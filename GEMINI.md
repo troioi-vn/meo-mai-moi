@@ -255,12 +255,12 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
 
 **Goal:** Establish the core project infrastructure, including backend and frontend scaffolding, development tools, and documentation setup. This phase ensures a solid foundation for all future development.
 
--   **Task:** Initialize a new Laravel project for the backend API.
--   **Task:** Initialize a new React project (using Vite) for the frontend SPA.
--   **Task:** Configure `PHP-CS-Fixer` for the Laravel backend to enforce PSR-12 coding standards.
--   **Task:** Set up `ESLint` (with Airbnb config) and `Prettier` for the React frontend to ensure consistent code style.
--   **Task:** Install and configure an OpenAPI package (e.g., `l5-swagger`) for the Laravel backend to define and document the API contract.
--   **Task:** Set up a static site generator (e.g., VitePress) for the `docs/` directory to create a navigable documentation website.
+-   **Task:** Initialize a new Laravel project for the backend API. `[DONE]`
+-   **Task:** Initialize a new React project (using Vite) for the frontend SPA. `[DONE]`
+-   **Task:** Configure `PHP-CS-Fixer` for the Laravel backend to enforce PSR-12 coding standards. `[DONE]`
+-   **Task:** Set up `ESLint` (with Airbnb config) and `Prettier` for the React frontend to ensure consistent code style. `[DONE]`
+-   **Task:** Install and configure an OpenAPI package (e.g., `l5-swagger`) for the Laravel backend to define and document the API contract. `[DONE]`
+-   **Task:** Set up a static site generator (e.g., VitePress) for the `docs/` directory to create a navigable documentation website. `[DONE]`
 
 ---
 

@@ -269,29 +269,29 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
 **Goal:** Implement the minimum viable product (MVP) functionality. This includes user registration, basic profile management, the ability for admins to add cats, and for the public to view them.
 
 #### Epic 1: User & Helper Account Management
--   **User Story 12: User Profile Management**
+-   **User Story 12: User Profile Management** `[DONE]`
     -   **Scenario:** A registered user wants to view or update their personal account information.
     -   **Backend:** `GET /api/users/me`, `PUT /api/users/me`.
     -   **Frontend:** A "My Profile" section in the user dashboard.
 
 #### Epic 2: Cat Profile & Custodianship Lifecycle
--   **User Story 1: Cat Owner Lists a New Cat**
+-   **User Story 1: Cat Owner Lists a New Cat** `[DONE]`
     -   **Scenario:** A registered user with the `CAT_OWNER` role lists a cat they need to rehome.
     -   **Backend:** `POST /api/cats`.
     -   **Frontend:** A user-facing form at `/account/cats/new`.
 
 #### Epic 3: Public Discovery & Browsing
--   **User Story 4: Public User Browses Available Cats**
+-   **User Story 4: Public User Browses Available Cats** `[DONE]`
     -   **Scenario:** A visitor browses all available cats.
     -   **Backend:** `GET /api/cats`.
     -   **Frontend:** A public gallery at `/cats`.
--   **User Story 5: Viewing the Dynamic Cat Profile Page**
+-   **User Story 5: Viewing the Dynamic Cat Profile Page** `[DONE]`
     -   **Scenario:** A user views a cat's profile page, seeing different information based on their role (Public, Admin, etc.).
     -   **Backend:** An intelligent `GET /api/cats/{id}` endpoint that returns data and a `viewer_permissions` object.
     -   **Frontend:** A declarative component that renders based on the `viewer_permissions` object.
 
 #### Epic 5: Core Platform & Notifications
--   **User Story 8: The Public Homepage**
+-   **User Story 8: The Public Homepage** `[DONE]`
     -   **Scenario:** A new visitor arrives at the main landing page.
     -   **Backend:** `GET /api/cats/featured`.
     -   **Frontend:** A homepage with a hero section, featured cats, and a footer.
@@ -303,21 +303,21 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
 **Goal:** Build upon the MVP by implementing the core workflows of the application, including the helper application process and the system for transferring cat custodianship.
 
 #### Epic 1: User & Helper Account Management
--   **User Story 2: User Becomes a Helper**
+-   **User Story 2: User Becomes a Helper** `[DONE]`
     -   **Scenario:** A user completes their helper profile and is auto-verified.
     -   **Backend:** `POST /api/helper-profiles`. The `HelperVerificationService` is triggered.
     -   **Frontend:** A form at `/apply-to-help`. The admin dashboard at `/admin/applications` is now for managing *reported* profiles, not approvals.
--   **User Story 15: User Views Helper Application Status**
+-   **User Story 15: User Views Helper Application Status** `[DONE]`
     -   **Scenario:** A user checks the status of their helper application (e.g., `pending_verification`, `approved`, `rejected_by_admin`).
     -   **Backend:** `GET /api/helper-profiles/me`.
     -   **Frontend:** A dedicated section in the user's dashboard.
 
 #### Epic 2: Cat Profile & Custodianship Lifecycle
--   **User Story 3: Managing & Transferring Cat Custodianship**
+-   **User Story 3: Managing & Transferring Cat Custodianship** `[DONE]`
     -   **Scenario:** A cat owner initiates a transfer of a cat to an approved helper.
     -   **Backend:** New `TransferRequest` model and endpoints (`POST /api/cats/{cat_id}/transfer-request`, `POST /api/transfer-requests/{id}/accept`, `POST /api/transfer-requests/{id}/reject`).
     -   **Frontend:** UI for initiating, viewing, and acting on transfer requests.
--   **User Story 13: Custodian Manages Cat Profile**
+-   **User Story 13: Custodian Manages Cat Profile** `[DONE]`
     -   **Scenario:** A cat's current custodian updates its profile or adds medical/weight records.
     -   **Backend:** `PUT /api/cats/{id}`, `POST /api/cats/{id}/medical-records`, `POST /api/cats/{id}/weight-history`.
     -   **Frontend:** Editing forms on the cat profile page, visible only to the custodian/admin.
@@ -329,7 +329,7 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
 **Goal:** Enhance the platform with features that foster community trust and interaction, such as reviews, comments, and direct messaging.
 
 #### Epic 4: Community Interaction & Communication
--   **User Story 6: User Reputation and Reviews**
+-   **User Story 6: User Reputation and Reviews** `[DONE]`
     -   **Scenario:** A previous custodian leaves a review for a fosterer after a successful transfer.
     -   **Backend:** New `Review` model and endpoints (`POST /api/reviews`, `GET /api/users/{id}/reviews`).
     -   **Frontend:** Prompts to leave reviews and public display of ratings on helper profiles.

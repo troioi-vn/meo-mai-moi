@@ -1,0 +1,36 @@
+# User-specific
+tmp/
+
+# Laravel
+/bootstrap/cache/*.php
+/bootstrap/cache/config.php
+/bootstrap/cache/packages.php
+/bootstrap/cache/routes.php
+/bootstrap/cache/services.php
+/storage/app/*.key
+/storage/framework/
+/storage/logs/
+/.env
+/vendor/
+/public/hot
+/public/storage
+/public/build
+/node_modules/
+npm-debug.log
+yarn-error.log
+
+# React
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+build/
+dist/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/

@@ -325,6 +325,12 @@ To ensure secure and flexible user access, we will implement the following authe
 - [ ] **Configure Linting & Formatting:**
     - [ ] Set up `PHP-CS-Fixer` for the Laravel backend.
     - [ ] Set up `ESLint` (with Airbnb config) and `Prettier` for the React frontend.
+- [ ] **API Contract Definition (Swagger/OpenAPI):**
+    - [ ] Install a Laravel OpenAPI Package (e.g., `darkaonline/l5-swagger`).
+    - [ ] Configure the Package.
+    - [ ] Annotate API Endpoints in Laravel controllers/models.
+    - [ ] Generate OpenAPI documentation.
+    - [ ] Serve Swagger UI.
 
 ## 11. Production Deployment and Operations
 

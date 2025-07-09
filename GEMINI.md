@@ -107,6 +107,13 @@ As the AI assistant for this project, my primary responsibilities are:
     - New features: `feature/task-description` (e.g., `feature/add-user-profile-page`)
     - Bug fixes: `fix/bug-description` (e.g., `fix/login-form-validation`)
 
+### Versioning
+
+We will use **Semantic Versioning (SemVer)** managed via Git tags.
+- **Format:** `MAJOR.MINOR.PATCH` (e.g., `v0.1.0`).
+- **Pre-release:** All versions before our official public launch will have a `0` MAJOR version (e.g., `v0.1.0`, `v0.2.0`).
+- **Tagging:** When a version is released (e.g., MVP), a new Git tag will be created. The `CHANGELOG.md` will be updated to reflect the version number and release date.
+
 ### Testing
 
 - **TDD for New Features:** All new features must begin with a failing test that defines the desired functionality. This is the default approach for adding anything new.
@@ -166,21 +173,50 @@ To ensure a consistent and user-friendly experience, we will standardize error h
 
 Based on user feedback, we are architecting a **Rescue Management System**. The core concept is tracking **Cat Custodianship** over time, providing a full, auditable history for each animal.
 
-**User Roles & Permissions:** The system has a fluid role model. A single user account can both offer help (by creating a `HelperProfile`) and manage cats for whom they are the current custodian. Permissions are contextual:
--   **Admin (`is_admin: true`):** A user associated with the main rescue organization. They can manage all cats and all helper applications.
--   **Custodian (Regular User):** A user who is currently responsible for a cat (e.g., fostering it). They can manage and initiate transfers for *only the cats in their care*.
+**User Roles & Permissions:** The system uses an explicit Role-Based Access Control (RBAC) model to ensure security and clarity. Each user has a single, well-defined role that dictates their permissions.
+
+```php
+enum UserRole: string {
+    case ADMIN = 'admin';
+    case CAT_OWNER = 'cat_owner';
+    case HELPER = 'helper';
+    case VIEWER = 'viewer';
+}
+
+enum Permission: string {
+    case CREATE_CAT = 'create_cat';
+    case EDIT_OWN_CAT = 'edit_own_cat';
+    case DELETE_OWN_CAT = 'delete_own_cat';
+    case VIEW_CONTACT_INFO = 'view_contact_info';
+    case APPROVE_HELPERS = 'approve_helpers';
+    case MANAGE_ALL_CATS = 'manage_all_cats';
+}
+```
+
+**Role-Permission Matrix:**
+
+*   **ADMIN**: Has all permissions, including `MANAGE_ALL_CATS` and `APPROVE_HELPERS`.
+*   **CAT_OWNER**: Can `CREATE_CAT`, `EDIT_OWN_CAT`, and `DELETE_OWN_CAT`.
+*   **HELPER**: Can `VIEW_CONTACT_INFO` of cat owners after their helper application is approved.
+*   **VIEWER**: Can browse public cat profiles. This is the default role for any registered user.
+
+**Implementation Notes:**
+
+*   Permissions will be checked using dedicated middleware for API routes.
+*   There will be clear processes for role upgrades (e.g., a `VIEWER` becomes a `HELPER` after their helper application is approved).
 
 ### Core Models
 
 1.  **`User` Model:** Represents any registered user.
-    -   `is_admin` (boolean): Grants system-wide administrative privileges.
+    -   `role` (enum: `UserRole`): The user's role within the system. Defaults to `VIEWER`.
+    -   `location` (string, nullable): The user's general location (e.g., "City, Country").
 
 2.  **`Cat` Model:** Represents the cat's permanent biological and descriptive information.
-    -   `city_id` (foreign key to `City`, nullable): The city where the cat is located.
+    -   `location` (string, nullable): The city or area where the cat is located.
 
 3.  **`HelperProfile` Model:** An **application form** for users who want to become approved fosterers or adopters.
-    -   `approval_status` (enum: `pending`, `approved`, `rejected`): Managed by admins.
-    -   `city_id` (foreign key to `City`, nullable): The city where the helper is located.
+    -   `approval_status` (enum: `pending`, `approved`, `rejected`): Managed automatically by the `HelperVerificationService` and can be manually overridden by an admin in response to a community report.
+    -   `location` (string, nullable): The city or area where the helper is located.
 
 4.  **`Custodianship` Model (New Core):** Links a Cat to a User, defining their relationship over time.
     -   `relationship_type` (enum: `rescue_org`, `fostering`, `permanent_foster`).
@@ -206,15 +242,6 @@ Based on user feedback, we are architecting a **Rescue Management System**. The 
     -   `cat_id` (foreign key to `Cat`): The cat this weight record belongs to.
     -   `weight_kg` (decimal): The recorded weight in kilograms.
     -   `record_date` (date): The date the weight was recorded.
-
-8.  **`Province` Model:** Represents a geographical province or state.
-    -   `id` (primary key)
-    -   `name` (string): Name of the province.
-
-9.  **`City` Model:** Represents a geographical city, linked to a province.
-    -   `id` (primary key)
-    -   `province_id` (foreign key to `Province`)
-    -   `name` (string): Name of the city.
 
 --- 
 
@@ -248,10 +275,10 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
     -   **Frontend:** A "My Profile" section in the user dashboard.
 
 #### Epic 2: Cat Profile & Custodianship Lifecycle
--   **User Story 1: Admin Onboards a New Cat**
-    -   **Scenario:** An admin adds a newly rescued cat to the system.
-    -   **Backend:** `POST /api/admin/cats`.
-    -   **Frontend:** An admin-only form at `/admin/cats/new`.
+-   **User Story 1: Cat Owner Lists a New Cat**
+    -   **Scenario:** A registered user with the `CAT_OWNER` role lists a cat they need to rehome.
+    -   **Backend:** `POST /api/cats`.
+    -   **Frontend:** A user-facing form at `/account/cats/new`.
 
 #### Epic 3: Public Discovery & Browsing
 -   **User Story 4: Public User Browses Available Cats**
@@ -276,18 +303,18 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
 **Goal:** Build upon the MVP by implementing the core workflows of the application, including the helper application process and the system for transferring cat custodianship.
 
 #### Epic 1: User & Helper Account Management
--   **User Story 2: New User Applies to Help**
-    -   **Scenario:** A new user applies to become an approved fosterer or adopter.
-    -   **Backend:** `POST /api/helper-profiles`, plus admin endpoints for review.
-    -   **Frontend:** A public form at `/apply-to-help` and an admin dashboard at `/admin/applications`.
+-   **User Story 2: User Becomes a Helper**
+    -   **Scenario:** A user completes their helper profile and is auto-verified.
+    -   **Backend:** `POST /api/helper-profiles`. The `HelperVerificationService` is triggered.
+    -   **Frontend:** A form at `/apply-to-help`. The admin dashboard at `/admin/applications` is now for managing *reported* profiles, not approvals.
 -   **User Story 15: User Views Helper Application Status**
-    -   **Scenario:** A user checks the status of their helper application.
+    -   **Scenario:** A user checks the status of their helper application (e.g., `pending_verification`, `approved`, `rejected_by_admin`).
     -   **Backend:** `GET /api/helper-profiles/me`.
     -   **Frontend:** A dedicated section in the user's dashboard.
 
 #### Epic 2: Cat Profile & Custodianship Lifecycle
 -   **User Story 3: Managing & Transferring Cat Custodianship**
-    -   **Scenario:** An admin or current fosterer initiates a transfer of a cat to a new user.
+    -   **Scenario:** A cat owner initiates a transfer of a cat to an approved helper.
     -   **Backend:** New `TransferRequest` model and endpoints (`POST /api/cats/{cat_id}/transfer-request`, `POST /api/transfer-requests/{id}/accept`, `POST /api/transfer-requests/{id}/reject`).
     -   **Frontend:** UI for initiating, viewing, and acting on transfer requests.
 -   **User Story 13: Custodian Manages Cat Profile**
@@ -356,8 +383,170 @@ To ensure a smooth and reliable deployment process, we will consider the followi
 -   **Database Migrations:** Outline a strategy for running database migrations in a production environment (e.g., as part of a deployment script).
 -   **CI/CD Pipeline:** Consider implementing a basic Continuous Integration/Continuous Deployment (CI/CD) pipeline to automate testing and deployment, reducing manual errors and speeding up releases.
 
+### File Upload Strategy
+
+All user-uploaded files will be stored on the local filesystem of the VPS, organized into a structured directory within `/public/uploads/`.
+
+**Directory Structure:**
+
+```
+/public/uploads/
+├── cats/
+│   ├── profiles/     // Cat profile images
+│   └── medical/      // Medical documents
+├── users/
+│   └── avatars/      // User profile images
+└── temp/             // Temporary uploads (cleaned daily)
+```
+
+**Implementation:**
+
+A dedicated `FileUploadService` will handle all file operations, including validation, storage, and database record creation.
+
+```php
+class FileUploadService {
+    public function uploadCatPhoto(UploadedFile $file, Cat $cat): string {
+        $filename = $cat->id . '_' . time() . '.' . $file->extension();
+        $path = $file->storeAs('cats/profiles', $filename, 'public');
+        
+        // Assuming a 'photos' relationship exists on the Cat model
+        $cat->photos()->create([
+            'filename' => $filename,
+            'path' => $path,
+            'size' => $file->getSize(),
+            'mime_type' => $file->getMimeType(),
+        ]);
+        
+        return $path;
+    }
+}
+```
+
+**Key Features:**
+
+-   **Image Optimization:** All uploaded images intended for display (avatars, cat profiles) will be automatically resized and optimized to reduce file size and improve loading times.
+-   **File Cleanup:** A system will be in place to delete associated files when a parent record (like a `Cat` or `User`) is deleted.
+-   **Temporary File Management:** A scheduled task will run daily to clean out old files from the `/temp/` directory.
+
 ## 12. User Preferences
 
 - **Collaboration Style:** Iterative, feedback-driven.
 - **Command Style:** Imperative (e.g., "Refactor this function", "Write a test for the login API").
 - **User Language:** Intermediate English (native: Russian). Communication should be clear and direct.
+
+---
+## 13. Success Metrics & Tracking
+
+To ensure the project is achieving its real-world goals, we will define and track key success metrics. This will be implemented via a centralized `MetricService`.
+
+```php
+enum MetricType: string {
+    case SUCCESSFUL_ADOPTION = 'successful_adoption';
+    case USER_REGISTRATION = 'user_registration';
+    case CAT_LISTING_CREATED = 'cat_listing_created';
+    case HELPER_APPLICATION = 'helper_application';
+    case CONTACT_INITIATED = 'contact_initiated';
+    case TIME_TO_ADOPTION = 'time_to_adoption';
+}
+
+class MetricService {
+    public function recordAdoption(Cat $cat, User $adopter): void {
+        Metric::create([
+            'metric_name' => MetricType::SUCCESSFUL_ADOPTION,
+            'metric_value' => 1,
+            'recorded_at' => now(),
+            'metadata' => [
+                'cat_id' => $cat->id,
+                'adopter_id' => $adopter->id,
+                'days_listed' => $cat->created_at->diffInDays(now()),
+            ],
+        ]);
+    }
+}
+```
+
+### Initial Success Goals
+
+-   **Adoption Rate:** 70% of listed cats to be successfully adopted within 30 days of listing.
+-   **User Retention:** 80% of users who initiate contact with another user remain active on the platform.
+-   **Ease of Use:** A user should be able to initiate contact with a cat owner or helper in fewer than 5 clicks from the homepage.
+
+---
+## 14. Self-Service Operations & Community Moderation
+
+To minimize administrative bottlenecks and empower users, the platform will operate on a self-service model. Core operations like becoming a helper or listing a cat will be automated, with admins stepping in only to handle exceptions and community-reported issues.
+
+### Auto-Approval and Verification
+
+Instead of manual admin review, a `HelperVerificationService` will automatically approve users who meet basic criteria.
+
+```php
+class HelperVerificationService {
+    public function autoVerifyHelper(HelperProfile $helper): bool {
+        $checks = [
+            $this->hasValidEmail($helper->user),
+            $this->hasCompletedProfile($helper),
+            $this->passesBasicScreening($helper), // e.g., no flagged keywords
+        ];
+        
+        return !in_array(false, $checks);
+    }
+}
+```
+
+### Community-Based Reporting
+
+A robust `ReportService` will be the primary mechanism for ensuring safety and trust. Users can report other users or cat listings for review by the admin team.
+
+```php
+class ReportService {
+    public function reportUser(User $reported, User $reporter, string $reason): void {
+        Report::create([
+            'reported_user_id' => $reported->id,
+            'reporter_user_id' => $reporter->id,
+            'reason' => $reason,
+            'status' => 'pending_review',
+        ]);
+    }
+}
+```
+
+This approach means:
+-   Helpers can self-register and be approved automatically.
+-   Cat owners can manage their own listings directly.
+- Admins focus on moderation and dispute resolution, not routine approvals.
+
+---
+## 15. Mobile Strategy
+
+To ensure the platform is accessible to the widest possible audience, we will adopt a **mobile-first responsive design** strategy for the React frontend. All components and layouts will be designed for mobile screens first, then enhanced for larger desktop views.
+
+### Key Pillars:
+
+1.  **Responsive CSS Framework:** We will integrate a utility-first CSS framework like **Tailwind CSS** or a component-based one like **Bootstrap** to accelerate the development of a responsive UI and ensure consistency across all devices.
+2.  **Progressive Web App (PWA):** The application will be built as a PWA. This will provide users with an app-like experience, including the ability to add the site to their home screen and access certain features offline, without the need for separate native app development for iOS and Android.
+3.  **Performance:** Mobile performance will be a key consideration. We will prioritize optimized images, lazy loading, and efficient data fetching to ensure a fast and smooth experience, even on slower mobile networks.
+
+### Long-Term Vision: Native Mobile App
+
+While the immediate focus is on a high-quality, responsive PWA, a native mobile app for iOS and Android remains a long-term goal. A native app could be considered in a future phase to provide an even more integrated experience, including features like push notifications and deeper OS integration, further broadening the platform's reach and engagement.
+
+---
+## 16. Community Feedback & Iteration
+
+To ensure the platform evolves in alignment with real-world user needs, we will establish a formal feedback loop. This process makes our users active collaborators in the development cycle.
+
+### Feedback Channels
+
+1.  **In-App Feedback Form:** A simple, non-intrusive feedback form will be accessible from the user dashboard, allowing users to submit suggestions or report non-critical issues at any time.
+2.  **Beta Testing Program:** We will create an opt-in beta testing program for engaged community members to test new features before they are released to the public. This provides a structured environment for gathering detailed feedback on major updates.
+3.  **User Surveys:** Periodic surveys will be sent out to gather structured data on user satisfaction, feature requests, and overall priorities.
+
+### Closing the Loop
+
+Gathering feedback is only the first step. We will implement a process to:
+-   Regularly review all feedback submissions.
+-   Triage submissions into categories (bug, feature request, suggestion).
+-   Convert actionable items into development tickets.
+-   Communicate back to the community about which suggestions are being implemented to show that their input is valued.
+

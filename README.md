@@ -49,17 +49,17 @@ To set up and run the development server, follow these steps:
     ```bash
     cp .env.example .env
     ```
-3.  Install PHP dependencies:
+3.  Bring up the Docker containers:
     ```bash
-    composer install
+    docker compose up -d
     ```
-4.  Generate an application key:
+4.  Install PHP dependencies inside the Laravel container:
     ```bash
-    php artisan key:generate
+    docker compose exec -w /var/www/html laravel.test composer install
     ```
-5.  Start the development server using Laravel Sail:
+5.  Generate an application key inside the Laravel container:
     ```bash
-    ./vendor/bin/sail up -d
+    docker compose exec -w /var/www/html laravel.test php artisan key:generate
     ```
 
 **Note:** The default ports for the application and database have been changed to `8080` and `5433` respectively to avoid conflicts with common local development setups. You can access the application at `http://localhost:8080`.

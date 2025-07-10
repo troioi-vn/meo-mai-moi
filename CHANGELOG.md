@@ -8,6 +8,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `test_user_can_get_their_own_profile`
+- `test_user_can_update_their_own_profile`
+- `test_user_cannot_view_another_users_profile_details`
+- `test_user_cannot_update_another_users_profile`
+- `test_cat_owner_can_initiate_transfer_request`
+- `test_recipient_can_accept_transfer_request`
+- `test_recipient_can_reject_transfer_request`
+- `test_non_recipient_cannot_act_on_transfer_request`
+- `test_user_can_leave_review_for_helper`
+- `test_can_get_reviews_for_a_user`
+- `test_cannot_review_the_same_user_multiple_times_for_same_transfer`
+- `test_user_can_create_helper_profile`
+- `test_user_can_view_their_helper_profile_status`
+- `test_guest_cannot_create_helper_profile`
+- `test_custodian_can_add_medical_record`
+- `test_admin_can_add_medical_record`
+- `test_guest_cannot_add_medical_record`
+- `test_custodian_can_add_weight_record`
+- `test_admin_can_add_weight_record`
+- `test_guest_cannot_add_weight_record`
+- `test_can_get_all_available_cats`
+- `test_can_get_featured_cats`
+- `test_can_get_single_cat_profile`
+- `test_authenticated_user_can_create_cat_listing`
+- `test_guest_cannot_create_cat_listing`
+- `test_can_get_comments_for_a_cat`
+- `test_authenticated_user_can_add_comment_to_cat_profile`
+- `test_guest_cannot_add_comment`
+- `ApplyToHelpPage.test.tsx`
+- `CatProfilePage.test.tsx`
+- `HomePage.test.tsx`
+- `LoginPage.test.tsx`
+- `RegisterPage.test.tsx`
+- `CommentsSection.test.tsx`
+- `HelperApplicationForm.test.tsx`
+- `HeroSection.test.tsx`
+- Initialized a new Laravel project for the backend API.
+- Initialized a new React project (using Vite) for the frontend SPA.
+- Configured `PHP-CS-Fixer` for the Laravel backend to enforce PSR-12 coding standards.
+- Set up `ESLint` (with Airbnb config) and `Prettier` for the React frontend to ensure consistent code style.
+- Installed and configured an OpenAPI package (e.g., `l5-swagger`) for the Laravel backend to define and document the API contract.
+- Set up a static site generator (e.g., VitePress) for the `docs/` directory to create a navigable documentation website.
+- User Story 12: User Profile Management
+- User Story 1: Cat Owner Lists a New Cat
+- User Story 4: Public User Browses Available Cats
+- User Story 5: Viewing the Dynamic Cat Profile Page
+- User Story 8: The Public Homepage
+- User Story 2: User Becomes a Helper
+- User Story 15: User Views Helper Application Status
+- User Story 3: Managing & Transferring Cat Custodianship
+- User Story 13: Custodian Manages Cat Profile
+- User Story 6: User Reputation and Reviews
 - Implemented login and registration scenarios, including:
   - Frontend: `LoginForm.tsx` and `RegisterForm.tsx` components, `LoginPage.tsx` and `RegisterPage.tsx` pages, and routing configuration.
 - Added frontend tests for `LoginForm.tsx` and `RegisterForm.tsx` components using Vitest and React Testing Library.

@@ -10,71 +10,13 @@ This document lists the missing tests for implemented features, based on the CHA
 
 #### Feature Tests (`tests/Feature`)
 
--   **CatProfileTest.php:** `[DONE]`
-    -   `test_guest_cannot_update_cat_profile`
-    -   `test_non_custodian_cannot_update_cat_profile`
-    -   `test_custodian_can_update_cat_profile`
-    -   `test_admin_can_update_any_cat_profile`
-
--   **CatMedicalHistoryTest.php:** `[DONE]`
-    -   `test_custodian_can_add_medical_record`
-    -   `test_admin_can_add_medical_record`
-    -   `test_guest_cannot_add_medical_record`
-
--   **CatWeightHistoryTest.php:** `[DONE]`
-    -   `test_custodian_can_add_weight_record`
-    -   `test_admin_can_add_weight_record`
-    -   `test_guest_cannot_add_weight_record`
-
--   **CatListingTest.php:** `[DONE]`
-    -   `test_can_get_all_available_cats`
-    -   `test_can_get_featured_cats`
-    -   `test_can_get_single_cat_profile`
-    -   `test_authenticated_user_can_create_cat_listing`
-    -   `test_guest_cannot_create_cat_listing`
-
--   **CatCommentTest.php:** `[DONE]`
-    -   `test_can_get_comments_for_a_cat`
-    -   `test_authenticated_user_can_add_comment_to_cat_profile`
-    -   `test_guest_cannot_add_comment`
-
--   **HelperProfileTest.php:** `[DONE]`
-    -   `test_user_can_create_helper_profile`
-    -   `test_user_can_view_their_helper_profile_status`
-    -   `test_guest_cannot_create_helper_profile`
-
--   **TransferRequestTest.php:** `[DONE]`
-    -   `test_cat_owner_can_initiate_transfer_request`
-    -   `test_recipient_can_accept_transfer_request`
-    -   `test_recipient_can_reject_transfer_request`
-    -   `test_non_recipient_cannot_act_on_transfer_request`
-
--   **ReviewTest.php:** `[DONE]`
-    -   `test_user_can_leave_review_for_helper`
-    -   `test_can_get_reviews_for_a_user`
-    -   `test_cannot_review_the_same_user_multiple_times_for_same_transfer`
-
--   **UserProfileTest.php:** `[DONE]`
-    -   `test_user_can_get_their_own_profile`
-    -   `test_user_can_update_their_own_profile`
-    -   `test_user_cannot_view_another_users_profile_details`
-    -   `test_user_cannot_update_another_users_profile`
 
 ### Frontend (React/Vitest)
 
 #### Page Tests
 
--   `ApplyToHelpPage.test.tsx` `[DONE]`
--   `CatProfilePage.test.tsx` `[DONE]`
--   `HomePage.test.tsx` `[DONE]`
--   `LoginPage.test.tsx` `[DONE]`
--   `RegisterPage.test.tsx` `[DONE]`
 
 #### Component Tests
-
--   `CommentsSection.test.tsx` `[DONE]`
--   `HelperApplicationForm.test.tsx` `[DONE]`
--   `HeroSection.test.tsx` `[DONE]`
 
 ---
 
@@ -366,13 +308,6 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
 
 **Goal:** Establish the core project infrastructure, including backend and frontend scaffolding, development tools, and documentation setup. This phase ensures a solid foundation for all future development.
 
--   **Task:** Initialize a new Laravel project for the backend API. `[DONE]`
--   **Task:** Initialize a new React project (using Vite) for the frontend SPA. `[DONE]`
--   **Task:** Configure `PHP-CS-Fixer` for the Laravel backend to enforce PSR-12 coding standards. `[DONE]`
--   **Task:** Set up `ESLint` (with Airbnb config) and `Prettier` for the React frontend to ensure consistent code style. `[DONE]`
--   **Task:** Install and configure an OpenAPI package (e.g., `l5-swagger`) for the Laravel backend to define and document the API contract. `[DONE]`
--   **Task:** Set up a static site generator (e.g., VitePress) for the `docs/` directory to create a navigable documentation website. `[DONE]`
-
 ---
 
 ### Phase 1: Core MVP - Viewing & User Management
@@ -380,32 +315,12 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
 **Goal:** Implement the minimum viable product (MVP) functionality. This includes user registration, basic profile management, the ability for admins to add cats, and for the public to view them.
 
 #### Epic 1: User & Helper Account Management
--   **User Story 12: User Profile Management** `[DONE]`
-    -   **Scenario:** A registered user wants to view or update their personal account information.
-    -   **Backend:** `GET /api/users/me`, `PUT /api/users/me`.
-    -   **Frontend:** A "My Profile" section in the user dashboard.
 
 #### Epic 2: Cat Profile & Custodianship Lifecycle
--   **User Story 1: Cat Owner Lists a New Cat** `[DONE]`
-    -   **Scenario:** A registered user with the `CAT_OWNER` role lists a cat they need to rehome.
-    -   **Backend:** `POST /api/cats`.
-    -   **Frontend:** A user-facing form at `/account/cats/new`.
 
 #### Epic 3: Public Discovery & Browsing
--   **User Story 4: Public User Browses Available Cats** `[DONE]`
-    -   **Scenario:** A visitor browses all available cats.
-    -   **Backend:** `GET /api/cats`.
-    -   **Frontend:** A public gallery at `/cats`.
--   **User Story 5: Viewing the Dynamic Cat Profile Page** `[DONE]`
-    -   **Scenario:** A user views a cat's profile page, seeing different information based on their role (Public, Admin, etc.).
-    -   **Backend:** An intelligent `GET /api/cats/{id}` endpoint that returns data and a `viewer_permissions` object.
-    -   **Frontend:** A declarative component that renders based on the `viewer_permissions` object.
 
 #### Epic 5: Core Platform & Notifications
--   **User Story 8: The Public Homepage** `[DONE]`
-    -   **Scenario:** A new visitor arrives at the main landing page.
-    -   **Backend:** `GET /api/cats/featured`.
-    -   **Frontend:** A homepage with a hero section, featured cats, and a footer.
 
 ---
 
@@ -414,24 +329,8 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
 **Goal:** Build upon the MVP by implementing the core workflows of the application, including the helper application process and the system for transferring cat custodianship.
 
 #### Epic 1: User & Helper Account Management
--   **User Story 2: User Becomes a Helper** `[DONE]`
-    -   **Scenario:** A user completes their helper profile and is auto-verified.
-    -   **Backend:** `POST /api/helper-profiles`. The `HelperVerificationService` is triggered.
-    -   **Frontend:** A form at `/apply-to-help`. The admin dashboard at `/admin/applications` is now for managing *reported* profiles, not approvals.
--   **User Story 15: User Views Helper Application Status** `[DONE]`
-    -   **Scenario:** A user checks the status of their helper application (e.g., `pending_verification`, `approved`, `rejected_by_admin`).
-    -   **Backend:** `GET /api/helper-profiles/me`.
-    -   **Frontend:** A dedicated section in the user's dashboard.
 
 #### Epic 2: Cat Profile & Custodianship Lifecycle
--   **User Story 3: Managing & Transferring Cat Custodianship** `[DONE]`
-    -   **Scenario:** A cat owner initiates a transfer of a cat to an approved helper.
-    -   **Backend:** New `TransferRequest` model and endpoints (`POST /api/cats/{cat_id}/transfer-request`, `POST /api/transfer-requests/{id}/accept`, `POST /api/transfer-requests/{id}/reject`).
-    -   **Frontend:** UI for initiating, viewing, and acting on transfer requests.
--   **User Story 13: Custodian Manages Cat Profile** `[DONE]`
-    -   **Scenario:** A cat's current custodian updates its profile or adds medical/weight records.
-    -   **Backend:** `PUT /api/cats/{id}`, `POST /api/cats/{id}/medical-records`, `POST /api/cats/{id}/weight-history`.
-    -   **Frontend:** Editing forms on the cat profile page, visible only to the custodian/admin.
 
 ---
 
@@ -440,10 +339,6 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
 **Goal:** Enhance the platform with features that foster community trust and interaction, such as reviews, comments, and direct messaging.
 
 #### Epic 4: Community Interaction & Communication
--   **User Story 6: User Reputation and Reviews** `[DONE]`
-    -   **Scenario:** A previous custodian leaves a review for a fosterer after a successful transfer.
-    -   **Backend:** New `Review` model and endpoints (`POST /api/reviews`, `GET /api/users/{id}/reviews`).
-    -   **Frontend:** Prompts to leave reviews and public display of ratings on helper profiles.
 -   **User Story 7: Fosterer Comments on Cat Profiles**
     -   **Scenario:** A past or present fosterer adds a public comment to a cat's profile.
     -   **Backend:** New `CatComment` model and endpoints (`GET /api/cats/{id}/comments`, `POST /api/cats/{id}/comments`).
@@ -634,7 +529,12 @@ To ensure the platform is accessible to the widest possible audience, we will ad
 
 ### Key Pillars:
 
-1.  **Responsive CSS Framework:** We will integrate a utility-first CSS framework like **Tailwind CSS** or a component-based one like **Bootstrap** to accelerate the development of a responsive UI and ensure consistency across all devices.
+1.  **Responsive CSS Framework:** We will integrate a utility-first CSS framework like **Tailwind CSS** and a component library like **shadcn/ui** to accelerate the development of a responsive UI and ensure consistency across all devices.
+    **Implementation Plan for Tailwind CSS & shadcn/ui:**
+    -   **Install Tailwind CSS:** Add Tailwind CSS to the React frontend project.
+    -   **Configure Tailwind CSS:** Set up `tailwind.config.js` and import Tailwind's base styles.
+    -   **Install shadcn/ui CLI:** Use the shadcn/ui CLI to initialize and add components.
+    -   **Add Components:** Start adding necessary UI components (e.g., Button, Input, Card) using the shadcn/ui CLI.
 2.  **Progressive Web App (PWA):** The application will be built as a PWA. This will provide users with an app-like experience, including the ability to add the site to their home screen and access certain features offline, without the need for separate native app development for iOS and Android.
 3.  **Performance:** Mobile performance will be a key consideration. We will prioritize optimized images, lazy loading, and efficient data fetching to ensure a fast and smooth experience, even on slower mobile networks.
 

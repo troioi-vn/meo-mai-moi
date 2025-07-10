@@ -35,6 +35,54 @@ This project is designed to be a **starter engine** for communities, NGOs, shelt
 
 The system is not tied to any specific country, though the initial dataset is based on Vietnam.
 
+## Development Setup
+
+To set up and run the development server, follow these steps:
+
+### Backend (Laravel)
+
+1.  Navigate to the `backend` directory:
+    ```bash
+    cd backend
+    ```
+2.  Copy the example environment file:
+    ```bash
+    cp .env.example .env
+    ```
+3.  Install PHP dependencies:
+    ```bash
+    composer install
+    ```
+4.  Generate an application key:
+    ```bash
+    php artisan key:generate
+    ```
+5.  Start the development server using Laravel Sail:
+    ```bash
+    ./vendor/bin/sail up -d
+    ```
+
+**Note:** The default ports for the application and database have been changed to `8080` and `5433` respectively to avoid conflicts with common local development setups. You can access the application at `http://localhost:8080`.
+
+### Frontend (React)
+
+1.  Navigate to the `frontend` directory:
+    ```bash
+    cd frontend
+    ```
+2.  Install Node.js dependencies:
+    ```bash
+    npm install
+    ```
+3.  To run the frontend in development mode (with hot-reloading):
+    ```bash
+    npm run dev
+    ```
+4.  To build the frontend for production:
+    ```bash
+    npm run build
+    ```
+
 ## License
 
 This project is licensed under the **MIT License** — feel free to use, modify, and deploy it for your own community needs.

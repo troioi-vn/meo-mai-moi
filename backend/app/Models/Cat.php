@@ -28,4 +28,9 @@ class Cat extends Model
     {
         return $this->hasMany(WeightHistory::class);
     }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(CatComment::class);
+    }
 }

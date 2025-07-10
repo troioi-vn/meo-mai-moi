@@ -2,6 +2,82 @@
 
 This document outlines the conventions, goals, and workflow for the collaboration between the development team and the Gemini AI assistant on the Meo Mai Moi project.
 
+## Testing TODOs
+
+This document lists the missing tests for implemented features, based on the CHANGELOG.md.
+
+### Backend (PHP/Laravel)
+
+#### Feature Tests (`tests/Feature`)
+
+-   **CatProfileTest.php:**
+    -   `test_guest_cannot_update_cat_profile`
+    -   `test_non_custodian_cannot_update_cat_profile`
+    -   `test_custodian_can_update_cat_profile`
+    -   `test_admin_can_update_any_cat_profile`
+
+-   **CatMedicalHistoryTest.php:**
+    -   `test_custodian_can_add_medical_record`
+    -   `test_admin_can_add_medical_record`
+    -   `test_guest_cannot_add_medical_record`
+
+-   **CatWeightHistoryTest.php:**
+    -   `test_custodian_can_add_weight_record`
+    -   `test_admin_can_add_weight_record`
+    -   `test_guest_cannot_add_weight_record`
+
+-   **CatListingTest.php:**
+    -   `test_can_get_all_available_cats`
+    -   `test_can_get_featured_cats`
+    -   `test_can_get_single_cat_profile`
+    -   `test_authenticated_user_can_create_cat_listing`
+    -   `test_guest_cannot_create_cat_listing`
+
+-   **CatCommentTest.php:**
+    -   `test_can_get_comments_for_a_cat`
+    -   `test_authenticated_user_can_add_comment_to_cat_profile`
+    -   `test_guest_cannot_add_comment`
+
+-   **HelperProfileTest.php:**
+    -   `test_user_can_create_helper_profile`
+    -   `test_user_can_view_their_helper_profile_status`
+    -   `test_guest_cannot_create_helper_profile`
+
+-   **TransferRequestTest.php:**
+    -   `test_cat_owner_can_initiate_transfer_request`
+    -   `test_recipient_can_accept_transfer_request`
+    -   `test_recipient_can_reject_transfer_request`
+    -   `test_non_recipient_cannot_act_on_transfer_request`
+
+-   **ReviewTest.php:**
+    -   `test_user_can_leave_review_for_helper`
+    -   `test_can_get_reviews_for_a_user`
+    -   `test_cannot_review_the_same_user_multiple_times_for_same_transfer`
+
+-   **UserProfileTest.php:**
+    -   `test_user_can_get_their_own_profile`
+    -   `test_user_can_update_their_own_profile`
+    -   `test_user_cannot_view_another_users_profile_details`
+    -   `test_user_cannot_update_another_users_profile`
+
+### Frontend (React/Vitest)
+
+#### Page Tests
+
+-   `ApplyToHelpPage.test.tsx`
+-   `CatProfilePage.test.tsx`
+-   `HomePage.test.tsx`
+-   `LoginPage.test.tsx`
+-   `RegisterPage.test.tsx`
+
+#### Component Tests
+
+-   `CommentsSection.test.tsx`
+-   `HelperApplicationForm.test.tsx`
+-   `HeroSection.test.tsx`
+
+---
+
 ## 1. Project Summary
 
 **Meo Mai Moi** is an open-source web application engine designed to help communities build cat rehoming networks. It connects cat owners with fosters and adopters, supporting a community-driven approach to cat welfare. The platform is architected to be geographically modular, allowing anyone to deploy it for their own region.
@@ -22,44 +98,7 @@ This outlines the high-level map of the application from the perspective of its 
 
 ### User Account Dashboard (For logged-in users)
 
--   **My Account (`/account`):** A central dashboard for personal activities.
--   **My Cats:** Manage cats currently under the user's custodianship.
--   **My Helper Profile:** Create or edit their application to be a helper.
--   **Notifications:** View alerts and updates related to their activities.
-
-### Admin Dashboard (For rescue staff only)
-
--   **Admin Home (`/admin`):** A private dashboard with operational overviews.
--   **Manage Cats:** Add new cats and view/edit all cats in the system.
--   **Manage Applications:** Review and approve/reject helper applications.
--   **Manage Users:** View all users and manage admin privileges.
--   **Manage Transfers:** View a complete history of all custodianship changes.
-
-#  GEMINI.md - Meo Mai Moi Project
-
-This document outlines the conventions, goals, and workflow for the collaboration between the development team and the Gemini AI assistant on the Meo Mai Moi project.
-
-## 1. Project Summary
-
-**Meo Mai Moi** is an open-source web application engine designed to help communities build cat rehoming networks. It connects cat owners with fosters and adopters, supporting a community-driven approach to cat welfare. The platform is architected to be geographically modular, allowing anyone to deploy it for their own region.
-
-## 2. Application Structure (User POV)
-
-This outlines the high-level map of the application from the perspective of its users.
-
-### Public-Facing Area (For all visitors)
-
--   **Homepage (`/`):** Main landing page with general info, featured cats, and calls to action.
--   **Available Cats (`/cats`):** A filterable gallery of all cats seeking a home.
--   **Cat Profile (`/cats/{id}`):** Detailed public page for a single cat.
--   **Available Helpers (`/helpers`):** A filterable list of approved users offering to foster or adopt.
--   **Helper Profile (`/helpers/{id}`):** Detailed public profile for a single helper.
--   **Apply to Help (`/apply-to-help`):** The questionnaire for users wanting to become helpers.
--   **Login & Registration Pages:** Standard account access pages.
-
-### User Account Dashboard (For logged-in users)
-
--   **My Account (`/account`):** A central dashboard for personal activities.
+-   **My Account (`/account`)::** A central dashboard for personal activities.
 -   **My Cats:** Manage cats currently under the user's custodianship.
 -   **My Helper Profile:** Create or edit their application to be a helper.
 -   **Notifications:** View alerts and updates related to their activities.
@@ -122,6 +161,17 @@ We will use **Semantic Versioning (SemVer)** managed via Git tags.
     - **Laravel (Backend):** Pest
     - **React (Frontend):** Vitest with React Testing Library (RTL)
 
+### Backend Testing Strategy
+
+We employ a layered testing approach using Pest:
+
+*   **Unit Tests (`tests/Unit/`):** Isolate and test individual components (classes, methods) without external dependencies (database, file system, external APIs). Mock dependencies for true isolation.
+*   **Feature Tests (`tests/Feature/`):** Test the full request-response cycle for API endpoints, interacting with the database (using `RefreshDatabase` trait) and internal services. External services are mocked. This is where our TDD-for-features workflow primarily applies.
+
+**TDD Workflow:** For new features, write a failing feature test, implement the minimum code to pass, then refactor.
+
+**Considerations:** High code coverage, explicit error handling tests, fast execution, and CI/CD integration.
+
 #### Frontend Testing Strategies
 
 For the React frontend, we employ a combination of unit and integration tests using Vitest and React Testing Library (RTL). Our focus is on testing user-facing behavior rather than internal component implementation details.
@@ -176,6 +226,7 @@ To ensure a consistent and user-friendly experience, we will standardize error h
 ## 7. Command Glossary
 
 ### Backend (Laravel)
+**Note:** All `php artisan` and `composer` commands should be executed within the running Docker container (e.g., `docker compose exec laravel.test <command>`).
 - `composer install`: Install PHP dependencies.
 - `php artisan serve`: Start the local development server.
 - `php artisan migrate`: Run database migrations.

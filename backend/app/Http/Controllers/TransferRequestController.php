@@ -192,7 +192,7 @@ class TransferRequestController extends Controller
         $transferRequest->accepted_at = now();
         $transferRequest->save();
 
-        // Logic to update cat custodianship should go here
+        $transferRequest->cat->update(['user_id' => $transferRequest->recipient_user_id]);
 
         return response()->json($transferRequest);
     }

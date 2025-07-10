@@ -15,6 +15,16 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->enum('approval_status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->string('address');
+            $table->string('city');
+            $table->string('state');
+            $table->string('zip_code');
+            $table->string('phone_number');
+            $table->text('experience');
+            $table->boolean('has_pets');
+            $table->boolean('has_children');
+            $table->boolean('can_foster');
+            $table->boolean('can_adopt');
             $table->string('location')->nullable();
             $table->timestamps();
         });

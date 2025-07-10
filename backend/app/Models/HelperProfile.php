@@ -57,6 +57,16 @@ class HelperProfile extends Model
         'user_id',
         'approval_status',
         'location',
+        'address',
+        'city',
+        'state',
+        'zip_code',
+        'phone_number',
+        'experience',
+        'has_pets',
+        'has_children',
+        'can_foster',
+        'can_adopt',
     ];
 
     public function user(): BelongsTo

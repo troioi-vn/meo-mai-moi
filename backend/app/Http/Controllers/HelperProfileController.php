@@ -77,6 +77,16 @@ class HelperProfileController extends Controller
     {
         try {
             $validatedData = $request->validate([
+                'address' => 'required|string|max:255',
+                'city' => 'required|string|max:255',
+                'state' => 'required|string|max:255',
+                'zip_code' => 'required|string|max:255',
+                'phone_number' => 'required|string|max:255',
+                'experience' => 'required|string',
+                'has_pets' => 'required|boolean',
+                'has_children' => 'required|boolean',
+                'can_foster' => 'required|boolean',
+                'can_adopt' => 'required|boolean',
                 'location' => 'required|string|max:255',
             ]);
         } catch (ValidationException $e) {

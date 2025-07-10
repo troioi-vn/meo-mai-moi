@@ -31,10 +31,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/reviews', [ReviewController::class, 'store']);
 });
 
+Route::get('/cats/featured', [CatController::class, 'featured']);
 Route::get('/cats', [CatController::class, 'index']);
 Route::get('/cats/{cat}', [CatController::class, 'show']);
 Route::get('/cats/{cat}/comments', [CatCommentController::class, 'index']);
-Route::get('/cats/featured', [CatController::class, 'featured']);
 Route::get('/users/{user}/reviews', [ReviewController::class, 'index']);
 
 Route::post('/register', [AuthController::class, 'register']);

@@ -218,7 +218,7 @@ class CatController extends Controller
             ], 422);
         }
 
-        $cat = Cat::create($validatedData);
+        $cat = Cat::create($validatedData + ['user_id' => $request->user()->id]);
 
         return response()->json($cat, 201);
     }
@@ -271,7 +271,7 @@ class CatController extends Controller
      */
     public function update(Request $request, Cat $cat)
     {
-        if ($request->user()->role !== UserRole::ADMIN->value && $cat->user_id !== $request->user()->id) {
+        if ($request->user()->role !== UserRole::ADMIN && $cat->user_id !== $request->user()->id) {
             return response()->json(['message' => 'You are not authorized to update this cat.'], 403);
         }
 

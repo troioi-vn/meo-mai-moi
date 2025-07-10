@@ -25,7 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added a "Development Setup" section to the `README.md` file with instructions for setting up and running the development server.
 - Implemented a Hero Section component for the homepage.
 - Implemented a basic homepage and frontend routing.
-- Implemented API endpoints for user reviews (`POST /api/reviews`, `GET /api/users/{id}/reviews`), now documented in Swagger.
+  - Implemented API endpoints for user reviews (`POST /api/reviews`, `GET /api/users/{id}/reviews`), now documented in Swagger.
+  - Implemented User Story 3: Managing & Transferring Cat Custodianship, including:
+    - Backend: `TransferRequest` model, migration, controller (`TransferRequestController`), and API endpoints (`POST /api/cats/{cat_id}/transfer-request`, `POST /api/transfer-requests/{id}/accept`, `POST /api/transfer-requests/{id}/reject`).
+  - Created `HelperProfileFactory.php` and `TransferRequestFactory.php`.
 - Implemented API endpoint for updating a cat's profile (`PUT /api/cats/{id}`), now documented in Swagger.
 - Implemented API endpoint for adding medical records to a cat's profile (`POST /api/cats/{id}/medical-records`), now documented in Swagger.
 - Implemented API endpoint for adding weight history to a cat's profile (`POST /api/cats/{id}/weight-history`), now documented in Swagger.

@@ -48,9 +48,10 @@ class ReviewController extends Controller
     {
         try {
             $validatedData = $request->validate([
-                'reviewed_id' => 'required|exists:users,id',
+                'reviewed_user_id' => 'required|exists:users,id',
                 'rating' => 'required|integer|min:1|max:5',
                 'comment' => 'nullable|string',
+                'transfer_id' => 'nullable|exists:transfer_requests,id',
             ]);
         } catch (ValidationException $e) {
             return response()->json([
@@ -59,7 +60,16 @@ class ReviewController extends Controller
             ], 422);
         }
 
-        $review = Review::create(array_merge($validatedData, ['reviewer_id' => $request->user()->id]));
+        $existingReview = Review::where('reviewer_user_id', $request->user()->id)
+            ->where('reviewed_user_id', $validatedData['reviewed_user_id'])
+            ->where('transfer_id', $validatedData['transfer_id'])
+            ->first();
+
+        if ($existingReview) {
+            return response()->json(['message' => 'You have already reviewed this user for this transfer.'], 409);
+        }
+
+        $review = Review::create(array_merge($validatedData, ['reviewer_user_id' => $request->user()->id]));
 
         return response()->json($review, 201);
     }

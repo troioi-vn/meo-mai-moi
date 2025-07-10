@@ -13,6 +13,13 @@ return new class extends Migration
     {
         Schema::create('cats', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('name');
+            $table->string('breed');
+            $table->integer('age');
+            $table->string('location');
+            $table->string('status')->default('available');
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

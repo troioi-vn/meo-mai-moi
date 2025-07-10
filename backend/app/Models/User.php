@@ -63,6 +63,6 @@ class User extends Authenticatable
 
     public function reviewsBeingReviewed(): HasMany
     {
-        return $this->hasMany(Review::class, 'reviewed_id');
+        return $this->hasMany(Review::class, 'reviewed_user_id');
     }
 }

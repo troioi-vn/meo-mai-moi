@@ -60,19 +60,20 @@ class Review extends Model
     use HasFactory;
 
     protected $fillable = [
-        'reviewer_id',
-        'reviewed_id',
+        'reviewer_user_id',
+        'reviewed_user_id',
         'rating',
         'comment',
+        'transfer_id',
     ];
 
     public function reviewer(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'reviewer_id');
+        return $this->belongsTo(User::class, 'reviewer_user_id');
     }
 
     public function reviewed(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'reviewed_id');
+        return $this->belongsTo(User::class, 'reviewed_user_id');
     }
 }

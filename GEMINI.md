@@ -122,6 +122,27 @@ We will use **Semantic Versioning (SemVer)** managed via Git tags.
     - **Laravel (Backend):** Pest
     - **React (Frontend):** Vitest with React Testing Library (RTL)
 
+#### Frontend Testing Strategies
+
+For the React frontend, we employ a combination of unit and integration tests using Vitest and React Testing Library (RTL). Our focus is on testing user-facing behavior rather than internal component implementation details.
+
+-   **Unit Tests:** For isolated functions and small, stateless components.
+-   **Integration Tests:** For components that interact with other components, APIs, or the DOM. These tests simulate user interactions to ensure the application behaves as expected from a user's perspective.
+
+**Key Principles:**
+-   **User-Centric:** Tests should reflect how users interact with the application.
+-   **Accessibility:** RTL encourages testing with accessibility in mind by querying elements the way a user would (e.g., `getByRole`, `getByLabelText`).
+-   **Mocking:** External dependencies (like API calls) are mocked to ensure tests are fast, reliable, and isolated.
+
+**Running Frontend Tests:**
+-   To run all tests: `npm run test`
+-   To run tests in watch mode: `npm run test -- --watch`
+-   To run a specific test file: `npm run test -- <path-to-test-file>`
+
+**Code Quality Checks:**
+-   **Linting:** `npm run lint` (ESLint with Airbnb config)
+-   **Formatting:** `npm run format` (Prettier)
+
 ### Coding Style & Linting
 
 - **PHP / Laravel:**

@@ -14,4 +14,14 @@ export default defineConfig({
       input: 'src/main.tsx',
     },
   },
+  server: {
+    proxy: {
+      '/api': 'http://localhost:8080',
+    },
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/setupTests.ts',
+  },
 })

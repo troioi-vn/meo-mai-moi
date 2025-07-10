@@ -1,11 +1,11 @@
 services:
     laravel.test:
         build:
-            context: ./vendor/laravel/sail/runtimes/8.4
+            context: .
             dockerfile: Dockerfile
             args:
                 WWWGROUP: '${WWWGROUP}'
-        image: sail-8.4/app
+        image: laravel-app
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         ports:
@@ -22,16 +22,16 @@ services:
         networks:
             - sail
         depends_on:
-            - pgsql
+            pgsql:
+                condition: service_healthy
     pgsql:
         image: 'postgres:17'
         ports:
             - '${FORWARD_DB_PORT:-5433}:5432'
         environment:
-            PGPASSWORD: '${DB_PASSWORD:-secret}'
             POSTGRES_DB: '${DB_DATABASE}'
-            POSTGRES_USER: '${DB_USERNAME}'
-            POSTGRES_PASSWORD: '${DB_PASSWORD:-secret}'
+            POSTGRES_USER: 'postgres'
+            POSTGRES_PASSWORD: 'password'
         volumes:
             - 'sail-pgsql:/var/lib/postgresql/data'
             - './vendor/laravel/sail/database/pgsql/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql'

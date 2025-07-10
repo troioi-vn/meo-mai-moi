@@ -8,8 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Implemented login and registration scenarios, including:
+  - Frontend: `LoginForm.tsx` and `RegisterForm.tsx` components, `LoginPage.tsx` and `RegisterPage.tsx` pages, and routing configuration.
+- Added frontend tests for `LoginForm.tsx` and `RegisterForm.tsx` components using Vitest and React Testing Library.
+- Successfully registered a user via the API.
+
+### Fixed
+- Enabled CORS for API routes by adding `HandleCors` middleware to the `api` middleware group in `bootstrap/app.php`.
+- Updated frontend API calls in `LoginForm.tsx` and `RegisterForm.tsx` to use port `8080` instead of `8000` to match backend configuration.
+- Corrected the namespace for `HandleCors` middleware in `bootstrap/app.php` to `Illuminate\Http\Middleware\HandleCors`.
 - Implemented User Story 7: Fosterer Comments on Cat Profiles, including:
   - Backend: `CatComment` model, migration, controller (`CatCommentController`), and API routes (`GET /api/cats/{id}/comments`, `POST /api/cats/{id}/comments`).
+- Implemented User Story 2: User Becomes a Helper, including:
+  - Frontend: `ApplyToHelpPage.tsx` and `HelperApplicationForm.tsx`.
   - Frontend: `CommentsSection` component and integration into `CatProfilePage`.
 - Added a "Development Setup" section to the `README.md` file with instructions for setting up and running the development server.
 - Implemented a Hero Section component for the homepage.
@@ -37,12 +48,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial project setup.
 
 ### Changed
+- Updated `GEMINI.md` with detailed frontend testing strategies, including principles, tools (Vitest, React Testing Library), and command examples.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+- Fixed backend tests by:
+  - Correctly configuring `APP_URL` in `.env`.
+  - Updating `nginx.conf` with the correct PHP-FPM socket path.
+  - Including API routes in `bootstrap/app.php`.
+  - Adding `Laravel\Sanctum\HasApiTokens` trait to `User.php`.
+  - Setting `DB_CONNECTION` to `sqlite` and `DB_DATABASE` to `:memory:` in `phpunit.xml`.
+  - Publishing Sanctum migrations to `database/migrations`.
 - Updated `vite.config.ts` to explicitly name the manifest file `manifest.json` and place it in the root of the `build` directory, resolving the "Vite manifest not found" server error.
 - Corrected the `@vite` directive in `welcome.blade.php` to correctly point to the `build` directory, resolving issues with asset loading (404s and MIME type errors).
 - Changed default ports for `pgsql` and `laravel.test` services in `docker-compose.yml` to avoid conflicts with local development environment.

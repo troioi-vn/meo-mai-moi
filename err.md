@@ -1,105 +1,41 @@
-# Error Report: Frontend Build Issues
+# Problem Summary
 
-This report details the errors encountered during the frontend build process and the attempts made to resolve them.
+The primary problem is that backend tests (PHPUnit) are consistently failing. This failure manifests in two main ways:
+1.  **Database Connection/Authentication Errors:** Tests report "Connection refused" or "password authentication failed" when attempting to interact with the PostgreSQL database.
+2.  **Routing (404) Errors:** Tests receive a 404 (Not Found) response when making HTTP requests to API endpoints, indicating that the test requests are not correctly reaching the Laravel application.
 
-## Initial Problem: Vite Manifest Not Found
+# Attempted Solutions
 
-**Error:** `Illuminate\Foundation\ViteManifestNotFoundException`
-`Vite manifest not found at: /home/edward/Desktop/Dev/meo-mai-moi/backend/public/build/manifest.json`
+Multiple approaches have been tried to resolve these issues:
 
-**Context:** This error occurred because the Laravel backend was trying to serve the React frontend, but the frontend assets (including `manifest.json`) had not been built or the Vite development server was not running.
+## 1. PHP Extension (`mbstring`) Issue
+-   **Attempt:** Initial test run failed with "mbstring extension not available".
+-   **Action:** Rebuilt Docker containers (`docker-compose down && docker-compose up -d --build`) and ran `composer install` inside the `laravel.test` container.
+-   **Outcome:** `mbstring` was confirmed to be present in PHP configuration, suggesting the error message was misleading. Switched to running `vendor/bin/phpunit` directly to bypass potential `artisan` command environment issues.
 
-## Troubleshooting Attempts and Subsequent Errors:
+## 2. Database Connectivity and Authentication
+-   **Attempt:** Persistent "password authentication failed" and "Connection refused" errors.
+-   **Action:**
+    -   Generated a new `APP_KEY` and updated `backend/.env`.
+    -   Attempted `php artisan migrate:fresh --seed` to re-initialize the database.
+    -   Tried to manually connect to the PostgreSQL container using `psql` from within the `laravel.test` container to debug connectivity (encountered "role 'postgres' does not exist" and "database 'meomaimoi' does not exist" errors).
+    -   Modified `docker-compose.yml` to explicitly set `PGPASSWORD` for the `pgsql` service.
+    -   Rebuilt containers after `docker-compose.yml` changes.
+    -   Attempted to manually create the database and user with `psql` using the `meomaimoi` user.
+    -   Reverted `DB_PORT` in `backend/.env` to `5432` (internal container port) after a brief attempt to use `5433` (host mapped port).
+    -   Simplified `docker-compose.yml` to use default `postgres` user and `password` for the `pgsql` service, and updated `backend/.env` accordingly.
+    -   Attempted to introduce a `sleep` delay before running migrations and tests to allow PostgreSQL to fully start.
+-   **Outcome:** Database connection errors persisted, indicating the Laravel application still couldn't reliably connect to PostgreSQL.
 
-1.  **Attempt:** Build frontend assets using `npm run build` in `frontend` directory.
-    **Command:** `npm run build`
-    **Outcome:** Failed with `src/App.tsx(1,56): error TS2307: Cannot find module 'react-router-dom' or its corresponding type declarations.`
+## 3. Routing (404) Errors
+-   **Attempt:** Tests started returning 404 errors, suggesting requests weren't reaching the Laravel application.
+-   **Action:**
+    -   Confirmed `APP_URL` in `backend/.env` was `http://localhost`.
+    -   Modified `phpunit.xml` to set `APP_URL` to `http://laravel.test` for the test environment.
+    -   Modified `backend/tests/TestCase.php` to explicitly set `app.url` and `app.asset_url` to `http://laravel.test` within the `setUp` method.
+    -   Attempted to use `depends_on` with `condition: service_healthy` in `docker-compose.yml` for the `pgsql` service to ensure it's ready before `laravel.test` starts.
+-   **Outcome:** 404 errors continue, indicating the test requests are still not correctly routing to the Laravel application within the Docker network. The `docker-compose wait` command was not found, so the `service_healthy` condition might not be fully effective or correctly implemented.
 
-2.  **Attempt:** Install `@types/react-router-dom` to resolve TypeScript type declaration error.
-    **Command:** `npm install --save-dev @types/react-router-dom --prefix frontend`
-    **Outcome:** Installation successful, but subsequent `npm run build` still failed with the same TypeScript error.
+# Current Status
 
-3.  **Attempt:** Inspect `tsconfig.json` and `tsconfig.app.json` for correct configuration.
-    **Command:** `read_many_files` for `frontend/tsconfig.json` and `frontend/tsconfig.app.json`
-    **Outcome:** Files appeared correctly configured.
-
-4.  **Attempt:** Clear TypeScript build cache and rebuild.
-    **Command:** `rm -rf frontend/node_modules/.tmp && npm run build`
-    **Outcome:** Failed with the same TypeScript error.
-
-5.  **Attempt:** Explicitly add `react-router-dom` to `types` array in `tsconfig.app.json`.
-    **Command:** `replace` in `frontend/tsconfig.app.json`
-    **Outcome:** Failed with syntax errors in `tsconfig.app.json` due to incorrect placement of the `types` array.
-
-6.  **Attempt:** Revert `tsconfig.app.json` change and then correctly add `types` inside `compilerOptions`.
-    **Command:** `replace` to revert, then `replace` to add correctly.
-    **Outcome:** `tsconfig.app.json` corrected, but `npm run build` still failed with the same TypeScript error.
-
-7.  **Attempt:** Comprehensive cleanup and reinstallation of frontend dependencies.
-    **Command:** `rm -rf frontend/node_modules frontend/package-lock.json && npm cache clean --force && npm install --prefix frontend && npm run build --prefix frontend`
-    **Outcome:** `npm run build` failed with `npm error Missing script: "build"`. This was due to chaining commands, where `npm install` might not have completed before `npm run build` was attempted.
-
-8.  **Attempt:** Separate cleanup, install, and build commands.
-    **Commands:**
-    `rm -rf frontend/node_modules frontend/package-lock.json && npm cache clean --force`
-    `npm install --prefix frontend`
-    `npm run build`
-    **Outcome:** `npm run build` failed with `sh: 1: vite: not found`. This indicated `vite` executable was not found in PATH.
-
-9.  **Attempt:** Verify `package.json` for `build` script.
-    **Command:** `read_file` for `frontend/package.json`
-    **Outcome:** `build` script was correctly defined.
-
-10. **Attempt:** Explicitly add `react-router-dom` to `dependencies` in `package.json`.
-    **Command:** `replace` in `frontend/package.json`
-    **Outcome:** `npm install` and `npm run build` still failed with the same TypeScript error.
-
-11. **Attempt:** Remove `tsc -b` from `build` script in `package.json` (relying solely on `vite build`).
-    **Command:** `replace` in `frontend/package.json`
-    **Outcome:** `npm run build` failed with `[vite]: Rollup failed to resolve import "react-router-dom"`.
-
-12. **Attempt:** Inspect `vite.config.ts`.
-    **Command:** `read_file` for `frontend/vite.config.ts`
-    **Outcome:** File appeared correctly configured.
-
-13. **Attempt:** Add `react-router-dom` to `optimizeDeps.include` in `vite.config.ts`.
-    **Command:** `replace` in `frontend/vite.config.ts`
-    **Outcome:** `npm run build` still failed with the same Rollup error.
-
-14. **Attempt:** Comprehensive cleanup of all `node_modules` and `package-lock.json` files (frontend and root), and npm cache.
-    **Command:** `rm -rf frontend/node_modules frontend/package-lock.json node_modules package-lock.json && npm cache clean --force`
-    **Outcome:** Cleanup successful.
-
-15. **Attempt:** Reinstall frontend dependencies after comprehensive cleanup.
-    **Command:** `npm install --prefix frontend`
-    **Outcome:** `npm run build` failed with `sh: 1: vite: not found`.
-
-16. **Attempt:** Reinstall frontend dependencies by running `npm install` directly in the `frontend` directory.
-    **Command:** `npm install` (in `frontend` directory)
-    **Outcome:** Failed with `npm error code ERESOLVE` due to peer dependency conflict between `eslint-config-airbnb-typescript` and `@typescript-eslint/eslint-plugin`.
-
-17. **Attempt:** Search for compatibility information for `eslint-config-airbnb-typescript` and `@typescript-eslint/eslint-plugin`.
-    **Command:** `google_web_search`
-    **Outcome:** Discovered `eslint-config-airbnb-typescript` is not compatible with `@typescript-eslint/eslint-plugin` v8.x, and recommended using `@hover/eslint-config-airbnb-typescript`.
-
-18. **Attempt:** Replace `eslint-config-airbnb-typescript` with `@hover/eslint-config-airbnb-typescript` in `frontend/package.json`.
-    **Command:** `replace` in `frontend/package.json`
-    **Outcome:** `npm install` was successful.
-
-19. **Attempt:** Build frontend assets after updating eslint config.
-    **Command:** `npm run build`
-    **Outcome:** Failed with `sh: 1: vite: not found`.
-
-20. **Attempt:** Run `vite` using its full path within `node_modules/.bin`.
-    **Command:** `./node_modules/.bin/vite build`
-    **Outcome:** Failed with `No such file or directory`.
-
-21. **Attempt:** Force clean reinstallation of all frontend dependencies, including explicitly installing `vite`.
-    **Command:** `rm -rf frontend/node_modules frontend/package-lock.json && npm cache clean --force && npm install --prefix frontend && npm install vite --save-dev --prefix frontend`
-    **Outcome:** Installation successful, but `npm run build` still failed with `sh: 1: vite: not found`.
-
-22. **Attempt:** Run `vite` using `npx`.
-    **Command:** `npx vite build`
-    **Outcome:** Failed with `Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'vite' imported from ...vite.config.ts`. This indicates `vite` itself is having trouble resolving its own modules.
-
-The frontend build process is currently stuck due to persistent issues with `vite` and `react-router-dom` resolution, despite numerous attempts at cleaning and reinstalling dependencies and adjusting configurations.
+The backend tests are still failing with 404 errors, implying a fundamental issue with how the test environment is configured to communicate with the Laravel application within the Docker network. The database connection problems are likely a symptom of this broader connectivity issue, as the application cannot interact with the database if requests aren't reaching it in the first place.

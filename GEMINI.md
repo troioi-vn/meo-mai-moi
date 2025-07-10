@@ -60,6 +60,14 @@ This outlines the high-level map of the application from the perspective of its 
 - **Database:** PostgreSQL
 - **Deployment:** Docker Compose (Images will be stored on the same VPS as the application, not in cloud storage initially).
 
+## API Documentation & Integration
+
+To ensure our API is well-documented and easily consumable, we will focus on the following:
+
+-   **Task:** Add more detailed API documentation within Swagger for all existing and new endpoints.
+-   **Task:** Integrate Swagger UI with the frontend for easy access to API documentation.
+-   **Task:** Implement a process to ensure API changes are automatically reflected in Swagger documentation.
+
 ## 4. Internationalization (i18n)
 
 To support multiple languages, we will implement the following:

@@ -15,6 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(append: [
             Illuminate\Http\Middleware\HandleCors::class,
         ]);
+
+        $middleware->web([
+            // No global exclusions here. Manage middleware per route or in Kernel.php if needed.
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

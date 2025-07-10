@@ -12,10 +12,11 @@ const LoginForm: React.FC = () => {
     setError(null); // Clear previous errors
 
     try {
-      const response = await fetch('http://localhost:8080/api/login', { // Assuming backend runs on port 8080
+      const response = await fetch('/api/login', { // Assuming backend runs on port 8080
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify({ email, password }),
       });

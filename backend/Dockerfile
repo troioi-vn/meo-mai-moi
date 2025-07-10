@@ -54,6 +54,7 @@ COPY nginx.conf /etc/nginx/sites-available/default
 RUN ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 
 COPY php.ini /etc/php/8.4/cli/conf.d/99-sail.ini
+COPY docker/php-fpm.conf /etc/php/8.4/fpm/pool.d/www.conf
 
 EXPOSE 80/tcp
 

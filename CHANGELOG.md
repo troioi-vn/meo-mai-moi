@@ -11,9 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implemented login and registration scenarios, including:
   - Frontend: `LoginForm.tsx` and `RegisterForm.tsx` components, `LoginPage.tsx` and `RegisterPage.tsx` pages, and routing configuration.
 - Added frontend tests for `LoginForm.tsx` and `RegisterForm.tsx` components using Vitest and React Testing Library.
+- Added frontend tests for `ApplyToHelpPage.test.tsx`, `CatProfilePage.test.tsx`, `HomePage.test.tsx`, `LoginPage.test.tsx`, `RegisterPage.test.tsx` pages.
+- Added frontend tests for `CommentsSection.test.tsx`, `HelperApplicationForm.test.tsx`, `HeroSection.test.tsx` components.
 - Successfully registered a user via the API.
 
 ### Fixed
+- Resolved `502 Bad Gateway` error by correctly configuring PHP-FPM in `backend/docker/php-fpm.conf` with `user`, `group`, and `pm` directives.
+- Resolved `CORS Missing Allow Origin` error by adding explicit CORS headers to `backend/nginx.conf` to handle preflight `OPTIONS` requests and allow `Access-Control-Allow-Origin`.
+- Resolved "Unknown named parameter $except" error in `backend/bootstrap/app.php` by removing the problematic `except` parameter, allowing middleware to be managed per route or in `Kernel.php`.
+- Addressed `422 Unprocessable Content` error during login, which was due to invalid credentials provided by the user, not a code issue.
 - Enabled CORS for API routes by adding `HandleCors` middleware to the `api` middleware group in `bootstrap/app.php`.
 - Updated frontend API calls in `LoginForm.tsx` and `RegisterForm.tsx` to use port `8080` instead of `8000` to match backend configuration.
 - Corrected the namespace for `HandleCors` middleware in `bootstrap/app.php` to `Illuminate\Http\Middleware\HandleCors`.

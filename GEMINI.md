@@ -10,51 +10,51 @@ This document lists the missing tests for implemented features, based on the CHA
 
 #### Feature Tests (`tests/Feature`)
 
--   **CatProfileTest.php:**
+-   **CatProfileTest.php:** `[DONE]`
     -   `test_guest_cannot_update_cat_profile`
     -   `test_non_custodian_cannot_update_cat_profile`
     -   `test_custodian_can_update_cat_profile`
     -   `test_admin_can_update_any_cat_profile`
 
--   **CatMedicalHistoryTest.php:**
+-   **CatMedicalHistoryTest.php:** `[DONE]`
     -   `test_custodian_can_add_medical_record`
     -   `test_admin_can_add_medical_record`
     -   `test_guest_cannot_add_medical_record`
 
--   **CatWeightHistoryTest.php:**
+-   **CatWeightHistoryTest.php:** `[DONE]`
     -   `test_custodian_can_add_weight_record`
     -   `test_admin_can_add_weight_record`
     -   `test_guest_cannot_add_weight_record`
 
--   **CatListingTest.php:**
+-   **CatListingTest.php:** `[DONE]`
     -   `test_can_get_all_available_cats`
     -   `test_can_get_featured_cats`
     -   `test_can_get_single_cat_profile`
     -   `test_authenticated_user_can_create_cat_listing`
     -   `test_guest_cannot_create_cat_listing`
 
--   **CatCommentTest.php:**
+-   **CatCommentTest.php:** `[DONE]`
     -   `test_can_get_comments_for_a_cat`
     -   `test_authenticated_user_can_add_comment_to_cat_profile`
     -   `test_guest_cannot_add_comment`
 
--   **HelperProfileTest.php:**
+-   **HelperProfileTest.php:** `[DONE]`
     -   `test_user_can_create_helper_profile`
     -   `test_user_can_view_their_helper_profile_status`
     -   `test_guest_cannot_create_helper_profile`
 
--   **TransferRequestTest.php:**
+-   **TransferRequestTest.php:** `[DONE]`
     -   `test_cat_owner_can_initiate_transfer_request`
     -   `test_recipient_can_accept_transfer_request`
     -   `test_recipient_can_reject_transfer_request`
     -   `test_non_recipient_cannot_act_on_transfer_request`
 
--   **ReviewTest.php:**
+-   **ReviewTest.php:** `[DONE]`
     -   `test_user_can_leave_review_for_helper`
     -   `test_can_get_reviews_for_a_user`
     -   `test_cannot_review_the_same_user_multiple_times_for_same_transfer`
 
--   **UserProfileTest.php:**
+-   **UserProfileTest.php:** `[DONE]`
     -   `test_user_can_get_their_own_profile`
     -   `test_user_can_update_their_own_profile`
     -   `test_user_cannot_view_another_users_profile_details`
@@ -64,17 +64,17 @@ This document lists the missing tests for implemented features, based on the CHA
 
 #### Page Tests
 
--   `ApplyToHelpPage.test.tsx`
--   `CatProfilePage.test.tsx`
--   `HomePage.test.tsx`
--   `LoginPage.test.tsx`
--   `RegisterPage.test.tsx`
+-   `ApplyToHelpPage.test.tsx` `[DONE]`
+-   `CatProfilePage.test.tsx` `[DONE]`
+-   `HomePage.test.tsx` `[DONE]`
+-   `LoginPage.test.tsx` `[DONE]`
+-   `RegisterPage.test.tsx` `[DONE]`
 
 #### Component Tests
 
--   `CommentsSection.test.tsx`
--   `HelperApplicationForm.test.tsx`
--   `HeroSection.test.tsx`
+-   `CommentsSection.test.tsx` `[DONE]`
+-   `HelperApplicationForm.test.tsx` `[DONE]`
+-   `HeroSection.test.tsx` `[DONE]`
 
 ---
 
@@ -232,6 +232,19 @@ To ensure a consistent and user-friendly experience, we will standardize error h
 - `php artisan migrate`: Run database migrations.
 - `php artisan test`: Run the Pest test suite.
 - `./vendor/bin/php-cs-fixer fix`: Automatically fix code style issues.
+- `docker compose exec -w /var/www/html laravel.test php artisan optimize:clear`: Clear Laravel optimized class loader and services cache.
+- `docker compose exec -w /var/www/html laravel.test php artisan config:clear`: Clear Laravel configuration cache.
+- `docker compose exec -w /var/www/html laravel.test php artisan route:clear`: Clear Laravel route cache.
+- `docker compose exec -w /var/www/html laravel.test php artisan view:clear`: Clear Laravel view cache.
+- `docker compose exec -w /var/www/html laravel.test php artisan cache:clear`: Clear Laravel application cache.
+- `docker compose exec -w /var/www/html laravel.test php artisan event:clear`: Clear Laravel event cache.
+- `docker compose exec -w /var/www/html laravel.test php artisan queue:clear`: Clear Laravel queue cache.
+- `docker compose exec -w /var/www/html laravel.test php artisan schedule:clear`: Clear Laravel schedule cache.
+- `docker compose exec -w /var/www/html laravel.test php artisan optimize`: Re-optimize the Laravel application for better performance.
+- `docker compose exec -w /var/www/html laravel.test php artisan config:cache`: Cache the Laravel configuration.
+- `docker compose exec -w /var/www/html laravel.test php artisan route:cache`: Cache the Laravel routes.
+- `docker compose exec -w /var/www/html laravel.test php artisan view:cache`: Cache the Laravel views.
+- `docker compose exec -w /var/www/html laravel.test php artisan event:cache`: Cache the Laravel events.
 
 ### Frontend (React + Vite)
 - `npm install`: Install Node.js dependencies.

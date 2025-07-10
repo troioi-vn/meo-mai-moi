@@ -38,5 +38,5 @@ Route::get('/cats/{cat}/comments', [CatCommentController::class, 'index']);
 Route::get('/users/{user}/reviews', [ReviewController::class, 'index']);
 
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');

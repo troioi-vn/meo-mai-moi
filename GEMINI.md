@@ -193,6 +193,26 @@ For the React frontend, we employ a combination of unit and integration tests us
 -   **Linting:** `npm run lint` (ESLint with Airbnb config)
 -   **Formatting:** `npm run format` (Prettier)
 
+### Debugging and Problem Solving Strategy
+
+When encountering issues, especially those related to environment or integration, we follow a systematic debugging process:
+
+1.  **Understand the Symptom:** Clearly identify the error message, HTTP status code, and observed behavior (e.g., `502 Bad Gateway`, `CORS Missing Allow Origin`, `422 Unprocessable Content`).
+2.  **Isolate the Problem:**
+    *   **Check Logs:** Examine relevant logs (e.g., Docker container logs for `laravel.test`, Nginx logs, PHP-FPM logs) for specific error messages or clues.
+    *   **Inspect Configuration:** Review configuration files related to the suspected component (e.g., `nginx.conf`, `php-fpm.conf`, Laravel's `cors.php`, `bootstrap/app.php`).
+    *   **Verify Dependencies:** Ensure correct versions of PHP, Laravel, and other dependencies are installed and compatible.
+    *   **Frontend/Backend Communication:** Use browser developer tools to inspect network requests and responses, verifying headers, payloads, and status codes.
+3.  **Formulate a Hypothesis:** Based on observations, propose a likely cause for the problem.
+4.  **Implement a Targeted Fix:** Make small, isolated changes to address the hypothesis.
+5.  **Verify the Fix:**
+    *   **Rebuild and Restart:** For Docker-related changes, always rebuild the affected image (`docker compose build <service_name>`) and force recreation of the container (`docker compose up -d --force-recreate`) to ensure changes are applied.
+    *   **Clear Caches:** Clear relevant application caches (e.g., Laravel's `php artisan optimize:clear`, `config:clear`, etc.) to ensure old configurations are not interfering.
+    *   **Retest:** Attempt the action that previously caused the error.
+6.  **Iterate:** If the problem persists or a new one emerges, repeat the process from step 1.
+
+This iterative approach, combined with a deep understanding of the application's architecture and Docker environment, is crucial for efficient problem-solving.
+
 ### Coding Style & Linting
 
 - **PHP / Laravel:**
@@ -226,25 +246,31 @@ To ensure a consistent and user-friendly experience, we will standardize error h
 ## 7. Command Glossary
 
 ### Backend (Laravel)
-**Note:** All `php artisan` and `composer` commands should be executed within the running Docker container (e.g., `docker compose exec laravel.test <command>`).
-- `composer install`: Install PHP dependencies.
-- `php artisan serve`: Start the local development server.
-- `php artisan migrate`: Run database migrations.
-- `php artisan test`: Run the Pest test suite.
-- `./vendor/bin/php-cs-fixer fix`: Automatically fix code style issues.
-- `docker compose exec -w /var/www/html laravel.test php artisan optimize:clear`: Clear Laravel optimized class loader and services cache.
-- `docker compose exec -w /var/www/html laravel.test php artisan config:clear`: Clear Laravel configuration cache.
-- `docker compose exec -w /var/www/html laravel.test php artisan route:clear`: Clear Laravel route cache.
-- `docker compose exec -w /var/www/html laravel.test php artisan view:clear`: Clear Laravel view cache.
-- `docker compose exec -w /var/www/html laravel.test php artisan cache:clear`: Clear Laravel application cache.
-- `docker compose exec -w /var/www/html laravel.test php artisan event:clear`: Clear Laravel event cache.
-- `docker compose exec -w /var/www/html laravel.test php artisan queue:clear`: Clear Laravel queue cache.
-- `docker compose exec -w /var/www/html laravel.test php artisan schedule:clear`: Clear Laravel schedule cache.
-- `docker compose exec -w /var/www/html laravel.test php artisan optimize`: Re-optimize the Laravel application for better performance.
-- `docker compose exec -w /var/www/html laravel.test php artisan config:cache`: Cache the Laravel configuration.
-- `docker compose exec -w /var/www/html laravel.test php artisan route:cache`: Cache the Laravel routes.
-- `docker compose exec -w /var/www/html laravel.test php artisan view:cache`: Cache the Laravel views.
-- `docker compose exec -w /var/www/html laravel.test php artisan event:cache`: Cache the Laravel events.
+**Note:** All `php artisan` and `composer` commands should be executed within the running Docker container from the `backend/` directory. For example, `docker compose exec -w /var/www/html laravel.test <command>`.
+
+-   `docker compose up -d`: Bring up Docker Compose services in detached mode.
+-   `docker compose up -d --force-recreate`: Bring up Docker Compose services in detached mode, forcing recreation of containers.
+-   `docker compose build <service_name>`: Rebuild the Docker image for a specific service (e.g., `laravel.test`).
+-   `docker compose logs <service_name>`: View logs for a specific Docker service.
+-   `docker compose exec -w /var/www/html laravel.test composer install`: Install PHP dependencies inside the Laravel Docker container.
+-   `docker compose exec -w /var/www/html laravel.test composer install --no-dev --optimize-autoloader`: Reinstall Composer dependencies inside the Laravel Docker container, excluding dev dependencies and optimizing the autoloader.
+-   `docker compose exec -w /var/www/html laravel.test php artisan serve`: Start the local development server inside the Laravel Docker container.
+-   `docker compose exec -w /var/www/html laravel.test php artisan migrate`: Run database migrations inside the Laravel Docker container.
+-   `docker compose exec -w /var/www/html laravel.test php artisan test`: Run the Pest test suite inside the Laravel Docker container.
+-   `docker compose exec -w /var/www/html laravel.test ./vendor/bin/php-cs-fixer fix`: Automatically fix code style issues inside the Laravel Docker container.
+-   `docker compose exec -w /var/www/html laravel.test php artisan optimize:clear`: Clear Laravel optimized class loader and services cache inside the Laravel Docker container.
+-   `docker compose exec -w /var/www/html laravel.test php artisan config:clear`: Clear Laravel configuration cache inside the Laravel Docker container.
+-   `docker compose exec -w /var/www/html laravel.test php artisan route:clear`: Clear Laravel route cache inside the Laravel Docker container.
+-   `docker compose exec -w /var/www/html laravel.test php artisan view:clear`: Clear Laravel view cache inside the Laravel Docker container.
+-   `docker compose exec -w /var/www/html laravel.test php artisan cache:clear`: Clear Laravel application cache inside the Laravel Docker container.
+-   `docker compose exec -w /var/www/html laravel.test php artisan event:clear`: Clear Laravel event cache inside the Laravel Docker container.
+-   `docker compose exec -w /var/www/html laravel.test php artisan queue:clear`: Clear Laravel queue cache inside the Laravel Docker container.
+-   `docker compose exec -w /var/www/html laravel.test php artisan schedule:clear`: Clear Laravel schedule cache inside the Laravel Docker container.
+-   `docker compose exec -w /var/www/html laravel.test php artisan optimize`: Re-optimize the Laravel application for better performance inside the Laravel Docker container.
+-   `docker compose exec -w /var/www/html laravel.test php artisan config:cache`: Cache the Laravel configuration inside the Laravel Docker container.
+-   `docker compose exec -w /var/www/html laravel.test php artisan route:cache`: Cache the Laravel routes inside the Laravel Docker container.
+-   `docker compose exec -w /var/www/html laravel.test php artisan view:cache`: Cache the Laravel views inside the Laravel Docker container.
+-   `docker compose exec -w /var/www/html laravel.test php artisan event:cache`: Cache the Laravel events inside the Laravel Docker container.
 
 ### Frontend (React + Vite)
 - `npm install`: Install Node.js dependencies.

@@ -2,24 +2,6 @@
 
 This document outlines the conventions, goals, and workflow for the collaboration between the development team and the Gemini AI assistant on the Meo Mai Moi project.
 
-## Testing TODOs
-
-This document lists the missing tests for implemented features, based on the CHANGELOG.md.
-
-### Backend (PHP/Laravel)
-
-#### Feature Tests (`tests/Feature`)
-
-
-### Frontend (React/Vitest)
-
-#### Page Tests
-
-
-#### Component Tests
-
----
-
 ## 1. Project Summary
 
 **Meo Mai Moi** is an open-source web application engine designed to help communities build cat rehoming networks. It connects cat owners with fosters and adopters, supporting a community-driven approach to cat welfare. The platform is architected to be geographically modular, allowing anyone to deploy it for their own region.
@@ -193,34 +175,39 @@ To ensure a consistent and user-friendly experience, we will standardize error h
 -   **Frontend Error Display:** Implement centralized mechanisms for displaying user-friendly error messages.
 -   **Backend Error Logging:** Integrate centralized error logging on the backend.
 
+### CHANGELOG.md
+- When a development task is completed, I must update the CHANGELOG.md file to document the change. I should add the completed task under the appropriate category (e.g., Added, Changed, Fixed) in the "[Unreleased]" section.
+
 ## 7. Command Glossary
 
 ### Backend (Laravel)
-**Note:** All `php artisan` and `composer` commands should be executed within the running Docker container from the `backend/` directory. For example, `docker compose exec -w /var/www/html laravel.test <command>`.
+**Important:**
+- For all `php artisan` and `composer` commands: I must always execute them within the Docker container using Laravel Sail. The command will always be structured as: vendor/bin/sail <php artisan or composer command>
+- For all `docker compose` commands (e.g., `docker compose up`, `docker compose logs`): I must always specify the directory='backend/' parameter for the run_shell_command tool.
 
 -   `docker compose up -d`: Bring up Docker Compose services in detached mode.
 -   `docker compose up -d --force-recreate`: Bring up Docker Compose services in detached mode, forcing recreation of containers.
 -   `docker compose build <service_name>`: Rebuild the Docker image for a specific service (e.g., `laravel.test`).
 -   `docker compose logs <service_name>`: View logs for a specific Docker service.
--   `docker compose exec -w /var/www/html laravel.test composer install`: Install PHP dependencies inside the Laravel Docker container.
--   `docker compose exec -w /var/www/html laravel.test composer install --no-dev --optimize-autoloader`: Reinstall Composer dependencies inside the Laravel Docker container, excluding dev dependencies and optimizing the autoloader.
--   `docker compose exec -w /var/www/html laravel.test php artisan serve`: Start the local development server inside the Laravel Docker container.
--   `docker compose exec -w /var/www/html laravel.test php artisan migrate`: Run database migrations inside the Laravel Docker container.
--   `docker compose exec -w /var/www/html laravel.test php artisan test`: Run the Pest test suite inside the Laravel Docker container.
--   `docker compose exec -w /var/www/html laravel.test ./vendor/bin/php-cs-fixer fix`: Automatically fix code style issues inside the Laravel Docker container.
--   `docker compose exec -w /var/www/html laravel.test php artisan optimize:clear`: Clear Laravel optimized class loader and services cache inside the Laravel Docker container.
--   `docker compose exec -w /var/www/html laravel.test php artisan config:clear`: Clear Laravel configuration cache inside the Laravel Docker container.
--   `docker compose exec -w /var/www/html laravel.test php artisan route:clear`: Clear Laravel route cache inside the Laravel Docker container.
--   `docker compose exec -w /var/www/html laravel.test php artisan view:clear`: Clear Laravel view cache inside the Laravel Docker container.
--   `docker compose exec -w /var/www/html laravel.test php artisan cache:clear`: Clear Laravel application cache inside the Laravel Docker container.
--   `docker compose exec -w /var/www/html laravel.test php artisan event:clear`: Clear Laravel event cache inside the Laravel Docker container.
--   `docker compose exec -w /var/www/html laravel.test php artisan queue:clear`: Clear Laravel queue cache inside the Laravel Docker container.
--   `docker compose exec -w /var/www/html laravel.test php artisan schedule:clear`: Clear Laravel schedule cache inside the Laravel Docker container.
--   `docker compose exec -w /var/www/html laravel.test php artisan optimize`: Re-optimize the Laravel application for better performance inside the Laravel Docker container.
--   `docker compose exec -w /var/www/html laravel.test php artisan config:cache`: Cache the Laravel configuration inside the Laravel Docker container.
--   `docker compose exec -w /var/www/html laravel.test php artisan route:cache`: Cache the Laravel routes inside the Laravel Docker container.
--   `docker compose exec -w /var/www/html laravel.test php artisan view:cache`: Cache the Laravel views inside the Laravel Docker container.
--   `docker compose exec -w /var/www/html laravel.test php artisan event:cache`: Cache the Laravel events inside the Laravel Docker container.
+    - `vendor/bin/sail composer install`: Install PHP dependencies inside the Laravel Docker container using Sail.
+    - `vendor/bin/sail composer install --no-dev --optimize-autoloader`: Reinstall Composer dependencies inside the Laravel Docker container using Sail, excluding dev dependencies and optimizing the autoloader.
+    - `vendor/bin/sail artisan serve`: Start the local development server inside the Laravel Docker container using Sail.
+    - `vendor/bin/sail artisan migrate`: Run database migrations inside the Laravel Docker container using Sail.
+    - `vendor/bin/sail artisan test`: Run the Pest test suite inside the Laravel Docker container using Sail.
+    - `vendor/bin/sail php-cs-fixer fix`: Automatically fix code style issues inside the Laravel Docker container using Sail.
+-   `vendor/bin/sail artisan optimize:clear`: Clear Laravel optimized class loader and services cache inside the Laravel Docker container using Sail.
+-   `vendor/bin/sail artisan config:clear`: Clear Laravel configuration cache inside the Laravel Docker container using Sail.
+-   `vendor/bin/sail artisan route:clear`: Clear Laravel route cache inside the Laravel Docker container using Sail.
+-   `vendor/bin/sail artisan view:clear`: Clear Laravel view cache inside the Laravel Docker container using Sail.
+-   `vendor/bin/sail artisan cache:clear`: Clear Laravel application cache inside the Laravel Docker container using Sail.
+-   `vendor/bin/sail artisan event:clear`: Clear Laravel event cache inside the Laravel Docker container using Sail.
+-   `vendor/bin/sail artisan queue:clear`: Clear Laravel queue cache inside the Laravel Docker container using Sail.
+-   `vendor/bin/sail artisan schedule:clear`: Clear Laravel schedule cache inside the Laravel Docker container using Sail.
+-   `vendor/bin/sail artisan optimize`: Re-optimize the Laravel application for better performance inside the Laravel Docker container using Sail.
+-   `vendor/bin/sail artisan config:cache`: Cache the Laravel configuration inside the Laravel Docker container.
+-   `vendor/bin/sail artisan route:cache`: Cache the Laravel routes inside the Laravel Docker container.
+-   `vendor/bin/sail artisan view:cache`: Cache the Laravel views inside the Laravel Docker container.
+-   `vendor/bin/sail artisan event:cache`: Cache the Laravel events inside the Laravel Docker container.
 
 ### Frontend (React + Vite)
 - `npm install`: Install Node.js dependencies.
@@ -375,7 +362,7 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
     -   **Frontend:** UI controls for filtering on the cat list page.
 -   **User Story 10: Browsing and Filtering Helper Offers**
     -   **Scenario:** A custodian searches for a suitable new home by filtering available helpers.
-    -   **Backend:** Enhanced `GET /api/helper-profiles` endpoint with filtering and sorting.
+    -   **Backend:** `GET /api/helper-profiles` endpoint (Not yet implemented - needs to be added with filtering and sorting capabilities).
     -   **Frontend:** UI controls for filtering and sorting on the helper list page.
 
 ---

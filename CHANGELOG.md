@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - `test_user_can_get_their_own_profile`
+- `test_authenticated_user_can_access_api_user_endpoint`
+- `test_a_user_can_logout_successfully`
+- `test_can_filter_cats_by_location`
+- `test_can_filter_cats_by_breed`
+- `test_can_sort_cats_by_name_ascending`
+- `test_can_sort_cats_by_name_descending`
+- `test_can_sort_cats_by_age_ascending`
+- `test_can_sort_cats_by_age_descending`
 - `test_user_can_update_their_own_profile`
 - `test_user_cannot_view_another_users_profile_details`
 - `test_user_cannot_update_another_users_profile`
@@ -108,8 +116,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initialized the Laravel project for the backend API.
 - Initial project setup.
 
+## [Unreleased]
+
 ### Changed
+- Updated `GEMINI.md` and `README.md` to reflect the use of Laravel Sail for backend development commands.
 - Updated `GEMINI.md` with detailed frontend testing strategies, including principles, tools (Vitest, React Testing Library), and command examples.
+
 
 ### Deprecated
 

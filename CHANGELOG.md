@@ -74,6 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added frontend tests for `ApplyToHelpPage.test.tsx`, `CatProfilePage.test.tsx`, `HomePage.test.tsx`, `LoginPage.test.tsx`, `RegisterPage.test.tsx` pages.
 - Added frontend tests for `CommentsSection.test.tsx`, `HelperApplicationForm.test.tsx`, `HeroSection.test.tsx` components.
 - Successfully registered a user via the API.
+- Implemented Tailwind CSS and shadcn/ui for the frontend, including configuration and adding a basic Button component.
 
 ### Fixed
 - Resolved `502 Bad Gateway` error by correctly configuring PHP-FPM in `backend/docker/php-fpm.conf` with `user`, `group`, and `pm` directives.
@@ -121,6 +122,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Updated `GEMINI.md` and `README.md` to reflect the use of Laravel Sail for backend development commands.
 - Updated `GEMINI.md` with detailed frontend testing strategies, including principles, tools (Vitest, React Testing Library), and command examples.
+- Updated `GEMINI.md` with short descriptions of Tailwind CSS and shadcn/ui in the 'Tech Stack' section.
 
 
 ### Deprecated
@@ -128,6 +130,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 ### Fixed
+- Fixed a persistent frontend import resolution issue by correcting path aliases in `components.json` and `tsconfig.json`, installing and configuring `vite-tsconfig-paths` in `vite.config.ts`, restructuring the component and lib directories, and updating all import statements to use the correct aliases.
+- Fixed Vite alias resolution by adding `resolve.alias` configuration to `vite.config.ts`.
+- Fixed PostCSS configuration by installing `@tailwindcss/postcss` and updating `postcss.config.js`.
 - Fixed backend tests by:
   - Correctly configuring `APP_URL` in `.env`.
   - Updating `nginx.conf` with the correct PHP-FPM socket path.

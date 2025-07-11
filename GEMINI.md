@@ -39,6 +39,8 @@ This outlines the high-level map of the application from the perspective of its 
 
 - **Backend:** Laravel (PHP) - REST API
 - **Frontend:** React (TypeScript) - Single Page Application
+    -   **Tailwind CSS:** A utility-first CSS framework that provides low-level utility classes to build custom designs directly in your JSX. It promotes rapid UI development and highly customizable styling.
+    -   **shadcn/ui:** Not a traditional component library, but a collection of re-usable components whose source code is added directly to your project. This provides full control and easy customization, as components are built with Tailwind CSS.
 - **Database:** PostgreSQL
 - **Deployment:** Docker Compose (Images will be stored on the same VPS as the application, not in cloud storage initially).
 
@@ -216,6 +218,15 @@ To ensure a consistent and user-friendly experience, we will standardize error h
 - `npm run test`: Run the Vitest test suite.
 - `npm run lint`: Run ESLint to check for code quality issues.
 - `npm run format`: Run Prettier to format the code.
+
+#### Frontend Architecture Notes
+The frontend is built with React (using Vite) and TypeScript. It uses `vite-tsconfig-paths` to enable path aliases (e.g., `@/*`) defined in `tsconfig.json`. This allows for cleaner, more maintainable import statements across the application. All new components and pages should use these aliases for imports.
+
+**Path Alias Configuration:**
+-   **`vite.config.ts`:** Configured with the `tsconfigPaths()` plugin.
+-   **`tsconfig.json`:** Contains the base URL and path mappings. The primary alias is `@/*`, which maps to `src/*`.
+-   **`components.json`:** Configured to use the `@/` alias for `shadcn/ui` components.
+
 
 ## 8. Core Data Models
 
@@ -555,4 +566,45 @@ Gathering feedback is only the first step. We will implement a process to:
 -   Triage submissions into categories (bug, feature request, suggestion).
 -   Convert actionable items into development tickets.
 -   Communicate back to the community about which suggestions are being implemented to show that their input is valued.
+
+---
+## 17. Todo: User Authentication & Profile
+
+This section outlines the development plan for implementing a fully functional user authentication system and profile management.
+
+### 1. Backend (Laravel)
+-   [x] **Login/Registration API:**
+    -   [x] Create API endpoints for user registration (`/api/register`).
+    -   [x] Create API endpoints for user login (`/api/login`) that returns a Sanctum token.
+    -   [x] Create API endpoint for user logout (`/api/logout`).
+    -   [x] Implement rate limiting on authentication routes.
+-   [x] **User Profile API:**
+    -   [x] Create API endpoint to fetch the authenticated user's profile (`/api/user`).
+    -   [x] Create API endpoint to update the authenticated user's profile.
+-   [x] **Testing (Pest):**
+    -   [x] Write feature tests for registration, login, and logout.
+    -   [x] Write feature tests for fetching and updating the user profile.
+    -   [x] Ensure all tests cover both success and failure scenarios (e.g., validation errors, incorrect credentials).
+-   [ ] **API Documentation:**
+    -   [ ] Add Swagger (OpenAPI) documentation for all authentication and user profile endpoints.
+
+### 2. Frontend (React)
+-   [ ] **Pages & Components:**
+    -   [ ] Create a `RegisterPage` with a registration form.
+    -   [ ] Create a `LoginPage` with a login form.
+    -   [ ] Create a `ProfilePage` to display and edit user information.
+    -   [ ] Create a main navigation menu/header that changes based on authentication state (e.g., shows "Login/Register" or "Profile/Logout").
+-   [ ] **State Management & Routing:**
+    -   [ ] Implement state management for user authentication (e.g., using Context API or a state management library).
+    -   [ ] Create protected routes that require authentication to access (e.g., the `ProfilePage`).
+    -   [ ] Redirect users to the login page if they try to access a protected route without being authenticated.
+-   [ ] **API Integration:**
+    -   [ ] Connect the registration and login forms to the backend API endpoints.
+    -   [ ] Store the authentication token securely in the browser (e.g., in an HttpOnly cookie or local storage).
+    -   [ ] Create an API client/service to handle all authenticated requests, attaching the token to the headers.
+-   [ ] **Testing (Vitest & RTL):**
+    -   [ ] Write tests for the `RegisterPage` and `LoginPage`, mocking API calls.
+    -   [ ] Write tests for the `ProfilePage`, mocking API calls.
+    -   [ ] Write tests for the main navigation to ensure it displays correctly for both authenticated and unauthenticated users.
+    -   [ ] Review and update any existing frontend tests that may be affected by these changes.
 

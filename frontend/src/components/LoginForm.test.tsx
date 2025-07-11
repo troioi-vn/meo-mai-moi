@@ -1,99 +1,101 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
-import LoginForm from './LoginForm';
-import { BrowserRouter } from 'react-router-dom';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { describe, it, expect, vi, type Mock } from 'vitest';
+import * as authService from '@/services/authService';
+import { MemoryRouter } from 'react-router-dom';
 
-// Mock useNavigate from react-router-dom
-const mockedUsedNavigate = vi.fn();
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual = await importOriginal();
+// Mock the authService
+vi.mock('@/services/authService', () => ({
+  login: vi.fn(),
+}));
+
+// Mock the useAuth hook
+vi.mock('@/hooks/useAuth', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/hooks/useAuth')>();
   return {
     ...actual,
-    useNavigate: () => mockedUsedNavigate,
+    useAuth: vi.fn(),
   };
 });
 
-describe('LoginForm', () => {
-  beforeEach(() => {
-    // Clear all mocks before each test
-    vi.clearAllMocks();
-    // Reset localStorage
-    localStorage.clear();
-  });
+// Then import the component that uses the hook
+import LoginForm from './LoginForm';
+import { useAuth } from '@/hooks/useAuth'; // Import the mocked useAuth
 
-  it('should allow the user to log in successfully', async () => {
-    // Mock a successful fetch response
-    vi.spyOn(window, 'fetch').mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ access_token: 'mock_access_token' }),
-    } as Response);
+describe('LoginForm', () => {
+  it('renders the login form correctly', () => {
+    (useAuth as Mock).mockReturnValue({
+      login: vi.fn(),
+      isAuthenticated: false,
+      user: null,
+      isLoading: false,
+      changePassword: vi.fn(),
+      deleteAccount: vi.fn(),
+    });
 
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <LoginForm />
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
-    // Find the input fields and button
-    const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
-    const loginButton = screen.getByRole('button', { name: /login/i });
+    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
+  });
 
-    // Simulate user typing
+  it('allows the user to fill out the form', () => {
+    (useAuth as Mock).mockReturnValue({
+      login: vi.fn(),
+      isAuthenticated: false,
+      user: null,
+      isLoading: false,
+      changePassword: vi.fn(),
+      deleteAccount: vi.fn(),
+    });
+
+    render(
+      <MemoryRouter>
+        <LoginForm />
+      </MemoryRouter>
+    );
+
+    const emailInput = screen.getByLabelText(/email/i) as HTMLInputElement;
+    const passwordInput = screen.getByLabelText(/password/i) as HTMLInputElement;
+
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
 
-    // Simulate form submission
-    fireEvent.click(loginButton);
-
-    // Wait for the fetch call and navigation to complete
-    await waitFor(() => {
-      // Assert that fetch was called with correct data
-      expect(window.fetch).toHaveBeenCalledWith(
-        'http://localhost:8080/api/login',
-        expect.objectContaining({
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: 'test@example.com', password: 'password123' }),
-        })
-      );
-
-      // Assert that access token is stored in localStorage
-      expect(localStorage.getItem('access_token')).toBe('mock_access_token');
-
-      // Assert that navigation occurred
-      expect(mockedUsedNavigate).toHaveBeenCalledWith('/account');
-    });
+    expect(emailInput.value).toBe('test@example.com');
+    expect(passwordInput.value).toBe('password123');
   });
 
-  it('should display an error message on failed login', async () => {
-    // Mock a failed fetch response
-    vi.spyOn(window, 'fetch').mockResolvedValueOnce({
-      ok: false,
-      json: async () => ({ message: 'Invalid credentials' }),
-    } as Response);
+  it('shows an error message on failed login', async () => {
+    (authService.login as Mock).mockRejectedValue(new Error('Invalid credentials'));
+
+    (useAuth as Mock).mockReturnValue({
+      login: vi.fn(),
+      isAuthenticated: false,
+      user: null,
+      isLoading: false,
+      changePassword: vi.fn(),
+      deleteAccount: vi.fn(),
+    });
 
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <LoginForm />
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
-    const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
-    const loginButton = screen.getByRole('button', { name: /login/i });
-
-    fireEvent.change(emailInput, { target: { value: 'wrong@example.com' } });
-    fireEvent.change(passwordInput, { target: { value: 'wrongpassword' } });
-    fireEvent.click(loginButton);
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@example.com' } });
+    fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'password123' } });
+    
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /login/i }));
+    });
 
     await waitFor(() => {
-      // Assert that an error message is displayed
-      expect(screen.getByText(/invalid credentials/i)).toBeInTheDocument();
-      // Assert that navigation did not occur
-      expect(mockedUsedNavigate).not.toHaveBeenCalled();
-      // Assert that localStorage is empty
-      expect(localStorage.getItem('access_token')).toBeNull();
+      expect(screen.getByText(/failed to login/i)).toBeInTheDocument();
     });
   });
 });

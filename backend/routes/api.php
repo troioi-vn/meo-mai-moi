@@ -12,18 +12,36 @@ use App\Http\Controllers\TransferRequestController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\AuthController;
 
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "api" middleware group. Make something great!
+|
+*/
+
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
     Route::get('/users/me', [UserProfileController::class, 'show']);
     Route::put('/users/me', [UserProfileController::class, 'update']);
+    Route::put('/users/me/password', [UserProfileController::class, 'updatePassword']);
+    Route::delete('/users/me', [UserProfileController::class, 'destroy']);
     Route::post('/cats', [CatController::class, 'store']);
     Route::put('/cats/{cat}', [CatController::class, 'update']);
     Route::post('/cats/{cat}/medical-records', [MedicalRecordController::class, 'store']);
     Route::post('/cats/{cat}/weight-history', [WeightHistoryController::class, 'store']);
     Route::post('/cats/{cat}/comments', [CatCommentController::class, 'store']);
     Route::post('/helper-profiles', [HelperProfileController::class, 'store']);
+    Route::get('/helper-profiles', [HelperProfileController::class, 'index']);
     Route::get('/helper-profiles/me', [HelperProfileController::class, 'show']);
     Route::post('/cats/{cat}/transfer-request', [TransferRequestController::class, 'store']);
     Route::post('/transfer-requests/{transferRequest}/accept', [TransferRequestController::class, 'accept']);
@@ -37,6 +55,3 @@ Route::get('/cats/{cat}', [CatController::class, 'show']);
 Route::get('/cats/{cat}/comments', [CatCommentController::class, 'index']);
 Route::get('/users/{user}/reviews', [ReviewController::class, 'index']);
 
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login'])->name('login');
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');

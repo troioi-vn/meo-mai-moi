@@ -48,9 +48,10 @@ This outlines the high-level map of the application from the perspective of its 
 
 To ensure our API is well-documented and easily consumable, we will focus on the following:
 
--   **Task:** Add more detailed API documentation within Swagger for all existing and new endpoints.
+-   **Task:** Add detailed Swagger (OpenAPI) annotations to all new and existing endpoints.
 -   **Task:** Integrate Swagger UI with the frontend for easy access to API documentation.
--   **Task:** Implement a process to ensure API changes are automatically reflected in Swagger documentation.
+-   **Task:** Implement an automated, test-driven process to ensure API changes are always reflected in the Swagger documentation. This will be achieved through **API Contract Testing**.
+
 
 ## 4. Internationalization (i18n)
 
@@ -106,6 +107,23 @@ We employ a layered testing approach using Pest:
 
 **Considerations:** High code coverage, explicit error handling tests, fast execution, and CI/CD integration.
 
+### API Contract Testing & Pipeline Integration
+
+To ensure our API implementation never deviates from its documentation, we will adopt a **contract testing** approach. This enhances our existing testing strategy by using the OpenAPI specification as the single source of truth.
+
+**The Strategy:**
+1.  **Contract First:** The Swagger annotations in the code are the definitive contract for the API's behavior.
+2.  **Tests Validate the Contract:** Our Pest feature tests will be expanded to not only test application logic but also to validate that the API's responses (status codes, headers, JSON structure) perfectly match the schemas defined in the generated `openapi.json` file.
+3.  **Preventing Drift:** This creates a powerful automated check. If a code change causes a response to differ from the documented contract, a test will fail, preventing the change from being merged until the contract (the annotation) is updated.
+
+**CI/CD Pipeline Integration:**
+This strategy is enforced via our CI/CD pipeline with the following steps on every pull request:
+1.  **Lint Contract:** The pipeline will first lint the `openapi.json` file to check for syntax errors and ensure it follows best practices.
+2.  **Run Tests:** The full Pest test suite, including the contract validation tests, is executed. A failure here indicates a mismatch between the code and the contract.
+3.  **Verify Documentation Freshness:** The pipeline will run `artisan l5-swagger:generate` and then check if the command produced any changes to the `openapi.json` file. If it did, the build fails. This forces developers to always commit the most up-to-date version of the API documentation with their code changes.
+
+This process guarantees that our API documentation is always a reliable and accurate reflection of its implementation.
+
 #### Frontend Testing Strategies
 
 For the React frontend, we employ a combination of unit and integration tests using Vitest and React Testing Library (RTL). Our focus is on testing user-facing behavior rather than internal component implementation details.
@@ -145,8 +163,6 @@ When encountering issues, especially those related to environment or integration
     *   **Retest:** Attempt the action that previously caused the error.
 6.  **Iterate:** If the problem persists or a new one emerges, repeat the process from step 1.
 
-This iterative approach, combined with a deep understanding of the application's architecture and Docker environment, is crucial for efficient problem-solving.
-
 ### Coding Style & Linting
 
 - **PHP / Laravel:**
@@ -183,33 +199,7 @@ To ensure a consistent and user-friendly experience, we will standardize error h
 ## 7. Command Glossary
 
 ### Backend (Laravel)
-**Important:**
-- For all `php artisan` and `composer` commands: I must always execute them within the Docker container using Laravel Sail. The command will always be structured as: vendor/bin/sail <php artisan or composer command>
-- For all `docker compose` commands (e.g., `docker compose up`, `docker compose logs`): I must always specify the directory='backend/' parameter for the run_shell_command tool.
 
--   `docker compose up -d`: Bring up Docker Compose services in detached mode.
--   `docker compose up -d --force-recreate`: Bring up Docker Compose services in detached mode, forcing recreation of containers.
--   `docker compose build <service_name>`: Rebuild the Docker image for a specific service (e.g., `laravel.test`).
--   `docker compose logs <service_name>`: View logs for a specific Docker service.
-    - `vendor/bin/sail composer install`: Install PHP dependencies inside the Laravel Docker container using Sail.
-    - `vendor/bin/sail composer install --no-dev --optimize-autoloader`: Reinstall Composer dependencies inside the Laravel Docker container using Sail, excluding dev dependencies and optimizing the autoloader.
-    - `vendor/bin/sail artisan serve`: Start the local development server inside the Laravel Docker container using Sail.
-    - `vendor/bin/sail artisan migrate`: Run database migrations inside the Laravel Docker container using Sail.
-    - `vendor/bin/sail artisan test`: Run the Pest test suite inside the Laravel Docker container using Sail.
-    - `vendor/bin/sail php-cs-fixer fix`: Automatically fix code style issues inside the Laravel Docker container using Sail.
--   `vendor/bin/sail artisan optimize:clear`: Clear Laravel optimized class loader and services cache inside the Laravel Docker container using Sail.
--   `vendor/bin/sail artisan config:clear`: Clear Laravel configuration cache inside the Laravel Docker container using Sail.
--   `vendor/bin/sail artisan route:clear`: Clear Laravel route cache inside the Laravel Docker container using Sail.
--   `vendor/bin/sail artisan view:clear`: Clear Laravel view cache inside the Laravel Docker container using Sail.
--   `vendor/bin/sail artisan cache:clear`: Clear Laravel application cache inside the Laravel Docker container using Sail.
--   `vendor/bin/sail artisan event:clear`: Clear Laravel event cache inside the Laravel Docker container using Sail.
--   `vendor/bin/sail artisan queue:clear`: Clear Laravel queue cache inside the Laravel Docker container using Sail.
--   `vendor/bin/sail artisan schedule:clear`: Clear Laravel schedule cache inside the Laravel Docker container using Sail.
--   `vendor/bin/sail artisan optimize`: Re-optimize the Laravel application for better performance inside the Laravel Docker container using Sail.
--   `vendor/bin/sail artisan config:cache`: Cache the Laravel configuration inside the Laravel Docker container.
--   `vendor/bin/sail artisan route:cache`: Cache the Laravel routes inside the Laravel Docker container.
--   `vendor/bin/sail artisan view:cache`: Cache the Laravel views inside the Laravel Docker container.
--   `vendor/bin/sail artisan event:cache`: Cache the Laravel events inside the Laravel Docker container.
 
 ### Frontend (React + Vite)
 - `npm install`: Install Node.js dependencies.
@@ -319,14 +309,6 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
 ### Phase 1: Core MVP - Viewing & User Management
 
 **Goal:** Implement the minimum viable product (MVP) functionality. This includes user registration, basic profile management, the ability for admins to add cats, and for the public to view them.
-
-#### Epic 1: User & Helper Account Management
-
-#### Epic 2: Cat Profile & Custodianship Lifecycle
-
-#### Epic 3: Public Discovery & Browsing
-
-#### Epic 5: Core Platform & Notifications
 
 ---
 

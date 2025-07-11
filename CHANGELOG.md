@@ -7,7 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Resolved login redirection issue by ensuring `AuthContext`'s `login` function returns a Promise and awaiting it in `LoginForm.tsx` before navigation.
+- Resolved frontend build errors related to TypeScript type mismatches in `ChangePasswordForm.tsx`, `LoginForm.test.tsx`, `RegisterForm.test.tsx`, `ProfilePage.test.tsx`, `form.tsx`, and `useAuth.ts`.
+
 ### Added
+- Implemented password change mechanism in backend (`PUT /api/users/me/password`) and frontend (`ChangePasswordForm.tsx`).
+- Implemented account deletion mechanism in backend (`DELETE /api/users/me`) and frontend (`DeleteAccountDialog.tsx`).
+- Created `ChangePasswordForm.tsx` component for password updates.
+- Created `DeleteAccountDialog.tsx` component for account deletion.
+- Integrated `ChangePasswordForm` and `DeleteAccountDialog` into `AccountPage.tsx`.
+- Added `changePassword` and `deleteAccount` functions to `AuthContext.tsx` and `authService.ts`.
+- Added feature tests for password change and account deletion in `backend/tests/Feature/UserProfileTest.php`.
+- Configured `.env` file with correct database credentials and generated application key, resolving database connection issues.
+- Successfully ran database migrations after resolving connection issues.
+
+### Changed
+- Investigated backend and frontend implementation of registration and login.
+- Modified `RegisterForm.tsx` to redirect to `/account` after successful registration.
+- Wrapped `LoginForm` and `RegisterForm` in `MemoryRouter` in their respective test files to resolve `useNavigate()` errors.
+- Imported `MemoryRouter` in `LoginForm.test.tsx` and `RegisterForm.test.tsx`.
+- Updated `GEMINI.md` and `README.md` to reflect the use of Laravel Sail for backend development commands.
+- Updated `GEMINI.md` with detailed frontend testing strategies, including principles, tools (Vitest, React Testing Library), and command examples.
+- Updated `GEMINI.md` with short descriptions of Tailwind CSS and shadcn/ui in the 'Tech Stack' section.
+- Modified `RegisterForm.tsx` to log the full error response from the server for better debugging of validation issues.
+
+### Fixed
+- Resolved circular dependency in frontend by refactoring `AuthContext` and `useAuth` imports.
+- Removed "Passwords do not match" test from `frontend/src/components/RegisterForm.test.tsx`.
+- Resolved persistent database connection issue by performing a full Docker container and volume rebuild, ensuring correct PostgreSQL initialization with updated credentials.
 - `test_user_can_get_their_own_profile`
 - `test_authenticated_user_can_access_api_user_endpoint`
 - `test_a_user_can_logout_successfully`
@@ -77,52 +105,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implemented Tailwind CSS and shadcn/ui for the frontend, including configuration and adding a basic Button component.
 
 ### Fixed
-- Resolved `502 Bad Gateway` error by correctly configuring PHP-FPM in `backend/docker/php-fpm.conf` with `user`, `group`, and `pm` directives.
-- Resolved `CORS Missing Allow Origin` error by adding explicit CORS headers to `backend/nginx.conf` to handle preflight `OPTIONS` requests and allow `Access-Control-Allow-Origin`.
-- Resolved "Unknown named parameter $except" error in `backend/bootstrap/app.php` by removing the problematic `except` parameter, allowing middleware to be managed per route or in `Kernel.php`.
-- Addressed `422 Unprocessable Content` error during login, which was due to invalid credentials provided by the user, not a code issue.
-- Enabled CORS for API routes by adding `HandleCors` middleware to the `api` middleware group in `bootstrap/app.php`.
-- Updated frontend API calls in `LoginForm.tsx` and `RegisterForm.tsx` to use port `8080` instead of `8000` to match backend configuration.
-- Corrected the namespace for `HandleCors` middleware in `bootstrap/app.php` to `Illuminate\Http\Middleware\HandleCors`.
-- Implemented User Story 7: Fosterer Comments on Cat Profiles, including:
-  - Backend: `CatComment` model, migration, controller (`CatCommentController`), and API routes (`GET /api/cats/{id}/comments`, `POST /api/cats/{id}/comments`).
-- Implemented User Story 2: User Becomes a Helper, including:
-  - Frontend: `ApplyToHelpPage.tsx` and `HelperApplicationForm.tsx`.
-  - Frontend: `CommentsSection` component and integration into `CatProfilePage`.
-- Added a "Development Setup" section to the `README.md` file with instructions for setting up and running the development server.
-- Implemented a Hero Section component for the homepage.
-- Implemented a basic homepage and frontend routing.
-  - Implemented API endpoints for user reviews (`POST /api/reviews`, `GET /api/users/{id}/reviews`), now documented in Swagger.
-  - Implemented User Story 3: Managing & Transferring Cat Custodianship, including:
-    - Backend: `TransferRequest` model, migration, controller (`TransferRequestController`), and API endpoints (`POST /api/cats/{cat_id}/transfer-request`, `POST /api/transfer-requests/{id}/accept`, `POST /api/transfer-requests/{id}/reject`).
-  - Created `HelperProfileFactory.php` and `TransferRequestFactory.php`.
-- Implemented API endpoint for updating a cat's profile (`PUT /api/cats/{id}`), now documented in Swagger.
-- Implemented API endpoint for adding medical records to a cat's profile (`POST /api/cats/{id}/medical-records`), now documented in Swagger.
-- Implemented API endpoint for adding weight history to a cat's profile (`POST /api/cats/{id}/weight-history`), now documented in Swagger.
-- Implemented API endpoints for managing cat custodianship transfer requests (`POST /api/cats/{cat_id}/transfer-request`, `POST /api/transfer-requests/{id}/accept`, `POST /api/transfer-requests/{id}/reject`), now documented in Swagger.
-- Implemented API endpoint for retrieving authenticated user's helper profile status (`GET /api/helper-profiles/me`), now documented in Swagger.
-- Implemented API endpoint for creating a new helper profile (`POST /api/helper-profiles`), now documented in Swagger.
-- Implemented API endpoint for retrieving featured cat listings (`GET /api/cats/featured`), now documented in Swagger.
-- Implemented API endpoint for retrieving a single cat's profile with dynamic viewer permissions (`GET /api/cats/{id}`), now documented in Swagger.
-- Implemented API endpoint for retrieving all available cat listings (`GET /api/cats`), now documented in Swagger.
-- Ran database migrations to create `users`, `cache`, `jobs`, and `cats` tables.
-- Implemented API endpoint for creating new cat listings (`POST /api/cats`), now documented in Swagger.
-- Implemented user profile management API endpoints (`GET /api/users/me`, `PUT /api/users/me`), now documented in Swagger.
-- Added VitePress documentation setup and initial content.
-- Set up a static site generator (`VitePress`) for the `docs/` directory.
-- Installed and configured `l5-swagger` for the Laravel backend to handle OpenAPI documentation.
-- Set up `ESLint` (with Airbnb config) and `Prettier` for the React frontend.
-- Configured `PHP-CS-Fixer` for the Laravel backend to enforce PSR-12 coding standards.
-- Initialized the React (Vite + TypeScript) project for the frontend SPA.
-- Initialized the Laravel project for the backend API.
-- Initial project setup.
-
-## [Unreleased]
+- Resolved `ParseError` in `backend/routes/api.php` by removing duplicate `<?php` tag and correctly grouping authenticated routes.
 
 ### Changed
-- Updated `GEMINI.md` and `README.md` to reflect the use of Laravel Sail for backend development commands.
-- Updated `GEMINI.md` with detailed frontend testing strategies, including principles, tools (Vitest, React Testing Library), and command examples.
-- Updated `GEMINI.md` with short descriptions of Tailwind CSS and shadcn/ui in the 'Tech Stack' section.
+- Implemented redirection to `/account` after successful login in `LoginForm.tsx`.
+- Ensured the "Login button" is hidden after successful login by leveraging existing conditional rendering in `MainNav.tsx` based on authentication status.
+- Created an `AccountPage` placeholder component (`frontend/src/pages/AccountPage.tsx`) to display basic user variables.
+- Added a route for `/account` in `frontend/src/App.tsx` and protected it with `ProtectedRoute`.
 
 
 ### Deprecated

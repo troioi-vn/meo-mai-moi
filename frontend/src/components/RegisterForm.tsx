@@ -1,5 +1,14 @@
-import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { register as registerUser } from '@/services/authService';
+import { Button } from "@/components/ui/button";
+import { AxiosError } from 'axios';
+
+interface ApiError {
+  message: string;
+  errors?: { [key: string]: string[] };
+}
 
 const RegisterForm: React.FC = () => {
   const [name, setName] = useState('');
@@ -7,87 +16,83 @@ const RegisterForm: React.FC = () => {
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null); // Clear previous errors
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError(null);
+
+    if (password !== passwordConfirmation) {
+      setError("Passwords do not match.");
+      return;
+    }
 
     try {
-      const response = await fetch('http://localhost:8080/api/register', { // Assuming backend runs on port 8080
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, email, password, password_confirmation: passwordConfirmation }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem('access_token', data.access_token);
-        navigate('/account'); // Redirect to user account dashboard
+      const response = await registerUser({ name, email, password, password_confirmation: passwordConfirmation });
+      const { user, token } = response.data;
+      login(user, token);
+      navigate('/account');
+    } catch (err: unknown) {
+      const axiosError = err as AxiosError<ApiError>;
+      console.error("Registration error:", axiosError.response?.data || axiosError); // Log the full error response
+      if (axiosError.response && axiosError.response.data && axiosError.response.data.errors) {
+        const errorMessages = Object.values(axiosError.response.data.errors).flat().join(' ');
+        setError(errorMessages as string);
       } else {
-        setError(data.message || 'Registration failed. Please try again.');
+        setError(axiosError.message || 'Failed to register. Please try again.');
       }
-    } catch (err) {
-      setError('An error occurred. Please try again later.');
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {error && <p className="text-red-500 text-sm">{error}</p>}
-      <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
+    <form onSubmit={handleSubmit}>
+      {error && <p data-testid="register-error-message" className="text-red-500 text-sm mb-4">{error}</p>}
+      <div className="mb-4">
+        <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
         <input
           type="text"
           id="name"
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           required
         />
       </div>
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+      <div className="mb-4">
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
         <input
           type="email"
           id="email"
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           required
         />
       </div>
-      <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+      <div className="mb-4">
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
         <input
           type="password"
           id="password"
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           required
         />
       </div>
-      <div>
-        <label htmlFor="password_confirmation" className="block text-sm font-medium text-gray-700">Confirm Password</label>
+      <div className="mb-6">
+        <label htmlFor="passwordConfirmation" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Confirm Password</label>
         <input
           type="password"
-          id="password_confirmation"
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          id="passwordConfirmation"
           value={passwordConfirmation}
           onChange={(e) => setPasswordConfirmation(e.target.value)}
+          className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           required
         />
       </div>
-      <button
-        type="submit"
-        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-      >
-        Register
-      </button>
+      <Button type="submit" className="w-full">Register</Button>
     </form>
   );
 };

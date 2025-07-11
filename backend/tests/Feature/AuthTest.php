@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\User;
+use Laravel\Sanctum\Sanctum;
 
 class AuthTest extends TestCase
 {
@@ -125,5 +126,35 @@ class AuthTest extends TestCase
         ]);
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['email']);
+    }
+
+    /** @test */
+    public function a_user_can_logout_successfully()
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson('/api/logout');
+
+        $response->assertStatus(200)
+                 ->assertJson(['message' => 'Logged out successfully']);
+
+        // Verify that the token is deleted from the database
+        $this->assertDatabaseMissing('personal_access_tokens', [
+            'tokenable_type' => get_class($user),
+            'tokenable_id' => $user->id,
+        ]);
+    }
+
+    /** @test */
+    public function authenticated_user_can_access_api_user_endpoint()
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $response = $this->getJson('/api/user');
+
+        $response->assertStatus(200)
+                 ->assertJson(['email' => $user->email]);
     }
 }

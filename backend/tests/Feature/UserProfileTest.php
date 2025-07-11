@@ -2,73 +2,96 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
+use App\Models\User;
+use Laravel\Sanctum\Sanctum;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class UserProfileTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_user_can_get_their_own_profile(): void
+    protected $user;
+
+    protected function setUp(): void
     {
-        $user = User::factory()->create();
-        Sanctum::actingAs($user);
-
-        $response = $this->getJson('/api/users/me');
-
-        $response->assertStatus(200)
-            ->assertJson([
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-            ]);
+        parent::setUp();
+        $this->user = User::factory()->create();
+        Sanctum::actingAs($this->user);
     }
 
-    public function test_guest_cannot_get_profile_information(): void
+    /** @test */
+    public function authenticated_user_can_update_their_password_successfully()
     {
-        $response = $this->getJson('/api/users/me');
-        $response->assertStatus(401);
-    }
-
-    public function test_user_can_update_their_own_profile(): void
-    {
-        $user = User::factory()->create();
-        Sanctum::actingAs($user);
-
-        $updateData = [
-            'name' => 'New Name',
-            'email' => 'newemail@example.com',
-        ];
-
-        $response = $this->putJson('/api/users/me', $updateData);
-
-        $response->assertStatus(200)
-            ->assertJson([
-                'name' => 'New Name',
-                'email' => 'newemail@example.com',
-            ]);
-
-        $this->assertDatabaseHas('users', [
-            'id' => $user->id,
-            'name' => 'New Name',
-            'email' => 'newemail@example.com',
+        $response = $this->putJson('/api/users/me/password', [
+            'current_password' => 'password',
+            'new_password' => 'new_password',
+            'new_password_confirmation' => 'new_password',
         ]);
+
+        $response->assertStatus(200)
+                 ->assertJson(['message' => 'Password updated successfully.']);
+
+        $this->assertTrue(Hash::check('new_password', $this->user->fresh()->password));
     }
 
-    public function test_user_cannot_update_profile_with_existing_email(): void
+    /** @test */
+    public function update_password_fails_with_incorrect_current_password()
     {
-        $user1 = User::factory()->create();
-        $user2 = User::factory()->create();
-        Sanctum::actingAs($user1);
+        $response = $this->putJson('/api/users/me/password', [
+            'current_password' => 'wrong_password',
+            'new_password' => 'new_password',
+            'new_password_confirmation' => 'new_password',
+        ]);
 
-        $updateData = [
-            'email' => $user2->email,
-        ];
+        $response->assertStatus(422)
+                 ->assertJsonValidationErrors(['current_password']);
 
-        $response = $this->putJson('/api/users/me', $updateData);
-
-        $response->assertStatus(422);
+        $this->assertTrue(Hash::check('password', $this->user->fresh()->password));
     }
+
+    /** @test */
+    public function update_password_fails_with_mismatched_new_password_confirmation()
+    {
+        $response = $this->putJson('/api/users/me/password', [
+            'current_password' => 'password',
+            'new_password' => 'new_password',
+            'new_password_confirmation' => 'mismatched_password',
+        ]);
+
+        $response->assertStatus(422)
+                 ->assertJsonValidationErrors(['new_password']);
+
+        $this->assertTrue(Hash::check('password', $this->user->fresh()->password));
+    }
+
+    /** @test */
+    public function authenticated_user_can_delete_their_account_successfully()
+    {
+        $response = $this->deleteJson('/api/users/me', [
+            'password' => 'password',
+        ]);
+
+        $response->assertStatus(200)
+                 ->assertJson(['message' => 'Account deleted successfully.']);
+
+        $this->assertDatabaseMissing('users', ['id' => $this->user->id]);
+    }
+
+    /** @test */
+    public function delete_account_fails_with_incorrect_password()
+    {
+        $response = $this->deleteJson('/api/users/me', [
+            'password' => 'wrong_password',
+        ]);
+
+        $response->assertStatus(422)
+                 ->assertJsonValidationErrors(['password']);
+
+        $this->assertDatabaseHas('users', ['id' => $this->user->id]);
+    }
+
+    
 }

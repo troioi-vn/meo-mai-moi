@@ -75,9 +75,28 @@ class CatController extends Controller
      *     )
      * )
      */
-    public function index()
+    public function index(Request $request)
     {
-        $cats = Cat::all();
+        $query = Cat::query();
+
+        if ($request->has('location')) {
+            $query->where('location', 'like', '%' . $request->input('location') . '%');
+        }
+
+        if ($request->has('breed')) {
+            $query->where('breed', 'like', '%' . $request->input('breed') . '%');
+        }
+
+        if ($request->has('sort_by')) {
+            $sortBy = $request->input('sort_by');
+            $sortDirection = $request->input('sort_direction', 'asc'); // Default to ascending
+
+            if (in_array($sortBy, ['name', 'age'])) {
+                $query->orderBy($sortBy, $sortDirection);
+            }
+        }
+
+        $cats = $query->get();
         return response()->json($cats);
     }
 

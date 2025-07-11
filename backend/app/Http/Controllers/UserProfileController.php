@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Hash;
 use OpenApi\Annotations as OA;
+use App\Http\Requests\UpdatePasswordRequest;
+use App\Http\Requests\DeleteAccountRequest;
 
 /**
  * @OA\Schema(
@@ -118,5 +121,93 @@ class UserProfileController extends Controller
         $user->save();
 
         return response()->json($user);
+    }
+
+    /**
+     * @OA\Put(
+     *     path="/api/users/me/password",
+     *     summary="Update authenticated user's password",
+     *     tags={"User Profile"},
+     *     security={{"sanctum": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"current_password", "new_password", "new_password_confirmation"},
+     *             @OA\Property(property="current_password", type="string", format="password", example="old_secret_password"),
+     *             @OA\Property(property="new_password", type="string", format="password", example="new_secret_password"),
+     *             @OA\Property(property="new_password_confirmation", type="string", format="password", example="new_secret_password")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Password updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Password updated successfully.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Validation Error"),
+     *             @OA\Property(property="errors", type="object", example={"current_password": {"The provided password does not match your current password."}})
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     )
+     * )
+     */
+    public function updatePassword(UpdatePasswordRequest $request)
+    {
+        $user = $request->user();
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return response()->json(['message' => 'Password updated successfully.']);
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/api/users/me",
+     *     summary="Delete authenticated user's account",
+     *     tags={"User Profile"},
+     *     security={{"sanctum": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"password"},
+     *             @OA\Property(property="password", type="string", format="password", example="your_current_password")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Account deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Account deleted successfully.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Validation Error"),
+     *             @OA\Property(property="errors", type="object", example={"password": {"The provided password does not match your current password."}})
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     )
+     * )
+     */
+    public function destroy(DeleteAccountRequest $request)
+    {
+        $user = $request->user();
+        $user->tokens()->delete(); // Revoke all tokens for the user
+        $user->delete();
+
+        return response()->json(['message' => 'Account deleted successfully.']);
     }
 }

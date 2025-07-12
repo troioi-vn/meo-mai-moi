@@ -1,8 +1,8 @@
-import { useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { register as registerUser } from '@/services/authService';
+import { useAuth } from '@/contexts/AuthContext.jsx';
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { AxiosError } from 'axios';
 
 interface ApiError {
@@ -10,14 +10,17 @@ interface ApiError {
   errors?: { [key: string]: string[] };
 }
 
-const RegisterForm: React.FC = () => {
+interface RegisterFormProps {
+  onSuccess?: () => void;
+}
+
+const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const { register } = useAuth();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -29,10 +32,10 @@ const RegisterForm: React.FC = () => {
     }
 
     try {
-      const response = await registerUser({ name, email, password, password_confirmation: passwordConfirmation });
-      const { user, token } = response.data;
-      login(user, token);
-      navigate('/account');
+      await register({ name, email, password, password_confirmation: passwordConfirmation });
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (err: unknown) {
       const axiosError = err as AxiosError<ApiError>;
       console.error("Registration error:", axiosError.response?.data || axiosError); // Log the full error response
@@ -49,46 +52,42 @@ const RegisterForm: React.FC = () => {
     <form onSubmit={handleSubmit}>
       {error && <p data-testid="register-error-message" className="text-red-500 text-sm mb-4">{error}</p>}
       <div className="mb-4">
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
-        <input
+        <Label htmlFor="name">Name</Label>
+        <Input
           type="text"
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           required
         />
       </div>
       <div className="mb-4">
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
-        <input
+        <Label htmlFor="email">Email</Label>
+        <Input
           type="email"
           id="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           required
         />
       </div>
       <div className="mb-4">
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
-        <input
+        <Label htmlFor="password">Password</Label>
+        <Input
           type="password"
           id="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           required
         />
       </div>
       <div className="mb-6">
-        <label htmlFor="passwordConfirmation" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Confirm Password</label>
-        <input
+        <Label htmlFor="passwordConfirmation">Confirm Password</Label>
+        <Input
           type="password"
           id="passwordConfirmation"
           value={passwordConfirmation}
           onChange={(e) => setPasswordConfirmation(e.target.value)}
-          className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           required
         />
       </div>

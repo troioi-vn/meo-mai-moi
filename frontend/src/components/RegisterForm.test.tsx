@@ -1,42 +1,21 @@
-import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, type Mock } from 'vitest';
-import RegisterForm from './RegisterForm';
-import * as authService from '@/services/authService';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
+import { TestAuthProvider } from '@/contexts/TestAuthProvider';
+import RegisterForm from './RegisterForm';
 
-// Mock the authService
-vi.mock('@/services/authService', () => ({
-  register: vi.fn(),
-}));
-
-// Mock the useAuth hook
-vi.mock('@/hooks/useAuth', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/hooks/useAuth')>();
-  return {
-    ...actual,
-    useAuth: vi.fn(),
-  };
-});
-
-// Import the mocked useAuth after mocking
-import { useAuth } from '@/hooks/useAuth';
+const renderWithProviders = (ui, { providerProps, ...renderOptions }) => {
+  return render(
+    <TestAuthProvider {...providerProps}>
+      <MemoryRouter>{ui}</MemoryRouter>
+    </TestAuthProvider>,
+    renderOptions
+  );
+};
 
 describe('RegisterForm', () => {
   it('renders the registration form correctly', () => {
-    (useAuth as Mock).mockReturnValue({
-      login: vi.fn(),
-      isAuthenticated: false,
-      user: null,
-      isLoading: false,
-      changePassword: vi.fn(),
-      deleteAccount: vi.fn(),
-    });
-
-    render(
-      <MemoryRouter>
-        <RegisterForm />
-      </MemoryRouter>
-    );
+    renderWithProviders(<RegisterForm />, {});
 
     expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
@@ -46,32 +25,22 @@ describe('RegisterForm', () => {
   });
 
   it('shows an error message on failed registration', async () => {
-    (authService.register as Mock).mockRejectedValue(new Error('Registration failed'));
+    const register = vi.fn(() => Promise.reject(new Error('Registration failed')));
+    renderWithProviders(<RegisterForm />, { providerProps: { mockValues: { register } } });
 
-    (useAuth as Mock).mockReturnValue({
-      login: vi.fn(),
-      isAuthenticated: false,
-      user: null,
-      isLoading: false,
-      changePassword: vi.fn(),
-      deleteAccount: vi.fn(),
-    });
-
-    render(
-      <MemoryRouter>
-        <RegisterForm />
-      </MemoryRouter>
-    );
-
-    fireEvent.change(screen.getByLabelText(/name/i) as HTMLInputElement, { target: { value: 'Test User' } });
-    fireEvent.change(screen.getByLabelText(/email/i) as HTMLInputElement, { target: { value: 'test@example.com' } });
-    fireEvent.change(screen.getByLabelText(/^Password$/i) as HTMLInputElement, { target: { value: 'password123' } });
-    fireEvent.change(screen.getByLabelText(/confirm password/i) as HTMLInputElement, { target: { value: 'password123' } });
-    act(() => {
-      fireEvent.click(screen.getByRole('button', { name: /register/i }));
-    });
+    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: 'Test User' } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@example.com' } });
+    fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'password123' } });
+    fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'password123' } });
+    fireEvent.click(screen.getByRole('button', { name: /register/i }));
 
     await waitFor(() => {
+      expect(register).toHaveBeenCalledWith({
+        name: 'Test User',
+        email: 'test@example.com',
+        password: 'password123',
+        password_confirmation: 'password123',
+      });
       expect(screen.getByText(/Registration failed/i)).toBeInTheDocument();
     });
   });

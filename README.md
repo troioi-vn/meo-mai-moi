@@ -22,7 +22,7 @@ Anyone can deploy this system in their area or country to run their own version 
 - **Frontend:** React.js
 - **Backend:** Laravel (PHP)
 - **Database:** PostgreSQL (planned default), with static JSON optionally used for initial geography data
-- **Deployment:** Docker Compose for local and production environments
+
 
 ## Intended Use
 

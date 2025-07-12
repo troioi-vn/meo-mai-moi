@@ -1,66 +1,30 @@
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { describe, it, expect, vi, type Mock } from 'vitest';
-import * as authService from '@/services/authService';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
-
-// Mock the authService
-vi.mock('@/services/authService', () => ({
-  login: vi.fn(),
-}));
-
-// Mock the useAuth hook
-vi.mock('@/hooks/useAuth', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/hooks/useAuth')>();
-  return {
-    ...actual,
-    useAuth: vi.fn(),
-  };
-});
-
-// Then import the component that uses the hook
+import { TestAuthProvider } from '@/contexts/TestAuthProvider';
 import LoginForm from './LoginForm';
-import { useAuth } from '@/hooks/useAuth'; // Import the mocked useAuth
+
+const renderWithProviders = (ui, { providerProps, ...renderOptions }) => {
+  return render(
+    <TestAuthProvider {...providerProps}>
+      <MemoryRouter>{ui}</MemoryRouter>
+    </TestAuthProvider>,
+    renderOptions
+  );
+};
 
 describe('LoginForm', () => {
   it('renders the login form correctly', () => {
-    (useAuth as Mock).mockReturnValue({
-      login: vi.fn(),
-      isAuthenticated: false,
-      user: null,
-      isLoading: false,
-      changePassword: vi.fn(),
-      deleteAccount: vi.fn(),
-    });
-
-    render(
-      <MemoryRouter>
-        <LoginForm />
-      </MemoryRouter>
-    );
-
+    renderWithProviders(<LoginForm />, {});
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
   });
 
   it('allows the user to fill out the form', () => {
-    (useAuth as Mock).mockReturnValue({
-      login: vi.fn(),
-      isAuthenticated: false,
-      user: null,
-      isLoading: false,
-      changePassword: vi.fn(),
-      deleteAccount: vi.fn(),
-    });
-
-    render(
-      <MemoryRouter>
-        <LoginForm />
-      </MemoryRouter>
-    );
-
-    const emailInput = screen.getByLabelText(/email/i) as HTMLInputElement;
-    const passwordInput = screen.getByLabelText(/password/i) as HTMLInputElement;
+    renderWithProviders(<LoginForm />, {});
+    const emailInput = screen.getByLabelText(/email/i);
+    const passwordInput = screen.getByLabelText(/password/i);
 
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
@@ -70,31 +34,16 @@ describe('LoginForm', () => {
   });
 
   it('shows an error message on failed login', async () => {
-    (authService.login as Mock).mockRejectedValue(new Error('Invalid credentials'));
-
-    (useAuth as Mock).mockReturnValue({
-      login: vi.fn(),
-      isAuthenticated: false,
-      user: null,
-      isLoading: false,
-      changePassword: vi.fn(),
-      deleteAccount: vi.fn(),
-    });
-
-    render(
-      <MemoryRouter>
-        <LoginForm />
-      </MemoryRouter>
-    );
+    const login = vi.fn(() => Promise.reject(new Error('Invalid credentials')));
+    renderWithProviders(<LoginForm />, { providerProps: { mockValues: { login } } });
 
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@example.com' } });
     fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'password123' } });
     
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /login/i }));
-    });
+    fireEvent.click(screen.getByRole('button', { name: /login/i }));
 
     await waitFor(() => {
+      expect(login).toHaveBeenCalledWith({ email: 'test@example.com', password: 'password123' });
       expect(screen.getByText(/failed to login/i)).toBeInTheDocument();
     });
   });

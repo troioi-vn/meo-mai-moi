@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Removed duplicate `axios` import in `frontend/src/api/axios.js`.
+- Reverted `backend/config/session.php` to use `env('SESSION_SECURE_COOKIE', true)` and `env('SESSION_SAME_SITE', 'lax')` to align with Laravel Sanctum SPA authentication.
+- Reverted `frontend/src/api/axios.js` and `frontend/src/contexts/AuthContext.jsx` to align with Laravel Sanctum SPA authentication.
+- Removed `csrf()` calls from `register` and `login` functions in `frontend/src/contexts/AuthContext.jsx` as part of the transition to token-based authentication.
+- Changed `SESSION_DRIVER` to `cookie` in `backend/.env` to address persistent 401 Unauthorized errors during login.
+- Explicitly set `SESSION_DOMAIN` to `null` in `backend/config/session.php` to resolve 401 Unauthorized errors during login.
+- Reverted `APP_URL` in `backend/.env` to `http://localhost:8000` to align with `php artisan serve` default behavior, while keeping `SANCTUM_STATEFUL_DOMAINS=localhost:5173`.
+- Resolved 401 Unauthorized error on login by setting `SESSION_DOMAIN=null`, `SESSION_SECURE_COOKIE=false`, and `SESSION_SAME_SITE=null` in `backend/.env` and `backend/config/session.php` to allow cross-site cookie handling for `php artisan serve`.
+- Resolved `ToasterProps` export error by replacing `ToasterProps` with `React.ComponentProps<typeof Sonner>` in `frontend/src/components/ui/sonner.tsx`.
 - Resolved login redirection issue by ensuring `AuthContext`'s `login` function returns a Promise and awaiting it in `LoginForm.tsx` before navigation.
 - Resolved frontend build errors related to TypeScript type mismatches in `ChangePasswordForm.tsx`, `LoginForm.test.tsx`, `RegisterForm.test.tsx`, `ProfilePage.test.tsx`, `form.tsx`, and `useAuth.ts`.
 
@@ -23,6 +32,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Successfully ran database migrations after resolving connection issues.
 
 ### Changed
+- Implemented sonner toast notifications for frontend, integrating it into `App.tsx`.
+- Modified `RegisterForm.tsx` to accept an `onSuccess` callback for post-registration actions.
+- Updated `RegisterPage.jsx` to use the `onSuccess` callback from `RegisterForm.tsx` to display a success toast and navigate to the login page after successful registration.
 - Investigated backend and frontend implementation of registration and login.
 - Modified `RegisterForm.tsx` to redirect to `/account` after successful registration.
 - Wrapped `LoginForm` and `RegisterForm` in `MemoryRouter` in their respective test files to resolve `useNavigate()` errors.

@@ -18,9 +18,9 @@ const MainNav: React.FC = () => {
   };
 
   return (
-    <header className="bg-white dark:bg-gray-800 shadow-md">
+    <header className="bg-neutral-50 dark:bg-neutral-900 shadow-lg">
       <nav className="container mx-auto px-6 py-3 flex justify-between items-center">
-        <Link to="/" className="text-xl font-bold text-gray-900 dark:text-gray-100">
+        <Link to="/" className="text-xl font-bold text-neutral-900 dark:text-neutral-100">
           Meo Mai Moi
         </Link>
         <div className="flex items-center space-x-4">

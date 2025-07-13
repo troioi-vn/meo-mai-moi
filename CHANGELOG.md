@@ -14,13 +14,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Created an event and listener to create notifications when a `HelperProfile` is approved or rejected.
 - Created `AdminController` to handle approval and rejection of helper profiles.
 - Added `admin` middleware to protect admin routes.
+- Created `CatCard.tsx` component for displaying individual cat profiles.
+- Integrated `CatCard.tsx` into `CatsSection.tsx` with placeholder data.
 
 ### Changed
 - Updated `GEMINI.md` to reflect the new notification system.
 - Added `NotificationBell` to the main navigation.
+- Added a custom color palette to `tailwind.config.js` for consistent design.
+- Added typography settings (font sizes, weights, and line heights) to `tailwind.config.js`.
+- Applied consistent card styling to `LoginPage.tsx` and `RegisterPage.tsx` using `neutral` colors and `shadow-lg`.
+- Applied consistent card styling to `ProfilePage.tsx`, improved user information display, and integrated `ChangePasswordForm` and `DeleteAccountDialog`.
+- Refactored `MyCatsPage.tsx` to use `CatCard` component for displaying cat profiles and added placeholder data.
+- Applied consistent styling to `CreateCatPage.tsx` for the container, heading, form, and labels.
+- Applied consistent styling to `NotFoundPage.tsx` for background, headings, and text.
+- Replaced `Header.tsx` with `MainNav.tsx` in `MainPage.tsx` and deleted `Header.tsx`.
+- Applied consistent styling to `MainNav.tsx` for background, text, and shadow.
+- Applied consistent styling to `Footer.tsx` for background and text color.
+- Applied consistent styling to `HeroSection.tsx` for headings and paragraph text colors.
 
 ### Fixed
 - Corrected middleware registration from `app/Http/Kernel.php` to `bootstrap/app.php`.
+- Resolved `Unterminated JSX contents` error in `CreateCatPage.tsx` by correcting JSX structure.
+- Resolved `Failed to resolve import` error for `@/components/ui/card` by adding the `card` component using `npx shadcn@latest add card`.
 
 ### Fixed
 - Resolved all TypeScript errors in the frontend, allowing `npm run build` to succeed.
@@ -61,6 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated `GEMINI.md` with detailed frontend testing strategies, including principles, tools (Vitest, React Testing Library), and command examples.
 - Updated `GEMINI.md` with short descriptions of Tailwind CSS and shadcn/ui in the 'Tech Stack' section.
 - Modified `RegisterForm.tsx` to log the full error response from the server for better debugging of validation issues.
+- Added `format` script to `frontend/package.json` for Prettier.
 
 ### Fixed
 - Resolved circular dependency in frontend by refactoring `AuthContext` and `useAuth` imports.

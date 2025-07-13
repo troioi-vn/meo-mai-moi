@@ -4,6 +4,7 @@ import { createCat } from '@/api/cats';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
 const CreateCatPage: React.FC = () => {
@@ -37,68 +38,68 @@ const CreateCatPage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Add a New Cat</h1>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-            Name
-          </label>
-          <Input
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="breed" className="block text-sm font-medium text-gray-700">
-            Breed
-          </label>
-          <Input
-            id="breed"
-            value={breed}
-            onChange={(e) => setBreed(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="age" className="block text-sm font-medium text-gray-700">
-            Age
-          </label>
-          <Input
-            id="age"
-            type="number"
-            value={age}
-            onChange={(e) => setAge(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="location" className="block text-sm font-medium text-gray-700">
-            Location
-          </label>
-          <Input
-            id="location"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-            Description
-          </label>
-          <Textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
-          />
-        </div>
-        {error && <p className="text-red-500">{error}</p>}
-        <Button type="submit">Create Cat</Button>
-      </form>
+    <div className="flex items-center justify-center min-h-screen bg-neutral-100 dark:bg-neutral-900 py-8">
+      <div className="w-full max-w-2xl p-8 space-y-8 bg-neutral-50 rounded-lg shadow-lg dark:bg-neutral-800">
+        <h1 className="text-3xl font-bold text-center text-neutral-900 dark:text-neutral-100 mb-6">Add a New Cat</h1>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="name" className="block">Name</Label>
+            <Input
+              id="name"
+              name="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="breed" className="block">Breed</Label>
+            <Input
+              id="breed"
+              name="breed"
+              type="text"
+              value={breed}
+              onChange={(e) => setBreed(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="age" className="block">Age</Label>
+            <Input
+              id="age"
+              name="age"
+              type="number"
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="location" className="block">Location</Label>
+            <Input
+              id="location"
+              name="location"
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="description" className="block">Description</Label>
+            <Textarea
+              id="description"
+              name="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              required
+            />
+          </div>
+          {error && <p className="text-red-500">{error}</p>}
+          <Button type="submit" aria-label="Create Cat">Create Cat</Button>
+        </form>
+      </div>
     </div>
   );
 };

@@ -29,7 +29,7 @@ describe('RegisterForm', () => {
   });
 
   it('shows an error message on failed registration', async () => {
-    vi.mocked(api.post).mockRejectedValue(new Error('Registration failed'));
+    vi.mocked(api.post).mockRejectedValue(new Error('Network Error'));
     renderWithProviders(<RegisterForm />);
 
     fireEvent.change(screen.getByLabelText(/name/i), { target: { value: 'Test User' } });
@@ -39,7 +39,7 @@ describe('RegisterForm', () => {
     fireEvent.click(screen.getByRole('button', { name: /register/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Registration failed/i)).toBeInTheDocument();
+      expect(screen.getByText(/Network Error/i)).toBeInTheDocument();
     });
   });
 });

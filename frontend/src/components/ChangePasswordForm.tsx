@@ -124,4 +124,4 @@ const ChangePasswordForm: React.FC = () => {
   );
 };
 
-export default ChangePasswordForm;
+export { ChangePasswordForm };

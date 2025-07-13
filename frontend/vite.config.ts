@@ -30,5 +30,8 @@ export default defineConfig({
     emptyOutDir: true,
     manifest: true,
     assetsDir: 'assets',
+    rollupOptions: {
+      input: 'src/main.tsx',
+    },
   },
 })

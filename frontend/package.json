@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "postbuild": "rm -rf ../backend/public/build && cp -r dist ../backend/public/build",
+    "postbuild": "rm -rf ../backend/public/build && cp -r dist/. ../backend/public/build && mv ../backend/public/build/.vite/manifest.json ../backend/public/build/manifest.json",
     "lint": "eslint .",
     "test": "vitest",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",

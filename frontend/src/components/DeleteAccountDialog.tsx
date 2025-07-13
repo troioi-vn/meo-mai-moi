@@ -92,4 +92,4 @@ const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDele
   );
 };
 
-export default DeleteAccountDialog;
+export { DeleteAccountDialog };

@@ -20,18 +20,25 @@ interface Notification {
 export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchNotifications();
   }, []);
 
   const fetchNotifications = async () => {
+    setIsLoading(true);
+    setError(null);
     try {
       const response = await api.get('/notifications');
       setNotifications(response.data);
       setUnreadCount(response.data.filter((n: Notification) => !n.is_read).length);
     } catch (error) {
       console.error('Error fetching notifications:', error);
+      setError('Failed to fetch notifications');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -40,7 +47,6 @@ export function NotificationBell() {
       try {
         await api.post('/notifications/mark-as-read');
         setUnreadCount(0);
-        // Optionally refetch notifications to update their is_read status
         fetchNotifications();
       } catch (error) {
         console.error('Error marking notifications as read:', error);
@@ -48,32 +54,41 @@ export function NotificationBell() {
     }
   };
 
+  if (error) return <div role="alert">{error}</div>;
+  
+  if (isLoading) return (
+    <div role="status" aria-label="Loading notifications">
+      <span className="sr-only">Loading notifications...</span>
+      <div className="h-8 w-8 animate-pulse bg-neutral-200 dark:bg-neutral-700 rounded-full" />
+    </div>
+  );
+
   return (
     <DropdownMenu onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
+        <Button variant="ghost" className="relative w-8 h-8 p-0">
+          <Bell className="w-5 h-5" />
           {unreadCount > 0 && (
-            <Badge
-              variant="destructive"
-              className="absolute -top-1 -right-1 h-4 w-4 justify-center rounded-full p-0"
+            <Badge 
+              variant="destructive" 
+              role="status"
+              aria-label={`${unreadCount} unread notifications`}
+              className="absolute -top-1 -right-1 min-w-[1.2rem] h-5 px-1"
             >
               {unreadCount}
             </Badge>
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent>
         {notifications.length === 0 ? (
-          <DropdownMenuItem disabled>No notifications</DropdownMenuItem>
+          <DropdownMenuItem>No notifications</DropdownMenuItem>
         ) : (
           notifications.map((notification) => (
-            <DropdownMenuItem
-              key={notification.id}
-              asChild
-              className={!notification.is_read ? 'font-bold' : ''}
-            >
-              <a href={notification.link}>{notification.message}</a>
+            <DropdownMenuItem key={notification.id} asChild>
+              <a href={notification.link} className="w-full">
+                {notification.message}
+              </a>
             </DropdownMenuItem>
           ))
         )}

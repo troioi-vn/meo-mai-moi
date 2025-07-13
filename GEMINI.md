@@ -562,8 +562,8 @@ To ensure the platform is accessible to the widest possible audience, we will ad
     **Implementation Plan for Tailwind CSS & shadcn/ui:**
     -   **Install Tailwind CSS:** Add Tailwind CSS to the React frontend project.
     -   **Configure Tailwind CSS:** Set up `tailwind.config.js` and import Tailwind's base styles.
-    -   **Install shadcn/ui CLI:** Use the shadcn/ui CLI to initialize and add components.
-    -   **Add Components:** Start adding necessary UI components (e.g., Button, Input, Card) using the shadcn/ui CLI.
+    -   **Install shadcn/ui CLI:** Use the shadcn/ui CLI to initialize and add components. (Note: `shadcn-ui` is deprecated, use `npx shadcn@latest add <component>` instead).
+    -   **Add Components:** Start adding necessary UI components (e.g., Button, Input, Card) using the shadcn CLI.
 2.  **Progressive Web App (PWA):** The application will be built as a PWA. This will provide users with an app-like experience, including the ability to add the site to their home screen and access certain features offline, without the need for separate native app development for iOS and Android.
 3.  **Performance:** Mobile performance will be a key consideration. We will prioritize optimized images, lazy loading, and efficient data fetching to ensure a fast and smooth experience, even on slower mobile networks.
 
@@ -594,6 +594,7 @@ Gathering feedback is only the first step. We will implement a process to:
 
 ## 18. UI/UX Design Principles & Beautification Plan
 
+**Status:** Completed. The frontend has been beautified according to the principles outlined below, leveraging Tailwind CSS and shadcn/ui.
 
   To enhance the visual appeal and user experience of the Meo Mai Moi application, we will focus on the following principles and actionable steps, leveraging
   our existing Tailwind CSS and shadcn/ui tools:
@@ -625,3 +626,28 @@ Gathering feedback is only the first step. We will implement a process to:
        * Performance: Prioritize efficient rendering and loading times, especially for mobile users.
        * Accessibility: Ensure all UI elements are accessible, adhering to WCAG guidelines where applicable (e.g., sufficient color contrast, proper ARIA
          attributes).
+
+## Linting and Formatting Before Build
+
+To ensure code quality and consistent formatting before building the frontend, run these commands in the `frontend` directory:
+
+```bash
+npm run lint      # Check code for lint errors
+npm run format    # Format code with Prettier
+```
+
+You should run these commands before executing `npm run build` to catch and fix issues early.
+
+For convenience, you can add these scripts to your `package.json`:
+
+```json
+"scripts": {
+  "lint": "eslint .",
+  "format": "prettier --write ."
+}
+```
+
+Then use:
+```bash
+npm run lint && npm run format && npm run build
+```

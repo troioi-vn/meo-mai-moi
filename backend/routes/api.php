@@ -4,6 +4,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\CatController;
+use App\Http\Controllers\MedicalRecordController;
+use App\Http\Controllers\WeightHistoryController;
+use App\Http\Controllers\CatCommentController;
+use App\Http\Controllers\HelperProfileController;
+use App\Http\Controllers\TransferRequestController;
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\AuthController;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index']);
@@ -14,15 +23,6 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::post('/helper-profiles/{helperProfile}/approve', [AdminController::class, 'approveHelperProfile']);
     Route::post('/helper-profiles/{helperProfile}/reject', [AdminController::class, 'rejectHelperProfile']);
 });
-use App\Http\Controllers\UserProfileController;
-use App\Http\Controllers\CatController;
-use App\Http\Controllers\MedicalRecordController;
-use App\Http\Controllers\WeightHistoryController;
-use App\Http\Controllers\CatCommentController;
-use App\Http\Controllers\HelperProfileController;
-use App\Http\Controllers\TransferRequestController;
-use App\Http\Controllers\ReviewController;
-use App\Http\Controllers\AuthController;
 
 /*
 |--------------------------------------------------------------------------

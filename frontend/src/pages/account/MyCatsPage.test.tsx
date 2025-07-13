@@ -3,20 +3,15 @@ import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 import MyCatsPage from './MyCatsPage';
 import { getMyCats } from '@/api/cats';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 vi.mock('@/api/cats');
+vi.mock('@/contexts/AuthContext');
 
 const mockUser = { id: 1, name: 'Test User', email: 'test@example.com' };
 
-const renderWithProviders = (ui: React.ReactElement) => {
-  return render(
-    <MemoryRouter>
-      <AuthProvider>
-        {ui}
-      </AuthProvider>
-    </MemoryRouter>
-  );
+const renderWithRouter = (ui: React.ReactElement) => {
+  return render(<MemoryRouter>{ui}</MemoryRouter>);
 };
 
 describe('MyCatsPage', () => {
@@ -33,6 +28,7 @@ describe('MyCatsPage', () => {
         status: 'available',
         created_at: '2023-01-01T00:00:00Z',
         updated_at: '2023-01-01T00:00:00Z',
+        imageUrl: 'http://example.com/cat1.jpg',
       },
       {
         id: 2,
@@ -45,19 +41,29 @@ describe('MyCatsPage', () => {
         status: 'fostered',
         created_at: '2023-01-02T00:00:00Z',
         updated_at: '2023-01-02T00:00:00Z',
+        imageUrl: 'http://example.com/cat2.jpg',
       },
     ]);
-    // @ts-ignore
-    vi.spyOn(require('@/contexts/AuthContext'), 'useAuth').mockReturnValue({ user: mockUser });
+    vi.mocked(useAuth).mockReturnValue({
+      user: mockUser,
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+      register: vi.fn(),
+      isLoading: false,
+      loadUser: vi.fn(),
+      changePassword: vi.fn(),
+      deleteAccount: vi.fn(),
+    });
   });
 
   it('renders the page title', async () => {
-    renderWithProviders(<MyCatsPage />);
+    renderWithRouter(<MyCatsPage />);
     expect(screen.getByText('My Cats')).toBeInTheDocument();
   });
 
   it('fetches and displays the user\'s cats', async () => {
-    renderWithProviders(<MyCatsPage />);
+    renderWithRouter(<MyCatsPage />);
     await waitFor(() => {
       expect(screen.getByText('Cat 1')).toBeInTheDocument();
       expect(screen.getByText('Cat 2')).toBeInTheDocument();
@@ -65,20 +71,21 @@ describe('MyCatsPage', () => {
   });
 
   it('displays a loading message initially', () => {
-    renderWithProviders(<MyCatsPage />);
+    renderWithRouter(<MyCatsPage />);
     expect(screen.getByText('Loading...')).toBeInTheDocument();
   });
 
   it('displays an error message if fetching cats fails', async () => {
     vi.mocked(getMyCats).mockRejectedValue(new Error('Failed to fetch'));
-    renderWithProviders(<MyCatsPage />);
+    renderWithRouter(<MyCatsPage />);
     await waitFor(() => {
       expect(screen.getByText('Failed to fetch cats.')).toBeInTheDocument();
     });
   });
 
   it('has a link to the create cat page', () => {
-    renderWithProviders(<MyCatsPage />);
-    expect(screen.getByText('Add Cat')).toHaveAttribute('href', '/account/cats/create');
+    renderWithRouter(<MyCatsPage />);
+    const link = screen.getByRole('link', { name: 'Add Cat' });
+    expect(link).toHaveAttribute('href', '/account/cats/create');
   });
 });

@@ -5,7 +5,12 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import LoginForm from './LoginForm';
 import { api } from '@/api/api';
 
-vi.mock('@/api/api');
+vi.mock('@/api/api', () => ({
+  api: {
+    get: vi.fn(() => Promise.resolve({ data: { user: null } })),
+    post: vi.fn(),
+  },
+}));
 
 const renderWithProviders = (ui: React.ReactElement) => {
   return render(

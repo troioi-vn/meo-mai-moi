@@ -20,8 +20,10 @@ describe('ProfilePage', () => {
     renderWithProviders(<ProfilePage />, { providerProps: { mockValues: { user, logout } } });
 
     expect(screen.getByRole('heading', { name: /profile/i })).toBeInTheDocument();
-    expect(screen.getByText(/name: test user/i)).toBeInTheDocument();
-    expect(screen.getByText(/email: test@example.com/i)).toBeInTheDocument();
+    expect(screen.getByText('Name:')).toBeInTheDocument();
+    expect(screen.getByText('Test User')).toBeInTheDocument();
+    expect(screen.getByText('Email:')).toBeInTheDocument();
+    expect(screen.getByText('test@example.com')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /logout/i })).toBeInTheDocument();
   });
 });

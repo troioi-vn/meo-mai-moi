@@ -145,6 +145,19 @@ For the React frontend, we employ a combination of unit and integration tests us
 -   **Linting:** `npm run lint` (ESLint with Airbnb config)
 -   **Formatting:** `npm run format` (Prettier)
 
+##### Components without Tests (Future Development)
+
+-   `HomeButton.tsx`
+-   `BackButton.tsx`
+-   `UserMenu.tsx`
+-   `CatsSection.tsx`
+-   `HeroSection.tsx`
+-   `ChangePasswordForm.tsx`
+-   `ProtectedRoute.tsx`
+-   `DeleteAccountDialog.tsx`
+-   `MainNav.tsx`
+-   `NotificationBell.tsx`
+
 ### Debugging and Problem Solving Strategy
 
 When encountering issues, especially those related to environment or integration, we follow a systematic debugging process:
@@ -262,14 +275,7 @@ enum Permission: string {
 
 2.  **`Cat` Model:** Represents the cat's permanent biological and descriptive information.
     -   `location` (string, nullable): The city or area where the cat is located.
-
-3.  **`HelperProfile` Model:** An **application form** for users who want to become approved fosterers or adopters.
-    -   `approval_status` (enum: `pending`, `approved`, `rejected`): Managed automatically by the `HelperVerificationService` and can be manually overridden by an admin in response to a community report.
-    -   `location` (string, nullable): The city or area where the helper is located.
-
-4.  **`Custodianship` Model (New Core):** Links a Cat to a User, defining their relationship over time.
-    -   `relationship_type` (enum: `rescue_org`, `fostering`, `permanent_foster`).
-    -   `start_date`, `end_date` (nullable): Defines the active period.
+    -   `status` (enum: `available`, `fostered`, `adopted`): The current status of the cat.
 
 5.  **`TransferRequest` Model:** Facilitates the formal transfer of a cat between custodians.
     -   `cat_id` (foreign key to `Cat`): The cat being transferred.
@@ -317,8 +323,24 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
 **Goal:** Build upon the MVP by implementing the core workflows of the application, including the helper application process and the system for transferring cat custodianship.
 
 #### Epic 1: User & Helper Account Management
+-   **User Story: API Documentation and Frontend Tests**
+    -   **Backend:** Add Swagger (OpenAPI) documentation for all authentication and user profile endpoints.
+    -   **Frontend:** Write tests for the `RegisterPage`, `LoginPage`, and `ProfilePage`, mocking API calls. Write tests for the main navigation to ensure it displays correctly for both authenticated and unauthenticated users.
 
 #### Epic 2: Cat Profile & Custodianship Lifecycle
+
+#### Epic 3: Cat Profile Management
+-   **User Story: Create and Edit a Cat Profile**
+    -   **Scenario:** A `CAT_OWNER` creates a new profile for their cat, providing all necessary details. They can later edit this information.
+    -   **Backend:**
+        -   Implement `CatController` with CRUD endpoints (`/api/cats`).
+        -   Add a `status` field to the `cats` table to track availability (e.g., `available`, `fostered`, `adopted`).
+        -   Implement authorization to ensure only the owner or an `ADMIN` can edit/delete the cat.
+        -   Add API documentation for the new endpoints.
+    -   **Frontend:**
+        -   Create a "My Cats" page (`/account/cats`) to display a list of cats owned by the user.
+        -   Create a form (`/account/cats/create`, `/account/cats/{id}/edit`) for creating and editing cat profiles.
+        -   Write tests for the new components.
 
 ---
 
@@ -338,9 +360,20 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
 
 #### Epic 5: Core Platform & Notifications
 -   **User Story 11: Centralized Notification System**
-    -   **Scenario:** Users receive alerts for important events.
-    -   **Backend:** New `Notification` model and event-driven creation of notifications.
-    -   **Frontend:** A notification indicator and a dedicated page to view notifications.
+    -   **Scenario:** A user receives a notification about an important event, such as their Helper Profile status changing. They see an indicator in the navigation bar and can view the notification in a dropdown list.
+    -   **Backend:**
+        -   Create a `Notification` model (`user_id`, `message`, `is_read`, `link`).
+        -   Create API endpoints:
+            -   `GET /api/notifications`: Fetches all notifications for the authenticated user.
+            -   `POST /api/notifications/mark-as-read`: Marks all unread notifications as read.
+        -   Implement an event listener that creates a notification when a `HelperProfile` is approved or rejected.
+    -   **Frontend:**
+        -   Create a `NotificationBell` component in the main navigation bar.
+        -   The component will fetch the user's notifications.
+        -   It will display a badge with the count of unread notifications.
+        -   On click, it will open a dropdown (`DropdownMenu` from shadcn/ui) displaying a list of recent notifications.
+        -   When the dropdown is opened, it will call the `POST /api/notifications/mark-as-read` endpoint to mark all notifications as read, and the unread count badge will disappear.
+        -   Each notification in the dropdown should be a clickable item that navigates the user to a relevant page (e.g., their helper profile page).
 
 ---
 
@@ -549,44 +582,38 @@ Gathering feedback is only the first step. We will implement a process to:
 -   Convert actionable items into development tickets.
 -   Communicate back to the community about which suggestions are being implemented to show that their input is valued.
 
----
-## 17. Todo: User Authentication & Profile
 
-This section outlines the development plan for implementing a fully functional user authentication system and profile management.
 
-### 1. Backend (Laravel)
--   [x] **Login/Registration API:**
-    -   [x] Create API endpoints for user registration (`/api/register`).
-    -   [x] Create API endpoints for user login (`/api/login`) that returns a Sanctum token.
-    -   [x] Create API endpoint for user logout (`/api/logout`).
-    -   [x] Implement rate limiting on authentication routes.
--   [x] **User Profile API:**
-    -   [x] Create API endpoint to fetch the authenticated user's profile (`/api/user`).
-    -   [x] Create API endpoint to update the authenticated user's profile.
--   [x] **Testing (Pest):**
-    -   [x] Write feature tests for registration, login, and logout.
-    -   [x] Write feature tests for fetching and updating the user profile.
-    -   [x] Ensure all tests cover both success and failure scenarios (e.g., validation errors, incorrect credentials).
--   [ ] **API Documentation:**
-    -   [ ] Add Swagger (OpenAPI) documentation for all authentication and user profile endpoints.
+## 18. UI/UX Design Principles & Beautification Plan
 
-### 2. Frontend (React)
--   [ ] **Pages & Components:**
-    -   [ ] Create a `RegisterPage` with a registration form.
-    -   [ ] Create a `LoginPage` with a login form.
-    -   [ ] Create a `ProfilePage` to display and edit user information.
-    -   [ ] Create a main navigation menu/header that changes based on authentication state (e.g., shows "Login/Register" or "Profile/Logout").
--   [ ] **State Management & Routing:**
-    -   [ ] Implement state management for user authentication (e.g., using Context API or a state management library).
-    -   [ ] Create protected routes that require authentication to access (e.g., the `ProfilePage`).
-    -   [ ] Redirect users to the login page if they try to access a protected route without being authenticated.
--   [ ] **API Integration:**
-    -   [ ] Connect the registration and login forms to the backend API endpoints.
-    -   [ ] Store the authentication token securely in the browser (e.g., in an HttpOnly cookie or local storage).
-    -   [ ] Create an API client/service to handle all authenticated requests, attaching the token to the headers.
--   [ ] **Testing (Vitest & RTL):**
-    -   [ ] Write tests for the `RegisterPage` and `LoginPage`, mocking API calls.
-    -   [ ] Write tests for the `ProfilePage`, mocking API calls.
-    -   [ ] Write tests for the main navigation to ensure it displays correctly for both authenticated and unauthenticated users.
-    -   [ ] Review and update any existing frontend tests that may be affected by these changes.
 
+  To enhance the visual appeal and user experience of the Meo Mai Moi application, we will focus on the following principles and actionable steps, leveraging
+  our existing Tailwind CSS and shadcn/ui tools:
+
+
+   1. Consistent Design System:
+       * Color Palette: Define and consistently apply a project-specific color palette (primary, accent, neutral, success, error colors) using Tailwind's
+         configuration.
+       * Typography: Establish a clear typographic scale (font sizes, weights, line heights) for all text elements.
+       * Spacing: Utilize a consistent spacing scale (e.g., p-4, m-2) to create visual rhythm and hierarchy.
+       * Shadows & Borders: Apply subtle shadows and borders to elements like cards and buttons for depth and separation.
+
+
+   2. Strategic shadcn/ui Component Implementation:
+       * Component Exploration: Actively explore and integrate relevant shadcn/ui components (buttons, inputs, cards, dialogs, navigation, etc.) to replace
+         custom or basic HTML elements.
+       * Customization: Leverage shadcn/ui's code-based approach to customize components to align with the defined color palette, typography, and overall
+         design system.
+
+
+   3. Optimized Layout and Visual Hierarchy:
+       * Responsive Layouts: Employ Tailwind's flexbox and grid utilities to create clean, responsive layouts that adapt seamlessly across various screen sizes
+         (mobile, tablet, desktop).
+       * Whitespace Management: Utilize ample whitespace to reduce visual clutter, improve readability, and highlight key information.
+       * Visual Grouping: Group related UI elements visually using cards, distinct background colors, or borders to enhance user comprehension and navigation.
+
+
+   4. Performance and Accessibility:
+       * Performance: Prioritize efficient rendering and loading times, especially for mobile users.
+       * Accessibility: Ensure all UI elements are accessible, adhering to WCAG guidelines where applicable (e.g., sufficient color contrast, proper ARIA
+         attributes).

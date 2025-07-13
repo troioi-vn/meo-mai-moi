@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { TestAuthProvider } from '@/contexts/TestAuthProvider';
 import ProfilePage from '../pages/ProfilePage';
 
-const renderWithProviders = (ui, { providerProps, ...renderOptions }) => {
+const renderWithProviders = (ui: React.ReactElement, { providerProps, ...renderOptions }: { providerProps?: any; [key: string]: any }) => {
   return render(
     <TestAuthProvider {...providerProps}>
       <MemoryRouter>{ui}</MemoryRouter>

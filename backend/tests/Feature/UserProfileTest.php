@@ -8,6 +8,7 @@ use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use PHPUnit\Framework\Attributes\Test;
 
 class UserProfileTest extends TestCase
 {
@@ -22,7 +23,7 @@ class UserProfileTest extends TestCase
         Sanctum::actingAs($this->user);
     }
 
-    /** @test */
+    #[Test]
     public function authenticated_user_can_update_their_password_successfully()
     {
         $response = $this->putJson('/api/users/me/password', [
@@ -37,7 +38,7 @@ class UserProfileTest extends TestCase
         $this->assertTrue(Hash::check('new_password', $this->user->fresh()->password));
     }
 
-    /** @test */
+    #[Test]
     public function update_password_fails_with_incorrect_current_password()
     {
         $response = $this->putJson('/api/users/me/password', [
@@ -52,7 +53,7 @@ class UserProfileTest extends TestCase
         $this->assertTrue(Hash::check('password', $this->user->fresh()->password));
     }
 
-    /** @test */
+    #[Test]
     public function update_password_fails_with_mismatched_new_password_confirmation()
     {
         $response = $this->putJson('/api/users/me/password', [
@@ -67,7 +68,7 @@ class UserProfileTest extends TestCase
         $this->assertTrue(Hash::check('password', $this->user->fresh()->password));
     }
 
-    /** @test */
+    #[Test]
     public function authenticated_user_can_delete_their_account_successfully()
     {
         $response = $this->deleteJson('/api/users/me', [
@@ -80,7 +81,7 @@ class UserProfileTest extends TestCase
         $this->assertDatabaseMissing('users', ['id' => $this->user->id]);
     }
 
-    /** @test */
+    #[Test]
     public function delete_account_fails_with_incorrect_password()
     {
         $response = $this->deleteJson('/api/users/me', [

@@ -8,11 +8,13 @@ use App\Enums\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class CatProfileTest extends TestCase
 {
     use RefreshDatabase;
 
+    #[Test]
     public function test_guest_cannot_update_cat_profile(): void
     {
         $cat = Cat::factory()->create();

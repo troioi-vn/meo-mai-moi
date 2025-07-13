@@ -6,12 +6,13 @@ use App\Models\Review;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class ReviewTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function test_user_can_leave_review_for_helper()
     {
         $reviewer = User::factory()->create();
@@ -35,7 +36,7 @@ class ReviewTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function test_can_get_reviews_for_a_user()
     {
         $user = User::factory()->create();
@@ -47,7 +48,7 @@ class ReviewTest extends TestCase
         $response->assertJsonCount(3);
     }
 
-    /** @test */
+    #[Test]
     public function test_cannot_review_the_same_user_multiple_times_for_same_transfer()
     {
         $reviewer = User::factory()->create();

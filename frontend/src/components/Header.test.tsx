@@ -8,7 +8,7 @@ vi.mock('./UserMenu', () => ({
   UserMenu: () => <div>UserMenu</div>,
 }));
 
-const renderWithProviders = (ui, { providerProps, ...renderOptions }) => {
+const renderWithProviders = (ui: React.ReactElement, { providerProps, ...renderOptions }: { providerProps?: any; [key: string]: any }) => {
   return render(
     <TestAuthProvider {...providerProps}>
       <MemoryRouter>{ui}</MemoryRouter>

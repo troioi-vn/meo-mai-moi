@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import HeroSection from '@/components/HeroSection';
+import { HeroSection } from '@/components/HeroSection';
 import { Button } from "@/components/ui/button"; // Import the Button component
 
 const HomePage: React.FC = () => {

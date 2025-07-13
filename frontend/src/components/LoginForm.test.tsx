@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { TestAuthProvider } from '@/contexts/TestAuthProvider';
 import LoginForm from './LoginForm';
 
-const renderWithProviders = (ui, { providerProps, ...renderOptions }) => {
+const renderWithProviders = (ui: React.ReactElement, { providerProps, ...renderOptions }: { providerProps?: any; [key: string]: any }) => {
   return render(
     <TestAuthProvider {...providerProps}>
       <MemoryRouter>{ui}</MemoryRouter>
@@ -15,22 +15,22 @@ const renderWithProviders = (ui, { providerProps, ...renderOptions }) => {
 
 describe('LoginForm', () => {
   it('renders the login form correctly', () => {
-    renderWithProviders(<LoginForm />, {});
+    renderWithProviders(<LoginForm />, { providerProps: {} });
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
   });
 
   it('allows the user to fill out the form', () => {
-    renderWithProviders(<LoginForm />, {});
+    renderWithProviders(<LoginForm />, { providerProps: {} });
     const emailInput = screen.getByLabelText(/email/i);
     const passwordInput = screen.getByLabelText(/password/i);
 
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
 
-    expect(emailInput.value).toBe('test@example.com');
-    expect(passwordInput.value).toBe('password123');
+    expect((emailInput as HTMLInputElement).value).toBe('test@example.com');
+    expect((passwordInput as HTMLInputElement).value).toBe('password123');
   });
 
   it('shows an error message on failed login', async () => {

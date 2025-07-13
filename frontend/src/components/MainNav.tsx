@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import { logout as logoutUser } from '@/services/authService';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import { NotificationBell } from '@/components/NotificationBell';
 
 const MainNav: React.FC = () => {
   const { isAuthenticated, logout } = useAuth();
@@ -10,9 +10,7 @@ const MainNav: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      await logoutUser();
-      localStorage.removeItem('authToken');
-      logout();
+      await logout();
       navigate('/login');
     } catch (error) {
       console.error('Failed to logout', error);
@@ -28,6 +26,7 @@ const MainNav: React.FC = () => {
         <div className="flex items-center space-x-4">
           {isAuthenticated ? (
             <>
+              <NotificationBell />
               <Link to="/profile">
                 <Button variant="ghost">Profile</Button>
               </Link>

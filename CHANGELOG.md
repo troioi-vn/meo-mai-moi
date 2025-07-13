@@ -7,7 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Implemented a notification system with a `NotificationBell` component in the frontend and corresponding backend infrastructure.
+- Created `Notification` model and migration.
+- Created `NotificationController` with endpoints to fetch and mark notifications as read.
+- Created an event and listener to create notifications when a `HelperProfile` is approved or rejected.
+- Created `AdminController` to handle approval and rejection of helper profiles.
+- Added `admin` middleware to protect admin routes.
+
+### Changed
+- Updated `GEMINI.md` to reflect the new notification system.
+- Added `NotificationBell` to the main navigation.
+
 ### Fixed
+- Corrected middleware registration from `app/Http/Kernel.php` to `bootstrap/app.php`.
+
+### Fixed
+- Resolved all TypeScript errors in the frontend, allowing `npm run build` to succeed.
 - Removed duplicate `axios` import in `frontend/src/api/axios.js`.
 - Reverted `backend/config/session.php` to use `env('SESSION_SECURE_COOKIE', true)` and `env('SESSION_SAME_SITE', 'lax')` to align with Laravel Sanctum SPA authentication.
 - Reverted `frontend/src/api/axios.js` and `frontend/src/contexts/AuthContext.jsx` to align with Laravel Sanctum SPA authentication.
@@ -38,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Investigated backend and frontend implementation of registration and login.
 - Modified `RegisterForm.tsx` to redirect to `/account` after successful registration.
 - Wrapped `LoginForm` and `RegisterForm` in `MemoryRouter` in their respective test files to resolve `useNavigate()` errors.
+- Replaced "back" button with "home" button on login and registration pages.
 - Imported `MemoryRouter` in `LoginForm.test.tsx` and `RegisterForm.test.tsx`.
 - Updated `GEMINI.md` and `README.md` to reflect the use of Laravel Sail for backend development commands.
 - Updated `GEMINI.md` with detailed frontend testing strategies, including principles, tools (Vitest, React Testing Library), and command examples.

@@ -6,7 +6,7 @@ const Toaster = ({ ...props }: React.ComponentProps<typeof Sonner>) => {
 
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
+      theme={theme as React.ComponentProps<typeof Sonner>["theme"]}
       className="toaster group"
       style={
         {

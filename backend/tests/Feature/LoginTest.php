@@ -7,16 +7,13 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use PHPUnit\Framework\Attributes\Test;
 
 class LoginTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * Test that a user can log in successfully with valid credentials.
-     *
-     * @return void
-     */
+    #[Test]
     public function test_user_can_login_with_valid_credentials()
     {
         $user = User::factory()->create([
@@ -37,11 +34,7 @@ class LoginTest extends TestCase
                  ]);
     }
 
-    /**
-     * Test that a user cannot log in with invalid credentials.
-     *
-     * @return void
-     */
+    #[Test]
     public function test_user_cannot_login_with_invalid_credentials()
     {
         $user = User::factory()->create([
@@ -58,11 +51,7 @@ class LoginTest extends TestCase
                  ->assertJsonValidationErrors(['email']);
     }
 
-    /**
-     * Test that an unauthenticated user is not redirected when accessing a protected API route.
-     *
-     * @return void
-     */
+    #[Test]
     public function test_unauthenticated_user_is_not_redirected_on_protected_api_route()
     {
         $response = $this->getJson('/api/user');

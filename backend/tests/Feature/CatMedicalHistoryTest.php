@@ -9,11 +9,13 @@ use App\Enums\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class CatMedicalHistoryTest extends TestCase
 {
     use RefreshDatabase;
 
+    #[Test]
     public function test_custodian_can_add_medical_record(): void
     {
         $custodian = User::factory()->create();

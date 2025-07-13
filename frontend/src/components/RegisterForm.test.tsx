@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { TestAuthProvider } from '@/contexts/TestAuthProvider';
 import RegisterForm from './RegisterForm';
 
-const renderWithProviders = (ui, { providerProps, ...renderOptions }) => {
+const renderWithProviders = (ui: React.ReactElement, { providerProps, ...renderOptions }: { providerProps?: any; [key: string]: any }) => {
   return render(
     <TestAuthProvider {...providerProps}>
       <MemoryRouter>{ui}</MemoryRouter>
@@ -15,7 +15,7 @@ const renderWithProviders = (ui, { providerProps, ...renderOptions }) => {
 
 describe('RegisterForm', () => {
   it('renders the registration form correctly', () => {
-    renderWithProviders(<RegisterForm />, {});
+    renderWithProviders(<RegisterForm />, { providerProps: {} });
 
     expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();

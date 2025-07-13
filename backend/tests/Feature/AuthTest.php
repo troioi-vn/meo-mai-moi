@@ -6,12 +6,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
+use PHPUnit\Framework\Attributes\Test;
 
 class AuthTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function a_user_can_register_successfully()
     {
         $response = $this->postJson('/api/register', [
@@ -33,7 +34,7 @@ class AuthTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function registration_fails_with_invalid_data()
     {
         // Missing email
@@ -82,7 +83,7 @@ class AuthTest extends TestCase
                  ->assertJsonValidationErrors(['email']);
     }
 
-    /** @test */
+    #[Test]
     public function a_user_can_login_successfully()
     {
         $user = User::factory()->create([
@@ -103,7 +104,7 @@ class AuthTest extends TestCase
                  ]);
     }
 
-    /** @test */
+    #[Test]
     public function login_fails_with_invalid_credentials()
     {
         $user = User::factory()->create([
@@ -128,7 +129,7 @@ class AuthTest extends TestCase
                  ->assertJsonValidationErrors(['email']);
     }
 
-    /** @test */
+    #[Test]
     public function a_user_can_logout_successfully()
     {
         $user = User::factory()->create();
@@ -146,7 +147,7 @@ class AuthTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function authenticated_user_can_access_api_user_endpoint()
     {
         $user = User::factory()->create();

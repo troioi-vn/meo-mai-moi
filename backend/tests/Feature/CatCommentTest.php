@@ -7,12 +7,13 @@ use App\Models\CatComment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class CatCommentTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function test_can_get_comments_for_a_cat()
     {
         $cat = Cat::factory()->create();
@@ -24,7 +25,7 @@ class CatCommentTest extends TestCase
         $response->assertJsonCount(3);
     }
 
-    /** @test */
+    #[Test]
     public function test_authenticated_user_can_add_comment_to_cat_profile()
     {
         $user = User::factory()->create();
@@ -42,7 +43,7 @@ class CatCommentTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function test_guest_cannot_add_comment()
     {
         $cat = Cat::factory()->create();

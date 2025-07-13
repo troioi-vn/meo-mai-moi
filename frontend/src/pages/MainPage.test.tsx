@@ -9,7 +9,7 @@ vi.mock('@/components/HeroSection', () => ({ HeroSection: () => <section>Hero Se
 vi.mock('@/components/CatsSection', () => ({ CatsSection: () => <section>Cats Section</section> }));
 vi.mock('@/components/Footer', () => ({ Footer: () => <footer>Footer</footer> }));
 
-const renderWithProviders = (ui, { providerProps, ...renderOptions }) => {
+const renderWithProviders = (ui: React.ReactElement, { providerProps, ...renderOptions }: { providerProps?: any; [key: string]: any }) => {
   return render(
     <TestAuthProvider {...providerProps}>
       <MemoryRouter>{ui}</MemoryRouter>
@@ -20,7 +20,7 @@ const renderWithProviders = (ui, { providerProps, ...renderOptions }) => {
 
 describe('MainPage', () => {
   it('renders all the main sections', () => {
-    renderWithProviders(<MainPage />, {});
+    renderWithProviders(<MainPage />, { providerProps: {} });
     expect(screen.getByRole('banner')).toHaveTextContent('Header');
     expect(screen.getByText('Hero Section')).toBeInTheDocument();
     expect(screen.getByText('Cats Section')).toBeInTheDocument();

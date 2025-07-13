@@ -7,11 +7,13 @@ use App\Models\HelperProfile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+use PHPUnit\Framework\Attributes\Test;
+
 class HelperProfileTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function test_user_can_create_helper_profile()
     {
         $user = User::factory()->create();
@@ -35,7 +37,7 @@ class HelperProfileTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function test_user_can_view_their_helper_profile_status()
     {
         $user = User::factory()->create();
@@ -47,7 +49,7 @@ class HelperProfileTest extends TestCase
         $response->assertJson(['user_id' => $user->id]);
     }
 
-    /** @test */
+    #[Test]
     public function test_guest_cannot_create_helper_profile()
     {
         $response = $this->postJson('/api/helper-profiles', [

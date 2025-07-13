@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './contexts/AuthContext.jsx';
+import { useAuth } from './contexts/AuthContext';
 import MainPage from './pages/MainPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -7,9 +7,9 @@ import ProfilePage from './pages/ProfilePage';
 import NotFoundPage from './pages/NotFoundPage';
 import { Toaster } from '@/components/ui/sonner';
 
-function PrivateRoute({ children }) {
-  const { user, loading } = useAuth();
-  if (loading) return <div>Loading...</div>;
+function PrivateRoute({ children }: { children: React.ReactNode }){
+  const { user, isLoading } = useAuth();
+  if (isLoading) return <div>Loading...</div>;
   return user ? children : <Navigate to="/login" replace />;
 }
 

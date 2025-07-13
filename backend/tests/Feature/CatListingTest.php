@@ -7,11 +7,13 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class CatListingTest extends TestCase
 {
     use RefreshDatabase;
 
+    #[Test]
     public function test_can_get_all_available_cats(): void
     {
         Cat::factory()->count(5)->create();

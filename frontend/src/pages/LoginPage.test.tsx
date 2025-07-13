@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { TestAuthProvider } from '@/contexts/TestAuthProvider';
 import LoginPage from '../pages/LoginPage';
 
-const renderWithProviders = (ui, { providerProps, ...renderOptions }) => {
+const renderWithProviders = (ui: React.ReactElement, { providerProps, ...renderOptions }: { providerProps?: any; [key: string]: any }) => {
   return render(
     <TestAuthProvider {...providerProps}>
       <MemoryRouter>{ui}</MemoryRouter>
@@ -15,7 +15,7 @@ const renderWithProviders = (ui, { providerProps, ...renderOptions }) => {
 
 describe('LoginPage', () => {
   it('renders the login page correctly', () => {
-    renderWithProviders(<LoginPage />, {});
+    renderWithProviders(<LoginPage />, { providerProps: {} });
 
     expect(screen.getByRole('heading', { name: /login/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();

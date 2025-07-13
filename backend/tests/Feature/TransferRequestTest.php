@@ -7,12 +7,13 @@ use App\Models\TransferRequest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class TransferRequestTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function test_cat_owner_can_initiate_transfer_request()
     {
         $owner = User::factory()->create();
@@ -34,7 +35,7 @@ class TransferRequestTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function test_recipient_can_accept_transfer_request()
     {
         $owner = User::factory()->create();
@@ -58,7 +59,7 @@ class TransferRequestTest extends TestCase
         $this->assertEquals($recipient->id, $cat->fresh()->user_id);
     }
 
-    /** @test */
+    #[Test]
     public function test_recipient_can_reject_transfer_request()
     {
         $owner = User::factory()->create();
@@ -82,7 +83,7 @@ class TransferRequestTest extends TestCase
         $this->assertEquals($owner->id, $cat->fresh()->user_id);
     }
 
-    /** @test */
+    #[Test]
     public function test_non_recipient_cannot_act_on_transfer_request()
     {
         $owner = User::factory()->create();

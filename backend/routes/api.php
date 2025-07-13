@@ -47,8 +47,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/users/me', [UserProfileController::class, 'update']);
     Route::put('/users/me/password', [UserProfileController::class, 'updatePassword']);
     Route::delete('/users/me', [UserProfileController::class, 'destroy']);
+    Route::get('/my-cats', [CatController::class, 'myCats']);
     Route::post('/cats', [CatController::class, 'store']);
     Route::put('/cats/{cat}', [CatController::class, 'update']);
+    Route::delete('/cats/{cat}', [CatController::class, 'destroy']);
     Route::post('/cats/{cat}/medical-records', [MedicalRecordController::class, 'store']);
     Route::post('/cats/{cat}/weight-history', [WeightHistoryController::class, 'store']);
     Route::post('/cats/{cat}/comments', [CatCommentController::class, 'store']);

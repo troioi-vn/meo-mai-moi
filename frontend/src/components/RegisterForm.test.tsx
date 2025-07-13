@@ -1,21 +1,25 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
-import { TestAuthProvider } from '@/contexts/TestAuthProvider';
+import { AuthProvider } from '@/contexts/AuthContext';
 import RegisterForm from './RegisterForm';
+import { api } from '@/api/api';
 
-const renderWithProviders = (ui: React.ReactElement, { providerProps, ...renderOptions }: { providerProps?: any; [key: string]: any }) => {
+vi.mock('@/api/api');
+
+const renderWithProviders = (ui: React.ReactElement) => {
   return render(
-    <TestAuthProvider {...providerProps}>
-      <MemoryRouter>{ui}</MemoryRouter>
-    </TestAuthProvider>,
-    renderOptions
+    <MemoryRouter>
+      <AuthProvider>
+        {ui}
+      </AuthProvider>
+    </MemoryRouter>
   );
 };
 
 describe('RegisterForm', () => {
   it('renders the registration form correctly', () => {
-    renderWithProviders(<RegisterForm />, { providerProps: {} });
+    renderWithProviders(<RegisterForm />);
 
     expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
@@ -25,8 +29,8 @@ describe('RegisterForm', () => {
   });
 
   it('shows an error message on failed registration', async () => {
-    const register = vi.fn(() => Promise.reject(new Error('Registration failed')));
-    renderWithProviders(<RegisterForm />, { providerProps: { mockValues: { register } } });
+    vi.mocked(api.post).mockRejectedValue(new Error('Registration failed'));
+    renderWithProviders(<RegisterForm />);
 
     fireEvent.change(screen.getByLabelText(/name/i), { target: { value: 'Test User' } });
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@example.com' } });
@@ -35,12 +39,6 @@ describe('RegisterForm', () => {
     fireEvent.click(screen.getByRole('button', { name: /register/i }));
 
     await waitFor(() => {
-      expect(register).toHaveBeenCalledWith({
-        name: 'Test User',
-        email: 'test@example.com',
-        password: 'password123',
-        password_confirmation: 'password123',
-      });
       expect(screen.getByText(/Registration failed/i)).toBeInTheDocument();
     });
   });

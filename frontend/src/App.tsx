@@ -4,6 +4,8 @@ import MainPage from './pages/MainPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
+import MyCatsPage from './pages/account/MyCatsPage';
+import CreateCatPage from './pages/account/CreateCatPage';
 import NotFoundPage from './pages/NotFoundPage';
 import { Toaster } from '@/components/ui/sonner';
 
@@ -26,6 +28,22 @@ export default function App() {
           element={
             <PrivateRoute>
               <ProfilePage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/account/cats"
+          element={
+            <PrivateRoute>
+              <MyCatsPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/account/cats/create"
+          element={
+            <PrivateRoute>
+              <CreateCatPage />
             </PrivateRoute>
           }
         />

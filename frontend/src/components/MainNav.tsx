@@ -30,6 +30,9 @@ const MainNav: React.FC = () => {
               <Link to="/profile">
                 <Button variant="ghost">Profile</Button>
               </Link>
+              <Link to="/account/cats">
+                <Button variant="ghost">My Cats</Button>
+              </Link>
               <Button onClick={handleLogout}>Logout</Button>
             </>
           ) : (

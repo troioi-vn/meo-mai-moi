@@ -135,6 +135,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implemented Tailwind CSS and shadcn/ui for the frontend, including configuration and adding a basic Button component.
 
 ### Fixed
+- Resolved `Uncaught SyntaxError: The requested module 'http://localhost:5173/src/types/cat.ts' doesn't provide an export named: 'Cat'` by using `import type` for type imports and completing mock data in `MyCatsPage.test.tsx`.
 - Resolved `ParseError` in `backend/routes/api.php` by removing duplicate `<?php` tag and correctly grouping authenticated routes.
 
 ### Changed

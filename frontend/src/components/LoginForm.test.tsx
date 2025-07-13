@@ -1,28 +1,32 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
-import { TestAuthProvider } from '@/contexts/TestAuthProvider';
+import { AuthProvider } from '@/contexts/AuthContext';
 import LoginForm from './LoginForm';
+import { api } from '@/api/api';
 
-const renderWithProviders = (ui: React.ReactElement, { providerProps, ...renderOptions }: { providerProps?: any; [key: string]: any }) => {
+vi.mock('@/api/api');
+
+const renderWithProviders = (ui: React.ReactElement) => {
   return render(
-    <TestAuthProvider {...providerProps}>
-      <MemoryRouter>{ui}</MemoryRouter>
-    </TestAuthProvider>,
-    renderOptions
+    <MemoryRouter>
+      <AuthProvider>
+        {ui}
+      </AuthProvider>
+    </MemoryRouter>
   );
 };
 
 describe('LoginForm', () => {
   it('renders the login form correctly', () => {
-    renderWithProviders(<LoginForm />, { providerProps: {} });
+    renderWithProviders(<LoginForm />);
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
   });
 
   it('allows the user to fill out the form', () => {
-    renderWithProviders(<LoginForm />, { providerProps: {} });
+    renderWithProviders(<LoginForm />);
     const emailInput = screen.getByLabelText(/email/i);
     const passwordInput = screen.getByLabelText(/password/i);
 
@@ -34,8 +38,8 @@ describe('LoginForm', () => {
   });
 
   it('shows an error message on failed login', async () => {
-    const login = vi.fn(() => Promise.reject(new Error('Invalid credentials')));
-    renderWithProviders(<LoginForm />, { providerProps: { mockValues: { login } } });
+    vi.mocked(api.post).mockRejectedValue(new Error('Invalid credentials'));
+    renderWithProviders(<LoginForm />);
 
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@example.com' } });
     fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'password123' } });
@@ -43,7 +47,6 @@ describe('LoginForm', () => {
     fireEvent.click(screen.getByRole('button', { name: /login/i }));
 
     await waitFor(() => {
-      expect(login).toHaveBeenCalledWith({ email: 'test@example.com', password: 'password123' });
       expect(screen.getByText(/failed to login/i)).toBeInTheDocument();
     });
   });

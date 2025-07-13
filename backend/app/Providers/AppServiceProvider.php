@@ -11,6 +11,15 @@ use App\Listeners\CreateHelperProfileNotification;
 class AppServiceProvider extends ServiceProvider
 {
     /**
+     * The policy mappings for the application.
+     *
+     * @var array
+     */
+    protected $policies = [
+        'App\Models\Cat' => 'App\Policies\CatPolicy',
+    ];
+
+    /**
      * Register any application services.
      */
     public function register(): void

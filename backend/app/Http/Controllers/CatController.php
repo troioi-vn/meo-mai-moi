@@ -60,6 +60,11 @@ use App\Enums\UserRole;
  */
 class CatController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(Cat::class, 'cat');
+    }
+
     /**
      * @OA\Get(
      *     path="/api/cats",
@@ -97,6 +102,32 @@ class CatController extends Controller
         }
 
         $cats = $query->get();
+        return response()->json($cats);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/my-cats",
+     *     summary="Get a list of the authenticated user's cats",
+     *     tags={"Cats"},
+     *     security={{"sanctum": {}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(ref="#/components/schemas/Cat")
+     *         )
+     *     ),
+     *      @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     )
+     * )
+     */
+    public function myCats(Request $request)
+    {
+        $cats = $request->user()->cats;
         return response()->json($cats);
     }
 
@@ -290,10 +321,6 @@ class CatController extends Controller
      */
     public function update(Request $request, Cat $cat)
     {
-        if ($request->user()->role !== UserRole::ADMIN && $cat->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'You are not authorized to update this cat.'], 403);
-        }
-
         try {
             $validatedData = $request->validate([
                 'name' => 'sometimes|required|string|max:255',
@@ -302,7 +329,7 @@ class CatController extends Controller
                 'location' => 'sometimes|required|string|max:255',
                 'description' => 'sometimes|required|string',
             ]);
-        } catch (ValidationException $e) {
+        } catch (ValidationException $e) {.
             return response()->json([
                 'message' => 'Validation Error',
                 'errors' => $e->errors(),
@@ -313,5 +340,43 @@ class CatController extends Controller
         $cat->save();
 
         return response()->json($cat);
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/api/cats/{id}",
+     *     summary="Delete a cat's profile",
+     *     tags={"Cats"},
+     *     security={{"sanctum": {}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the cat to delete",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=204,
+     *         description="Cat deleted successfully"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Cat not found"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden: You are not authorized to delete this cat."
+     *     )
+     * )
+     */
+    public function destroy(Cat $cat)
+    {
+        $cat->delete();
+
+        return response()->json(null, 204);
     }
 }

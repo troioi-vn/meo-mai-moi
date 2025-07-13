@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Resolved all TypeScript errors in the frontend, allowing `npm run build` to succeed.
+- Documented persistent `ViteManifestNotFoundException` in `GEMINI.md`.
 - Removed duplicate `axios` import in `frontend/src/api/axios.js`.
 - Reverted `backend/config/session.php` to use `env('SESSION_SECURE_COOKIE', true)` and `env('SESSION_SAME_SITE', 'lax')` to align with Laravel Sanctum SPA authentication.
 - Reverted `frontend/src/api/axios.js` and `frontend/src/contexts/AuthContext.jsx` to align with Laravel Sanctum SPA authentication.

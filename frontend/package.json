@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "postbuild": "rm -rf ../backend/public/build && cp -r dist ../backend/public/build",
     "lint": "eslint .",
     "test": "vitest",
     "preview": "vite preview"

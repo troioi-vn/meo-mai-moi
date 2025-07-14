@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 
 const ApplyToHelpPage: React.FC = () => {
   return (
@@ -6,7 +6,7 @@ const ApplyToHelpPage: React.FC = () => {
       <h1>Apply to Help Page</h1>
       {/* Application form goes here */}
     </div>
-  );
-};
+  )
+}
 
-export default ApplyToHelpPage;
+export default ApplyToHelpPage

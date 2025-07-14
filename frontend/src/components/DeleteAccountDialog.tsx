@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,51 +9,54 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/components/ui/use-toast';
-import { AxiosError } from 'axios';
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { useAuth } from '@/contexts/AuthContext'
+import { toast } from '@/components/ui/use-toast'
+import { AxiosError } from 'axios'
 
 interface ApiError {
-  message: string;
-  errors?: Record<string, string[]>;
+  message: string
+  errors?: Record<string, string[]>
 }
 
 interface DeleteAccountDialogProps {
-  onAccountDeleted: () => void;
+  onAccountDeleted: () => void
 }
 
 const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDeleted }) => {
-  const { deleteAccount, logout } = useAuth();
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const { deleteAccount, logout } = useAuth()
+  const [password, setPassword] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
   const handleDeleteAccount = async (): Promise<void> => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      await deleteAccount(password);
+      await deleteAccount(password)
       toast({
         title: 'Account Deleted',
         description: 'Your account has been successfully deleted.',
-      });
-      setIsOpen(false);
-      logout(); // Log out the user after successful deletion
-      onAccountDeleted(); // Callback to handle redirection or other post-deletion logic
+      })
+      setIsOpen(false)
+      await logout() // Log out the user after successful deletion
+      onAccountDeleted() // Callback to handle redirection or other post-deletion logic
     } catch (error: unknown) {
-      const axiosError = error as AxiosError<ApiError>;
+      const axiosError = error as AxiosError<ApiError>
       toast({
         title: 'Account Deletion Failed',
-        description: axiosError.response?.data?.message ?? axiosError.message ?? 'An unexpected error occurred.',
+        description:
+          axiosError.response?.data?.message ??
+          axiosError.message ??
+          'An unexpected error occurred.',
         variant: 'destructive',
-      });
+      })
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
@@ -64,9 +67,8 @@ const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDele
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete your account
-            and remove your data from our servers. To confirm, please type your
-            password below.
+            This action cannot be undone. This will permanently delete your account and remove your
+            data from our servers. To confirm, please type your password below.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="grid gap-4 py-4">
@@ -76,7 +78,9 @@ const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDele
               id="password"
               type="password"
               value={password}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setPassword(e.target.value); }}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                setPassword(e.target.value)
+              }}
               disabled={isLoading}
             />
           </div>
@@ -89,7 +93,7 @@ const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDele
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-  );
-};
+  )
+}
 
-export { DeleteAccountDialog };
+export { DeleteAccountDialog }

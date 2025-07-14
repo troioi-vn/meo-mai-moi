@@ -1,9 +1,9 @@
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { HomeIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
+import { HomeIcon } from 'lucide-react'
 
 export function HomeButton() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   return (
     <Button
@@ -14,5 +14,5 @@ export function HomeButton() {
     >
       <HomeIcon className="h-4 w-4" />
     </Button>
-  );
+  )
 }

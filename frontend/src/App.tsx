@@ -1,20 +1,20 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './contexts/AuthContext';
-import MainPage from './pages/MainPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import ProfilePage from './pages/ProfilePage';
-import MyCatsPage from './pages/account/MyCatsPage';
-import CreateCatPage from './pages/account/CreateCatPage';
-import NotFoundPage from './pages/NotFoundPage';
-import { Toaster } from '@/components/ui/sonner';
-import MainNav from '@/components/MainNav';
-import './App.css';
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { useAuth } from './contexts/AuthContext'
+import MainPage from './pages/MainPage'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
+import ProfilePage from './pages/ProfilePage'
+import MyCatsPage from './pages/account/MyCatsPage'
+import CreateCatPage from './pages/account/CreateCatPage'
+import NotFoundPage from './pages/NotFoundPage'
+import { Toaster } from '@/components/ui/sonner'
+import MainNav from '@/components/MainNav'
+import './App.css'
 
-function PrivateRoute({ children }: { children: React.ReactNode }){
-  const { user, isLoading } = useAuth();
-  if (isLoading) return <div>Loading...</div>;
-  return user ? <>{children}</> : <Navigate to="/login" replace />;
+function PrivateRoute({ children }: { children: React.ReactNode }) {
+  const { user, isLoading } = useAuth()
+  if (isLoading) return <div>Loading...</div>
+  return user ? <>{children}</> : <Navigate to="/login" replace />
 }
 
 export default function App() {
@@ -56,5 +56,5 @@ export default function App() {
       </main>
       <Toaster />
     </>
-  );
+  )
 }

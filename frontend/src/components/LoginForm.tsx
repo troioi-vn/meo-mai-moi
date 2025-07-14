@@ -1,31 +1,31 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 const LoginForm: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const { login } = useAuth()
+  const navigate = useNavigate()
 
   const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setError(null);
+    event.preventDefault()
+    setError(null)
     try {
-      await login({ email, password });
-      navigate('/profile');
+      await login({ email, password })
+      navigate('/profile')
     } catch (err) {
-      setError('Failed to login. Please check your credentials.');
-      console.error(err);
+      setError('Failed to login. Please check your credentials.')
+      console.error(err)
     }
-  };
+  }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={(event) => { void handleSubmit(event); }}>
       {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
       <div className="mb-4">
         <Label htmlFor="email">Email</Label>
@@ -33,7 +33,9 @@ const LoginForm: React.FC = () => {
           type="email"
           id="email"
           value={email}
-          onChange={(e) => { setEmail(e.target.value); }}
+          onChange={(e) => {
+            setEmail(e.target.value)
+          }}
           required
         />
       </div>
@@ -43,13 +45,17 @@ const LoginForm: React.FC = () => {
           type="password"
           id="password"
           value={password}
-          onChange={(e) => { setPassword(e.target.value); }}
+          onChange={(e) => {
+            setPassword(e.target.value)
+          }}
           required
         />
       </div>
-      <Button type="submit" className="w-full">Login</Button>
+      <Button type="submit" className="w-full">
+        Login
+      </Button>
     </form>
-  );
-};
+  )
+}
 
-export default LoginForm;
+export default LoginForm

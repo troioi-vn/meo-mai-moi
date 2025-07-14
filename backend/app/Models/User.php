@@ -65,4 +65,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Review::class, 'reviewed_user_id');
     }
+    // Relationship: User owns many cats
+    public function cats(): HasMany
+    {
+        return $this->hasMany(\App\Models\Cat::class);
+    }
 }

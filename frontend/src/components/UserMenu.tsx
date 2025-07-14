@@ -2,44 +2,47 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Link } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { useTheme } from 'next-themes';
-import { Moon, Sun } from 'lucide-react';
-import defaultAvatar from '@/assets/images/default-avatar.webp';
+} from '@/components/ui/dropdown-menu'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Link } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
+import { useTheme } from 'next-themes'
+import { Moon, Sun } from 'lucide-react'
+import defaultAvatar from '@/assets/images/default-avatar.webp'
+import { useEffect } from 'react'
 
 export function UserMenu() {
-  const { user, logout } = useAuth();
-  const { setTheme } = useTheme();
+  const { user, logout } = useAuth()
+  const { setTheme, theme } = useTheme()
+
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/no-unnecessary-condition
+    const isDark =
+      theme === 'dark' ||
+      (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    document.documentElement.classList.toggle('dark', isDark)
+  }, [theme])
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Avatar className="h-9 w-9 cursor-pointer">
-          <AvatarImage src={user?.avatar_url || defaultAvatar} alt={user?.name || 'User avatar'} />
+          <AvatarImage src={user?.avatar_url ?? defaultAvatar} alt={user?.name ?? 'User avatar'} />
           <AvatarFallback>{user?.name?.[0].toUpperCase()}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
+        <DropdownMenuItem className="cursor-pointer" asChild>
           <Link to="/account">Profile</Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
+        <DropdownMenuItem className="cursor-pointer" asChild>
           <Link to="/account/cats">My Cats</Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to="/about">About</Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuSub>
@@ -50,21 +53,15 @@ export function UserMenu() {
           </DropdownMenuSubTrigger>
           <DropdownMenuPortal>
             <DropdownMenuSubContent>
-              <DropdownMenuItem onClick={() => setTheme('light')}>
-                Light
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme('dark')}>
-                Dark
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme('system')}>
-                System
-              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { setTheme('light'); }}>Light</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { setTheme('dark'); }}>Dark</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { setTheme('system'); }}>System</DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuPortal>
         </DropdownMenuSub>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={logout}>Log Out</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => { void logout(); }}>Log Out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }

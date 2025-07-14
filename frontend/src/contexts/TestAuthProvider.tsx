@@ -1,30 +1,34 @@
-import { AuthContext } from './AuthContext';
-import { vi } from 'vitest';
-import React from 'react';
+import { AuthContext } from './AuthContext'
+import { vi } from 'vitest'
+import React from 'react'
 
 interface User {
-  id: number;
-  name: string;
-  email: string;
-  avatar_url?: string; // Optional avatar URL
+  id: number
+  name: string
+  email: string
+  avatar_url?: string // Optional avatar URL
   // Add other user properties as needed
 }
 
 interface AuthContextType {
-  user: User | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  register: (payload: any) => Promise<void>;
-  login: (payload: any) => Promise<void>;
-  logout: () => Promise<void>;
-  loadUser: () => Promise<void>;
-  changePassword: (currentPassword: string, newPassword: string, newPasswordConfirmation: string) => Promise<void>;
-  deleteAccount: (password: string) => Promise<void>;
+  user: User | null
+  isLoading: boolean
+  isAuthenticated: boolean
+  register: (payload: any) => Promise<void>
+  login: (payload: any) => Promise<void>
+  logout: () => Promise<void>
+  loadUser: () => Promise<void>
+  changePassword: (
+    currentPassword: string,
+    newPassword: string,
+    newPasswordConfirmation: string
+  ) => Promise<void>
+  deleteAccount: (password: string) => Promise<void>
 }
 
 interface TestAuthProviderProps {
-  children: React.ReactNode;
-  mockValues?: Partial<AuthContextType>;
+  children: React.ReactNode
+  mockValues?: Partial<AuthContextType>
 }
 
 export const TestAuthProvider = ({ children, mockValues }: TestAuthProviderProps) => {
@@ -38,13 +42,9 @@ export const TestAuthProvider = ({ children, mockValues }: TestAuthProviderProps
     isAuthenticated: false,
     changePassword: vi.fn(),
     deleteAccount: vi.fn(),
-  };
+  }
 
-  const value = { ...defaultMockValues, ...mockValues } as AuthContextType;
+  const value = { ...defaultMockValues, ...mockValues } as AuthContextType
 
-  return (
-    <AuthContext value={value}>
-      {children}
-    </AuthContext>
-  );
-};
+  return <AuthContext value={value}>{children}</AuthContext>
+}

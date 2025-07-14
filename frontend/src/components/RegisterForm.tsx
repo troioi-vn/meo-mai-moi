@@ -1,63 +1,69 @@
-import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { AxiosError } from 'axios';
+import React, { useState } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { AxiosError } from 'axios'
 
 interface ApiError {
-  message: string;
-  errors?: Record<string, string[]>;
+  message: string
+  errors?: Record<string, string[]>
 }
 
 interface RegisterFormProps {
-  onSuccess?: () => void;
+  onSuccess?: () => void
 }
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [passwordConfirmation, setPasswordConfirmation] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const { register } = useAuth();
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [passwordConfirmation, setPasswordConfirmation] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const { register } = useAuth()
 
   const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setError(null);
+    event.preventDefault()
+    setError(null)
 
     if (password !== passwordConfirmation) {
-      setError("Passwords do not match.");
-      return;
+      setError('Passwords do not match.')
+      return
     }
 
     try {
-      await register({ name, email, password, password_confirmation: passwordConfirmation });
+      await register({ name, email, password, password_confirmation: passwordConfirmation })
       if (onSuccess) {
-        onSuccess();
+        onSuccess()
       }
     } catch (err: unknown) {
-      const axiosError = err as AxiosError<ApiError>;
-      console.error("Registration error:", axiosError.response?.data || axiosError); // Log the full error response
+      const axiosError = err as AxiosError<ApiError>
+      console.error('Registration error:', axiosError.response?.data ?? axiosError) // Log the full error response
       if (axiosError.response?.data?.errors) {
-        const errorMessages = Object.values(axiosError.response.data.errors).flat().join(' ');
-        setError(errorMessages);
+        const errorMessages = Object.values(axiosError.response.data.errors).flat().join(' ')
+        setError(errorMessages)
       } else {
-        setError(axiosError.message || 'Failed to register. Please try again.');
+        setError(axiosError.message || 'Failed to register. Please try again.')
       }
     }
-  };
+  }
 
   return (
-    <form onSubmit={handleSubmit}>
-      {error && <p data-testid="register-error-message" className="text-red-500 text-sm mb-4">{error}</p>}
+    <form onSubmit={(event) => { void handleSubmit(event); }}>
+      {error && (
+        <p data-testid="register-error-message" className="text-red-500 text-sm mb-4">
+          {error}
+        </p>
+      )}
       <div className="mb-4">
         <Label htmlFor="name">Name</Label>
         <Input
           type="text"
           id="name"
           value={name}
-          onChange={(e) => { setName(e.target.value); }}
+          onChange={(e) => {
+            setName(e.target.value)
+          }}
           required
         />
       </div>
@@ -67,7 +73,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
           type="email"
           id="email"
           value={email}
-          onChange={(e) => { setEmail(e.target.value); }}
+          onChange={(e) => {
+            setEmail(e.target.value)
+          }}
           required
         />
       </div>
@@ -77,7 +85,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
           type="password"
           id="password"
           value={password}
-          onChange={(e) => { setPassword(e.target.value); }}
+          onChange={(e) => {
+            setPassword(e.target.value)
+          }}
           required
         />
       </div>
@@ -87,13 +97,17 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
           type="password"
           id="passwordConfirmation"
           value={passwordConfirmation}
-          onChange={(e) => { setPasswordConfirmation(e.target.value); }}
+          onChange={(e) => {
+            setPasswordConfirmation(e.target.value)
+          }}
           required
         />
       </div>
-      <Button type="submit" className="w-full">Register</Button>
+      <Button type="submit" className="w-full">
+        Register
+      </Button>
     </form>
-  );
-};
+  )
+}
 
-export default RegisterForm;
+export default RegisterForm

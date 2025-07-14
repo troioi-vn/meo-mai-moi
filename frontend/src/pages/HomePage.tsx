@@ -1,7 +1,7 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { HeroSection } from '@/components/HeroSection';
-import { Button } from "@/components/ui/button"; // Import the Button component
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { HeroSection } from '@/components/HeroSection'
+import { Button } from '@/components/ui/button' // Import the Button component
 
 const HomePage: React.FC = () => {
   return (
@@ -17,7 +17,7 @@ const HomePage: React.FC = () => {
       </div>
       {/* Add more content here as needed */}
     </div>
-  );
-};
+  )
+}
 
-export default HomePage;
+export default HomePage

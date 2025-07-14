@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 
 const CatProfilePage: React.FC = () => {
   return (
@@ -6,7 +6,7 @@ const CatProfilePage: React.FC = () => {
       <h1>Cat Profile Page</h1>
       {/* Cat profile details go here */}
     </div>
-  );
-};
+  )
+}
 
-export default CatProfilePage;
+export default CatProfilePage

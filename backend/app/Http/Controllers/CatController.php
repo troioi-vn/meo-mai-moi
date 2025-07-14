@@ -60,11 +60,6 @@ use App\Enums\UserRole;
  */
 class CatController extends Controller
 {
-    public function __construct()
-    {
-        $this->authorizeResource(Cat::class, 'cat');
-    }
-
     /**
      * @OA\Get(
      *     path="/api/cats",
@@ -321,6 +316,16 @@ class CatController extends Controller
      */
     public function update(Request $request, Cat $cat)
     {
+        $user = $request->user();
+        $role = $user ? ($user->role instanceof \BackedEnum ? $user->role->value : $user->role) : null;
+        $isAdmin = $role === UserRole::ADMIN->value || $role === 'admin';
+        $isOwner = $user && $cat->user_id === $user->id;
+        if (!$user || (!$isAdmin && !$isOwner)) {
+            return response()->json([
+                'message' => 'Forbidden: You are not authorized to update this cat.'
+            ], 403);
+        }
+
         try {
             $validatedData = $request->validate([
                 'name' => 'sometimes|required|string|max:255',
@@ -329,7 +334,7 @@ class CatController extends Controller
                 'location' => 'sometimes|required|string|max:255',
                 'description' => 'sometimes|required|string',
             ]);
-        } catch (ValidationException $e) {.
+        } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Validation Error',
                 'errors' => $e->errors(),

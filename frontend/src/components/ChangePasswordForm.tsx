@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Button } from '@/components/ui/button';
+import React, { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+import { Button } from '@/components/ui/button'
 import {
   Form,
   FormControl,
@@ -10,31 +10,33 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/components/ui/use-toast';
-import { AxiosError } from 'axios';
+} from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { useAuth } from '@/contexts/AuthContext'
+import { toast } from '@/components/ui/use-toast'
+import { AxiosError } from 'axios'
 
 interface ApiError {
-  message: string;
-  errors?: Record<string, string[]>;
+  message: string
+  errors?: Record<string, string[]>
 }
 
-const passwordChangeSchema = z.object({
-  current_password: z.string().min(1, { message: 'Current password is required.' }),
-  new_password: z.string().min(8, { message: 'New password must be at least 8 characters.' }),
-  new_password_confirmation: z.string().min(1, { message: 'Confirm new password is required.' }),
-}).refine((data) => data.new_password === data.new_password_confirmation, {
-  message: 'New password and confirmation do not match.',
-  path: ['new_password_confirmation'],
-});
+const passwordChangeSchema = z
+  .object({
+    current_password: z.string().min(1, { message: 'Current password is required.' }),
+    new_password: z.string().min(8, { message: 'New password must be at least 8 characters.' }),
+    new_password_confirmation: z.string().min(1, { message: 'Confirm new password is required.' }),
+  })
+  .refine((data) => data.new_password === data.new_password_confirmation, {
+    message: 'New password and confirmation do not match.',
+    path: ['new_password_confirmation'],
+  })
 
-type PasswordChangeFormValues = z.infer<typeof passwordChangeSchema>;
+type PasswordChangeFormValues = z.infer<typeof passwordChangeSchema>
 
 const ChangePasswordForm: React.FC = () => {
-  const { changePassword } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
+  const { changePassword } = useAuth()
+  const [isLoading, setIsLoading] = useState(false)
 
   const form = useForm<PasswordChangeFormValues>({
     resolver: zodResolver(passwordChangeSchema),
@@ -43,36 +45,43 @@ const ChangePasswordForm: React.FC = () => {
       new_password: '',
       new_password_confirmation: '',
     },
-  });
+  })
 
   const onSubmit = async (values: PasswordChangeFormValues): Promise<void> => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      await changePassword(values.current_password, values.new_password, values.new_password_confirmation);
+      await changePassword(
+        values.current_password,
+        values.new_password,
+        values.new_password_confirmation
+      )
       toast({
         title: 'Password Changed',
         description: 'Your password has been updated successfully.',
-      });
-      form.reset();
+      })
+      form.reset()
     } catch (error: unknown) {
-      const axiosError = error as AxiosError<ApiError>;
+      const axiosError = error as AxiosError<ApiError>
       toast({
         title: 'Password Change Failed',
-        description: axiosError.response?.data?.message ?? axiosError.message ?? 'An unexpected error occurred.',
+        description:
+          (axiosError.response?.data?.message) ? axiosError.response.data.message : 
+          axiosError.message ??
+          'An unexpected error occurred.',
         variant: 'destructive',
-      });
+      })
       if (axiosError.response?.data?.errors) {
         for (const key in axiosError.response.data.errors) {
           form.setError(key as keyof PasswordChangeFormValues, {
             type: 'server',
             message: axiosError.response.data.errors[key][0],
-          });
+          })
         }
       }
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <Form {...form}>
@@ -121,7 +130,7 @@ const ChangePasswordForm: React.FC = () => {
         </Button>
       </form>
     </Form>
-  );
-};
+  )
+}
 
-export { ChangePasswordForm };
+export { ChangePasswordForm }

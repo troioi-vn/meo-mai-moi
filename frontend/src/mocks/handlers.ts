@@ -52,19 +52,19 @@ export const handlers = [
     return new HttpResponse(null, { status: 204 })
   }),
   http.post('/api/login', async ({ request }) => {
-    const info = await request.json() as { email?: string };
+    const info = (await request.json()) as { email?: string }
     if (info.email === 'fail@example.com') {
-      return HttpResponse.json({ message: 'Invalid credentials' }, { status: 422 });
+      return HttpResponse.json({ message: 'Invalid credentials' }, { status: 422 })
     }
-    return HttpResponse.json({ status: 'ok' });
+    return HttpResponse.json({ status: 'ok' })
   }),
 
   http.post('/api/register', async ({ request }) => {
-    const info = await request.json() as { email?: string };
+    const info = (await request.json()) as { email?: string }
     if (info.email === 'fail@example.com') {
-      return HttpResponse.json({ message: 'Registration failed' }, { status: 500 });
+      return HttpResponse.json({ message: 'Registration failed' }, { status: 500 })
     }
-    return HttpResponse.json({ status: 'ok' }, { status: 201 });
+    return HttpResponse.json({ status: 'ok' }, { status: 201 })
   }),
   http.post('/api/logout', () => {
     return new HttpResponse(null, { status: 204 })

@@ -18,7 +18,7 @@ import { AxiosError } from 'axios';
 
 interface ApiError {
   message: string;
-  errors?: { [key: string]: string[] };
+  errors?: Record<string, string[]>;
 }
 
 const passwordChangeSchema = z.object({
@@ -45,7 +45,7 @@ const ChangePasswordForm: React.FC = () => {
     },
   });
 
-  const onSubmit = async (values: PasswordChangeFormValues) => {
+  const onSubmit = async (values: PasswordChangeFormValues): Promise<void> => {
     setIsLoading(true);
     try {
       await changePassword(values.current_password, values.new_password, values.new_password_confirmation);
@@ -58,7 +58,7 @@ const ChangePasswordForm: React.FC = () => {
       const axiosError = error as AxiosError<ApiError>;
       toast({
         title: 'Password Change Failed',
-        description: axiosError.response?.data?.message || axiosError.message || 'An unexpected error occurred.',
+        description: axiosError.response?.data?.message ?? axiosError.message ?? 'An unexpected error occurred.',
         variant: 'destructive',
       });
       if (axiosError.response?.data?.errors) {
@@ -76,9 +76,9 @@ const ChangePasswordForm: React.FC = () => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={(e) => void form.handleSubmit(onSubmit)(e)} className="space-y-4">
         <FormField
-          control={form.control as any}
+          control={form.control}
           name="current_password"
           render={({ field }) => (
             <FormItem>
@@ -91,7 +91,7 @@ const ChangePasswordForm: React.FC = () => {
           )}
         />
         <FormField
-          control={form.control as any}
+          control={form.control}
           name="new_password"
           render={({ field }) => (
             <FormItem>
@@ -104,7 +104,7 @@ const ChangePasswordForm: React.FC = () => {
           )}
         />
         <FormField
-          control={form.control as any}
+          control={form.control}
           name="new_password_confirmation"
           render={({ field }) => (
             <FormItem>

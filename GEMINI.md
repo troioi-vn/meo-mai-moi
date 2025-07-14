@@ -145,19 +145,6 @@ For the React frontend, we employ a combination of unit and integration tests us
 -   **Linting:** `npm run lint` (ESLint with Airbnb config)
 -   **Formatting:** `npm run format` (Prettier)
 
-##### Components without Tests (Future Development)
-
--   `HomeButton.tsx`
--   `BackButton.tsx`
--   `UserMenu.tsx`
--   `CatsSection.tsx`
--   `HeroSection.tsx`
--   `ChangePasswordForm.tsx`
--   `ProtectedRoute.tsx`
--   `DeleteAccountDialog.tsx`
--   `MainNav.tsx`
--   `NotificationBell.tsx`
-
 ### Debugging and Problem Solving Strategy
 
 When encountering issues, especially those related to environment or integration, we follow a systematic debugging process:
@@ -644,3 +631,90 @@ This is configured in `frontend/package.json`:
 ```
 
 This ensures that all code pushed to production is clean and adheres to our coding standards without requiring manual checks.
+
+## Frontend File Structure
+
+```
+frontend/
+├───.gitignore
+├───.prettierignore
+├───.prettierrc
+├───components.json
+├───dev-additions.json
+├───eslint.config.js
+├───index.html
+├───package-lock.json
+├───package.json
+├───postcss.config.js
+├───README.md
+├───tailwind.config.js
+├───tsconfig.app.json
+├───tsconfig.json
+├───tsconfig.node.json
+├───vite.config.ts
+├───public/
+│   └───vite.svg
+└───src/
+    ├───App.css
+    ├───App.tsx
+    ├───index.css
+    ├───main.tsx
+    ├───setupTests.ts
+    ├───vite-env.d.ts
+    ├───api/
+    ├───assets/
+    ├───components/
+    │   ├───CatCard.tsx
+    │   ├───CatsSection.tsx
+    │   ├───ChangePasswordForm.tsx
+    │   ├───DeleteAccountDialog.tsx
+    │   ├───Footer.test.tsx
+    │   ├───Footer.tsx
+    │   ├───HeroSection.tsx
+    │   ├───HomeButton.tsx
+    │   ├───LoginForm.test.tsx
+    │   ├───LoginForm.tsx
+    │   ├───MainNav.tsx
+    │   ├───NotificationBell.test.tsx
+    │   ├───NotificationBell.tsx
+    │   ├───RegisterForm.test.tsx
+    │   ├───RegisterForm.tsx
+    │   ├───theme-provider.tsx
+    │   ├───UserMenu.tsx
+    │   └───ui/
+    │       ├───alert-dialog.tsx
+    │       ├───avatar.tsx
+    │       ├───badge.tsx
+    │       ├───button.tsx
+    │       ├───card.tsx
+    │       ├───dialog.tsx
+    │       ├───dropdown-menu.tsx
+    │       ├───form.tsx
+    │       ├───input.tsx
+    │       ├───label.tsx
+    │       ├───sonner.tsx
+    │       └───toast.tsx
+    ├───contexts/
+    │   └���──AuthContext.tsx
+    ├───hooks/
+    │   └───useAuth.ts
+    ├───lib/
+    │   └───utils.ts
+    ├───mocks/
+    │   ├───handlers.ts
+    │   └───server.ts
+    ├───pages/
+    │   ├───HomePage.tsx
+    │   ├───LoginPage.tsx
+    │   ├───MainPage.test.tsx
+    │   ├───MainPage.tsx
+    │   ├───NotFoundPage.tsx
+    │   ├───ProfilePage.tsx
+    │   ├───RegisterPage.tsx
+    │   └───account/
+    │       └───MyCatsPage.tsx
+    ├───services/
+    │   └───authService.ts
+    └───types/
+        └───index.ts
+```

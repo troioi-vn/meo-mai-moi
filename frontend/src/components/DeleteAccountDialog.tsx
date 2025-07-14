@@ -19,7 +19,7 @@ import { AxiosError } from 'axios';
 
 interface ApiError {
   message: string;
-  errors?: { [key: string]: string[] };
+  errors?: Record<string, string[]>;
 }
 
 interface DeleteAccountDialogProps {
@@ -32,7 +32,7 @@ const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDele
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleDeleteAccount = async () => {
+  const handleDeleteAccount = async (): Promise<void> => {
     setIsLoading(true);
     try {
       await deleteAccount(password);
@@ -47,7 +47,7 @@ const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDele
       const axiosError = error as AxiosError<ApiError>;
       toast({
         title: 'Account Deletion Failed',
-        description: axiosError.response?.data?.message || axiosError.message || 'An unexpected error occurred.',
+        description: axiosError.response?.data?.message ?? axiosError.message ?? 'An unexpected error occurred.',
         variant: 'destructive',
       });
     } finally {
@@ -76,14 +76,14 @@ const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDele
               id="password"
               type="password"
               value={password}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setPassword(e.target.value); }}
               disabled={isLoading}
             />
           </div>
         </div>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleDeleteAccount} disabled={isLoading}>
+          <AlertDialogAction onClick={() => void handleDeleteAccount()} disabled={isLoading}>
             {isLoading ? 'Deleting...' : 'Delete My Account'}
           </AlertDialogAction>
         </AlertDialogFooter>

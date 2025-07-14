@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Integrated `msw` for mocking API requests in tests.
 
 ### Changed
+- Implemented a major UI overhaul and beautification of the frontend, adopting the design principles from `GEMINI.md`.
+- Integrated `shadcn/ui` for core components and implemented a new theme system using CSS variables and Tailwind CSS for a consistent and modern look and feel.
+- Refactored numerous components to use the new design system, including buttons, forms, cards, and navigation.
+- Added a dark mode theme toggle.
 - Updated `GEMINI.md` to reflect the new notification system.
 - Added `NotificationBell` to the main navigation.
 - Added a custom color palette to `tailwind.config.js` for consistent design.

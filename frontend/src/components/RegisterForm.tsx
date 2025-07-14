@@ -7,7 +7,7 @@ import { AxiosError } from 'axios';
 
 interface ApiError {
   message: string;
-  errors?: { [key: string]: string[] };
+  errors?: Record<string, string[]>;
 }
 
 interface RegisterFormProps {
@@ -39,9 +39,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
     } catch (err: unknown) {
       const axiosError = err as AxiosError<ApiError>;
       console.error("Registration error:", axiosError.response?.data || axiosError); // Log the full error response
-      if (axiosError.response && axiosError.response.data && axiosError.response.data.errors) {
+      if (axiosError.response?.data?.errors) {
         const errorMessages = Object.values(axiosError.response.data.errors).flat().join(' ');
-        setError(errorMessages as string);
+        setError(errorMessages);
       } else {
         setError(axiosError.message || 'Failed to register. Please try again.');
       }
@@ -57,7 +57,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
           type="text"
           id="name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => { setName(e.target.value); }}
           required
         />
       </div>
@@ -67,7 +67,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
           type="email"
           id="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => { setEmail(e.target.value); }}
           required
         />
       </div>
@@ -77,7 +77,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
           type="password"
           id="password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => { setPassword(e.target.value); }}
           required
         />
       </div>
@@ -87,7 +87,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
           type="password"
           id="passwordConfirmation"
           value={passwordConfirmation}
-          onChange={(e) => setPasswordConfirmation(e.target.value)}
+          onChange={(e) => { setPasswordConfirmation(e.target.value); }}
           required
         />
       </div>

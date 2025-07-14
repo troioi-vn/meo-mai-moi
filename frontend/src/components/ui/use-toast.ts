@@ -83,7 +83,7 @@ let memoryState: State = { toasts: [] }
 
 function dispatch(action: Action) {
   memoryState = reducer(memoryState, action)
-  listeners.forEach((listener) => listener(memoryState))
+  listeners.forEach((listener) => { listener(memoryState); })
 }
 
 type Toast = Omit<ToasterToast, "id">
@@ -96,9 +96,9 @@ function toast({ ...props }: Toast) {
   const id = genId()
 
   const update = (props: ToasterToast) =>
-    dispatch({ type: actionTypes.UPDATE_TOAST, toast: { ...props, id } })
-  const dismiss = () => dispatch({ type: actionTypes.DISMISS_TOAST, toastId: id })
-  const remove = () => dispatch({ type: actionTypes.REMOVE_TOAST, toastId: id })
+    { dispatch({ type: actionTypes.UPDATE_TOAST, toast: { ...props, id } }); }
+  const dismiss = () => { dispatch({ type: actionTypes.DISMISS_TOAST, toastId: id }); }
+  const remove = () => { dispatch({ type: actionTypes.REMOVE_TOAST, toastId: id }); }
 
   dispatch({ type: actionTypes.ADD_TOAST, toast: { ...props, id, open: true, onOpenChange: (open) => {
     if (!open) dismiss()
@@ -123,7 +123,7 @@ function useToast() {
   return {
     ...state,
     toast,
-    dismiss: React.useCallback((toastId?: string) => dispatch({ type: actionTypes.DISMISS_TOAST, toastId }), []),
+    dismiss: React.useCallback((toastId?: string) => { dispatch({ type: actionTypes.DISMISS_TOAST, toastId }); }, []),
   }
 }
 

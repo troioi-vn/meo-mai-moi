@@ -49,7 +49,7 @@ const CreateCatPage: React.FC = () => {
               name="name"
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => { setName(e.target.value); }}
               required
               aria-labelledby="name-label"
             />
@@ -61,7 +61,7 @@ const CreateCatPage: React.FC = () => {
               name="breed"
               type="text"
               value={breed}
-              onChange={(e) => setBreed(e.target.value)}
+              onChange={(e) => { setBreed(e.target.value); }}
               required
               aria-labelledby="breed-label"
             />
@@ -73,7 +73,7 @@ const CreateCatPage: React.FC = () => {
               name="age"
               type="number"
               value={age}
-              onChange={(e) => setAge(e.target.value)}
+              onChange={(e) => { setAge(e.target.value); }}
               required
               aria-labelledby="age-label"
             />
@@ -85,7 +85,7 @@ const CreateCatPage: React.FC = () => {
               name="location"
               type="text"
               value={location}
-              onChange={(e) => setLocation(e.target.value)}
+              onChange={(e) => { setLocation(e.target.value); }}
               required
               aria-labelledby="location-label"
             />
@@ -96,7 +96,7 @@ const CreateCatPage: React.FC = () => {
               id="description"
               name="description"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => { setDescription(e.target.value); }}
               required
               aria-labelledby="description-label"
             />

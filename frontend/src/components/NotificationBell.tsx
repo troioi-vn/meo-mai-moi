@@ -77,12 +77,11 @@ export function NotificationBell() {
               {unreadCount}
             </Badge>
           )}
-          <span className="sr-only">Notifications</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
+      <DropdownMenuContent align="end">
         {notifications.length === 0 ? (
-          <DropdownMenuItem>No notifications</DropdownMenuItem>
+          <DropdownMenuItem>No new notifications</DropdownMenuItem>
         ) : (
           notifications.map((notification) => (
             <DropdownMenuItem key={notification.id} asChild>

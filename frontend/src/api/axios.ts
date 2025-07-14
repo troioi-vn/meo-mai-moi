@@ -13,7 +13,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
+  (error: { message: any; }) => {
     return Promise.reject(new Error(error.message));
   }
 );

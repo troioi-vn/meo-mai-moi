@@ -43,8 +43,8 @@ export const TestAuthProvider = ({ children, mockValues }: TestAuthProviderProps
   const value = { ...defaultMockValues, ...mockValues } as AuthContextType;
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext value={value}>
       {children}
-    </AuthContext.Provider>
+    </AuthContext>
   );
 };

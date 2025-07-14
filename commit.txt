@@ -1,0 +1,34 @@
+feat: Implement frontend UI/UX beautification and refactor components
+
+This commit introduces significant UI/UX enhancements to the frontend,
+aligning with the "Beautification Plan" outlined in GEMINI.md.
+
+Key changes include:
+- **Design System Integration:** Added a custom color palette and typography
+  settings to `tailwind.config.js` for consistent styling across the application.
+- **Component Enhancements:**
+    - Introduced `CatCard.tsx` for displaying cat profiles, integrated into
+      `CatsSection.tsx` and `MyCatsPage.tsx` with placeholder data.
+    - Applied consistent card styling to `LoginPage.tsx`, `RegisterPage.tsx`,
+      `ProfilePage.tsx`, `CreateCatPage.tsx`, and `NotFoundPage.tsx`.
+    - Updated `MainNav.tsx` with consistent styling and added a link to
+      "My Cats" page.
+    - Enhanced `HeroSection.tsx` and `Footer.tsx` with updated styling.
+    - Improved `ProfilePage.tsx` to better display user information and
+      integrate `ChangePasswordForm` and `DeleteAccountDialog`.
+    - Updated `NotificationBell.tsx` for loading/error states and accessibility.
+- **Codebase Cleanup:** Removed the redundant `Header.tsx` component and its
+  associated test file.
+- **Testing Improvements:**
+    - Refactored `AuthContext` mocking in `MyCatsPage.test.tsx`,
+      `CreateCatPage.test.tsx`, and `NotificationBell.test.tsx` to use
+      `vi.mock` for better test isolation and reliability.
+    - Corrected assertions in `MainPage.test.tsx` and `RegisterForm.test.tsx`
+      to match updated component text and error messages.
+    - Fixed component import issues in `ProfilePage.test.tsx` by ensuring
+      correct named exports for `ChangePasswordForm` and `DeleteAccountDialog`.
+- **Developer Experience:** Added a `format` script to `frontend/package.json`
+  for consistent code formatting with Prettier.
+- **Documentation:** Updated `GEMINI.md` to reflect the completion of the
+  beautification plan and added a note about `npx shadcn@latest`.
+- **Changelog:** Documented all changes in `CHANGELOG.md`.

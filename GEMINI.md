@@ -629,25 +629,18 @@ Gathering feedback is only the first step. We will implement a process to:
 
 ## Linting and Formatting Before Build
 
-To ensure code quality and consistent formatting before building the frontend, run these commands in the `frontend` directory:
+To ensure code quality and consistent formatting, the frontend build process now automatically includes linting and formatting steps.
 
-```bash
-npm run lint      # Check code for lint errors
-npm run format    # Format code with Prettier
-```
+When you run `npm run build` in the `frontend` directory, it will first run `eslint` to check for any linting errors and then `prettier` to format the code before proceeding with the TypeScript compilation and Vite build.
 
-You should run these commands before executing `npm run build` to catch and fix issues early.
-
-For convenience, you can add these scripts to your `package.json`:
+This is configured in `frontend/package.json`:
 
 ```json
 "scripts": {
+  "build": "npm run lint && npm run format && tsc -b && vite build",
   "lint": "eslint .",
   "format": "prettier --write ."
 }
 ```
 
-Then use:
-```bash
-npm run lint && npm run format && npm run build
-```
+This ensures that all code pushed to production is clean and adheres to our coding standards without requiring manual checks.

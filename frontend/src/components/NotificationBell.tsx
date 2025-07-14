@@ -66,18 +66,18 @@ export function NotificationBell() {
   return (
     <DropdownMenu onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative w-8 h-8 p-0">
-          <Bell className="w-5 h-5" />
+        <Button variant="ghost" size="icon" className="relative" aria-label="Open notifications">
+          <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
-              role="status"
-              aria-label={`${unreadCount} unread notifications`}
-              className="absolute -top-1 -right-1 min-w-[1.2rem] h-5 px-1"
+            <Badge
+              variant="destructive"
+              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center rounded-full"
+              data-testid="notification-badge"
             >
               {unreadCount}
             </Badge>
           )}
+          <span className="sr-only">Notifications</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>

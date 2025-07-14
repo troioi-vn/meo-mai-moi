@@ -16,6 +16,28 @@ const renderWithRouter = (ui: React.ReactElement) => {
 
 describe('MyCatsPage', () => {
   beforeEach(() => {
+    vi.mocked(useAuth).mockReturnValue({
+      user: mockUser,
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+      register: vi.fn(),
+      isLoading: false,
+      loadUser: vi.fn(),
+      changePassword: vi.fn(),
+      deleteAccount: vi.fn(),
+    });
+  });
+
+  it('renders the page title', async () => {
+    vi.mocked(getMyCats).mockResolvedValue([]);
+    renderWithRouter(<MyCatsPage />);
+    await waitFor(() => {
+      expect(screen.getByText('My Cats')).toBeInTheDocument();
+    });
+  });
+
+  it("fetches and displays the user's cats", async () => {
     vi.mocked(getMyCats).mockResolvedValue([
       {
         id: 1,
@@ -44,25 +66,6 @@ describe('MyCatsPage', () => {
         imageUrl: 'http://example.com/cat2.jpg',
       },
     ]);
-    vi.mocked(useAuth).mockReturnValue({
-      user: mockUser,
-      isAuthenticated: true,
-      login: vi.fn(),
-      logout: vi.fn(),
-      register: vi.fn(),
-      isLoading: false,
-      loadUser: vi.fn(),
-      changePassword: vi.fn(),
-      deleteAccount: vi.fn(),
-    });
-  });
-
-  it('renders the page title', async () => {
-    renderWithRouter(<MyCatsPage />);
-    expect(screen.getByText('My Cats')).toBeInTheDocument();
-  });
-
-  it('fetches and displays the user\'s cats', async () => {
     renderWithRouter(<MyCatsPage />);
     await waitFor(() => {
       expect(screen.getByText('Cat 1')).toBeInTheDocument();
@@ -70,9 +73,13 @@ describe('MyCatsPage', () => {
     });
   });
 
-  it('displays a loading message initially', () => {
+  it('displays a loading message initially', async () => {
+    vi.mocked(getMyCats).mockResolvedValue([]);
     renderWithRouter(<MyCatsPage />);
     expect(screen.getByText('Loading...')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+    });
   });
 
   it('displays an error message if fetching cats fails', async () => {
@@ -83,9 +90,12 @@ describe('MyCatsPage', () => {
     });
   });
 
-  it('has a link to the create cat page', () => {
+  it('has a link to the create cat page', async () => {
+    vi.mocked(getMyCats).mockResolvedValue([]);
     renderWithRouter(<MyCatsPage />);
-    const link = screen.getByRole('link', { name: 'Add Cat' });
-    expect(link).toHaveAttribute('href', '/account/cats/create');
+    await waitFor(() => {
+      const link = screen.getByRole('link', { name: 'Add Cat' });
+      expect(link).toHaveAttribute('href', '/account/cats/create');
+    });
   });
 });

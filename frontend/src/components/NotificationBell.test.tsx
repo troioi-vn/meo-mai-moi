@@ -43,9 +43,9 @@ describe('NotificationBell', () => {
 
   it('fetches and displays the number of unread notifications', async () => {
     renderWithProviders(<NotificationBell />);
-    await waitFor(() => {
-      const badge = screen.getByRole('status');
-      expect(badge).toHaveTextContent('2');
-    });
+    
+    const badge = await screen.findByTestId('notification-badge');
+    expect(badge).toBeInTheDocument();
+    expect(badge).toHaveTextContent('2');
   });
 });

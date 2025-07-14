@@ -1,39 +1,24 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { NotificationBell } from '@/components/NotificationBell';
+import { UserMenu } from './UserMenu';
 
 const MainNav: React.FC = () => {
-  const { isAuthenticated, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate('/login');
-    } catch (error) {
-      console.error('Failed to logout', error);
-    }
-  };
+  const { isAuthenticated } = useAuth();
 
   return (
-    <header className="bg-neutral-50 dark:bg-neutral-900 shadow-lg">
-      <nav className="container mx-auto px-6 py-3 flex justify-between items-center">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <nav className="container flex h-14 max-w-screen-2xl items-center justify-between">
         <Link to="/" className="text-xl font-bold text-neutral-900 dark:text-neutral-100">
           Meo Mai Moi
         </Link>
-        <div className="flex items-center space-x-4">
+        <div className="flex flex-1 items-center justify-end space-x-4">
           {isAuthenticated ? (
             <>
               <NotificationBell />
-              <Link to="/profile">
-                <Button variant="ghost">Profile</Button>
-              </Link>
-              <Link to="/account/cats">
-                <Button variant="ghost">My Cats</Button>
-              </Link>
-              <Button onClick={handleLogout}>Logout</Button>
+              <UserMenu />
             </>
           ) : (
             <>

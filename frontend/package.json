@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "npm run lint && npm run format && tsc -b && vite build",
     "postbuild": "rm -rf ../backend/public/build && cp -r dist/. ../backend/public/build && mv ../backend/public/build/.vite/manifest.json ../backend/public/build/manifest.json",
     "lint": "eslint .",
     "test": "vitest",
@@ -50,6 +50,7 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
     "jsdom": "^26.1.0",
+    "msw": "^2.10.4",
     "postcss": "^8.5.6",
     "shadcn": "^2.8.0",
     "tailwindcss": "^4.1.11",

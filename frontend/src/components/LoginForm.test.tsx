@@ -3,7 +3,6 @@ import { describe, it, expect, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import LoginForm from './LoginForm';
-import { api } from '@/api/api';
 
 vi.mock('@/api/api', () => ({
   api: {
@@ -43,16 +42,15 @@ describe('LoginForm', () => {
   });
 
   it('shows an error message on failed login', async () => {
-    vi.mocked(api.post).mockRejectedValue(new Error('Invalid credentials'));
     renderWithProviders(<LoginForm />);
 
-    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@example.com' } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'fail@example.com' } });
     fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'password123' } });
     
     fireEvent.click(screen.getByRole('button', { name: /login/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/failed to login/i)).toBeInTheDocument();
+      expect(screen.getByText(/Failed to login/i)).toBeInTheDocument();
     });
   });
 });

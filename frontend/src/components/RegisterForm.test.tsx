@@ -3,7 +3,6 @@ import { describe, it, expect, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import RegisterForm from './RegisterForm';
-import { api } from '@/api/api';
 
 vi.mock('@/api/api');
 
@@ -29,17 +28,16 @@ describe('RegisterForm', () => {
   });
 
   it('shows an error message on failed registration', async () => {
-    vi.mocked(api.post).mockRejectedValue(new Error('Network Error'));
     renderWithProviders(<RegisterForm />);
 
     fireEvent.change(screen.getByLabelText(/name/i), { target: { value: 'Test User' } });
-    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@example.com' } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'fail@example.com' } });
     fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'password123' } });
     fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'password123' } });
     fireEvent.click(screen.getByRole('button', { name: /register/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Network Error/i)).toBeInTheDocument();
+      expect(screen.getByTestId('register-error-message')).toBeInTheDocument();
     });
   });
 });

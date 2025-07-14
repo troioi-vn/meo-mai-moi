@@ -28,6 +28,9 @@ export function UserMenu() {
           <Link to="/account">Profile</Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
+          <Link to="/account/cats">My Cats</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
           <Link to="/about">About</Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

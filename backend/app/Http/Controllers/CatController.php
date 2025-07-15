@@ -29,11 +29,7 @@ use App\Enums\UserRole;
  *         type="string",
  *         description="Cat's breed"
  *     ),
- *     @OA\Property(
- *         property="age",
- *         type="integer",
- *         description="Cat's age in years"
- *     ),
+ 
  *     @OA\Property(
  *         property="location",
  *         type="string",
@@ -91,7 +87,7 @@ class CatController extends Controller
             $sortBy = $request->input('sort_by');
             $sortDirection = $request->input('sort_direction', 'asc'); // Default to ascending
 
-            if (in_array($sortBy, ['name', 'age'])) {
+            if (in_array($sortBy, ['name', 'birthday'])) {
                 $query->orderBy($sortBy, $sortDirection);
             }
         }
@@ -226,7 +222,7 @@ class CatController extends Controller
      *             required={"name", "breed", "age", "location", "description"},
      *             @OA\Property(property="name", type="string", example="Whiskers"),
      *             @OA\Property(property="breed", type="string", example="Siamese"),
-     *             @OA\Property(property="age", type="integer", example=2),
+     *             @OA\Property(property="birthday", type="string", format="date", example="2023-01-01"),
      *             @OA\Property(property="location", type="string", example="New York, USA"),
      *             @OA\Property(property="description", type="string", example="A friendly and playful cat.")
      *         )
@@ -256,7 +252,7 @@ class CatController extends Controller
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
                 'breed' => 'required|string|max:255',
-                'age' => 'required|integer|min:0',
+                'birthday' => 'required|date',
                 'location' => 'required|string|max:255',
                 'description' => 'required|string',
             ]);
@@ -290,7 +286,7 @@ class CatController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="name", type="string", example="Whiskers Updated"),
      *             @OA\Property(property="breed", type="string", example="Siamese Mix"),
-     *             @OA\Property(property="age", type="integer", example=3),
+     *             @OA\Property(property="birthday", type="string", format="date", example="2023-01-01"),
      *             @OA\Property(property="location", type="string", example="London, UK"),
      *             @OA\Property(property="description", type="string", example="A friendly and playful cat, now in London.")
      *         )
@@ -334,7 +330,7 @@ class CatController extends Controller
             $validatedData = $request->validate([
                 'name' => 'sometimes|required|string|max:255',
                 'breed' => 'sometimes|required|string|max:255',
-                'age' => 'sometimes|required|integer|min:0',
+                'birthday' => 'sometimes|required|date',
                 'location' => 'sometimes|required|string|max:255',
                 'description' => 'sometimes|required|string',
             ]);
@@ -382,8 +378,19 @@ class CatController extends Controller
      *     )
      * )
      */
-    public function destroy(Cat $cat)
+    public function destroy(Request $request, Cat $cat)
     {
+        $user = $request->user();
+        $role = $user ? ($user->role instanceof \BackedEnum ? $user->role->value : $user->role) : null;
+        $isAdmin = $role === UserRole::ADMIN->value || $role === 'admin';
+        $isOwner = $user && $cat->user_id === $user->id;
+
+        if (!$user || (!$isAdmin && !$isOwner)) {
+            return response()->json([
+                'message' => 'Forbidden: You are not authorized to delete this cat.'
+            ], 403);
+        }
+
         $cat->delete();
 
         return response()->json(null, 204);

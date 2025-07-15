@@ -21,7 +21,7 @@ class CatFactory extends Factory
             'user_id' => User::factory(),
             'name' => $this->faker->name(),
             'breed' => $this->faker->word(),
-            'age' => $this->faker->numberBetween(1, 20),
+            'birthday' => $this->faker->date(),
             'location' => $this->faker->city(),
             'status' => 'available',
             'description' => $this->faker->paragraph,

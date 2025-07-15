@@ -78,6 +78,7 @@ export function NotificationBell() {
       onOpenChange={(isOpen) => {
         void handleOpenChange(isOpen)
       }}
+      data-testid="notification-bell"
     >
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative" aria-label="Open notifications">

@@ -5,24 +5,62 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **Backend**: Added `Message` model and migration.
+- **Backend**: Implemented `MessageController` with `store`, `index`, `show`, `markAsRead`, and `destroy` methods.
+- **Backend**: Added API routes for messaging.
+- **Backend**: Added `cat_photos` table migration.
+- **Backend**: Added `CatPhoto` model.
+- **Backend**: Added `photos()` relationship to `Cat` model.
+- **Backend**: Added `uploadCatPhoto` method to `FileUploadService`.
+- **Backend**: Added `CatPhotoController` with `store` and `destroy` methods for cat photo management.
+- **Backend**: Added API routes for cat photo upload and deletion.
+- **Backend**: Added `avatar_url` column to `users` table.
+- **Backend**: Implemented `FileUploadService` for handling file uploads.
+- **Backend**: Added `uploadAvatar` and `deleteAvatar` methods to `UserProfileController`.
+- **Backend**: Added API routes for user avatar upload and deletion.
 - **Documentation**: Added user stories for avatar management, cat profile deletion, and cat photo management to `GEMINI.md`.
 - **Documentation**: Added new testing TODOs for `UserAvatar.tsx`, `MyCatsPage.tsx`, and `EditCatPage.tsx`.
 - **Frontend**: Added local placeholder image for cats.
 
 ### Changed
+- **Backend**: `HelperProfileController` `index` method now supports filtering and sorting helper offers.
+- **Backend**: `Cat` model updated: `age` replaced with `birthday`, and `status` field added.
+- **Backend**: `TransferRequest` model updated: `fostering_type` and `price` fields added.
+- **Backend**: `CatController` updated to use `birthday` instead of `age` for validation and sorting.
+- **Backend**: `TransferRequestController`'s `store` method updated to handle new fields and authorization.
+- **Backend**: Added `localhost:5173` to `SANCTUM_STATEFUL_DOMAINS` in `config/sanctum.php`.
 - **Documentation**: Updated `Cat` model in `GEMINI.md` to use `birthday` instead of `age`.
 - **Documentation**: Updated "Create and Edit a Cat Profile" user story to reflect the `birthday` change and frontend age calculation.
-- **Backend**: Added `localhost:5173` to `SANCTUM_STATEFUL_DOMAINS` in `config/sanctum.php`.
 - **Frontend**: Re-implemented a custom theme provider, removing the `next-themes` dependency.
 - **Frontend**: Updated numerous components with consistent styling from the new design system in Tailwind CSS.
 - **Frontend**: Simplified CSRF function in `src/api/axios.ts`.
 - **Frontend**: Updated `tsconfig.app.json` and `tsconfig.node.json` to include `composite: true`.
+- **Tests**: `CatListingTest` updated to use `birthday` and dynamic sorting assertions.
+- **Tests**: `TransferRequestTest` updated to reflect new API and authorization.
 
 ### Removed
 - **Frontend**: Removed `next-themes` library.
 - **Frontend**: Deleted `DropdownMenuTest.tsx`, `HomePage.tsx`, and `HomePage.test.tsx`.
 
+### Changed
+- **Backend**: `HelperProfileController` `index` method now supports filtering and sorting helper offers.
+- **Backend**: `Cat` model updated: `age` replaced with `birthday`, and `status` field added.
+- **Backend**: `TransferRequest` model updated: `fostering_type` and `price` fields added.
+- **Backend**: `CatController` updated to use `birthday` instead of `age` for validation and sorting.
+- **Backend**: `TransferRequestController`'s `store` method updated to handle new fields and authorization.
+- **Backend**: Added `localhost:5173` to `SANCTUM_STATEFUL_DOMAINS` in `config/sanctum.php`.
+- **Documentation**: Updated `Cat` model in `GEMINI.md` to use `birthday` instead of `age`.
+- **Documentation**: Updated "Create and Edit a Cat Profile" user story to reflect the `birthday` change and frontend age calculation.
+- **Frontend**: Re-implemented a custom theme provider, removing the `next-themes` dependency.
+- **Frontend**: Updated numerous components with consistent styling from the new design system in Tailwind CSS.
+- **Frontend**: Simplified CSRF function in `src/api/axios.ts`.
+- **Frontend**: Updated `tsconfig.app.json` and `tsconfig.node.json` to include `composite: true`.
+- **Tests**: `CatListingTest` updated to use `birthday` and dynamic sorting assertions.
+- **Tests**: `TransferRequestTest` updated to reflect new API and authorization.
+
 ### Fixed
+- **Backend**: Added authorization to `CatController@destroy` to ensure only owners or admins can delete cat profiles.
+- **Backend**: Ensured `HelperProfileStatusUpdated` event is dispatched in `AdminController` for notification.
 - Frontend: Fixed all failing frontend tests to properly match component implementations:
   - Updated `Footer.test.tsx` to test actual footer structure instead of removed social media icons
   - Fixed `MainPage.test.tsx` to correctly identify navigation elements (DropdownMenuTest component)

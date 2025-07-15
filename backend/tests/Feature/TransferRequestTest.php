@@ -14,25 +14,66 @@ class TransferRequestTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function test_cat_owner_can_initiate_transfer_request()
+    public function test_helper_can_initiate_transfer_request()
     {
-        $owner = User::factory()->create();
-        $cat = Cat::factory()->create(['user_id' => $owner->id]);
-        $recipient = User::factory()->create();
+        $helper = User::factory()->create(['role' => \App\Enums\UserRole::HELPER]);
+        $catOwner = User::factory()->create();
+        $cat = Cat::factory()->create(['user_id' => $catOwner->id, 'status' => 'available']);
 
-        $response = $this->actingAs($owner)->postJson("/api/cats/{$cat->id}/transfer-request", [
-            'recipient_user_id' => $recipient->id,
+        $response = $this->actingAs($helper)->postJson("/api/transfer-requests", [
+            'cat_id' => $cat->id,
             'requested_relationship_type' => 'fostering',
+            'fostering_type' => 'free',
         ]);
 
         $response->assertCreated();
         $this->assertDatabaseHas('transfer_requests', [
             'cat_id' => $cat->id,
-            'initiator_user_id' => $owner->id,
-            'recipient_user_id' => $recipient->id,
+            'initiator_user_id' => $helper->id,
+            'recipient_user_id' => $catOwner->id,
             'status' => 'pending',
             'requested_relationship_type' => 'fostering',
+            'fostering_type' => 'free',
         ]);
+
+        // Assert notification is created for the cat owner
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $catOwner->id,
+            'message' => 'New transfer request for your cat: ' . $cat->name,
+            'link' => '/account/transfer-requests/' . $response->json('id'),
+            'is_read' => false,
+        ]);
+    }
+
+    #[Test]
+    public function test_non_helper_cannot_initiate_transfer_request()
+    {
+        $catOwner = User::factory()->create(['role' => \App\Enums\UserRole::CAT_OWNER]);
+        $cat = Cat::factory()->create(['user_id' => $catOwner->id, 'status' => 'available']);
+
+        $response = $this->actingAs($catOwner)->postJson("/api/transfer-requests", [
+            'cat_id' => $cat->id,
+            'requested_relationship_type' => 'fostering',
+            'fostering_type' => 'free',
+        ]);
+
+        $response->assertForbidden();
+    }
+
+    #[Test]
+    public function test_helper_cannot_initiate_transfer_request_for_unavailable_cat()
+    {
+        $helper = User::factory()->create(['role' => \App\Enums\UserRole::HELPER]);
+        $catOwner = User::factory()->create();
+        $cat = Cat::factory()->create(['user_id' => $catOwner->id, 'status' => 'adopted']); // Cat is adopted
+
+        $response = $this->actingAs($helper)->postJson("/api/transfer-requests", [
+            'cat_id' => $cat->id,
+            'requested_relationship_type' => 'fostering',
+            'fostering_type' => 'free',
+        ]);
+
+        $response->assertForbidden();
     }
 
     #[Test]

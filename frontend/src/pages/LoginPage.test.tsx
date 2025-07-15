@@ -4,7 +4,7 @@ import { describe, it, expect } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { TestAuthProvider } from '@/contexts/TestAuthProvider'
 import LoginPage from '../pages/LoginPage'
-import type { AuthContextType } from '@/types/auth'
+import type { AuthContextType } from '@/contexts/auth-context'
 
 const renderWithProviders = (
   ui: React.ReactElement,

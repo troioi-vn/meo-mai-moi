@@ -7,6 +7,7 @@ use App\Models\TransferRequest;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Annotations as OA;
+use App\Enums\UserRole;
 
 /**
  * @OA\Schema(
@@ -50,6 +51,20 @@ use OpenApi\Annotations as OA;
  *         description="Type of custodianship requested"
  *     ),
  *     @OA\Property(
+ *         property="fostering_type",
+ *         type="string",
+ *         enum={"free", "paid"},
+ *         nullable=true,
+ *         description="Type of fostering (free or paid)"
+ *     ),
+ *     @OA\Property(
+ *         property="price",
+ *         type="number",
+ *         format="float",
+ *         nullable=true,
+ *         description="Price for paid fostering"
+ *     ),
+ *     @OA\Property(
  *         property="accepted_at",
  *         type="string",
  *         format="date-time",
@@ -81,23 +96,18 @@ class TransferRequestController extends Controller
 {
     /**
      * @OA\Post(
-     *     path="/api/cats/{cat_id}/transfer-request",
-     *     summary="Initiate a transfer request for a cat",
+     *     path="/api/transfer-requests",
+     *     summary="Initiate a transfer request for a cat (by a helper)",
      *     tags={"Transfer Requests"},
      *     security={{"sanctum": {}}},
-     *     @OA\Parameter(
-     *         name="cat_id",
-     *         in="path",
-     *         required=true,
-     *         description="ID of the cat for which to initiate a transfer",
-     *         @OA\Schema(type="integer")
-     *     ),
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"recipient_user_id", "requested_relationship_type"},
-     *             @OA\Property(property="recipient_user_id", type="integer", example=2),
-     *             @OA\Property(property="requested_relationship_type", type="string", enum={"fostering", "permanent_foster"}, example="fostering")
+     *             required={"cat_id", "requested_relationship_type"},
+     *             @OA\Property(property="cat_id", type="integer", example=1),
+     *             @OA\Property(property="requested_relationship_type", type="string", enum={"fostering", "permanent_foster"}, example="fostering"),
+     *             @OA\Property(property="fostering_type", type="string", enum={"free", "paid"}, nullable=true, example="free"),
+     *             @OA\Property(property="price", type="number", format="float", nullable=true, example=50.00)
      *         )
      *     ),
      *     @OA\Response(
@@ -110,7 +120,7 @@ class TransferRequestController extends Controller
      *         description="Validation error",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Validation Error"),
-     *             @OA\Property(property="errors", type="object", example={"recipient_user_id": {"The recipient user id field is required."}})
+     *             @OA\Property(property="errors", type="object", example={"cat_id": {"The cat id field is required."}})
      *         )
      *     ),
      *     @OA\Response(
@@ -119,20 +129,27 @@ class TransferRequestController extends Controller
      *     ),
      *     @OA\Response(
      *         response=403,
-     *         description="Forbidden: You are not the owner of this cat."
+     *         description="Forbidden: Only helpers can initiate transfer requests or cat is not available."
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Cat not found"
      *     )
      * )
      */
-    public function store(Request $request, Cat $cat)
+    public function store(Request $request)
     {
-        if ($cat->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'You are not the owner of this cat.'], 403);
+        $user = $request->user();
+        if (!$user || $user->role !== \App\Enums\UserRole::HELPER) {
+            return response()->json(['message' => 'Forbidden: Only helpers can initiate transfer requests.'], 403);
         }
 
         try {
             $validatedData = $request->validate([
-                'recipient_user_id' => 'required|exists:users,id',
+                'cat_id' => 'required|exists:cats,id',
                 'requested_relationship_type' => 'required|in:fostering,permanent_foster',
+                'fostering_type' => 'nullable|in:free,paid|required_if:requested_relationship_type,fostering',
+                'price' => 'nullable|numeric|min:0|required_if:fostering_type,paid',
             ]);
         } catch (ValidationException $e) {
             return response()->json([
@@ -141,11 +158,29 @@ class TransferRequestController extends Controller
             ], 422);
         }
 
+        $cat = Cat::find($validatedData['cat_id']);
+
+        if (!$cat) {
+            return response()->json(['message' => 'Cat not found.'], 404);
+        }
+
+        if ($cat->status !== 'available') {
+            return response()->json(['message' => 'Cat is not available for transfer.'], 403);
+        }
+
         $transferRequest = TransferRequest::create(array_merge($validatedData, [
-            'cat_id' => $cat->id,
-            'initiator_user_id' => $request->user()->id,
+            'initiator_user_id' => $user->id,
+            'recipient_user_id' => $cat->user_id, // Cat owner is the recipient
             'status' => 'pending',
         ]));
+
+        // Send notification to cat owner
+        \App\Models\Notification::create([
+            'user_id' => $cat->user_id,
+            'message' => 'New transfer request for your cat: ' . $cat->name,
+            'link' => '/account/transfer-requests/' . $transferRequest->id,
+            'is_read' => false,
+        ]);
 
         return response()->json($transferRequest, 201);
     }

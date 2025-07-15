@@ -4,7 +4,8 @@ import { defineConfig } from 'vite'
 import tailwindcss from '@tailwindcss/vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  base: mode === 'production' ? '/build/' : '/',
   plugins: [react(), tsconfigPaths(), tailwindcss()],
   server: {
     port: 5173,
@@ -36,4 +37,4 @@ export default defineConfig({
       input: 'src/main.tsx',
     },
   },
-})
+}))

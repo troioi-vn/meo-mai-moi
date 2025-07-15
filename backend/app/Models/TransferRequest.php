@@ -16,6 +16,8 @@ class TransferRequest extends Model
         'recipient_user_id',
         'status',
         'requested_relationship_type',
+        'fostering_type',
+        'price',
         'accepted_at',
         'rejected_at',
     ];

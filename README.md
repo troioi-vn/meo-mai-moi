@@ -85,6 +85,102 @@ To set up and run the development server, follow these steps:
     npm run build
     ```
 
+## Deployment
+
+This guide outlines the steps to deploy the Meo Mai Moi application to a production environment using Docker and Nginx.
+
+### Prerequisites
+
+* A server running Ubuntu
+* Docker and Docker Compose installed
+* Nginx installed
+* A registered domain name
+
+### Deployment Steps
+
+1. **Clone the Repository**
+
+   Clone the Meo Mai Moi repository to your server:
+
+   ```bash
+   git clone https://github.com/your-username/meo-mai-moi.git
+   cd meo-mai-moi
+   ```
+
+2. **Configure the Backend**
+
+   Navigate to the `backend` directory and create a `.env` file from the example file:
+
+   ```bash
+   cd backend
+   cp .env.example .env
+   ```
+
+   Update the `.env` file with your database credentials and other environment-specific settings.
+
+3. **Build and Run the Docker Containers**
+
+   From the project root directory, build and start the Docker containers in detached mode:
+
+   ```bash
+   docker-compose up -d --build
+   ```
+
+4. **Configure Nginx as a Reverse Proxy**
+
+   Copy the provided Nginx configuration file to the Nginx `sites-available` directory:
+
+   ```bash
+   sudo cp ttt.catarchy.space.conf /etc/nginx/sites-available/
+   ```
+
+   Create a symbolic link to the `sites-enabled` directory:
+
+   ```bash
+   sudo ln -s /etc/nginx/sites-available/ttt.catarchy.space.conf /etc/nginx/sites-enabled/
+   ```
+
+   Test the Nginx configuration for syntax errors:
+
+   ```bash
+   sudo nginx -t
+   ```
+
+   If the test is successful, restart Nginx to apply the changes:
+
+   ```bash
+   sudo systemctl restart nginx
+   ```
+
+5. **Set Up the Database**
+
+   Access the backend container to run the database migrations:
+
+   ```bash
+   docker-compose exec backend php artisan migrate
+   ```
+
+   You can also seed the database with initial data:
+
+   ```bash
+   docker-compose exec backend php artisan db:seed
+   ```
+
+6. **Secure with SSL (Recommended)**
+
+   Install Certbot and obtain a free SSL certificate from Let's Encrypt:
+
+   ```bash
+   sudo apt-get install certbot python3-certbot-nginx
+   sudo certbot --nginx -d ttt.catarchy.space
+   ```
+
+   Certbot will automatically update your Nginx configuration to use SSL.
+
+### Accessing the Application
+
+Your application should now be accessible at `https://ttt.catarchy.space`.
+
 ## License
 
 This project is licensed under the **MIT License** — feel free to use, modify, and deploy it for your own community needs.

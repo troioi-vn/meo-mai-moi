@@ -43,31 +43,31 @@
   .bg-background {
     background-color: rgb(var(--bg));
   }
-  
+
   .bg-accent {
     background-color: rgb(var(--accent));
   }
-  
+
   .bg-muted {
     background-color: rgb(var(--muted));
   }
-  
+
   .text-accent-foreground {
     color: rgb(var(--accent-foreground));
   }
-  
+
   .text-muted-foreground {
     color: rgb(var(--muted-foreground));
   }
-  
+
   .text-foreground {
     color: rgb(var(--fg));
   }
-  
+
   .hover\:bg-accent:hover {
     background-color: rgb(var(--accent));
   }
-  
+
   .hover\:text-accent-foreground:hover {
     color: rgb(var(--accent-foreground));
   }

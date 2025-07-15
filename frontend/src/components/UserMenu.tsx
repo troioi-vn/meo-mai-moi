@@ -20,7 +20,7 @@ export function UserMenu() {
   const { theme, setTheme } = useTheme()
 
   return (
-    <DropdownMenu>
+    <DropdownMenu data-testid="user-menu">
       <DropdownMenuTrigger asChild>
         <Avatar className="h-9 w-9 cursor-pointer">
           <AvatarImage src={user?.avatar_url ?? defaultAvatar} alt={user?.name ?? 'User avatar'} />

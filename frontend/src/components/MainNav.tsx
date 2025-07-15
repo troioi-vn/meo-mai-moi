@@ -17,7 +17,7 @@ const MainNav: React.FC = () => {
             Meo!
           </Link>
         </div>
-        
+
         {/* Right: Actions padding right 5 */}
         <div className="flex items-center space-x-4 pr-5">
           {isAuthenticated ? (

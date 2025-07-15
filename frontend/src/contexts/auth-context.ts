@@ -2,7 +2,7 @@ import type { User } from '@/types/user'
 import type { RegisterPayload, LoginPayload } from '@/types/auth'
 import { createContext } from 'react'
 
-interface AuthContextType {
+export interface AuthContextType {
   user: User | null
   isLoading: boolean
   isAuthenticated: boolean

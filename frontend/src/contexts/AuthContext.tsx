@@ -16,6 +16,8 @@ interface LoginPayload {
 import type { User } from '@/types/user'
 import { AuthContext } from './auth-context'
 
+export { AuthContext }
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(true)

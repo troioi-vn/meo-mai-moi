@@ -4,7 +4,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { TestAuthProvider } from '@/contexts/TestAuthProvider'
 import MainPage from '../pages/MainPage'
-import type { AuthContextType } from '@/types/auth'
+import type { AuthContextType } from '@/contexts/auth-context'
 import {
   DropdownMenu,
   DropdownMenuContent,

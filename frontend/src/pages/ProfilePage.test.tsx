@@ -4,18 +4,17 @@ import { MemoryRouter } from 'react-router-dom'
 import { TestAuthProvider } from '@/contexts/TestAuthProvider'
 import ProfilePage from '../pages/ProfilePage'
 
-import type { RenderOptions } from '@testing-library/react'
-import type { AuthContextType } from '@/types/auth'
+import type { AuthContextType } from '@/contexts/auth-context'
 
 const renderWithProviders = (
   ui: React.ReactElement,
   {
     providerProps,
     ...renderOptions
-  }: { providerProps?: Partial<AuthContextType>; [key: string]: RenderOptions }
+  }: { providerProps?: Partial<AuthContextType>; [key: string]: unknown } = {}
 ) => {
   return render(
-    <TestAuthProvider {...providerProps}>
+    <TestAuthProvider mockValues={providerProps}>
       <MemoryRouter>{ui}</MemoryRouter>
     </TestAuthProvider>,
     renderOptions
@@ -24,9 +23,9 @@ const renderWithProviders = (
 
 describe('ProfilePage', () => {
   it('renders the profile page correctly', () => {
-    const user = { name: 'Test User', email: 'test@example.com' }
+    const user = { id: 1, name: 'Test User', email: 'test@example.com' }
     const logout = vi.fn()
-    renderWithProviders(<ProfilePage />, { providerProps: { mockValues: { user, logout } } })
+    renderWithProviders(<ProfilePage />, { providerProps: { user, logout } })
 
     expect(screen.getByRole('heading', { name: /profile/i })).toBeInTheDocument()
     expect(screen.getByText('Name:')).toBeInTheDocument()

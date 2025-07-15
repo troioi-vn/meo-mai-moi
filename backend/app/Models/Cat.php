@@ -13,10 +13,11 @@ class Cat extends Model
     protected $fillable = [
         'name',
         'breed',
-        'age',
         'location',
         'description',
         'user_id',
+        'status',
+        'birthday',
     ];
 
     public function medicalRecords(): HasMany
@@ -32,5 +33,10 @@ class Cat extends Model
     public function comments(): HasMany
     {
         return $this->hasMany(CatComment::class);
+    }
+
+    public function photos(): HasMany
+    {
+        return $this->hasMany(CatPhoto::class);
     }
 }

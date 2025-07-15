@@ -43,7 +43,7 @@ class CatListingTest extends TestCase
         $catData = [
             'name' => 'Test Cat',
             'breed' => 'Test Breed',
-            'age' => 1,
+            'birthday' => '2023-01-01',
             'location' => 'Test Location',
             'description' => 'Test Description',
         ];
@@ -59,7 +59,7 @@ class CatListingTest extends TestCase
         $catData = [
             'name' => 'Test Cat',
             'breed' => 'Test Breed',
-            'age' => 1,
+            'birthday' => '2023-01-01',
             'location' => 'Test Location',
             'description' => 'Test Description',
         ];
@@ -115,29 +115,29 @@ class CatListingTest extends TestCase
                  ->assertJsonPath('2.name', 'A Cat');
     }
 
-    public function test_can_sort_cats_by_age_ascending(): void
+    public function test_can_sort_cats_by_birthday_ascending(): void
     {
-        Cat::factory()->create(['age' => 5]);
-        Cat::factory()->create(['age' => 1]);
-        Cat::factory()->create(['age' => 3]);
+        Cat::factory()->create(['birthday' => '2020-01-01']);
+        Cat::factory()->create(['birthday' => '2022-01-01']);
+        Cat::factory()->create(['birthday' => '2021-01-01']);
 
-        $response = $this->getJson('/api/cats?sort_by=age&sort_direction=asc');
-        $response->assertStatus(200)
-                 ->assertJsonPath('0.age', 1)
-                 ->assertJsonPath('1.age', 3)
-                 ->assertJsonPath('2.age', 5);
+        $response = $this->getJson('/api/cats?sort_by=birthday&sort_direction=asc');
+        $response->assertStatus(200);
+        $responseCats = $response->json();
+        $birthdays = array_column($responseCats, 'birthday');
+        $this->assertEquals(['2020-01-01', '2021-01-01', '2022-01-01'], $birthdays);
     }
 
-    public function test_can_sort_cats_by_age_descending(): void
+    public function test_can_sort_cats_by_birthday_descending(): void
     {
-        Cat::factory()->create(['age' => 5]);
-        Cat::factory()->create(['age' => 1]);
-        Cat::factory()->create(['age' => 3]);
+        Cat::factory()->create(['birthday' => '2020-01-01']);
+        Cat::factory()->create(['birthday' => '2022-01-01']);
+        Cat::factory()->create(['birthday' => '2021-01-01']);
 
-        $response = $this->getJson('/api/cats?sort_by=age&sort_direction=desc');
-        $response->assertStatus(200)
-                 ->assertJsonPath('0.age', 5)
-                 ->assertJsonPath('1.age', 3)
-                 ->assertJsonPath('2.age', 1);
+        $response = $this->getJson('/api/cats?sort_by=birthday&sort_direction=desc');
+        $response->assertStatus(200);
+        $responseCats = $response->json();
+        $birthdays = array_column($responseCats, 'birthday');
+        $this->assertEquals(['2022-01-01', '2021-01-01', '2020-01-01'], $birthdays);
     }
 }

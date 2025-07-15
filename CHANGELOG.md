@@ -18,6 +18,8 @@ All notable changes to this project will be documented in this file.
 - **Backend**: Implemented `FileUploadService` for handling file uploads.
 - **Backend**: Added `uploadAvatar` and `deleteAvatar` methods to `UserProfileController`.
 - **Backend**: Added API routes for user avatar upload and deletion.
+- **Backend**: Completed API documentation for all existing endpoints with Swagger (OpenAPI) annotations.
+- **Backend**: Implemented API Contract Testing for documentation freshness.
 - **Documentation**: Added user stories for avatar management, cat profile deletion, and cat photo management to `GEMINI.md`.
 - **Documentation**: Added new testing TODOs for `UserAvatar.tsx`, `MyCatsPage.tsx`, and `EditCatPage.tsx`.
 - **Frontend**: Added local placeholder image for cats.

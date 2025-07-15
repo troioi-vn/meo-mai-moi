@@ -19,12 +19,28 @@ export function UserMenu() {
   const { user, logout } = useAuth()
   const { theme, setTheme } = useTheme()
 
+  // Use a fallback approach for the default avatar
+  const getAvatarSrc = () => {
+    if (user?.avatar_url) {
+      return user.avatar_url
+    }
+    // If the import doesn't work, the fallback will be shown
+    return defaultAvatar
+  }
+
   return (
     <DropdownMenu data-testid="user-menu">
       <DropdownMenuTrigger asChild>
         <Avatar className="h-9 w-9 cursor-pointer">
-          <AvatarImage src={user?.avatar_url ?? defaultAvatar} alt={user?.name ?? 'User avatar'} />
-          <AvatarFallback>{user?.name ? user.name[0].toUpperCase() : ''}</AvatarFallback>
+          <AvatarImage 
+            src={getAvatarSrc()} 
+            alt={user?.name ?? 'User avatar'}
+            onError={(e) => {
+              // If image fails to load, this will trigger the fallback
+              console.log('Avatar image failed to load:', e.currentTarget.src)
+            }}
+          />
+          <AvatarFallback>{user?.name ? user.name[0].toUpperCase() : '?'}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

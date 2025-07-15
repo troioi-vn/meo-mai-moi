@@ -29,11 +29,17 @@ use App\Enums\UserRole;
  *         type="string",
  *         description="Cat's breed"
  *     ),
- 
  *     @OA\Property(
- *         property="location",
+ *         property="birthday",
  *         type="string",
- *         description="Cat's location"
+ *         format="date",
+ *         description="Cat's date of birth"
+ *     ),
+ *     @OA\Property(
+ *         property="status",
+ *         type="string",
+ *         enum={"available", "fostered", "adopted"},
+ *         description="Current status of the cat"
  *     ),
  *     @OA\Property(
  *         property="description",
@@ -219,7 +225,7 @@ class CatController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"name", "breed", "age", "location", "description"},
+     *             required={"name", "breed", "birthday", "location", "description"},
      *             @OA\Property(property="name", type="string", example="Whiskers"),
      *             @OA\Property(property="breed", type="string", example="Siamese"),
      *             @OA\Property(property="birthday", type="string", format="date", example="2023-01-01"),

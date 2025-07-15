@@ -1,6 +1,6 @@
-feat: Implement Grab This Cat feature backend
+feat: Complete backend features and API documentation
 
-This commit integrates the "Grab This Cat" feature into the backend, allowing HELPER role users to initiate transfer requests for available cats. It includes:
+This commit finalizes several backend features and ensures comprehensive API documentation:
 
 - **Cat Model Updates**: Replaced `age` with `birthday` and added `status` field.
 - **TransferRequest Model Updates**: Added `fostering_type` and `price` fields.
@@ -10,5 +10,7 @@ This commit integrates the "Grab This Cat" feature into the backend, allowing HE
 - **User Avatar Management**: Implemented endpoints for uploading and deleting user avatars, including `avatar_url` column in `users` table, `FileUploadService` updates, and `UserProfileController` methods.
 - **Messaging Feature**: Implemented secure in-app messaging with `Message` model, `MessageController`, and API routes for sending, listing, retrieving, marking as read, and deleting messages.
 - **Helper Offers Filtering**: Confirmed `HelperProfileController` already supports filtering and sorting helper offers.
-- **Tests**: Updated relevant tests (`CatListingTest`, `TransferRequestTest`) to reflect model and API changes.
+- **API Documentation and Integration**: Completed detailed Swagger (OpenAPI) annotations for all new and existing endpoints across `AuthController`, `UserProfileController`, `CatController`, `CatPhotoController`, `MessageController`, and `HelperProfileController`.
+- **API Contract Testing**: Implemented automated contract testing to ensure API documentation freshness.
+- **Tests**: Updated relevant tests (`CatListingTest`, `TransferRequestTest`, `ApiContractTest`) to reflect model and API changes.
 - **Documentation**: Updated `GEMINI.md` and `CHANGELOG.md` to reflect all new features and changes.

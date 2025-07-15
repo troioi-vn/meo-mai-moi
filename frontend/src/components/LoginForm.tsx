@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,19 +13,19 @@ const LoginForm: React.FC = () => {
   const navigate = useNavigate()
 
   const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault()
-    setError(null)
+    event.preventDefault();
+    setError(null);
     try {
-      await login({ email, password })
-      navigate('/profile')
+      await login({ email, password });
+      navigate('/profile');
     } catch (err) {
-      setError('Failed to login. Please check your credentials.')
-      console.error(err)
+      setError('Failed to login. Please check your credentials.');
+      console.error(err);
     }
   }
 
   return (
-    <form onSubmit={(event) => { void handleSubmit(event); }}>
+    <form onSubmit={handleSubmit}>
       {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
       <div className="mb-4">
         <Label htmlFor="email">Email</Label>

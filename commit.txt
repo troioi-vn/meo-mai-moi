@@ -1,19 +1,11 @@
-feat: Implement comprehensive frontend and backend refactoring and linting fixes
+feat(auth): stabilize frontend auth and fix module resolution
 
-This commit introduces a wide range of improvements across both the frontend and backend, focusing on code quality, maintainability, and adherence to best practices.
+This commit addresses a series of critical frontend issues that were causing the application to fail on startup. The primary focus was on resolving module import/export errors and stabilizing the authentication system.
 
 Key changes include:
-
-- **Frontend Refactoring:**
-  - Standardized import statements and updated component structures for better readability and consistency.
-  - Addressed numerous ESLint errors and warnings, including type safety issues (e.g., `any` usage, unsafe operations), promise handling, and deprecated features.
-  - Improved React Fast Refresh compatibility by separating component variants into dedicated files.
-  - Enhanced styling and theming by removing hardcoded colors and ensuring proper application of Tailwind CSS utility classes.
-  - Updated various page and component layouts for better visual presentation.
-
-- **Backend Improvements:**
-  - Refactored `CatController` authorization logic for clarity and direct control.
-  - Integrated Laravel traits for authorization and validation in the base controller.
-  - Added a new relationship to the `User` model for managing cats.
-
-These changes aim to create a more robust, maintainable, and performant application, laying a solid foundation for future development.
+- Fixed incorrect export of `buttonVariants` from the `button` component.
+- Resolved persistent "User type not found" errors by correcting import paths in `AuthContext.tsx` to use the `@/` alias and ensuring type-only imports.
+- Added the missing `React` import to `AuthContext.tsx` to fix a "React is not defined" reference error.
+- Refactored the authentication-related type definitions and hooks into separate, more organized files (`use-auth.ts`, `auth-context.ts`, etc.) to improve code structure and maintainability.
+- Updated `GEMINI.md` with a summary of the frontend authentication architecture.
+- Updated `CHANGELOG.md` to reflect the recent fixes and refactoring.

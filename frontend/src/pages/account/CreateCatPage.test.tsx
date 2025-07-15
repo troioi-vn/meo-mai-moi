@@ -1,6 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
-import { vi } from 'vitest'
 import CreateCatPage from './CreateCatPage'
 import MyCatsPage from './MyCatsPage'
 import { AuthProvider } from '@/contexts/AuthContext'

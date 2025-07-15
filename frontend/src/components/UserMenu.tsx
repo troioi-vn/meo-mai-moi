@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Link } from 'react-router-dom'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/hooks/use-auth'
 import { useTheme } from 'next-themes'
 import { Moon, Sun } from 'lucide-react'
 import defaultAvatar from '@/assets/images/default-avatar.webp'
@@ -22,7 +22,6 @@ export function UserMenu() {
   const { setTheme, theme } = useTheme()
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/no-unnecessary-condition
     const isDark =
       theme === 'dark' ||
       (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
@@ -33,7 +32,7 @@ export function UserMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Avatar className="h-9 w-9 cursor-pointer">
-          <AvatarImage src={user?.avatar_url ?? defaultAvatar} alt={user?.name ?? 'User avatar'} />
+          <AvatarImage src={user?.avatar_url || defaultAvatar} alt={user?.name || 'User avatar'} />
           <AvatarFallback>{user?.name?.[0].toUpperCase()}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>

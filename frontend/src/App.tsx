@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { useAuth } from './contexts/AuthContext'
+import { useAuth } from '@/hooks/use-auth'
+
 import MainPage from './pages/MainPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
@@ -12,7 +13,9 @@ import MainNav from '@/components/MainNav'
 import './App.css'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const { user, isLoading } = useAuth()
+  const auth = useAuth()
+  const user = auth.user
+  const isLoading = auth.isLoading
   if (isLoading) return <div>Loading...</div>
   return user ? <>{children}</> : <Navigate to="/login" replace />
 }

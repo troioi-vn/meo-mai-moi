@@ -122,6 +122,10 @@ class CatController extends Controller
      */
     public function myCats(Request $request)
     {
+        if (!$request->user()) {
+            \Log::warning('myCats: User is not authenticated.');
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
         $cats = $request->user()->cats;
         return response()->json($cats);
     }

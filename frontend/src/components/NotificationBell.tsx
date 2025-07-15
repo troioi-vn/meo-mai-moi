@@ -1,6 +1,8 @@
+import React from 'react'
 import { useState, useEffect } from 'react'
 import { Bell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+// ...existing code...
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,44 +25,41 @@ export function NotificationBell() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchNotifications = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const response = await api.get<Notification[]>('/notifications');
-        if (isMounted) {
-          setNotifications(response.data);
-          setUnreadCount(response.data.filter((n) => !n.is_read).length);
-        }
-      } catch (error: unknown) {
+  const fetchNotifications = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await api.get<Notification[]>('/notifications');
+      setNotifications(response.data);
+      setUnreadCount(response.data.filter((n) => !n.is_read).length);
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'message' in error) {
+        console.error('Error fetching notifications:', (error as Error).message);
+      } else {
         console.error('Error fetching notifications:', error);
-        if (isMounted) {
-          setError('Failed to fetch notifications');
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
       }
-    };
+      setError('Failed to fetch notifications');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     void fetchNotifications();
-
-    return () => {
-      isMounted = false;
-    };
   }, []);
 
   const handleOpenChange = async (isOpen: boolean) => {
     if (isOpen && unreadCount > 0) {
       try {
-        await api.post('/notifications/mark-as-read')
-        setUnreadCount(0)
-        fetchNotifications()
+        await api.post('/notifications/mark-as-read');
+        setUnreadCount(0);
+        void fetchNotifications();
       } catch (error: unknown) {
-        console.error('Error marking notifications as read:', error as AxiosError);
+        if (error && typeof error === 'object' && 'message' in error) {
+          console.error('Error marking notifications as read:', (error as Error).message);
+        } else {
+          console.error('Error marking notifications as read:', error);
+        }
       }
     }
   }

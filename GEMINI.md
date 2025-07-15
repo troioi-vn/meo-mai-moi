@@ -397,6 +397,10 @@ To ensure secure user access, we will implement the following authentication fea
     -   **Email Verification:** New user registrations will require email verification to ensure valid email addresses and enhance security.
     -   **Rate Limiting:** Implement rate limiting on authentication endpoints to prevent brute-force attacks.
 
+### Frontend: React Context & Axios Interceptors
+
+The frontend uses React Context to manage authentication state globally. An `AuthProvider` component wraps the application, providing user data and auth functions (`login`, `logout`, etc.) to any component through a `useAuth` hook. API requests are handled by Axios, which uses an interceptor to automatically attach the user's authentication token to every outgoing request.
+
 ## 11. Production Deployment and Operations
 
 To ensure a smooth and reliable deployment process, we will consider the following:

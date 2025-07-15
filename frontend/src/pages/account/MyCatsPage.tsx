@@ -1,14 +1,19 @@
 import { Button } from '@/components/ui/button'
+import { useNavigate } from 'react-router-dom'
 import { CatCard } from '@/components/CatCard'
 import { PlusCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { getMyCats } from '@/api/cats'
 import type { Cat } from '@/types/cat'
+import { useAuth } from '@/hooks/use-auth'
+import React from 'react'
 
 export default function MyCatsPage() {
   const [cats, setCats] = useState<Cat[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { isAuthenticated, isLoading } = useAuth()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchCats = async () => {
@@ -25,14 +30,24 @@ export default function MyCatsPage() {
       }
     }
 
-    fetchCats()
-  }, [])
+    if (isAuthenticated && !isLoading) {
+      void fetchCats()
+    }
+  }, [isAuthenticated, isLoading])
+
+  if (isLoading) {
+    return <p>Loading authentication status...</p>
+  }
+
+  if (!isAuthenticated) {
+    return <p>Please log in to view your cats.</p>
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">My Cats</h1>
-        <Button>
+        <Button onClick={() => void navigate('/account/cats/create')}>
           <PlusCircle className="mr-2 h-4 w-4" />
           New Cat
         </Button>

@@ -12,7 +12,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/hooks/use-auth'
 import { toast } from '@/components/ui/use-toast'
 import { AxiosError } from 'axios'
 
@@ -61,23 +61,32 @@ const ChangePasswordForm: React.FC = () => {
       })
       form.reset()
     } catch (error: unknown) {
-      const axiosError = error as AxiosError<ApiError>
-      toast({
-        title: 'Password Change Failed',
-        description:
-          (axiosError.response?.data?.message) ? axiosError.response.data.message : 
-          axiosError.message ??
-          'An unexpected error occurred.',
-        variant: 'destructive',
-      })
-      if (axiosError.response?.data?.errors) {
-        for (const key in axiosError.response.data.errors) {
-          form.setError(key as keyof PasswordChangeFormValues, {
-            type: 'server',
-            message: axiosError.response.data.errors[key][0],
-          })
+      let errorMessage = 'An unexpected error occurred.';
+      if (
+        error &&
+        typeof error === 'object' &&
+        'isAxiosError' in error &&
+        (error as AxiosError<ApiError>).isAxiosError
+      ) {
+        const axiosError = error as AxiosError<ApiError>;
+        errorMessage =
+          (axiosError.response && axiosError.response.data && axiosError.response.data.message)
+            ? axiosError.response.data.message
+            : (axiosError.message ? axiosError.message : errorMessage);
+        if (axiosError.response && axiosError.response.data && axiosError.response.data.errors) {
+          for (const key in axiosError.response.data.errors) {
+            form.setError(key as keyof PasswordChangeFormValues, {
+              type: 'server',
+              message: axiosError.response.data.errors[key][0],
+            });
+          }
         }
       }
+      toast({
+        title: 'Password Change Failed',
+        description: errorMessage,
+        variant: 'destructive',
+      })
     } finally {
       setIsLoading(false)
     }
@@ -86,7 +95,7 @@ const ChangePasswordForm: React.FC = () => {
   return (
     <Form {...form}>
       <form onSubmit={(e) => void form.handleSubmit(onSubmit)(e)} className="space-y-4">
-        <FormField
+        <FormField<PasswordChangeFormValues>
           control={form.control}
           name="current_password"
           render={({ field }) => (
@@ -99,7 +108,7 @@ const ChangePasswordForm: React.FC = () => {
             </FormItem>
           )}
         />
-        <FormField
+        <FormField<PasswordChangeFormValues>
           control={form.control}
           name="new_password"
           render={({ field }) => (
@@ -112,7 +121,7 @@ const ChangePasswordForm: React.FC = () => {
             </FormItem>
           )}
         />
-        <FormField
+        <FormField<PasswordChangeFormValues>
           control={form.control}
           name="new_password_confirmation"
           render={({ field }) => (

@@ -28,17 +28,17 @@ const CreateCatPage: React.FC = () => {
         location,
         description,
       })
-      toast.success('Cat created successfully!')
+      void toast.success('Cat created successfully!')
       navigate('/account/cats')
     } catch (err) {
       setError('Failed to create cat.')
       console.error(err)
-      toast.error('Failed to create cat.')
+      void toast.error('Failed to create cat.')
     }
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-neutral-100 dark:bg-neutral-900 py-8">
+    <div className="flex items-center justify-center min-h-screen">
       <div className="w-full max-w-2xl p-8 space-y-8 bg-neutral-50 rounded-lg shadow-lg dark:bg-neutral-800">
         <h1 className="text-3xl font-bold text-center text-neutral-900 dark:text-neutral-100 mb-6">
           Add a New Cat

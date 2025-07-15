@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/hooks/use-auth'
 import { toast } from '@/components/ui/use-toast'
 import { AxiosError } from 'axios'
 
@@ -41,10 +41,10 @@ const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDele
         description: 'Your account has been successfully deleted.',
       })
       setIsOpen(false)
-      await logout() // Log out the user after successful deletion
-      onAccountDeleted() // Callback to handle redirection or other post-deletion logic
+      await logout(); // Log out the user after successful deletion
+      onAccountDeleted(); // Callback to handle redirection or other post-deletion logic
     } catch (error: unknown) {
-      const axiosError = error as AxiosError<ApiError>
+      const axiosError = error as AxiosError<ApiError>;
       toast({
         title: 'Account Deletion Failed',
         description:
@@ -52,7 +52,7 @@ const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDele
           axiosError.message ??
           'An unexpected error occurred.',
         variant: 'destructive',
-      })
+      });
     } finally {
       setIsLoading(false)
     }

@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
+import { useState } from 'react'
+import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -37,13 +37,23 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
         onSuccess()
       }
     } catch (err: unknown) {
-      const axiosError = err as AxiosError<ApiError>
-      console.error('Registration error:', axiosError.response?.data ?? axiosError) // Log the full error response
-      if (axiosError.response?.data?.errors) {
-        const errorMessages = Object.values(axiosError.response.data.errors).flat().join(' ')
-        setError(errorMessages)
+      const axiosError = err as AxiosError<ApiError>;
+      console.error('Registration error:', axiosError.response?.data ?? axiosError); // Log the full error response
+      if (err && typeof err === 'object' && 'isAxiosError' in err && (err as AxiosError<ApiError>).isAxiosError) {
+        const axiosError = err as AxiosError<ApiError>;
+        console.error('Registration error:', axiosError.response?.data ?? axiosError);
+        if (axiosError.response?.data?.errors) {
+          const errorMessages = Object.values(axiosError.response.data.errors).flat().join(' ');
+          setError(errorMessages);
+        } else {
+          setError(
+            axiosError.response?.data?.message ??
+            axiosError.message ??
+            'An unexpected error occurred.'
+          );
+        }
       } else {
-        setError(axiosError.message || 'Failed to register. Please try again.')
+        setError('An unexpected error occurred.');
       }
     }
   }

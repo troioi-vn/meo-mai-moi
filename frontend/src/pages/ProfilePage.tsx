@@ -1,4 +1,4 @@
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { ChangePasswordForm } from '@/components/ChangePasswordForm'
 import { DeleteAccountDialog } from '@/components/DeleteAccountDialog'
@@ -30,8 +30,8 @@ export default function ProfilePage() {
         )}
         <div className="space-y-4 pt-4">
           <ChangePasswordForm />
-          <DeleteAccountDialog onAccountDeleted={logout} />
-          <Button onClick={logout} className="w-full" variant="destructive">
+          <DeleteAccountDialog onAccountDeleted={() => { void logout() }} />
+          <Button onClick={() => { void logout() }} className="w-full" variant="destructive">
             Logout
           </Button>
         </div>

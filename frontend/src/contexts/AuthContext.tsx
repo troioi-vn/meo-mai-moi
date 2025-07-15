@@ -1,29 +1,5 @@
-import { createContext, use, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { api, csrf } from '@/api/axios'
-
-interface User {
-  id: number
-  name: string
-  email: string
-  avatar_url?: string // Optional avatar URL
-  // Add other user properties as needed
-}
-
-interface AuthContextType {
-  user: User | null
-  isLoading: boolean
-  isAuthenticated: boolean
-  register: (payload: RegisterPayload) => Promise<void>
-  login: (payload: LoginPayload) => Promise<void>
-  logout: () => Promise<void>
-  loadUser: () => Promise<void>
-  changePassword: (
-    currentPassword: string,
-    newPassword: string,
-    newPasswordConfirmation: string
-  ) => Promise<void>
-  deleteAccount: (password: string) => Promise<void>
-}
 
 interface RegisterPayload {
   name: string;
@@ -37,7 +13,9 @@ interface LoginPayload {
   password: string;
 }
 
-export const AuthContext = createContext<AuthContextType | null>(null)
+import type { User } from '@/types/user'
+
+import { AuthContext } from './auth-context'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -59,16 +37,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const register = async (payload: any) => {
+  const register = async (payload: RegisterPayload) => {
     await csrf()
     await api.post('/register', payload)
     await loadUser()
   }
 
-  const login = async (payload: any) => {
+  const login = async (payload: LoginPayload) => {
     await csrf()
     const response = await api.post('/login', payload)
-    localStorage.setItem('access_token', response.data.access_token)
+    localStorage.setItem('access_token', response.data.access_token as string)
     await loadUser()
   }
 
@@ -101,28 +79,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isAuthenticated = user !== null
 
   return (
-    <AuthContext
-      value={{
-        user,
-        isLoading,
-        isAuthenticated,
-        register,
-        login,
-        logout,
-        loadUser,
-        changePassword,
-        deleteAccount,
-      }}
+    <AuthContext.Provider
+      value={React.useMemo(
+        () => ({
+          user,
+          isLoading,
+          isAuthenticated,
+          register,
+          login,
+          logout,
+          loadUser,
+          changePassword,
+          deleteAccount,
+        }),
+        [user, isLoading, isAuthenticated, register, login, logout, loadUser, changePassword, deleteAccount]
+      )}
     >
       {children}
-    </AuthContext>
+    </AuthContext.Provider>
   )
 }
 
-export const useAuth = () => {
-  const context = use(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
-}
+export { useAuth } from '@/hooks/use-auth'

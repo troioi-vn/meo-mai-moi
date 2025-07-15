@@ -6,19 +6,8 @@ import { Controller, FormProvider, useFormContext } from 'react-hook-form'
 
 import { cn } from '@/lib/utils'
 
-// --- New Contexts ---
-interface FormFieldContextValue {
-  name: string
-}
-
-const FormFieldContext = React.createContext<FormFieldContextValue>({} as FormFieldContextValue)
-
-interface FormItemContextValue {
-  id: string
-}
-
-const FormItemContext = React.createContext<FormItemContextValue>({} as FormItemContextValue)
-// --- End New Contexts ---
+import { FormFieldContext } from './form-context'
+import { FormItemContext } from './form-item-context'
 
 const Form = FormProvider
 
@@ -29,8 +18,8 @@ const FormField = ({
   const id = React.useId() // Generate a unique ID for the field
 
   return (
-    <FormFieldContext value={{ name: props.name }}>
-      <FormItemContext value={{ id }}>
+    <FormFieldContext.Provider value={React.useMemo(() => ({ name: props.name }), [props.name])}>
+      <FormItemContext.Provider value={React.useMemo(() => ({ id }), [id])}>
         <Controller
           {...props}
           render={({ field, fieldState, formState }) => {
@@ -45,8 +34,8 @@ const FormField = ({
             )
           }}
         />
-      </FormItemContext>
-    </FormFieldContext>
+      </FormItemContext.Provider>
+    </FormFieldContext.Provider>
   )
 }
 
@@ -166,7 +155,7 @@ const FormMessage = ({
   const formItemId = `${id}-${name}`
   const formMessageId = `${formItemId}-message`
 
-  const body = error ? String(error.message) : children
+  const body = error ? (typeof error.message === 'string' ? error.message : JSON.stringify(error.message)) : children
 
   if (!body) {
     return null

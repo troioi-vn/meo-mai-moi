@@ -1,30 +1,8 @@
-import { AuthContext } from './AuthContext'
+import { AuthContext } from './auth-context'
 import { vi } from 'vitest'
 import React from 'react'
 
-interface User {
-  id: number
-  name: string
-  email: string
-  avatar_url?: string // Optional avatar URL
-  // Add other user properties as needed
-}
-
-interface AuthContextType {
-  user: User | null
-  isLoading: boolean
-  isAuthenticated: boolean
-  register: (payload: any) => Promise<void>
-  login: (payload: any) => Promise<void>
-  logout: () => Promise<void>
-  loadUser: () => Promise<void>
-  changePassword: (
-    currentPassword: string,
-    newPassword: string,
-    newPasswordConfirmation: string
-  ) => Promise<void>
-  deleteAccount: (password: string) => Promise<void>
-}
+import { User, RegisterPayload, LoginPayload, AuthContextType } from '@/types/auth'
 
 interface TestAuthProviderProps {
   children: React.ReactNode
@@ -34,14 +12,14 @@ interface TestAuthProviderProps {
 export const TestAuthProvider = ({ children, mockValues }: TestAuthProviderProps) => {
   const defaultMockValues: AuthContextType = {
     user: null,
-    login: vi.fn(),
-    register: vi.fn(),
+    register: vi.fn(async (_payload: RegisterPayload) => {}),
+    login: vi.fn(async (_payload: LoginPayload) => {}),
     logout: vi.fn(),
     loadUser: vi.fn(),
     isLoading: false,
     isAuthenticated: false,
-    changePassword: vi.fn(),
-    deleteAccount: vi.fn(),
+    changePassword: vi.fn(async (_current, _new, _confirm) => {}),
+    deleteAccount: vi.fn(async (_password: string) => {}),
   }
 
   const value = { ...defaultMockValues, ...mockValues } as AuthContextType

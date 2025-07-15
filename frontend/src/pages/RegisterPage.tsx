@@ -7,7 +7,7 @@ export default function RegisterPage() {
   const navigate = useNavigate()
 
   const handleRegistrationSuccess = () => {
-    toast.success('You are registered, now login please.')
+    void toast.success('You are registered, now login please.')
     navigate('/login')
   }
 

@@ -9,7 +9,7 @@ export function HomeButton() {
     <Button
       variant="outline"
       size="icon"
-      onClick={() => navigate('/')}
+      onClick={() => void navigate('/')}
       aria-label="Go to home page"
     >
       <HomeIcon className="h-4 w-4" />

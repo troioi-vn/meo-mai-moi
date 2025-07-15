@@ -1,3 +1,7 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
 ## [Unreleased]
 
 ### Added
@@ -59,3 +63,7 @@
 - Frontend: Fixed `any` type usage in `LoginPage.test.tsx`, `MainPage.test.tsx`, `ProfilePage.test.tsx`, `RegisterPage.test.tsx`, `AuthContext.tsx`, and `TestAuthProvider.tsx`.
 - Frontend: Fixed `react-refresh/only-export-components` errors in `badge.tsx`, `button.tsx`, `form.tsx`, and `AuthContext.tsx`.
 - Frontend: Fixed `no-array-index-key` warning in `MyCatsPage.tsx`.
+
+### Refactored
+- Improved frontend code structure by separating auth context, hooks, and types into their own files for better maintainability.
+- Standardized promise handling and error catching across several React components.

@@ -1,4 +1,4 @@
-import { api } from './api'
+import { api } from './axios'
 import type { Cat } from '@/types/cat'
 
 export const getMyCats = async (): Promise<Cat[]> => {

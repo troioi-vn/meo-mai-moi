@@ -7,7 +7,7 @@ export default function ProfilePage() {
   const { user, logout } = useAuth()
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="flex items-center justify-center min-h-screen bg-neutral-100 dark:bg-neutral-900">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-xl dark:bg-neutral-800">
         <h1 className="text-3xl font-bold text-center text-neutral-900 dark:text-neutral-100">
           User Profile

@@ -124,17 +124,48 @@ This strategy is enforced via our CI/CD pipeline with the following steps on eve
 
 This process guarantees that our API documentation is always a reliable and accurate reflection of its implementation.
 
-#### Frontend Testing Strategies
+#### Frontend Testing Strategy: A Practical Guide
 
-For the React frontend, we employ a combination of unit and integration tests using Vitest and React Testing Library (RTL). Our focus is on testing user-facing behavior rather than internal component implementation details.
+Our frontend testing strategy is built on the principle of **testing user behavior, not implementation details**. This ensures our tests are robust, maintainable, and verify that the application works as users expect.
 
--   **Unit Tests:** For isolated functions and small, stateless components.
--   **Integration Tests:** For components that interact with other components, APIs, or the DOM. These tests simulate user interactions to ensure the application behaves as expected from a user's perspective.
+**Core Tools:**
+*   **Test Runner:** **Vitest** for a fast and modern testing experience.
+*   **Testing Framework:** **React Testing Library (RTL)** to interact with components like a user.
+*   **API Mocking:** **Mock Service Worker (MSW)** (configured in `src/mocks/`) to simulate API responses, making tests fast and reliable without a live backend.
 
-**Key Principles:**
--   **User-Centric:** Tests should reflect how users interact with the application.
--   **Accessibility:** RTL encourages testing with accessibility in mind by querying elements the way a user would (e.g., `getByRole`, `getByLabelText`).
--   **Mocking:** External dependencies (like API calls) are mocked to ensure tests are fast, reliable, and isolated.
+**How to Write a New Test:**
+
+1.  **Arrange:**
+    *   Render the component with all necessary providers (e.g., `AuthProvider`, `MemoryRouter` for routing).
+    *   Mock any required API responses using MSW (`msw/server`). Define mock handlers in `src/mocks/handlers.ts`.
+
+2.  **Act:**
+    *   Simulate user interactions using `@testing-library/user-event`.
+    *   Find elements using accessible queries (`getByRole`, `getByLabelText`, `getByText`, etc.) before resorting to `getByTestId`.
+
+3.  **Assert:**
+    *   Check for the expected outcome in the DOM. For example, assert that a success message appears, an error is displayed, or navigation occurs.
+    *   **Do not** test internal component state or implementation details.
+
+**Example Test Flow for a Form:**
+```tsx
+// 1. Arrange: Render the form and mock API calls
+render(<MyFormComponent />);
+server.use(
+  http.post('/api/submit', () => {
+    return HttpResponse.json({ success: true });
+  })
+);
+
+// 2. Act: Find elements and simulate user input
+await userEvent.type(screen.getByLabelText(/email/i), 'user@example.com');
+await userEvent.click(screen.getByRole('button', { name: /submit/i }));
+
+// 3. Assert: Check for the result the user would see
+expect(await screen.findByText(/success/i)).toBeInTheDocument();
+```
+
+This approach ensures our tests are a true reflection of the user experience and remain valid even when the underlying code is refactored.
 
 **Running Frontend Tests:**
 -   To run all tests: `npm run test`
@@ -673,85 +704,105 @@ This ensures that all code pushed to production is clean and adheres to our codi
 
 ```
 frontend/
-├───.gitignore
-├───.prettierignore
-├───.prettierrc
-├───components.json
-├───dev-additions.json
-├───eslint.config.js
-├───index.html
-├───package-lock.json
-├───package.json
-├───postcss.config.js
-├───README.md
-├───tailwind.config.js
-├───tsconfig.app.json
-├───tsconfig.json
-├───tsconfig.node.json
-├───vite.config.ts
-├───public/
-│   └───vite.svg
-└───src/
-    ├───App.css
-    ├───App.tsx
-    ├───index.css
-    ├───main.tsx
-    ├───setupTests.ts
-    ├───vite-env.d.ts
-    ├───api/
-    ├───assets/
-    ├───components/
-    │   ├───CatCard.tsx
-    │   ├───CatsSection.tsx
-    │   ├───ChangePasswordForm.tsx
-    │   ├───DeleteAccountDialog.tsx
-    │   ├───Footer.test.tsx
-    │   ├───Footer.tsx
-    │   ├───HeroSection.tsx
-    │   ├───HomeButton.tsx
-    │   ├───LoginForm.test.tsx
-    │   ├───LoginForm.tsx
-    │   ├───MainNav.tsx
-    │   ├───NotificationBell.test.tsx
-    │   ├───NotificationBell.tsx
-    │   ├───RegisterForm.test.tsx
-    │   ├───RegisterForm.tsx
-    │   ├───theme-provider.tsx
-    │   ├───UserMenu.tsx
-    │   └───ui/
-    │       ├───alert-dialog.tsx
-    │       ├───avatar.tsx
-    │       ├───badge.tsx
-    │       ├───button.tsx
-    │       ├───card.tsx
-    │       ├───dialog.tsx
-    │       ├───dropdown-menu.tsx
-    │       ├───form.tsx
-    │       ├───input.tsx
-    │       ├───label.tsx
-    │       ├───sonner.tsx
-    │       └───toast.tsx
-    ├───contexts/
-    │   └���──AuthContext.tsx
-    ├───hooks/
-    │   └───useAuth.ts
-    ├───lib/
-    │   └───utils.ts
-    ├───mocks/
-    │   ├───handlers.ts
-    │   └───server.ts
-    ├───pages/
-    │   ├───HomePage.tsx
-    │   ├───LoginPage.tsx
-    │   ├───MainPage.test.tsx
-    │   ├───MainPage.tsx
-    │   ├───NotFoundPage.tsx
-    │   ├───ProfilePage.tsx
-    │   ├───RegisterPage.tsx
-    │   └───account/
-    │       └───MyCatsPage.tsx
-    ├───services/
-    │   └───authService.ts
-    └───types/
-        └───index.ts
+├───.gitignore                  // Specifies intentionally untracked files to ignore.
+├───.prettierignore             // Specifies files that Prettier should not format.
+├───.prettierrc                 // Configuration file for the Prettier code formatter.
+├───components.json             // Configuration for shadcn/ui components.
+├───dev-additions.json          // Developer-specific configurations or metadata.
+├───eslint.config.js            // Configuration file for ESLint, the linter.
+├───index.html                  // The main HTML file that serves as the entry point for the React app.
+├───package-lock.json           // Records the exact versions of dependencies.
+├───package.json                // Lists project dependencies and scripts.
+├───postcss.config.js           // Configuration for PostCSS, a CSS preprocessor.
+├───README.md                   // README file for the frontend project.
+├───tailwind.config.js          // Configuration file for Tailwind CSS.
+├───tsconfig.app.json           // TypeScript configuration specific to the application code.
+├───tsconfig.json               // Root TypeScript configuration file.
+├───tsconfig.node.json          // TypeScript configuration for Node.js-specific files (like vite.config.ts).
+├───vite.config.ts              // Configuration file for Vite, the build tool.
+├───public/                     // Directory for static assets.
+│   └───vite.svg                // Vite logo, a static asset.
+└───src/                        // Source code for the React application.
+    ├───App.css                 // Global CSS styles for the main App component.
+    ├───App.tsx                 // The root component of the application.
+    ├───index.css               // Top-level CSS styles, often for base styling.
+    ├───main.tsx                // The main entry point of the React application, where the App is rendered.
+    ├───setupTests.ts           // Setup file for Vitest tests.
+    ├───vite-env.d.ts           // TypeScript declarations for Vite environment variables.
+    ├───api/                    // Contains API-related logic, like client setup.
+    ├───assets/                 // For static assets like images, fonts, etc.
+    ├───components/             // Reusable UI components.
+    │   ├───CatCard.tsx         // A card component to display a cat's summary.
+    │   ├───CatsSection.tsx     // A section to display a list of cat cards.
+    │   ├───ChangePasswordForm.tsx // Form for users to change their password.
+    │   ├───DeleteAccountDialog.tsx // A dialog to confirm account deletion.
+    │   ├───Footer.test.tsx    // Tests for the Footer component.
+    │   ├───Footer.tsx          // The application's footer.
+    │   ├───HeroSection.tsx      // The hero section for the homepage.
+    │   ├───LoginForm.test.tsx  // Tests for the LoginForm component.
+    │   ├───LoginForm.tsx       // The user login form.
+    │   ├───MainNav.tsx         // The main navigation bar.
+    │   ├───NotificationBell.test.tsx // Tests for the NotificationBell component.
+    │   ├───NotificationBell.tsx // A component to display user notifications.
+    │   ├───RegisterForm.test.tsx // Tests for the RegisterForm component.
+    │   ├───RegisterForm.tsx    // The user registration form.
+    │   ├───theme-provider.tsx  // Provides theme (e.g., light/dark mode) to the application.
+    │   ├───UserMenu.tsx        // The user menu in the navigation bar.
+    │   └───ui/                 // Directory for shadcn/ui components.
+    │       ├───alert-dialog.tsx // Reusable alert dialog component from shadcn/ui.
+    │       ├───avatar.tsx      // Reusable avatar component from shadcn/ui.
+    │       ├───badge.tsx       // Reusable badge component from shadcn/ui.
+    │       ├───button.tsx      // Reusable button component from shadcn/ui.
+    │       ├───card.tsx        // Reusable card component from shadcn/ui.
+    │       ├───dialog.tsx      // Reusable dialog component from shadcn/ui.
+    │       ├───dropdown-menu.tsx // Reusable dropdown menu component from shadcn/ui.
+    │       ├───form.tsx        // Reusable form components from shadcn/ui.
+    │       ├───input.tsx       // Reusable input component from shadcn/ui.
+    │       ├───label.tsx       // Reusable label component from shadcn/ui.
+    │       ├───sonner.tsx      // Reusable toast notification component from shadcn/ui.
+    │       └───toast.tsx       // Reusable toast component from shadcn/ui.
+    ├───contexts/               // For React context providers.
+    │   └───AuthContext.tsx     // Context for managing authentication state.
+    ├───hooks/                  // For custom React hooks.
+    │   └───useAuth.ts          // Hook for accessing authentication context.
+    ├───lib/                    // For utility functions.
+    │   └───utils.ts            // General utility functions.
+    ├───mocks/                  // For mock service worker handlers.
+    │   ├───handlers.ts         // Mock API request handlers for testing.
+    │   └───server.ts           // Mock server setup for testing.
+    ├───pages/                  // For application pages.
+    │   ├───HomePage.tsx        // The application's home page.
+    │   ├───LoginPage.tsx       // The user login page.
+    │   ├───MainPage.test.tsx   // Tests for the MainPage.
+    │   ├───MainPage.tsx        // The main application page after login.
+    │   ├───NotFoundPage.tsx    // The 404 not found page.
+    │   ├───ProfilePage.tsx     // The user profile page.
+    │   ├───RegisterPage.tsx    // The user registration page.
+    │   └───account/            // Pages related to user account management.
+    │       └───MyCatsPage.tsx  // Page for a user to manage their cats.
+    ├───services/               // For services that interact with APIs.
+    │   └───authService.ts      // Service for authentication-related API calls.
+    └───types/                  // For TypeScript type definitions.
+        └───index.ts            // Main file for exporting TypeScript types.
 ```
+
+## Testing TODOs
+
+The following is a list of components and pages that are known to be missing tests. This list should be updated as new components are created and tests are written.
+
+### Components
+- [ ] `CatCard.tsx`
+- [ ] `CatsSection.tsx`
+- [ ] `ChangePasswordForm.tsx`
+- [ ] `DeleteAccountDialog.tsx`
+- [ ] `HeroSection.tsx`
+- [ ] `icons.tsx`
+- [ ] `MainNav.tsx`
+- [ ] `theme-provider.tsx`
+- [ ] `UserMenu.tsx`
+
+### Pages
+- [ ] `ApplyToHelpPage.tsx`
+- [ ] `CatProfilePage.tsx`
+- [ ] `HomePage.tsx`
+- [ ] `NotFoundPage.tsx`

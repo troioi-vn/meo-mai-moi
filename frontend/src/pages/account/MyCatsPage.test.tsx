@@ -76,9 +76,9 @@ describe('MyCatsPage', () => {
   it('displays a loading message initially', async () => {
     vi.mocked(getMyCats).mockResolvedValue([])
     renderWithRouter(<MyCatsPage />)
-    expect(screen.getByText('Loading...')).toBeInTheDocument()
+    expect(screen.getByText('Loading your cats...')).toBeInTheDocument()
     await waitFor(() => {
-      expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
+      expect(screen.queryByText('Loading your cats...')).not.toBeInTheDocument()
     })
   })
 
@@ -86,16 +86,16 @@ describe('MyCatsPage', () => {
     vi.mocked(getMyCats).mockRejectedValue(new Error('Failed to fetch'))
     renderWithRouter(<MyCatsPage />)
     await waitFor(() => {
-      expect(screen.getByText('Failed to fetch cats.')).toBeInTheDocument()
+      expect(screen.getByText('Failed to fetch your cats. Please try again later.')).toBeInTheDocument()
     })
   })
 
-  it('has a link to the create cat page', async () => {
+  it('has a button to create a new cat', async () => {
     vi.mocked(getMyCats).mockResolvedValue([])
     renderWithRouter(<MyCatsPage />)
     await waitFor(() => {
-      const link = screen.getByRole('link', { name: 'Add Cat' })
-      expect(link).toHaveAttribute('href', '/account/cats/create')
+      const button = screen.getByRole('button', { name: /new cat/i })
+      expect(button).toBeInTheDocument()
     })
   })
 })

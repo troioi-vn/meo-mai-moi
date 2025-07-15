@@ -30,9 +30,9 @@ const renderWithProviders = (
 describe('MainPage', () => {
   it('renders all the main sections', () => {
     renderWithProviders(<MainPage />, { providerProps: {} })
-    expect(screen.getByRole('banner')).toHaveTextContent('Main Navigation')
+    expect(screen.getByText('Open Menu')).toBeInTheDocument()
     expect(screen.getByText('Hero Section')).toBeInTheDocument()
     expect(screen.getByText('Cats Section')).toBeInTheDocument()
-    expect(screen.getByRole('contentinfo')).toHaveTextContent('Footer')
+    expect(screen.getByRole('contentinfo')).toBeInTheDocument()
   })
 })

@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- Frontend: Fixed all failing frontend tests to properly match component implementations:
+  - Updated `Footer.test.tsx` to test actual footer structure instead of removed social media icons
+  - Fixed `MainPage.test.tsx` to correctly identify navigation elements (DropdownMenuTest component)
+  - Corrected `MyCatsPage.test.tsx` loading and error message text to match actual component output
+  - Updated button/link expectations in `MyCatsPage.test.tsx` to match actual UI implementation
+  - All 18 frontend tests now pass successfully
+
 ## [0.3.0] - 2025-07-15
 
 ### Added

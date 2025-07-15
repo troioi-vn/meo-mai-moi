@@ -16,7 +16,12 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   const auth = useAuth()
   const user = auth.user
   const isLoading = auth.isLoading
-  if (isLoading) return <div>Loading...</div>
+  if (isLoading)
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    )
   return user ? <>{children}</> : <Navigate to="/login" replace />
 }
 

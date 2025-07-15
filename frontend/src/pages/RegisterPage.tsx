@@ -11,11 +11,9 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="w-full max-w-md p-8 space-y-8 bg-neutral-50 rounded-lg">
-        <h1 className="text-2xl font-bold text-center">
-          Create an Account
-        </h1>
+    <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="w-full max-w-md p-8 space-y-8 bg-card rounded-lg shadow-lg border">
+        <h1 className="text-2xl font-bold text-center text-card-foreground">Create an Account</h1>
         <RegisterForm onSuccess={handleRegistrationSuccess} />
       </div>
     </div>

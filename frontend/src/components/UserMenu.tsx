@@ -2,31 +2,22 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuPortal,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
-import { useTheme } from 'next-themes'
+import { useTheme } from '@/hooks/use-theme'
 import { Moon, Sun } from 'lucide-react'
 import defaultAvatar from '@/assets/images/default-avatar.webp'
-import { useEffect } from 'react'
 
 export function UserMenu() {
   const { user, logout } = useAuth()
-  const { setTheme, theme } = useTheme()
-
-  useEffect(() => {
-    const isDark =
-      theme === 'dark' ||
-      (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-    document.documentElement.classList.toggle('dark', isDark)
-  }, [theme])
+  const { theme, setTheme } = useTheme()
 
   return (
     <DropdownMenu>
@@ -44,38 +35,31 @@ export function UserMenu() {
           <Link to="/account/cats">My Cats</Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger>
-            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="ml-2">Toggle theme</span>
-          </DropdownMenuSubTrigger>
-          <DropdownMenuPortal>
-            <DropdownMenuSubContent>
-              <DropdownMenuItem
-                onClick={() => {
-                  setTheme('light')
-                }}
-              >
-                Light
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  setTheme('dark')
-                }}
-              >
-                Dark
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  setTheme('system')
-                }}
-              >
-                System
-              </DropdownMenuItem>
-            </DropdownMenuSubContent>
-          </DropdownMenuPortal>
-        </DropdownMenuSub>
+        <DropdownMenuLabel>Theme</DropdownMenuLabel>
+        <DropdownMenuRadioGroup
+          value={theme}
+          onValueChange={(value) => {
+            if (value === 'light' || value === 'dark' || value === 'system') {
+              setTheme(value)
+            }
+          }}
+        >
+          <DropdownMenuRadioItem value="light">
+            <Sun className="h-[1.2rem] w-[1.2rem] mr-2" />
+            Light
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="dark">
+            <Moon className="h-[1.2rem] w-[1.2rem] mr-2" />
+            Dark
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="system">
+            <div className="h-[1.2rem] w-[1.2rem] mr-2 relative">
+              <Sun className="h-[1.2rem] w-[1.2rem] absolute rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="h-[1.2rem] w-[1.2rem] absolute rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            </div>
+            System
+          </DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => {

@@ -59,7 +59,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
       }}
     >
       {error && (
-        <p data-testid="register-error-message" className="text-red-500 text-sm mb-4">
+        <p data-testid="register-error-message" className="text-destructive text-sm mb-4">
           {error}
         </p>
       )}

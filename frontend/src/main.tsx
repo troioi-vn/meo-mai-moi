@@ -8,12 +8,12 @@ import './index.css'
 const rootElement = document.getElementById('root')
 if (rootElement) {
   ReactDOM.createRoot(rootElement).render(
-  <BrowserRouter>
-    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </ThemeProvider>
-  </BrowserRouter>
-  );
+    <BrowserRouter>
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </ThemeProvider>
+    </BrowserRouter>
+  )
 }

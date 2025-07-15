@@ -2,15 +2,15 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { api, csrf } from '@/api/axios'
 
 interface RegisterPayload {
-  name: string;
-  email: string;
-  password: string;
-  password_confirmation: string;
+  name: string
+  email: string
+  password: string
+  password_confirmation: string
 }
 
 interface LoginPayload {
-  email: string;
-  password: string;
+  email: string
+  password: string
 }
 
 import type { User } from '@/types/user'
@@ -36,11 +36,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const register = useCallback(async (payload: RegisterPayload) => {
-    await csrf()
-    await api.post('/register', payload)
-    await loadUser()
-  }, [loadUser])
+  const register = useCallback(
+    async (payload: RegisterPayload) => {
+      await csrf()
+      await api.post('/register', payload)
+      await loadUser()
+    },
+    [loadUser]
+  )
 
   const login = useCallback(
     async (payload: LoginPayload) => {
@@ -49,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('access_token', response.data.access_token)
       await loadUser()
     },
-    [loadUser],
+    [loadUser]
   )
 
   const logout = useCallback(async () => {
@@ -66,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         new_password_confirmation,
       })
     },
-    [],
+    []
   )
 
   const deleteAccount = useCallback(async (password: string) => {
@@ -101,7 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loadUser,
       changePassword,
       deleteAccount,
-    ],
+    ]
   )
 
   return <AuthContext value={value}>{children}</AuthContext>

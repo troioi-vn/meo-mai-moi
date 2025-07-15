@@ -78,7 +78,7 @@ const FormLabel = ({
   return (
     <label
       ref={ref}
-      className={cn('block text-sm font-medium text-gray-700 dark:text-gray-300', className)}
+      className={cn('block text-sm font-medium text-foreground', className)}
       htmlFor={formItemId}
       {...props}
     />
@@ -131,7 +131,7 @@ const FormDescription = ({
     <p
       ref={ref}
       id={formDescriptionId}
-      className={cn('text-[0.8rem] text-muted-foreground', className)}
+      className={cn('text-[0.8rem] text-gray-500', className)}
       {...props}
     />
   )
@@ -154,7 +154,13 @@ const FormMessage = ({
   const formItemId = `${id}-${name}`
   const formMessageId = `${formItemId}-message`
 
-  const body = error ? (typeof error.message === 'string' ? error.message : (error.message ? JSON.stringify(error.message) : 'Error occurred')) : children
+  const body = error
+    ? typeof error.message === 'string'
+      ? error.message
+      : error.message
+        ? JSON.stringify(error.message)
+        : 'Error occurred'
+    : children
 
   if (!body) {
     return null
@@ -173,12 +179,4 @@ const FormMessage = ({
 }
 FormMessage.displayName = 'FormMessage'
 
-export {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormDescription,
-  FormMessage,
-}
+export { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage }

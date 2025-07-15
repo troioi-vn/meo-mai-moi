@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react'
 import { getMyCats } from '@/api/cats'
 import type { Cat } from '@/types/cat'
 import { useAuth } from '@/hooks/use-auth'
-import React from 'react'
 
 export default function MyCatsPage() {
   const [cats, setCats] = useState<Cat[]>([])
@@ -36,25 +35,33 @@ export default function MyCatsPage() {
   }, [isAuthenticated, isLoading])
 
   if (isLoading) {
-    return <p>Loading authentication status...</p>
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Loading authentication status...</p>
+      </div>
+    )
   }
 
   if (!isAuthenticated) {
-    return <p>Please log in to view your cats.</p>
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Please log in to view your cats.</p>
+      </div>
+    )
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 bg-background min-h-screen">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">My Cats</h1>
+        <h1 className="text-3xl font-bold text-foreground">My Cats</h1>
         <Button onClick={() => void navigate('/account/cats/create')}>
           <PlusCircle className="mr-2 h-4 w-4" />
           New Cat
         </Button>
       </div>
 
-      {loading && <p>Loading your cats...</p>}
-      {error && <p className="text-red-500">{error}</p>}
+      {loading && <p className="text-muted-foreground">Loading your cats...</p>}
+      {error && <p className="text-destructive">{error}</p>}
 
       {!loading && !error && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">

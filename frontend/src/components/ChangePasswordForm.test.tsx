@@ -29,11 +29,11 @@ describe('ChangePasswordForm', () => {
 
   it('renders all form fields', () => {
     render(<ChangePasswordForm />)
-    
+
     // Check that all three password inputs exist
     const inputs = document.querySelectorAll('input[type="password"]')
     expect(inputs).toHaveLength(3)
-    
+
     expect(screen.getByText('Current Password')).toBeInTheDocument()
     expect(screen.getByText('New Password')).toBeInTheDocument()
     expect(screen.getByText('Confirm New Password')).toBeInTheDocument()
@@ -43,10 +43,10 @@ describe('ChangePasswordForm', () => {
   it('shows validation errors for empty fields', async () => {
     const user = userEvent.setup()
     render(<ChangePasswordForm />)
-    
+
     const submitButton = screen.getByRole('button', { name: /change password/i })
     await user.click(submitButton)
-    
+
     expect(screen.getByText(/current password is required/i)).toBeInTheDocument()
     expect(screen.getByText(/new password must be at least 8 characters/i)).toBeInTheDocument()
     expect(screen.getByText(/confirm new password is required/i)).toBeInTheDocument()
@@ -55,63 +55,92 @@ describe('ChangePasswordForm', () => {
   it('shows error when new passwords do not match', async () => {
     const user = userEvent.setup()
     render(<ChangePasswordForm />)
-    
+
     // Use querySelector to find inputs by name since password inputs don't have textbox role
-    const currentPasswordInput = document.querySelector('input[name="current_password"]')!
-    const newPasswordInput = document.querySelector('input[name="new_password"]')!
-    const confirmPasswordInput = document.querySelector('input[name="new_password_confirmation"]')!
-    
+    const currentPasswordInput = document.querySelector('input[name="current_password"]')
+    const newPasswordInput = document.querySelector('input[name="new_password"]')
+    const confirmPasswordInput = document.querySelector('input[name="new_password_confirmation"]')
+
+    expect(currentPasswordInput).toBeInTheDocument()
+    expect(newPasswordInput).toBeInTheDocument()
+    expect(confirmPasswordInput).toBeInTheDocument()
+
+    if (!currentPasswordInput || !newPasswordInput || !confirmPasswordInput) {
+      throw new Error('Required form inputs not found')
+    }
+
     await user.type(currentPasswordInput, 'currentpass')
     await user.type(newPasswordInput, 'newpassword123')
     await user.type(confirmPasswordInput, 'differentpass123')
-    
+
     const submitButton = screen.getByRole('button', { name: /change password/i })
     await user.click(submitButton)
-    
+
     expect(screen.getByText(/new password and confirmation do not match/i)).toBeInTheDocument()
   })
 
   it('calls changePassword with correct values on valid form submission', async () => {
     const user = userEvent.setup()
     mockChangePassword.mockResolvedValue(undefined)
-    
+
     render(<ChangePasswordForm />)
-    
-    const currentPasswordInput = document.querySelector('input[name="current_password"]')!
-    const newPasswordInput = document.querySelector('input[name="new_password"]')!
-    const confirmPasswordInput = document.querySelector('input[name="new_password_confirmation"]')!
-    
+
+    const currentPasswordInput = document.querySelector('input[name="current_password"]')
+    const newPasswordInput = document.querySelector('input[name="new_password"]')
+    const confirmPasswordInput = document.querySelector('input[name="new_password_confirmation"]')
+
+    expect(currentPasswordInput).toBeInTheDocument()
+    expect(newPasswordInput).toBeInTheDocument()
+    expect(confirmPasswordInput).toBeInTheDocument()
+
+    if (!currentPasswordInput || !newPasswordInput || !confirmPasswordInput) {
+      throw new Error('Required form inputs not found')
+    }
+
     await user.type(currentPasswordInput, 'currentpass')
     await user.type(newPasswordInput, 'newpassword123')
     await user.type(confirmPasswordInput, 'newpassword123')
-    
+
     const submitButton = screen.getByRole('button', { name: /change password/i })
     await user.click(submitButton)
-    
+
     expect(mockChangePassword).toHaveBeenCalledWith(
       'currentpass',
-      'newpassword123', 
+      'newpassword123',
       'newpassword123'
     )
   })
 
   it('shows loading state during form submission', async () => {
     const user = userEvent.setup()
-    mockChangePassword.mockImplementation(() => new Promise(() => {})) // Never resolves
-    
+    mockChangePassword.mockImplementation(
+      () =>
+        new Promise(() => {
+          // This promise never resolves to test loading state
+        })
+    )
+
     render(<ChangePasswordForm />)
-    
-    const currentPasswordInput = document.querySelector('input[name="current_password"]')!
-    const newPasswordInput = document.querySelector('input[name="new_password"]')!
-    const confirmPasswordInput = document.querySelector('input[name="new_password_confirmation"]')!
-    
+
+    const currentPasswordInput = document.querySelector('input[name="current_password"]')
+    const newPasswordInput = document.querySelector('input[name="new_password"]')
+    const confirmPasswordInput = document.querySelector('input[name="new_password_confirmation"]')
+
+    expect(currentPasswordInput).toBeInTheDocument()
+    expect(newPasswordInput).toBeInTheDocument()
+    expect(confirmPasswordInput).toBeInTheDocument()
+
+    if (!currentPasswordInput || !newPasswordInput || !confirmPasswordInput) {
+      throw new Error('Required form inputs not found')
+    }
+
     await user.type(currentPasswordInput, 'currentpass')
     await user.type(newPasswordInput, 'newpassword123')
     await user.type(confirmPasswordInput, 'newpassword123')
-    
+
     const submitButton = screen.getByRole('button', { name: /change password/i })
     await user.click(submitButton)
-    
+
     expect(submitButton).toBeDisabled()
   })
 })

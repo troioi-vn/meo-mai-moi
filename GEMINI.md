@@ -327,6 +327,7 @@ enum Permission: string {
     -   `location` (string, nullable): The user's general location (e.g., "City, Country").
 
 2.  **`Cat` Model:** Represents the cat's permanent biological and descriptive information.
+    -   `birthday` (date): The cat's date of birth.
     -   `location` (string, nullable): The city or area where the cat is located.
     -   `status` (enum: `available`, `fostered`, `adopted`): The current status of the cat.
 
@@ -379,6 +380,10 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
 -   **User Story: API Documentation and Frontend Tests**
     -   **Backend:** Add Swagger (OpenAPI) documentation for all authentication and user profile endpoints.
     -   **Frontend:** Write tests for the `RegisterPage`, `LoginPage`, and `ProfilePage`, mocking API calls. Write tests for the main navigation to ensure it displays correctly for both authenticated and unauthenticated users.
+-   **User Story: User Avatar Management**
+    -   **Scenario:** A user uploads a new avatar on their profile page.
+    -   **Backend:** Implement an endpoint to handle avatar image uploads, storing the file path in the `User` model.
+    -   **Frontend:** Add an upload button and display the user's avatar on the `ProfilePage`.
 
 #### Epic 2: Cat Profile & Custodianship Lifecycle
 
@@ -387,13 +392,23 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
     -   **Scenario:** A `CAT_OWNER` creates a new profile for their cat, providing all necessary details. They can later edit this information.
     -   **Backend:**
         -   Implement `CatController` with CRUD endpoints (`/api/cats`).
+        -   Replace the `age` field with a `birthday` (date) field in the `cats` table and model.
         -   Add a `status` field to the `cats` table to track availability (e.g., `available`, `fostered`, `adopted`).
         -   Implement authorization to ensure only the owner or an `ADMIN` can edit/delete the cat.
         -   Add API documentation for the new endpoints.
     -   **Frontend:**
         -   Create a "My Cats" page (`/account/cats`) to display a list of cats owned by the user.
         -   Create a form (`/account/cats/create`, `/account/cats/{id}/edit`) for creating and editing cat profiles.
+        -   Calculate and display the cat's age on the `CatCard` and `CatProfilePage` based on the `birthday` date.
         -   Write tests for the new components.
+-   **User Story: Delete a Cat Profile**
+    -   **Scenario:** A `CAT_OWNER` deletes one of their cat's profiles.
+    -   **Backend:** Implement a `DELETE /api/cats/{id}` endpoint with authorization.
+    -   **Frontend:** Add a delete button to the cat management interface with a confirmation dialog.
+-   **User Story: Manage Cat Profile Photos**
+    -   **Scenario:** A `CAT_OWNER` uploads a new photo for their cat or removes an existing one.
+    -   **Backend:** Implement endpoints to handle photo uploads and deletion.
+    -   **Frontend:** Add UI controls on the cat edit page for photo management.
 
 ---
 
@@ -800,9 +815,12 @@ The following is a list of components and pages that are known to be missing tes
 - [ ] `MainNav.tsx`
 - [ ] `theme-provider.tsx`
 - [ ] `UserMenu.tsx`
+- [ ] `UserAvatar.tsx`
 
 ### Pages
 - [ ] `ApplyToHelpPage.tsx`
 - [ ] `CatProfilePage.tsx`
 - [ ] `HomePage.tsx`
 - [ ] `NotFoundPage.tsx`
+- [ ] `MyCatsPage.tsx`
+- [ ] `EditCatPage.tsx`

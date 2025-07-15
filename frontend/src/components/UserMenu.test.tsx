@@ -49,7 +49,7 @@ describe('UserMenu', () => {
 
   it('renders user avatar with correct fallback initials', () => {
     renderWithRouter(<UserMenu />)
-    
+
     // Since the avatar image might not load in tests, check for fallback
     const fallback = screen.getByText('J')
     expect(fallback).toBeInTheDocument()
@@ -70,7 +70,7 @@ describe('UserMenu', () => {
     })
 
     renderWithRouter(<UserMenu />)
-    
+
     const fallback = screen.getByText('J')
     expect(fallback).toBeInTheDocument()
   })
@@ -78,12 +78,17 @@ describe('UserMenu', () => {
   it('opens dropdown menu when avatar is clicked', async () => {
     const user = userEvent.setup()
     renderWithRouter(<UserMenu />)
-    
+
     // Find the dropdown trigger by its aria attributes
     const avatar = document.querySelector('[aria-haspopup="menu"]')
     expect(avatar).toBeInTheDocument()
-    await user.click(avatar!)
-    
+
+    if (!avatar) {
+      throw new Error('Avatar dropdown trigger not found')
+    }
+
+    await user.click(avatar)
+
     // Check that menu items are visible after clicking
     expect(screen.getByRole('menuitem', { name: 'Profile' })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: 'My Cats' })).toBeInTheDocument()
@@ -93,13 +98,19 @@ describe('UserMenu', () => {
   it('has correct navigation links in the menu', async () => {
     const user = userEvent.setup()
     renderWithRouter(<UserMenu />)
-    
+
     const avatar = document.querySelector('[aria-haspopup="menu"]')
-    await user.click(avatar!)
-    
+    expect(avatar).toBeInTheDocument()
+
+    if (!avatar) {
+      throw new Error('Avatar dropdown trigger not found')
+    }
+
+    await user.click(avatar)
+
     const profileLink = screen.getByRole('menuitem', { name: 'Profile' })
     const myCatsLink = screen.getByRole('menuitem', { name: 'My Cats' })
-    
+
     expect(profileLink).toHaveAttribute('href', '/account')
     expect(myCatsLink).toHaveAttribute('href', '/account/cats')
   })
@@ -107,25 +118,37 @@ describe('UserMenu', () => {
   it('calls logout function when logout is clicked', async () => {
     const user = userEvent.setup()
     mockLogout.mockResolvedValue(undefined)
-    
+
     renderWithRouter(<UserMenu />)
-    
+
     const avatar = document.querySelector('[aria-haspopup="menu"]')
-    await user.click(avatar!)
-    
+    expect(avatar).toBeInTheDocument()
+
+    if (!avatar) {
+      throw new Error('Avatar dropdown trigger not found')
+    }
+
+    await user.click(avatar)
+
     const logoutButton = screen.getByRole('menuitem', { name: 'Log Out' })
     await user.click(logoutButton)
-    
+
     expect(mockLogout).toHaveBeenCalledTimes(1)
   })
 
   it('shows theme toggle submenu', async () => {
     const user = userEvent.setup()
     renderWithRouter(<UserMenu />)
-    
+
     const avatar = document.querySelector('[aria-haspopup="menu"]')
-    await user.click(avatar!)
-    
+    expect(avatar).toBeInTheDocument()
+
+    if (!avatar) {
+      throw new Error('Avatar dropdown trigger not found')
+    }
+
+    await user.click(avatar)
+
     const themeToggle = screen.getByRole('menuitem', { name: /toggle theme/i })
     expect(themeToggle).toBeInTheDocument()
   })
@@ -144,7 +167,7 @@ describe('UserMenu', () => {
     })
 
     renderWithRouter(<UserMenu />)
-    
+
     // Should not crash and avatar should still render
     const avatar = document.querySelector('[aria-haspopup="menu"]')
     expect(avatar).toBeInTheDocument()
@@ -152,20 +175,28 @@ describe('UserMenu', () => {
 
   it('handles logout error gracefully', async () => {
     const user = userEvent.setup()
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {
+      // Mock console.error for testing
+    })
     mockLogout.mockRejectedValue(new Error('Logout failed'))
-    
+
     renderWithRouter(<UserMenu />)
-    
+
     const avatar = document.querySelector('[aria-haspopup="menu"]')
-    await user.click(avatar!)
-    
+    expect(avatar).toBeInTheDocument()
+
+    if (!avatar) {
+      throw new Error('Avatar dropdown trigger not found')
+    }
+
+    await user.click(avatar)
+
     const logoutButton = screen.getByRole('menuitem', { name: 'Log Out' })
     await user.click(logoutButton)
-    
+
     expect(mockLogout).toHaveBeenCalledTimes(1)
     expect(consoleErrorSpy).toHaveBeenCalledWith('Logout error:', expect.any(Error))
-    
+
     consoleErrorSpy.mockRestore()
   })
 })

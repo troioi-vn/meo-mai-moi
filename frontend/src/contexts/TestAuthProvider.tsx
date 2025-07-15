@@ -30,12 +30,12 @@ export const TestAuthProvider = ({ children, mockValues }: TestAuthProviderProps
         await Promise.resolve()
       }),
     }),
-    [],
+    []
   )
 
   const value = React.useMemo(
     () => ({ ...defaultMockValues, ...mockValues }),
-    [defaultMockValues, mockValues],
+    [defaultMockValues, mockValues]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

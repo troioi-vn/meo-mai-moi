@@ -4,12 +4,15 @@ import { MemoryRouter } from 'react-router-dom'
 import { TestAuthProvider } from '@/contexts/TestAuthProvider'
 import ProfilePage from '../pages/ProfilePage'
 
-import { RenderOptions } from '@testing-library/react'
-import { AuthContextType } from '@/contexts/auth-context'
+import type { RenderOptions } from '@testing-library/react'
+import type { AuthContextType } from '@/types/auth'
 
 const renderWithProviders = (
   ui: React.ReactElement,
-  { providerProps, ...renderOptions }: { providerProps?: Partial<AuthContextType>; [key: string]: RenderOptions }
+  {
+    providerProps,
+    ...renderOptions
+  }: { providerProps?: Partial<AuthContextType>; [key: string]: RenderOptions }
 ) => {
   return render(
     <TestAuthProvider {...providerProps}>

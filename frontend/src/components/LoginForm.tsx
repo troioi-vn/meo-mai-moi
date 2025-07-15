@@ -15,23 +15,21 @@ const LoginForm: React.FC = () => {
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault()
     setError(null)
-    
-    void (
-      (async () => {
-        try {
-          await login({ email, password })
-          void navigate('/profile')
-        } catch (err: unknown) {
-          setError('Failed to login. Please check your credentials.')
-          console.error(err)
-        }
-      })()
-    )
+
+    void (async () => {
+      try {
+        await login({ email, password })
+        void navigate('/account/cats')
+      } catch (err: unknown) {
+        setError('Failed to login. Please check your credentials.')
+        console.error(err)
+      }
+    })()
   }
 
   return (
     <form onSubmit={handleSubmit}>
-      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+      {error && <p className="text-destructive text-sm mb-4">{error}</p>}
       <div className="mb-4">
         <Label htmlFor="email">Email</Label>
         <Input

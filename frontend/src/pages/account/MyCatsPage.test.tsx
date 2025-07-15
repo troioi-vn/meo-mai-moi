@@ -1,12 +1,15 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { vi } from 'vitest'
+import { setupServer } from 'msw/node'
 import MyCatsPage from './MyCatsPage'
 import { getMyCats } from '@/api/cats'
 import { useAuth } from '@/hooks/use-auth'
 
 vi.mock('@/api/cats')
 vi.mock('@/hooks/use-auth')
+
+const server = setupServer()
 
 const mockUser = { id: 1, name: 'Test User', email: 'test@example.com' }
 
@@ -15,6 +18,16 @@ const renderWithRouter = (ui: React.ReactElement) => {
 }
 
 describe('MyCatsPage', () => {
+  beforeAll(() => {
+    server.listen()
+  })
+  afterEach(() => {
+    server.resetHandlers()
+  })
+  afterAll(() => {
+    server.close()
+  })
+
   beforeEach(() => {
     vi.mocked(useAuth).mockReturnValue({
       user: mockUser,
@@ -86,7 +99,9 @@ describe('MyCatsPage', () => {
     vi.mocked(getMyCats).mockRejectedValue(new Error('Failed to fetch'))
     renderWithRouter(<MyCatsPage />)
     await waitFor(() => {
-      expect(screen.getByText('Failed to fetch your cats. Please try again later.')).toBeInTheDocument()
+      expect(
+        screen.getByText('Failed to fetch your cats. Please try again later.')
+      ).toBeInTheDocument()
     })
   })
 

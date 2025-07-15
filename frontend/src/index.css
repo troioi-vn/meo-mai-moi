@@ -1,48 +1,74 @@
 @import 'tailwindcss';
 
+:root {
+  --bg: 255 255 255;
+  --fg: 17 24 39;
+  --border: 229 231 235;
+  --input: 229 231 235;
+  --ring: 59 130 246;
+  --radius: 0.5rem;
+  --muted: 249 250 251;
+  --muted-foreground: 107 114 128;
+  --accent: 243 244 246;
+  --accent-foreground: 17 24 39;
+}
+
+.dark {
+  --bg: 17 24 39;
+  --fg: 243 244 246;
+  --border: 75 85 99;
+  --input: 75 85 99;
+  --ring: 147 197 253;
+  --muted: 31 41 55;
+  --muted-foreground: 156 163 175;
+  --accent: 31 41 55;
+  --accent-foreground: 243 244 246;
+}
+
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
+  * {
+    border-color: rgb(var(--border));
   }
 
-  .dark {
-    --background: 222 84% 5%;
-    --foreground: 210 40% 98%;
-    --card: 222 84% 5%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 84% 5%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47% 11%;
-    --secondary: 217 33% 18%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 18%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 217 33% 18%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 18%;
-    --input: 217 33% 18%;
-    --ring: 213 27% 84%;
+  body {
+    background-color: rgb(var(--bg));
+    color: rgb(var(--fg));
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
+  }
+}
+
+@layer utilities {
+  .bg-background {
+    background-color: rgb(var(--bg));
+  }
+  
+  .bg-accent {
+    background-color: rgb(var(--accent));
+  }
+  
+  .bg-muted {
+    background-color: rgb(var(--muted));
+  }
+  
+  .text-accent-foreground {
+    color: rgb(var(--accent-foreground));
+  }
+  
+  .text-muted-foreground {
+    color: rgb(var(--muted-foreground));
+  }
+  
+  .text-foreground {
+    color: rgb(var(--fg));
+  }
+  
+  .hover\:bg-accent:hover {
+    background-color: rgb(var(--accent));
+  }
+  
+  .hover\:text-accent-foreground:hover {
+    color: rgb(var(--accent-foreground));
   }
 }

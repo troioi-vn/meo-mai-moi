@@ -4,4 +4,6 @@ interface FormFieldContextValue {
   name: string
 }
 
-export const FormFieldContext = React.createContext<FormFieldContextValue>({} as FormFieldContextValue)
+export const FormFieldContext = React.createContext<FormFieldContextValue>(
+  {} as FormFieldContextValue
+)

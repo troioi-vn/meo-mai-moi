@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- **Documentation**: Added user stories for avatar management, cat profile deletion, and cat photo management to `GEMINI.md`.
+- **Documentation**: Added new testing TODOs for `UserAvatar.tsx`, `MyCatsPage.tsx`, and `EditCatPage.tsx`.
+- **Frontend**: Added local placeholder image for cats.
+
+### Changed
+- **Documentation**: Updated `Cat` model in `GEMINI.md` to use `birthday` instead of `age`.
+- **Documentation**: Updated "Create and Edit a Cat Profile" user story to reflect the `birthday` change and frontend age calculation.
+- **Backend**: Added `localhost:5173` to `SANCTUM_STATEFUL_DOMAINS` in `config/sanctum.php`.
+- **Frontend**: Re-implemented a custom theme provider, removing the `next-themes` dependency.
+- **Frontend**: Updated numerous components with consistent styling from the new design system in Tailwind CSS.
+- **Frontend**: Simplified CSRF function in `src/api/axios.ts`.
+- **Frontend**: Updated `tsconfig.app.json` and `tsconfig.node.json` to include `composite: true`.
+
+### Removed
+- **Frontend**: Removed `next-themes` library.
+- **Frontend**: Deleted `DropdownMenuTest.tsx`, `HomePage.tsx`, and `HomePage.test.tsx`.
+
 ### Fixed
 - Frontend: Fixed all failing frontend tests to properly match component implementations:
   - Updated `Footer.test.tsx` to test actual footer structure instead of removed social media icons

@@ -1,13 +1,13 @@
 export interface RegisterPayload {
-  name: string;
-  email: string;
-  password: string;
-  password_confirmation: string;
+  name: string
+  email: string
+  password: string
+  password_confirmation: string
 }
 
 export interface LoginPayload {
-  email: string;
-  password: string;
+  email: string
+  password: string
 }
 export interface User {
   id: number
@@ -26,7 +26,7 @@ export interface AuthContextType {
   changePassword: (
     current_password: string,
     new_password: string,
-    new_password_confirmation: string,
+    new_password_confirmation: string
   ) => Promise<void>
   deleteAccount: (password: string) => Promise<void>
 }

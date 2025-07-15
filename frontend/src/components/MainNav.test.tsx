@@ -38,7 +38,7 @@ describe('MainNav', () => {
 
     it('renders the brand logo', () => {
       renderWithRouter(<MainNav />)
-      
+
       const logo = screen.getByRole('link', { name: 'Meo!' })
       expect(logo).toBeInTheDocument()
       expect(logo).toHaveAttribute('href', '/')
@@ -46,24 +46,24 @@ describe('MainNav', () => {
 
     it('shows login and register buttons', () => {
       renderWithRouter(<MainNav />)
-      
+
       expect(screen.getByRole('link', { name: /login/i })).toBeInTheDocument()
       expect(screen.getByRole('link', { name: /register/i })).toBeInTheDocument()
     })
 
     it('does not show authenticated user components', () => {
       renderWithRouter(<MainNav />)
-      
+
       expect(screen.queryByTestId('notification-bell')).not.toBeInTheDocument()
       expect(screen.queryByTestId('user-menu')).not.toBeInTheDocument()
     })
 
     it('has correct navigation links', () => {
       renderWithRouter(<MainNav />)
-      
+
       const loginLink = screen.getByRole('link', { name: /login/i })
       const registerLink = screen.getByRole('link', { name: /register/i })
-      
+
       expect(loginLink).toHaveAttribute('href', '/login')
       expect(registerLink).toHaveAttribute('href', '/register')
     })
@@ -86,7 +86,7 @@ describe('MainNav', () => {
 
     it('renders the brand logo', () => {
       renderWithRouter(<MainNav />)
-      
+
       const logo = screen.getByRole('link', { name: 'Meo!' })
       expect(logo).toBeInTheDocument()
       expect(logo).toHaveAttribute('href', '/')
@@ -94,14 +94,14 @@ describe('MainNav', () => {
 
     it('shows notification bell and user menu', () => {
       renderWithRouter(<MainNav />)
-      
+
       expect(screen.getByTestId('notification-bell')).toBeInTheDocument()
       expect(screen.getByTestId('user-menu')).toBeInTheDocument()
     })
 
     it('does not show login and register buttons', () => {
       renderWithRouter(<MainNav />)
-      
+
       expect(screen.queryByRole('link', { name: /login/i })).not.toBeInTheDocument()
       expect(screen.queryByRole('link', { name: /register/i })).not.toBeInTheDocument()
     })
@@ -121,10 +121,10 @@ describe('MainNav', () => {
     })
 
     renderWithRouter(<MainNav />)
-    
+
     const nav = screen.getByRole('navigation')
     expect(nav).toBeInTheDocument()
-    
+
     const header = screen.getByRole('banner')
     expect(header).toBeInTheDocument()
     expect(header).toHaveClass('fixed', 'top-0', 'z-50')
@@ -144,7 +144,7 @@ describe('MainNav', () => {
     })
 
     renderWithRouter(<MainNav />)
-    
+
     const header = screen.getByRole('banner')
     expect(header).toHaveClass(
       'fixed',

@@ -20,34 +20,29 @@ const CreateCatPage: React.FC = () => {
     e.preventDefault()
     setError(null)
 
-    
-    void (
-      (async () => {
-        try {
-          await createCat({
-            name,
-            breed,
-            age: parseInt(age, 10),
-            location,
-            description,
-          })
-          void toast.success('Cat created successfully!')
-          void navigate('/account/cats')
-        } catch (err: unknown) {
-          setError('Failed to create cat.')
-          console.error(err)
-          void toast.error('Failed to create cat.')
-        }
-      })()
-    )
+    void (async () => {
+      try {
+        await createCat({
+          name,
+          breed,
+          age: parseInt(age, 10),
+          location,
+          description,
+        })
+        void toast.success('Cat created successfully!')
+        void navigate('/account/cats')
+      } catch (err: unknown) {
+        setError('Failed to create cat.')
+        console.error(err)
+        void toast.error('Failed to create cat.')
+      }
+    })()
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="w-full max-w-2xl p-8 space-y-8 bg-neutral-50 rounded-lg shadow-lg dark:bg-neutral-800">
-        <h1 className="text-3xl font-bold text-center text-neutral-900 dark:text-neutral-100 mb-6">
-          Add a New Cat
-        </h1>
+    <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="w-full max-w-2xl p-8 space-y-8 bg-card rounded-lg shadow-lg border">
+        <h1 className="text-3xl font-bold text-center text-card-foreground mb-6">Add a New Cat</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="name" id="name-label" className="block">
@@ -128,7 +123,7 @@ const CreateCatPage: React.FC = () => {
               aria-labelledby="description-label"
             />
           </div>
-          {error && <p className="text-red-500">{error}</p>}
+          {error && <p className="text-destructive">{error}</p>}
           <Button type="submit" aria-label="Create Cat">
             Create Cat
           </Button>

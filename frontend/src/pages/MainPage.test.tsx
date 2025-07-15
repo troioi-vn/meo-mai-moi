@@ -1,23 +1,29 @@
-import { render, screen } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
+import { render, screen, RenderOptions } from '@testing-library/react'
+import { describe, it, expect, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { TestAuthProvider } from '@/contexts/TestAuthProvider'
 import MainPage from '../pages/MainPage'
+import { AuthContextType } from '@/types/auth'
 
-vi.mock('@/components/MainNav', () => ({ default: () => <header>Main Navigation</header> }))
+vi.mock('@/components/MainNav', () => ({
+  default: () => <header>Main Navigation</header>,
+}))
 vi.mock('@/components/HeroSection', () => ({ HeroSection: () => <section>Hero Section</section> }))
 vi.mock('@/components/CatsSection', () => ({ CatsSection: () => <section>Cats Section</section> }))
 vi.mock('@/components/Footer', () => ({ Footer: () => <footer>Footer</footer> }))
 
 const renderWithProviders = (
   ui: React.ReactElement,
-  { providerProps, ...renderOptions }: { providerProps?: any; [key: string]: any }
+  {
+    providerProps,
+    ...renderOptions
+  }: { providerProps?: Partial<AuthContextType> } & RenderOptions = {},
 ) => {
   return render(
-    <TestAuthProvider {...providerProps}>
+    <TestAuthProvider mockValues={providerProps}>
       <MemoryRouter>{ui}</MemoryRouter>
     </TestAuthProvider>,
-    renderOptions
+    renderOptions,
   )
 }
 

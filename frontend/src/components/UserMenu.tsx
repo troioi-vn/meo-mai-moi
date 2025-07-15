@@ -32,8 +32,8 @@ export function UserMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Avatar className="h-9 w-9 cursor-pointer">
-          <AvatarImage src={user?.avatar_url || defaultAvatar} alt={user?.name || 'User avatar'} />
-          <AvatarFallback>{user?.name?.[0].toUpperCase()}</AvatarFallback>
+          <AvatarImage src={user?.avatar_url ?? defaultAvatar} alt={user?.name ?? 'User avatar'} />
+          <AvatarFallback>{user?.name ? user.name[0].toUpperCase() : ''}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -52,14 +52,40 @@ export function UserMenu() {
           </DropdownMenuSubTrigger>
           <DropdownMenuPortal>
             <DropdownMenuSubContent>
-              <DropdownMenuItem onClick={() => { setTheme('light'); }}>Light</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => { setTheme('dark'); }}>Dark</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => { setTheme('system'); }}>System</DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  setTheme('light')
+                }}
+              >
+                Light
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  setTheme('dark')
+                }}
+              >
+                Dark
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  setTheme('system')
+                }}
+              >
+                System
+              </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuPortal>
         </DropdownMenuSub>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => { void logout(); }}>Log Out</DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => {
+            logout().catch((err: unknown) => {
+              console.error('Logout error:', err)
+            })
+          }}
+        >
+          Log Out
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

@@ -61,27 +61,22 @@ const ChangePasswordForm: React.FC = () => {
       })
       form.reset()
     } catch (error: unknown) {
-      let errorMessage = 'An unexpected error occurred.';
-      if (
-        error &&
-        typeof error === 'object' &&
-        'isAxiosError' in error &&
-        (error as AxiosError<ApiError>).isAxiosError
-      ) {
-        const axiosError = error as AxiosError<ApiError>;
-        errorMessage =
-          (axiosError.response && axiosError.response.data && axiosError.response.data.message)
-            ? axiosError.response.data.message
-            : (axiosError.message ? axiosError.message : errorMessage);
-        if (axiosError.response && axiosError.response.data && axiosError.response.data.errors) {
+      let errorMessage = 'An unexpected error occurred.'
+      if (error instanceof AxiosError) {
+        const axiosError = error as AxiosError<ApiError>
+        errorMessage = axiosError.response?.data.message ?? axiosError.message
+        if (axiosError.response?.data.errors) {
           for (const key in axiosError.response.data.errors) {
             form.setError(key as keyof PasswordChangeFormValues, {
               type: 'server',
               message: axiosError.response.data.errors[key][0],
-            });
+            })
           }
         }
+      } else if (error instanceof Error) {
+        errorMessage = error.message
       }
+
       toast({
         title: 'Password Change Failed',
         description: errorMessage,

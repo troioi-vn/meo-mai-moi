@@ -4,6 +4,62 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-07-15
+
+### Added
+- Frontend: Added new `auth-context.tsx` file to separate context definition from provider implementation.
+- Frontend: Added comprehensive error logging in registration form for better debugging.
+
+### Changed
+- Frontend: Refactored authentication architecture for better separation of concerns:
+  - Moved context definition to separate file (`auth-context.tsx`)
+  - Updated `AuthContext` to use `useCallback` for all functions to prevent unnecessary re-renders
+  - Standardized type imports across auth-related files
+- Frontend: Improved error handling consistency across forms:
+  - Enhanced `ChangePasswordForm` with proper `AxiosError` type checking and fallback error messages
+  - Updated `DeleteAccountDialog` to use consistent error handling pattern
+  - Improved `RegisterForm` error processing and type safety
+- Frontend: Enhanced component implementations:
+  - Updated `LoginForm` to properly handle async form submission with `void` operator
+  - Modified `UserMenu` to use proper promise handling for `logout` function
+  - Updated `MainNav` to use the new `useAuth` hook import path
+- Frontend: Improved UI component architecture:
+  - Refactored `alert-dialog.tsx` to use proper `React.forwardRef` implementation
+  - Updated `button.tsx` to use cleaner interface definitions and import structure
+  - Enhanced `form.tsx` with better context handling and error message processing
+  - Improved `input.tsx` with proper TypeScript interface exports
+- Frontend: Updated page components for better UX:
+  - Removed `HomeButton` component from `LoginPage` and `RegisterPage` for cleaner design
+  - Enhanced `ProfilePage` to use direct function references instead of arrow functions
+  - Updated `CreateCatPage` to use proper promise chaining instead of async/await in event handlers
+- Frontend: Improved test infrastructure:
+  - Updated `NotificationBell.test.tsx` with proper API mocking using `vi.spyOn`
+  - Enhanced `TestAuthProvider` to use `useMemo` for better performance
+  - Fixed test imports to use the new hook location
+- Frontend: Configuration improvements:
+  - Updated `tsconfig.json` to explicitly include the new `auth-context.tsx` file
+
+### Removed
+- Frontend: Removed the unused `HomeButton` component and all its references.
+
+### Fixed
+- **Linting:** Resolved majority of ESLint errors including:
+  - Fixed `@typescript-eslint/no-floating-promises` errors by using proper promise handling
+  - Resolved `@typescript-eslint/no-unsafe-call` and `@typescript-eslint/no-unsafe-assignment` errors
+  - Fixed `@typescript-eslint/no-unnecessary-condition` errors with proper type checking
+  - Resolved `@typescript-eslint/prefer-nullish-coalescing` errors by using `??` operator
+- **Type Safety:** Enhanced TypeScript usage across components:
+  - Proper `AxiosError` type checking in error handlers
+  - Improved interface definitions and type exports
+  - Better error message type handling
+- **React Best Practices:** Improved component implementations:
+  - Proper `React.forwardRef` usage in UI components
+  - Better hook usage with `useCallback` and `useMemo` for performance
+  - Consistent promise handling patterns
+- **Note:** Some React 19 warnings remain for `forwardRef` usage and context providers, which are acceptable for current shadcn/ui components
+
+## [0.2.0] - 2025-07-15
+
 ### Added
 - Backend: Added `cats()` relationship to `User` model.
 - Frontend: Added `postcss.config.js` for Tailwind CSS and Autoprefixer.
@@ -45,24 +101,18 @@ All notable changes to this project will be documented in this file.
 - Frontend: Removed "About" link from `UserMenu.tsx`.
 - Frontend: Removed `DropdownMenuLabel` import from `UserMenu.tsx`.
 - Frontend: Removed `type VariantProps` from `button.tsx` import.
+- Frontend: Removed the unused `HomeButton` component.
 
 ### Fixed
-- Backend: Fixed typo in `CatController.php` catch block.
-- Frontend: Fixed `ElementRef` deprecation errors in `alert-dialog.tsx`, `form.tsx`, `label.tsx`, and `toast.tsx`.
-- Frontend: Fixed `no-empty-object-type` error in `input.tsx`.
-- Frontend: Fixed `no-case-declarations` error in `use-toast.ts`.
-- Frontend: Fixed `no-floating-promises` errors in `DeleteAccountDialog.tsx`, `LoginForm.tsx`, `NotificationBell.tsx`, `RegisterPage.tsx`, `CreateCatPage.tsx`, and `MyCatsPage.tsx`.
-- Frontend: Fixed `no-misused-promises` errors in `NotificationBell.tsx`, `RegisterForm.tsx`, `UserMenu.tsx`, `ProfilePage.tsx`, and `CreateCatPage.tsx`.
-- Frontend: Fixed `no-unused-vars` errors in `NotificationBell.test.tsx`, `UserMenu.tsx`, `button.tsx`, and `CreateCatPage.test.tsx`.
-- Frontend: Fixed `unbound-method` error in `NotificationBell.test.tsx`.
-- Frontend: Fixed `no-unsafe-call` error in `NotificationBell.tsx`.
-- Frontend: Fixed `prefer-nullish-coalescing` and `no-unnecessary-condition` errors in `RegisterForm.tsx` and `UserMenu.tsx`.
-- Frontend: Fixed `no-redundant-type-constituents`, `no-unsafe-assignment`, `no-unsafe-member-access`, and `prefer-nullish-coalescing` errors in `button.tsx`.
-- Frontend: Fixed `no-base-to-string` and `no-unnecessary-condition` errors in `form.tsx`.
-- Frontend: Fixed `no-non-null-assertion` error in `main.tsx`.
-- Frontend: Fixed `any` type usage in `LoginPage.test.tsx`, `MainPage.test.tsx`, `ProfilePage.test.tsx`, `RegisterPage.test.tsx`, `AuthContext.tsx`, and `TestAuthProvider.tsx`.
-- Frontend: Fixed `react-refresh/only-export-components` errors in `badge.tsx`, `button.tsx`, `form.tsx`, and `AuthContext.tsx`.
-- Frontend: Fixed `no-array-index-key` warning in `MyCatsPage.tsx`.
+- **General:** Addressed numerous ESLint errors across the frontend, including `no-floating-promises`, `no-unsafe-call`, `no-unnecessary-condition`, and `no-misused-promises`, leading to more stable and type-safe code.
+- **Ref Forwarding:** Corrected the implementation of `React.forwardRef` in several `shadcn/ui` components (`alert-dialog.tsx`, `input.tsx`) to resolve React 19 warnings.
+- **Fast Refresh:** Fixed `react-refresh/only-export-components` errors by isolating non-component exports (e.g., `buttonVariants`, form contexts) into their own files.
+- **Error Handling:** Standardized and improved error handling in forms (`ChangePasswordForm`, `RegisterForm`) and dialogs (`DeleteAccountDialog`) to be more robust.
+- **Promise Handling:** Correctly handled promises in various components (`LoginForm`, `CreateCatPage`, `UserMenu`) to prevent unhandled promise rejections.
+- **Imports & Modules:** Corrected the import path for `useAuth` hook and `buttonVariants` across multiple components.
+- **Configuration:** Updated `frontend/tsconfig.json` to correctly include all necessary files, resolving a persistent parsing error.
+- **Testing:** Repaired broken tests (`NotificationBell.test.tsx`, `LoginPage.test.tsx`, etc.) by mocking dependencies correctly and updating providers.
+- **UI/UX:** Removed the now-redundant `HomeButton` from login and registration pages.
 
 ### Refactored
 - Improved frontend code structure by separating auth context, hooks, and types into their own files for better maintainability.

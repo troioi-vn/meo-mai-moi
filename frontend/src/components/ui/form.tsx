@@ -5,7 +5,6 @@ import { Slot } from '@radix-ui/react-slot'
 import { Controller, FormProvider, useFormContext } from 'react-hook-form'
 
 import { cn } from '@/lib/utils'
-
 import { FormFieldContext } from './form-context'
 import { FormItemContext } from './form-item-context'
 
@@ -15,7 +14,7 @@ const FormField = ({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<typeof Controller> & { className?: string }) => {
-  const id = React.useId() // Generate a unique ID for the field
+  const id = React.useId()
 
   return (
     <FormFieldContext.Provider value={React.useMemo(() => ({ name: props.name }), [props.name])}>
@@ -147,15 +146,15 @@ const FormMessage = ({
 }: React.HTMLAttributes<HTMLParagraphElement> & {
   ref?: React.RefObject<HTMLParagraphElement | null>
 }) => {
-  const { id } = React.use(FormItemContext)
   const { name } = React.use(FormFieldContext)
   const { formState } = useFormContext()
+  const { id } = React.use(FormItemContext)
 
   const error = formState.errors[name]
   const formItemId = `${id}-${name}`
   const formMessageId = `${formItemId}-message`
 
-  const body = error ? (typeof error.message === 'string' ? error.message : JSON.stringify(error.message)) : children
+  const body = error ? (typeof error.message === 'string' ? error.message : (error.message ? JSON.stringify(error.message) : 'Error occurred')) : children
 
   if (!body) {
     return null
@@ -174,4 +173,12 @@ const FormMessage = ({
 }
 FormMessage.displayName = 'FormMessage'
 
-export { useFormContext, Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage }
+export {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage,
+}

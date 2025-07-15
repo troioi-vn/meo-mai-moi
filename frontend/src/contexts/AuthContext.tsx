@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { api, csrf } from '@/api/axios'
 
 interface RegisterPayload {
@@ -14,14 +14,13 @@ interface LoginPayload {
 }
 
 import type { User } from '@/types/user'
-
 import { AuthContext } from './auth-context'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(true)
 
-  const loadUser = async () => {
+  const loadUser = useCallback(async () => {
     try {
       const token = localStorage.getItem('access_token')
       if (token) {
@@ -35,69 +34,75 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
-  const register = async (payload: RegisterPayload) => {
+  const register = useCallback(async (payload: RegisterPayload) => {
     await csrf()
     await api.post('/register', payload)
     await loadUser()
-  }
+  }, [loadUser])
 
-  const login = async (payload: LoginPayload) => {
-    await csrf()
-    const response = await api.post('/login', payload)
-    localStorage.setItem('access_token', response.data.access_token as string)
-    await loadUser()
-  }
+  const login = useCallback(
+    async (payload: LoginPayload) => {
+      await csrf()
+      const response = await api.post<{ access_token: string }>('/login', payload)
+      localStorage.setItem('access_token', response.data.access_token)
+      await loadUser()
+    },
+    [loadUser],
+  )
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     localStorage.removeItem('access_token')
     await api.post('/logout')
     setUser(null)
-  }
+  }, [])
 
-  const changePassword = async (
-    current_password: string,
-    new_password: string,
-    new_password_confirmation: string
-  ) => {
-    await api.put('/users/me/password', {
-      current_password,
-      new_password,
-      new_password_confirmation,
-    })
-  }
+  const changePassword = useCallback(
+    async (current_password: string, new_password: string, new_password_confirmation: string) => {
+      await api.put('/users/me/password', {
+        current_password,
+        new_password,
+        new_password_confirmation,
+      })
+    },
+    [],
+  )
 
-  const deleteAccount = async (password: string) => {
+  const deleteAccount = useCallback(async (password: string) => {
     await api.delete('/users/me', { data: { password } })
-  }
+  }, [])
 
   useEffect(() => {
-    loadUser()
-  }, [])
+    void loadUser()
+  }, [loadUser])
 
   const isAuthenticated = user !== null
 
-  return (
-    <AuthContext.Provider
-      value={React.useMemo(
-        () => ({
-          user,
-          isLoading,
-          isAuthenticated,
-          register,
-          login,
-          logout,
-          loadUser,
-          changePassword,
-          deleteAccount,
-        }),
-        [user, isLoading, isAuthenticated, register, login, logout, loadUser, changePassword, deleteAccount]
-      )}
-    >
-      {children}
-    </AuthContext.Provider>
+  const value = React.useMemo(
+    () => ({
+      user,
+      isLoading,
+      isAuthenticated,
+      register,
+      login,
+      logout,
+      loadUser,
+      changePassword,
+      deleteAccount,
+    }),
+    [
+      user,
+      isLoading,
+      isAuthenticated,
+      register,
+      login,
+      logout,
+      loadUser,
+      changePassword,
+      deleteAccount,
+    ],
   )
-}
 
-export { useAuth } from '@/hooks/use-auth'
+  return <AuthContext value={value}>{children}</AuthContext>
+}

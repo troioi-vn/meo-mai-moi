@@ -3,10 +3,10 @@ import { MemoryRouter } from 'react-router-dom'
 import { vi } from 'vitest'
 import MyCatsPage from './MyCatsPage'
 import { getMyCats } from '@/api/cats'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/hooks/use-auth'
 
 vi.mock('@/api/cats')
-vi.mock('@/contexts/AuthContext')
+vi.mock('@/hooks/use-auth')
 
 const mockUser = { id: 1, name: 'Test User', email: 'test@example.com' }
 

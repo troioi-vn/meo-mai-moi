@@ -41,18 +41,21 @@ const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDele
         description: 'Your account has been successfully deleted.',
       })
       setIsOpen(false)
-      await logout(); // Log out the user after successful deletion
-      onAccountDeleted(); // Callback to handle redirection or other post-deletion logic
+      void logout()
+      onAccountDeleted()
     } catch (error: unknown) {
-      const axiosError = error as AxiosError<ApiError>;
+      let errorMessage = 'An unexpected error occurred.'
+      if (error instanceof AxiosError) {
+        const axiosError = error as AxiosError<ApiError>
+        errorMessage = axiosError.response?.data.message ?? axiosError.message
+      } else if (error instanceof Error) {
+        errorMessage = error.message
+      }
       toast({
         title: 'Account Deletion Failed',
-        description:
-          axiosError.response?.data?.message ??
-          axiosError.message ??
-          'An unexpected error occurred.',
+        description: errorMessage,
         variant: 'destructive',
-      });
+      })
     } finally {
       setIsLoading(false)
     }

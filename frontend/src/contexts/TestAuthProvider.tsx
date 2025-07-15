@@ -2,7 +2,7 @@ import { AuthContext } from './auth-context'
 import { vi } from 'vitest'
 import React from 'react'
 
-import { User, RegisterPayload, LoginPayload, AuthContextType } from '@/types/auth'
+import { type AuthContextType } from '@/types/auth'
 
 interface TestAuthProviderProps {
   children: React.ReactNode
@@ -10,19 +10,33 @@ interface TestAuthProviderProps {
 }
 
 export const TestAuthProvider = ({ children, mockValues }: TestAuthProviderProps) => {
-  const defaultMockValues: AuthContextType = {
-    user: null,
-    register: vi.fn(async (_payload: RegisterPayload) => {}),
-    login: vi.fn(async (_payload: LoginPayload) => {}),
-    logout: vi.fn(),
-    loadUser: vi.fn(),
-    isLoading: false,
-    isAuthenticated: false,
-    changePassword: vi.fn(async (_current, _new, _confirm) => {}),
-    deleteAccount: vi.fn(async (_password: string) => {}),
-  }
+  const defaultMockValues = React.useMemo(
+    () => ({
+      user: null,
+      register: vi.fn(async () => {
+        await Promise.resolve()
+      }),
+      login: vi.fn(async () => {
+        await Promise.resolve()
+      }),
+      logout: vi.fn(),
+      loadUser: vi.fn(),
+      isLoading: false,
+      isAuthenticated: false,
+      changePassword: vi.fn(async () => {
+        await Promise.resolve()
+      }),
+      deleteAccount: vi.fn(async () => {
+        await Promise.resolve()
+      }),
+    }),
+    [],
+  )
 
-  const value = { ...defaultMockValues, ...mockValues } as AuthContextType
+  const value = React.useMemo(
+    () => ({ ...defaultMockValues, ...mockValues }),
+    [defaultMockValues, mockValues],
+  )
 
-  return <AuthContext value={value}>{children}</AuthContext>
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

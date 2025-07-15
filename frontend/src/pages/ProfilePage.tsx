@@ -30,8 +30,22 @@ export default function ProfilePage() {
         )}
         <div className="space-y-4 pt-4">
           <ChangePasswordForm />
-          <DeleteAccountDialog onAccountDeleted={() => { void logout() }} />
-          <Button onClick={() => { void logout() }} className="w-full" variant="destructive">
+          <DeleteAccountDialog 
+            onAccountDeleted={() => {
+              logout().catch((err: unknown) => {
+                console.error('Logout error:', err)
+              })
+            }} 
+          />
+          <Button 
+            onClick={() => {
+              logout().catch((err: unknown) => {
+                console.error('Logout error:', err)
+              })
+            }} 
+            className="w-full" 
+            variant="destructive"
+          >
             Logout
           </Button>
         </div>

@@ -12,16 +12,21 @@ const LoginForm: React.FC = () => {
   const { login } = useAuth()
   const navigate = useNavigate()
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setError(null);
-    try {
-      await login({ email, password });
-      navigate('/profile');
-    } catch (err) {
-      setError('Failed to login. Please check your credentials.');
-      console.error(err);
-    }
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault()
+    setError(null)
+    
+    void (
+      (async () => {
+        try {
+          await login({ email, password })
+          void navigate('/profile')
+        } catch (err: unknown) {
+          setError('Failed to login. Please check your credentials.')
+          console.error(err)
+        }
+      })()
+    )
   }
 
   return (

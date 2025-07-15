@@ -37,29 +37,27 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
         onSuccess()
       }
     } catch (err: unknown) {
-      const axiosError = err as AxiosError<ApiError>;
-      console.error('Registration error:', axiosError.response?.data ?? axiosError); // Log the full error response
-      if (err && typeof err === 'object' && 'isAxiosError' in err && (err as AxiosError<ApiError>).isAxiosError) {
-        const axiosError = err as AxiosError<ApiError>;
-        console.error('Registration error:', axiosError.response?.data ?? axiosError);
-        if (axiosError.response?.data?.errors) {
-          const errorMessages = Object.values(axiosError.response.data.errors).flat().join(' ');
-          setError(errorMessages);
+      if (err instanceof AxiosError) {
+        const axiosError = err as AxiosError<ApiError>
+        console.error('Registration error:', axiosError.response?.data ?? axiosError)
+        if (axiosError.response?.data.errors) {
+          const errorMessages = Object.values(axiosError.response.data.errors).flat().join(' ')
+          setError(errorMessages)
         } else {
-          setError(
-            axiosError.response?.data?.message ??
-            axiosError.message ??
-            'An unexpected error occurred.'
-          );
+          setError(axiosError.response?.data.message ?? axiosError.message)
         }
       } else {
-        setError('An unexpected error occurred.');
+        setError('An unexpected error occurred.')
       }
     }
   }
 
   return (
-    <form onSubmit={(event) => { void handleSubmit(event); }}>
+    <form
+      onSubmit={(e) => {
+        void handleSubmit(e)
+      }}
+    >
       {error && (
         <p data-testid="register-error-message" className="text-red-500 text-sm mb-4">
           {error}

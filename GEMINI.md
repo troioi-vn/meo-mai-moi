@@ -183,6 +183,20 @@ When encountering issues, especially those related to environment or integration
 ### React Components
 
 - **Component Style:** We will use **Functional Components with Hooks** exclusively. Class-based components should not be used unless there is a specific, agreed-upon reason.
+- **Performance Optimization:** Use `useCallback` and `useMemo` strategically to prevent unnecessary re-renders, especially in context providers and expensive computations.
+- **Ref Forwarding:** Use proper `React.forwardRef` implementation for components that need to expose refs, ensuring React 19 compatibility.
+- **Promise Handling:** Use explicit promise handling patterns:
+  - Use `void` operator for fire-and-forget promises in event handlers
+  - Use `.catch()` for error handling in promise chains
+  - Avoid unhandled promise rejections
+
+### Code Quality Standards
+
+- **Zero ESLint Errors:** All code must pass ESLint checks without errors
+- **Type Safety:** Comprehensive TypeScript usage with proper interface definitions
+- **Error Handling:** Consistent patterns for handling `AxiosError` with proper type checking and fallback messages
+- **Import Organization:** Use absolute imports with path aliases (`@/`) and consistent import order
+- **Component Architecture:** Separate concerns by isolating context definitions, variant definitions, and component implementations
 
 ### Documentation
 
@@ -200,6 +214,19 @@ To ensure a consistent and user-friendly experience, we will standardize error h
 -   **API Error Format:** Define a consistent JSON structure for API error responses.
 -   **Frontend Error Display:** Implement centralized mechanisms for displaying user-friendly error messages.
 -   **Backend Error Logging:** Integrate centralized error logging on the backend.
+-   **TypeScript Error Handling:** Use proper `AxiosError` type checking with comprehensive fallback patterns:
+    ```typescript
+    catch (error: unknown) {
+      let errorMessage = 'An unexpected error occurred.'
+      if (error instanceof AxiosError) {
+        errorMessage = error.response?.data.message ?? error.message
+      } else if (error instanceof Error) {
+        errorMessage = error.message
+      }
+      // Handle error appropriately
+    }
+    ```
+-   **Promise Handling:** Consistent async operation handling to prevent unhandled rejections and maintain user experience.
 
 ### CHANGELOG.md
 - When a development task is completed, I must update the CHANGELOG.md file to document the change. I should add the completed task under the appropriate category (e.g., Added, Changed, Fixed) in the "[Unreleased]" section.
@@ -400,6 +427,12 @@ To ensure secure user access, we will implement the following authentication fea
 ### Frontend: React Context & Axios Interceptors
 
 The frontend uses React Context to manage authentication state globally. An `AuthProvider` component wraps the application, providing user data and auth functions (`login`, `logout`, etc.) to any component through a `useAuth` hook. API requests are handled by Axios, which uses an interceptor to automatically attach the user's authentication token to every outgoing request.
+
+**Architecture Details:**
+- **Context Separation:** The context definition is separated into `auth-context.tsx` for better maintainability
+- **Performance Optimization:** All context functions use `useCallback` to prevent unnecessary re-renders
+- **Type Safety:** Comprehensive TypeScript interfaces ensure type safety across auth operations
+- **Error Handling:** Consistent error handling patterns with proper `AxiosError` type checking
 
 ## 11. Production Deployment and Operations
 

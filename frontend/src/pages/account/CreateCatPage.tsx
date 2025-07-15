@@ -16,25 +16,30 @@ const CreateCatPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
 
-    try {
-      await createCat({
-        name,
-        breed,
-        age: parseInt(age, 10),
-        location,
-        description,
-      })
-      void toast.success('Cat created successfully!')
-      navigate('/account/cats')
-    } catch (err) {
-      setError('Failed to create cat.')
-      console.error(err)
-      void toast.error('Failed to create cat.')
-    }
+    
+    void (
+      (async () => {
+        try {
+          await createCat({
+            name,
+            breed,
+            age: parseInt(age, 10),
+            location,
+            description,
+          })
+          void toast.success('Cat created successfully!')
+          void navigate('/account/cats')
+        } catch (err: unknown) {
+          setError('Failed to create cat.')
+          console.error(err)
+          void toast.error('Failed to create cat.')
+        }
+      })()
+    )
   }
 
   return (

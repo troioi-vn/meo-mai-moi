@@ -25,3 +25,21 @@ export const updateCat = async (
   const response = await api.put<Cat>(`/cats/${id}`, catData)
   return response.data
 }
+
+export const deleteCat = async (id: string, password: string): Promise<void> => {
+  await api.delete(`/cats/${id}`, {
+    data: { password },
+  })
+}
+
+export const updateCatStatus = async (
+  id: string,
+  status: string,
+  password: string
+): Promise<Cat> => {
+  const response = await api.put<Cat>(`/cats/${id}/status`, {
+    status,
+    password,
+  })
+  return response.data
+}

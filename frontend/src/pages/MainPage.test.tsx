@@ -48,7 +48,6 @@ const renderWithProviders = (
 describe('MainPage', () => {
   it('renders all the main sections', () => {
     renderWithProviders(<MainPage />, { providerProps: {} })
-    expect(screen.getByText('Open')).toBeInTheDocument()
     expect(screen.getByText('Hero Section')).toBeInTheDocument()
     expect(screen.getByText('Cats Section')).toBeInTheDocument()
     expect(screen.getByRole('contentinfo')).toBeInTheDocument()

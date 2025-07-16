@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Annotations as OA;
 use App\Enums\UserRole;
+use Illuminate\Support\Facades\Hash;
 
 /**
  * @OA\Schema(
@@ -79,7 +80,7 @@ class CatController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Cat::query();
+        $query = Cat::query()->where('status', '!=', 'dead');
 
         if ($request->has('location')) {
             $query->where('location', 'like', '%' . $request->input('location') . '%');
@@ -125,7 +126,6 @@ class CatController extends Controller
     public function myCats(Request $request)
     {
         if (!$request->user()) {
-            \Log::warning('myCats: User is not authenticated.');
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
         $cats = $request->user()->cats;
@@ -178,12 +178,17 @@ class CatController extends Controller
         if ($request->user()) {
             $userRole = $request->user()->role;
 
-            if ($userRole === UserRole::ADMIN->value) {
+            if ($userRole === UserRole::ADMIN) {
                 $viewerPermissions['can_edit'] = true;
                 $viewerPermissions['can_view_contact'] = true;
-            } elseif ($userRole === UserRole::CAT_OWNER->value && $cat->user_id === $request->user()->id) {
+            } elseif ($cat->user_id === $request->user()->id) {
+                // Any authenticated user who owns the cat can edit it
                 $viewerPermissions['can_edit'] = true;
-            } elseif ($userRole === UserRole::HELPER->value) {
+                // If the owner is also a helper, they get contact permissions
+                if ($userRole === UserRole::HELPER) {
+                    $viewerPermissions['can_view_contact'] = true;
+                }
+            } elseif ($userRole === UserRole::HELPER) {
                 $viewerPermissions['can_view_contact'] = true;
             }
         }
@@ -211,8 +216,8 @@ class CatController extends Controller
      */
     public function featured()
     {
-        // For now, return a random selection of 3 cats as featured
-        $featuredCats = Cat::inRandomOrder()->limit(3)->get();
+        // For now, return a random selection of 3 cats as featured (excluding dead cats)
+        $featuredCats = Cat::where('status', '!=', 'dead')->inRandomOrder()->limit(3)->get();
         return response()->json($featuredCats);
     }
 
@@ -397,8 +402,54 @@ class CatController extends Controller
             ], 403);
         }
 
+        if (!Hash::check($request->input('password'), $user->password)) {
+            return response()->json([
+                'message' => 'The provided password does not match our records.',
+                'errors' => [
+                    'password' => [
+                        'The provided password does not match our records.'
+                    ]
+                ]
+            ], 422);
+        }
+
         $cat->delete();
 
         return response()->json(null, 204);
+    }
+
+    public function updateStatus(Request $request, Cat $cat)
+    {
+        $user = $request->user();
+        $role = $user ? ($user->role instanceof \BackedEnum ? $user->role->value : $user->role) : null;
+        $isAdmin = $role === UserRole::ADMIN->value || $role === 'admin';
+        $isOwner = $user && $cat->user_id === $user->id;
+
+        if (!$user || (!$isAdmin && !$isOwner)) {
+            return response()->json([
+                'message' => 'Forbidden: You are not authorized to update this cat.'
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|string|in:dead',
+            'password' => 'required|string',
+        ]);
+
+        if (!Hash::check($validated['password'], $user->password)) {
+            return response()->json([
+                'message' => 'The provided password does not match our records.',
+                'errors' => [
+                    'password' => [
+                        'The provided password does not match our records.'
+                    ]
+                ]
+            ], 422);
+        }
+
+        $cat->status = $validated['status'];
+        $cat->save();
+
+        return response()->json($cat, 200);
     }
 }

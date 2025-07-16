@@ -26,9 +26,14 @@ export const useCatProfile = (id: string | undefined): UseCatProfileResult => {
         setError(null)
         const catData = await getCat(id)
         setCat(catData)
-      } catch (err: any) {
-        if (err.response?.status === 404) {
-          setError('Cat not found')
+      } catch (err: unknown) {
+        if (err && typeof err === 'object' && 'response' in err) {
+          const axiosErr = err as { response?: { status?: number } }
+          if (axiosErr.response?.status === 404) {
+            setError('Cat not found')
+          } else {
+            setError('Failed to load cat information')
+          }
         } else {
           setError('Failed to load cat information')
         }
@@ -38,7 +43,7 @@ export const useCatProfile = (id: string | undefined): UseCatProfileResult => {
       }
     }
 
-    fetchCat()
+    void fetchCat()
   }, [id])
 
   return { cat, loading, error }

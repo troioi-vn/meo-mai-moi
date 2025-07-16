@@ -5,31 +5,51 @@ namespace App\Policies;
 use App\Models\Cat;
 use App\Models\User;
 use App\Enums\UserRole;
-use Illuminate\Auth\Access\Response;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class CatPolicy
 {
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    use HandlesAuthorization;
+
+    public function before(User $user, $ability)
     {
-        return $user->role === UserRole::CAT_OWNER;
+        if ($user->role === UserRole::ADMIN) {
+            return true;
+        }
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Cat $cat): bool
+    public function viewAny(User $user)
     {
-        return $user->role === UserRole::ADMIN || $user->id === $cat->user_id;
+        return true;
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Cat $cat): bool
+    public function view(User $user, Cat $cat)
     {
-        return $user->role === UserRole::ADMIN || $user->id === $cat->user_id;
+        return true;
+    }
+
+    public function create(User $user)
+    {
+        return true;
+    }
+
+    public function update(User $user, Cat $cat)
+    {
+        return $user->id === $cat->user_id;
+    }
+
+    public function delete(User $user, Cat $cat)
+    {
+        return $user->id === $cat->user_id;
+    }
+
+    public function restore(User $user, Cat $cat)
+    {
+        return $user->id === $cat->user_id;
+    }
+
+    public function forceDelete(User $user, Cat $cat)
+    {
+        return $user->id === $cat->user_id;
     }
 }

@@ -4,23 +4,20 @@ import { FormField } from '@/components/ui/FormField'
 import { useCreateCatForm } from '@/hooks/useCreateCatForm'
 
 const CreateCatPage: React.FC = () => {
-  const {
-    formData,
-    errors,
-    error,
-    isSubmitting,
-    updateField,
-    handleSubmit,
-    handleCancel,
-  } = useCreateCatForm()
+  const { formData, errors, error, isSubmitting, updateField, handleSubmit, handleCancel } =
+    useCreateCatForm()
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
       <div className="w-full max-w-2xl p-8 space-y-8 bg-card rounded-lg shadow-lg border">
-        <h1 className="text-3xl font-bold text-center text-card-foreground mb-6">
-          Add a New Cat
-        </h1>
-        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+        <h1 className="text-3xl font-bold text-center text-card-foreground mb-6">Add a New Cat</h1>
+        <form
+          onSubmit={(e) => {
+            void handleSubmit(e)
+          }}
+          className="space-y-6"
+          noValidate
+        >
           <FormField
             id="name"
             label="Name"
@@ -29,7 +26,7 @@ const CreateCatPage: React.FC = () => {
             error={errors.name}
             placeholder="Enter cat's name"
           />
-          
+
           <FormField
             id="breed"
             label="Breed"
@@ -38,7 +35,7 @@ const CreateCatPage: React.FC = () => {
             error={errors.breed}
             placeholder="Enter cat's breed"
           />
-          
+
           <FormField
             id="birthday"
             label="Birthday"
@@ -47,7 +44,7 @@ const CreateCatPage: React.FC = () => {
             onChange={updateField('birthday')}
             error={errors.birthday}
           />
-          
+
           <FormField
             id="location"
             label="Location"
@@ -56,7 +53,7 @@ const CreateCatPage: React.FC = () => {
             error={errors.location}
             placeholder="Enter cat's location"
           />
-          
+
           <FormField
             id="description"
             label="Description"
@@ -67,22 +64,17 @@ const CreateCatPage: React.FC = () => {
             placeholder="Describe the cat's personality and characteristics"
           />
 
-          {error && <p className="text-destructive" data-testid="form-error">{error}</p>}
-          
+          {error && (
+            <p className="text-destructive" data-testid="form-error">
+              {error}
+            </p>
+          )}
+
           <div className="flex gap-4">
-            <Button 
-              type="submit" 
-              aria-label="Create Cat"
-              disabled={isSubmitting}
-            >
+            <Button type="submit" aria-label="Create Cat" disabled={isSubmitting}>
               {isSubmitting ? 'Creating...' : 'Create Cat'}
             </Button>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={handleCancel}
-              disabled={isSubmitting}
-            >
+            <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
               Cancel
             </Button>
           </div>

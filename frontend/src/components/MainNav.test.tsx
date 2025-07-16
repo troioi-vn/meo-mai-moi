@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { TestAuthProvider } from '@/contexts/TestAuthProvider'
 import MainNav from './MainNav'
@@ -17,7 +17,7 @@ describe('MainNav', () => {
     expect(screen.getByText('Register')).toBeInTheDocument()
   })
 
-  it('renders notification bell and user menu when authenticated', () => {
+  it('renders notification bell and user menu when authenticated', async () => {
     render(
       <TestAuthProvider
         mockValues={{
@@ -31,7 +31,10 @@ describe('MainNav', () => {
       </TestAuthProvider>
     )
 
-    expect(screen.getByTestId('notification-bell')).toBeInTheDocument()
-    expect(screen.getByTestId('user-menu')).toBeInTheDocument()
+    // Wait for notification bell to finish loading and check for its button
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /open notifications/i })).toBeInTheDocument()
+    })
+    expect(screen.getByRole('button', { name: /TU/i })).toBeInTheDocument() // User menu avatar with initials
   })
 })

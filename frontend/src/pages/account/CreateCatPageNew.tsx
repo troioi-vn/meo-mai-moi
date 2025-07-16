@@ -76,7 +76,7 @@ const CreateCatPage: React.FC = () => {
   }
 
   const handleCancel = () => {
-    navigate('/account/cats')
+    void navigate('/account/cats')
   }
 
   return (

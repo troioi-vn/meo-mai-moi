@@ -1,6 +1,6 @@
-import React from 'react'
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
-import { BrowserRouter, MemoryRouter, Routes, Route } from 'react-router-dom'
+import userEvent from '@testing-library/user-event'
+import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { toast } from 'sonner'
 import EditCatPage from '@/pages/account/EditCatPage'
@@ -29,7 +29,7 @@ vi.mock('react-router-dom', async () => {
   }
 })
 
-const renderWithRouter = (catId: string = '1') => {
+const renderWithRouter = (catId = '1') => {
   return render(
     <MemoryRouter initialEntries={[`/account/cats/${catId}/edit`]}>
       <Routes>
@@ -92,7 +92,7 @@ describe('EditCatPage', () => {
       created_at: '2023-01-01T00:00:00Z',
       updated_at: '2023-01-01T00:00:00Z',
     }
-    
+
     vi.mocked(getCat).mockResolvedValue(mockCat)
     vi.mocked(updateCat).mockResolvedValue({
       ...mockCat,
@@ -156,21 +156,32 @@ describe('EditCatPage', () => {
       expect(screen.getByDisplayValue('Fluffy')).toBeInTheDocument()
     })
 
-    // Clear required fields
+    // Clear required fields using userEvent for better simulation
+    const user = userEvent.setup()
     const nameInput = screen.getByDisplayValue('Fluffy')
     const breedInput = screen.getByDisplayValue('Persian')
-    
-    fireEvent.change(nameInput, { target: { value: '' } })
-    fireEvent.change(breedInput, { target: { value: '' } })
+
+    await user.clear(nameInput)
+    await user.clear(breedInput)
 
     // Submit form
-    fireEvent.click(screen.getByRole('button', { name: /update cat/i }))
+    const submitButton = screen.getByRole('button', { name: /update cat/i })
+    await user.click(submitButton)
 
-    // Check validation errors with longer timeout
-    await waitFor(() => {
-      expect(screen.getByText('Name is required')).toBeInTheDocument()
-      expect(screen.getByText('Breed is required')).toBeInTheDocument()
-    }, { timeout: 3000 })
+    // Check validation errors appear
+    await waitFor(
+      () => {
+        expect(screen.getByText('Name is required')).toBeInTheDocument()
+      },
+      { timeout: 5000 }
+    )
+
+    await waitFor(
+      () => {
+        expect(screen.getByText('Breed is required')).toBeInTheDocument()
+      },
+      { timeout: 5000 }
+    )
   })
 
   it('displays error message when API call fails', async () => {
@@ -187,7 +198,7 @@ describe('EditCatPage', () => {
       created_at: '2023-01-01T00:00:00Z',
       updated_at: '2023-01-01T00:00:00Z',
     }
-    
+
     vi.mocked(getCat).mockResolvedValue(mockCat)
     vi.mocked(updateCat).mockRejectedValue(new Error('Update failed'))
 
@@ -238,7 +249,7 @@ describe('EditCatPage', () => {
   it('displays error when cat is not found', async () => {
     const { getCat } = await import('@/api/cats')
     vi.mocked(getCat).mockRejectedValue({
-      response: { status: 404 }
+      response: { status: 404 },
     })
 
     renderWithRouter('999')

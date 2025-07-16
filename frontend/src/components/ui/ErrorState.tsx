@@ -7,10 +7,10 @@ interface ErrorStateProps {
   retryText?: string
 }
 
-export const ErrorState: React.FC<ErrorStateProps> = ({ 
-  error, 
-  onRetry, 
-  retryText = 'Back to Cats' 
+export const ErrorState: React.FC<ErrorStateProps> = ({
+  error,
+  onRetry,
+  retryText = 'Back to Cats',
 }) => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">

@@ -7,6 +7,8 @@ import RegisterPage from './pages/RegisterPage'
 import ProfilePage from './pages/ProfilePage'
 import MyCatsPage from './pages/account/MyCatsPage'
 import CreateCatPage from './pages/account/CreateCatPage'
+import EditCatPage from './pages/account/EditCatPage'
+import CatProfilePage from './pages/CatProfilePage'
 import NotFoundPage from './pages/NotFoundPage'
 import { Toaster } from '@/components/ui/sonner'
 import MainNav from '@/components/MainNav'
@@ -32,6 +34,7 @@ export default function App() {
       <main className="pt-16">
         <Routes>
           <Route path="/" element={<MainPage />} />
+          <Route path="/cats/:id" element={<CatProfilePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/account" element={<Navigate to="/profile" replace />} />
@@ -56,6 +59,14 @@ export default function App() {
             element={
               <PrivateRoute>
                 <CreateCatPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/account/cats/:id/edit"
+            element={
+              <PrivateRoute>
+                <EditCatPage />
               </PrivateRoute>
             }
           />

@@ -14,6 +14,26 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
 - **Status:** `Done`
 - **Goal:** Implement the minimum viable product (MVP) functionality. This includes user registration, basic profile management, the ability for admins to add cats, and for the public to view them.
 
+#### Epic 0: Admin Panel Setup
+- **Task: Filament Admin Panel Integration**
+  - **Status:** `Done`
+  - **Notes:** Integrated Filament for admin functionalities, including user management, roles, and permissions.
+  - **Backend:**
+    - [x] Install and configure `filament/filament`.
+    - [x] Integrate `bezhansalleh/filament-shield` for role and permission management.
+    - [x] Configure `tomatophp/filament-users` for user management with Shield integration and impersonation.
+
+#### Epic 1: Admin Panel Features
+- **Task: Add Cats to Admin Panel**
+  - **Status:** `To Do`
+  - **Notes:** Implement the functionality to manage cat profiles directly within the Filament admin panel.
+  - **Backend:**
+    - [ ] Create Filament Resource for Cat model.
+    - [ ] Implement CRUD operations for cats.
+    - [ ] Add necessary fields for cat attributes (e.g., name, breed, age, status).
+  - **Frontend:**
+    - [ ] Ensure admin panel UI for cats is intuitive and user-friendly.
+
 ---
 
 ### Phase 2: Core Functionality - Applications & Transfers
@@ -41,14 +61,29 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
   - **Status:** `Done`
   - **Backend:**
     - [x] Implement `CatController` CRUD
-    - [x] Add `status` field to `Cat` model
+    - [x] Add `status` field to `Cat` model (including 'dead' status)
     - [ ] Implement flexible birthday fields (`year`, `month`, `day`)
     - [ ] Add API documentation
   - **Frontend:**
-    - [ ] Create "My Cats" page
+    - [x] Create "My Cats" page with deceased cats toggle
     - [x] Create `Create/Edit Cat` form
     - [ ] Calculate and display age from birthday
     - [x] Write tests for new components
+    - [x] Comprehensive test coverage for all cat management functionality
+- **Task: Cat Profile Permissions & Navigation**
+  - **Status:** `Done`
+  - **Backend:**
+    - [x] Optional authentication middleware for public routes
+    - [x] Ownership-based permission system
+    - [x] API tests for optional auth middleware
+    - [x] Unit tests for ownership permission logic
+  - **Frontend:**
+    - [x] Fixed `/cats/:id` routing
+    - [x] Conditional edit/navigation buttons for owners
+    - [x] Component tests for conditional button rendering
+    - [x] Routing tests for fixed `/cats/:id` route
+    - [ ] Integration tests for complete cat profile workflow
+    - [ ] E2E tests for user journey (view cat → see edit button → edit cat)
 - **Task: Delete a Cat Profile**
   - **Status:** `Done`
   - **Backend:**
@@ -63,6 +98,24 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
     - [x] Endpoints for photo deletion
   - **Frontend:**
     - [x] UI controls for photo management
+  - **Testing:**
+    - [x] Comprehensive feature tests for upload, resize, and delete functionality.
+- **Task: Enhanced Cat Removal**
+  - **Status:** `Done`
+  - **Notes:** Implemented a comprehensive multi-step process to prevent accidental cat profile deletion and allow marking cats as deceased.
+  - **Backend:**
+    - [x] Create an endpoint that verifies user password (`POST /api/auth/verify-password`)
+    - [x] Modify the delete endpoint to accept a `status` change to 'dead' as an alternative to deletion
+    - [x] Ensure the password check is enforced before any destructive action
+    - [x] Filter deceased cats from public listings by default
+  - **Frontend:**
+    - [x] Create a multi-step modal for the removal process (`EnhancedCatRemovalModal.tsx`)
+    - [x] Step 1: Ask the user to type the cat's name to confirm
+    - [x] Step 2: Present two buttons: `Delete Permanently` and `Mark as Deceased`
+    - [x] Step 3: Require the user to enter their password to finalize the action
+    - [x] Add toggle switch on "My Cats" page to show/hide deceased cats
+    - [x] Comprehensive test coverage for all new components and functionality
+
 
 #### Epic 4: Grab This Cat Feature
 - **Task: "Grab This Cat" Feature**
@@ -125,3 +178,35 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
     - [ ] `GET /api/helper-profiles` endpoint with filters
   - **Frontend:**
     - [ ] UI controls for filtering
+
+#### Epic 4: UI & UX Polish
+- **Task: Display Real Cats on Homepage**
+  - **Status:** `To Do`
+  - **Notes:** Replace the static, hardcoded cat cards on the main page with a dynamic list of cats fetched from the API.
+  - **Frontend:**
+    - [ ] Fetch a list of available cats from the `/api/cats` endpoint.
+    - [ ] Map the fetched data to the `CatCard` component.
+    - [ ] Ensure the layout is responsive and handles various numbers of cats gracefully.
+
+---
+
+### Phase 5: Deployment & Maintenance
+- **Goal:** Prepare the application for production deployment and establish long-term maintenance practices.
+
+#### Epic 6: Production Readiness
+- **Task: API Contract Testing**
+  - **Status:** `Done`
+  - **Backend:**
+    - [x] Generate `openapi.json`
+    - [x] Add contract tests to CI
+- **Task: Deployment & CI/CD**
+  - **Status:** `To Do`
+  - **Backend:**
+    - [ ] Set up production environment
+    - [ ] Create CI/CD pipeline
+- **Task: Internationalization (i18n)**
+  - **Status:** `To Do`
+  - **Backend:**
+    - [ ] Implement Laravel localization
+  - **Frontend:**
+    - [ ] Integrate `react-i18next`

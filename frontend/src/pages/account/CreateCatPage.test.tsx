@@ -53,7 +53,7 @@ describe('CreateCatPage', () => {
     expect(screen.getByLabelText('Birthday')).toBeInTheDocument()
     expect(screen.getByLabelText('Location')).toBeInTheDocument()
     expect(screen.getByLabelText('Description')).toBeInTheDocument()
-    
+
     // Should NOT have age field
     expect(screen.queryByLabelText('Age')).not.toBeInTheDocument()
   })
@@ -130,10 +130,7 @@ describe('CreateCatPage', () => {
     // Mock API error
     server.use(
       http.post('/api/cats', () => {
-        return HttpResponse.json(
-          { message: 'Failed to create cat' },
-          { status: 500 }
-        )
+        return HttpResponse.json({ message: 'Failed to create cat' }, { status: 500 })
       })
     )
 

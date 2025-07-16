@@ -44,7 +44,7 @@ export function UserMenu() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link to="/account">Profile</Link>
+          <Link to="/profile">Profile</Link>
         </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer" asChild>
           <Link to="/account/cats">My Cats</Link>

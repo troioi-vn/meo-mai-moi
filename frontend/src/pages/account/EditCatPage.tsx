@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { FormField } from '@/components/ui/FormField'
+import { EnhancedCatRemovalModal } from '@/components/EnhancedCatRemovalModal'
 import { toast } from 'sonner'
 
 interface FormData {
@@ -14,7 +15,7 @@ interface FormData {
   birthday: string
   location: string
   description: string
-  status: string
+  status: 'available' | 'fostered' | 'adopted' | 'dead'
 }
 
 interface FormErrors {
@@ -29,12 +30,12 @@ interface FormErrors {
 const EditCatPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  
+
   const [cat, setCat] = useState<Cat | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
-  
+
   const [formData, setFormData] = useState<FormData>({
     name: '',
     breed: '',
@@ -43,7 +44,7 @@ const EditCatPage: React.FC = () => {
     description: '',
     status: 'available',
   })
-  
+
   const [errors, setErrors] = useState<FormErrors>({})
 
   useEffect(() => {
@@ -67,9 +68,14 @@ const EditCatPage: React.FC = () => {
           description: catData.description,
           status: catData.status,
         })
-      } catch (err: any) {
-        if (err.response?.status === 404) {
-          setError('Cat not found')
+      } catch (err: unknown) {
+        if (err && typeof err === 'object' && 'response' in err) {
+          const axiosErr = err as { response?: { status?: number } }
+          if (axiosErr.response?.status === 404) {
+            setError('Cat not found')
+          } else {
+            setError('Failed to load cat information')
+          }
         } else {
           setError('Failed to load cat information')
         }
@@ -79,14 +85,14 @@ const EditCatPage: React.FC = () => {
       }
     }
 
-    fetchCat()
+    void fetchCat()
   }, [id])
 
   const updateField = (field: keyof FormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }))
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }))
+      setErrors((prev) => ({ ...prev, [field]: undefined }))
     }
   }
 
@@ -133,8 +139,8 @@ const EditCatPage: React.FC = () => {
       setSubmitting(true)
       await updateCat(id, formData)
       toast.success('Cat profile updated successfully!')
-      navigate('/account/cats')
-    } catch (error: any) {
+      void navigate('/account/cats')
+    } catch (error: unknown) {
       console.error('Error updating cat:', error)
       toast.error('Failed to update cat profile. Please try again.')
     } finally {
@@ -143,7 +149,11 @@ const EditCatPage: React.FC = () => {
   }
 
   const handleCancel = () => {
-    navigate('/account/cats')
+    void navigate('/account/cats')
+  }
+
+  const handleRemovalSuccess = () => {
+    void navigate('/account/cats')
   }
 
   if (loading) {
@@ -151,11 +161,27 @@ const EditCatPage: React.FC = () => {
   }
 
   if (error) {
-    return <ErrorState error={error} onRetry={() => navigate('/account/cats')} retryText="Back to Cats" />
+    return (
+      <ErrorState
+        error={error}
+        onRetry={() => {
+          void navigate('/account/cats')
+        }}
+        retryText="Back to Cats"
+      />
+    )
   }
 
   if (!cat) {
-    return <ErrorState error="Cat not found" onRetry={() => navigate('/account/cats')} retryText="Back to Cats" />
+    return (
+      <ErrorState
+        error="Cat not found"
+        onRetry={() => {
+          void navigate('/account/cats')
+        }}
+        retryText="Back to Cats"
+      />
+    )
   }
 
   return (
@@ -167,13 +193,20 @@ const EditCatPage: React.FC = () => {
         </div>
 
         <div className="bg-card rounded-lg shadow-lg p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form
+            onSubmit={(e) => {
+              void handleSubmit(e)
+            }}
+            className="space-y-6"
+          >
             <FormField
               label="Name"
               id="name"
               type="text"
               value={formData.name}
-              onChange={(value) => updateField('name', value)}
+              onChange={(value) => {
+                updateField('name', value)
+              }}
               error={errors.name}
               placeholder="Enter cat's name"
               required
@@ -184,7 +217,9 @@ const EditCatPage: React.FC = () => {
               id="breed"
               type="text"
               value={formData.breed}
-              onChange={(value) => updateField('breed', value)}
+              onChange={(value) => {
+                updateField('breed', value)
+              }}
               error={errors.breed}
               placeholder="Enter cat's breed"
               required
@@ -195,7 +230,9 @@ const EditCatPage: React.FC = () => {
               id="birthday"
               type="date"
               value={formData.birthday}
-              onChange={(value) => updateField('birthday', value)}
+              onChange={(value) => {
+                updateField('birthday', value)
+              }}
               error={errors.birthday}
               required
             />
@@ -205,7 +242,9 @@ const EditCatPage: React.FC = () => {
               id="location"
               type="text"
               value={formData.location}
-              onChange={(value) => updateField('location', value)}
+              onChange={(value) => {
+                updateField('location', value)
+              }}
               error={errors.location}
               placeholder="Enter location"
               required
@@ -216,7 +255,9 @@ const EditCatPage: React.FC = () => {
               id="status"
               type="select"
               value={formData.status}
-              onChange={(value) => updateField('status', value)}
+              onChange={(value) => {
+                updateField('status', value)
+              }}
               options={[
                 { value: 'available', label: 'Available' },
                 { value: 'fostered', label: 'Fostered' },
@@ -230,23 +271,21 @@ const EditCatPage: React.FC = () => {
               id="description"
               type="textarea"
               value={formData.description}
-              onChange={(value) => updateField('description', value)}
+              onChange={(value) => {
+                updateField('description', value)
+              }}
               error={errors.description}
               placeholder="Describe your cat's personality, habits, and any special needs"
               required
             />
 
             <div className="flex gap-4 pt-4">
-              <Button 
-                type="submit" 
-                disabled={submitting}
-                className="flex-1"
-              >
+              <Button type="submit" disabled={submitting} className="flex-1">
                 {submitting ? 'Updating...' : 'Update Cat'}
               </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={handleCancel}
                 disabled={submitting}
                 className="flex-1"
@@ -255,6 +294,22 @@ const EditCatPage: React.FC = () => {
               </Button>
             </div>
           </form>
+
+          {/* Enhanced Cat Removal Section */}
+          <div className="border-t border-border pt-6 mt-8">
+            <h3 className="text-lg font-semibold text-foreground mb-2">Remove Cat Profile</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Permanently delete this cat's profile or mark them as deceased. This action requires
+              your password confirmation.
+            </p>
+            {id && (
+              <EnhancedCatRemovalModal
+                catId={id}
+                catName={cat.name}
+                onSuccess={handleRemovalSuccess}
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -54,7 +54,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/my-cats', [CatController::class, 'myCats']);
     Route::post('/cats', [CatController::class, 'store']);
     Route::put('/cats/{cat}', [CatController::class, 'update']);
-    Route::delete('/cats/{cat}', [CatController::class, 'destroy']);
+    Route::delete('/cats/{cat}', [CatController::class, 'destroy'])->name('cats.destroy');
+    Route::put('/cats/{cat}/status', [CatController::class, 'updateStatus'])->name('cats.updateStatus');
     Route::post('/cats/{cat}/photos', [CatPhotoController::class, 'store']);
     Route::delete('/cats/{cat}/photos/{photo}', [CatPhotoController::class, 'destroy']);
     Route::post('/cats/{cat}/medical-records', [MedicalRecordController::class, 'store']);
@@ -78,7 +79,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::get('/cats/featured', [CatController::class, 'featured']);
 Route::get('/cats', [CatController::class, 'index']);
-Route::get('/cats/{cat}', [CatController::class, 'show']);
+Route::get('/cats/{cat}', [CatController::class, 'show'])->middleware('optional.auth');
 Route::get('/cats/{cat}/comments', [CatCommentController::class, 'index']);
 Route::get('/users/{user}/reviews', [ReviewController::class, 'index']);
 

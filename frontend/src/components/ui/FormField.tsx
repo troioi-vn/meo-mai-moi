@@ -15,6 +15,8 @@ interface SelectOption {
   label: string
 }
 
+const DEFAULT_SELECT_OPTIONS: SelectOption[] = []
+
 interface FormFieldProps {
   id: string
   label: string
@@ -38,7 +40,7 @@ export const FormField: React.FC<FormFieldProps> = ({
   placeholder,
   className = '',
   required = false,
-  options = [],
+  options = DEFAULT_SELECT_OPTIONS,
 }) => {
   const labelId = `${id}-label`
 

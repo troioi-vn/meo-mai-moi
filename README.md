@@ -88,11 +88,67 @@ To set up and run the development server, follow these steps:
     ```
     This builds the frontend and copies the files to the Laravel backend's public directory, making them available at `http://localhost:8000`.
 
+### Admin Panel Access
+
+The admin panel is available at `http://localhost:8000/admin`.
+
+**Default Credentials:**
+- **Email:** `test@example.com`
+- **Password:** `password`
+
 ### Development Workflow
 
 - **Development Server**: Use `npm run dev` to run the frontend on `http://localhost:5173` with hot-reloading.
 - **Laravel Integration**: Use `npm run build` to update the version served by Laravel on `http://localhost:8000`.
 - **Docker Builds**: The deployment process uses `npm run build:docker` which is optimized for container builds.
+
+## Testing
+
+The project includes comprehensive testing coverage for both backend and frontend components:
+
+### Backend Tests (Laravel/PHPUnit)
+
+```bash
+cd backend
+
+# Run all tests
+vendor/bin/sail artisan test
+
+# Run specific test suites
+vendor/bin/sail artisan test --filter="OptionalAuthMiddlewareTest"
+vendor/bin/sail artisan test --filter="OwnershipPermissionTest"
+vendor/bin/sail artisan test --filter="CatProfileTest"
+
+# Run with coverage
+vendor/bin/sail artisan test --coverage
+```
+
+### Frontend Tests (Vitest/React Testing Library)
+
+```bash
+cd frontend
+
+# Run all tests
+npm test
+
+# Run specific test files
+npm test -- CatProfilePage.test.tsx
+npm test -- App.routing.test.tsx
+
+# Run in watch mode
+npm test
+
+# Run with coverage
+npm test -- --coverage
+```
+
+### Test Coverage
+
+- **Backend**: 25+ tests covering authentication, permissions, and API endpoints
+- **Frontend**: 22+ tests covering component rendering, routing, and user interactions
+- **Key Features**: OptionalAuth middleware, ownership-based permissions, conditional UI rendering
+
+For detailed testing documentation, see [docs/testing.md](docs/testing.md).
 
 ## Deployment
 

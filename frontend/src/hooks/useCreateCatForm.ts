@@ -53,10 +53,10 @@ export const useCreateCatForm = () => {
   const navigate = useNavigate()
 
   const updateField = (field: keyof CreateCatFormData) => (value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }))
     // Clear field error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }))
+      setErrors((prev) => ({ ...prev, [field]: undefined }))
     }
   }
 
@@ -95,7 +95,7 @@ export const useCreateCatForm = () => {
     try {
       await createCat(formData)
       toast.success(SUCCESS_MESSAGES.CAT_CREATED)
-      navigate(ROUTES.MY_CATS)
+      void navigate(ROUTES.MY_CATS)
     } catch (err: unknown) {
       setError(ERROR_MESSAGES.CREATE_FAILED)
       console.error(err)
@@ -106,7 +106,7 @@ export const useCreateCatForm = () => {
   }
 
   const handleCancel = () => {
-    navigate(ROUTES.MY_CATS)
+    void navigate(ROUTES.MY_CATS)
   }
 
   return {

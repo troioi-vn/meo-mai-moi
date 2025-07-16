@@ -19,7 +19,7 @@ export const CatDetails: React.FC<CatDetailsProps> = ({ cat }) => {
         {/* Cat Image */}
         <div className="md:w-1/2">
           <img
-            src={cat.imageUrl || placeholderImage}
+            src={cat.imageUrl ?? placeholderImage}
             alt={cat.name}
             className="w-full h-64 md:h-full object-cover"
           />
@@ -29,9 +29,7 @@ export const CatDetails: React.FC<CatDetailsProps> = ({ cat }) => {
         <div className="md:w-1/2 p-8">
           <div className="space-y-4">
             <div>
-              <h1 className="text-3xl font-bold text-card-foreground mb-2">
-                {cat.name}
-              </h1>
+              <h1 className="text-3xl font-bold text-card-foreground mb-2">{cat.name}</h1>
               <p className="text-lg text-muted-foreground">
                 {cat.breed} - {age} years old
               </p>
@@ -45,16 +43,16 @@ export const CatDetails: React.FC<CatDetailsProps> = ({ cat }) => {
 
               <div>
                 <h3 className="font-semibold text-card-foreground">Status</h3>
-                <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${statusClasses}`}>
+                <span
+                  className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${statusClasses}`}
+                >
                   {statusDisplay}
                 </span>
               </div>
 
               <div>
                 <h3 className="font-semibold text-card-foreground">About {cat.name}</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  {cat.description}
-                </p>
+                <p className="text-muted-foreground leading-relaxed">{cat.description}</p>
               </div>
             </div>
           </div>

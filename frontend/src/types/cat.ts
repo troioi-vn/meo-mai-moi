@@ -6,10 +6,14 @@ export interface Cat {
   location: string
   description: string
   user_id: number
-  status: 'available' | 'fostered' | 'adopted'
+  status: 'available' | 'fostered' | 'adopted' | 'dead'
   imageUrl?: string
   created_at: string
   updated_at: string
+  viewer_permissions?: {
+    can_edit: boolean
+    can_view_contact: boolean
+  }
 }
 
 // Helper function to calculate age from birthday
@@ -18,10 +22,10 @@ export const calculateAge = (birthday: string): number => {
   const birthDate = new Date(birthday)
   let age = today.getFullYear() - birthDate.getFullYear()
   const monthDiff = today.getMonth() - birthDate.getMonth()
-  
+
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
     age--
   }
-  
+
   return age
 }

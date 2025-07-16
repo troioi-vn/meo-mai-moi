@@ -12,7 +12,17 @@ const CatProfilePage: React.FC = () => {
   const { cat, loading, error } = useCatProfile(id)
 
   const handleBackClick = () => {
-    navigate('/')
+    void navigate('/')
+  }
+
+  const handleEditClick = () => {
+    if (cat?.id) {
+      void navigate(`/account/cats/${String(cat.id)}/edit`)
+    }
+  }
+
+  const handleMyCatsClick = () => {
+    void navigate('/account/cats')
   }
 
   if (loading) {
@@ -30,11 +40,25 @@ const CatProfilePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4 max-w-4xl">
-        {/* Back Button */}
+        {/* Navigation Buttons */}
         <div className="mb-6">
-          <Button onClick={handleBackClick} variant="outline" className="mb-4">
-            ← Back to Cats
-          </Button>
+          <div className="flex gap-3 mb-4">
+            <Button onClick={handleBackClick} variant="outline">
+              ← Back
+            </Button>
+
+            {/* Owner-only buttons */}
+            {cat.viewer_permissions?.can_edit && (
+              <>
+                <Button onClick={handleEditClick} variant="default">
+                  Edit
+                </Button>
+                <Button onClick={handleMyCatsClick} variant="outline">
+                  My Cats
+                </Button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Cat Profile Content */}

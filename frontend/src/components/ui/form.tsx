@@ -17,8 +17,8 @@ const FormField = ({
   const id = React.useId()
 
   return (
-    <FormFieldContext.Provider value={React.useMemo(() => ({ name: props.name }), [props.name])}>
-      <FormItemContext.Provider value={React.useMemo(() => ({ id }), [id])}>
+    <FormFieldContext value={React.useMemo(() => ({ name: props.name }), [props.name])}>
+      <FormItemContext value={React.useMemo(() => ({ id }), [id])}>
         <Controller
           {...props}
           render={({ field, fieldState, formState }) => {
@@ -33,8 +33,8 @@ const FormField = ({
             )
           }}
         />
-      </FormItemContext.Provider>
-    </FormFieldContext.Provider>
+      </FormItemContext>
+    </FormFieldContext>
   )
 }
 

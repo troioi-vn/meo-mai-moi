@@ -44,7 +44,7 @@ export const handlers = [
   }),
   http.get('/api/cats/:id', ({ params }) => {
     const id = params.id as string
-    
+
     if (id === '1') {
       return HttpResponse.json({
         id: 1,
@@ -60,7 +60,7 @@ export const handlers = [
         imageUrl: 'https://example.com/fluffy.jpg',
       })
     }
-    
+
     if (id === '2') {
       return HttpResponse.json({
         id: 2,
@@ -75,21 +75,21 @@ export const handlers = [
         updated_at: '2023-01-01T00:00:00Z',
       })
     }
-    
+
     if (id === '999') {
       return HttpResponse.json({ message: 'Cat not found' }, { status: 404 })
     }
-    
+
     if (id === '500') {
       return HttpResponse.json({ message: 'Failed to fetch cat' }, { status: 500 })
     }
-    
+
     return HttpResponse.json({ message: 'Cat not found' }, { status: 404 })
   }),
   http.put('/api/cats/:id', async ({ params, request }) => {
     const id = params.id as string
-    const updatedData = await request.json() as any
-    
+    const updatedData = (await request.json()) as Record<string, unknown>
+
     if (id === '1') {
       return HttpResponse.json({
         id: 1,
@@ -97,13 +97,13 @@ export const handlers = [
         user_id: 1,
         created_at: '2023-01-01T00:00:00Z',
         updated_at: new Date().toISOString(),
-      })
+      } satisfies Record<string, unknown>)
     }
-    
+
     if (id === '999') {
       return HttpResponse.json({ message: 'Cat not found' }, { status: 404 })
     }
-    
+
     return HttpResponse.json({ message: 'Cat not found' }, { status: 404 })
   }),
   http.get('/api/notifications', () => {

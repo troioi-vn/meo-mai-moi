@@ -15,7 +15,7 @@ interface CatCardProps {
 
 export function CatCard({ id, name, breed, birthday, location, imageUrl }: CatCardProps) {
   const age = calculateAge(birthday)
-  
+
   return (
     <Card className="flex flex-col overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 ease-in-out">
       <img src={imageUrl ?? placeholderImage} alt={name} className="w-full h-48 object-cover" />

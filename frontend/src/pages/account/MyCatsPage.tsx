@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
 import { useNavigate } from 'react-router-dom'
 import { CatCard } from '@/components/CatCard'
 import { PlusCircle } from 'lucide-react'
@@ -11,6 +12,7 @@ export default function MyCatsPage() {
   const [cats, setCats] = useState<Cat[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showAll, setShowAll] = useState(false)
   const { isAuthenticated, isLoading } = useAuth()
   const navigate = useNavigate()
 
@@ -64,11 +66,31 @@ export default function MyCatsPage() {
       {error && <p className="text-destructive">{error}</p>}
 
       {!loading && !error && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {cats.map((cat) => (
-            <CatCard key={cat.id} {...cat} id={String(cat.id)} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-6">
+            {cats
+              .filter((cat) => showAll || cat.status !== 'dead')
+              .map((cat) => (
+                <CatCard key={cat.id} {...cat} id={String(cat.id)} />
+              ))}
+          </div>
+
+          {/* Show All Toggle - Below the cards */}
+          <div className="flex items-center justify-center space-x-2 mt-8">
+            <Switch
+              id="show-all"
+              checked={showAll}
+              onCheckedChange={setShowAll}
+              className="scale-75"
+            />
+            <label
+              htmlFor="show-all"
+              className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            >
+              Show all (including deceased)
+            </label>
+          </div>
+        </>
       )}
     </div>
   )

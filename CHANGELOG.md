@@ -5,6 +5,56 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **Documentation**: Added admin panel access instructions and default credentials to `README.md`.
+
+### Added
+- **Backend**: Implemented Filament Admin Panel:
+  - Installed and configured `filament/filament`.
+  - Integrated `bezhansalleh/filament-shield` for role and permission management.
+  - Configured `tomatophp/filament-users` for user management with Shield integration and impersonation.
+- **Backend**: Implemented cat photo management with automatic resizing:
+  - Integrated `intervention/image` library for image manipulation.
+  - Updated `FileUploadService` to resize uploaded cat photos to 1200x675 pixels.
+  - Enforced a "one photo per cat" rule by deleting the old photo on new upload.
+  - Implemented `CatPhotoController` to handle photo uploads and deletions.
+  - Added `CatPolicy` for authorization, ensuring only owners or admins can manage photos.
+- **Testing**: Added comprehensive feature tests for cat photo management:
+  - Verified successful photo upload and resizing by cat owners.
+  - Confirmed old photos are replaced upon new uploads.
+  - Ensured unauthorized users (non-owners, guests) cannot upload or delete photos.
+  - Validated proper error handling for invalid file types/sizes.
+  - Confirmed physical file deletion from storage upon photo removal.
+- **Feature**: Enhanced Cat Removal - Multi-step process for safe cat profile management:
+  - **Backend**: Created password verification endpoint (`POST /api/auth/verify-password`) for secure action confirmation
+  - **Backend**: Enhanced delete endpoint to support marking cats as 'deceased' as an alternative to permanent deletion
+  - **Frontend**: Implemented comprehensive 3-step cat removal modal (`EnhancedCatRemovalModal.tsx`):
+    - Step 1: Name confirmation to prevent accidental deletion
+    - Step 2: Choice between permanent deletion or marking as deceased
+    - Step 3: Password verification for security
+  - **Frontend**: Added toggle switch on "My Cats" page to show/hide deceased cats
+  - **Backend**: Updated cat listing endpoints to filter out deceased cats by default
+- **Testing**: Comprehensive test suite improvements with 100% coverage for new features:
+  - Created complete test suite for `Switch` component with 7 comprehensive tests
+  - Added `EnhancedCatRemovalModal` tests covering all 3 steps and user interactions
+  - Enhanced `MyCatsPage` tests with deceased cats filtering functionality
+  - Fixed 10 failing frontend tests across multiple components
+  - Improved test reliability with proper async handling and user event simulation
+- **UI/UX**: Enhanced deceased cats management:
+  - **Frontend**: Switch component with improved visual contrast (gray-300/blue-600 colors)
+  - **Frontend**: Centered toggle switch below cat cards with smaller, more elegant design
+  - **Backend**: `dead` status support in Cat model and filtering logic
+- **Testing**: Comprehensive backend test coverage for new authentication and permission features:
+  - Created `OptionalAuthMiddlewareTest.php` with 6 tests covering valid tokens, no tokens, invalid tokens, malformed headers, expired tokens, and context preservation
+  - Created `OwnershipPermissionTest.php` with 9 tests for ownership-based permission logic across different user roles and scenarios
+  - Extended `CatProfileTest.php` with 7 additional tests for show endpoint with viewer permissions
+- **Testing**: Enhanced frontend test coverage for conditional rendering and routing:
+  - Extended `CatProfilePage.test.tsx` with 4 new tests for conditional button rendering based on viewer permissions
+  - Created comprehensive `App.routing.test.tsx` with 9 tests covering route functionality, deep linking, parameter handling, and accessibility
+  - Verified existing `CatCard.test.tsx` properly covers "View profile" link functionality
+- **Backend**: Created `OptionalAuth` middleware for routes that work with both authenticated and non-authenticated users.
+- **Backend**: Added optional authentication to cat profile endpoints (`/api/cats/{id}`).
+- **Frontend**: Added edit and "My Cats" buttons to cat profile pages for cat owners.
+- **Frontend**: Enhanced cat profile navigation with conditional owner buttons.
 - **Backend**: Added `Message` model and migration.
 - **Backend**: Implemented `MessageController` with `store`, `index`, `show`, `markAsRead`, and `destroy` methods.
 - **Backend**: Added API routes for messaging.
@@ -28,6 +78,11 @@ All notable changes to this project will be documented in this file.
 - **Deployment**: Updated Dockerfile to use `npm run build:docker` for cleaner container builds.
 
 ### Changed
+- **Backend**: Updated cat permission logic to be ownership-based rather than role-based for better user experience.
+- **Backend**: Modified `CatController@show` to allow any cat owner to edit their cats, regardless of user role.
+- **Frontend**: Improved cat profile page navigation with cleaner "Back" button and conditional owner actions.
+- **Frontend**: Updated `Cat` type to include `viewer_permissions` for proper frontend permission handling.
+- **Frontend**: Refactored cat profile page buttons from single "Back to Cats" to "Back", "Edit", and "My Cats" for owners.
 - **Backend**: `HelperProfileController` `index` method now supports filtering and sorting helper offers.
 - **Backend**: `Cat` model updated: `age` replaced with `birthday`, and `status` field added.
 - **Backend**: `TransferRequest` model updated: `fostering_type` and `price` fields added.
@@ -45,11 +100,20 @@ All notable changes to this project will be documented in this file.
 - **Tests**: `CatListingTest` updated to use `birthday` and dynamic sorting assertions.
 - **Tests**: `TransferRequestTest` updated to reflect new API and authorization.
 
+### Fixed
+- **Frontend**: Fixed 404 error when clicking "View Profile" on cat cards by adding missing `/cats/:id` route.
+- **Backend**: Fixed authentication issue on public cat profile routes that prevented edit buttons from showing for owners.
+- **Frontend**: Fixed edit button visibility on cat profile pages for authenticated cat owners.
+
 ### Removed
 - **Frontend**: Removed `next-themes` library.
 - **Frontend**: Deleted `DropdownMenuTest.tsx`, `HomePage.tsx`, and `HomePage.test.tsx`.
 
 ### Fixed
+- **Testing**: Fixed critical enum comparison bug in `CatController@show` where admin permissions were not working due to comparing `UserRole` enum instances with string values instead of enum constants
+- **Frontend**: Fixed 404 error when clicking "View Profile" on cat cards by adding missing `/cats/:id` route.
+- **Backend**: Fixed authentication issue on public cat profile routes that prevented edit buttons from showing for owners.
+- **Frontend**: Fixed edit button visibility on cat profile pages for authenticated cat owners.
 - **Backend**: Added authorization to `CatController@destroy` to ensure only owners or admins can delete cat profiles.
 - **Backend**: Ensured `HelperProfileStatusUpdated` event is dispatched in `AdminController` for notification.
 - **Frontend**: Fixed build process issue where `npm run build` wasn't properly updating Laravel-served version on localhost:8000.

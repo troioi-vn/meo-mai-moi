@@ -51,7 +51,7 @@ describe('UserMenu', () => {
     renderWithRouter(<UserMenu />)
 
     // Since the avatar image might not load in tests, check for fallback
-    const fallback = screen.getByText('J')
+    const fallback = screen.getByText('JD')
     expect(fallback).toBeInTheDocument()
   })
 
@@ -71,7 +71,7 @@ describe('UserMenu', () => {
 
     renderWithRouter(<UserMenu />)
 
-    const fallback = screen.getByText('J')
+    const fallback = screen.getByText('JD')
     expect(fallback).toBeInTheDocument()
   })
 
@@ -111,7 +111,7 @@ describe('UserMenu', () => {
     const profileLink = screen.getByRole('menuitem', { name: 'Profile' })
     const myCatsLink = screen.getByRole('menuitem', { name: 'My Cats' })
 
-    expect(profileLink).toHaveAttribute('href', '/account')
+    expect(profileLink).toHaveAttribute('href', '/profile')
     expect(myCatsLink).toHaveAttribute('href', '/account/cats')
   })
 
@@ -149,8 +149,11 @@ describe('UserMenu', () => {
 
     await user.click(avatar)
 
-    const themeToggle = screen.getByRole('menuitem', { name: /toggle theme/i })
-    expect(themeToggle).toBeInTheDocument()
+    // Check for theme label and options
+    expect(screen.getByText('Theme')).toBeInTheDocument()
+    expect(screen.getByRole('menuitemradio', { name: 'Light' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitemradio', { name: 'Dark' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitemradio', { name: 'System' })).toBeInTheDocument()
   })
 
   it('handles user without name gracefully', () => {

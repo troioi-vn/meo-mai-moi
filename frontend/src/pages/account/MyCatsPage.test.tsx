@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { vi } from 'vitest'
 import { setupServer } from 'msw/node'
@@ -56,7 +57,7 @@ describe('MyCatsPage', () => {
         id: 1,
         name: 'Cat 1',
         breed: 'Breed 1',
-        age: 2,
+        birthday: '2020-01-01',
         location: 'Location 1',
         description: 'Description 1',
         user_id: 1,
@@ -69,7 +70,7 @@ describe('MyCatsPage', () => {
         id: 2,
         name: 'Cat 2',
         breed: 'Breed 2',
-        age: 3,
+        birthday: '2021-01-01',
         location: 'Location 2',
         description: 'Description 2',
         user_id: 1,
@@ -111,6 +112,102 @@ describe('MyCatsPage', () => {
     await waitFor(() => {
       const button = screen.getByRole('button', { name: /new cat/i })
       expect(button).toBeInTheDocument()
+    })
+  })
+
+  describe('Show All Switch', () => {
+    it('renders the switch to show all cats including deceased', async () => {
+      vi.mocked(getMyCats).mockResolvedValue([])
+      renderWithRouter(<MyCatsPage />)
+
+      await waitFor(() => {
+        expect(screen.getByRole('switch')).toBeInTheDocument()
+        expect(screen.getByText('Show all (including deceased)')).toBeInTheDocument()
+      })
+    })
+
+    it('filters out dead cats by default', async () => {
+      vi.mocked(getMyCats).mockResolvedValue([
+        {
+          id: 1,
+          name: 'Alive Cat',
+          breed: 'Breed 1',
+          birthday: '2020-01-01',
+          location: 'Location 1',
+          description: 'Description 1',
+          user_id: 1,
+          status: 'available',
+          created_at: '2023-01-01T00:00:00Z',
+          updated_at: '2023-01-01T00:00:00Z',
+        },
+        {
+          id: 2,
+          name: 'Dead Cat',
+          breed: 'Breed 2',
+          birthday: '2021-01-01',
+          location: 'Location 2',
+          description: 'Description 2',
+          user_id: 1,
+          status: 'dead',
+          created_at: '2023-01-02T00:00:00Z',
+          updated_at: '2023-01-02T00:00:00Z',
+        },
+      ])
+
+      renderWithRouter(<MyCatsPage />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Alive Cat')).toBeInTheDocument()
+        expect(screen.queryByText('Dead Cat')).not.toBeInTheDocument()
+      })
+    })
+
+    it('shows dead cats when switch is toggled on', async () => {
+      const user = userEvent.setup()
+      vi.mocked(getMyCats).mockResolvedValue([
+        {
+          id: 1,
+          name: 'Alive Cat',
+          breed: 'Breed 1',
+          birthday: '2020-01-01',
+          location: 'Location 1',
+          description: 'Description 1',
+          user_id: 1,
+          status: 'available',
+          created_at: '2023-01-01T00:00:00Z',
+          updated_at: '2023-01-01T00:00:00Z',
+        },
+        {
+          id: 2,
+          name: 'Dead Cat',
+          breed: 'Breed 2',
+          birthday: '2021-01-01',
+          location: 'Location 2',
+          description: 'Description 2',
+          user_id: 1,
+          status: 'dead',
+          created_at: '2023-01-02T00:00:00Z',
+          updated_at: '2023-01-02T00:00:00Z',
+        },
+      ])
+
+      renderWithRouter(<MyCatsPage />)
+
+      // Initially dead cat should not be visible
+      await waitFor(() => {
+        expect(screen.getByText('Alive Cat')).toBeInTheDocument()
+        expect(screen.queryByText('Dead Cat')).not.toBeInTheDocument()
+      })
+
+      // Toggle the switch
+      const switchElement = screen.getByRole('switch')
+      await user.click(switchElement)
+
+      // Now dead cat should be visible
+      await waitFor(() => {
+        expect(screen.getByText('Alive Cat')).toBeInTheDocument()
+        expect(screen.getByText('Dead Cat')).toBeInTheDocument()
+      })
     })
   })
 })

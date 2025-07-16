@@ -21,8 +21,8 @@
   --ring: 147 197 253;
   --muted: 31 41 55;
   --muted-foreground: 156 163 175;
-  --accent: 31 41 55;
-  --accent-foreground: 243 244 246;
+  --accent: 55 65 81;
+  --accent-foreground: 255 255 255;
 }
 
 @layer base {
@@ -70,5 +70,14 @@
 
   .hover\:text-accent-foreground:hover {
     color: rgb(var(--accent-foreground));
+  }
+
+  /* Enhanced dark theme dropdown hover states */
+  .dark .hover\:bg-accent:hover {
+    background-color: rgb(55 65 81); /* Better contrast in dark mode */
+  }
+
+  .dark .hover\:text-accent-foreground:hover {
+    color: rgb(255 255 255); /* Pure white for better visibility */
   }
 }

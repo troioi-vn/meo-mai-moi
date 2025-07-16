@@ -1,47 +1,56 @@
 # Multi-stage build: First stage for building frontend
 FROM node:18 AS frontend-build
 
-# Copy frontend source (adjust path based on build context)
-COPY frontend /frontend
 WORKDIR /frontend
 
-# Install dependencies and build
-RUN npm install
+# Copy package files first for better caching
+COPY frontend/package*.json ./
+
+# Install dependencies (cached if package.json hasn't changed)
+RUN npm ci --only=production --ignore-scripts
+
+# Copy source code after dependencies
+COPY frontend ./
+
+# Build the application
 RUN npm run build:docker
 
 # Second stage: PHP backend with built frontend
-FROM php:8.2-fpm
+FROM php:8.4-fpm
 
 # Set working directory
 WORKDIR /var/www
 
 # Install system dependencies including nginx
 RUN apt-get update && apt-get install -y \
-    build-essential \
+    # Runtime dependencies
     libpng-dev \
     libjpeg62-turbo-dev \
     libfreetype6-dev \
-    locales \
-    zip \
-    jpegoptim optipng pngquant gifsicle \
-    vim \
-    unzip \
-    git \
-    curl \
     libonig-dev \
     libzip-dev \
     libpq-dev \
+    libicu-dev \
+    locales \
+    zip \
+    unzip \
+    curl \
     nginx \
-    supervisor
+    supervisor \
+    # Build dependencies (will be removed later)
+    build-essential
+
+# Install PHP extensions
+RUN docker-php-ext-install mbstring zip exif pcntl intl \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd \
+    && docker-php-ext-install pdo_pgsql
+
+# Remove build dependencies to reduce image size
+RUN apt-get purge -y build-essential && apt-get autoremove -y
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring zip exif pcntl intl
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg
-RUN docker-php-ext-install gd
-RUN docker-php-ext-install pdo_pgsql
 
 # Copy custom PHP-FPM pool configuration
 COPY backend/www.conf /usr/local/etc/php-fpm.d/www.conf
@@ -54,13 +63,22 @@ RUN touch /var/log/php-fpm-error.log /var/log/php-fpm-access.log \
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Copy composer files first for better dependency caching
+COPY backend/composer.json backend/composer.lock ./
+
+# Install PHP dependencies first (cached if composer files haven't changed)
+RUN composer install --no-dev --optimize-autoloader --no-scripts --no-plugins
+
 # Copy backend application
 COPY backend .
 
 # Copy built frontend from first stage
 COPY --from=frontend-build /frontend/dist ./public/build
 
-# Install Laravel dependencies
+# Copy Docker-specific environment file
+COPY backend/.env.docker /var/www/.env
+
+# Run composer scripts now that we have the full application
 RUN composer install --no-dev --optimize-autoloader
 
 # Create storage link for file uploads

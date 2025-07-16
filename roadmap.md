@@ -188,6 +188,26 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
     - [ ] Map the fetched data to the `CatCard` component.
     - [ ] Ensure the layout is responsive and handles various numbers of cats gracefully.
 
+#### Epic 5: Medical Records Management
+- **Task: Track Cat Weight**
+  - **Status:** `To Do`
+  - **Backend:**
+    - [ ] Add `WeightHistory` model and migration.
+    - [ ] Implement API endpoints for adding and viewing weight records.
+  - **Frontend:**
+    - [ ] Add a "Track Weight" button to cat profile.
+    - [ ] Implement UI for adding new weight entries.
+    - [ ] Display weight history (e.g., chart or list) on cat profile.
+- **Task: Manage Vaccination Records**
+  - **Status:** `To Do`
+  - **Backend:**
+    - [ ] Add `MedicalRecord` model and migration (for vaccinations).
+    - [ ] Implement API endpoints for adding and viewing vaccination records.
+  - **Frontend:**
+    - [ ] Add a "Vaccination Record" button to cat profile.
+    - [ ] Implement UI for adding new vaccination entries.
+    - [ ] Display vaccination history on cat profile.
+
 ---
 
 ### Phase 5: Deployment & Maintenance
@@ -210,3 +230,53 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
     - [ ] Implement Laravel localization
   - **Frontend:**
     - [ ] Integrate `react-i18next`
+
+#### Epic 7: Deployment & Demo Server
+- **Task: Prepare VPS for Demo/Dev Server**
+  - **Status:** `To Do`
+  - **Notes:** Set up a Virtual Private Server (VPS) environment suitable for deploying a demo or development instance of the application.
+  - **Deployment:**
+    - [ ] Provision a VPS instance.
+    - [ ] Install necessary software (Docker, Nginx, PostgreSQL, etc.).
+    - [ ] Configure firewall and security settings.
+- **Task: Deploy Demo Server**
+  - **Status:** `To Do`
+  - **Notes:** Deploy the current state of the application to the prepared VPS for demonstration and testing purposes.
+  - **Deployment:**
+    - [ ] Deploy backend and frontend applications.
+    - [ ] Configure Nginx as a reverse proxy.
+    - [ ] Set up SSL/TLS (Let's Encrypt).
+    - [ ] Configure continuous deployment (if applicable).
+
+#### Epic 8: Internationalization
+- **Task: Add Multilanguage Support**
+  - **Status:** `To Do`
+  - **Notes:** Implement full multi-language support across the application.
+  - **Backend:**
+    - [ ] Implement Laravel's built-in localization features.
+    - [ ] Store all user-facing strings in language files.
+  - **Frontend:**
+    - [ ] Integrate `react-i18next` for managing translations.
+    - [ ] Add a language selector UI component.
+  - **Supported Languages:**
+    - [ ] English (`en`)
+    - [ ] Vietnamese (`vn`)
+  - **Admin Configuration:**
+    - [ ] Add an interface in the admin panel for managing and adding new language strings.
+
+---
+
+### Phase 6: Future Enhancements (Creative Ideas)
+- **Goal:** Explore innovative features to enhance user engagement, experience, and platform capabilities beyond core functionality.
+
+#### Epic 1: Community & Engagement
+- **Task: Gamification: Badges & Leaderboards**
+  - **Status:** `To Do`
+  - **Notes:** Introduce a gamified system to reward users for positive contributions (e.g., successful adoptions, fostering duration, helpful comments).
+  - **Backend:**
+    - [ ] `Badge` and `UserBadge` models.
+    - [ ] Logic for awarding badges based on actions.
+    - [ ] API endpoints for user badges and leaderboards.
+  - **Frontend:**
+    - [ ] Display badges on user profiles.
+    - [ ] Create a "Leaderboard" page.

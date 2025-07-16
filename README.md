@@ -37,56 +37,55 @@ The system is not tied to any specific country, though the initial dataset is ba
 
 ## Development Setup
 
-To set up and run the development server, follow these steps:
+This project uses different databases for different environments:
 
-### Backend (Laravel)
+- **Local Development**: SQLite (file-based, lightweight)
+- **Docker/Production**: PostgreSQL (robust, full-featured)
 
-1.  Navigate to the `backend` directory:
-    ```bash
-    cd backend
-    ```
-2.  Copy the example environment file:
-    ```bash
-    cp .env.example .env
-    ```
-3.  Bring up the Docker containers:
-    ```bash
-    docker compose up -d
-    ```
-4.  Install PHP dependencies inside the Laravel container using Sail:
-    ```bash
-    vendor/bin/sail composer install
-    ```
-5.  Generate an application key inside the Laravel container using Sail:
-    ```bash
-    vendor/bin/sail artisan key:generate
-    ```
+### Option 1: Local Development (SQLite)
 
-**Note:** All Laravel Artisan and Composer commands should be run by prefixing them with `vendor/bin/sail` (e.g., `vendor/bin/sail artisan migrate`, `vendor/bin/sail composer update`).
+1. **Backend Setup**:
+   ```bash
+   cd backend
+   cp .env.example .env
+   composer install
+   php artisan key:generate
+   php artisan migrate
+   php artisan db:seed
+   php artisan serve  # Runs on http://localhost:8000
+   ```
 
-**Note:** The default ports for the application and database have been changed to `8080` and `5433` respectively to avoid conflicts with common local development setups. You can access the application at `http://localhost:8080`.
+2. **Frontend Setup**:
+   ```bash
+   cd frontend
+   npm install
+   npm run dev  # Runs on http://localhost:5173
+   ```
 
-### Frontend (React)
+### Option 2: Docker Setup (PostgreSQL)
 
-1.  Navigate to the `frontend` directory:
-    ```bash
-    cd frontend
-    ```
-2.  Install Node.js dependencies:
-    ```bash
-    npm install
-    ```
-3.  To run the frontend in development mode (with hot-reloading):
-    ```bash
-    npm run dev
-    ```
-    This starts the Vite development server on `http://localhost:5173` with API proxying to the Laravel backend.
+1. **Start the application**:
+   ```bash
+   docker-compose up -d --build
+   ```
 
-4.  To build the frontend for production and update the Laravel-served version:
-    ```bash
-    npm run build
-    ```
-    This builds the frontend and copies the files to the Laravel backend's public directory, making them available at `http://localhost:8000`.
+2. **First time setup** - run migrations and seeding:
+   ```bash
+   docker-compose --profile setup up migrate seed
+   ```
+
+   Or run manually if needed:
+   ```bash
+   docker-compose exec backend php artisan migrate
+   docker-compose exec backend php artisan db:seed
+   ```
+
+3. **Access the application**: http://localhost:8000
+
+### Requirements
+
+- **Local Development**: PHP 8.4, Node.js, Composer, npm
+- **Docker**: Docker & Docker Compose
 
 ### Admin Panel Access
 

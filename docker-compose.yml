@@ -24,6 +24,33 @@ services:
     networks:
       - meo-mai-moi-network
 
+  # Database migration service (run once)
+  migrate:
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+    command: php artisan migrate --force
+    depends_on:
+      - db
+    networks:
+      - meo-mai-moi-network
+    profiles:
+      - setup
+
+  # Database seeding service (run once)
+  seed:
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+    command: php artisan db:seed --force
+    depends_on:
+      - db
+      - migrate
+    networks:
+      - meo-mai-moi-network
+    profiles:
+      - setup
+
 networks:
   meo-mai-moi-network:
     driver: bridge

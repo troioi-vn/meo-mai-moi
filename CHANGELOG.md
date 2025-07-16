@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **Documentation**: Updated `roadmap.md` with new epics and tasks:
+  - Medical Records Management (Track Cat Weight, Manage Vaccination Records)
+  - Deployment & Demo Server (Prepare VPS, Deploy Demo Server)
+  - Internationalization (Multilanguage Support, Language Selector)
 - **Documentation**: Added admin panel access instructions and default credentials to `README.md`.
 
 ### Added

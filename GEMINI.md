@@ -41,7 +41,9 @@ This outlines the high-level map of the application from the perspective of its 
 - **Frontend:** React (TypeScript) - Single Page Application
     -   **Tailwind CSS:** A utility-first CSS framework that provides low-level utility classes to build custom designs directly in your JSX. It promotes rapid UI development and highly customizable styling.
     -   **shadcn/ui:** Not a traditional component library, but a collection of re-usable components whose source code is added directly to your project. This provides full control and easy customization, as components are built with Tailwind CSS.
-- **Database:** PostgreSQL
+- **Database:** 
+    - **Local Development:** SQLite (file-based, lightweight)
+    - **Docker/Production:** PostgreSQL (robust, full-featured)
 - **Deployment:** Docker Compose (Images will be stored on the same VPS as the application, not in cloud storage initially).
 
 ## 4. Development Roadmap
@@ -252,6 +254,51 @@ To ensure a consistent and user-friendly experience, we will standardize error h
 - When a development task is completed, I must update the CHANGELOG.md file to document the change. I should add the completed task under the appropriate category (e.g., Added, Changed, Fixed) in the "[Unreleased]" section.
 
 ## 9. Command Glossary
+
+### Local Development Setup
+**Backend (Laravel + SQLite):**
+```bash
+cd backend
+cp .env.example .env
+composer install
+php artisan key:generate
+php artisan migrate
+php artisan db:seed
+php artisan serve  # http://localhost:8000
+```
+
+**Frontend (React + Vite):**
+```bash
+cd frontend
+npm install
+npm run dev  # http://localhost:5173
+```
+
+### Docker Setup
+**Start Application:**
+```bash
+docker-compose up -d --build
+```
+
+**Build with cache optimization:**
+```bash
+# Use BuildKit for better caching and parallel builds
+DOCKER_BUILDKIT=1 docker-compose build --parallel
+
+# Or for just the backend service
+DOCKER_BUILDKIT=1 docker-compose build backend
+```
+
+**First-time Database Setup:**
+```bash
+docker-compose --profile setup up migrate seed
+```
+
+**Manual Database Commands:**
+```bash
+docker-compose exec backend php artisan migrate
+docker-compose exec backend php artisan db:seed
+```
 
 ### Backend (Laravel)
 - `php artisan serve`: Start the Laravel development server.

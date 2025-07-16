@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **Admin Panel**: Added global settings to admin panel, starting with SMTP mail server configuration.
+
 - **Docker Optimization**: Improved Docker build performance with multi-stage builds and layer caching:
   - Implemented two-stage composer installation for better dependency caching
   - Added user context switching to avoid permission conflicts

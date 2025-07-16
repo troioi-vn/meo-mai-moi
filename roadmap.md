@@ -50,6 +50,13 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
     - [x] Configure `tomatophp/filament-users` for user management with Shield integration and impersonation.
 
 #### Epic 1: Admin Panel Features
+- **Task: Add Global Settings to Admin Panel (SMTP)**
+  - **Status:** `To Do`
+  - **Notes:** Implement a global settings page in the Filament admin panel, starting with SMTP mail server configuration for notifications.
+  - **Backend:**
+    - [ ] Create a Filament page or resource for global settings.
+    - [ ] Implement fields for SMTP host, port, username, password, encryption, and sender email.
+    - [ ] Securely store and retrieve SMTP credentials.
 - **Task: Add Cats to Admin Panel**
   - **Status:** `To Do`
   - **Notes:** Implement the functionality to manage cat profiles directly within the Filament admin panel.

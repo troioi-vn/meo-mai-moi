@@ -12,7 +12,7 @@ export function CatsSection() {
             id="1"
             name="Whiskers"
             breed="Siamese"
-            age={2}
+            birthday="2023-01-01" // 2 years old in 2025
             location="New York, NY"
             imageUrl="https://via.placeholder.com/300x200?text=Whiskers"
           />
@@ -20,7 +20,7 @@ export function CatsSection() {
             id="2"
             name="Mittens"
             breed="Persian"
-            age={4}
+            birthday="2021-01-01" // 4 years old in 2025
             location="Los Angeles, CA"
             imageUrl="https://via.placeholder.com/300x200?text=Mittens"
           />
@@ -28,7 +28,7 @@ export function CatsSection() {
             id="3"
             name="Shadow"
             breed="Bombay"
-            age={1}
+            birthday="2024-01-01" // 1 year old in 2025
             location="Chicago, IL"
             imageUrl="https://via.placeholder.com/300x200?text=Shadow"
           />
@@ -36,7 +36,7 @@ export function CatsSection() {
             id="4"
             name="Tiger"
             breed="Tabby"
-            age={3}
+            birthday="2022-01-01" // 3 years old in 2025
             location="Houston, TX"
             imageUrl="https://via.placeholder.com/300x200?text=Tiger"
           />

@@ -80,10 +80,19 @@ To set up and run the development server, follow these steps:
     ```bash
     npm run dev
     ```
-4.  To build the frontend for production:
+    This starts the Vite development server on `http://localhost:5173` with API proxying to the Laravel backend.
+
+4.  To build the frontend for production and update the Laravel-served version:
     ```bash
     npm run build
     ```
+    This builds the frontend and copies the files to the Laravel backend's public directory, making them available at `http://localhost:8000`.
+
+### Development Workflow
+
+- **Development Server**: Use `npm run dev` to run the frontend on `http://localhost:5173` with hot-reloading.
+- **Laravel Integration**: Use `npm run build` to update the version served by Laravel on `http://localhost:8000`.
+- **Docker Builds**: The deployment process uses `npm run build:docker` which is optimized for container builds.
 
 ## Deployment
 

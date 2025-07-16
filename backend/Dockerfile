@@ -7,7 +7,7 @@ WORKDIR /frontend
 
 # Install dependencies and build
 RUN npm install
-RUN npm run build
+RUN npm run build:docker
 
 # Second stage: PHP backend with built frontend
 FROM php:8.2-fpm
@@ -38,7 +38,7 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring zip exif pcntl
+RUN docker-php-ext-install pdo_mysql mbstring zip exif pcntl intl
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-install gd
 RUN docker-php-ext-install pdo_pgsql
@@ -62,6 +62,9 @@ COPY --from=frontend-build /frontend/dist ./public/build
 
 # Install Laravel dependencies
 RUN composer install --no-dev --optimize-autoloader
+
+# Create storage link for file uploads
+RUN php artisan storage:link
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www \

@@ -2,6 +2,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { ChangePasswordForm } from '@/components/ChangePasswordForm'
 import { DeleteAccountDialog } from '@/components/DeleteAccountDialog'
+import { UserAvatar } from '@/components/UserAvatar'
 
 export default function ProfilePage() {
   const { user, logout } = useAuth()
@@ -10,6 +11,12 @@ export default function ProfilePage() {
     <div className="flex items-center justify-center min-h-screen bg-background">
       <div className="w-full max-w-md p-8 space-y-6 bg-card rounded-lg shadow-xl border">
         <h1 className="text-3xl font-bold text-center text-card-foreground">User Profile</h1>
+
+        {/* Avatar Section */}
+        <div className="flex justify-center pb-4">
+          <UserAvatar size="xl" showUploadControls={true} />
+        </div>
+
         {user && (
           <div className="space-y-4 text-lg">
             <div className="flex justify-between items-center">

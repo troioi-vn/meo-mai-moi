@@ -12,3 +12,16 @@ export const createCat = async (
   const response = await api.post<Cat>('/cats', catData)
   return response.data
 }
+
+export const getCat = async (id: string): Promise<Cat> => {
+  const response = await api.get<Cat>(`/cats/${id}`)
+  return response.data
+}
+
+export const updateCat = async (
+  id: string,
+  catData: Omit<Cat, 'id' | 'user_id' | 'created_at' | 'updated_at'>
+): Promise<Cat> => {
+  const response = await api.put<Cat>(`/cats/${id}`, catData)
+  return response.data
+}

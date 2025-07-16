@@ -23,6 +23,9 @@ All notable changes to this project will be documented in this file.
 - **Documentation**: Added user stories for avatar management, cat profile deletion, and cat photo management to `GEMINI.md`.
 - **Documentation**: Added new testing TODOs for `UserAvatar.tsx`, `MyCatsPage.tsx`, and `EditCatPage.tsx`.
 - **Frontend**: Added local placeholder image for cats.
+- **Frontend**: Enhanced `UserAvatar` component to display default placeholder image when no user avatar is uploaded.
+- **Frontend**: Added `build:docker` script for Docker-specific builds without local file copying.
+- **Deployment**: Updated Dockerfile to use `npm run build:docker` for cleaner container builds.
 
 ### Changed
 - **Backend**: `HelperProfileController` `index` method now supports filtering and sorting helper offers.
@@ -37,6 +40,8 @@ All notable changes to this project will be documented in this file.
 - **Frontend**: Updated numerous components with consistent styling from the new design system in Tailwind CSS.
 - **Frontend**: Simplified CSRF function in `src/api/axios.ts`.
 - **Frontend**: Updated `tsconfig.app.json` and `tsconfig.node.json` to include `composite: true`.
+- **Frontend**: Updated `npm run build` script to properly copy build files to backend directory for local Laravel serving.
+- **Frontend**: Modified Vite config to output to `dist` directory consistently across environments.
 - **Tests**: `CatListingTest` updated to use `birthday` and dynamic sorting assertions.
 - **Tests**: `TransferRequestTest` updated to reflect new API and authorization.
 
@@ -44,31 +49,23 @@ All notable changes to this project will be documented in this file.
 - **Frontend**: Removed `next-themes` library.
 - **Frontend**: Deleted `DropdownMenuTest.tsx`, `HomePage.tsx`, and `HomePage.test.tsx`.
 
-### Changed
-- **Backend**: `HelperProfileController` `index` method now supports filtering and sorting helper offers.
-- **Backend**: `Cat` model updated: `age` replaced with `birthday`, and `status` field added.
-- **Backend**: `TransferRequest` model updated: `fostering_type` and `price` fields added.
-- **Backend**: `CatController` updated to use `birthday` instead of `age` for validation and sorting.
-- **Backend**: `TransferRequestController`'s `store` method updated to handle new fields and authorization.
-- **Backend**: Added `localhost:5173` to `SANCTUM_STATEFUL_DOMAINS` in `config/sanctum.php`.
-- **Documentation**: Updated `Cat` model in `GEMINI.md` to use `birthday` instead of `age`.
-- **Documentation**: Updated "Create and Edit a Cat Profile" user story to reflect the `birthday` change and frontend age calculation.
-- **Frontend**: Re-implemented a custom theme provider, removing the `next-themes` dependency.
-- **Frontend**: Updated numerous components with consistent styling from the new design system in Tailwind CSS.
-- **Frontend**: Simplified CSRF function in `src/api/axios.ts`.
-- **Frontend**: Updated `tsconfig.app.json` and `tsconfig.node.json` to include `composite: true`.
-- **Tests**: `CatListingTest` updated to use `birthday` and dynamic sorting assertions.
-- **Tests**: `TransferRequestTest` updated to reflect new API and authorization.
-
 ### Fixed
 - **Backend**: Added authorization to `CatController@destroy` to ensure only owners or admins can delete cat profiles.
 - **Backend**: Ensured `HelperProfileStatusUpdated` event is dispatched in `AdminController` for notification.
+- **Frontend**: Fixed build process issue where `npm run build` wasn't properly updating Laravel-served version on localhost:8000.
+- **Deployment**: Fixed Vite configuration inconsistency between local development and Docker builds.
 - Frontend: Fixed all failing frontend tests to properly match component implementations:
   - Updated `Footer.test.tsx` to test actual footer structure instead of removed social media icons
   - Fixed `MainPage.test.tsx` to correctly identify navigation elements (DropdownMenuTest component)
   - Corrected `MyCatsPage.test.tsx` loading and error message text to match actual component output
   - Updated button/link expectations in `MyCatsPage.test.tsx` to match actual UI implementation
   - All 18 frontend tests now pass successfully
+- **Backend**: Fixed Laravel storage symbolic link configuration to properly serve uploaded avatar files.
+- **Backend**: Updated `nginx-docker.conf` to include `/storage/` location block for serving user-uploaded files.
+- **Backend**: Added `php artisan storage:link` command to Dockerfile for proper file serving in production.
+- **Frontend**: Fixed default avatar placeholder loading in `UserAvatar` component by using hardcoded asset path instead of Vite import.
+- **Frontend**: Fixed default avatar placeholder loading in `UserMenu` component to display properly when no user avatar is uploaded.
+- **Deployment**: Fixed avatar file serving configuration to work correctly in both development and Docker environments.
 
 ## [0.3.0] - 2025-07-15
 

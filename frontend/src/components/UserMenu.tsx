@@ -13,34 +13,33 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { useTheme } from '@/hooks/use-theme'
 import { Moon, Sun } from 'lucide-react'
-import defaultAvatar from '@/assets/images/default-avatar.webp'
+// import defaultAvatar from '@/assets/images/default-avatar.webp'
+const defaultAvatar = '/build/assets/default-avatar-Dio_8tmr.webp'
 
 export function UserMenu() {
   const { user, logout } = useAuth()
   const { theme, setTheme } = useTheme()
 
-  // Use a fallback approach for the default avatar
-  const getAvatarSrc = () => {
-    if (user?.avatar_url) {
-      return user.avatar_url
-    }
-    // If the import doesn't work, the fallback will be shown
-    return defaultAvatar
-  }
-
   return (
     <DropdownMenu data-testid="user-menu">
       <DropdownMenuTrigger asChild>
         <Avatar className="h-9 w-9 cursor-pointer">
-          <AvatarImage 
-            src={getAvatarSrc()} 
+          <AvatarImage
+            src={
+              user?.avatar_url && user.avatar_url.trim() !== '' ? user.avatar_url : defaultAvatar
+            }
             alt={user?.name ?? 'User avatar'}
-            onError={(e) => {
-              // If image fails to load, this will trigger the fallback
-              console.log('Avatar image failed to load:', e.currentTarget.src)
-            }}
           />
-          <AvatarFallback>{user?.name ? user.name[0].toUpperCase() : '?'}</AvatarFallback>
+          <AvatarFallback className="bg-blue-500 text-white font-medium text-sm">
+            {user?.name
+              ? user.name
+                  .split(' ')
+                  .map((n) => n[0])
+                  .join('')
+                  .slice(0, 2)
+                  .toUpperCase()
+              : '?'}
+          </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

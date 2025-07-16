@@ -2,7 +2,7 @@ export interface Cat {
   id: number
   name: string
   breed: string
-  age: number
+  birthday: string // Changed from age to birthday (ISO date string)
   location: string
   description: string
   user_id: number
@@ -10,4 +10,18 @@ export interface Cat {
   imageUrl?: string
   created_at: string
   updated_at: string
+}
+
+// Helper function to calculate age from birthday
+export const calculateAge = (birthday: string): number => {
+  const today = new Date()
+  const birthDate = new Date(birthday)
+  let age = today.getFullYear() - birthDate.getFullYear()
+  const monthDiff = today.getMonth() - birthDate.getMonth()
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--
+  }
+  
+  return age
 }

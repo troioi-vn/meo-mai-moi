@@ -11,7 +11,7 @@ const mockCatData = {
   id: '1',
   name: 'Fluffy',
   breed: 'Persian',
-  age: 3,
+  birthday: '2021-01-01', // This should make the cat about 4 years old in 2025
   location: 'Ho Chi Minh City',
   imageUrl: 'https://example.com/cat.jpg',
 }
@@ -21,7 +21,7 @@ describe('CatCard', () => {
     renderWithRouter(<CatCard {...mockCatData} />)
 
     expect(screen.getByText('Fluffy')).toBeInTheDocument()
-    expect(screen.getByText('Persian - 3 years old')).toBeInTheDocument()
+    expect(screen.getByText('Persian - 4 years old')).toBeInTheDocument() // Updated to reflect calculated age
     expect(screen.getByText('Ho Chi Minh City')).toBeInTheDocument()
   })
 

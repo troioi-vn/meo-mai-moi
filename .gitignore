@@ -34,3 +34,6 @@ Thumbs.db
 # Editor
 .vscode/
 .idea/
+
+# ESLint
+.eslintcache

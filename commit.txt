@@ -1,16 +1,41 @@
-feat: Complete backend features and API documentation
+feat(frontend, docs): Overhaul documentation and enhance frontend features
 
-This commit finalizes several backend features and ensures comprehensive API documentation:
+This commit introduces a major refactoring of the project's documentation and implements significant enhancements to the frontend, build process, and backend configuration.
 
-- **Cat Model Updates**: Replaced `age` with `birthday` and added `status` field.
-- **TransferRequest Model Updates**: Added `fostering_type` and `price` fields.
-- **TransferRequestController**: Implemented `store` method for creating transfer requests with proper validation and authorization.
-- **Notification Integration**: Ensured notifications are sent to cat owners upon new transfer requests.
-- **Cat Photo Management**: Implemented endpoints for uploading and deleting cat photos, including `CatPhoto` model, migration, and `CatPhotoController`.
-- **User Avatar Management**: Implemented endpoints for uploading and deleting user avatars, including `avatar_url` column in `users` table, `FileUploadService` updates, and `UserProfileController` methods.
-- **Messaging Feature**: Implemented secure in-app messaging with `Message` model, `MessageController`, and API routes for sending, listing, retrieving, marking as read, and deleting messages.
-- **Helper Offers Filtering**: Confirmed `HelperProfileController` already supports filtering and sorting helper offers.
-- **API Documentation and Integration**: Completed detailed Swagger (OpenAPI) annotations for all new and existing endpoints across `AuthController`, `UserProfileController`, `CatController`, `CatPhotoController`, `MessageController`, and `HelperProfileController`.
-- **API Contract Testing**: Implemented automated contract testing to ensure API documentation freshness.
-- **Tests**: Updated relevant tests (`CatListingTest`, `TransferRequestTest`, `ApiContractTest`) to reflect model and API changes.
-- **Documentation**: Updated `GEMINI.md` and `CHANGELOG.md` to reflect all new features and changes.
+### Documentation Overhaul
+
+-   **Refactor `GEMINI.md`:**
+    -   Replaced the verbose user story format with a new, streamlined `roadmap.md` file using a list-based structure for clearer task tracking.
+    -   Archived the old user stories in `tmp/user_stories.md`.
+    -   Removed redundant sections: `Frontend File Structure`, `Known Issues`, and `Linting and Formatting Before Build`.
+    -   Consolidated all build and execution commands into a single, unified `Command Glossary`.
+-   **Update `README.md`:**
+    -   Clarified the development workflow, distinguishing between `npm run dev`, `npm run build` (for local production), and `npm run build:docker`.
+
+### Frontend Enhancements
+
+-   **User Avatar Management:**
+    -   Introduced a new `UserAvatar` component that handles image uploads, display, and deletion.
+    -   Includes a fallback to display user initials if no avatar is set.
+    -   Integrated into the `ProfilePage` and `UserMenu`.
+-   **Cat Profile Management:**
+    -   The `Cat` model now uses `birthday` (a string) instead of `age`, with a client-side utility to calculate the age dynamically. This allows for more flexible date handling.
+    -   Implemented `CatProfilePage` and `CreateCatPage` to allow creating and editing cat profiles with the new birthday field.
+-   **Build Process:**
+    -   Added a `build:docker` script to the frontend `package.json` specifically for containerized builds, which streamlines the Docker deployment process.
+    -   The standard `npm run build` script is now configured for local production builds, copying assets directly to the Laravel backend.
+
+### Backend & Configuration
+
+-   **Dockerfile:**
+    -   Updated the backend Dockerfile to use the new `build:docker` script.
+    -   Added the `intl` PHP extension.
+    -   Included `php artisan storage:link` to ensure user uploads are publicly accessible.
+-   **Nginx:**
+    -   Added a `/storage/` location block to the Nginx configuration to correctly serve files linked from the `storage` directory.
+-   **Dependencies:**
+    -   Added `@radix-ui/react-select` to support new UI components.
+-   **Testing:**
+    -   Added comprehensive tests for the new `UserAvatar` component.
+    -   Updated existing tests for `CatCard` and other components to align with the new data models and features.
+    -   All 18 frontend tests are now passing.

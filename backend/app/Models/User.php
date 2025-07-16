@@ -10,8 +10,10 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasApiTokens, HasRoles;
@@ -71,5 +73,14 @@ class User extends Authenticatable
     public function cats(): HasMany
     {
         return $this->hasMany(\App\Models\Cat::class);
+    }
+
+    /**
+     * Determine if the user can access the Filament admin panel.
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        // Allow access if user has admin or super_admin role
+        return $this->hasRole(['admin', 'super_admin']);
     }
 }

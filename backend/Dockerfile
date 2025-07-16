@@ -63,11 +63,18 @@ RUN touch /var/log/php-fpm-error.log /var/log/php-fpm-access.log \
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Set up permissions for www-data user early
+RUN chown -R www-data:www-data /var/www
+
 # Copy composer files first for better dependency caching
 COPY backend/composer.json backend/composer.lock ./
 
-# Install PHP dependencies first (cached if composer files haven't changed)
+# Switch to www-data user to install dependencies
+USER www-data
 RUN composer install --no-dev --optimize-autoloader --no-scripts --no-plugins
+
+# Switch back to root for copying files and system operations
+USER root
 
 # Copy backend application
 COPY backend .
@@ -78,16 +85,16 @@ COPY --from=frontend-build /frontend/dist ./public/build
 # Copy Docker-specific environment file
 COPY backend/.env.docker /var/www/.env
 
-# Run composer scripts now that we have the full application
+# Create necessary Laravel directories and set permissions
+RUN mkdir -p bootstrap/cache storage/app storage/framework/cache storage/framework/sessions storage/framework/views storage/logs \
+    && chown -R www-data:www-data /var/www \
+    && chmod -R 775 storage bootstrap/cache
+
+# Complete composer installation with scripts (as root since we need Laravel setup)
 RUN composer install --no-dev --optimize-autoloader
 
 # Create storage link for file uploads
 RUN php artisan storage:link
-
-# Set permissions
-RUN chown -R www-data:www-data /var/www \
-    && chmod -R 755 /var/www/storage \
-    && chmod -R 755 /var/www/bootstrap/cache
 
 # Copy nginx configuration
 COPY backend/nginx-docker.conf /etc/nginx/sites-available/default

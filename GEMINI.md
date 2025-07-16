@@ -37,14 +37,17 @@ This outlines the high-level map of the application from the perspective of its 
 
 ## 3. Tech Stack
 
-- **Backend:** Laravel (PHP) - REST API
+- **Backend:** Laravel (PHP) - REST API with Filament Admin Panel
 - **Frontend:** React (TypeScript) - Single Page Application
     -   **Tailwind CSS:** A utility-first CSS framework that provides low-level utility classes to build custom designs directly in your JSX. It promotes rapid UI development and highly customizable styling.
     -   **shadcn/ui:** Not a traditional component library, but a collection of re-usable components whose source code is added directly to your project. This provides full control and easy customization, as components are built with Tailwind CSS.
 - **Database:** 
     - **Local Development:** SQLite (file-based, lightweight)
     - **Docker/Production:** PostgreSQL (robust, full-featured)
-- **Deployment:** Docker Compose (Images will be stored on the same VPS as the application, not in cloud storage initially).
+- **Admin Panel:** Filament v3 with FilamentShield for role-based permissions
+- **Authentication:** Laravel Sanctum for API token authentication
+- **Permissions:** Spatie Laravel Permission package
+- **Deployment:** Docker Compose with optimized multi-stage builds
 
 ## 4. Development Roadmap
 
@@ -277,28 +280,39 @@ npm run dev  # http://localhost:5173
 ### Docker Setup
 **Start Application:**
 ```bash
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 **Build with cache optimization:**
 ```bash
 # Use BuildKit for better caching and parallel builds
-DOCKER_BUILDKIT=1 docker-compose build --parallel
+DOCKER_BUILDKIT=1 docker compose build --parallel
 
 # Or for just the backend service
-DOCKER_BUILDKIT=1 docker-compose build backend
+DOCKER_BUILDKIT=1 docker compose build backend
 ```
 
 **First-time Database Setup:**
 ```bash
-docker-compose --profile setup up migrate seed
+# Automated setup (recommended)
+docker compose --profile setup up migrate seed
+
+# Or manual setup
+docker compose exec backend php artisan migrate --force
+docker compose exec backend php artisan db:seed --force
+docker compose exec backend php artisan shield:generate --all
 ```
 
 **Manual Database Commands:**
 ```bash
-docker-compose exec backend php artisan migrate
-docker-compose exec backend php artisan db:seed
+docker compose exec backend php artisan migrate --force
+docker compose exec backend php artisan db:seed --force
+docker compose exec backend php artisan shield:generate --all
 ```
+
+**Admin Panel Access:**
+- URL: http://localhost:8000/admin
+- Default credentials: `test@example.com` / `password`
 
 ### Backend (Laravel)
 - `php artisan serve`: Start the Laravel development server.

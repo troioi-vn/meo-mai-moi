@@ -66,18 +66,24 @@ This project uses different databases for different environments:
 
 1. **Start the application**:
    ```bash
-   docker-compose up -d --build
+   docker compose up -d --build
    ```
 
-2. **First time setup** - run migrations and seeding:
+2. **Set up the database** (required after first build):
    ```bash
-   docker-compose --profile setup up migrate seed
+   # Run migrations to create database tables
+   docker compose exec backend php artisan migrate --force
+   
+   # Seed the database with initial data and admin user
+   docker compose exec backend php artisan db:seed --force
+   
+   # Generate admin panel permissions
+   docker compose exec backend php artisan shield:generate --all
    ```
 
-   Or run manually if needed:
+   Or use the automated setup profile:
    ```bash
-   docker-compose exec backend php artisan migrate
-   docker-compose exec backend php artisan db:seed
+   docker compose --profile setup up migrate seed
    ```
 
 3. **Access the application**: http://localhost:8000
@@ -187,7 +193,7 @@ This guide outlines the steps to deploy the Meo Mai Moi application to a product
    From the project root directory, build and start the Docker containers in detached mode:
 
    ```bash
-   docker-compose up -d --build
+   docker compose up -d --build
    ```
 
 4. **Configure Nginx as a Reverse Proxy**
@@ -221,13 +227,19 @@ This guide outlines the steps to deploy the Meo Mai Moi application to a product
    Access the backend container to run the database migrations:
 
    ```bash
-   docker-compose exec backend php artisan migrate
+   docker compose exec backend php artisan migrate --force
    ```
 
-   You can also seed the database with initial data:
+   Seed the database with initial data and admin user:
 
    ```bash
-   docker-compose exec backend php artisan db:seed
+   docker compose exec backend php artisan db:seed --force
+   ```
+
+   Generate admin panel permissions:
+
+   ```bash
+   docker compose exec backend php artisan shield:generate --all
    ```
 
 6. **Secure with SSL (Recommended)**

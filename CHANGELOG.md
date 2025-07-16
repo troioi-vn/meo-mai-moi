@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **Docker Optimization**: Improved Docker build performance with multi-stage builds and layer caching:
+  - Implemented two-stage composer installation for better dependency caching
+  - Added user context switching to avoid permission conflicts
+  - Optimized Dockerfile with proper permission management
+- **Admin Panel Enhancement**: Improved Filament admin panel setup:
+  - Fixed 403 Forbidden errors by implementing `canAccessPanel` method in User model
+  - Enhanced user model with `FilamentUser` contract for proper panel access control
+  - Streamlined permission assignment for super_admin role
+- **Database Management**: Enhanced database setup workflow:
+  - Added `--force` flags to migration and seeding commands for production deployments
+  - Integrated FilamentShield permission generation into setup process
+  - Improved error handling for duplicate user creation during seeding
+- **Content Security Policy**: Fixed Alpine.js compatibility issues:
+  - Updated nginx CSP headers to include `'unsafe-eval'` for Alpine.js expression evaluation
+  - Maintained security while enabling full admin panel functionality
+- **Documentation**: Updated setup instructions with current working procedures:
+  - Clarified post-build database setup steps
+  - Added admin panel access credentials and URL
+  - Updated Docker commands to use `docker compose` syntax
+
+### Added (Previous)
 - **Documentation**: Updated `roadmap.md` with new epics and tasks:
   - Medical Records Management (Track Cat Weight, Manage Vaccination Records)
   - Deployment & Demo Server (Prepare VPS, Deploy Demo Server)

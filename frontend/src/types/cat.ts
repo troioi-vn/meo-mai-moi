@@ -8,8 +8,15 @@ export interface Cat {
   user_id: number
   status: 'available' | 'fostered' | 'adopted' | 'dead'
   imageUrl?: string
+  photo_url?: string // Backend API photo URL
   created_at: string
   updated_at: string
+  user: {
+    id: number
+    name: string
+    email: string
+    location?: string
+  }
   viewer_permissions?: {
     can_edit: boolean
     can_view_contact: boolean

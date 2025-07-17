@@ -1,37 +1,45 @@
-import { render, screen } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
-import { MemoryRouter } from 'react-router-dom'
-import { TestAuthProvider } from '@/contexts/TestAuthProvider'
-import ProfilePage from '../pages/ProfilePage'
+// Mock useAuth to always return a user
+vi.mock('@/hooks/use-auth', () => ({
+  useAuth: () => ({ user: mockUser, logout: vi.fn() })
+}))
+import { screen, waitFor } from '@testing-library/react'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { renderWithRouter } from '@/test-utils'
+import ProfilePage from './ProfilePage'
+import { http, HttpResponse } from 'msw'
+import { server } from '@/mocks/server'
+import { mockUser } from '@/mocks/data/user'
 
-import type { AuthContextType } from '@/contexts/auth-context'
+// Mock navigation if needed
+let mockNavigate = vi.fn()
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
+  return { ...actual, useNavigate: () => mockNavigate }
+})
 
-const renderWithProviders = (
-  ui: React.ReactElement,
-  {
-    providerProps,
-    ...renderOptions
-  }: { providerProps?: Partial<AuthContextType>; [key: string]: unknown } = {}
-) => {
-  return render(
-    <TestAuthProvider mockValues={providerProps}>
-      <MemoryRouter>{ui}</MemoryRouter>
-    </TestAuthProvider>,
-    renderOptions
-  )
-}
+// Mock toast if needed
+// vi.mock('sonner', () => ({
+//   toast: { success: vi.fn(), error: vi.fn() }
+// }))
 
 describe('ProfilePage', () => {
-  it('renders the profile page correctly', () => {
-    const user = { id: 1, name: 'Test User', email: 'test@example.com' }
-    const logout = vi.fn()
-    renderWithProviders(<ProfilePage />, { providerProps: { user, logout } })
+  beforeEach(() => {
+    server.use(
+      http.get('/api/user', () => {
+        return HttpResponse.json({ data: mockUser })
+      })
+    )
+  })
 
+  it('renders the profile page correctly', async () => {
+    renderWithRouter(<ProfilePage />)
+
+    // Wait for user name to appear (ensures AuthProvider has loaded user)
+    expect(await screen.findByText(mockUser.name)).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /profile/i })).toBeInTheDocument()
     expect(screen.getByText('Name:')).toBeInTheDocument()
-    expect(screen.getByText('Test User')).toBeInTheDocument()
     expect(screen.getByText('Email:')).toBeInTheDocument()
-    expect(screen.getByText('test@example.com')).toBeInTheDocument()
+    expect(screen.getByText(mockUser.email)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /logout/i })).toBeInTheDocument()
   })
 })

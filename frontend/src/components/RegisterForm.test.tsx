@@ -1,22 +1,20 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
-import { MemoryRouter } from 'react-router-dom'
-import { AuthProvider } from '@/contexts/AuthContext'
+import { screen, waitFor } from '@testing-library/react';
+import { renderWithRouter } from '@/test-utils';
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { userEvent } from '@testing-library/user-event'
 import RegisterForm from './RegisterForm'
-
-vi.mock('@/api/api')
-
-const renderWithProviders = (ui: React.ReactElement) => {
-  return render(
-    <MemoryRouter>
-      <AuthProvider>{ui}</AuthProvider>
-    </MemoryRouter>
-  )
-}
+import { http, HttpResponse } from 'msw'
+import { server } from '@/mocks/server'
 
 describe('RegisterForm', () => {
+  let user: ReturnType<typeof userEvent.setup>
+
+  beforeEach(() => {
+    user = userEvent.setup()
+    })
+
   it('renders the registration form correctly', () => {
-    renderWithProviders(<RegisterForm />)
+    renderWithRouter(<RegisterForm />)
 
     expect(screen.getByLabelText(/name/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
@@ -26,18 +24,33 @@ describe('RegisterForm', () => {
   })
 
   it('shows an error message on failed registration', async () => {
-    renderWithProviders(<RegisterForm />)
+    renderWithRouter(<RegisterForm />)
 
-    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: 'Test User' } })
-    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'fail@example.com' } })
-    fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'password123' } })
-    fireEvent.change(screen.getByLabelText(/confirm password/i), {
-      target: { value: 'password123' },
-    })
-    fireEvent.click(screen.getByRole('button', { name: /register/i }))
+    await user.type(screen.getByLabelText(/name/i), 'Test User')
+    await user.type(screen.getByLabelText(/email/i), 'fail@example.com')
+    await user.type(screen.getByLabelText(/^Password$/i), 'password123')
+    await user.type(screen.getByLabelText(/confirm password/i), 'password123')
+    await user.click(screen.getByRole('button', { name: /register/i }))
 
     await waitFor(() => {
-      expect(screen.getByTestId('register-error-message')).toBeInTheDocument()
+      // The UI shows the error message from Axios: 'Registration failed'
+      expect(screen.getByText(/registration failed/i)).toBeInTheDocument()
     })
   })
+
+  it('shows a success message on successful registration', async () => {
+    const onSuccess = vi.fn()
+    renderWithRouter(<RegisterForm onSuccess={onSuccess} />)
+
+    await user.type(screen.getByLabelText(/name/i), 'Test User')
+    await user.type(screen.getByLabelText(/email/i), 'success@example.com')
+    await user.type(screen.getByLabelText(/^Password$/i), 'password123')
+    await user.type(screen.getByLabelText(/confirm password/i), 'password123')
+    await user.click(screen.getByRole('button', { name: /register/i }))
+
+    await waitFor(() => {
+      expect(onSuccess).toHaveBeenCalled()
+    })
+  })
+  
 })

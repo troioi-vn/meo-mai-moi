@@ -1,53 +1,35 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Routes, Route } from 'react-router-dom'
+
+import { screen, waitFor, fireEvent } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
+import { renderWithRouter, userEvent } from '@/test-utils'
 import { server } from '@/mocks/server'
 import { http, HttpResponse } from 'msw'
 import CreateCatPage from './CreateCatPage'
 import MyCatsPage from './MyCatsPage'
-import { AuthProvider } from '@/contexts/AuthContext'
-import { Toaster } from '@/components/ui/sonner'
+import { toast } from 'sonner'
 
-// Mock the useAuth hook to return an authenticated user
-vi.mock('@/hooks/use-auth', () => ({
-  useAuth: () => ({
-    isAuthenticated: true,
-    isLoading: false,
-    user: { id: 1, name: 'Test User', role: 'cat_owner' },
-  }),
-}))
+// Mock the toast module
+vi.mock('sonner')
 
-const mockNavigate = vi.fn()
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom')
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-  }
-})
-
-const renderWithProviders = (ui: React.ReactElement) => {
-  return render(
-    <MemoryRouter initialEntries={['/account/cats/create']}>
-      <AuthProvider>
-        <Routes>
-          <Route path="/account/cats/create" element={ui} />
-          <Route path="/account/cats" element={<MyCatsPage />} />
-        </Routes>
-        <Toaster />
-      </AuthProvider>
-    </MemoryRouter>
-  )
-}
+const mockUser = { id: 1, name: 'Test User', email: 'test@example.com', role: 'cat_owner' }
 
 describe('CreateCatPage', () => {
+  let user: ReturnType<typeof userEvent.setup>
+
   beforeEach(() => {
-    vi.clearAllMocks()
+    user = userEvent.setup()
+    server.use(
+      http.get('http://localhost:3000/api/user', () => {
+        return HttpResponse.json(mockUser)
+      }),
+      http.get('http://localhost:3000/api/my-cats', () => {
+        return HttpResponse.json([])
+      })
+    )
   })
 
   it('renders the form fields with birthday instead of age', () => {
-    renderWithProviders(<CreateCatPage />)
+    renderWithRouter(<CreateCatPage />)
     expect(screen.getByLabelText('Name')).toBeInTheDocument()
     expect(screen.getByLabelText('Breed')).toBeInTheDocument()
     expect(screen.getByLabelText('Birthday')).toBeInTheDocument()
@@ -59,50 +41,59 @@ describe('CreateCatPage', () => {
   })
 
   it('renders cancel button that navigates back to my cats page', () => {
-    renderWithProviders(<CreateCatPage />)
+    renderWithRouter(<CreateCatPage />)
     expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
   })
 
   it('submits the form with birthday and redirects on success', async () => {
-    const user = userEvent.setup()
-
     // Mock the API response
     server.use(
-      http.post('/api/cats', () => {
-        return HttpResponse.json({
-          id: 1,
-          name: 'Fluffy',
-          breed: 'Persian',
-          birthday: '2023-01-01',
-          location: 'New York',
-          description: 'A very cute cat',
-          user_id: 1,
-          status: 'available',
-          created_at: '2025-01-01T00:00:00.000Z',
-          updated_at: '2025-01-01T00:00:00.000Z',
-        })
+      http.post('http://localhost:3000/api/cats', async ({ request }) => {
+        const newCat = await request.json()
+        return HttpResponse.json(
+          {
+            id: 1,
+            ...newCat,
+            user_id: 1,
+            status: 'alive',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+          { status: 201 }
+        )
       })
     )
 
-    renderWithProviders(<CreateCatPage />)
+    renderWithRouter(
+      <>
+        <CreateCatPage />
+        <MyCatsPage />
+      </>,
+      { route: '/account/cats/create' }
+    )
 
     await user.type(screen.getByLabelText('Name'), 'Fluffy')
     await user.type(screen.getByLabelText('Breed'), 'Persian')
-    await user.type(screen.getByLabelText('Birthday'), '2023-01-01')
+    // Note: userEvent.type for date inputs can be tricky.
+    // We'll directly set the value for reliability in tests.
+    const birthdayInput = screen.getByLabelText('Birthday')
+    fireEvent.change(birthdayInput, { target: { value: '2023-01-01' } })
+
     await user.type(screen.getByLabelText('Location'), 'New York')
     await user.type(screen.getByLabelText('Description'), 'A very cute cat')
 
     await user.click(screen.getByRole('button', { name: 'Create Cat' }))
 
+    // Check that we've navigated to the My Cats page
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/account/cats')
+      expect(screen.getByRole('heading', { name: /My Cats/i })).toBeInTheDocument()
     })
+    // Assert toast.success was called
+    expect(toast.success).toHaveBeenCalledWith('Cat created successfully!')
   })
 
   it('displays validation errors for empty required fields', async () => {
-    const user = userEvent.setup()
-
-    renderWithProviders(<CreateCatPage />)
+    renderWithRouter(<CreateCatPage />)
 
     // Try to submit empty form
     await user.click(screen.getByRole('button', { name: 'Create Cat' }))
@@ -115,26 +106,30 @@ describe('CreateCatPage', () => {
   })
 
   it('navigates back to my cats page when cancel button is clicked', async () => {
-    const user = userEvent.setup()
-
-    renderWithProviders(<CreateCatPage />)
+    renderWithRouter(
+      <>
+        <CreateCatPage />
+        <MyCatsPage />
+      </>,
+      { route: '/account/cats/create' }
+    )
 
     await user.click(screen.getByRole('button', { name: /cancel/i }))
 
-    expect(mockNavigate).toHaveBeenCalledWith('/account/cats')
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /My Cats/i })).toBeInTheDocument()
+    })
   })
 
   it('displays error message when API call fails', async () => {
-    const user = userEvent.setup()
-
     // Mock API error
     server.use(
-      http.post('/api/cats', () => {
+      http.post('http://localhost:3000/api/cats', () => {
         return HttpResponse.json({ message: 'Failed to create cat' }, { status: 500 })
       })
     )
 
-    renderWithProviders(<CreateCatPage />)
+    renderWithRouter(<CreateCatPage />)
 
     // Fill out the form completely so validation passes
     await user.type(screen.getByLabelText('Name'), 'Fluffy')
@@ -150,5 +145,7 @@ describe('CreateCatPage', () => {
       // Check for the form error message (not the toast)
       expect(screen.getByTestId('form-error')).toHaveTextContent(/failed to create cat/i)
     })
+    // Assert toast.error was called
+    expect(toast.error).toHaveBeenCalledWith('Failed to create cat.')
   })
 })

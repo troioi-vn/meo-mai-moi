@@ -1,3 +1,15 @@
+# 2025-07-18
+## Frontend Test Refactor, MSW Handler Alignment, and CatPhotoManager Robustness
+
+- Refactored all major frontend test files to use global MSW server, renderWithRouter, and centralized mock data utilities.
+- Removed all local MSW server setups and decentralized mock data from test files.
+- Centralized all cat/user mock data and handlers in `src/mocks/data/`.
+- Updated all MSW handlers to match API response shapes and use only relative or absolute paths as required by the app and test environment.
+- Fixed CatPhotoManager and related tests to assert navigation and toast side effects via mocks, not DOM.
+- Ensured CatPhotoManager photo upload/delete handlers return `{ cat: ... }` at the top level, matching component expectations.
+- Deleted legacy `handlers.js` to prevent shadowing/conflicts.
+- Updated roadmap.md to reflect new PlacementRequest architecture and test refactoring progress.
+- Updated and refactored all major page/component test files for robust, user-centric, and maintainable testing.
 # Changelog
 
 All notable changes to this project will be documented in this file.

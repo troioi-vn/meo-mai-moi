@@ -14,13 +14,13 @@ export const createCat = async (
 }
 
 export const getCat = async (id: string): Promise<Cat> => {
-  const response = await api.get<Cat>(`/cats/${id}`)
-  return response.data
+  const response = await api.get<{ data: Cat }>(`/cats/${id}`)
+  return response.data.data
 }
 
 export const updateCat = async (
   id: string,
-  catData: Omit<Cat, 'id' | 'user_id' | 'created_at' | 'updated_at'>
+  catData: Omit<Cat, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'user' | 'viewer_permissions'>
 ): Promise<Cat> => {
   const response = await api.put<Cat>(`/cats/${id}`, catData)
   return response.data

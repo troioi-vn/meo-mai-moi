@@ -24,14 +24,28 @@ class CatPhotoController extends Controller
             'photo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
-        $path = $this->fileUploadService->uploadCatPhoto($request->file('photo'), $cat);
+        $file = $request->file('photo');
+        $size = $file->getSize();
+        $mimeType = $file->getMimeType();
+        $path = $this->fileUploadService->uploadCatPhoto($file, $cat);
+        $filename = basename($path);
 
-        $cat->photos()->create([
+        $photo = $cat->photos()->create([
             'path' => $path,
+            'cat_id' => $cat->id,
+            'filename' => $filename,
+            'size' => $size,
+            'mime_type' => $mimeType,
             'created_by' => Auth::id(),
         ]);
 
-        return response()->json(['message' => 'Photo uploaded successfully', 'path' => $path]);
+        // Refresh cat with new photo relationship
+        $cat->load('photo', 'photos');
+        return response()->json([
+            'message' => 'Photo uploaded successfully',
+            'path' => $path,
+            'cat' => $cat,
+        ]);
     }
 
     public function destroy(Cat $cat)

@@ -10,6 +10,13 @@ class Cat extends Model
 {
     use HasFactory;
 
+    // Returns the latest photo (main photo) for the cat
+    public function photo()
+    {
+        return $this->hasOne(CatPhoto::class)->latestOfMany();
+    }
+    use HasFactory;
+
     protected $fillable = [
         'name',
         'breed',

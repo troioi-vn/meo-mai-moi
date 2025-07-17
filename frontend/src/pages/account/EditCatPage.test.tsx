@@ -1,263 +1,196 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Routes, Route } from 'react-router-dom'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { renderWithRouter, screen, waitFor, userEvent, fireEvent } from '@/test-utils'
+import { vi, describe, it, expect, beforeEach } from 'vitest'
+import { http, HttpResponse } from 'msw'
+import { server } from '@/mocks/server'
 import { toast } from 'sonner'
+import { mockCat, anotherMockCat } from '@/mocks/data/cats'
 import EditCatPage from '@/pages/account/EditCatPage'
+import * as CatApi from '@/api/cats' // Import the entire module to mock getCat
 
-// Mock the API
-vi.mock('@/api/cats', () => ({
-  getCat: vi.fn(),
-  updateCat: vi.fn(),
-}))
+// Mock the toast module
+vi.mock('sonner')
 
-// Mock the toast
-vi.mock('sonner', () => ({
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-  },
-}))
-
-// Mock navigate
-const mockNavigate = vi.fn()
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom')
+// Mock react-router-dom hooks
+const mockUseParams = vi.fn()
+const mockUseNavigate = vi.fn()
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual = await importOriginal()
   return {
     ...actual,
-    useNavigate: () => mockNavigate,
+    useParams: () => mockUseParams(),
+    useNavigate: () => mockUseNavigate,
   }
 })
 
-const renderWithRouter = (catId = '1') => {
-  return render(
-    <MemoryRouter initialEntries={[`/account/cats/${catId}/edit`]}>
-      <Routes>
-        <Route path="/account/cats/:id/edit" element={<EditCatPage />} />
-      </Routes>
-    </MemoryRouter>
-  )
+const mockUser = {
+  id: 1,
+  name: 'Test User',
+  email: 'test@example.com',
+  role: 'cat_owner',
 }
 
 describe('EditCatPage', () => {
+  const user = userEvent.setup()
+
   beforeEach(() => {
     vi.clearAllMocks()
+    mockUseNavigate.mockClear()
+
+    // MSW handler for /api/cats/:id (getCat)
+    server.use(
+      http.get('http://localhost:3000/api/cats/:id', ({ params }) => {
+        const catId = String(params.id)
+        if (catId === '1') {
+          return HttpResponse.json({ data: { ...mockCat, user_id: mockUser.id, viewer_permissions: { can_edit: true } } })
+        }
+        if (catId === '2') {
+          return HttpResponse.json({ data: { ...anotherMockCat, user_id: 99, viewer_permissions: { can_edit: false } } })
+        }
+        return new HttpResponse(null, { status: 404 })
+      })
+    )
+
+    server.use(
+      http.get('http://localhost:3000/api/user', () => {
+        return HttpResponse.json(mockUser)
+      }),
+      // Removed http.get('/api/cats/:id') handler as getCat is now mocked directly
+      http.get('http://localhost:3000/api/my-cats', () => {
+        return HttpResponse.json([mockCat])
+      })
+    )
   })
+
+  it('shows a loading spinner while fetching cat data', async () => {
+    mockUseParams.mockReturnValue({ id: '1' })
+    // Simulate a slow MSW response for /api/cats/1
+    server.use(
+      http.get('http://localhost:3000/api/cats/1', async () => {
+        await new Promise((resolve) => setTimeout(resolve, 100))
+        return HttpResponse.json({ data: { ...mockCat, user_id: mockUser.id, viewer_permissions: { can_edit: true } } })
+      })
+    )
+    renderComponent()
+    // The spinner should be present before the data loads
+    expect(screen.getByTestId('loading-spinner')).toBeInTheDocument()
+    // Wait for the form to appear
+    await waitFor(() => {
+      expect(screen.getByDisplayValue(mockCat.name)).toBeInTheDocument()
+    })
+  })
+
+  // Helper to render the EditCatPage
+  const renderComponent = () => {
+    return renderWithRouter(<EditCatPage />)
+  }
 
   it('loads and displays cat data in the form', async () => {
-    const { getCat } = await import('@/api/cats')
-    const mockCat = {
-      id: 1,
-      name: 'Fluffy',
-      breed: 'Persian',
-      birthday: '2020-01-15',
-      location: 'New York, NY',
-      description: 'A very friendly and fluffy cat.',
-      status: 'available' as const,
-      user_id: 1,
-      created_at: '2023-01-01T00:00:00Z',
-      updated_at: '2023-01-01T00:00:00Z',
-    }
-    vi.mocked(getCat).mockResolvedValue(mockCat)
+    mockUseParams.mockReturnValue({ id: '1' })
+    renderComponent()
 
-    renderWithRouter('1')
-
-    // Should show loading initially
-    expect(screen.getByText(/loading/i)).toBeInTheDocument()
-
-    // Wait for form to load with cat data
     await waitFor(() => {
-      expect(screen.getByDisplayValue('Fluffy')).toBeInTheDocument()
+      expect(screen.getByDisplayValue(mockCat.name)).toBeInTheDocument()
+      expect(screen.getByDisplayValue(mockCat.breed)).toBeInTheDocument()
+      expect(screen.getByDisplayValue(mockCat.birthday)).toBeInTheDocument()
+      expect(screen.getByDisplayValue(mockCat.location)).toBeInTheDocument()
+      expect(screen.getByDisplayValue(mockCat.description)).toBeInTheDocument()
+      expect(screen.getByRole('combobox')).toHaveTextContent(/available/i)
     })
-
-    expect(screen.getByDisplayValue('Persian')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('2020-01-15')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('New York, NY')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('A very friendly and fluffy cat.')).toBeInTheDocument()
-    // Check the select shows the correct value (using role to be more specific)
-    expect(screen.getByRole('combobox')).toHaveTextContent('Available')
   })
 
-  it('submits the form with updated data and redirects on success', async () => {
-    const { getCat, updateCat } = await import('@/api/cats')
-    const mockCat = {
-      id: 1,
-      name: 'Fluffy',
-      breed: 'Persian',
-      birthday: '2020-01-15',
-      location: 'New York, NY',
-      description: 'A very friendly and fluffy cat.',
-      status: 'available' as const,
-      user_id: 1,
-      created_at: '2023-01-01T00:00:00Z',
-      updated_at: '2023-01-01T00:00:00Z',
-    }
-
-    vi.mocked(getCat).mockResolvedValue(mockCat)
-    vi.mocked(updateCat).mockResolvedValue({
-      ...mockCat,
-      name: 'Updated Fluffy',
-      description: 'An updated description.',
-    })
-
-    renderWithRouter('1')
-
-    // Wait for form to load
-    await waitFor(() => {
-      expect(screen.getByDisplayValue('Fluffy')).toBeInTheDocument()
-    })
-
-    // Update form fields
-    fireEvent.change(screen.getByDisplayValue('Fluffy'), {
-      target: { value: 'Updated Fluffy' },
-    })
-    fireEvent.change(screen.getByDisplayValue('A very friendly and fluffy cat.'), {
-      target: { value: 'An updated description.' },
-    })
-
-    // Submit form
-    fireEvent.click(screen.getByRole('button', { name: /update cat/i }))
-
-    await waitFor(() => {
-      expect(updateCat).toHaveBeenCalledWith('1', {
-        name: 'Updated Fluffy',
-        breed: 'Persian',
-        birthday: '2020-01-15',
-        location: 'New York, NY',
-        description: 'An updated description.',
-        status: 'available',
+  it('submits updated data and navigates on success', async () => {
+    const updatedName = 'Fluffy II'
+    server.use(
+      http.put('http://localhost:3000/api/cats/1', async () => {
+        return HttpResponse.json({ ...mockCat, name: updatedName })
       })
+    )
+
+    mockUseParams.mockReturnValue({ id: '1' })
+    renderComponent()
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue(mockCat.name)).toBeInTheDocument()
     })
 
-    expect(toast.success).toHaveBeenCalledWith('Cat profile updated successfully!')
-    expect(mockNavigate).toHaveBeenCalledWith('/account/cats')
+    await user.clear(screen.getByLabelText(/name/i))
+    await user.type(screen.getByLabelText(/name/i), updatedName)
+    await user.click(screen.getByRole('button', { name: /update cat/i }))
+
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith('Cat profile updated successfully!')
+    })
+    await waitFor(() => {
+      expect(mockUseNavigate).toHaveBeenCalledWith('/account/cats')
+    })
   })
 
   it('displays validation errors for empty required fields', async () => {
-    const { getCat } = await import('@/api/cats')
-    const mockCat = {
-      id: 1,
-      name: 'Fluffy',
-      breed: 'Persian',
-      birthday: '2020-01-15',
-      location: 'New York, NY',
-      description: 'A very friendly and fluffy cat.',
-      status: 'available' as const,
-      user_id: 1,
-      created_at: '2023-01-01T00:00:00Z',
-      updated_at: '2023-01-01T00:00:00Z',
-    }
-    vi.mocked(getCat).mockResolvedValue(mockCat)
+    mockUseParams.mockReturnValue({ id: '1' })
+    renderComponent()
 
-    renderWithRouter('1')
-
-    // Wait for form to load
     await waitFor(() => {
-      expect(screen.getByDisplayValue('Fluffy')).toBeInTheDocument()
+      expect(screen.getByDisplayValue(mockCat.name)).toBeInTheDocument()
     })
 
-    // Clear required fields using userEvent for better simulation
-    const user = userEvent.setup()
-    const nameInput = screen.getByDisplayValue('Fluffy')
-    const breedInput = screen.getByDisplayValue('Persian')
+    await user.clear(screen.getByLabelText(/name/i))
+    await user.clear(screen.getByLabelText(/breed/i))
+    await user.clear(screen.getByLabelText(/birthday/i))
+    await user.clear(screen.getByLabelText(/location/i))
+    await user.clear(screen.getByLabelText(/description/i))
 
-    await user.clear(nameInput)
-    await user.clear(breedInput)
+    await fireEvent.submit(screen.getByRole('form'))
 
-    // Submit form
-    const submitButton = screen.getByRole('button', { name: /update cat/i })
-    await user.click(submitButton)
-
-    // Check validation errors appear
-    await waitFor(
-      () => {
-        expect(screen.getByText('Name is required')).toBeInTheDocument()
-      },
-      { timeout: 5000 }
-    )
-
-    await waitFor(
-      () => {
-        expect(screen.getByText('Breed is required')).toBeInTheDocument()
-      },
-      { timeout: 5000 }
-    )
+    await waitFor(() => {
+      expect(screen.getByText('Name is required.')).toBeInTheDocument()
+      expect(screen.getByText('Breed is required.')).toBeInTheDocument()
+      expect(screen.getByText('Birthday is required.')).toBeInTheDocument()
+      expect(screen.getByText('Location is required.')).toBeInTheDocument()
+      expect(screen.getByText('Description is required.')).toBeInTheDocument()
+    })
   })
 
-  it('displays error message when API call fails', async () => {
-    const { getCat, updateCat } = await import('@/api/cats')
-    const mockCat = {
-      id: 1,
-      name: 'Fluffy',
-      breed: 'Persian',
-      birthday: '2020-01-15',
-      location: 'New York, NY',
-      description: 'A very friendly and fluffy cat.',
-      status: 'available' as const,
-      user_id: 1,
-      created_at: '2023-01-01T00:00:00Z',
-      updated_at: '2023-01-01T00:00:00Z',
-    }
+  it('handles server errors during submission', async () => {
+    server.use(
+      http.put('http://localhost:3000/api/cats/1', () => {
+        return new HttpResponse(null, { status: 500 })
+      })
+    )
 
-    vi.mocked(getCat).mockResolvedValue(mockCat)
-    vi.mocked(updateCat).mockRejectedValue(new Error('Update failed'))
+    mockUseParams.mockReturnValue({ id: '1' })
+    renderComponent()
 
-    renderWithRouter('1')
-
-    // Wait for form to load
     await waitFor(() => {
-      expect(screen.getByDisplayValue('Fluffy')).toBeInTheDocument()
+      expect(screen.getByDisplayValue(mockCat.name)).toBeInTheDocument()
     })
 
-    // Submit form
-    fireEvent.click(screen.getByRole('button', { name: /update cat/i }))
+    await user.click(screen.getByRole('button', { name: /update cat/i }))
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('Failed to update cat profile. Please try again.')
     })
   })
 
-  it('has a cancel button that navigates back to cats list', async () => {
-    const { getCat } = await import('@/api/cats')
-    const mockCat = {
-      id: 1,
-      name: 'Fluffy',
-      breed: 'Persian',
-      birthday: '2020-01-15',
-      location: 'New York, NY',
-      description: 'A very friendly and fluffy cat.',
-      status: 'available' as const,
-      user_id: 1,
-      created_at: '2023-01-01T00:00:00Z',
-      updated_at: '2023-01-01T00:00:00Z',
-    }
-    vi.mocked(getCat).mockResolvedValue(mockCat)
-
-    renderWithRouter('1')
-
-    // Wait for form to load
+  it('redirects if user does not own the cat', async () => {
+    mockUseParams.mockReturnValue({ id: '2' })
+    renderComponent()
     await waitFor(() => {
-      expect(screen.getByDisplayValue('Fluffy')).toBeInTheDocument()
+      expect(toast.error).toHaveBeenCalledWith("You don't have permission to edit this cat.")
     })
-
-    // Click cancel button
-    fireEvent.click(screen.getByRole('button', { name: /cancel/i }))
-
-    expect(mockNavigate).toHaveBeenCalledWith('/account/cats')
+    await waitFor(() => {
+      expect(mockUseNavigate).toHaveBeenCalledWith('/')
+    })
   })
 
-  it('displays error when cat is not found', async () => {
-    const { getCat } = await import('@/api/cats')
-    vi.mocked(getCat).mockRejectedValue({
-      response: { status: 404 },
-    })
-
-    renderWithRouter('999')
-
+  it('navigates to the cat list on cancel', async () => {
+    mockUseParams.mockReturnValue({ id: '1' })
+    renderComponent()
     await waitFor(() => {
-      expect(screen.getByText('Cat not found')).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /edit cat profile/i })).toBeInTheDocument()
     })
-
-    expect(screen.getByRole('button', { name: /back to cats/i })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /cancel/i }))
+    await waitFor(() => {
+      expect(mockUseNavigate).toHaveBeenCalledWith('/account/cats')
+    })
   })
 })

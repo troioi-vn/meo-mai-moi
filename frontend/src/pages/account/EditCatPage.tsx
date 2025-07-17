@@ -7,6 +7,7 @@ import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { FormField } from '@/components/ui/FormField'
 import { EnhancedCatRemovalModal } from '@/components/EnhancedCatRemovalModal'
+import { CatPhotoManager } from '@/components/cats/CatPhotoManager'
 import { toast } from 'sonner'
 
 interface FormData {
@@ -59,6 +60,13 @@ const EditCatPage: React.FC = () => {
         setLoading(true)
         setError(null)
         const catData = await getCat(id)
+
+        if (!catData || !catData.viewer_permissions?.can_edit) {
+          toast.error("You don't have permission to edit this cat.")
+          navigate('/')
+          return
+        }
+
         setCat(catData)
         setFormData({
           name: catData.name,
@@ -100,25 +108,26 @@ const EditCatPage: React.FC = () => {
     const newErrors: FormErrors = {}
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required'
+      newErrors.name = 'Name is required.'
     }
 
     if (!formData.breed.trim()) {
-      newErrors.breed = 'Breed is required'
+      newErrors.breed = 'Breed is required.'
     }
 
     if (!formData.birthday) {
-      newErrors.birthday = 'Birthday is required'
+      newErrors.birthday = 'Birthday is required.'
     }
 
     if (!formData.location.trim()) {
-      newErrors.location = 'Location is required'
+      newErrors.location = 'Location is required.'
     }
 
     if (!formData.description.trim()) {
-      newErrors.description = 'Description is required'
+      newErrors.description = 'Description is required.'
     }
 
+    console.log('validateForm called, errors:', newErrors)
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -193,7 +202,16 @@ const EditCatPage: React.FC = () => {
         </div>
 
         <div className="bg-card rounded-lg shadow-lg p-8">
+          {/* Photo Manager */}
+          <div className="mb-8">
+            <CatPhotoManager
+              cat={cat}
+              isOwner={!!cat.viewer_permissions?.can_edit}
+              onPhotoUpdated={(updatedCat) => setCat(updatedCat)}
+            />
+          </div>
           <form
+            role="form"
             onSubmit={(e) => {
               void handleSubmit(e)
             }}

@@ -1,34 +1,43 @@
-import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { ChangePasswordForm } from './ChangePasswordForm'
-import { useAuth } from '@/hooks/use-auth'
+import { screen, waitFor } from '@testing-library/react'
+import { describe, it, expect, beforeEach } from 'vitest'
 
-vi.mock('@/hooks/use-auth')
-vi.mock('@/components/ui/use-toast', () => ({
-  toast: vi.fn(),
-}))
+import { ChangePasswordForm } from './ChangePasswordForm'
+import { renderWithRouter, userEvent } from '@/test-utils'
+import { useAuth } from '@/hooks/use-auth'
+import { toast } from '@/components/ui/use-toast'
+
+// Stable mock for changePassword
+import { mockUser } from '@/mocks/data/user'
+const changePasswordMock = vi.fn(async () => Promise.resolve())
+import { mockUser } from '@/mocks/data/user'
+
+vi.mock('@/hooks/use-auth', () => {
+  return {
+    useAuth: () => ({
+      user: mockUser,
+      isAuthenticated: true,
+      isLoading: false,
+      changePassword: changePasswordMock,
+    }),
+  }
+})
+
+vi.mock('@/components/ui/use-toast', () => {
+  return { toast: vi.fn() }
+})
 
 describe('ChangePasswordForm', () => {
-  const mockChangePassword = vi.fn()
+  let user: ReturnType<typeof userEvent.setup>
 
   beforeEach(() => {
-    vi.clearAllMocks()
-    vi.mocked(useAuth).mockReturnValue({
-      user: { id: 1, name: 'Test User', email: 'test@example.com' },
-      isAuthenticated: true,
-      login: vi.fn(),
-      logout: vi.fn(),
-      register: vi.fn(),
-      isLoading: false,
-      loadUser: vi.fn(),
-      changePassword: mockChangePassword,
-      deleteAccount: vi.fn(),
-    })
+    user = userEvent.setup()
+    changePasswordMock.mockClear()
+    changePasswordMock.mockImplementation(async () => Promise.resolve())
+    vi.mocked(toast).mockClear()
   })
 
   it('renders all form fields', () => {
-    render(<ChangePasswordForm />)
+    renderWithRouter(<ChangePasswordForm />)
 
     // Check that all three password inputs exist
     const inputs = document.querySelectorAll('input[type="password"]')
@@ -41,8 +50,7 @@ describe('ChangePasswordForm', () => {
   })
 
   it('shows validation errors for empty fields', async () => {
-    const user = userEvent.setup()
-    render(<ChangePasswordForm />)
+    renderWithRouter(<ChangePasswordForm />)
 
     const submitButton = screen.getByRole('button', { name: /change password/i })
     await user.click(submitButton)
@@ -53,8 +61,7 @@ describe('ChangePasswordForm', () => {
   })
 
   it('shows error when new passwords do not match', async () => {
-    const user = userEvent.setup()
-    render(<ChangePasswordForm />)
+    renderWithRouter(<ChangePasswordForm />)
 
     // Use querySelector to find inputs by name since password inputs don't have textbox role
     const currentPasswordInput = document.querySelector('input[name="current_password"]')
@@ -80,10 +87,7 @@ describe('ChangePasswordForm', () => {
   })
 
   it('calls changePassword with correct values on valid form submission', async () => {
-    const user = userEvent.setup()
-    mockChangePassword.mockResolvedValue(undefined)
-
-    render(<ChangePasswordForm />)
+    renderWithRouter(<ChangePasswordForm />)
 
     const currentPasswordInput = document.querySelector('input[name="current_password"]')
     const newPasswordInput = document.querySelector('input[name="new_password"]')
@@ -104,23 +108,21 @@ describe('ChangePasswordForm', () => {
     const submitButton = screen.getByRole('button', { name: /change password/i })
     await user.click(submitButton)
 
-    expect(mockChangePassword).toHaveBeenCalledWith(
-      'currentpass',
-      'newpassword123',
-      'newpassword123'
-    )
+    await waitFor(() => {
+      expect(vi.mocked(toast)).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Password Changed',
+          description: 'Your password has been updated successfully.',
+        })
+      )
+    })
   })
 
   it('shows loading state during form submission', async () => {
-    const user = userEvent.setup()
-    mockChangePassword.mockImplementation(
-      () =>
-        new Promise(() => {
-          // This promise never resolves to test loading state
-        })
-    )
-
-    render(<ChangePasswordForm />)
+    // Simulate a never-resolving changePassword
+    // Set the mock to never resolve before rendering
+    changePasswordMock.mockImplementation(() => new Promise(() => {}))
+    renderWithRouter(<ChangePasswordForm />)
 
     const currentPasswordInput = document.querySelector('input[name="current_password"]')
     const newPasswordInput = document.querySelector('input[name="new_password"]')

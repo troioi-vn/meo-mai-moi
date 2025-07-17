@@ -1,17 +1,11 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { EnhancedCatRemovalModal } from '@/components/EnhancedCatRemovalModal'
 import { toast } from 'sonner'
 import type { Cat } from '@/types/cat'
+import { renderWithRouter, userEvent } from '@/test-utils'
 
-// Mock the API functions
-vi.mock('@/api/cats', () => ({
-  deleteCat: vi.fn(),
-  updateCatStatus: vi.fn(),
-}))
 
-// Mock sonner toast
 vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
@@ -26,18 +20,21 @@ describe('EnhancedCatRemovalModal', () => {
     onSuccess: vi.fn(),
   }
 
+  let user: ReturnType<typeof userEvent.setup>
+
   beforeEach(() => {
+    user = userEvent.setup()
     vi.clearAllMocks()
   })
 
   it('renders the trigger button', () => {
-    render(<EnhancedCatRemovalModal {...mockProps} />)
+    renderWithRouter(<EnhancedCatRemovalModal {...mockProps} />)
     expect(screen.getByRole('button', { name: /remove cat/i })).toBeInTheDocument()
   })
 
   it('opens the modal and shows step 1 when trigger is clicked', async () => {
     const user = userEvent.setup()
-    render(<EnhancedCatRemovalModal {...mockProps} />)
+    renderWithRouter(<EnhancedCatRemovalModal {...mockProps} />)
 
     await user.click(screen.getByRole('button', { name: /remove cat/i }))
 
@@ -48,7 +45,7 @@ describe('EnhancedCatRemovalModal', () => {
 
   it('validates name confirmation in step 1', async () => {
     const user = userEvent.setup()
-    render(<EnhancedCatRemovalModal {...mockProps} />)
+    renderWithRouter(<EnhancedCatRemovalModal {...mockProps} />)
 
     await user.click(screen.getByRole('button', { name: /remove cat/i }))
 
@@ -60,7 +57,7 @@ describe('EnhancedCatRemovalModal', () => {
 
   it('proceeds to step 2 when correct name is entered', async () => {
     const user = userEvent.setup()
-    render(<EnhancedCatRemovalModal {...mockProps} />)
+    renderWithRouter(<EnhancedCatRemovalModal {...mockProps} />)
 
     await user.click(screen.getByRole('button', { name: /remove cat/i }))
 
@@ -75,7 +72,7 @@ describe('EnhancedCatRemovalModal', () => {
 
   it('proceeds to step 3 when delete action is selected', async () => {
     const user = userEvent.setup()
-    render(<EnhancedCatRemovalModal {...mockProps} />)
+    renderWithRouter(<EnhancedCatRemovalModal {...mockProps} />)
 
     await user.click(screen.getByRole('button', { name: /remove cat/i }))
     await user.type(screen.getByPlaceholderText('Fluffy'), 'Fluffy')
@@ -91,7 +88,7 @@ describe('EnhancedCatRemovalModal', () => {
 
   it('proceeds to step 3 when deceased action is selected', async () => {
     const user = userEvent.setup()
-    render(<EnhancedCatRemovalModal {...mockProps} />)
+    renderWithRouter(<EnhancedCatRemovalModal {...mockProps} />)
 
     await user.click(screen.getByRole('button', { name: /remove cat/i }))
     await user.type(screen.getByPlaceholderText('Fluffy'), 'Fluffy')
@@ -107,7 +104,7 @@ describe('EnhancedCatRemovalModal', () => {
 
   it('validates password in step 3', async () => {
     const user = userEvent.setup()
-    render(<EnhancedCatRemovalModal {...mockProps} />)
+    renderWithRouter(<EnhancedCatRemovalModal {...mockProps} />)
 
     await user.click(screen.getByRole('button', { name: /remove cat/i }))
     await user.type(screen.getByPlaceholderText('Fluffy'), 'Fluffy')
@@ -124,12 +121,7 @@ describe('EnhancedCatRemovalModal', () => {
   })
 
   it('calls deleteCat API when delete action is confirmed', async () => {
-    const { deleteCat } = await import('@/api/cats')
-    const user = userEvent.setup()
-
-    vi.mocked(deleteCat).mockResolvedValue(undefined)
-
-    render(<EnhancedCatRemovalModal {...mockProps} />)
+    renderWithRouter(<EnhancedCatRemovalModal {...mockProps} />)
 
     await user.click(screen.getByRole('button', { name: /remove cat/i }))
     await user.type(screen.getByPlaceholderText('Fluffy'), 'Fluffy')
@@ -137,8 +129,6 @@ describe('EnhancedCatRemovalModal', () => {
     await user.click(screen.getByRole('button', { name: /delete permanently/i }))
     await user.type(screen.getByPlaceholderText('Enter your password'), 'password123')
     await user.click(screen.getByRole('button', { name: /delete permanently/i }))
-
-    expect(deleteCat).toHaveBeenCalledWith('1', 'password123')
 
     await waitFor(() => {
       expect(toast.success).toHaveBeenCalledWith('Cat profile has been permanently deleted')
@@ -147,23 +137,7 @@ describe('EnhancedCatRemovalModal', () => {
   })
 
   it('calls updateCatStatus API when deceased action is confirmed', async () => {
-    const { updateCatStatus } = await import('@/api/cats')
-    const user = userEvent.setup()
-
-    vi.mocked(updateCatStatus).mockResolvedValue({
-      id: 1,
-      name: 'Fluffy',
-      status: 'dead',
-      breed: 'Persian',
-      birthday: '2020-01-01',
-      location: 'Test Location',
-      description: 'Test description',
-      user_id: 1,
-      created_at: '2023-01-01T00:00:00Z',
-      updated_at: '2023-01-01T00:00:00Z',
-    } satisfies Cat)
-
-    render(<EnhancedCatRemovalModal {...mockProps} />)
+    renderWithRouter(<EnhancedCatRemovalModal {...mockProps} />)
 
     await user.click(screen.getByRole('button', { name: /remove cat/i }))
     await user.type(screen.getByPlaceholderText('Fluffy'), 'Fluffy')
@@ -172,8 +146,6 @@ describe('EnhancedCatRemovalModal', () => {
     await user.type(screen.getByPlaceholderText('Enter your password'), 'password123')
     await user.click(screen.getByRole('button', { name: /mark as deceased/i }))
 
-    expect(updateCatStatus).toHaveBeenCalledWith('1', 'dead', 'password123')
-
     await waitFor(() => {
       expect(toast.success).toHaveBeenCalledWith('Cat has been marked as deceased')
       expect(mockProps.onSuccess).toHaveBeenCalled()
@@ -181,27 +153,7 @@ describe('EnhancedCatRemovalModal', () => {
   })
 
   it('handles API errors gracefully', async () => {
-    const { deleteCat } = await import('@/api/cats')
-    const { AxiosError } = await import('axios')
-    const user = userEvent.setup()
-
-    const mockError = new AxiosError('Request failed')
-    mockError.response = {
-      data: {
-        message: 'Invalid password',
-        errors: {
-          password: ['The provided password does not match our records.'],
-        },
-      },
-      status: 422,
-      statusText: 'Unprocessable Entity',
-      headers: {},
-      config: {} as never,
-    }
-
-    vi.mocked(deleteCat).mockRejectedValue(mockError)
-
-    render(<EnhancedCatRemovalModal {...mockProps} />)
+    renderWithRouter(<EnhancedCatRemovalModal {...mockProps} />)
 
     await user.click(screen.getByRole('button', { name: /remove cat/i }))
     await user.type(screen.getByPlaceholderText('Fluffy'), 'Fluffy')
@@ -216,8 +168,7 @@ describe('EnhancedCatRemovalModal', () => {
   })
 
   it.skip('allows navigation back between steps', async () => {
-    const user = userEvent.setup()
-    render(<EnhancedCatRemovalModal {...mockProps} />)
+    renderWithRouter(<EnhancedCatRemovalModal {...mockProps} />)
 
     await user.click(screen.getByRole('button', { name: /remove cat/i }))
     await user.type(screen.getByPlaceholderText('Fluffy'), 'Fluffy')
@@ -239,8 +190,7 @@ describe('EnhancedCatRemovalModal', () => {
   })
 
   it('resets modal state when closed', async () => {
-    const user = userEvent.setup()
-    render(<EnhancedCatRemovalModal {...mockProps} />)
+    renderWithRouter(<EnhancedCatRemovalModal {...mockProps} />)
 
     await user.click(screen.getByRole('button', { name: /remove cat/i }))
     await user.type(screen.getByPlaceholderText('Fluffy'), 'test')

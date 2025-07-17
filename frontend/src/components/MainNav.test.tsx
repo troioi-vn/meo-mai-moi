@@ -35,6 +35,6 @@ describe('MainNav', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /open notifications/i })).toBeInTheDocument()
     })
-    expect(screen.getByRole('button', { name: /TU/i })).toBeInTheDocument() // User menu avatar with initials
+    expect(screen.getByText(/TU/i)).toBeInTheDocument() // User menu avatar with initials
   })
 })

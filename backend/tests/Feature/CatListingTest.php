@@ -32,7 +32,7 @@ class CatListingTest extends TestCase
     {
         $cat = Cat::factory()->create();
         $response = $this->getJson("/api/cats/{$cat->id}");
-        $response->assertStatus(200)->assertJson(['id' => $cat->id]);
+        $response->assertStatus(200)->assertJson(['data' => ['id' => $cat->id]]);
     }
 
     public function test_authenticated_user_can_create_cat_listing(): void

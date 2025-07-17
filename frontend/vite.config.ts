@@ -27,6 +27,9 @@ export default defineConfig(({ mode }) => ({
     environment: 'jsdom',
     setupFiles: './src/setupTests.ts',
     css: true,
+    alias: {
+      '@': '/src',
+    },
   },
   build: {
     outDir: 'dist',

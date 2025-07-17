@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -54,7 +55,7 @@ class CatPhotoManagementTest extends TestCase
         Storage::disk('public')->assertExists($path);
 
         // Verify image dimensions
-        $image = (new ImageManager)->make(Storage::disk('public')->get($path));
+        $image = (new ImageManager(new Driver()))->read(Storage::disk('public')->get($path));
         $this->assertEquals(1200, $image->width());
         $this->assertEquals(675, $image->height());
     }

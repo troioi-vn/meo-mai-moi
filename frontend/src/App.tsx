@@ -27,51 +27,57 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   return user ? <>{children}</> : <Navigate to="/login" replace />
 }
 
+export function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<MainPage />} />
+      <Route path="/cats/:id" element={<CatProfilePage />} />
+      <Route
+        path="/cats/:id/edit"
+        element={
+          <PrivateRoute>
+            <EditCatPage />
+          </PrivateRoute>
+        }
+      />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/account" element={<Navigate to="/profile" replace />} />
+      <Route
+        path="/profile"
+        element={
+          <PrivateRoute>
+            <ProfilePage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/account/cats"
+        element={
+          <PrivateRoute>
+            <MyCatsPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/account/cats/create"
+        element={
+          <PrivateRoute>
+            <CreateCatPage />
+          </PrivateRoute>
+        }
+      />
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
+  )
+}
+
 export default function App() {
   return (
     <>
       <MainNav />
       <main className="pt-16">
-        <Routes>
-          <Route path="/" element={<MainPage />} />
-          <Route path="/cats/:id" element={<CatProfilePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/account" element={<Navigate to="/profile" replace />} />
-          <Route
-            path="/profile"
-            element={
-              <PrivateRoute>
-                <ProfilePage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/account/cats"
-            element={
-              <PrivateRoute>
-                <MyCatsPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/account/cats/create"
-            element={
-              <PrivateRoute>
-                <CreateCatPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/account/cats/:id/edit"
-            element={
-              <PrivateRoute>
-                <EditCatPage />
-              </PrivateRoute>
-            }
-          />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
+        <AppRoutes />
       </main>
       <Toaster />
     </>

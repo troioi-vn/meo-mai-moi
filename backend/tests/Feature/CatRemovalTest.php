@@ -6,6 +6,7 @@ use App\Models\Cat;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class CatRemovalTest extends TestCase
@@ -28,7 +29,7 @@ class CatRemovalTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_to_delete_a_cat_profile_with_an_incorrect_password()
     {
         $response = $this->actingAs($this->user)->deleteJson(route('cats.destroy', $this->cat), [
@@ -40,7 +41,7 @@ class CatRemovalTest extends TestCase
         $this->assertDatabaseHas('cats', ['id' => $this->cat->id]);
     }
 
-    /** @test */
+    #[Test]
     public function it_successfully_deletes_a_cat_profile_with_the_correct_password()
     {
         $response = $this->actingAs($this->user)->deleteJson(route('cats.destroy', $this->cat), [
@@ -51,7 +52,7 @@ class CatRemovalTest extends TestCase
         $this->assertDatabaseMissing('cats', ['id' => $this->cat->id]);
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_to_mark_a_cat_as_deceased_with_an_incorrect_password()
     {
         $response = $this->actingAs($this->user)->putJson(route('cats.updateStatus', $this->cat), [
@@ -67,7 +68,7 @@ class CatRemovalTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_successfully_marks_a_cat_as_deceased_with_the_correct_password()
     {
         $response = $this->actingAs($this->user)->putJson(route('cats.updateStatus', $this->cat), [

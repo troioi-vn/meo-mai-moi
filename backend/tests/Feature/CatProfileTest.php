@@ -70,7 +70,7 @@ class CatProfileTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonFragment(['name' => 'Test Cat'])
-            ->assertJsonPath('viewer_permissions.can_edit', false);
+            ->assertJsonPath('data.viewer_permissions.can_edit', false);
     }
 
     #[Test]
@@ -84,7 +84,7 @@ class CatProfileTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonFragment(['name' => 'Test Cat'])
-            ->assertJsonPath('viewer_permissions.can_edit', false);
+            ->assertJsonPath('data.viewer_permissions.can_edit', false);
     }
 
     #[Test]
@@ -98,7 +98,7 @@ class CatProfileTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonFragment(['name' => 'Owner Cat'])
-            ->assertJsonPath('viewer_permissions.can_edit', true);
+            ->assertJsonPath('data.viewer_permissions.can_edit', true);
     }
 
     #[Test]
@@ -116,7 +116,7 @@ class CatProfileTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonFragment(['name' => 'Admin Test Cat'])
-            ->assertJsonPath('viewer_permissions.can_edit', true);
+            ->assertJsonPath('data.viewer_permissions.can_edit', true);
     }
 
     #[Test]
@@ -131,7 +131,7 @@ class CatProfileTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonFragment(['name' => 'Test Cat'])
-            ->assertJsonPath('viewer_permissions.can_edit', false);
+            ->assertJsonPath('data.viewer_permissions.can_edit', false);
     }
 
     #[Test]
@@ -146,7 +146,7 @@ class CatProfileTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonFragment(['name' => 'Test Cat'])
-            ->assertJsonPath('viewer_permissions.can_edit', false);
+            ->assertJsonPath('data.viewer_permissions.can_edit', false);
     }
 
     #[Test]

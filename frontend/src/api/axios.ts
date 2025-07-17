@@ -7,9 +7,22 @@ export const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('access_token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+    // Do not add Authorization header for login, register, or csrf-cookie requests
+    const skipAuth =
+      config.url?.includes('/login') ||
+      config.url?.includes('/register') ||
+      config.url?.includes('/sanctum/csrf-cookie')
+
+    if (!skipAuth) {
+      const token = localStorage.getItem('access_token')
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+      }
+    } else {
+      // Ensure Authorization header is not set
+      if (config.headers && 'Authorization' in config.headers) {
+        delete config.headers.Authorization
+      }
     }
     return config
   },

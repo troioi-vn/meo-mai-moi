@@ -17,7 +17,7 @@ const CatProfilePage: React.FC = () => {
 
   const handleEditClick = () => {
     if (cat?.id) {
-      void navigate(`/account/cats/${String(cat.id)}/edit`)
+      void navigate(`/cats/${String(cat.id)}/edit`)
     }
   }
 

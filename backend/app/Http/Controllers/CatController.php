@@ -196,7 +196,7 @@ class CatController extends Controller
         $catData = $cat->toArray();
         $catData['viewer_permissions'] = $viewerPermissions;
 
-        return response()->json($catData);
+        return response()->json(['data' => $catData]);
     }
 
     /**

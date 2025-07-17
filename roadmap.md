@@ -1,6 +1,8 @@
-## Development Roadmap
+## Development Roadmap (DRAFT - PlacementRequest Architecture)
 
 This document outlines the strategic development plan for the Meo Mai Moi project. For a history of the original user stories, see `tmp/user_stories.md`.
+
+**MAJOR ARCHITECTURAL CHANGE:** This roadmap incorporates the new PlacementRequest model architecture, which separates cat life status from placement needs, providing a more logical and scalable system.
 
 ---
 
@@ -67,10 +69,23 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
   - **Frontend:**
     - [ ] Ensure admin panel UI for cats is intuitive and user-friendly.
 
+- **Task: Add PlacementRequests to Admin Panel**
+  - **Status:** `To Do`
+  - **Notes:** **NEW FEATURE** - Enable admin oversight and management of placement requests through Filament admin panel.
+  - **Backend:**
+    - [ ] Create Filament Resource for PlacementRequest model
+    - [ ] Implement read-only views for placement request monitoring
+    - [ ] Add admin-only actions (cancel requests, mark as urgent, etc.)
+    - [ ] Create analytics widgets for placement request statistics
+  - **Frontend:**
+    - [ ] Ensure placement request admin UI shows key metrics and trends
+    - [ ] Add filtering and search capabilities for placement requests
+    - [ ] Create admin dashboard widgets for placement insights
+
 ---
 
-### Phase 2: Core Functionality - Applications & Transfers
-- **Goal:** Build upon the MVP by implementing the core workflows of the application, including the helper application process and the system for transferring cat custodianship.
+### Phase 2: Core Functionality - Placement System & User Management
+- **Goal:** Build upon the MVP by implementing the core workflows of the application, including the helper application process and the NEW placement request system for cat rehoming.
 
 #### Epic 1: User & Helper Account Management
 - **Task: API Documentation & Tests**
@@ -89,20 +104,80 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
     - [ ] Add upload button to `ProfilePage`
     - [ ] Display avatar on `ProfilePage`
 
-#### Epic 3: Cat Profile Management
-- **Task: Create/Edit Cat Profile**
-  - **Status:** `Done`
+- **Task: Helper Profile Placement Preferences**
+  - **Status:** `To Do`
+  - **Notes:** **NEW FEATURE** - Allow helpers to specify their placement type preferences (foster/permanent, requirements, etc.) for better matching.
+  - **Backend:**
+    - [ ] Add placement preference fields to HelperProfile model (can_foster_short_term, can_foster_long_term, can_adopt_permanent, medical_care_capable, etc.)
+    - [ ] Update HelperProfile API endpoints to include placement preferences
+    - [ ] Add validation for placement preference combinations
+  - **Frontend:**
+    - [ ] Update helper profile creation/edit forms with placement preferences
+    - [ ] Add placement preference indicators to helper profile displays
+    - [ ] Create placement preference filtering for helper discovery
+
+#### Epic 2: NEW - Placement Request System (CORE ARCHITECTURE)
+- **Task: PlacementRequest Model & API**
+  - **Status:** `To Do - HIGH PRIORITY`
+  - **Notes:** **NEW CORE FEATURE** - Implement the PlacementRequest model that allows cat owners to create specific placement needs (foster/permanent) with requirements and timelines.
+  - **Backend:**
+    - [ ] Create `PlacementRequest` model with fields: type, status, start_date, end_date, description, priority, requirements
+    - [ ] Define `PlacementRequest.status` enum: `open`, `pending_review`, `fulfilled`, `expired`, `cancelled`
+    - [ ] Implement constraint: one active request per type per cat
+    - [ ] Add business rule: When a permanent adoption request is fulfilled, automatically cancel any other active foster requests for the same cat.
+    - [ ] Create API endpoints: `POST /api/cats/{cat}/placement-requests`, `GET /api/cats/{cat}/placement-requests`, `PUT /api/placement-requests/{id}`, `DELETE /api/placement-requests/{id}`
+    - [ ] Add relationship: Cat hasMany PlacementRequests
+    - [ ] Ensure: A cat should be publicly visible if there is an active PlacementRequest for this cat (even if it would otherwise be hidden)
+    - [ ] Add API documentation for all endpoints
+  - **Frontend:**
+    - [ ] Create `PlacementRequestForm` component for owners to create requests
+    - [ ] Create `PlacementRequestCard` component to display active requests on cat profiles
+    - [ ] Add placement request management to cat owner dashboard
+    - [ ] Add validation and error handling for placement requests
+
+- **Task: NEW - Owner-Side Placement Management**
+  - **Status:** `To Do`
+  - **Notes:** **NEW FEATURE** - Create the interface for cat owners to manage incoming placement responses from helpers.
+  - **Backend:**
+    - [ ] Create API endpoint to list all `TransferRequests` for a given `PlacementRequest`.
+    - [ ] Implement `accept` and `reject` actions on `TransferRequest` that can only be performed by the cat owner.
+    - [ ] When a response is accepted, update the `PlacementRequest` status to `fulfilled`.
+  - **Frontend:**
+    - [ ] Create a "Manage Responses" view on the owner's dashboard.
+    - [ ] Display a list of helpers who have responded to a placement request.
+    - [ ] Add `Accept` and `Reject` buttons for each response.
+    - [ ] Ensure the UI updates correctly after an action is taken.
+
+#### Epic 3: Cat Profile Management (REFACTORED)
+- **Task: Refactor Cat Status System**
+  - **Status:** `To Do - BREAKING CHANGE`
+  - **Notes:** **MAJOR REFACTOR** - Change cat status from placement-based (available/fostered/adopted) to life-based (alive/dead/lost/deleted) for logical consistency.
+  - **Backend:**
+    - [ ] Create migration to update Cat.status enum: `alive`, `dead`, `lost`, `deleted`
+    - [ ] Update existing cats to use new status (all current cats → `alive`)
+    - [ ] Update CatController to handle new status logic
+    - [ ] Remove placement-related status logic from cat filtering
+    - [ ] Update API documentation for new status values
+  - **Frontend:**
+    - [ ] Update all cat status displays to use new enum
+    - [ ] Update cat filtering to work with new status system
+    - [ ] Modify `EnhancedCatRemovalModal` to use new status logic
+    - [ ] Update tests to reflect new status system
+
+- **Task: Maintain Existing Cat Management Features**
+  - **Status:** `Done` (needs minor updates for new status)
   - **Backend:**
     - [x] Implement `CatController` CRUD
-    - [x] Add `status` field to `Cat` model (including 'dead' status)
+    - [x] Add `status` field to `Cat` model (needs refactoring to new enum)
     - [ ] Implement flexible birthday fields (`year`, `month`, `day`)
-    - [ ] Add API documentation
+    - [ ] Update API documentation
   - **Frontend:**
-    - [x] Create "My Cats" page with deceased cats toggle
-    - [x] Create `Create/Edit Cat` form
+    - [x] Create "My Cats" page with deceased cats toggle (needs update for new status)
+    - [x] Create `Create/Edit Cat` form (needs status update)
     - [ ] Calculate and display age from birthday
-    - [x] Write tests for new components
+    - [x] Write and refactor tests for EditCatPage, including validation error handling (DONE)
     - [x] Comprehensive test coverage for all cat management functionality
+
 - **Task: Cat Profile Permissions & Navigation**
   - **Status:** `Done`
   - **Backend:**
@@ -117,13 +192,15 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
     - [x] Routing tests for fixed `/cats/:id` route
     - [ ] Integration tests for complete cat profile workflow
     - [ ] E2E tests for user journey (view cat → see edit button → edit cat)
+
 - **Task: Delete a Cat Profile**
-  - **Status:** `Done`
+  - **Status:** `Done` (compatible with new status)
   - **Backend:**
     - [x] Implement `DELETE /api/cats/{id}`
   - **Frontend:**
     - [x] Add delete button to UI
     - [x] Add confirmation dialog
+
 - **Task: Manage Cat Profile Photos**
   - **Status:** `Done`
   - **Backend:**
@@ -133,8 +210,9 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
     - [x] UI controls for photo management
   - **Testing:**
     - [x] Comprehensive feature tests for upload, resize, and delete functionality.
+
 - **Task: Enhanced Cat Removal**
-  - **Status:** `Done`
+  - **Status:** `Done` (needs minor updates for new status)
   - **Notes:** Implemented a comprehensive multi-step process to prevent accidental cat profile deletion and allow marking cats as deceased.
   - **Backend:**
     - [x] Create an endpoint that verifies user password (`POST /api/auth/verify-password`)
@@ -149,19 +227,35 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
     - [x] Add toggle switch on "My Cats" page to show/hide deceased cats
     - [x] Comprehensive test coverage for all new components and functionality
 
-
-#### Epic 4: Grab This Cat Feature
-- **Task: "Grab This Cat" Feature**
-  - **Status:** `Planned`
+#### Epic 4: NEW - Placement Response System (Helper Interaction)
+- **Task: Link TransferRequest to PlacementRequest**
+  - **Status:** `To Do - HIGH PRIORITY`
+  - **Notes:** **ARCHITECTURE UPDATE** - Modify existing TransferRequest system to respond to specific PlacementRequests instead of generic cat grabbing.
   - **Backend:**
-    - [x] Update `Cat` model (`status`)
-    - [x] `POST /api/transfer-requests` endpoint
-    - [x] Notification integration
+    - [ ] Add `placement_request_id` foreign key to TransferRequest model
+    - [ ] Update TransferRequest creation logic to link to specific PlacementRequest
+    - [ ] Modify TransferRequest validation to ensure placement request is active
+    - [ ] Update acceptance logic to mark PlacementRequest as fulfilled
+    - [ ] Add relationship: PlacementRequest hasMany TransferRequests
   - **Frontend:**
-    - [ ] Add filters to cat list page
-    - [ ] Create "Grab this cat" modal
-    - [ ] Add button to `CatProfilePage`
-    - [ ] Integrate `NotificationBell`
+    - [ ] Replace generic "Grab This Cat" with placement-specific "Respond to Request"
+    - [ ] Create `PlacementResponseModal` showing available placement requests
+    - [ ] Update TransferRequest displays to show associated placement details
+    - [ ] Add placement context to notification messages
+
+- **Task: NEW - Placement Discovery & Matching**
+  - **Status:** `To Do`
+  - **Notes:** **NEW FEATURE** - Allow helpers to discover cats with active placement requests and understand specific needs.
+  - **Backend:**
+    - [ ] Add API endpoint: `GET /api/placement-requests` with filtering (type, location, urgency)
+    - [ ] Implement placement request search and sorting
+    - [ ] Add statistics endpoint for placement success rates
+  - **Frontend:**
+    - [ ] Create `/placements` page for browsing active placement requests
+    - [ ] Add filters for placement type, location, urgency, requirements
+    - [ ] Create `PlacementRequestCard` for display in lists
+    - [ ] Add placement request details modal
+    - [ ] Integrate with existing cat profile links
 
 ---
 
@@ -183,28 +277,64 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
     - [ ] "Messages" section in dashboard
 
 #### Epic 5: Core Platform & Notifications
+- **Task: Enhanced Notification Types for PlacementRequests**
+  - **Status:** `To Do`
+  - **Notes:** **NEW FEATURE** - Enhance notification system with specific placement request notification types.
+  - **Backend:**
+    - [ ] Create PlacementRequestNotification model/service
+    - [ ] Add notification types: request_created, request_approved, request_expired, match_found
+    - [ ] Implement notification preferences per user (email, SMS, in-app)
+    - [ ] Add email/SMS notification channels for placement updates
+    - [ ] Create notification templates for each placement event type
+  - **Frontend:**
+    - [ ] Create notification preference settings in user profile
+    - [ ] Display placement-specific notifications in UI with distinct styling
+    - [ ] Add real-time notifications for placement matches
+    - [ ] Implement notification filtering by type
+
 - **Task: Centralized Notifications**
   - **Status:** `Planned`
   - **Backend:**
-    - [ ] `Notification` model & endpoints
+    - [ ] `Notification` model & endpoints (already exists, needs enhancement)
     - [ ] Event listener for `HelperProfile` status
+    - [ ] NEW: Event listeners for PlacementRequest creation/fulfillment
   - **Frontend:**
     - [ ] `NotificationBell` component
     - [ ] Dropdown list for notifications
     - [ ] Mark as read functionality
+    - [ ] NEW: Placement-specific notification types
+
+#### Epic 6: NEW - Placement Analytics & Insights
+- **Task: Placement Success Tracking**
+  - **Status:** `To Do`
+  - **Notes:** **NEW FEATURE** - Track placement success rates, timing, and outcomes for platform improvement.
+  - **Backend:**
+    - [ ] Add placement outcome tracking (successful, returned, etc.)
+    - [ ] Implement analytics endpoints for success rates
+    - [ ] Add timing metrics (time from request to placement)
+  - **Frontend:**
+    - [ ] Create analytics dashboard for admins
+    - [ ] Add success rate displays for public trust building
+    - [ ] Create placement history tracking for individual cats
 
 ---
 
 ### Phase 4: Advanced Features & Polish
 - **Goal:** Add advanced discovery features and refine the user experience.
 
-#### Epic 3: Public Discovery & Browsing
-- **Task: Filter Available Cats**
+#### Epic 3: Public Discovery & Browsing (UPDATED)
+- **Task: Enhanced Cat & Placement Filtering**
   - **Status:** `To Do`
+  - **Notes:** **UPDATED** - Filter cats by placement needs rather than just availability.
   - **Backend:**
-    - [ ] Enhance `GET /api/cats` with filters
+    - [ ] Enhance `GET /api/cats` with placement-based filters
+    - [ ] Add filters for active placement types (foster/permanent)
+    - [ ] Implement urgency and requirement-based filtering
   - **Frontend:**
-    - [ ] UI controls for filtering
+    - [ ] Update cat list filters to show placement needs
+    - [ ] Add placement type indicators to cat cards
+    - [ ] Create placement urgency visual indicators
+
 - **Task: Filter Helper Offers**
   - **Status:** `To Do`
   - **Backend:**
@@ -217,9 +347,10 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
   - **Status:** `To Do`
   - **Notes:** Replace the static, hardcoded cat cards on the main page with a dynamic list of cats fetched from the API.
   - **Frontend:**
-    - [ ] Fetch a list of available cats from the `/api/cats` endpoint.
-    - [ ] Map the fetched data to the `CatCard` component.
-    - [ ] Ensure the layout is responsive and handles various numbers of cats gracefully.
+    - [ ] Fetch a list of cats with active placement requests from the `/api/cats` endpoint
+    - [ ] Map the fetched data to the `CatCard` component with placement indicators
+    - [ ] Ensure the layout is responsive and handles various numbers of cats gracefully
+    - [ ] NEW: Highlight urgent placement needs on homepage
 
 #### Epic 5: Medical Records Management
 - **Task: Track Cat Weight**
@@ -252,11 +383,13 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
   - **Backend:**
     - [x] Generate `openapi.json`
     - [x] Add contract tests to CI
+    - [ ] NEW: Update OpenAPI docs for PlacementRequest endpoints
 - **Task: Deployment & CI/CD**
   - **Status:** `To Do`
   - **Backend:**
     - [ ] Set up production environment
     - [ ] Create CI/CD pipeline
+    - [ ] NEW: Migration strategy for PlacementRequest rollout
 - **Task: Internationalization (i18n)**
   - **Status:** `To Do`
   - **Backend:**
@@ -311,11 +444,86 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
 #### Epic 1: Community & Engagement
 - **Task: Gamification: Badges & Leaderboards**
   - **Status:** `To Do`
-  - **Notes:** Introduce a gamified system to reward users for positive contributions (e.g., successful adoptions, fostering duration, helpful comments).
+  - **Notes:** Introduce a gamified system to reward users for positive contributions (e.g., successful placements, fostering duration, helpful comments).
   - **Backend:**
     - [ ] `Badge` and `UserBadge` models.
-    - [ ] Logic for awarding badges based on actions.
+    - [ ] Logic for awarding badges based on placement actions.
     - [ ] API endpoints for user badges and leaderboards.
   - **Frontend:**
     - [ ] Display badges on user profiles.
     - [ ] Create a "Leaderboard" page.
+
+#### Epic 2: NEW - Advanced Placement Features
+- **Task: Smart Placement Matching**
+  - **Status:** `Future Enhancement`
+  - **Notes:** **FUTURE FEATURE** - AI-powered matching between cats needing placement and suitable helpers.
+  - **Backend:**
+    - [ ] Implement matching algorithm based on requirements, location, experience
+    - [ ] Add preference learning from successful placements
+    - [ ] Create compatibility scoring system
+  - **Frontend:**
+    - [ ] Display match scores and recommendations
+    - [ ] Create "Recommended for You" sections
+    - [ ] Add match explanation UI
+
+- **Task: Placement Templates & Workflows**
+  - **Status:** `Future Enhancement`
+  - **Notes:** **FUTURE FEATURE** - Predefined placement workflows for common scenarios (medical foster, kitten care, etc.).
+  - **Backend:**
+    - [ ] Create placement template system
+    - [ ] Add workflow automation for common scenarios
+    - [ ] Implement placement milestone tracking
+  - **Frontend:**
+    - [ ] Template selection interface for placement creation
+    - [ ] Workflow progress tracking UI
+    - [ ] Milestone celebration and notification system
+
+---
+
+## Breaking Changes Summary
+
+### Database Changes
+- **Cat.status enum**: `available,fostered,adopted,dead` → `alive,dead,lost,deleted`
+- **New table**: `placement_requests`
+- **Updated**: `transfer_requests` adds `placement_request_id` foreign key
+
+### API Changes
+- **Modified**: `GET /api/cats` filtering logic (no longer filters by placement status)
+- **New endpoints**: PlacementRequest CRUD operations
+- **Modified**: `POST /api/transfer-requests` requires `placement_request_id`
+
+### Frontend Changes
+- **All cat status displays** need updating
+- **"Grab This Cat" button** replaced with placement-specific interactions
+- **New UI components** for placement request management
+- **Updated cat filtering** logic throughout the application
+
+---
+
+## Frontend Test Refactoring
+
+The following test files need to be reviewed and refactored to align with the new testing architecture outlined in `GEMINI.md`. The goal is to ensure all tests use the global MSW server, the `renderWithRouter` utility, and centralized mock data.
+
+- Centralized Mock Data and Handlers:
+Moving all mock data (like mockUser) to a shared location and using global MSW handlers ensures consistency, maintainability, and alignment with your GEMINI.md testing strategy.
+
+- Robust UI Feedback and Navigation Testing:
+For UI feedback (like toasts) and navigation, direct DOM assertions can be unreliable due to portals or router limitations. Mocking external modules (e.g., sonner for toasts, useNavigate for navigation) and asserting their calls is the most reliable and maintainable approach.
+
+- ESM Mocking Limitations Require Module Mocks:
+Vitest (and other ESM-based test runners) cannot spy on named exports directly. Instead, you must use vi.mock to mock entire modules and their methods, which is essential for testing side effects in modern React apps.
+
+- [x] `frontend/src/pages/account/MyCatsPage.test.tsx`
+- [x] `frontend/src/pages/account/CreateCatPage.test.tsx`
+- [x] `frontend/src/pages/account/EditCatPage.test.tsx`
+- [x] `frontend/src/pages/CatProfilePage.test.tsx`
+- [x] `frontend/src/pages/LoginPage.test.tsx`
+- [x] `frontend/src/pages/MainPage.test.tsx`
+- [x] `frontend/src/pages/NotFoundPage.test.tsx`
+- [x] `frontend/src/pages/ProfilePage.test.tsx`
+- [x] `frontend/src/pages/RegisterPage.test.tsx`
+- [x] `frontend/src/components/ChangePasswordForm.test.tsx`
+- [x] `frontend/src/components/EnhancedCatRemovalModal.test.tsx`
+- [ ] `frontend/src/components/LoginForm.test.tsx`
+- [ ] `frontend/src/components/RegisterForm.test.tsx`
+- [ ] `frontend/src/components/cats/CatPhotoManager.test.tsx`

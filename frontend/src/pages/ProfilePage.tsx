@@ -13,9 +13,11 @@ export default function ProfilePage() {
         <h1 className="text-3xl font-bold text-center text-card-foreground">User Profile</h1>
 
         {/* Avatar Section */}
-        <div className="flex justify-center pb-4">
-          <UserAvatar size="xl" showUploadControls={true} />
-        </div>
+        {user && (
+          <div className="flex justify-center pb-4">
+            <UserAvatar size="xl" showUploadControls={true} />
+          </div>
+        )}
 
         {user && (
           <div className="space-y-4 text-lg">

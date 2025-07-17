@@ -49,11 +49,17 @@ This outlines the high-level map of the application from the perspective of its 
 - **Permissions:** Spatie Laravel Permission package
 - **Deployment:** Docker Compose with optimized multi-stage builds
 
+## 3.1. Technical Project Structure
+
+**Key Configuration Files:**
+- `components.json` - shadcn/ui configuration
+- `vite.config.ts` - Frontend build configuration with path aliases
+- `tsconfig.json` - TypeScript configuration with `@/*` path mapping
+- `package.json` - Frontend dependencies and scripts
+
 ## 4. Development Roadmap
 
 The development roadmap is maintained in the `roadmap.md` file in the root of the project. That file serves as the single source of truth for the project's development plan.
-
-The original user stories have been archived in `tmp/user_stories.md`.
 
 ## 5. API Documentation & Integration
 
@@ -137,46 +143,55 @@ This process guarantees that our API documentation is always a reliable and accu
 
 #### Frontend Testing Strategy: A Practical Guide
 
-Our frontend testing strategy is built on the principle of **testing user behavior, not implementation details**. This ensures our tests are robust, maintainable, and verify that the application works as users expect.
+The frontend test suite uses **Vitest** for running tests, **React Testing Library** for rendering and interacting with components, and **Mock Service Worker (MSW)** for mocking API requests. The new testing architecture is built on a foundation of consistency and realism, ensuring that components are tested in an environment that closely mirrors the actual application.
 
-**Core Tools:**
-*   **Test Runner:** **Vitest** for a fast and modern testing experience.
-*   **Testing Framework:** **React Testing Library (RTL)** to interact with components like a user.
-*   **API Mocking:** **Mock Service Worker (MSW)** (configured in `src/mocks/`) to simulate API responses, making tests fast and reliable without a live backend.
+##### Key Principles
 
-**How to Write a New Test:**
+1.  **Always Use the Shared Test Utility**: All tests must use the `renderWithRouter` function from `frontend/src/test-utils.tsx`. This utility wraps components in all necessary providers (`QueryClientProvider`, `MemoryRouter`, `AuthProvider`, `Toaster`), ensuring a consistent and realistic test environment.
+2.  **Use Centralized Mock Data**: All mock data, especially for primary models like `Cat`, should be defined in and imported from `frontend/src/mocks/data/`. This prevents data duplication and ensures that tests are consistent.
+3.  **Rely on the Global Mock Server**: Individual test files must **not** set up their own MSW server. The global server is configured in `frontend/src/setupTests.ts` and uses a modular handler system.
+4.  **Write User-Centric Tests**: Tests should focus on what the user sees and does. Assert against the rendered output (e.g., `screen.getByText('Fluffy')`) rather than component state or implementation details.
 
-1.  **Arrange:**
-    *   Render the component with all necessary providers (e.g., `AuthProvider`, `MemoryRouter` for routing).
-    *   Mock any required API responses using MSW (`msw/server`). Define mock handlers in `src/mocks/handlers.ts`.
+##### Testing Architecture with TanStack Query and MSW
 
-2.  **Act:**
-    *   Simulate user interactions using `@testing-library/user-event`.
-    *   Find elements using accessible queries (`getByRole`, `getByLabelText`, `getByText`, etc.) before resorting to `getByTestId`.
+-   **TanStack Query Integration (`@tanstack/react-query`)**:
+    -   **Problem**: Components that use hooks like `useQuery` or `useMutation` require a `QueryClientProvider` to be present in the component tree.
+    -   **Solution**: A single `QueryClient` instance is provided to all test components via our custom `renderWithRouter` function. The query cache is cleared before each test to ensure test isolation.
 
-3.  **Assert:**
-    *   Check for the expected outcome in the DOM. For example, assert that a success message appears, an error is displayed, or navigation occurs.
-    *   **Do not** test internal component state or implementation details.
+-   **Modular MSW Handlers (`handlers.ts`)**:
+    -   **Problem**: Mock handlers were previously scattered, inconsistent, and did not correctly handle URL resolution in the `jsdom` test environment, leading to network errors.
+    -   **Solution**: The new architecture uses a centralized and modular approach:
+        1.  **Absolute URLs**: All MSW handlers **must** use absolute URLs (e.g., `http://localhost:3000/api/cats`) to ensure they are correctly intercepted by the mock server.
+        2.  **Data-Centric Modules**: Mock data and its corresponding handlers are grouped by resource (e.g., `frontend/src/mocks/data/cats.ts`).
+        3.  **Central Handler Composition**: The main `frontend/src/mocks/handlers.ts` file imports and combines these modular handlers into a single `handlers` array for the global server.
+        4.  **Correct API Structure**: All mock handlers are configured to return data in the same structure as the real API (e.g., wrapping responses in a `{ "data": ... }` object).
 
-**Example Test Flow for a Form:**
+##### Example: Testing a Component that Fetches Data
+
 ```tsx
-// 1. Arrange: Render the form and mock API calls
-render(<MyFormComponent />);
-server.use(
-  http.post('/api/submit', () => {
-    return HttpResponse.json({ success: true });
+// In your test file:
+import { screen, waitFor } from '@testing-library/react'
+import { describe, it, expect } from 'vitest'
+import { renderWithRouter } from '@/test-utils' // Import the shared utility
+import { mockCat } from '@/mocks/data/cats' // Import the shared mock data
+import CatProfilePage from './CatProfilePage'
+
+describe('CatProfilePage', () => {
+  it('renders cat profile information correctly', async () => {
+    // Use the utility to render the component with a specific route
+    renderWithRouter(<CatProfilePage />, { route: `/cats/${mockCat.id}` })
+
+    // Assert that the loading state appears first
+    expect(screen.getByText(/loading/i)).toBeInTheDocument()
+
+    // Wait for the data to be fetched and rendered
+    await waitFor(() => {
+      // Assert against the content using the centralized mock data
+      expect(screen.getByText(mockCat.name)).toBeInTheDocument()
+    })
   })
-);
-
-// 2. Act: Find elements and simulate user input
-await userEvent.type(screen.getByLabelText(/email/i), 'user@example.com');
-await userEvent.click(screen.getByRole('button', { name: /submit/i }));
-
-// 3. Assert: Check for the result the user would see
-expect(await screen.findByText(/success/i)).toBeInTheDocument();
+})
 ```
-
-This approach ensures our tests are a true reflection of the user experience and remain valid even when the underlying code is refactored.
 
 ### Debugging and Problem Solving Strategy
 
@@ -337,6 +352,36 @@ The frontend is built with React (using Vite) and TypeScript. It uses `vite-tsco
 -   **`tsconfig.json`:** Contains the base URL and path mappings. The primary alias is `@/*`, which maps to `src/*`.
 -   **`components.json`:** Configured to use the `@/` alias for `shadcn/ui` components.
 
+#### Frontend UI/UX Libraries & Patterns
+
+**Notification System:**
+- **Library:** `sonner` (not a custom useToast hook)
+- **Usage:** `import { toast } from 'sonner'`
+- **API:** Simple toast functions: `toast.success()`, `toast.error()`, `toast.info()`
+- **Integration:** The `<Toaster />` component from `@/components/ui/sonner` is included in the main App component
+
+**API Client:**
+- **Location:** `@/api/axios` (exports `api` instance)
+- **Not:** `@/lib/api` (this doesn't exist)
+- **Features:** Pre-configured with interceptors for authentication and base URL handling
+- **Usage:** `import { api } from '@/api/axios'` for all HTTP requests
+
+**Component Architecture:**
+- **Base Components:** Located in `@/components/ui/` (shadcn/ui components)
+- **Business Components:** Located in `@/components/` with clear feature organization
+- **Testing:** Components should include comprehensive test files using Vitest + RTL
+- **State Management:** React Context for global state (auth), local state with hooks for component-specific state
+
+**Form Handling:**
+- **Validation:** Uses error handling patterns with `AxiosError` type checking
+- **Error Display:** Consistent error message patterns using toast notifications
+- **API Integration:** Standardized error handling with fallback messages for network issues
+
+**Permission-Based UI:**
+- **Pattern:** Components receive `isOwner` or similar permission props to conditionally render UI elements
+- **Implementation:** UI elements are shown/hidden based on user permissions rather than role names
+- **Security:** Frontend permissions are for UX only - backend enforces actual security
+
 
 ## 10. Core Data Models
 
@@ -409,6 +454,7 @@ enum Permission: string {
     -   `record_date` (date): The date the weight was recorded.
 
 ---
+
 ## 11. Authentication
 
 To ensure secure user access, we will implement the following authentication features:

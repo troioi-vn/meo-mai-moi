@@ -12,10 +12,15 @@ import { Badge } from '@/components/ui/badge'
 import { api } from '@/api/axios'
 
 interface Notification {
-  id: number
-  message: string
-  is_read: boolean
-  link: string
+  id: string;
+  type: string;
+  notifiable_type: string;
+  notifiable_id: number;
+  data: {
+    message: string;
+  };
+  read_at: string | null;
+  created_at: string;
 }
 
 export function NotificationBell() {
@@ -28,15 +33,12 @@ export function NotificationBell() {
     setIsLoading(true)
     setError(null)
     try {
-      const response = await api.get<Notification[]>('/notifications')
-      setNotifications(response.data)
-      setUnreadCount(response.data.filter((n) => !n.is_read).length)
+      const response = await api.get<{ data: Notification[] }>('/notifications')
+      const fetchedNotifications = response.data
+      setNotifications(fetchedNotifications)
+      setUnreadCount(fetchedNotifications.filter((n) => n.read_at === null).length)
     } catch (error: unknown) {
-      if (error && typeof error === 'object' && 'message' in error) {
-        console.error('Error fetching notifications:', (error as Error).message)
-      } else {
-        console.error('Error fetching notifications:', error)
-      }
+      console.error('Error fetching notifications:', error)
       setError('Failed to fetch notifications')
     } finally {
       setIsLoading(false)

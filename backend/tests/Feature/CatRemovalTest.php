@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
+use App\Enums\CatStatus;
 
 class CatRemovalTest extends TestCase
 {
@@ -56,7 +57,7 @@ class CatRemovalTest extends TestCase
     public function it_fails_to_mark_a_cat_as_deceased_with_an_incorrect_password()
     {
         $response = $this->actingAs($this->user)->putJson(route('cats.updateStatus', $this->cat), [
-            'status' => 'dead',
+            'status' => CatStatus::DECEASED->value,
             'password' => 'wrong-password',
         ]);
 
@@ -72,14 +73,14 @@ class CatRemovalTest extends TestCase
     public function it_successfully_marks_a_cat_as_deceased_with_the_correct_password()
     {
         $response = $this->actingAs($this->user)->putJson(route('cats.updateStatus', $this->cat), [
-            'status' => 'dead',
+            'status' => CatStatus::DECEASED->value,
             'password' => 'password123',
         ]);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('cats', [
             'id' => $this->cat->id,
-            'status' => 'dead',
+            'status' => CatStatus::DECEASED->value,
         ]);
     }
 }

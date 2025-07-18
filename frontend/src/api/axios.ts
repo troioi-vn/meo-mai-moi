@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios'
 
 export const api = axios.create({
-  baseURL: '/api',
+  baseURL: process.env.NODE_ENV === 'test' ? 'http://localhost:3000/api' : '/api',
   withCredentials: true, // send cookies
 })
 
@@ -27,7 +27,7 @@ api.interceptors.request.use(
     return config
   },
   (error: AxiosError) => {
-    return Promise.reject(new Error(error.message))
+    return Promise.reject(error)
   }
 )
 

@@ -51,6 +51,7 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
     - [x] Integrate `bezhansalleh/filament-shield` for role and permission management.
     - [x] Configure `tomatophp/filament-users` for user management with Shield integration and impersonation.
 
+
 #### Epic 1: Admin Panel Features
 - **Task: Add Global Settings to Admin Panel (SMTP)**
   - **Status:** `To Do`
@@ -60,14 +61,15 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
     - [ ] Implement fields for SMTP host, port, username, password, encryption, and sender email.
     - [ ] Securely store and retrieve SMTP credentials.
 - **Task: Add Cats to Admin Panel**
-  - **Status:** `To Do`
-  - **Notes:** Implement the functionality to manage cat profiles directly within the Filament admin panel.
+  - **Status:** `Done`
+  - **Notes:** Filament CatResource implemented. Admins can now manage cat profiles (CRUD) with new status enum (`active`, `lost`, `deceased`, `deleted`).
   - **Backend:**
-    - [ ] Create Filament Resource for Cat model.
-    - [ ] Implement CRUD operations for cats.
-    - [ ] Add necessary fields for cat attributes (e.g., name, breed, age, status).
+    - [x] Create Filament Resource for Cat model.
+    - [x] Implement CRUD operations for cats.
+    - [x] Add necessary fields for cat attributes (e.g., name, breed, birthday, status).
+    - [x] Use new CatStatus enum for status field.
   - **Frontend:**
-    - [ ] Ensure admin panel UI for cats is intuitive and user-friendly.
+    - [x] Ensure admin panel UI for cats is intuitive and user-friendly.
 
 - **Task: Add PlacementRequests to Admin Panel**
   - **Status:** `To Do`
@@ -148,21 +150,22 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
     - [ ] Add `Accept` and `Reject` buttons for each response.
     - [ ] Ensure the UI updates correctly after an action is taken.
 
+
 #### Epic 3: Cat Profile Management (REFACTORED)
 - **Task: Refactor Cat Status System**
-  - **Status:** `To Do - BREAKING CHANGE`
-  - **Notes:** **MAJOR REFACTOR** - Change cat status from placement-based (available/fostered/adopted) to life-based (alive/dead/lost/deleted) for logical consistency.
+  - **Status:** `Done`
+  - **Notes:** **MAJOR REFACTOR COMPLETED** - Cat status now uses enum: `active`, `lost`, `deceased`, `deleted` (was: available/fostered/adopted/dead). All backend, frontend, and tests updated. Migration and data update complete. Admin panel supports new enum.
   - **Backend:**
-    - [ ] Create migration to update Cat.status enum: `alive`, `dead`, `lost`, `deleted`
-    - [ ] Update existing cats to use new status (all current cats → `alive`)
-    - [ ] Update CatController to handle new status logic
-    - [ ] Remove placement-related status logic from cat filtering
-    - [ ] Update API documentation for new status values
+    - [x] Create migration to update Cat.status enum: `active`, `lost`, `deceased`, `deleted`
+    - [x] Update existing cats to use new status (all current cats → `active`)
+    - [x] Update CatController to handle new status logic
+    - [x] Remove placement-related status logic from cat filtering
+    - [x] Update API documentation for new status values
   - **Frontend:**
-    - [ ] Update all cat status displays to use new enum
-    - [ ] Update cat filtering to work with new status system
-    - [ ] Modify `EnhancedCatRemovalModal` to use new status logic
-    - [ ] Update tests to reflect new status system
+    - [x] Update all cat status displays to use new enum
+    - [x] Update cat filtering to work with new status system
+    - [x] Modify `EnhancedCatRemovalModal` to use new status logic
+    - [x] Update tests to reflect new status system
 
 - **Task: Maintain Existing Cat Management Features**
   - **Status:** `Done` (needs minor updates for new status)
@@ -482,8 +485,12 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
 
 ## Breaking Changes Summary
 
+
 ### Database Changes
-- **Cat.status enum**: `available,fostered,adopted,dead` → `alive,dead,lost,deleted`
+- **`Cat` Model:** Now uses status enum: `active`, `lost`, `deceased`, `deleted` (was: available/fostered/adopted/dead). Represents the cat's permanent biological and descriptive information.
+    - TODO: checkbox "unknown_birthday" (boolean, nullable): Indicates if the birth date is unknown. (`birthday` still could be saved as aproximate date for age calculation)
+    - TODO: add small `~` symbol to indicate approximate dates in the UI.
+    - TODO: add checkbox "is_neutered" (boolean, nullable): Indicates if the cat is neutered.
 - **New table**: `placement_requests`
 - **Updated**: `transfer_requests` adds `placement_request_id` foreign key
 
@@ -498,8 +505,6 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
 - **New UI components** for placement request management
 - **Updated cat filtering** logic throughout the application
 
----
-
 ## Frontend Test Refactoring
 
 The following test files need to be reviewed and refactored to align with the new testing architecture outlined in `GEMINI.md`. The goal is to ensure all tests use the global MSW server, the `renderWithRouter` utility, and centralized mock data.
@@ -512,18 +517,3 @@ For UI feedback (like toasts) and navigation, direct DOM assertions can be unrel
 
 - ESM Mocking Limitations Require Module Mocks:
 Vitest (and other ESM-based test runners) cannot spy on named exports directly. Instead, you must use vi.mock to mock entire modules and their methods, which is essential for testing side effects in modern React apps.
-
-- [x] `frontend/src/pages/account/MyCatsPage.test.tsx`
-- [x] `frontend/src/pages/account/CreateCatPage.test.tsx`
-- [x] `frontend/src/pages/account/EditCatPage.test.tsx`
-- [x] `frontend/src/pages/CatProfilePage.test.tsx`
-- [x] `frontend/src/pages/LoginPage.test.tsx`
-- [x] `frontend/src/pages/MainPage.test.tsx`
-- [x] `frontend/src/pages/NotFoundPage.test.tsx`
-- [x] `frontend/src/pages/ProfilePage.test.tsx`
-- [x] `frontend/src/pages/RegisterPage.test.tsx`
-- [x] `frontend/src/components/ChangePasswordForm.test.tsx`
-- [x] `frontend/src/components/EnhancedCatRemovalModal.test.tsx`
-- [ ] `frontend/src/components/LoginForm.test.tsx`
-- [ ] `frontend/src/components/RegisterForm.test.tsx`
-- [ ] `frontend/src/components/cats/CatPhotoManager.test.tsx`

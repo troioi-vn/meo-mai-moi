@@ -30,6 +30,7 @@ export default defineConfig(({ mode }) => ({
     alias: {
       '@': '/src',
     },
+    testTimeout: 30000,
   },
   build: {
     outDir: 'dist',

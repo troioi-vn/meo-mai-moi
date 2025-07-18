@@ -7,7 +7,7 @@ import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { FormField } from '@/components/ui/FormField'
 import { EnhancedCatRemovalModal } from '@/components/EnhancedCatRemovalModal'
-import { CatPhotoManager } from '@/components/cats/CatPhotoManager'
+import { CatPhotoManager } from '@/components/CatPhotoManager'
 import { toast } from 'sonner'
 
 interface FormData {
@@ -16,7 +16,7 @@ interface FormData {
   birthday: string
   location: string
   description: string
-  status: 'available' | 'fostered' | 'adopted' | 'dead'
+  status: 'active' | 'lost' | 'deceased' | 'deleted'
 }
 
 interface FormErrors {
@@ -43,7 +43,7 @@ const EditCatPage: React.FC = () => {
     birthday: '',
     location: '',
     description: '',
-    status: 'available',
+    status: 'active',
   })
 
   const [errors, setErrors] = useState<FormErrors>({})
@@ -71,7 +71,7 @@ const EditCatPage: React.FC = () => {
         setFormData({
           name: catData.name,
           breed: catData.breed,
-          birthday: catData.birthday,
+          birthday: catData.birthday ? catData.birthday.substring(0, 10) : '',
           location: catData.location,
           description: catData.description,
           status: catData.status,
@@ -277,9 +277,10 @@ const EditCatPage: React.FC = () => {
                 updateField('status', value)
               }}
               options={[
-                { value: 'available', label: 'Available' },
-                { value: 'fostered', label: 'Fostered' },
-                { value: 'adopted', label: 'Adopted' },
+                { value: 'active', label: 'Active' },
+                { value: 'lost', label: 'Lost' },
+                { value: 'deceased', label: 'Deceased' },
+                { value: 'deleted', label: 'Deleted' },
               ]}
               required
             />

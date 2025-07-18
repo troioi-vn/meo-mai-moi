@@ -23,30 +23,34 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
       return
     }
 
-    // Check file size (5MB limit)
+    // TODO: Move this into admin config page!
+    //  Check file size (5MB limit)
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Please select an image smaller than 5MB.')
       return
     }
 
     setIsUploading(true)
-    
+    console.log('Starting photo upload...')
     try {
       const formData = new FormData()
       formData.append('photo', file)
       
-      const response = await api.post<{ cat: Cat }>(`/cats/${String(cat.id)}/photos`, formData, {
+      // Use the correct backend endpoint for photo upload
+      const response = await api.post<Cat>(`/cats/${String(cat.id)}/photos`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       })
       
-      onPhotoUpdated(response.data.cat)
+      console.log('Photo upload successful:', response.data)
+      onPhotoUpdated(response.data)
       toast.success('Photo uploaded successfully')
     } catch (error) {
-      console.error('Photo upload failed:', error)
+      console.error('Photo upload failed in component:', error)
       toast.error('Failed to upload the photo. Please try again.')
     } finally {
+      console.log('Photo upload finally block.')
       setIsUploading(false)
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
@@ -58,10 +62,12 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
     setIsDeleting(true)
     
     try {
-      const response = await api.delete<{ cat: Cat }>(`/cats/${String(cat.id)}/photo`)
+      await api.delete<Cat>(`/cats/${String(cat.id)}/photos/${String(cat.photo?.id)}`);
       
-      onPhotoUpdated(response.data.cat)
-      toast.success('Photo deleted successfully')
+      // Manually update the cat object to reflect photo deletion
+      const updatedCat = { ...cat, photo: null, photo_url: null };
+      onPhotoUpdated(updatedCat);
+      toast.success('Photo deleted successfully');
     } catch (error) {
       console.error('Photo deletion failed:', error)
       toast.error('Failed to delete the photo. Please try again.')
@@ -70,10 +76,10 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
     }
   }
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
-      void handlePhotoUpload(file)
+      await handlePhotoUpload(file)
     }
   }
 
@@ -100,7 +106,7 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
               />
               
               {isOwner && (
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 rounded-lg flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-200 rounded-lg flex items-center justify-center">
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 space-x-2">
                     <Button
                       variant="secondary"

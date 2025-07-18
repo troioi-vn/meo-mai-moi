@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CatStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,7 +16,6 @@ class Cat extends Model
     {
         return $this->hasOne(CatPhoto::class)->latestOfMany();
     }
-    use HasFactory;
 
     protected $fillable = [
         'name',
@@ -25,6 +25,11 @@ class Cat extends Model
         'user_id',
         'status',
         'birthday',
+    ];
+
+    protected $casts = [
+        'status' => CatStatus::class,
+        'birthday' => 'date',
     ];
 
     public function medicalRecords(): HasMany
@@ -40,6 +45,17 @@ class Cat extends Model
     public function comments(): HasMany
     {
         return $this->hasMany(CatComment::class);
+    }
+
+    protected $appends = ['photo_url'];
+
+    public function getPhotoUrlAttribute()
+    {
+        if ($this->photo) {
+            return url('storage/' . $this->photo->path);
+        }
+
+        return null;
     }
 
     public function photos(): HasMany

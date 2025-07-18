@@ -34,7 +34,7 @@ describe('RegisterForm', () => {
 
     await waitFor(() => {
       // The UI shows the error message from Axios: 'Registration failed'
-      expect(screen.getByText(/registration failed/i)).toBeInTheDocument()
+      expect(screen.getByText(/Email already taken./i)).toBeInTheDocument()
     })
   })
 

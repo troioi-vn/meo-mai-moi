@@ -6,7 +6,7 @@ export interface Cat {
   location: string
   description: string
   user_id: number
-  status: 'available' | 'fostered' | 'adopted' | 'dead'
+  status: 'active' | 'lost' | 'deceased' | 'deleted'
   imageUrl?: string
   photo_url?: string // Backend API photo URL
   created_at: string

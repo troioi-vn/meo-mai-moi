@@ -16,6 +16,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+- **Backend**: Updated cat status system to use `CatStatus` enum (active, lost, deceased, deleted) across Cat model, migrations, and API controller.
+- **Admin Panel**: Created `CatResource` to manage cats in Filament, including status selection using `CatStatus` enum.
+- **Frontend**: Updated `catStatus.ts`, `types/cat.ts`, and `mocks/handlers.ts` to reflect new cat statuses.
+
 ### Added
 - **Admin Panel**: Added global settings to admin panel, starting with SMTP mail server configuration.
 

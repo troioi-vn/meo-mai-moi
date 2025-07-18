@@ -23,7 +23,7 @@ class CatFactory extends Factory
             'breed' => $this->faker->word(),
             'birthday' => $this->faker->date(),
             'location' => $this->faker->city(),
-            'status' => 'available',
+            'status' => \App\Enums\CatStatus::ACTIVE->value,
             'description' => $this->faker->paragraph,
         ];
     }

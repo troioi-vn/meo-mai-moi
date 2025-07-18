@@ -7,7 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Annotations as OA;
 use App\Enums\UserRole;
+use App\Enums\CatStatus;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @OA\Schema(
@@ -39,7 +41,7 @@ use Illuminate\Support\Facades\Hash;
  *     @OA\Property(
  *         property="status",
  *         type="string",
- *         enum={"available", "fostered", "adopted"},
+ *         enum=App\Enums\CatStatus::class,
  *         description="Current status of the cat"
  *     ),
  *     @OA\Property(
@@ -80,7 +82,7 @@ class CatController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Cat::query()->where('status', '!=', 'dead');
+        $query = Cat::query()->whereNotIn('status', [CatStatus::DECEASED, CatStatus::DELETED]);
 
         if ($request->has('location')) {
             $query->where('location', 'like', '%' . $request->input('location') . '%');
@@ -176,27 +178,29 @@ class CatController extends Controller
         ];
 
         if ($request->user()) {
-            $userRole = $request->user()->role;
+            $user = $request->user();
+            $userRole = $user->role;
 
-            if ($userRole === UserRole::ADMIN) {
+            $isAdmin = $userRole === UserRole::ADMIN || $userRole === UserRole::ADMIN->value;
+            $isOwner = $cat->user_id === $user->id;
+            $isHelper = $userRole === UserRole::HELPER || $userRole === UserRole::HELPER->value;
+
+            if ($isAdmin) {
                 $viewerPermissions['can_edit'] = true;
                 $viewerPermissions['can_view_contact'] = true;
-            } elseif ($cat->user_id === $request->user()->id) {
-                // Any authenticated user who owns the cat can edit it
+            } elseif ($isOwner) {
                 $viewerPermissions['can_edit'] = true;
-                // If the owner is also a helper, they get contact permissions
-                if ($userRole === UserRole::HELPER) {
+                if ($isHelper) {
                     $viewerPermissions['can_view_contact'] = true;
                 }
-            } elseif ($userRole === UserRole::HELPER) {
+            } elseif ($isHelper) {
                 $viewerPermissions['can_view_contact'] = true;
             }
         }
 
-        $catData = $cat->toArray();
-        $catData['viewer_permissions'] = $viewerPermissions;
+        $cat->setAttribute('viewer_permissions', $viewerPermissions);
 
-        return response()->json(['data' => $catData]);
+        return response()->json($cat);
     }
 
     /**
@@ -217,7 +221,7 @@ class CatController extends Controller
     public function featured()
     {
         // For now, return a random selection of 3 cats as featured (excluding dead cats)
-        $featuredCats = Cat::where('status', '!=', 'dead')->inRandomOrder()->limit(3)->get();
+        $featuredCats = Cat::whereNotIn('status', [CatStatus::DECEASED, CatStatus::DELETED])->inRandomOrder()->limit(3)->get();
         return response()->json($featuredCats);
     }
 
@@ -432,7 +436,7 @@ class CatController extends Controller
         }
 
         $validated = $request->validate([
-            'status' => 'required|string|in:dead',
+            'status' => ['required', 'string', new \Illuminate\Validation\Rules\Enum(CatStatus::class)],
             'password' => 'required|string',
         ]);
 
@@ -452,4 +456,6 @@ class CatController extends Controller
 
         return response()->json($cat, 200);
     }
+
+    
 }

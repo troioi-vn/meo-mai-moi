@@ -4,7 +4,7 @@ import { useCatProfile } from '@/hooks/useCatProfile'
 import { Button } from '@/components/ui/button'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
-import { CatDetails } from '@/components/cat/CatDetails'
+import { CatDetails } from '@/components/CatDetails'
 
 const CatProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>()

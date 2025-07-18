@@ -419,40 +419,6 @@ enum Permission: string {
 *   Permissions will be checked using dedicated middleware for API routes.
 *   There will be clear processes for role upgrades (e.g., a `VIEWER` becomes a `HELPER` after their helper application is approved).
 
-### Core Models
-
-1.  **`User` Model:** Represents any registered user.
-    -   `role` (enum: `UserRole`): The user's role within the system. Defaults to `VIEWER`.
-    -   `location` (string, nullable): The user's general location (e.g., "City, Country").
-
-2.  **`Cat` Model:** Represents the cat's permanent biological and descriptive information.
-    -   `birth_year` (integer, nullable): The cat's year of birth.
-    -   `birth_month` (integer, nullable): The cat's month of birth.
-    -   `birth_day` (integer, nullable): The cat's day of birth.
-    -   `location` (string, nullable): The city or area where the cat is located.
-    -   `status` (enum: `available`, `fostered`, `adopted`): The current status of the cat.
-
-5.  **`TransferRequest` Model:** Facilitates the formal transfer of a cat between custodians.
-    -   `cat_id` (foreign key to `Cat`): The cat being transferred.
-    -   `initiator_user_id` (foreign key to `User`): The user initiating the transfer request.
-    -   `recipient_user_id` (foreign key to `User`): The user intended to receive the cat.
-    -   `status` (enum: `pending`, `accepted`, `rejected`): Current status of the request.
-    -   `requested_relationship_type` (enum: `fostering`, `permanent_foster`): The type of custodianship requested.
-    -   `created_at`, `accepted_at`, `rejected_at` (timestamps): Dates for request lifecycle.
-
-6.  **`MedicalRecord` Model:** Stores structured medical history for each cat.
-    -   `cat_id` (foreign key to `Cat`): The cat this record belongs to.
-    -   `record_type` (enum: `vaccination`, `vet_visit`, `medication`, `treatment`, `other`): Type of medical event.
-    -   `description` (text): Detailed description of the medical event.
-    -   `record_date` (date): The date the medical event occurred.
-    -   `vet_name` (string, nullable): Name of the veterinarian or clinic.
-    -   `attachment_url` (string, nullable): URL to any attached documents (e.g., vet reports).
-
-7.  **`WeightHistory` Model:** Tracks the weight of a cat over time.
-    -   `cat_id` (foreign key to `Cat`): The cat this weight record belongs to.
-    -   `weight_kg` (decimal): The recorded weight in kilograms.
-    -   `record_date` (date): The date the weight was recorded.
-
 ---
 
 ## 11. Authentication

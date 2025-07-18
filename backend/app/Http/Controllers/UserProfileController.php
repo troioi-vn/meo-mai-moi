@@ -280,10 +280,7 @@ class UserProfileController extends Controller
         $user->avatar_url = Storage::url($avatarPath);
         $user->save();
 
-        return response()->json([
-            'message' => 'Avatar uploaded successfully.',
-            'avatar_url' => $user->avatar_url,
-        ]);
+        return response()->json($user);
     }
 
     /**

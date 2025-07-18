@@ -25,10 +25,10 @@ class FileUploadService
             $cat->photo->delete();
         }
 
-        $filename = $cat->id . '_' . time() . '.' . $file->extension();
+        $filename = $cat->id . '_' . now()->valueOf() . '.' . $file->extension();
         $image = $this->imageManager->read($file);
 
-        $image->resize(1200, 675);
+        $image->cover(1200, 675);
 
         $path = 'cats/profiles/' . $filename;
         Storage::disk('public')->put($path, (string) $image->encode());
@@ -45,7 +45,7 @@ class FileUploadService
             $this->delete($oldPath);
         }
 
-        $filename = 'user_' . $user->id . '_' . time() . '.' . $file->extension();
+        $filename = 'user_' . $user->id . '_' . now()->valueOf() . '.' . $file->extension();
         $image = $this->imageManager->read($file);
 
         // Resize avatar to a square format

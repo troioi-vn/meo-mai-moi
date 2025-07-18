@@ -1,32 +1,15 @@
-import { render, screen } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
-import { vi } from 'vitest'
+import { screen, waitFor } from '@testing-library/react'
+import { renderWithRouter } from '@/test-utils'
 import { NotificationBell } from './NotificationBell'
-import { api } from '@/api/axios'
-import { AuthProvider } from '@/contexts/AuthContext'
+import { vi } from 'vitest'
 import { useAuth } from '@/hooks/use-auth'
 
-vi.mock('@/api/axios')
 vi.mock('@/hooks/use-auth')
 
 const mockUser = { id: 1, name: 'Test User', email: 'test@example.com' }
 
-const renderWithProviders = (ui: React.ReactElement) => {
-  return render(
-    <MemoryRouter>
-      <AuthProvider>{ui}</AuthProvider>
-    </MemoryRouter>
-  )
-}
-
 describe('NotificationBell', () => {
   beforeEach(() => {
-    vi.spyOn(api, 'get').mockResolvedValue({
-      data: [
-        { id: 1, message: 'Notification 1', is_read: false },
-        { id: 2, message: 'Notification 2', is_read: false },
-      ],
-    })
     vi.mocked(useAuth).mockReturnValue({
       user: mockUser,
       isAuthenticated: true,
@@ -41,10 +24,12 @@ describe('NotificationBell', () => {
   })
 
   it('fetches and displays the number of unread notifications', async () => {
-    renderWithProviders(<NotificationBell />)
+    renderWithRouter(<NotificationBell />)
 
-    const badge = await screen.findByTestId('notification-badge')
-    expect(badge).toBeInTheDocument()
-    expect(badge).toHaveTextContent('2')
+    await waitFor(() => {
+      const badge = screen.getByTestId('notification-badge')
+      expect(badge).toBeInTheDocument()
+      expect(badge).toHaveTextContent('1') // Based on the mock handler, one is unread
+    })
   })
 })

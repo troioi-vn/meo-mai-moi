@@ -538,6 +538,106 @@
                 }
             }
         },
+        "/api/cats/{cat}/photos": {
+            "post": {
+                "tags": [
+                    "Cat Photos"
+                ],
+                "summary": "Upload a photo for a specific cat",
+                "operationId": "b4cefd8627306812aa42500a36b8159c",
+                "parameters": [
+                    {
+                        "name": "cat",
+                        "in": "path",
+                        "description": "ID of the cat",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "photo": {
+                                        "description": "The photo file (max 2MB, jpeg, png, jpg, gif, svg)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Photo uploaded successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Cat"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Cat Photos"
+                ],
+                "summary": "Delete a photo for a specific cat",
+                "operationId": "ba3b6e914f8eb6252d4e9ea0ff1d5fb8",
+                "parameters": [
+                    {
+                        "name": "cat",
+                        "in": "path",
+                        "description": "ID of the cat",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Photo deleted successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Photo not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/helper-profiles": {
             "get": {
                 "tags": [
@@ -1889,9 +1989,10 @@
                         "description": "Current status of the cat",
                         "type": "string",
                         "enum": [
-                            "available",
-                            "fostered",
-                            "adopted"
+                            "active",
+                            "lost",
+                            "deceased",
+                            "deleted"
                         ]
                     },
                     "description": {
@@ -2255,6 +2356,10 @@
         {
             "name": "Cats",
             "description": "Cats"
+        },
+        {
+            "name": "Cat Photos",
+            "description": "Cat Photos"
         },
         {
             "name": "Helper Profiles",

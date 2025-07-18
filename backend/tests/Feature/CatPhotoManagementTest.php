@@ -45,13 +45,13 @@ class CatPhotoManagementTest extends TestCase
         ]);
 
         $response->assertStatus(200)
-            ->assertJsonStructure(['message', 'path']);
+            ->assertJsonStructure(['id', 'name', 'photo']);
 
         $this->assertDatabaseHas('cat_photos', [
             'cat_id' => $this->cat->id,
         ]);
 
-        $path = $response->json('path');
+        $path = $response->json('photo.path');
         Storage::disk('public')->assertExists($path);
 
         // Verify image dimensions
@@ -68,7 +68,7 @@ class CatPhotoManagementTest extends TestCase
         // Upload initial photo
         $oldFile = UploadedFile::fake()->image('old_photo.jpg');
         $response = $this->postJson('/api/cats/' . $this->cat->id . '/photos', ['photo' => $oldFile]);
-        $oldPath = $response->json('path');
+        $oldPath = $response->json('photo.path');
 
         $this->assertCount(1, $this->cat->photos);
         Storage::disk('public')->assertExists($oldPath);
@@ -76,7 +76,7 @@ class CatPhotoManagementTest extends TestCase
         // Upload new photo
         $newFile = UploadedFile::fake()->image('new_photo.jpg');
         $response = $this->postJson('/api/cats/' . $this->cat->id . '/photos', ['photo' => $newFile]);
-        $newPath = $response->json('path');
+        $newPath = $response->json('photo.path');
 
         $this->cat->refresh();
         $this->assertCount(1, $this->cat->photos);
@@ -135,7 +135,7 @@ class CatPhotoManagementTest extends TestCase
         // Upload a photo first
         $file = UploadedFile::fake()->image('photo.jpg');
         $response = $this->postJson('/api/cats/' . $this->cat->id . '/photos', ['photo' => $file]);
-        $path = $response->json('path');
+        $path = $response->json('photo.path');
         $photo = $this->cat->photo;
 
         Storage::disk('public')->assertExists($path);
@@ -143,7 +143,7 @@ class CatPhotoManagementTest extends TestCase
         // Delete the photo
         $response = $this->deleteJson('/api/cats/' . $this->cat->id . '/photos/' . $photo->id);
 
-        $response->assertStatus(200)->assertJson(['message' => 'Photo deleted successfully']);
+        $response->assertStatus(204);
         $this->assertDatabaseMissing('cat_photos', ['id' => $photo->id]);
         Storage::disk('public')->assertMissing($path);
     }

@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use App\Enums\CatStatus;
 
 class CatListingTest extends TestCase
 {
@@ -16,9 +17,10 @@ class CatListingTest extends TestCase
     #[Test]
     public function test_can_get_all_available_cats(): void
     {
-        Cat::factory()->count(5)->create();
+        Cat::factory()->count(3)->create(['status' => CatStatus::ACTIVE->value]);
+        Cat::factory()->count(2)->create(['status' => CatStatus::DECEASED->value]);
         $response = $this->getJson('/api/cats');
-        $response->assertStatus(200)->assertJsonCount(5);
+        $response->assertStatus(200)->assertJsonCount(3);
     }
 
     public function test_can_get_featured_cats(): void
@@ -32,7 +34,7 @@ class CatListingTest extends TestCase
     {
         $cat = Cat::factory()->create();
         $response = $this->getJson("/api/cats/{$cat->id}");
-        $response->assertStatus(200)->assertJson(['data' => ['id' => $cat->id]]);
+        $response->assertStatus(200)->assertJson(['id' => $cat->id]);
     }
 
     public function test_authenticated_user_can_create_cat_listing(): void
@@ -43,7 +45,7 @@ class CatListingTest extends TestCase
         $catData = [
             'name' => 'Test Cat',
             'breed' => 'Test Breed',
-            'birthday' => '2023-01-01',
+            'birthday' => '2023-01-01 00:00:00',
             'location' => 'Test Location',
             'description' => 'Test Description',
         ];
@@ -125,7 +127,7 @@ class CatListingTest extends TestCase
         $response->assertStatus(200);
         $responseCats = $response->json();
         $birthdays = array_column($responseCats, 'birthday');
-        $this->assertEquals(['2020-01-01', '2021-01-01', '2022-01-01'], $birthdays);
+        $this->assertEquals(['2020-01-01T00:00:00.000000Z', '2021-01-01T00:00:00.000000Z', '2022-01-01T00:00:00.000000Z'], $birthdays);
     }
 
     public function test_can_sort_cats_by_birthday_descending(): void
@@ -138,6 +140,6 @@ class CatListingTest extends TestCase
         $response->assertStatus(200);
         $responseCats = $response->json();
         $birthdays = array_column($responseCats, 'birthday');
-        $this->assertEquals(['2022-01-01', '2021-01-01', '2020-01-01'], $birthdays);
+        $this->assertEquals(['2022-01-01T00:00:00.000000Z', '2021-01-01T00:00:00.000000Z', '2020-01-01T00:00:00.000000Z'], $birthdays);
     }
 }

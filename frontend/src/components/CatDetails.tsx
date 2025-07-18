@@ -19,7 +19,7 @@ export const CatDetails: React.FC<CatDetailsProps> = ({ cat }) => {
         {/* Cat Image */}
         <div className="md:w-1/2">
           <img
-            src={cat.imageUrl ?? placeholderImage}
+            src={cat.photo_url ?? placeholderImage}
             alt={cat.name}
             className="w-full h-64 md:h-full object-cover"
           />

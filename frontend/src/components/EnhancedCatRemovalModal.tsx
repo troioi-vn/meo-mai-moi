@@ -83,7 +83,7 @@ const EnhancedCatRemovalModal: React.FC<EnhancedCatRemovalModalProps> = ({
         await deleteCat(catId, password)
         toast.success('Cat profile has been permanently deleted')
       } else {
-        await updateCatStatus(catId, 'dead', password)
+        await updateCatStatus(catId, 'deceased', password)
         toast.success('Cat has been marked as deceased')
       }
 

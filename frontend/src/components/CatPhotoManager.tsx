@@ -37,13 +37,13 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
       formData.append('photo', file)
       
       // Use the correct backend endpoint for photo upload
-      const response = await api.post<Cat>(`/cats/${String(cat.id)}/photos`, formData, {
+      const response = await api.post<{ data: Cat }>(`/cats/${String(cat.id)}/photos`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       })
       
-      onPhotoUpdated(response.data)
+      onPhotoUpdated(response.data.data)
       toast.success('Photo uploaded successfully')
     } catch (error) {
       console.error('Photo upload failed in component:', error)

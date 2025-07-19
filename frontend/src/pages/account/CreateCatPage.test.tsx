@@ -22,7 +22,7 @@ describe('CreateCatPage', () => {
       http.get('http://localhost:3000/api/user', () => {
         return HttpResponse.json(mockUser)
       }),
-      http.get('http://localhost:3000/api/my-cats', () => {
+      http.get('http://localhost:3000/api/cats', () => {
         return HttpResponse.json([])
       })
     )

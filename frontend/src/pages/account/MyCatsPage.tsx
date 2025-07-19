@@ -68,7 +68,7 @@ export default function MyCatsPage() {
       {!loading && !error && (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-6">
-            {cats
+            {(cats || [])
               .filter((cat) => showAll || cat.status !== 'deceased')
               .map((cat) => (
                 <CatCard key={cat.id} cat={cat} />

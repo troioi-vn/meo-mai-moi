@@ -55,7 +55,7 @@ describe('EditCatPage', () => {
         return HttpResponse.json(mockUser)
       }),
       // Removed http.get('/api/cats/:id') handler as getCat is now mocked directly
-      http.get('http://localhost:3000/api/my-cats', () => {
+      http.get('http://localhost:3000/api/cats', () => {
         return HttpResponse.json([mockCat])
       })
     )
@@ -94,7 +94,7 @@ describe('EditCatPage', () => {
       expect(screen.getByDisplayValue(mockCat.birthday)).toBeInTheDocument()
       expect(screen.getByDisplayValue(mockCat.location)).toBeInTheDocument()
       expect(screen.getByDisplayValue(mockCat.description)).toBeInTheDocument()
-      expect(screen.getByRole('combobox')).toHaveTextContent(/available/i)
+      expect(screen.getByRole('combobox')).toHaveTextContent(/active/i)
     })
   })
 
@@ -102,7 +102,7 @@ describe('EditCatPage', () => {
     const updatedName = 'Fluffy II'
     server.use(
       http.put('http://localhost:3000/api/cats/1', async () => {
-        return HttpResponse.json({ ...mockCat, name: updatedName })
+        return HttpResponse.json({ data: { ...mockCat, name: updatedName } })
       })
     )
 

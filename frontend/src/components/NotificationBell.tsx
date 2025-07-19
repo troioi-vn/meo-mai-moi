@@ -33,10 +33,10 @@ export function NotificationBell() {
     setIsLoading(true)
     setError(null)
     try {
-      const response = await api.get<{ data: Notification[] }>('/notifications')
-      const fetchedNotifications = response.data
+      const response = await api.get<{ data: { notifications: Notification[], unread_count: number } }>('/notifications')
+      const { notifications: fetchedNotifications, unread_count: fetchedUnreadCount } = response.data.data || { notifications: [], unread_count: 0 }
       setNotifications(fetchedNotifications)
-      setUnreadCount(fetchedNotifications.filter((n) => n.read_at === null).length)
+      setUnreadCount(fetchedUnreadCount)
     } catch (error: unknown) {
       console.error('Error fetching notifications:', error)
       setError('Failed to fetch notifications')
@@ -97,10 +97,10 @@ export function NotificationBell() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {notifications.length === 0 ? (
+        {notifications && notifications.length === 0 ? (
           <DropdownMenuItem>No new notifications</DropdownMenuItem>
         ) : (
-          notifications.map((notification) => (
+          notifications && notifications.map((notification) => (
             <DropdownMenuItem key={notification.id} asChild>
               <a href={notification.link} className="w-full">
                 {notification.message}

@@ -1,40 +1,40 @@
+import React from 'react'
 import { Link } from 'react-router-dom'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { calculateAge } from '@/types/cat'
-import placeholderImage from '@/assets/images/placeholder--cat.webp'
-
-
 import type { Cat } from '@/types/cat'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import placeholderImage from '@/assets/images/placeholder--cat.webp'
+import { calculateAge } from '@/utils/date'
 
 interface CatCardProps {
   cat: Cat
 }
 
-export function CatCard({ cat }: CatCardProps) {
-  const age = calculateAge(cat.birthday)
-
+export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
+  // Prefer photos[0].url, then photo_url, then placeholder
+  const imageUrl = (cat as any).photos?.[0]?.url || cat.photo_url || placeholderImage;
   return (
-    <Card className="flex flex-col overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 ease-in-out">
-      <img
-        src={cat.photo_url ?? placeholderImage}
-        alt={cat.name}
-        className="w-full h-48 object-cover"
-      />
-      <CardHeader className="flex-grow">
-        <CardTitle className="text-xl font-semibold text-foreground">{cat.name}</CardTitle>
-        <p className="text-sm text-gray-500">
-          {cat.breed} - {age} years old
-        </p>
+    <Card className="flex flex-col overflow-hidden rounded-lg shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl">
+      <Link to={`/cats/${cat.id}`} className="block">
+        <img
+          src={imageUrl}
+          alt={cat.name}
+          className="h-48 w-full object-cover"
+        />
+      </Link>
+      <CardHeader>
+        <CardTitle className="text-2xl font-bold text-primary">{cat.name}</CardTitle>
+        <CardDescription className="text-muted-foreground">{cat.breed} - {calculateAge(cat.birthday)} years old</CardDescription>
       </CardHeader>
-      <CardContent className="text-foreground">
-        <p>{cat.location}</p>
+      <CardContent className="flex flex-grow flex-col justify-between p-4">
+        <p className="text-sm text-gray-600">Location: {cat.location}</p>
+        <p className="text-sm text-gray-600">Status: {cat.status}</p>
+        <div className="mt-4">
+          <Link to={`/cats/${cat.id}`}>
+            <Button className="w-full">View Profile</Button>
+          </Link>
+        </div>
       </CardContent>
-      <CardFooter className="mt-auto">
-        <Link to={`/cats/${cat.id}`} className="w-full">
-          <Button className="w-full">View Profile</Button>
-        </Link>
-      </CardFooter>
     </Card>
   )
 }

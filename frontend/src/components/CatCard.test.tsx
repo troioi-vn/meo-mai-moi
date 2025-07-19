@@ -15,7 +15,7 @@ describe('CatCard', () => {
 
     expect(screen.getByText('Fluffy')).toBeInTheDocument()
     expect(screen.getByText('Persian - 5 years old')).toBeInTheDocument() // Updated to reflect calculated age
-    expect(screen.getByText('New York, NY')).toBeInTheDocument()
+    expect(screen.getByText(/New York, NY/)).toBeInTheDocument()
   })
 
   it('renders cat image with correct alt text', () => {
@@ -60,6 +60,6 @@ describe('CatCard', () => {
 
     // Check that the card has the hover transition classes
     const card = screen.getByText('Fluffy').closest('.shadow-lg')
-    expect(card).toHaveClass('hover:shadow-xl', 'transition-shadow')
+    expect(card).toHaveClass('hover:shadow-xl', 'transition-all')
   })
 })

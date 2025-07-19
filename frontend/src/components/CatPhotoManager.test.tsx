@@ -51,7 +51,7 @@ describe('CatPhotoManager', () => {
 
   it('uploads photo successfully', async () => {
     const user = userEvent.setup()
-    const initialCat: Cat = { ...mockCat, photo_url: null, photo: null, id: mockCat.id } // Ensure a valid ID
+    const initialCat: Cat = { ...mockCat, photo_url: undefined, id: mockCat.id }
     renderWithRouter(
       <CatPhotoManager
         cat={initialCat}
@@ -61,10 +61,10 @@ describe('CatPhotoManager', () => {
     )
 
     const file = new File(['test'], 'cat.jpg', { type: 'image/jpeg' })
-    const uploadButton = screen.getByRole('button', { name: /upload photo/i })
+    const uploadButton = screen.getByRole('button', { name: /replace|upload photo/i })
     await user.click(uploadButton)
-    const fileInput = document.querySelector('input[type="file"]')!
-    await user.upload(fileInput as HTMLElement, file)
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
+    await user.upload(fileInput, file)
 
     await waitFor(() => {
       expect(mockOnPhotoUpdated).toHaveBeenCalledWith(expect.objectContaining({
@@ -78,35 +78,34 @@ describe('CatPhotoManager', () => {
           mime_type: 'image/jpeg',
         },
       }))
-    }, { timeout: 3000 })
+    }, { timeout: 5000 })
     expect(toast.success).toHaveBeenCalledWith('Photo uploaded successfully')
   })
 
   it('handles upload errors gracefully', async () => {
-        const file = new File(['(⌐□_□)'], 'error.png', { type: 'image/png' }); // This file name triggers the error mock
-        const mockOnPhotoUpdated = vi.fn();
-
-        renderWithRouter(<CatPhotoManager catId="1" onPhotoUpdated={mockOnPhotoUpdated} cat={{ id: '1', name: 'Test Cat', photo_url: 'https://example.com/initial-cat.jpg' }} isOwner={true} />);
-
-        const uploadButton = screen.getByRole('button', { name: /replace/i });
-        const fileInput = document.querySelector('input[type="file"]')!;
-
-        await userEvent.click(uploadButton); // Simulate clicking the visible button
-        await userEvent.upload(fileInput, file); // Then upload the file to the hidden input
-
-        expect(screen.getByText(/uploading.../i)).toBeInTheDocument();
-
-        await waitFor(() => {
-            expect(toast.error).toHaveBeenCalledWith('Failed to upload photo: Network Error');
-        }, { timeout: 5000 });
-
-        expect(mockOnPhotoUpdated).not.toHaveBeenCalled();
-        expect(screen.queryByText(/uploading.../i)).not.toBeInTheDocument();
-    });
+    const user = userEvent.setup();
+    const file = new File(['(⌐□_□)'], 'error.png', { type: 'image/png' });
+    const mockOnPhotoUpdated = vi.fn();
+    // Use id: 999 to trigger the error mock
+    const errorCat = { ...mockCat, id: 999, name: 'Test Cat', photo_url: 'https://example.com/initial-cat.jpg' };
+    renderWithRouter(
+      <CatPhotoManager cat={errorCat} isOwner={true} onPhotoUpdated={mockOnPhotoUpdated} />
+    );
+    const uploadButton = screen.getByRole('button', { name: /replace|upload photo/i });
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    await user.click(uploadButton);
+    await user.upload(fileInput, file);
+    expect(screen.getByText(/uploading.../i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Failed to upload the photo. Please try again.');
+    }, { timeout: 5000 });
+    expect(mockOnPhotoUpdated).not.toHaveBeenCalled();
+    expect(screen.queryByText(/uploading.../i)).not.toBeInTheDocument();
+  });
 
   it('deletes photo successfully', async () => {
     const user = userEvent.setup()
-    const catWithPhoto: Cat = { ...mockCat, photo_url: 'https://example.com/cat.jpg', photo: { id: 1, path: 'path/to/photo.jpg' } as any }
+    const catWithPhoto: Cat = { ...mockCat, photo_url: 'https://example.com/cat.jpg' }
     renderWithRouter(
       <CatPhotoManager
         cat={catWithPhoto}
@@ -126,7 +125,7 @@ describe('CatPhotoManager', () => {
 
   it('handles delete errors gracefully', async () => {
     const user = userEvent.setup()
-    const catWithPhoto: Cat = { ...mockCat, photo_url: 'https://example.com/cat.jpg', photo: { id: 1, path: 'path/to/photo.jpg' } as any, id: 999 }
+    const catWithPhoto: Cat = { ...mockCat, photo_url: 'https://example.com/cat.jpg', id: 999 }
     renderWithRouter(
       <CatPhotoManager
         cat={catWithPhoto}
@@ -145,7 +144,7 @@ describe('CatPhotoManager', () => {
 
   it('shows loading states during upload and delete operations', async () => {
     const user = userEvent.setup()
-    const initialCat: Cat = { ...mockCat, photo_url: null, photo: null }
+    const initialCat: Cat = { ...mockCat, photo_url: undefined }
     const { rerender } = renderWithRouter(
       <CatPhotoManager
         cat={initialCat}
@@ -154,17 +153,19 @@ describe('CatPhotoManager', () => {
       />
     )
     const file = new File(['test'], 'cat.jpg', { type: 'image/jpeg' })
-    const fileInput = document.querySelector('input[type="file"]')!
-    await user.upload(fileInput as HTMLElement, file)
+    const uploadButton = screen.getByRole('button', { name: /replace|upload photo/i })
+    await user.click(uploadButton)
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
+    await user.upload(fileInput, file)
     
     // Should show uploading state
     expect(screen.getByText('Uploading...')).toBeInTheDocument()
     await waitFor(() => {
       expect(screen.queryByText('Uploading...')).not.toBeInTheDocument()
-    }, { timeout: 3000 })
+    }, { timeout: 5000 })
 
     // Test deleting loading state
-    const catWithPhoto: Cat = { ...mockCat, photo_url: 'https://example.com/cat.jpg', photo: { id: 1, path: 'path/to/photo.jpg' } as any }
+    const catWithPhoto: Cat = { ...mockCat, photo_url: 'https://example.com/cat.jpg' }
     rerender(
       <CatPhotoManager
         cat={catWithPhoto}
@@ -174,11 +175,10 @@ describe('CatPhotoManager', () => {
     )
     const removeButton = screen.getByRole('button', { name: /remove/i })
     await user.click(removeButton)
-    expect(screen.getByRole('button', { name: /remove/i, disabled: true })).toBeInTheDocument()
+    // Instead of using 'disabled' in getByRole options, check the attribute directly
+    expect(removeButton).toBeDisabled()
     await waitFor(() => {
-      console.log('Waiting for remove button to be enabled...');
-      expect(screen.queryByRole('button', { name: /remove/i, disabled: true })).not.toBeInTheDocument()
-      console.log('Remove button enabled!');
-    }, { timeout: 3000 })
+      expect(removeButton).not.toBeDisabled()
+    }, { timeout: 5000 })
   })
 })

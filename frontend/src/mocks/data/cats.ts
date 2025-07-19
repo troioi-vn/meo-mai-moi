@@ -56,12 +56,35 @@ export const anotherMockCat: Cat = {
   },
 }
 
+export const deceasedMockCat: Cat = {
+  id: 3,
+  name: 'Deceased Cat',
+  breed: 'Unknown',
+  birthday: '2010-01-01',
+  location: 'Rainbow Bridge',
+  description: 'A beloved cat who has passed away.',
+  user_id: 1,
+  status: 'deceased',
+  created_at: '2023-01-01T00:00:00Z',
+  updated_at: '2023-01-01T00:00:00Z',
+  photo_url: 'http://example.com/deceased-cat.jpg',
+  user: {
+    id: 1,
+    name: 'Test User',
+    email: 'test@example.com',
+  },
+  viewer_permissions: {
+    can_edit: true,
+    can_view_contact: true,
+  },
+}
+
 export const catHandlers = [
   // Returns a { data: [ ... ] } object
   http.get('http://localhost:3000/api/cats', () => {
-    return HttpResponse.json({ data: [mockCat, anotherMockCat] })
+    return HttpResponse.json({ data: [mockCat, anotherMockCat, deceasedMockCat] })
   }),
-  // Returns an object directly
+  // Returns a { data: { ... } } object
   http.get('http://localhost:3000/api/cats/:id', ({ params }) => {
     const catId = Number(params.id)
     let cat = null
@@ -72,7 +95,7 @@ export const catHandlers = [
     }
 
     if (cat) {
-      return HttpResponse.json(cat)
+      return HttpResponse.json({ data: cat })
     }
 
     return new HttpResponse(null, {
@@ -80,33 +103,58 @@ export const catHandlers = [
       statusText: 'Not Found',
     })
   }),
-  // Returns an object directly
+  // Returns a { data: { ... } } object
   http.post('http://localhost:3000/api/cats', async ({ request }) => {
-    const data = await request.json()
-    return HttpResponse.json({ ...mockCat, ...(data as object) }, { status: 201 })
+    const newCatData = await request.json()
+    const newCat = { ...mockCat, id: Date.now(), ...(newCatData as object) }
+    return HttpResponse.json({ data: newCat }, { status: 201 })
   }),
-  // Returns an object directly
+  // Returns a { data: { ... } } object
   http.post('http://localhost:3000/api/cats/:id/photos', async ({ params }) => {
+    // Do not call request.json(); just respond for FormData/file upload
     if (Number(params.id) === 999) {
       return HttpResponse.json({ message: 'Failed to upload the photo. Please try again.' }, { status: 500 })
     }
-    return HttpResponse.json({
-        ...mockCat,
-        id: Number(params.id),
-        photo_url: 'https://example.com/new-cat-photo.jpg',
-        photo: {
-          id: 1,
-          cat_id: Number(params.id),
-          filename: 'new-cat-photo.jpg',
-          path: 'cats/profiles/new-cat-photo.jpg',
-          size: 1024,
-          mime_type: 'image/jpeg',
-        },
-      }, { status: 200 })
+    const updatedCat = {
+      ...mockCat,
+      id: Number(params.id),
+      photo_url: 'https://example.com/new-cat-photo.jpg',
+      photo: {
+        id: 1,
+        cat_id: Number(params.id),
+        filename: 'new-cat-photo.jpg',
+        path: 'cats/profiles/new-cat-photo.jpg',
+        size: 1024,
+        mime_type: 'image/jpeg',
+      },
+    }
+    return HttpResponse.json({ data: updatedCat }, { status: 200 })
   }),
-  // Returns an object directly
+  // Relative path mock for upload (for MSW compatibility)
+  http.post('/api/cats/:id/photos', async ({ params }) => {
+    // Do not call request.json(); just respond for FormData/file upload
+    if (Number(params.id) === 999) {
+      return HttpResponse.json({ message: 'Failed to upload the photo. Please try again.' }, { status: 500 })
+    }
+    const updatedCat = {
+      ...mockCat,
+      id: Number(params.id),
+      photo_url: 'https://example.com/new-cat-photo.jpg',
+      photo: {
+        id: 1,
+        cat_id: Number(params.id),
+        filename: 'new-cat-photo.jpg',
+        path: 'cats/profiles/new-cat-photo.jpg',
+        size: 1024,
+        mime_type: 'image/jpeg',
+      },
+    }
+    return HttpResponse.json({ data: updatedCat }, { status: 200 })
+  }),
+  // Returns no content
   http.delete('http://localhost:3000/api/cats/:catId/photos/:photoId', async ({ params }) => {
     if (Number(params.catId) === 999) {
+      // Error responses do not have the 'data' wrapper
       return HttpResponse.json({ message: 'Failed to delete the photo. Please try again.' }, { status: 500 })
     }
     return new HttpResponse(null, { status: 204 })

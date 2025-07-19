@@ -1,3 +1,14 @@
+## 2025-07-20
+### Frontend: Test and API Response Shape Refactor, Cat Status Consistency, and UI Polish
+
+- Refactored all frontend test files to use global MSW server, renderWithRouter, and centralized mock data utilities. Removed local MSW server setups and decentralized mock data from test files.
+- Updated all MSW handlers and mock data to consistently return `{ data: ... }` or `{ data: { notifications, unread_count } }` as required by the app and tests. Fixed notification mocks and NotificationBell to use correct unread count and array shape.
+- Standardized all cat-related API endpoints and test mocks to use `/cats` (not `/my-cats`), and ensured all test and production code expects `{ data: ... }` wrappers for all API responses.
+- Added and used a `calculateAge` utility for cat age display; updated `CatCard` to show age and breed together, and improved accessibility and styling.
+- Improved error handling and loading states in all major cat-related pages and components, including MyCatsPage, CatsSection, CatPhotoManager, and EnhancedCatRemovalModal.
+- Updated all test files for MyCatsPage, EditCatPage, CreateCatPage, CatCard, CatPhotoManager, CatsSection, and App routing to match new API shapes and UI logic. Fixed test navigation, error, and loading assertions for reliability.
+- Cleaned up and removed obsolete test planning files: `frontend/test_list.md` and `frontend/test_refactor_plan.md`.
+
 # 2025-07-18
 ## Frontend Test Refactor, MSW Handler Alignment, and CatPhotoManager Robustness
 
@@ -15,6 +26,12 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+### Fixed
+- **Frontend**: Corrected the mock response for `/api/notifications` in `frontend/src/mocks/handlers.ts` to return an array of notifications with `unread_count`.
+- **Frontend**: Updated `frontend/src/components/NotificationBell.tsx` to correctly process the `notifications` array and `unread_count` from the API response, including a null check for `notifications`.
+- **Frontend**: Overwrote `frontend/src/__tests__/App.routing.test.tsx` with a corrected version that includes comprehensive mock handlers for all API calls and updated test logic to simulate authenticated user interactions and correct navigation flows.
+
 
 ### Changed
 - **Backend**: Updated cat status system to use `CatStatus` enum (active, lost, deceased, deleted) across Cat model, migrations, and API controller.

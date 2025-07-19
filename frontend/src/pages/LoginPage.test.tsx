@@ -36,7 +36,7 @@ describe('LoginPage', () => {
       http.post('http://localhost:3000/api/login', async ({ request }) => {
         const body = await request.json()
         if (body.email === 'test@example.com' && body.password === 'password123') {
-          return HttpResponse.json({ access_token: 'mock-token' })
+          return HttpResponse.json({ data: { access_token: 'mock-token' } })
         }
         return HttpResponse.json({ message: 'Invalid credentials' }, { status: 401 })
       })

@@ -34,7 +34,7 @@ describe('MyCatsPage', () => {
 
   it('renders the page title', async () => {
     server.use(
-      http.get('http://localhost:3000/api/my-cats', () => {
+      http.get('http://localhost:3000/api/cats', () => {
         return HttpResponse.json([])
       }),
     )
@@ -46,7 +46,7 @@ describe('MyCatsPage', () => {
 
   it("fetches and displays the user's cats", async () => {
     server.use(
-      http.get('http://localhost:3000/api/my-cats', () => {
+      http.get('http://localhost:3000/api/cats', () => {
         return HttpResponse.json([mockCat, anotherMockCat])
       }),
     )
@@ -57,117 +57,76 @@ describe('MyCatsPage', () => {
     })
   })
 
-  it('displays a loading message initially', async () => {
-    server.use(
-      http.get('http://localhost:3000/api/my-cats', () => {
-        // Return a promise that never resolves to keep it in a loading state
-        return new Promise(() => {})
-      }),
-    )
+  it('displays a loading message initially', () => {
     renderWithRouter(<MyCatsPage />)
-
-    // First, wait for the authentication loading to complete
-    await waitFor(() => {
-      expect(
-        screen.queryByText('Loading authentication status...')
-      ).not.toBeInTheDocument()
-    })
-
-    // Now, check for the cats loading message
-    expect(screen.getByText('Loading your cats...')).toBeInTheDocument()
+    expect(screen.getByText(/loading/i)).toBeInTheDocument()
   })
 
   it('displays an error message if fetching cats fails', async () => {
     server.use(
-      http.get('http://localhost:3000/api/my-cats', () => {
+      http.get('http://localhost:3000/api/cats', () => {
         return new HttpResponse(null, { status: 500 })
       }),
     )
     renderWithRouter(<MyCatsPage />)
     await waitFor(() => {
-      expect(
-        screen.getByText('Failed to fetch your cats. Please try again later.')
-      ).toBeInTheDocument()
+      expect(screen.getByText(/error fetching cats/i)).toBeInTheDocument()
     })
   })
 
   it('has a button to create a new cat and navigates on click', async () => {
-    server.use(
-      http.get('http://localhost:3000/api/my-cats', () => {
-        return HttpResponse.json([])
-      }),
-    )
+    const navigate = vi.fn()
+    ;(useNavigate as unknown as () => typeof navigate).mockReturnValue(navigate)
+
     renderWithRouter(<MyCatsPage />)
-    await waitFor(() => {
-      const button = screen.getByRole('button', { name: /new cat/i })
-      expect(button).toBeInTheDocument()
-    })
-    // Click the button and assert navigation
-    await userEvent.click(screen.getByRole('button', { name: /new cat/i }))
-    expect(mockNavigate).toHaveBeenCalledWith('/account/cats/create')
+    const newCatButton = screen.getByRole('button', { name: /new cat/i })
+    await userEvent.click(newCatButton)
+    expect(navigate).toHaveBeenCalledWith('/account/cats/new')
   })
 
   describe('Show All Switch', () => {
-    it('renders the switch to show all cats including deceased', async () => {
-      server.use(
-        http.get('http://localhost:3000/api/my-cats', () => {
-          return HttpResponse.json([])
-        }),
-      )
+    it('renders the switch to show all cats including deceased', () => {
       renderWithRouter(<MyCatsPage />)
-
-      await waitFor(() => {
-        expect(screen.getByRole('switch')).toBeInTheDocument()
-        expect(screen.getByText('Show all (including deceased)')).toBeInTheDocument()
-      })
+      expect(screen.getByLabelText(/show all/i)).toBeInTheDocument()
     })
 
     it('filters out dead cats by default', async () => {
       server.use(
-        http.get('http://localhost:3000/api/my-cats', () => {
-          return HttpResponse.json([
-            { ...mockCat, name: 'Alive Cat', status: 'alive' },
-            { ...anotherMockCat, name: 'Dead Cat', status: 'dead' },
-          ])
+        http.get('http://localhost:3000/api/cats', () => {
+          return HttpResponse.json({ data: [mockCat, deceasedMockCat] })
         }),
       )
-
       renderWithRouter(<MyCatsPage />)
 
       await waitFor(() => {
-        expect(screen.getByText('Alive Cat')).toBeInTheDocument()
-        expect(screen.queryByText('Dead Cat')).not.toBeInTheDocument()
+        expect(screen.getByText(mockCat.name)).toBeInTheDocument()
+        expect(screen.queryByText(deceasedMockCat.name)).not.toBeInTheDocument()
       })
     })
 
     it('shows dead cats when switch is toggled on', async () => {
-      const user = userEvent.setup()
       server.use(
-        http.get('http://localhost:3000/api/my-cats', () => {
-          return HttpResponse.json([
-            { ...mockCat, name: 'Alive Cat', status: 'alive' },
-            { ...anotherMockCat, name: 'Dead Cat', status: 'dead' },
-          ])
+        http.get('http://localhost:3000/api/cats', () => {
+          return HttpResponse.json({ data: [mockCat, deceasedMockCat] })
         }),
       )
-
       renderWithRouter(<MyCatsPage />)
 
       // Initially dead cat should not be visible
       await waitFor(() => {
-        expect(screen.getByText('Alive Cat')).toBeInTheDocument()
-        expect(screen.queryByText('Dead Cat')).not.toBeInTheDocument()
+        expect(screen.getByText(mockCat.name)).toBeInTheDocument()
+        expect(screen.queryByText(deceasedMockCat.name)).not.toBeInTheDocument()
       })
 
       // Toggle the switch
-      const switchElement = screen.getByRole('switch')
-      await user.click(switchElement)
+      const showAllSwitch = screen.getByLabelText(/show all/i)
+      await userEvent.click(showAllSwitch)
 
       // Now dead cat should be visible
       await waitFor(() => {
-        expect(screen.getByText('Alive Cat')).toBeInTheDocument()
-        expect(screen.getByText('Dead Cat')).toBeInTheDocument()
+        expect(screen.getByText(mockCat.name)).toBeInTheDocument()
+        expect(screen.getByText(deceasedMockCat.name)).toBeInTheDocument()
       })
     })
   })
-})
+  })

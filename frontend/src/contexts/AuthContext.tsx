@@ -28,8 +28,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (token) {
         api.defaults.headers.common.Authorization = `Bearer ${token}`
       }
-      const { data } = await api.get<User>('/user')
-      setUser(data)
+      const { data } = await api.get<{ data: User }>('/user')
+      setUser(data.data)
     } catch (error) {
       console.error('Error loading user:', error)
       setUser(null)
@@ -50,8 +50,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = useCallback(
     async (payload: LoginPayload) => {
       await csrf()
-      const response = await api.post<{ access_token: string }>('/login', payload)
-      localStorage.setItem('access_token', response.data.access_token)
+      const response = await api.post<{ data: { access_token: string } }>('/login', payload)
+      localStorage.setItem('access_token', response.data.data.access_token)
       await loadUser()
     },
     [loadUser]

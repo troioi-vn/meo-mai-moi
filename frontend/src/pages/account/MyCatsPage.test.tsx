@@ -1,16 +1,16 @@
 
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderWithRouter, userEvent } from '@/test-utils'
 import MyCatsPage from './MyCatsPage'
-import { mockCat, anotherMockCat } from '@/mocks/data/cats'
+import { mockCat, anotherMockCat, deceasedMockCat } from '@/mocks/data/cats'
 import { HttpResponse, http } from 'msw'
 import { server } from '@/mocks/server'
 
 // Mock useNavigate
 const mockNavigate = vi.fn()
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual = await importOriginal()
+vi.mock('react-router-dom', async () => {
+  const actual = await import('react-router-dom')
   return {
     ...actual,
     useNavigate: () => mockNavigate,
@@ -39,6 +39,7 @@ describe('MyCatsPage', () => {
       }),
     )
     renderWithRouter(<MyCatsPage />)
+    await waitForElementToBeRemoved(() => screen.queryByText(/loading authentication status/i))
     await waitFor(() => {
       expect(screen.getByText('My Cats')).toBeInTheDocument()
     })
@@ -47,18 +48,20 @@ describe('MyCatsPage', () => {
   it("fetches and displays the user's cats", async () => {
     server.use(
       http.get('http://localhost:3000/api/cats', () => {
-        return HttpResponse.json([mockCat, anotherMockCat])
+        return HttpResponse.json({ data: [mockCat, anotherMockCat] })
       }),
     )
     renderWithRouter(<MyCatsPage />)
+    await waitForElementToBeRemoved(() => screen.queryByText(/loading authentication status/i))
     await waitFor(() => {
       expect(screen.getByText(mockCat.name)).toBeInTheDocument()
       expect(screen.getByText(anotherMockCat.name)).toBeInTheDocument()
     })
   })
 
-  it('displays a loading message initially', () => {
+  it('displays a loading message initially', async () => {
     renderWithRouter(<MyCatsPage />)
+    await waitForElementToBeRemoved(() => screen.queryByText(/loading authentication status/i))
     expect(screen.getByText(/loading/i)).toBeInTheDocument()
   })
 
@@ -69,24 +72,29 @@ describe('MyCatsPage', () => {
       }),
     )
     renderWithRouter(<MyCatsPage />)
+    await waitForElementToBeRemoved(() => screen.queryByText(/loading authentication status/i))
     await waitFor(() => {
-      expect(screen.getByText(/error fetching cats/i)).toBeInTheDocument()
+      expect(screen.getByText('Failed to fetch your cats. Please try again later.')).toBeInTheDocument()
     })
   })
 
   it('has a button to create a new cat and navigates on click', async () => {
-    const navigate = vi.fn()
-    ;(useNavigate as unknown as () => typeof navigate).mockReturnValue(navigate)
+    // The mock for useNavigate is set up globally in the vi.mock block above.
+    // We can directly use mockNavigate here.
+    mockNavigate.mockClear()
 
     renderWithRouter(<MyCatsPage />)
+    await waitForElementToBeRemoved(() => screen.queryByText(/loading authentication status/i))
     const newCatButton = screen.getByRole('button', { name: /new cat/i })
     await userEvent.click(newCatButton)
-    expect(navigate).toHaveBeenCalledWith('/account/cats/new')
+    expect(mockNavigate).toHaveBeenCalledWith('/account/cats/create')
   })
 
   describe('Show All Switch', () => {
-    it('renders the switch to show all cats including deceased', () => {
+    it('renders the switch to show all cats including deceased', async () => {
       renderWithRouter(<MyCatsPage />)
+      await waitForElementToBeRemoved(() => screen.queryByText(/loading authentication status/i))
+      await waitForElementToBeRemoved(() => screen.queryByText(/loading your cats/i))
       expect(screen.getByLabelText(/show all/i)).toBeInTheDocument()
     })
 

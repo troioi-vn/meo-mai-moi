@@ -31,7 +31,6 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
     }
 
     setIsUploading(true)
-    setIsUploading(true)
     try {
       const formData = new FormData()
       formData.append('photo', file)

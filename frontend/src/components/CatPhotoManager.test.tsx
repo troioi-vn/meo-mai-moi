@@ -47,8 +47,6 @@ describe('CatPhotoManager', () => {
     expect(screen.getByText('Supported formats: JPG, PNG, GIF. Max size: 5MB')).toBeInTheDocument()
   })
 
-  
-
   it('uploads photo successfully', async () => {
     const user = userEvent.setup()
     const initialCat: Cat = { ...mockCat, photo_url: undefined, id: mockCat.id }
@@ -61,13 +59,12 @@ describe('CatPhotoManager', () => {
     )
 
     const file = new File(['test'], 'cat.jpg', { type: 'image/jpeg' })
-    const uploadButton = screen.getByRole('button', { name: /replace|upload photo/i })
-    await user.click(uploadButton)
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
     await user.upload(fileInput, file)
 
     await waitFor(() => {
       expect(mockOnPhotoUpdated).toHaveBeenCalledWith(expect.objectContaining({
+        id: initialCat.id,
         photo_url: 'https://example.com/new-cat-photo.jpg',
         photo: {
           id: 1,
@@ -85,15 +82,11 @@ describe('CatPhotoManager', () => {
   it('handles upload errors gracefully', async () => {
     const user = userEvent.setup();
     const file = new File(['(⌐□_□)'], 'error.png', { type: 'image/png' });
-    const mockOnPhotoUpdated = vi.fn();
-    // Use id: 999 to trigger the error mock
-    const errorCat = { ...mockCat, id: 999, name: 'Test Cat', photo_url: 'https://example.com/initial-cat.jpg' };
+    const errorCat: Cat = { ...mockCat, id: 999, name: 'Test Cat', photo_url: 'https://example.com/initial-cat.jpg' };
     renderWithRouter(
       <CatPhotoManager cat={errorCat} isOwner={true} onPhotoUpdated={mockOnPhotoUpdated} />
     );
-    const uploadButton = screen.getByRole('button', { name: /replace|upload photo/i });
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    await user.click(uploadButton);
     await user.upload(fileInput, file);
     expect(screen.getByText(/uploading.../i)).toBeInTheDocument();
     await waitFor(() => {
@@ -153,11 +146,9 @@ describe('CatPhotoManager', () => {
       />
     )
     const file = new File(['test'], 'cat.jpg', { type: 'image/jpeg' })
-    const uploadButton = screen.getByRole('button', { name: /replace|upload photo/i })
-    await user.click(uploadButton)
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
     await user.upload(fileInput, file)
-    
+
     // Should show uploading state
     expect(screen.getByText('Uploading...')).toBeInTheDocument()
     await waitFor(() => {

@@ -4,12 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Cat;
 use App\Models\WeightHistory;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Annotations as OA;
 
 class WeightHistoryController extends Controller
 {
+    use ApiResponseTrait;
+
     /**
      * @OA\Post(
      *     path="/api/cats/{cat_id}/weight-history",
@@ -58,23 +61,16 @@ class WeightHistoryController extends Controller
     {
         // Assuming only the cat's owner or an admin can add weight records
         if ($request->user()->id !== $cat->user_id && $request->user()->role !== \App\Enums\UserRole::ADMIN) {
-            return response()->json(['message' => 'You are not authorized to add weight records for this cat.'], 403);
+            return $this->sendError('You are not authorized to add weight records for this cat.', 403);
         }
 
-        try {
-            $validatedData = $request->validate([
-                'weight_kg' => 'required|numeric|min:0',
-                'record_date' => 'required|date',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'message' => 'Validation Error',
-                'errors' => $e->errors(),
-            ], 422);
-        }
+        $validatedData = $request->validate([
+            'weight_kg' => 'required|numeric|min:0',
+            'record_date' => 'required|date',
+        ]);
 
         $weightHistory = $cat->weightHistories()->create($validatedData);
 
-        return response()->json($weightHistory, 201);
+        return $this->sendSuccess($weightHistory, 201);
     }
 }

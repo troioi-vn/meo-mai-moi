@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Cat;
 use App\Services\FileUploadService;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class CatPhotoController extends Controller
 {
+    use ApiResponseTrait;
     protected $fileUploadService;
 
     public function __construct(FileUploadService $fileUploadService)
@@ -87,7 +89,7 @@ class CatPhotoController extends Controller
 
         // Refresh cat with new photo relationship
         $cat->load('photo', 'photos');
-        return response()->json($cat);
+        return $this->sendSuccess($cat);
     }
 
     /**
@@ -130,6 +132,6 @@ class CatPhotoController extends Controller
             $cat->photo->delete();
         }
 
-        return response()->json(null, 204);
+        return $this->sendSuccess(null, 204);
     }
 }

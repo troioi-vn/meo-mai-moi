@@ -20,21 +20,21 @@ class CatListingTest extends TestCase
         Cat::factory()->count(3)->create(['status' => CatStatus::ACTIVE->value]);
         Cat::factory()->count(2)->create(['status' => CatStatus::DECEASED->value]);
         $response = $this->getJson('/api/cats');
-        $response->assertStatus(200)->assertJsonCount(3);
+        $response->assertStatus(200)->assertJsonCount(3, 'data');
     }
 
     public function test_can_get_featured_cats(): void
     {
         Cat::factory()->count(5)->create();
         $response = $this->getJson('/api/cats/featured');
-        $response->assertStatus(200)->assertJsonCount(3);
+        $response->assertStatus(200)->assertJsonCount(3, 'data');
     }
 
     public function test_can_get_single_cat_profile(): void
     {
         $cat = Cat::factory()->create();
         $response = $this->getJson("/api/cats/{$cat->id}");
-        $response->assertStatus(200)->assertJson(['id' => $cat->id]);
+        $response->assertStatus(200)->assertJson(['data' => ['id' => $cat->id]]);
     }
 
     public function test_authenticated_user_can_create_cat_listing(): void
@@ -52,7 +52,8 @@ class CatListingTest extends TestCase
 
         $response = $this->postJson('/api/cats', $catData);
 
-        $response->assertStatus(201);
+        $response->assertStatus(201)
+            ->assertJsonStructure(['data' => ['id', 'name', 'breed']]);
         $this->assertDatabaseHas('cats', $catData);
     }
 
@@ -78,7 +79,7 @@ class CatListingTest extends TestCase
         Cat::factory()->create(['location' => 'New York']);
 
         $response = $this->getJson('/api/cats?location=New York');
-        $response->assertStatus(200)->assertJsonCount(2);
+        $response->assertStatus(200)->assertJsonCount(2, 'data');
     }
 
     public function test_can_filter_cats_by_breed(): void
@@ -88,7 +89,7 @@ class CatListingTest extends TestCase
         Cat::factory()->create(['breed' => 'Siamese']);
 
         $response = $this->getJson('/api/cats?breed=Siamese');
-        $response->assertStatus(200)->assertJsonCount(2);
+        $response->assertStatus(200)->assertJsonCount(2, 'data');
     }
 
     public function test_can_sort_cats_by_name_ascending(): void
@@ -99,9 +100,9 @@ class CatListingTest extends TestCase
 
         $response = $this->getJson('/api/cats?sort_by=name&sort_direction=asc');
         $response->assertStatus(200)
-                 ->assertJsonPath('0.name', 'A Cat')
-                 ->assertJsonPath('1.name', 'B Cat')
-                 ->assertJsonPath('2.name', 'C Cat');
+                 ->assertJsonPath('data.0.name', 'A Cat')
+                 ->assertJsonPath('data.1.name', 'B Cat')
+                 ->assertJsonPath('data.2.name', 'C Cat');
     }
 
     public function test_can_sort_cats_by_name_descending(): void
@@ -112,9 +113,9 @@ class CatListingTest extends TestCase
 
         $response = $this->getJson('/api/cats?sort_by=name&sort_direction=desc');
         $response->assertStatus(200)
-                 ->assertJsonPath('0.name', 'C Cat')
-                 ->assertJsonPath('1.name', 'B Cat')
-                 ->assertJsonPath('2.name', 'A Cat');
+                 ->assertJsonPath('data.0.name', 'C Cat')
+                 ->assertJsonPath('data.1.name', 'B Cat')
+                 ->assertJsonPath('data.2.name', 'A Cat');
     }
 
     public function test_can_sort_cats_by_birthday_ascending(): void
@@ -125,7 +126,7 @@ class CatListingTest extends TestCase
 
         $response = $this->getJson('/api/cats?sort_by=birthday&sort_direction=asc');
         $response->assertStatus(200);
-        $responseCats = $response->json();
+        $responseCats = $response->json('data');
         $birthdays = array_column($responseCats, 'birthday');
         $this->assertEquals(['2020-01-01T00:00:00.000000Z', '2021-01-01T00:00:00.000000Z', '2022-01-01T00:00:00.000000Z'], $birthdays);
     }
@@ -138,7 +139,7 @@ class CatListingTest extends TestCase
 
         $response = $this->getJson('/api/cats?sort_by=birthday&sort_direction=desc');
         $response->assertStatus(200);
-        $responseCats = $response->json();
+        $responseCats = $response->json('data');
         $birthdays = array_column($responseCats, 'birthday');
         $this->assertEquals(['2022-01-01T00:00:00.000000Z', '2021-01-01T00:00:00.000000Z', '2020-01-01T00:00:00.000000Z'], $birthdays);
     }

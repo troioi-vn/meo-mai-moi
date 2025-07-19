@@ -3,14 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notification;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
 {
+    use ApiResponseTrait;
+
     public function index()
     {
-        return Notification::where('user_id', Auth::id())->latest()->get();
+        $notifications = Notification::where('user_id', Auth::id())->latest()->get();
+        return $this->sendSuccess($notifications);
     }
 
     public function markAsRead()
@@ -19,6 +23,6 @@ class NotificationController extends Controller
             ->where('is_read', false)
             ->update(['is_read' => true]);
 
-        return response()->noContent();
+        return $this->sendSuccess(null, 204);
     }
 }

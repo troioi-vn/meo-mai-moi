@@ -28,7 +28,8 @@ class CatWeightHistoryTest extends TestCase
 
         $response = $this->postJson("/api/cats/{$cat->id}/weight-history", $weightData);
 
-        $response->assertStatus(201);
+        $response->assertStatus(201)
+            ->assertJsonStructure(['data' => ['id', 'weight_kg', 'record_date']]);
         $weightHistory = \App\Models\WeightHistory::first();
         $this->assertEquals($cat->id, $weightHistory->cat_id);
         $this->assertEquals(4.5, $weightHistory->weight_kg);
@@ -48,7 +49,8 @@ class CatWeightHistoryTest extends TestCase
 
         $response = $this->postJson("/api/cats/{$cat->id}/weight-history", $weightData);
 
-        $response->assertStatus(201);
+        $response->assertStatus(201)
+            ->assertJsonStructure(['data' => ['id', 'weight_kg', 'record_date']]);
         $weightHistory = \App\Models\WeightHistory::first();
         $this->assertEquals($cat->id, $weightHistory->cat_id);
         $this->assertEquals(4.5, $weightHistory->weight_kg);

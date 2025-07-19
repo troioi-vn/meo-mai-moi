@@ -45,13 +45,13 @@ class CatPhotoManagementTest extends TestCase
         ]);
 
         $response->assertStatus(200)
-            ->assertJsonStructure(['id', 'name', 'photo']);
+            ->assertJsonStructure(['data' => ['id', 'name', 'photo']]);
 
         $this->assertDatabaseHas('cat_photos', [
             'cat_id' => $this->cat->id,
         ]);
 
-        $path = $response->json('photo.path');
+        $path = $response->json('data.photo.path');
         Storage::disk('public')->assertExists($path);
 
         // Verify image dimensions
@@ -68,7 +68,7 @@ class CatPhotoManagementTest extends TestCase
         // Upload initial photo
         $oldFile = UploadedFile::fake()->image('old_photo.jpg');
         $response = $this->postJson('/api/cats/' . $this->cat->id . '/photos', ['photo' => $oldFile]);
-        $oldPath = $response->json('photo.path');
+        $oldPath = $response->json('data.photo.path');
 
         $this->assertCount(1, $this->cat->photos);
         Storage::disk('public')->assertExists($oldPath);
@@ -76,7 +76,7 @@ class CatPhotoManagementTest extends TestCase
         // Upload new photo
         $newFile = UploadedFile::fake()->image('new_photo.jpg');
         $response = $this->postJson('/api/cats/' . $this->cat->id . '/photos', ['photo' => $newFile]);
-        $newPath = $response->json('photo.path');
+        $newPath = $response->json('data.photo.path');
 
         $this->cat->refresh();
         $this->assertCount(1, $this->cat->photos);
@@ -135,7 +135,7 @@ class CatPhotoManagementTest extends TestCase
         // Upload a photo first
         $file = UploadedFile::fake()->image('photo.jpg');
         $response = $this->postJson('/api/cats/' . $this->cat->id . '/photos', ['photo' => $file]);
-        $path = $response->json('photo.path');
+        $path = $response->json('data.photo.path');
         $photo = $this->cat->photo;
 
         Storage::disk('public')->assertExists($path);

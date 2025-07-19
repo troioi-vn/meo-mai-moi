@@ -57,11 +57,11 @@ export const anotherMockCat: Cat = {
 }
 
 export const catHandlers = [
-  // Returns an array directly
+  // Returns a { data: [ ... ] } object
   http.get('http://localhost:3000/api/cats', () => {
-    return HttpResponse.json([mockCat, anotherMockCat])
+    return HttpResponse.json({ data: [mockCat, anotherMockCat] })
   }),
-  // Returns a { data: ... } object
+  // Returns an object directly
   http.get('http://localhost:3000/api/cats/:id', ({ params }) => {
     const catId = Number(params.id)
     let cat = null
@@ -72,7 +72,7 @@ export const catHandlers = [
     }
 
     if (cat) {
-      return HttpResponse.json({ data: cat })
+      return HttpResponse.json(cat)
     }
 
     return new HttpResponse(null, {

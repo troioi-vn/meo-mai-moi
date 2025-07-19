@@ -1,0 +1,227 @@
+# Frontend Test Coverage
+
+## Existing Tests
+
+- App.routing.test.tsx
+   - renders CatProfilePage for /cats/:id route
+   - handles cat profile route with invalid ID
+   - navigates from cats list to cat profile via URL
+   - renders edit cat route correctly
+   - supports navigation between routes
+- MainNav.test.tsx
+   - renders login and register buttons when not authenticated
+   - renders notification bell and user menu when authenticated
+- LoginForm.test.tsx
+   - renders the login form correctly
+   - allows the user to fill out the form
+   - shows an error message on failed login
+- UserMenu.test.tsx
+   - renders user avatar with correct fallback initials
+   - shows user initials as fallback when avatar fails to load
+   - opens dropdown menu when avatar is clicked
+   - has correct navigation links in the menu
+   - calls logout function when logout is clicked
+   - shows theme toggle submenu
+   - handles user without name gracefully
+   - handles logout error gracefully
+- CatPhotoManager.test.tsx
+   - renders photo for non-owner (no controls)
+   - renders photo and controls for owner
+   - uploads photo successfully
+   - handles upload errors gracefully
+   - deletes photo successfully
+   - handles delete errors gracefully
+   - shows loading states during upload and delete operations
+- CatsSection.test.tsx
+   - renders the section heading
+   - has centered heading with proper styling
+- CatCard.test.tsx
+   - renders cat information correctly
+   - renders cat image with correct alt text
+   - uses placeholder image when photo_url is not provided
+   - has a link to the cat profile page
+   - has proper accessibility structure
+   - applies hover effects through CSS classes
+- ChangePasswordForm.test.tsx
+   - renders all form fields
+   - shows validation errors for empty fields
+   - shows error when new passwords do not match
+   - calls changePassword with correct values on valid form submission
+   - shows loading state during form submission
+- UserAvatar.test.tsx
+   - renders user avatar with image when avatar_url is provided
+   - renders user initials when avatar_url is not provided
+   - shows upload controls when showUploadControls is true
+   - hides upload controls when showUploadControls is false
+   - does not show remove button when user has no avatar
+   - returns null when user is not available
+- HeroSection.test.tsx
+   - renders the main heading
+   - renders the descriptive text
+   - has proper semantic structure
+   - applies responsive styling classes
+   - has proper container structure
+- RegisterForm.test.tsx
+   - renders the registration form correctly
+   - shows an error message on failed registration
+   - shows a success message on successful registration
+- Footer.test.tsx
+   - renders the footer component
+- NotificationBell.test.tsx
+   - fetches and displays the number of unread notifications
+- EnhancedCatRemovalModal.test.tsx
+   - renders the trigger button
+   - opens the modal and shows step 1 when trigger is clicked
+   - validates name confirmation in step 1
+   - proceeds to step 2 when correct name is entered
+   - proceeds to step 3 when delete action is selected
+   - proceeds to step 3 when deceased action is selected
+   - validates password in step 3
+   - calls deleteCat API when delete action is confirmed
+   - calls updateCatStatus API when deceased action is confirmed
+   - handles API errors gracefully
+   - resets modal state when closed
+- CatProfilePage.test.tsx
+   - renders cat profile information correctly
+   - displays cat image with correct alt text
+   - shows placeholder image when imageUrl is not provided
+   - displays an error message when the cat is not found
+   - displays a generic error message on server failure
+   - shows only Back button when user doesn't have edit permissions
+   - shows Edit and My Cats buttons when user has edit permissions
+- ProfilePage.test.tsx
+   - renders the profile page correctly
+- NotFoundPage.test.tsx
+   - renders the 404 error number
+   - renders the page not found heading
+   - renders the explanatory message
+   - has a link to return to homepage
+   - applies proper styling for centering and layout
+   - has proper text styling for different elements
+   - renders NotFoundPage for unknown routes via router
+- RegisterPage.test.tsx
+   - renders the register page correctly
+   - registers a new user and navigates to login on success
+- MainPage.test.tsx
+   - renders all the main sections
+- ui/switch.test.tsx
+   - renders an unchecked switch by default
+   - renders a checked switch when checked prop is true
+   - calls onCheckedChange when clicked
+   - toggles between checked and unchecked states
+   - can be disabled
+   - has correct styling classes
+   - supports custom className
+
+## Missing Tests (Suggested)
+
+- HeroSection.test.tsx
+   - renders the main heading
+   - renders the descriptive text
+   - section has correct classes and structure
+- ui/select.test.tsx
+   - renders the select trigger
+   - opens dropdown on trigger click
+   - selects an option and displays value
+   - supports disabled state
+   - renders custom className
+- UserMenu.test.tsx
+   - renders avatar with correct fallback
+   - opens dropdown on avatar click
+   - shows user info and menu items
+   - toggles theme
+   - calls logout on click
+   - handles missing user gracefully
+- RegisterForm.test.tsx
+   - renders all form fields
+   - shows error if passwords do not match
+   - calls register on valid submit
+   - shows error on failed registration
+   - calls onSuccess on successful registration
+- ChangePasswordForm.test.tsx
+   - renders all form fields
+   - validates required fields
+   - shows error if passwords do not match
+   - calls changePassword on valid submit
+   - shows loading state during submission
+- CatPhotoManager.test.tsx
+   - renders photo and controls for owner
+   - renders photo for non-owner
+   - uploads photo successfully
+   - handles upload errors
+   - deletes photo successfully
+   - handles delete errors
+   - shows loading states
+- CatCard.test.tsx
+   - renders cat info and image
+   - uses placeholder if no photo
+   - links to cat profile
+   - displays age and breed
+   - has correct accessibility
+- icons.test.tsx
+   - renders each exported icon (if any)
+   - icons have correct props
+- EnhancedCatRemovalModal.test.tsx
+   - renders trigger button
+   - opens modal on trigger
+   - validates name confirmation
+   - proceeds through steps
+   - calls deleteCat API
+   - calls updateCatStatus API
+   - handles API errors
+   - resets modal state on close
+- ui/alert-dialog.test.tsx
+   - renders alert dialog
+   - opens and closes dialog
+   - calls action/cancel callbacks
+   - supports custom content
+- theme-provider.test.tsx
+   - provides theme context
+   - sets and gets theme from storage
+   - toggles between themes
+   - uses default theme if none in storage
+- ui/alert.test.tsx
+   - renders alert with default variant
+   - renders alert with destructive variant
+   - renders alert title and description
+   - supports custom className
+- CatsSection.test.tsx
+   - renders section heading
+   - renders CatCards for provided cats (if implemented)
+   - section has correct classes
+- LoginForm.test.tsx
+   - renders form fields
+   - submits with valid credentials
+   - shows error on failed login
+   - navigates on success
+- UserAvatar.test.tsx
+   - renders avatar image or fallback
+   - shows upload controls if enabled
+   - uploads new avatar
+   - deletes avatar
+   - handles upload/delete errors
+- ApplyToHelpPage.test.tsx
+   - renders the page heading
+   - renders application form (if implemented)
+   - submits application (if implemented)
+- LoginPage.test.tsx
+   - renders login form
+   - passes props to LoginForm
+   - displays correct layout
+- account/CreateCatPageNew.test.tsx
+   - renders all form fields
+   - validates required fields
+   - submits form and calls createCat
+   - shows error on failed submit
+   - navigates on success
+- account/MyCatsPage.test.tsx
+   - fetches and displays user cats
+   - shows loading and error states
+   - toggles showAll switch
+   - navigates to create cat page
+- account/EditCatPage.test.tsx
+   - fetches and displays cat data
+   - renders all form fields
+   - updates cat info on submit
+   - shows loading and error states
+   - handles removal modal actions

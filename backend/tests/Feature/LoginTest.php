@@ -28,9 +28,10 @@ class LoginTest extends TestCase
 
         $response->assertStatus(200)
                  ->assertJsonStructure([
-                     'message',
-                     'access_token',
-                     'token_type',
+                     'data' => [
+                         'access_token',
+                         'token_type',
+                     ]
                  ]);
     }
 

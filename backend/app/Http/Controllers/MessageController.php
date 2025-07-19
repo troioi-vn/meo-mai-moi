@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Message;
 use App\Models\User;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Annotations as OA;
@@ -59,6 +60,8 @@ use OpenApi\Annotations as OA;
  */
 class MessageController extends Controller
 {
+    use ApiResponseTrait;
+
     /**
      * @OA\Post(
      *     path="/api/messages",
@@ -94,17 +97,10 @@ class MessageController extends Controller
      */
     public function store(Request $request)
     {
-        try {
-            $validatedData = $request->validate([
-                'recipient_id' => 'required|exists:users,id',
-                'content' => 'required|string',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'message' => 'Validation Error',
-                'errors' => $e->errors(),
-            ], 422);
-        }
+        $validatedData = $request->validate([
+            'recipient_id' => 'required|exists:users,id',
+            'content' => 'required|string',
+        ]);
 
         $message = Message::create(array_merge($validatedData, [
             'sender_id' => $request->user()->id,
@@ -118,7 +114,7 @@ class MessageController extends Controller
             'is_read' => false,
         ]);
 
-        return response()->json($message, 201);
+        return $this->sendSuccess($message, 201);
     }
 
     /**
@@ -149,7 +145,7 @@ class MessageController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return response()->json($messages);
+        return $this->sendSuccess($messages);
     }
 
     /**
@@ -187,7 +183,7 @@ class MessageController extends Controller
     public function show(Request $request, Message $message)
     {
         if ($message->sender_id !== $request->user()->id && $message->recipient_id !== $request->user()->id) {
-            return response()->json(['message' => 'Forbidden: You are not authorized to view this message.'], 403);
+            return $this->sendError('Forbidden: You are not authorized to view this message.', 403);
         }
 
         if (is_null($message->read_at)) {
@@ -195,7 +191,7 @@ class MessageController extends Controller
             $message->save();
         }
 
-        return response()->json($message);
+        return $this->sendSuccess($message);
     }
 
     /**
@@ -233,13 +229,13 @@ class MessageController extends Controller
     public function markAsRead(Request $request, Message $message)
     {
         if ($message->recipient_id !== $request->user()->id) {
-            return response()->json(['message' => 'Forbidden: You are not authorized to mark this message as read.'], 403);
+            return $this->sendError('Forbidden: You are not authorized to mark this message as read.', 403);
         }
 
         $message->read_at = now();
         $message->save();
 
-        return response()->json($message);
+        return $this->sendSuccess($message);
     }
 
     /**
@@ -276,11 +272,11 @@ class MessageController extends Controller
     public function destroy(Request $request, Message $message)
     {
         if ($message->sender_id !== $request->user()->id && $message->recipient_id !== $request->user()->id) {
-            return response()->json(['message' => 'Forbidden: You are not authorized to delete this message.'], 403);
+            return $this->sendError('Forbidden: You are not authorized to delete this message.', 403);
         }
 
         $message->delete();
 
-        return response()->json(null, 204);
+        return $this->sendSuccess(null, 204);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Hash;
@@ -55,6 +56,8 @@ use Illuminate\Support\Facades\Storage;
  */
 class UserProfileController extends Controller
 {
+    use ApiResponseTrait;
+
     /**
      * @OA\Get(
      *     path="/api/users/me",
@@ -74,7 +77,7 @@ class UserProfileController extends Controller
      */
     public function show(Request $request)
     {
-        return response()->json($request->user());
+        return $this->sendSuccess($request->user());
     }
 
     /**
@@ -112,23 +115,16 @@ class UserProfileController extends Controller
      */
     public function update(Request $request)
     {
-        try {
-            $validatedData = $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users,email,' . $request->user()->id,
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'message' => 'Validation Error',
-                'errors' => $e->errors(),
-            ], 422);
-        }
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $request->user()->id,
+        ]);
 
         $user = $request->user();
         $user->fill($validatedData);
         $user->save();
 
-        return response()->json($user);
+        return $this->sendSuccess($user);
     }
 
     /**
@@ -173,7 +169,7 @@ class UserProfileController extends Controller
         $user->password = Hash::make($request->new_password);
         $user->save();
 
-        return response()->json(['message' => 'Password updated successfully.']);
+        return $this->sendSuccess(null, 204);
     }
 
     /**
@@ -216,7 +212,7 @@ class UserProfileController extends Controller
         $user->tokens()->delete(); // Revoke all tokens for the user
         $user->delete();
 
-        return response()->json(['message' => 'Account deleted successfully.']);
+        return $this->sendSuccess(null, 204);
     }
 
     /**
@@ -263,16 +259,9 @@ class UserProfileController extends Controller
      */
     public function uploadAvatar(Request $request, FileUploadService $fileUploadService)
     {
-        try {
-            $validatedData = $request->validate([
-                'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'message' => 'Validation Error',
-                'errors' => $e->errors(),
-            ], 422);
-        }
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
 
         $user = $request->user();
         $avatarPath = $fileUploadService->uploadUserAvatar($request->file('avatar'), $user);
@@ -280,7 +269,7 @@ class UserProfileController extends Controller
         $user->avatar_url = Storage::url($avatarPath);
         $user->save();
 
-        return response()->json($user);
+        return $this->sendSuccess($user);
     }
 
     /**
@@ -311,7 +300,7 @@ class UserProfileController extends Controller
         $user = $request->user();
 
         if (!$user->avatar_url) {
-            return response()->json(['message' => 'No avatar to delete.'], 404);
+            return $this->sendError('No avatar to delete.', 404);
         }
 
         // Extract the path relative to the storage disk
@@ -324,6 +313,6 @@ class UserProfileController extends Controller
         $user->avatar_url = null;
         $user->save();
 
-        return response()->json(['message' => 'Avatar deleted successfully.']);
+        return $this->sendSuccess(null, 204);
     }
 }

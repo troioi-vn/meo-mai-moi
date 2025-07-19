@@ -24,9 +24,10 @@ class AuthTest extends TestCase
 
         $response->assertStatus(201)
                  ->assertJsonStructure([
-                     'message',
-                     'access_token',
-                     'token_type',
+                     'data' => [
+                         'access_token',
+                         'token_type',
+                     ]
                  ]);
 
         $this->assertDatabaseHas('users', [
@@ -98,9 +99,10 @@ class AuthTest extends TestCase
 
         $response->assertStatus(200)
                  ->assertJsonStructure([
-                     'message',
-                     'access_token',
-                     'token_type',
+                     'data' => [
+                         'access_token',
+                         'token_type',
+                     ]
                  ]);
     }
 
@@ -137,8 +139,7 @@ class AuthTest extends TestCase
 
         $response = $this->postJson('/api/logout');
 
-        $response->assertStatus(200)
-                 ->assertJson(['message' => 'Logged out successfully']);
+        $response->assertStatus(204);
 
         // Verify that the token is deleted from the database
         $this->assertDatabaseMissing('personal_access_tokens', [
@@ -156,6 +157,6 @@ class AuthTest extends TestCase
         $response = $this->getJson('/api/user');
 
         $response->assertStatus(200)
-                 ->assertJson(['email' => $user->email]);
+                 ->assertJson(['data' => ['email' => $user->email]]);
     }
 }

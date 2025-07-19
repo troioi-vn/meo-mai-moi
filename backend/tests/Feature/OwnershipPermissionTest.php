@@ -24,7 +24,7 @@ class OwnershipPermissionTest extends TestCase
         $response = $this->getJson("/api/cats/{$cat->id}");
 
         $response->assertStatus(200)
-            ->assertJsonPath('viewer_permissions.can_edit', true);
+            ->assertJsonPath('data.viewer_permissions.can_edit', true);
     }
 
     #[Test]
@@ -38,7 +38,7 @@ class OwnershipPermissionTest extends TestCase
         $response = $this->getJson("/api/cats/{$cat->id}");
 
         $response->assertStatus(200)
-            ->assertJsonPath('viewer_permissions.can_edit', false);
+            ->assertJsonPath('data.viewer_permissions.can_edit', false);
     }
 
     #[Test]
@@ -52,7 +52,7 @@ class OwnershipPermissionTest extends TestCase
         $response = $this->getJson("/api/cats/{$cat->id}");
 
         $response->assertStatus(200)
-            ->assertJsonPath('viewer_permissions.can_edit', false);
+            ->assertJsonPath('data.viewer_permissions.can_edit', false);
     }
 
     #[Test]
@@ -66,8 +66,8 @@ class OwnershipPermissionTest extends TestCase
         $response = $this->getJson("/api/cats/{$cat->id}");
 
         $response->assertStatus(200)
-            ->assertJsonPath('viewer_permissions.can_edit', false)
-            ->assertJsonPath('viewer_permissions.can_view_contact', true);
+            ->assertJsonPath('data.viewer_permissions.can_edit', false)
+            ->assertJsonPath('data.viewer_permissions.can_view_contact', true);
     }
 
     #[Test]
@@ -80,8 +80,8 @@ class OwnershipPermissionTest extends TestCase
         $response = $this->getJson("/api/cats/{$cat->id}");
 
         $response->assertStatus(200)
-            ->assertJsonPath('viewer_permissions.can_edit', true)
-            ->assertJsonPath('viewer_permissions.can_view_contact', true);
+            ->assertJsonPath('data.viewer_permissions.can_edit', true)
+            ->assertJsonPath('data.viewer_permissions.can_view_contact', true);
     }
 
     #[Test]
@@ -95,8 +95,8 @@ class OwnershipPermissionTest extends TestCase
         $response = $this->getJson("/api/cats/{$cat->id}");
 
         $response->assertStatus(200)
-            ->assertJsonPath('viewer_permissions.can_edit', true)
-            ->assertJsonPath('viewer_permissions.can_view_contact', true);
+            ->assertJsonPath('data.viewer_permissions.can_edit', true)
+            ->assertJsonPath('data.viewer_permissions.can_view_contact', true);
     }
 
     #[Test]
@@ -112,23 +112,23 @@ class OwnershipPermissionTest extends TestCase
         Sanctum::actingAs($user1);
         $response1 = $this->getJson("/api/cats/{$cat1->id}");
         $response1->assertStatus(200)
-            ->assertJsonPath('viewer_permissions.can_edit', true);
+            ->assertJsonPath('data.viewer_permissions.can_edit', true);
 
         // User1 cannot edit User2's cat
         $response2 = $this->getJson("/api/cats/{$cat2->id}");
         $response2->assertStatus(200)
-            ->assertJsonPath('viewer_permissions.can_edit', false);
+            ->assertJsonPath('data.viewer_permissions.can_edit', false);
 
         // User2 can edit their own cat
         Sanctum::actingAs($user2);
         $response3 = $this->getJson("/api/cats/{$cat2->id}");
         $response3->assertStatus(200)
-            ->assertJsonPath('viewer_permissions.can_edit', true);
+            ->assertJsonPath('data.viewer_permissions.can_edit', true);
 
         // User2 cannot edit User1's cat
         $response4 = $this->getJson("/api/cats/{$cat1->id}");
         $response4->assertStatus(200)
-            ->assertJsonPath('viewer_permissions.can_edit', false);
+            ->assertJsonPath('data.viewer_permissions.can_edit', false);
     }
 
     #[Test]
@@ -143,7 +143,7 @@ class OwnershipPermissionTest extends TestCase
         // Even as VIEWER, they should be able to edit their own cat
         $response = $this->getJson("/api/cats/{$cat->id}");
         $response->assertStatus(200)
-            ->assertJsonPath('viewer_permissions.can_edit', true);
+            ->assertJsonPath('data.viewer_permissions.can_edit', true);
 
         // Change role to CAT_OWNER
         $user->update(['role' => UserRole::CAT_OWNER->value]);
@@ -153,7 +153,7 @@ class OwnershipPermissionTest extends TestCase
         Sanctum::actingAs($user);
         $response2 = $this->getJson("/api/cats/{$cat->id}");
         $response2->assertStatus(200)
-            ->assertJsonPath('viewer_permissions.can_edit', true);
+            ->assertJsonPath('data.viewer_permissions.can_edit', true);
     }
 
     #[Test]
@@ -166,7 +166,8 @@ class OwnershipPermissionTest extends TestCase
         // Owner should be able to update their cat
         Sanctum::actingAs($owner);
         $updateResponse = $this->putJson("/api/cats/{$cat->id}", ['name' => 'Updated Name']);
-        $updateResponse->assertStatus(200);
+        $updateResponse->assertStatus(200)
+            ->assertJson(['data' => ['name' => 'Updated Name']]);
 
         // Non-owner should not be able to update
         Sanctum::actingAs($nonOwner);

@@ -42,7 +42,7 @@ class CatProfileTest extends TestCase
         $response = $this->putJson("/api/cats/{$cat->id}", $updateData);
 
         $response->assertStatus(200)
-            ->assertJsonFragment($updateData);
+            ->assertJson(['data' => $updateData]);
         $this->assertDatabaseHas('cats', ['id' => $cat->id, 'name' => 'Updated Name']);
     }
 
@@ -56,7 +56,7 @@ class CatProfileTest extends TestCase
         $response = $this->putJson("/api/cats/{$cat->id}", $updateData);
 
         $response->assertStatus(200)
-            ->assertJsonFragment($updateData);
+            ->assertJson(['data' => $updateData]);
         $this->assertDatabaseHas('cats', ['id' => $cat->id, 'name' => 'Admin Updated Name']);
     }
 
@@ -69,8 +69,8 @@ class CatProfileTest extends TestCase
         $response = $this->getJson("/api/cats/{$cat->id}");
 
         $response->assertStatus(200)
-            ->assertJsonFragment(['name' => 'Test Cat'])
-            ->assertJsonPath('viewer_permissions.can_edit', false);
+            ->assertJsonPath('data.name', 'Test Cat')
+            ->assertJsonPath('data.viewer_permissions.can_edit', false);
     }
 
     #[Test]
@@ -83,8 +83,8 @@ class CatProfileTest extends TestCase
         $response = $this->getJson("/api/cats/{$cat->id}");
 
         $response->assertStatus(200)
-            ->assertJsonFragment(['name' => 'Test Cat'])
-            ->assertJsonPath('viewer_permissions.can_edit', false);
+            ->assertJsonPath('data.name', 'Test Cat')
+            ->assertJsonPath('data.viewer_permissions.can_edit', false);
     }
 
     #[Test]
@@ -97,8 +97,8 @@ class CatProfileTest extends TestCase
         $response = $this->getJson("/api/cats/{$cat->id}");
 
         $response->assertStatus(200)
-            ->assertJsonFragment(['name' => 'Owner Cat'])
-            ->assertJsonPath('viewer_permissions.can_edit', true);
+            ->assertJsonPath('data.name', 'Owner Cat')
+            ->assertJsonPath('data.viewer_permissions.can_edit', true);
     }
 
     #[Test]
@@ -115,8 +115,8 @@ class CatProfileTest extends TestCase
         $response = $this->getJson("/api/cats/{$cat->id}");
 
         $response->assertStatus(200)
-            ->assertJsonFragment(['name' => 'Admin Test Cat'])
-            ->assertJsonPath('viewer_permissions.can_edit', true);
+            ->assertJsonPath('data.name', 'Admin Test Cat')
+            ->assertJsonPath('data.viewer_permissions.can_edit', true);
     }
 
     #[Test]
@@ -130,8 +130,8 @@ class CatProfileTest extends TestCase
         ])->getJson("/api/cats/{$cat->id}");
 
         $response->assertStatus(200)
-            ->assertJsonFragment(['name' => 'Test Cat'])
-            ->assertJsonPath('viewer_permissions.can_edit', false);
+            ->assertJsonPath('data.name', 'Test Cat')
+            ->assertJsonPath('data.viewer_permissions.can_edit', false);
     }
 
     #[Test]
@@ -145,8 +145,8 @@ class CatProfileTest extends TestCase
         ])->getJson("/api/cats/{$cat->id}");
 
         $response->assertStatus(200)
-            ->assertJsonFragment(['name' => 'Test Cat'])
-            ->assertJsonPath('viewer_permissions.can_edit', false);
+            ->assertJsonPath('data.name', 'Test Cat')
+            ->assertJsonPath('data.viewer_permissions.can_edit', false);
     }
 
     #[Test]

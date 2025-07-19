@@ -505,6 +505,38 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
 - **New UI components** for placement request management
 - **Updated cat filtering** logic throughout the application
 
+# Cat-User Permissions System Refactor
+
+## Database Changes (add to roadmap)
+- **New table:** `cat_user_permissions` (fields: `cat_id`, `user_id`, `permission`, `start_datetime`, `end_datetime`)
+- **Removed:** One-to-one user relationship from `cats` table
+- **Updated:** All permission logic and API endpoints to use new many-to-many model
+
+## Epic X: Cat-User Permissions System Refactor
+
+**Goal:** Replace the one-to-one Cat-User relationship with a flexible, permission-based many-to-many system.
+
+### Tasks
+
+- **Backend:**
+  - [ ] Create new model and migration: `CatUserPermission` (or `CatUserRole` if you prefer)
+    - Fields: `cat_id`, `user_id`, `permission` (enum/string), `start_datetime`, `end_datetime`
+    - Permission options: `owner` (edit profile, change statuses, medical), `foster` (change statuses, medical)
+  - [ ] Update Cat model: remove direct user relationship, add many-to-many via `CatUserPermission`
+  - [ ] Update User model: add many-to-many relationship to cats via `CatUserPermission`
+  - [ ] Add API endpoints for managing cat-user permissions (CRUD)
+  - [ ] Add validation: only one `owner` per cat at a time; allow multiple `foster` records
+  - [ ] Update business logic to use new permission checks for all cat actions
+
+- **Frontend:**
+  - [ ] Update all cat profile and management UIs to use new permission system
+  - [ ] Add UI for managing cat-user permissions (assign, edit, revoke)
+  - [ ] Update permission checks for editing, status changes, and medical records
+
+- **Testing:**
+  - [ ] Add/Update tests for new permission logic and endpoints
+
+
 ## Frontend Test Refactoring
 
 The following test files need to be reviewed and refactored to align with the new testing architecture outlined in `GEMINI.md`. The goal is to ensure all tests use the global MSW server, the `renderWithRouter` utility, and centralized mock data.

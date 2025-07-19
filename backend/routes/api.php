@@ -43,7 +43,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
-        return $request->user();
+        return response()->json(['data' => $request->user()]);
     });
     Route::get('/users/me', [UserProfileController::class, 'show']);
     Route::put('/users/me', [UserProfileController::class, 'update']);

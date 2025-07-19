@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cat;
 use App\Models\TransferRequest;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Annotations as OA;
@@ -94,6 +95,8 @@ use App\Enums\UserRole;
  */
 class TransferRequestController extends Controller
 {
+    use ApiResponseTrait;
+
     /**
      * @OA\Post(
      *     path="/api/transfer-requests",
@@ -141,31 +144,24 @@ class TransferRequestController extends Controller
     {
         $user = $request->user();
         if (!$user || $user->role !== \App\Enums\UserRole::HELPER) {
-            return response()->json(['message' => 'Forbidden: Only helpers can initiate transfer requests.'], 403);
+            return $this->sendError('Forbidden: Only helpers can initiate transfer requests.', 403);
         }
 
-        try {
-            $validatedData = $request->validate([
-                'cat_id' => 'required|exists:cats,id',
-                'requested_relationship_type' => 'required|in:fostering,permanent_foster',
-                'fostering_type' => 'nullable|in:free,paid|required_if:requested_relationship_type,fostering',
-                'price' => 'nullable|numeric|min:0|required_if:fostering_type,paid',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'message' => 'Validation Error',
-                'errors' => $e->errors(),
-            ], 422);
-        }
+        $validatedData = $request->validate([
+            'cat_id' => 'required|exists:cats,id',
+            'requested_relationship_type' => 'required|in:fostering,permanent_foster',
+            'fostering_type' => 'nullable|in:free,paid|required_if:requested_relationship_type,fostering',
+            'price' => 'nullable|numeric|min:0|required_if:fostering_type,paid',
+        ]);
 
         $cat = Cat::find($validatedData['cat_id']);
 
         if (!$cat) {
-            return response()->json(['message' => 'Cat not found.'], 404);
+            return $this->sendError('Cat not found.', 404);
         }
 
         if ($cat->status !== 'available') {
-            return response()->json(['message' => 'Cat is not available for transfer.'], 403);
+            return $this->sendError('Cat is not available for transfer.', 403);
         }
 
         $transferRequest = TransferRequest::create(array_merge($validatedData, [
@@ -182,7 +178,7 @@ class TransferRequestController extends Controller
             'is_read' => false,
         ]);
 
-        return response()->json($transferRequest, 201);
+        return $this->sendSuccess($transferRequest, 201);
     }
 
     /**
@@ -220,7 +216,7 @@ class TransferRequestController extends Controller
     public function accept(Request $request, TransferRequest $transferRequest)
     {
         if ($transferRequest->recipient_user_id !== $request->user()->id || $transferRequest->status !== 'pending') {
-            return response()->json(['message' => 'You are not the recipient of this request or the request is not pending.'], 403);
+            return $this->sendError('You are not the recipient of this request or the request is not pending.', 403);
         }
 
         $transferRequest->status = 'accepted';
@@ -229,7 +225,7 @@ class TransferRequestController extends Controller
 
         $transferRequest->cat->update(['user_id' => $transferRequest->recipient_user_id]);
 
-        return response()->json($transferRequest);
+        return $this->sendSuccess($transferRequest);
     }
 
     /**
@@ -267,13 +263,13 @@ class TransferRequestController extends Controller
     public function reject(Request $request, TransferRequest $transferRequest)
     {
         if ($transferRequest->recipient_user_id !== $request->user()->id || $transferRequest->status !== 'pending') {
-            return response()->json(['message' => 'You are not the recipient of this request or the request is not pending.'], 403);
+            return $this->sendError('You are not the recipient of this request or the request is not pending.', 403);
         }
 
         $transferRequest->status = 'rejected';
         $transferRequest->rejected_at = now();
         $transferRequest->save();
 
-        return response()->json($transferRequest);
+        return $this->sendSuccess($transferRequest);
     }
 }

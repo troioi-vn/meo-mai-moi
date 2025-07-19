@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cat;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Annotations as OA;
@@ -65,6 +66,8 @@ use Illuminate\Support\Facades\Storage;
  */
 class CatController extends Controller
 {
+    use ApiResponseTrait;
+
     /**
      * @OA\Get(
      *     path="/api/cats",
@@ -102,7 +105,7 @@ class CatController extends Controller
         }
 
         $cats = $query->get();
-        return response()->json($cats);
+        return $this->sendSuccess($cats);
     }
 
     /**
@@ -128,10 +131,10 @@ class CatController extends Controller
     public function myCats(Request $request)
     {
         if (!$request->user()) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
+            return $this->sendError('Unauthenticated.', 401);
         }
         $cats = $request->user()->cats;
-        return response()->json($cats);
+        return $this->sendSuccess($cats);
     }
 
     /**
@@ -200,7 +203,7 @@ class CatController extends Controller
 
         $cat->setAttribute('viewer_permissions', $viewerPermissions);
 
-        return response()->json($cat);
+        return $this->sendSuccess($cat);
     }
 
     /**
@@ -222,7 +225,7 @@ class CatController extends Controller
     {
         // For now, return a random selection of 3 cats as featured (excluding dead cats)
         $featuredCats = Cat::whereNotIn('status', [CatStatus::DECEASED, CatStatus::DELETED])->inRandomOrder()->limit(3)->get();
-        return response()->json($featuredCats);
+        return $this->sendSuccess($featuredCats);
     }
 
     /**
@@ -263,24 +266,17 @@ class CatController extends Controller
      */
     public function store(Request $request)
     {
-        try {
-            $validatedData = $request->validate([
-                'name' => 'required|string|max:255',
-                'breed' => 'required|string|max:255',
-                'birthday' => 'required|date',
-                'location' => 'required|string|max:255',
-                'description' => 'required|string',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'message' => 'Validation Error',
-                'errors' => $e->errors(),
-            ], 422);
-        }
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'breed' => 'required|string|max:255',
+            'birthday' => 'required|date',
+            'location' => 'required|string|max:255',
+            'description' => 'required|string',
+        ]);
 
         $cat = Cat::create($validatedData + ['user_id' => $request->user()->id]);
 
-        return response()->json($cat, 201);
+        return $this->sendSuccess($cat, 201);
     }
 
     /**
@@ -336,30 +332,21 @@ class CatController extends Controller
         $isAdmin = $role === UserRole::ADMIN->value || $role === 'admin';
         $isOwner = $user && $cat->user_id === $user->id;
         if (!$user || (!$isAdmin && !$isOwner)) {
-            return response()->json([
-                'message' => 'Forbidden: You are not authorized to update this cat.'
-            ], 403);
+            return $this->sendError('Forbidden: You are not authorized to update this cat.', 403);
         }
 
-        try {
-            $validatedData = $request->validate([
-                'name' => 'sometimes|required|string|max:255',
-                'breed' => 'sometimes|required|string|max:255',
-                'birthday' => 'sometimes|required|date',
-                'location' => 'sometimes|required|string|max:255',
-                'description' => 'sometimes|required|string',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'message' => 'Validation Error',
-                'errors' => $e->errors(),
-            ], 422);
-        }
+        $validatedData = $request->validate([
+            'name' => 'sometimes|required|string|max:255',
+            'breed' => 'sometimes|required|string|max:255',
+            'birthday' => 'sometimes|required|date',
+            'location' => 'sometimes|required|string|max:255',
+            'description' => 'sometimes|required|string',
+        ]);
 
         $cat->fill($validatedData);
         $cat->save();
 
-        return response()->json($cat);
+        return $this->sendSuccess($cat);
     }
 
     /**
@@ -401,25 +388,16 @@ class CatController extends Controller
         $isOwner = $user && $cat->user_id === $user->id;
 
         if (!$user || (!$isAdmin && !$isOwner)) {
-            return response()->json([
-                'message' => 'Forbidden: You are not authorized to delete this cat.'
-            ], 403);
+            return $this->sendError('Forbidden: You are not authorized to delete this cat.', 403);
         }
 
         if (!Hash::check($request->input('password'), $user->password)) {
-            return response()->json([
-                'message' => 'The provided password does not match our records.',
-                'errors' => [
-                    'password' => [
-                        'The provided password does not match our records.'
-                    ]
-                ]
-            ], 422);
+            return $this->sendError('The provided password does not match our records.', 422);
         }
 
         $cat->delete();
 
-        return response()->json(null, 204);
+        return $this->sendSuccess(null, 204);
     }
 
     public function updateStatus(Request $request, Cat $cat)
@@ -430,9 +408,7 @@ class CatController extends Controller
         $isOwner = $user && $cat->user_id === $user->id;
 
         if (!$user || (!$isAdmin && !$isOwner)) {
-            return response()->json([
-                'message' => 'Forbidden: You are not authorized to update this cat.'
-            ], 403);
+            return $this->sendError('Forbidden: You are not authorized to update this cat.', 403);
         }
 
         $validated = $request->validate([
@@ -441,20 +417,13 @@ class CatController extends Controller
         ]);
 
         if (!Hash::check($validated['password'], $user->password)) {
-            return response()->json([
-                'message' => 'The provided password does not match our records.',
-                'errors' => [
-                    'password' => [
-                        'The provided password does not match our records.'
-                    ]
-                ]
-            ], 422);
+            return $this->sendError('The provided password does not match our records.', 422);
         }
 
         $cat->status = $validated['status'];
         $cat->save();
 
-        return response()->json($cat, 200);
+        return $this->sendSuccess($cat);
     }
 
     

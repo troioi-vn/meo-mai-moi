@@ -32,8 +32,7 @@ class UserProfileTest extends TestCase
             'new_password_confirmation' => 'new_password',
         ]);
 
-        $response->assertStatus(200)
-                 ->assertJson(['message' => 'Password updated successfully.']);
+        $response->assertStatus(204);
 
         $this->assertTrue(Hash::check('new_password', $this->user->fresh()->password));
     }
@@ -75,8 +74,7 @@ class UserProfileTest extends TestCase
             'password' => 'password',
         ]);
 
-        $response->assertStatus(200)
-                 ->assertJson(['message' => 'Account deleted successfully.']);
+        $response->assertStatus(204);
 
         $this->assertDatabaseMissing('users', ['id' => $this->user->id]);
     }

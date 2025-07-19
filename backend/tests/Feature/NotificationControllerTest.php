@@ -21,7 +21,7 @@ class NotificationControllerTest extends TestCase
         $response = $this->actingAs($user)->getJson('/api/notifications');
 
         $response->assertStatus(200);
-        $response->assertJsonCount(3);
+        $response->assertJsonCount(3, 'data');
     }
 
     #[Test]

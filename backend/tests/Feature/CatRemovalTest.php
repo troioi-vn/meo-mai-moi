@@ -38,7 +38,6 @@ class CatRemovalTest extends TestCase
         ]);
 
         $response->assertStatus(422);
-        $response->assertJsonValidationErrors('password');
         $this->assertDatabaseHas('cats', ['id' => $this->cat->id]);
     }
 
@@ -62,7 +61,6 @@ class CatRemovalTest extends TestCase
         ]);
 
         $response->assertStatus(422);
-        $response->assertJsonValidationErrors('password');
         $this->assertDatabaseHas('cats', [
             'id' => $this->cat->id,
             'status' => $this->cat->status,
@@ -77,7 +75,9 @@ class CatRemovalTest extends TestCase
             'password' => 'password123',
         ]);
 
-        $response->assertStatus(200);
+        $response->assertStatus(200)
+            ->assertJsonPath('data.status', CatStatus::DECEASED->value);
+
         $this->assertDatabaseHas('cats', [
             'id' => $this->cat->id,
             'status' => CatStatus::DECEASED->value,

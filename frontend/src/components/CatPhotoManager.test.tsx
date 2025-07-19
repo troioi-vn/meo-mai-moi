@@ -67,7 +67,6 @@ describe('CatPhotoManager', () => {
     await user.upload(fileInput as HTMLElement, file)
 
     await waitFor(() => {
-      console.log('Waiting for mockOnPhotoUpdated to be called...');
       expect(mockOnPhotoUpdated).toHaveBeenCalledWith(expect.objectContaining({
         photo_url: 'https://example.com/new-cat-photo.jpg',
         photo: {
@@ -79,33 +78,31 @@ describe('CatPhotoManager', () => {
           mime_type: 'image/jpeg',
         },
       }))
-      console.log('mockOnPhotoUpdated called!');
-    }, { timeout: 30000 })
+    }, { timeout: 3000 })
     expect(toast.success).toHaveBeenCalledWith('Photo uploaded successfully')
   })
 
   it('handles upload errors gracefully', async () => {
-    const user = userEvent.setup()
-    const initialCat: Cat = { ...mockCat, photo_url: null, photo: null, id: 999 }
-    renderWithRouter(
-      <CatPhotoManager
-        cat={initialCat}
-        isOwner={true}
-        onPhotoUpdated={mockOnPhotoUpdated}
-      />
-    )
-    const file = new File(['test'], 'any.jpg', { type: 'image/jpeg' })
-    const uploadButton = screen.getByRole('button', { name: /upload photo/i })
-    await user.click(uploadButton)
-    const fileInput = document.querySelector('input[type="file"]')!
-    await user.upload(fileInput as HTMLElement, file)
-    await waitFor(() => {
-      console.log('Waiting for toast.error to be called...');
-      expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/Failed to upload the photo/i))
-      console.log('toast.error called!');
-    }, { timeout: 30000 })
-    expect(mockOnPhotoUpdated).not.toHaveBeenCalled() // Ensure onPhotoUpdated is NOT called on error
-  })
+        const file = new File(['(⌐□_□)'], 'error.png', { type: 'image/png' }); // This file name triggers the error mock
+        const mockOnPhotoUpdated = vi.fn();
+
+        renderWithRouter(<CatPhotoManager catId="1" onPhotoUpdated={mockOnPhotoUpdated} cat={{ id: '1', name: 'Test Cat', photo_url: 'https://example.com/initial-cat.jpg' }} isOwner={true} />);
+
+        const uploadButton = screen.getByRole('button', { name: /replace/i });
+        const fileInput = document.querySelector('input[type="file"]')!;
+
+        await userEvent.click(uploadButton); // Simulate clicking the visible button
+        await userEvent.upload(fileInput, file); // Then upload the file to the hidden input
+
+        expect(screen.getByText(/uploading.../i)).toBeInTheDocument();
+
+        await waitFor(() => {
+            expect(toast.error).toHaveBeenCalledWith('Failed to upload photo: Network Error');
+        }, { timeout: 5000 });
+
+        expect(mockOnPhotoUpdated).not.toHaveBeenCalled();
+        expect(screen.queryByText(/uploading.../i)).not.toBeInTheDocument();
+    });
 
   it('deletes photo successfully', async () => {
     const user = userEvent.setup()
@@ -157,17 +154,14 @@ describe('CatPhotoManager', () => {
       />
     )
     const file = new File(['test'], 'cat.jpg', { type: 'image/jpeg' })
-    const uploadButton = screen.getByRole('button', { name: /upload photo/i })
-    await user.click(uploadButton)
     const fileInput = document.querySelector('input[type="file"]')!
     await user.upload(fileInput as HTMLElement, file)
+    
     // Should show uploading state
     expect(screen.getByText('Uploading...')).toBeInTheDocument()
     await waitFor(() => {
-      console.log('Waiting for Uploading... to disappear...');
       expect(screen.queryByText('Uploading...')).not.toBeInTheDocument()
-      console.log('Uploading... disappeared!');
-    }, { timeout: 30000 })
+    }, { timeout: 3000 })
 
     // Test deleting loading state
     const catWithPhoto: Cat = { ...mockCat, photo_url: 'https://example.com/cat.jpg', photo: { id: 1, path: 'path/to/photo.jpg' } as any }
@@ -185,6 +179,6 @@ describe('CatPhotoManager', () => {
       console.log('Waiting for remove button to be enabled...');
       expect(screen.queryByRole('button', { name: /remove/i, disabled: true })).not.toBeInTheDocument()
       console.log('Remove button enabled!');
-    }, { timeout: 30000 })
+    }, { timeout: 3000 })
   })
 })

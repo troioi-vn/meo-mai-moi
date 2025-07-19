@@ -1,4 +1,4 @@
-#  GEMINI.md - Meo Mai Moi Project
+# GEMINI.md - Meo Mai Moi Project
 
 This document outlines the conventions, goals, and workflow for the collaboration between the development team and the Gemini AI assistant on the Meo Mai Moi project.
 
@@ -30,7 +30,7 @@ This outlines the high-level map of the application from the perspective of its 
 ### Admin Dashboard (For rescue staff only)
 
 -   **Admin Home (`/admin`):** A private dashboard with operational overviews.
--   **Manage Cats:** Add new cats and view/edit all cats in the system.
+-   **Manage Cats:** Add new cats and view/edit all cats in the system. (Now uses enum status: `active`, `lost`, `deceased`, `deleted`)
 -   **Manage Applications:** Review and approve/reject helper applications.
 -   **Manage Users:** View all users and manage admin privileges.
 -   **Manage Transfers:** View a complete history of all custodianship changes.
@@ -418,6 +418,10 @@ enum Permission: string {
 
 *   Permissions will be checked using dedicated middleware for API routes.
 *   There will be clear processes for role upgrades (e.g., a `VIEWER` becomes a `HELPER` after their helper application is approved).
+
+**Cat Status:**
+  - The `Cat` model now uses a status enum: `active`, `lost`, `deceased`, `deleted`.
+  - All business logic, API, and UI are updated to use these values.
 
 ---
 

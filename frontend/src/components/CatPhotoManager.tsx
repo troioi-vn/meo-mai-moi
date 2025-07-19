@@ -31,7 +31,7 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
     }
 
     setIsUploading(true)
-    console.log('Starting photo upload...')
+    setIsUploading(true)
     try {
       const formData = new FormData()
       formData.append('photo', file)
@@ -43,14 +43,12 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
         },
       })
       
-      console.log('Photo upload successful:', response.data)
       onPhotoUpdated(response.data)
       toast.success('Photo uploaded successfully')
     } catch (error) {
       console.error('Photo upload failed in component:', error)
       toast.error('Failed to upload the photo. Please try again.')
     } finally {
-      console.log('Photo upload finally block.')
       setIsUploading(false)
       if (fileInputRef.current) {
         fileInputRef.current.value = ''

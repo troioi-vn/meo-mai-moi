@@ -34,10 +34,11 @@ export function NotificationBell() {
     setIsLoading(true)
     setError(null)
     try {
-      const response = await api.get<{ data: Notification[] }>('/notifications')
-      const fetchedNotifications = response.data.data
-      setNotifications(fetchedNotifications)
-      setUnreadCount(fetchedNotifications.filter(n => !n.read_at).length)
+      const response = await api.get<{ data: { notifications: Notification[], unread_count: number } }>('/notifications')
+      const responseData = response.data.data;
+      const fetchedNotifications = responseData?.notifications || [];
+      setNotifications(fetchedNotifications);
+      setUnreadCount(fetchedNotifications.filter(n => !n.read_at).length);
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.error('Error fetching notifications:', error.message)

@@ -63,7 +63,7 @@ describe('CatProfilePage', () => {
       <Routes>
         <Route path="/cats/:id" element={<CatProfilePage />} />
       </Routes>,
-      { route: `/cats/${mockCat.id}` },
+      { route: `/cats/${String(mockCat.id)}` },
     )
 
     await waitFor(() => {
@@ -149,7 +149,7 @@ describe('CatProfilePage', () => {
       })
 
       // Click Back and assert navigation
-      await screen.getByRole('button', { name: /back/i }).click()
+      screen.getByRole('button', { name: /back/i }).click()
       expect(mockNavigate).toHaveBeenCalledWith('/')
 
       expect(screen.queryByRole('button', { name: /edit/i })).not.toBeInTheDocument()
@@ -172,11 +172,11 @@ describe('CatProfilePage', () => {
       })
 
       // Click Edit and assert navigation
-      await screen.getByRole('button', { name: /edit/i }).click()
+      screen.getByRole('button', { name: /edit/i }).click()
       expect(mockNavigate).toHaveBeenCalledWith(`/cats/${String(mockCat.id)}/edit`)
 
       // Click My Cats and assert navigation
-      await screen.getByRole('button', { name: /my cats/i }).click()
+      screen.getByRole('button', { name: /my cats/i }).click()
       expect(mockNavigate).toHaveBeenCalledWith('/account/cats')
     })
   })

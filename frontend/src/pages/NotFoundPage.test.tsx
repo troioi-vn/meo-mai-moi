@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 import { renderWithRouter } from '@/test-utils'
-import NotFoundPage from './NotFoundPage'
+
 import { AppRoutes } from '@/App'
 
 describe('NotFoundPage', () => {

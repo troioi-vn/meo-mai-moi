@@ -19,10 +19,10 @@ describe('CreateCatPage', () => {
     user = userEvent.setup()
     server.use(
       http.get('http://localhost:3000/api/user', () => {
-        return HttpResponse.json(mockUser)
+        return HttpResponse.json(mockUser as any)
       }),
       http.get('http://localhost:3000/api/cats', () => {
-        return HttpResponse.json([])
+        return HttpResponse.json({ data: [] })
       })
     )
   })
@@ -55,7 +55,7 @@ describe('CreateCatPage', () => {
             id: 1,
             ...newCat,
             user_id: 1,
-            status: 'alive',
+            status: 'active',
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           },

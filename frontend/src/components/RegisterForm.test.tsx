@@ -3,8 +3,7 @@ import { renderWithRouter } from '@/test-utils';
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { userEvent } from '@testing-library/user-event'
 import RegisterForm from './RegisterForm'
-import { http, HttpResponse } from 'msw'
-import { server } from '@/mocks/server'
+
 
 describe('RegisterForm', () => {
   let user: ReturnType<typeof userEvent.setup>

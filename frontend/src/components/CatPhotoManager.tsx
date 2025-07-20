@@ -48,7 +48,12 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
     } catch (error: unknown) {
       let errorMessage = 'Failed to upload the photo. Please try again.'
       if (error instanceof AxiosError) {
-        errorMessage = error.response?.data?.message ?? error.message
+        if (error.response?.data && typeof error.response.data === 'object' && error.response.data !== null && 'message' in error.response.data) {
+          const responseData = error.response.data as { message: string }
+          errorMessage = responseData.message
+        } else {
+          errorMessage = error.message
+        }
       } else if (error instanceof Error) {
         errorMessage = error.message
       }
@@ -65,7 +70,8 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
     setIsDeleting(true)
     
     try {
-      await api.delete<Cat>(`/cats/${String(cat.id)}/photos/${String(cat.photo?.id ?? '')}`);
+      const photoId = cat.photo && 'id' in cat.photo ? String((cat.photo as { id: unknown }).id) : ''
+      await api.delete<Cat>(`/cats/${String(cat.id)}/photos/${photoId}`);
       
       // Manually update the cat object to reflect photo deletion
       const updatedCat: Cat = { ...cat, photo: null, photo_url: undefined };
@@ -74,7 +80,12 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
     } catch (error: unknown) {
       let errorMessage = 'Failed to delete the photo. Please try again.'
       if (error instanceof AxiosError) {
-        errorMessage = error.response?.data?.message ?? error.message
+        if (error.response?.data && typeof error.response.data === 'object' && error.response.data !== null && 'message' in error.response.data) {
+          const responseData = error.response.data as { message: string }
+          errorMessage = responseData.message
+        } else {
+          errorMessage = error.message
+        }
       } else if (error instanceof Error) {
         errorMessage = error.message
       }
@@ -84,15 +95,19 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
     }
   }
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
-      await handlePhotoUpload(file)
+      void handlePhotoUpload(file).catch(console.error)
     }
   }
 
   const triggerFileSelect = () => {
     fileInputRef.current?.click()
+  }
+
+  const handlePhotoDeleteClick = () => {
+    void handlePhotoDelete().catch(console.error)
   }
 
   return (
@@ -138,7 +153,7 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={() => void handlePhotoDelete().catch(console.error)}
+                      onClick={handlePhotoDeleteClick}
                       disabled={isDeleting}
                     >
                       {isDeleting ? (

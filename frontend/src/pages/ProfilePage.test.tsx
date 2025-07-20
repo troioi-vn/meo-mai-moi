@@ -11,7 +11,7 @@ import { server } from '@/mocks/server'
 import { mockUser } from '@/mocks/data/user'
 
 // Mock navigation if needed
-let mockNavigate = vi.fn()
+const mockNavigate = vi.fn()
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
   return { ...actual, useNavigate: () => mockNavigate }

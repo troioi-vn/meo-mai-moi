@@ -41,7 +41,7 @@ describe('CatsSection', () => {
   it('displays a loading message initially', () => {
     server.use(
       http.get('http://localhost:3000/api/cats', () => {
-        return new Promise(() => {})
+        return new Promise(() => { /* intentionally empty to simulate loading */ })
       }),
     )
     renderWithRouter(<CatsSection />)

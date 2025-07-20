@@ -127,7 +127,7 @@ export const catHandlers = [
     return HttpResponse.json({ data: updatedCat }, { status: 200 })
   }),
   // Returns no content
-  http.delete('http://localhost:3000/api/cats/:catId/photos/:photoId', async ({ params }) => {
+  http.delete('http://localhost:3000/api/cats/:catId/photos/:photoId', ({ params }) => {
     if (Number(params.catId) === 999) {
       // Error responses do not have the 'data' wrapper
       return HttpResponse.json({ message: 'Failed to delete the photo. Please try again.' }, { status: 500 })

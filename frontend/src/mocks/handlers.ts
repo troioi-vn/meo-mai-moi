@@ -45,7 +45,7 @@ const userHandlers = [
       if (body && typeof body === 'object' && 'password' in body) {
         password = (body as Record<string, unknown>).password as string
       }
-    } catch {}
+    } catch (e) { /* do nothing */ }
     
     if (params.id === String(mockCat.id)) {
       if (password === 'wrongpassword') {
@@ -69,7 +69,7 @@ const userHandlers = [
         status = (body as Record<string, unknown>).status as string
         password = (body as Record<string, unknown>).password as string
       }
-    } catch {}
+    } catch (e) { /* do nothing */ }
     if (params.id === String(mockCat.id) && status === 'deceased' && password) {
       return HttpResponse.json({ data: {
         ...mockCat,

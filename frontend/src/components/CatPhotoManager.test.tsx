@@ -18,14 +18,21 @@ vi.mock('@/api/axios', () => ({
 }));
 
 // Mock the sonner module
-vi.mock('sonner', () => ({
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-  },
-}))
+vi.mock('sonner', async () => {
+  const actual = await vi.importActual('sonner')
+  return {
+    ...actual,
+    toast: {
+      success: vi.fn(),
+      error: vi.fn(),
+    },
+  }
+})
 
 const mockOnPhotoUpdated = vi.fn()
+
+// Type the mocked functions to avoid unbound method errors
+
 
 describe('CatPhotoManager', () => {
 beforeEach(() => {

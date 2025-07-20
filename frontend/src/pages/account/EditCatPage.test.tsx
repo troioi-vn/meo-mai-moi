@@ -5,7 +5,7 @@ import { server } from '@/mocks/server'
 import { toast } from 'sonner'
 import { mockCat, anotherMockCat } from '@/mocks/data/cats'
 import EditCatPage from '@/pages/account/EditCatPage'
-import * as CatApi from '@/api/cats' // Import the entire module to mock getCat
+
 
 // Mock the toast module
 vi.mock('sonner')
@@ -17,8 +17,8 @@ vi.mock('react-router-dom', async (importOriginal) => {
   const actual = await importOriginal()
   return {
     ...actual,
-    useParams: () => mockUseParams(),
-    useNavigate: () => mockUseNavigate,
+    useParams: () => mockUseParams() as any,
+    useNavigate: () => mockUseNavigate as any,
   }
 })
 
@@ -101,7 +101,7 @@ describe('EditCatPage', () => {
   it('submits updated data and navigates on success', async () => {
     const updatedName = 'Fluffy II'
     server.use(
-      http.put('http://localhost:3000/api/cats/1', async () => {
+      http.put('http://localhost:3000/api/cats/1', () => {
         return HttpResponse.json({ data: { ...mockCat, name: updatedName } })
       })
     )
@@ -139,7 +139,7 @@ describe('EditCatPage', () => {
     await user.clear(screen.getByLabelText(/location/i))
     await user.clear(screen.getByLabelText(/description/i))
 
-    await fireEvent.submit(screen.getByRole('form'))
+    fireEvent.submit(screen.getByRole('form'))
 
     await waitFor(() => {
       expect(screen.getByText('Name is required.')).toBeInTheDocument()

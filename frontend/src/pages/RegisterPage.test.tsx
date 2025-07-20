@@ -2,7 +2,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
   const actual = await importOriginal()
   return {
     ...actual,
-    useNavigate: () => vi.fn(),
+    useNavigate: () => vi.fn() as any,
   }
 })
 import { screen, waitFor } from '@testing-library/react'
@@ -10,11 +10,15 @@ import { describe, it, expect } from 'vitest'
 import { renderWithRouter, userEvent } from '@/test-utils'
 import RegisterPage from './RegisterPage'
 import { useNavigate } from 'react-router-dom'
-vi.mock('sonner', () => ({
-  toast: {
-    success: vi.fn(),
-  },
-}))
+vi.mock('sonner', async () => {
+  const actual = await vi.importActual('sonner')
+  return {
+    ...actual,
+    toast: {
+      success: vi.fn(),
+    },
+  }
+})
 import { toast } from 'sonner'
 import { server } from '@/mocks/server'
 import { HttpResponse, http } from 'msw'

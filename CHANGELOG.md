@@ -40,6 +40,11 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Fixed
+- **Frontend**: Resolved various test failures and linting errors:
+  - Fixed `[vitest] No "Toaster" export is defined on the "sonner" mock` by updating `vi.mock('sonner')` to return `Toaster` in `CatPhotoManager.test.tsx` and `EnhancedCatRemovalModal.test.tsx`.
+  - Fixed `TypeError: [Function] is not a spy or a call to a spy!` in `CatPhotoManager.test.tsx` by directly asserting on `api.delete`.
+  - Fixed `TypeError: vi.mocked(...).mockImplementation is not a function` in `NotificationBell.test.tsx` by mocking `api.get` directly.
+  - Fixed `TypeError: Cannot read properties of undefined (reading 'filter')` in `CreateCatPage.test.tsx` by ensuring the mock for `/api/cats` returns `{ data: [] }`.
 - **Frontend**: Fixed and completed tests for the `CatPhotoManager` component, ensuring upload and delete functionality are fully covered.
 - **Frontend**: Corrected the mock response for `/api/notifications` in `frontend/src/mocks/handlers.ts` to return an array of notifications with `unread_count`.
 - **Frontend**: Updated `frontend/src/components/NotificationBell.tsx` to correctly process the `notifications` array and `unread_count` from the API response, including a null check for `notifications`.

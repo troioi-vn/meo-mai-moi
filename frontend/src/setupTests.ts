@@ -1,10 +1,18 @@
 /// <reference types="vitest/globals" />
 import '@testing-library/jest-dom/vitest'
 import { server } from './mocks/server'
+import { http, HttpResponse } from 'msw'
 
 // Establish API mocking before all tests.
 beforeAll(() => {
   server.listen()
+
+  // Mock the /user endpoint for AuthContext
+  server.use(
+    http.get('http://localhost:3000/api/user', () => {
+      return HttpResponse.json({ data: { id: 1, name: 'Test User', email: 'test@example.com' } })
+    }),
+  )
 })
 // Reset any request handlers that are declared as a part of tests
 // (i.e. for testing one-time error scenarios)

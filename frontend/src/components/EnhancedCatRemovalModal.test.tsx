@@ -2,16 +2,20 @@ import { screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { EnhancedCatRemovalModal } from '@/components/EnhancedCatRemovalModal'
 import { toast } from 'sonner'
-import type { Cat } from '@/types/cat'
+
 import { renderWithRouter, userEvent } from '@/test-utils'
 
 
-vi.mock('sonner', () => ({
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-  },
-}))
+vi.mock('sonner', async () => {
+  const actual = await vi.importActual('sonner')
+  return {
+    ...actual,
+    toast: {
+      success: vi.fn(),
+      error: vi.fn(),
+    },
+  }
+})
 
 describe('EnhancedCatRemovalModal', () => {
   const mockProps = {

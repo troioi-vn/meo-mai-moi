@@ -3,8 +3,10 @@ import { renderWithRouter } from '@/test-utils'
 import { NotificationBell } from './NotificationBell'
 import { vi } from 'vitest'
 import { useAuth } from '@/hooks/use-auth'
+import { api } from '@/api/axios'
 
 vi.mock('@/hooks/use-auth')
+vi.mock('@/api/axios')
 
 const mockUser = { id: 1, name: 'Test User', email: 'test@example.com' }
 
@@ -21,6 +23,33 @@ describe('NotificationBell', () => {
       changePassword: vi.fn(),
       deleteAccount: vi.fn(),
     })
+
+    // Mock the API response for notifications
+    vi.mocked(api.get).mockImplementation((url) => {
+      if (url === '/notifications') {
+        return Promise.resolve({
+          data: {
+            data: {
+              notifications: [
+                {
+                  id: '1',
+                  type: 'App\\Notifications\\NewFollower',
+                  notifiable_type: 'App\\Models\\User',
+                  notifiable_id: 1,
+                  data: { message: 'You have a new follower' },
+                  read_at: null,
+                  created_at: new Date().toISOString(),
+                },
+              ],
+              unread_count: 1,
+            },
+          },
+        });
+      } else if (url === '/user') {
+        return Promise.resolve({ data: { data: mockUser } });
+      }
+      return Promise.reject(new Error(`Unhandled GET request: ${url}`));
+    });
   })
 
   it('fetches and displays the number of unread notifications', async () => {

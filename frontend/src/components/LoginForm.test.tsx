@@ -18,7 +18,7 @@ describe('LoginForm', () => {
           email: 'test@example.com',
           avatar_url: 'https://example.com/avatar.jpg',
         })
-      }),
+      })
     )
   })
   it('renders the login form correctly', () => {
@@ -44,7 +44,7 @@ describe('LoginForm', () => {
     server.use(
       http.post('http://localhost:3000/api/login', () => {
         return HttpResponse.json({ message: 'Invalid credentials' }, { status: 401 })
-      }),
+      })
     )
 
     renderWithRouter(<LoginForm />)
@@ -55,7 +55,9 @@ describe('LoginForm', () => {
     await user.click(screen.getByRole('button', { name: /login/i }))
 
     await waitFor(() => {
-      expect(screen.getByText('Failed to login. Please check your credentials.')).toBeInTheDocument()
+      expect(
+        screen.getByText('Failed to login. Please check your credentials.')
+      ).toBeInTheDocument()
     })
   })
 })

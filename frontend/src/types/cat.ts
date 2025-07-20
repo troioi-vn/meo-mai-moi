@@ -9,6 +9,7 @@ export interface Cat {
   status: 'active' | 'lost' | 'deceased' | 'deleted'
   imageUrl?: string
   photo_url?: string // Backend API photo URL
+  photo?: { id: number; url: string; };
   created_at: string
   updated_at: string
   user: {

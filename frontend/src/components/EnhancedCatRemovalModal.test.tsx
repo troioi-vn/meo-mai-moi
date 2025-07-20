@@ -5,7 +5,6 @@ import { toast } from 'sonner'
 
 import { renderWithRouter, userEvent } from '@/test-utils'
 
-
 vi.mock('sonner', async () => {
   const actual = await vi.importActual('sonner')
   return {

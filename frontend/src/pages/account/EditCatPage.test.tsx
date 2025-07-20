@@ -6,7 +6,6 @@ import { toast } from 'sonner'
 import { mockCat, anotherMockCat } from '@/mocks/data/cats'
 import EditCatPage from '@/pages/account/EditCatPage'
 
-
 // Mock the toast module
 vi.mock('sonner')
 
@@ -17,8 +16,8 @@ vi.mock('react-router-dom', async (importOriginal) => {
   const actual = await importOriginal()
   return {
     ...actual,
-    useParams: () => mockUseParams() as any,
-    useNavigate: () => mockUseNavigate as any,
+    useParams: () => mockUseParams(), // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    useNavigate: () => mockUseNavigate, // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   }
 })
 
@@ -41,10 +40,14 @@ describe('EditCatPage', () => {
       http.get('http://localhost:3000/api/cats/:id', ({ params }) => {
         const catId = String(params.id)
         if (catId === '1') {
-          return HttpResponse.json({ data: { ...mockCat, user_id: mockUser.id, viewer_permissions: { can_edit: true } } })
+          return HttpResponse.json({
+            data: { ...mockCat, user_id: mockUser.id, viewer_permissions: { can_edit: true } },
+          })
         }
         if (catId === '2') {
-          return HttpResponse.json({ data: { ...anotherMockCat, user_id: 99, viewer_permissions: { can_edit: false } } })
+          return HttpResponse.json({
+            data: { ...anotherMockCat, user_id: 99, viewer_permissions: { can_edit: false } },
+          })
         }
         return new HttpResponse(null, { status: 404 })
       })
@@ -67,7 +70,9 @@ describe('EditCatPage', () => {
     server.use(
       http.get('http://localhost:3000/api/cats/1', async () => {
         await new Promise((resolve) => setTimeout(resolve, 100))
-        return HttpResponse.json({ data: { ...mockCat, user_id: mockUser.id, viewer_permissions: { can_edit: true } } })
+        return HttpResponse.json({
+          data: { ...mockCat, user_id: mockUser.id, viewer_permissions: { can_edit: true } },
+        })
       })
     )
     renderComponent()

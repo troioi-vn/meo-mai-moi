@@ -43,7 +43,7 @@ describe('App Routing', () => {
 
   describe('Cat profile routes', () => {
     it('renders CatProfilePage for /cats/:id route', async () => {
-      renderWithRouter(<App />, { route: '/cats/1', initialAuthState: authenticatedState })
+      renderWithRouter(<App />, { route: '/cats/1' })
 
       // Should show loading initially
       expect(screen.getByText(/loading/i)).toBeInTheDocument()
@@ -58,7 +58,7 @@ describe('App Routing', () => {
     })
 
     it('handles cat profile route with invalid ID', async () => {
-      renderWithRouter(<App />, { route: '/cats/999', initialAuthState: authenticatedState })
+      renderWithRouter(<App />, { route: '/cats/999' })
 
       await waitFor(() => {
         expect(screen.getByText(/cat not found/i)).toBeInTheDocument()
@@ -87,7 +87,7 @@ describe('App Routing', () => {
 
   describe('Edit cat routes', () => {
     it('renders edit cat route correctly', async () => {
-      renderWithRouter(<App />, { route: '/cats/1/edit', initialAuthState: authenticatedState })
+      renderWithRouter(<App />, { route: '/cats/1/edit' })
 
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: /edit cat profile/i })).toBeInTheDocument()
@@ -97,14 +97,19 @@ describe('App Routing', () => {
 
   describe('Route transitions', () => {
     it('supports navigation between routes', async () => {
-      const { user } = renderWithRouter(<App />, { route: '/', initialAuthState: authenticatedState })
+      const { user } = renderWithRouter(<App />, {
+        route: '/',
+      })
 
       // From home to a cat's profile by clicking on the cat's name
       const catProfileLink = await screen.findByText('Fluffy')
       await user.click(catProfileLink)
-      await waitFor(() => {
-        expect(screen.getByText(mockCat.name)).toBeInTheDocument()
-      }, { timeout: 5000 })
+      await waitFor(
+        () => {
+          expect(screen.getByText(mockCat.name)).toBeInTheDocument()
+        },
+        { timeout: 5000 }
+      )
 
       // Back to home
       const homeLink = screen.getByRole('link', { name: /meo!/i })

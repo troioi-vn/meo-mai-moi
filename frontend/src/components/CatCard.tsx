@@ -12,23 +12,22 @@ interface CatCardProps {
 
 export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
   // Prefer photos[0].url, then photo_url, then placeholder
-  const imageUrl = (Array.isArray((cat as { photos?: { url?: string }[] }).photos)
-    ? (cat as { photos?: { url?: string }[] }).photos?.[0]?.url
-    : undefined)
-    ?? cat.photo_url
-    ?? placeholderImage;
+  const imageUrl =
+    (Array.isArray((cat as { photos?: { url?: string }[] }).photos)
+      ? (cat as { photos?: { url?: string }[] }).photos?.[0]?.url
+      : undefined) ??
+    cat.photo_url ??
+    placeholderImage
   return (
     <Card className="flex flex-col overflow-hidden rounded-lg shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl">
       <Link to={`/cats/${String(cat.id)}`} className="block">
-        <img
-          src={imageUrl}
-          alt={cat.name}
-          className="h-48 w-full object-cover"
-        />
+        <img src={imageUrl} alt={cat.name} className="h-48 w-full object-cover" />
       </Link>
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-primary">{cat.name}</CardTitle>
-        <CardDescription className="text-muted-foreground">{cat.breed} - {calculateAge(cat.birthday)} years old</CardDescription>
+        <CardDescription className="text-muted-foreground">
+          {cat.breed} - {calculateAge(cat.birthday)} years old
+        </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-grow flex-col justify-between p-4">
         <p className="text-sm text-gray-600">Location: {cat.location}</p>

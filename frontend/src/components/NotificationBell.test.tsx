@@ -1,7 +1,7 @@
 import { screen, waitFor } from '@testing-library/react'
 import { renderWithRouter } from '@/test-utils'
 import { NotificationBell } from './NotificationBell'
-import { vi } from 'vitest'
+import { vi, type Mock } from 'vitest'
 import { useAuth } from '@/hooks/use-auth'
 import { api } from '@/api/axios'
 
@@ -11,6 +11,7 @@ vi.mock('@/api/axios')
 const mockUser = { id: 1, name: 'Test User', email: 'test@example.com' }
 
 describe('NotificationBell', () => {
+  let mockApiGet: Mock
   beforeEach(() => {
     vi.mocked(useAuth).mockReturnValue({
       user: mockUser,
@@ -25,7 +26,8 @@ describe('NotificationBell', () => {
     })
 
     // Mock the API response for notifications
-    vi.mocked(api.get).mockImplementation((url) => {
+    mockApiGet = vi.spyOn(api, 'get')
+    mockApiGet.mockImplementation(async (url) => {
       if (url === '/notifications') {
         return Promise.resolve({
           data: {
@@ -44,12 +46,12 @@ describe('NotificationBell', () => {
               unread_count: 1,
             },
           },
-        });
+        })
       } else if (url === '/user') {
-        return Promise.resolve({ data: { data: mockUser } });
+        return Promise.resolve({ data: { data: mockUser } })
       }
-      return Promise.reject(new Error(`Unhandled GET request: ${url}`));
-    });
+      return Promise.reject(new Error(`Unhandled GET request: ${String(url)}`))
+    })
   })
 
   it('fetches and displays the number of unread notifications', async () => {

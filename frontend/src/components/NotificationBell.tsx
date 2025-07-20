@@ -12,16 +12,16 @@ import { Badge } from '@/components/ui/badge'
 import { api } from '@/api/axios'
 
 interface Notification {
-  id: string;
-  type: string;
-  notifiable_type: string;
-  notifiable_id: number;
+  id: string
+  type: string
+  notifiable_type: string
+  notifiable_id: number
   data: {
-    message: string;
-    link?: string;
-  };
-  read_at: string | null;
-  created_at: string;
+    message: string
+    link?: string
+  }
+  read_at: string | null
+  created_at: string
 }
 
 export function NotificationBell() {
@@ -34,11 +34,14 @@ export function NotificationBell() {
     setIsLoading(true)
     setError(null)
     try {
-      const response = await api.get<{ data: { notifications: Notification[], unread_count: number } }>('/notifications')
-      const responseData = response.data.data;
-      const fetchedNotifications = responseData?.notifications || [];
-      setNotifications(fetchedNotifications);
-      setUnreadCount(fetchedNotifications.filter(n => !n.read_at).length);
+      const response = await api.get<{
+        data: { notifications: Notification[]; unread_count: number }
+      }>('/notifications')
+      const responseData = response.data.data
+      const fetchedNotifications = responseData.notifications || []
+      setNotifications(fetchedNotifications)
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      setUnreadCount(fetchedNotifications.filter((n) => !n.read_at).length)
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.error('Error fetching notifications:', error.message)

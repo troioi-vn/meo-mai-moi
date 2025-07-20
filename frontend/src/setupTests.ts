@@ -11,7 +11,7 @@ beforeAll(() => {
   server.use(
     http.get('http://localhost:3000/api/user', () => {
       return HttpResponse.json({ data: { id: 1, name: 'Test User', email: 'test@example.com' } })
-    }),
+    })
   )
 })
 // Reset any request handlers that are declared as a part of tests
@@ -39,4 +39,4 @@ Object.defineProperty(window, 'matchMedia', {
 })
 
 // Mock scrollIntoView as it's not implemented in JSDOM
-HTMLElement.prototype.scrollIntoView = vi.fn();
+HTMLElement.prototype.scrollIntoView = vi.fn()

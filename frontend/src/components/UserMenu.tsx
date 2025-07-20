@@ -19,7 +19,7 @@ const defaultAvatar = '/build/assets/default-avatar-Dio_8tmr.webp'
 export function UserMenu() {
   const { user, logout } = useAuth()
   const { theme, setTheme } = useTheme()
-  
+
   return (
     <DropdownMenu data-testid="user-menu">
       <DropdownMenuTrigger asChild>

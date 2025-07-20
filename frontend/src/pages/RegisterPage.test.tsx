@@ -1,8 +1,9 @@
+// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 vi.mock('react-router-dom', async (importOriginal) => {
-  const actual = await importOriginal()
+  const actual = await importOriginal() as any
   return {
     ...actual,
-    useNavigate: () => vi.fn() as any,
+    useNavigate: () => vi.fn(),
   }
 })
 import { screen, waitFor } from '@testing-library/react'
@@ -45,7 +46,10 @@ describe('RegisterPage', () => {
           if (data.email === mockUser.email) {
             return HttpResponse.json({ message: 'Email already taken.' }, { status: 422 })
           }
-          return HttpResponse.json({ user: { ...mockUser, ...(data as Record<string, unknown>) } }, { status: 201 })
+          return HttpResponse.json(
+            { user: { ...mockUser, ...(data as Record<string, unknown>) } },
+            { status: 201 }
+          )
         }
         return HttpResponse.json({ message: 'Invalid request' }, { status: 400 })
       })

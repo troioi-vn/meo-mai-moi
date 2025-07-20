@@ -1,6 +1,6 @@
 // Mock useAuth to always return a user
 vi.mock('@/hooks/use-auth', () => ({
-  useAuth: () => ({ user: mockUser, logout: vi.fn() })
+  useAuth: () => ({ user: mockUser, logout: vi.fn() }),
 }))
 import { screen } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'

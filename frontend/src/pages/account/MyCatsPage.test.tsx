@@ -1,4 +1,3 @@
-
 import { screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderWithRouter, userEvent } from '@/test-utils'
@@ -28,7 +27,7 @@ describe('MyCatsPage', () => {
           email: 'test@example.com',
           avatar_url: 'https://example.com/avatar.jpg',
         })
-      }),
+      })
     )
   })
 
@@ -56,11 +55,13 @@ describe('MyCatsPage', () => {
     server.use(
       http.get('http://localhost:3000/api/cats', () => {
         return new HttpResponse(null, { status: 500 })
-      }),
+      })
     )
     renderWithRouter(<MyCatsPage />)
     await waitFor(() => {
-      expect(screen.getByText('Failed to fetch your cats. Please try again later.')).toBeInTheDocument()
+      expect(
+        screen.getByText('Failed to fetch your cats. Please try again later.')
+      ).toBeInTheDocument()
     })
   })
 
@@ -81,7 +82,7 @@ describe('MyCatsPage', () => {
       server.use(
         http.get('http://localhost:3000/api/cats', () => {
           return HttpResponse.json({ data: [mockCat, deceasedMockCat] })
-        }),
+        })
       )
       renderWithRouter(<MyCatsPage />)
 
@@ -95,7 +96,7 @@ describe('MyCatsPage', () => {
       server.use(
         http.get('http://localhost:3000/api/cats', () => {
           return HttpResponse.json({ data: [mockCat, deceasedMockCat] })
-        }),
+        })
       )
       renderWithRouter(<MyCatsPage />)
 
@@ -116,4 +117,4 @@ describe('MyCatsPage', () => {
       })
     })
   })
-  })
+})

@@ -91,7 +91,7 @@ const ChangePasswordForm: React.FC = () => {
     <Form {...form}>
       <form onSubmit={(e) => void form.handleSubmit(onSubmit)(e)} className="space-y-4">
         <FormField
-          control={form.control}
+          control={form.control as any}
           name="current_password"
           render={({ field }) => (
             <FormItem>
@@ -104,7 +104,7 @@ const ChangePasswordForm: React.FC = () => {
           )}
         />
         <FormField
-          control={form.control}
+          control={form.control as any}
           name="new_password"
           render={({ field }) => (
             <FormItem>
@@ -117,7 +117,7 @@ const ChangePasswordForm: React.FC = () => {
           )}
         />
         <FormField
-          control={form.control}
+          control={form.control as any}
           name="new_password_confirmation"
           render={({ field }) => (
             <FormItem>

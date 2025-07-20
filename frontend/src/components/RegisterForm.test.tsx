@@ -1,16 +1,15 @@
-import { screen, waitFor } from '@testing-library/react';
-import { renderWithRouter } from '@/test-utils';
+import { screen, waitFor } from '@testing-library/react'
+import { renderWithRouter } from '@/test-utils'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { userEvent } from '@testing-library/user-event'
 import RegisterForm from './RegisterForm'
-
 
 describe('RegisterForm', () => {
   let user: ReturnType<typeof userEvent.setup>
 
   beforeEach(() => {
     user = userEvent.setup()
-    })
+  })
 
   it('renders the registration form correctly', () => {
     renderWithRouter(<RegisterForm />)
@@ -51,5 +50,4 @@ describe('RegisterForm', () => {
       expect(onSuccess).toHaveBeenCalled()
     })
   })
-  
 })

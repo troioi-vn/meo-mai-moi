@@ -15,7 +15,7 @@ describe('CatsSection', () => {
     server.use(
       http.get('http://localhost:3000/api/cats', () => {
         return HttpResponse.json({ data: [mockCat] })
-      }),
+      })
     )
   })
 
@@ -25,7 +25,9 @@ describe('CatsSection', () => {
     await waitFor(() => {
       expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
     })
-    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Cats Looking for Homes Now')
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
+      'Cats Looking for Homes Now'
+    )
   })
 
   it('has centered heading with proper styling', async () => {
@@ -41,8 +43,10 @@ describe('CatsSection', () => {
   it('displays a loading message initially', () => {
     server.use(
       http.get('http://localhost:3000/api/cats', () => {
-        return new Promise(() => { /* intentionally empty to simulate loading */ })
-      }),
+        return new Promise(() => {
+          /* intentionally empty to simulate loading */
+        })
+      })
     )
     renderWithRouter(<CatsSection />)
     expect(screen.getByText('Loading cats...')).toBeInTheDocument()
@@ -52,7 +56,7 @@ describe('CatsSection', () => {
     server.use(
       http.get('http://localhost:3000/api/cats', () => {
         return new HttpResponse(null, { status: 500 })
-      }),
+      })
     )
     renderWithRouter(<CatsSection />)
     await waitFor(() => {

@@ -61,7 +61,8 @@ const EditCatPage: React.FC = () => {
         setError(null)
         const catData = await getCat(id)
 
-        if (!catData || catData.viewer_permissions?.can_edit === false) {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-optional-chain
+        if (!catData || !catData.viewer_permissions?.can_edit) {
           toast.error("You don't have permission to edit this cat.")
           void navigate('/')
           return
@@ -207,7 +208,9 @@ const EditCatPage: React.FC = () => {
             <CatPhotoManager
               cat={cat}
               isOwner={!!cat.viewer_permissions?.can_edit}
-              onPhotoUpdated={(updatedCat) => { setCat(updatedCat) }}
+              onPhotoUpdated={(updatedCat) => {
+                setCat(updatedCat)
+              }}
             />
           </div>
           <form

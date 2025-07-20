@@ -1,7 +1,6 @@
-
 export const getStatusDisplay = (status?: string): string => {
-  if (!status || typeof status !== 'string') return '';
-  return status.charAt(0).toUpperCase() + status.slice(1);
+  if (!status || typeof status !== 'string') return ''
+  return status.charAt(0).toUpperCase() + status.slice(1)
 }
 
 export const getStatusClasses = (status: string): string => {

@@ -104,7 +104,10 @@ export const catHandlers = [
   http.post('http://localhost:3000/api/cats/:id/photos', ({ params }) => {
     // Do not call request.json(); just respond for FormData/file upload
     if (Number(params.id) === 999) {
-      return HttpResponse.json({ message: 'Failed to upload the photo. Please try again.' }, { status: 500 })
+      return HttpResponse.json(
+        { message: 'Failed to upload the photo. Please try again.' },
+        { status: 500 }
+      )
     }
     const updatedCat = {
       ...mockCat,
@@ -117,7 +120,10 @@ export const catHandlers = [
   http.post('/api/cats/:id/photos', ({ params }) => {
     // Do not call request.json(); just respond for FormData/file upload
     if (Number(params.id) === 999) {
-      return HttpResponse.json({ message: 'Failed to upload the photo. Please try again.' }, { status: 500 })
+      return HttpResponse.json(
+        { message: 'Failed to upload the photo. Please try again.' },
+        { status: 500 }
+      )
     }
     const updatedCat = {
       ...mockCat,
@@ -130,7 +136,10 @@ export const catHandlers = [
   http.delete('http://localhost:3000/api/cats/:catId/photos/:photoId', ({ params }) => {
     if (Number(params.catId) === 999) {
       // Error responses do not have the 'data' wrapper
-      return HttpResponse.json({ message: 'Failed to delete the photo. Please try again.' }, { status: 500 })
+      return HttpResponse.json(
+        { message: 'Failed to delete the photo. Please try again.' },
+        { status: 500 }
+      )
     }
     return new HttpResponse(null, { status: 204 })
   }),

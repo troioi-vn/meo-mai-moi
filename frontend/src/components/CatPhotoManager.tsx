@@ -35,20 +35,25 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
     try {
       const formData = new FormData()
       formData.append('photo', file)
-      
+
       // Use the correct backend endpoint for photo upload
       const response = await api.post<{ data: Cat }>(`/cats/${String(cat.id)}/photos`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       })
-      
+
       onPhotoUpdated(response.data.data)
       toast.success('Photo uploaded successfully')
     } catch (error: unknown) {
       let errorMessage = 'Failed to upload the photo. Please try again.'
       if (error instanceof AxiosError) {
-        if (error.response?.data && typeof error.response.data === 'object' && error.response.data !== null && 'message' in error.response.data) {
+        if (
+          error.response?.data &&
+          typeof error.response.data === 'object' &&
+          error.response.data !== null &&
+          'message' in error.response.data
+        ) {
           const responseData = error.response.data as { message: string }
           errorMessage = responseData.message
         } else {
@@ -68,19 +73,25 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
 
   const handlePhotoDelete = async () => {
     setIsDeleting(true)
-    
+
     try {
-      const photoId = cat.photo && 'id' in cat.photo ? String((cat.photo as { id: unknown }).id) : ''
-      await api.delete<Cat>(`/cats/${String(cat.id)}/photos/${photoId}`);
-      
+      const photoId =
+        cat.photo && 'id' in cat.photo ? String((cat.photo as { id: unknown }).id) : ''
+      await api.delete<Cat>(`/cats/${String(cat.id)}/photos/${photoId}`)
+
       // Manually update the cat object to reflect photo deletion
-      const updatedCat: Cat = { ...cat, photo: null, photo_url: undefined };
-      onPhotoUpdated(updatedCat);
-      toast.success('Photo deleted successfully');
+      const updatedCat: Cat = { ...cat, photo: null, photo_url: undefined }
+      onPhotoUpdated(updatedCat)
+      toast.success('Photo deleted successfully')
     } catch (error: unknown) {
       let errorMessage = 'Failed to delete the photo. Please try again.'
       if (error instanceof AxiosError) {
-        if (error.response?.data && typeof error.response.data === 'object' && error.response.data !== null && 'message' in error.response.data) {
+        if (
+          error.response?.data &&
+          typeof error.response.data === 'object' &&
+          error.response.data !== null &&
+          'message' in error.response.data
+        ) {
           const responseData = error.response.data as { message: string }
           errorMessage = responseData.message
         } else {
@@ -149,7 +160,7 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
                         </>
                       )}
                     </Button>
-                    
+
                     <Button
                       variant="destructive"
                       size="sm"
@@ -173,9 +184,7 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
             <div className="w-full max-w-md mx-auto aspect-[3/2] border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-500">
               <Camera className="h-12 w-12 mb-2" />
               <p className="text-sm text-center">No photo uploaded</p>
-              {isOwner && (
-                <p className="text-xs text-center mt-1">Click below to add one</p>
-              )}
+              {isOwner && <p className="text-xs text-center mt-1">Click below to add one</p>}
             </div>
           )}
         </div>
@@ -191,13 +200,9 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
               className="hidden"
               aria-label="Upload Photo"
             />
-            
+
             {!cat.photo_url && (
-              <Button
-                onClick={triggerFileSelect}
-                disabled={isUploading}
-                className="w-full"
-              >
+              <Button onClick={triggerFileSelect} disabled={isUploading} className="w-full">
                 {isUploading ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -211,7 +216,7 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
                 )}
               </Button>
             )}
-            
+
             <p className="text-xs text-gray-500 text-center">
               Supported formats: JPG, PNG, GIF. Max size: 10MB
             </p>

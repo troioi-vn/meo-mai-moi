@@ -19,7 +19,7 @@ describe('MainPage', () => {
           email: 'test@example.com',
           avatar_url: 'https://example.com/avatar.jpg',
         })
-      }),
+      })
     )
   })
 

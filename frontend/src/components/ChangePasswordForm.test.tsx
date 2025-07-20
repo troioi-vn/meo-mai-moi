@@ -1,5 +1,5 @@
 import { screen, waitFor } from '@testing-library/react'
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 import { ChangePasswordForm } from './ChangePasswordForm'
 import { renderWithRouter, userEvent } from '@/test-utils'
@@ -9,7 +9,6 @@ import { toast } from '@/components/ui/use-toast'
 // Stable mock for changePassword
 import { mockUser } from '@/mocks/data/user'
 const changePasswordMock = vi.fn(async () => Promise.resolve())
-import { mockUser } from '@/mocks/data/user'
 
 vi.mock('@/hooks/use-auth', () => {
   return {
@@ -121,7 +120,12 @@ describe('ChangePasswordForm', () => {
   it('shows loading state during form submission', async () => {
     // Simulate a never-resolving changePassword
     // Set the mock to never resolve before rendering
-    changePasswordMock.mockImplementation(() => new Promise(() => { /* intentionally empty to simulate loading */ }))
+    changePasswordMock.mockImplementation(
+      () =>
+        new Promise(() => {
+          /* intentionally empty to simulate loading */
+        })
+    )
     renderWithRouter(<ChangePasswordForm />)
 
     const currentPasswordInput = document.querySelector('input[name="current_password"]')

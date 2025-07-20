@@ -19,7 +19,8 @@ describe('CreateCatPage', () => {
     user = userEvent.setup()
     server.use(
       http.get('http://localhost:3000/api/user', () => {
-        return HttpResponse.json(mockUser as any)
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        return HttpResponse.json(mockUser)
       }),
       http.get('http://localhost:3000/api/cats', () => {
         return HttpResponse.json({ data: [] })
@@ -30,7 +31,7 @@ describe('CreateCatPage', () => {
   it('renders the form fields with birthday instead of age', () => {
     renderWithRouter(<CreateCatPage />)
     expect(screen.getByLabelText('Name')).toBeInTheDocument()
-    
+
     expect(screen.getByLabelText('Breed')).toBeInTheDocument()
     expect(screen.getByLabelText('Birthday')).toBeInTheDocument()
     expect(screen.getByLabelText('Location')).toBeInTheDocument()

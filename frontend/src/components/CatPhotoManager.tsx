@@ -163,6 +163,7 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
               accept="image/*"
               onChange={handleFileSelect}
               className="hidden"
+              aria-label="Upload Photo"
             />
             
             {!cat.photo_url && (

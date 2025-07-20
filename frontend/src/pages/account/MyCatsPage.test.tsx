@@ -33,35 +33,22 @@ describe('MyCatsPage', () => {
   })
 
   it('renders the page title', async () => {
-    server.use(
-      http.get('http://localhost:3000/api/cats', () => {
-        return HttpResponse.json([])
-      }),
-    )
     renderWithRouter(<MyCatsPage />)
-    await waitForElementToBeRemoved(() => screen.queryByText(/loading authentication status/i))
     await waitFor(() => {
       expect(screen.getByText('My Cats')).toBeInTheDocument()
     })
   })
 
   it("fetches and displays the user's cats", async () => {
-    server.use(
-      http.get('http://localhost:3000/api/cats', () => {
-        return HttpResponse.json({ data: [mockCat, anotherMockCat] })
-      }),
-    )
     renderWithRouter(<MyCatsPage />)
-    await waitForElementToBeRemoved(() => screen.queryByText(/loading authentication status/i))
     await waitFor(() => {
       expect(screen.getByText(mockCat.name)).toBeInTheDocument()
       expect(screen.getByText(anotherMockCat.name)).toBeInTheDocument()
     })
   })
 
-  it('displays a loading message initially', async () => {
+  it('displays a loading message initially', () => {
     renderWithRouter(<MyCatsPage />)
-    await waitForElementToBeRemoved(() => screen.queryByText(/loading authentication status/i))
     expect(screen.getByText(/loading/i)).toBeInTheDocument()
   })
 
@@ -72,20 +59,14 @@ describe('MyCatsPage', () => {
       }),
     )
     renderWithRouter(<MyCatsPage />)
-    await waitForElementToBeRemoved(() => screen.queryByText(/loading authentication status/i))
     await waitFor(() => {
       expect(screen.getByText('Failed to fetch your cats. Please try again later.')).toBeInTheDocument()
     })
   })
 
   it('has a button to create a new cat and navigates on click', async () => {
-    // The mock for useNavigate is set up globally in the vi.mock block above.
-    // We can directly use mockNavigate here.
-    mockNavigate.mockClear()
-
     renderWithRouter(<MyCatsPage />)
-    await waitForElementToBeRemoved(() => screen.queryByText(/loading authentication status/i))
-    const newCatButton = screen.getByRole('button', { name: /new cat/i })
+    const newCatButton = await screen.findByRole('button', { name: /new cat/i })
     await userEvent.click(newCatButton)
     expect(mockNavigate).toHaveBeenCalledWith('/account/cats/create')
   })
@@ -93,9 +74,7 @@ describe('MyCatsPage', () => {
   describe('Show All Switch', () => {
     it('renders the switch to show all cats including deceased', async () => {
       renderWithRouter(<MyCatsPage />)
-      await waitForElementToBeRemoved(() => screen.queryByText(/loading authentication status/i))
-      await waitForElementToBeRemoved(() => screen.queryByText(/loading your cats/i))
-      expect(screen.getByLabelText(/show all/i)).toBeInTheDocument()
+      expect(await screen.findByLabelText(/show all/i)).toBeInTheDocument()
     })
 
     it('filters out dead cats by default', async () => {
@@ -127,7 +106,7 @@ describe('MyCatsPage', () => {
       })
 
       // Toggle the switch
-      const showAllSwitch = screen.getByLabelText(/show all/i)
+      const showAllSwitch = await screen.findByLabelText(/show all/i)
       await userEvent.click(showAllSwitch)
 
       // Now dead cat should be visible

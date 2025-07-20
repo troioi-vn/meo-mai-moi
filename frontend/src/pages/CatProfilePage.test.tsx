@@ -34,19 +34,11 @@ describe('CatProfilePage', () => {
   })
 
   it('renders cat profile information correctly', async () => {
-    server.use(
-      http.get('/api/cats/:id', ({ params }) => {
-        if (params.id === String(mockCat.id)) {
-          return HttpResponse.json({ data: { ...mockCat, imageUrl: mockCat.photo_url } })
-        }
-        return new HttpResponse(null, { status: 404 })
-      }),
-    )
     renderWithRouter(
       <Routes>
         <Route path="/cats/:id" element={<CatProfilePage />} />
       </Routes>,
-      { route: `/cats/${mockCat.id}` }
+      { route: `/cats/${mockCat.id}` },
     )
 
     // Should show loading initially
@@ -67,19 +59,11 @@ describe('CatProfilePage', () => {
   })
 
   it('displays cat image with correct alt text', async () => {
-    server.use(
-      http.get('/api/cats/:id', ({ params }) => {
-        if (params.id === String(mockCat.id)) {
-          return HttpResponse.json({ data: { ...mockCat, imageUrl: mockCat.photo_url } })
-        }
-        return new HttpResponse(null, { status: 404 })
-      }),
-    )
     renderWithRouter(
       <Routes>
         <Route path="/cats/:id" element={<CatProfilePage />} />
       </Routes>,
-      { route: `/cats/${mockCat.id}` }
+      { route: `/cats/${mockCat.id}` },
     )
 
     await waitFor(() => {
@@ -90,19 +74,17 @@ describe('CatProfilePage', () => {
   })
 
   it('shows placeholder image when imageUrl is not provided', async () => {
+    const catWithoutPhoto = { ...anotherMockCat, photo_url: null }
     server.use(
-      http.get('/api/cats/:id', ({ params }) => {
-        if (params.id === String(anotherMockCat.id)) {
-          return HttpResponse.json({ data: { ...anotherMockCat, photo_url: null, imageUrl: null } })
-        }
-        return new HttpResponse(null, { status: 404 })
+      http.get(`http://localhost:3000/api/cats/${catWithoutPhoto.id}`, () => {
+        return HttpResponse.json({ data: catWithoutPhoto })
       }),
     )
     renderWithRouter(
       <Routes>
         <Route path="/cats/:id" element={<CatProfilePage />} />
       </Routes>,
-      { route: `/cats/${anotherMockCat.id}` }
+      { route: `/cats/${catWithoutPhoto.id}` },
     )
 
     await waitFor(() => {
@@ -113,7 +95,7 @@ describe('CatProfilePage', () => {
 
   it('displays an error message when the cat is not found', async () => {
     server.use(
-      http.get('/api/cats/:id', () => {
+      http.get('http://localhost:3000/api/cats/999', () => {
         return new HttpResponse(null, { status: 404 })
       }),
     )
@@ -121,7 +103,7 @@ describe('CatProfilePage', () => {
       <Routes>
         <Route path="/cats/:id" element={<CatProfilePage />} />
       </Routes>,
-      { route: '/cats/999' }
+      { route: '/cats/999' },
     )
 
     await waitFor(() => {
@@ -131,7 +113,7 @@ describe('CatProfilePage', () => {
 
   it('displays a generic error message on server failure', async () => {
     server.use(
-      http.get('/api/cats/:id', () => {
+      http.get('http://localhost:3000/api/cats/1', () => {
         return new HttpResponse(null, { status: 500 })
       }),
     )
@@ -139,7 +121,7 @@ describe('CatProfilePage', () => {
       <Routes>
         <Route path="/cats/:id" element={<CatProfilePage />} />
       </Routes>,
-      { route: '/cats/1' }
+      { route: '/cats/1' },
     )
 
     await waitFor(() => {
@@ -149,19 +131,17 @@ describe('CatProfilePage', () => {
 
   describe('Conditional button rendering', () => {
     it("shows only Back button when user doesn't have edit permissions", async () => {
+      const catWithoutPerms = { ...anotherMockCat, viewer_permissions: { can_edit: false, can_view_contact: false } }
       server.use(
-        http.get('/api/cats/:id', ({ params }) => {
-          if (params.id === String(anotherMockCat.id)) {
-            return HttpResponse.json({ data: { ...anotherMockCat, viewer_permissions: { can_edit: false, can_view_contact: false } } })
-          }
-          return new HttpResponse(null, { status: 404 })
+        http.get(`http://localhost:3000/api/cats/${catWithoutPerms.id}`, () => {
+          return HttpResponse.json({ data: catWithoutPerms })
         }),
       )
       renderWithRouter(
         <Routes>
           <Route path="/cats/:id" element={<CatProfilePage />} />
         </Routes>,
-        { route: `/cats/${anotherMockCat.id}` }
+        { route: `/cats/${catWithoutPerms.id}` },
       )
 
       await waitFor(() => {
@@ -177,19 +157,11 @@ describe('CatProfilePage', () => {
     })
 
     it('shows Edit and My Cats buttons when user has edit permissions', async () => {
-      server.use(
-        http.get('/api/cats/:id', ({ params }) => {
-          if (params.id === String(mockCat.id)) {
-            return HttpResponse.json({ data: { ...mockCat, viewer_permissions: { can_edit: true, can_view_contact: true } } })
-          }
-          return new HttpResponse(null, { status: 404 })
-        }),
-      )
       renderWithRouter(
         <Routes>
           <Route path="/cats/:id" element={<CatProfilePage />} />
         </Routes>,
-        { route: `/cats/${mockCat.id}` }
+        { route: `/cats/${mockCat.id}` },
       )
 
       await waitFor(() => {

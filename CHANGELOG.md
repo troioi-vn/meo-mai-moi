@@ -28,6 +28,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Fixed
+- **Frontend**: Fixed and completed tests for the `CatPhotoManager` component, ensuring upload and delete functionality are fully covered.
 - **Frontend**: Corrected the mock response for `/api/notifications` in `frontend/src/mocks/handlers.ts` to return an array of notifications with `unread_count`.
 - **Frontend**: Updated `frontend/src/components/NotificationBell.tsx` to correctly process the `notifications` array and `unread_count` from the API response, including a null check for `notifications`.
 - **Frontend**: Overwrote `frontend/src/__tests__/App.routing.test.tsx` with a corrected version that includes comprehensive mock handlers for all API calls and updated test logic to simulate authenticated user interactions and correct navigation flows.

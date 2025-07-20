@@ -6,7 +6,7 @@ const userHandlers = [
   // Register endpoint - returns a { data: { ... } } object
   http.post('http://localhost:3000/api/register', async ({ request }) => {
     const raw = await request.json()
-    const body = (raw && typeof raw === 'object') ? raw as Record<string, any> : {};
+    const body = (raw && typeof raw === 'object') ? raw as Record<string, unknown> : {};
     if (body.email === 'fail@example.com') {
       return HttpResponse.json({ message: 'Email already taken.', errors: { email: ['Email already taken.'] } }, { status: 422 })
     }
@@ -26,7 +26,7 @@ const userHandlers = [
   // Login endpoint - returns a { data: { ... } } object
   http.post('http://localhost:3000/api/login', async ({ request }) => {
     const raw = await request.json()
-    const body = (raw && typeof raw === 'object') ? raw as Record<string, any> : {};
+    const body = (raw && typeof raw === 'object') ? raw as Record<string, unknown> : {};
     if (body.email === 'fail@example.com') {
       return HttpResponse.json({ message: 'Invalid credentials' }, { status: 401 })
     }
@@ -43,7 +43,7 @@ const userHandlers = [
     try {
       const body = await request.json()
       if (body && typeof body === 'object' && 'password' in body) {
-        password = (body as any).password
+        password = (body as Record<string, unknown>).password as string
       }
     } catch {}
     
@@ -66,8 +66,8 @@ const userHandlers = [
     try {
       const body = await request.json()
       if (body && typeof body === 'object') {
-        status = (body as any).status
-        password = (body as any).password
+        status = (body as Record<string, unknown>).status as string
+        password = (body as Record<string, unknown>).password as string
       }
     } catch {}
     if (params.id === String(mockCat.id) && status === 'deceased' && password) {
@@ -87,7 +87,7 @@ const userHandlers = [
   // Update password - returns a success message
   http.put('http://localhost:3000/api/users/me/password', async ({ request }) => {
     const raw = await request.json()
-    const body = (raw && typeof raw === 'object') ? raw as Record<string, any> : {};
+    const body = (raw && typeof raw === 'object') ? raw as { current_password?: string, new_password?: string, new_password_confirmation?: string } : {};
     if (!body.current_password) {
       return HttpResponse.json({
         message: 'Current password is required.',

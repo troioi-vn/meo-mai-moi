@@ -9,8 +9,8 @@ api.interceptors.request.use(
   (config) => {
     // Do not add Authorization header for login, register, or csrf-cookie requests
     const skipAuth =
-      config.url?.includes('/login') ||
-      config.url?.includes('/register') ||
+      config.url?.includes('/login') ??
+      config.url?.includes('/register') ??
       config.url?.includes('/sanctum/csrf-cookie')
 
     if (!skipAuth) {
@@ -20,7 +20,7 @@ api.interceptors.request.use(
       }
     } else {
       // Ensure Authorization header is not set
-      if (config.headers && 'Authorization' in config.headers) {
+      if ('Authorization' in config.headers) {
         delete config.headers.Authorization
       }
     }

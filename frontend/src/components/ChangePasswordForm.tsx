@@ -91,8 +91,7 @@ const ChangePasswordForm: React.FC = () => {
     <Form {...form}>
       <form onSubmit={(e) => void form.handleSubmit(onSubmit)(e)} className="space-y-4">
         <FormField
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-          control={form.control as any}
+          control={form.control}
           name="current_password"
           render={({ field }) => (
             <FormItem>
@@ -105,8 +104,7 @@ const ChangePasswordForm: React.FC = () => {
           )}
         />
         <FormField
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-          control={form.control as any}
+          control={form.control}
           name="new_password"
           render={({ field }) => (
             <FormItem>
@@ -119,8 +117,7 @@ const ChangePasswordForm: React.FC = () => {
           )}
         />
         <FormField
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-          control={form.control as any}
+          control={form.control}
           name="new_password_confirmation"
           render={({ field }) => (
             <FormItem>

@@ -1,5 +1,17 @@
 ## 2025-07-20
 ### Frontend: Test and API Response Shape Refactor, Cat Status Consistency, and UI Polish
+- **Frontend**: Added comprehensive tests for the `Select` component (`frontend/src/components/ui/select.test.tsx`), covering rendering, opening/closing, and item selection.
+- **Frontend**: Added comprehensive tests for the `AlertDialog` component (`frontend/src/components/ui/alert-dialog.test.tsx`), covering rendering, opening/closing, and action execution.
+- **Frontend**: Added comprehensive tests for the `Alert` component (`frontend/src/components/ui/alert.test.tsx`), covering rendering with different variants, title, and description.
+- **Frontend**: Added comprehensive tests for the `ThemeProvider` component (`frontend/src/components/theme-provider.test.tsx`), covering initial theme loading, theme switching, and system theme preference.
+- **Frontend**: Added basic tests for the `ApplyToHelpPage` component (`frontend/src/pages/ApplyToHelpPage.test.tsx`), verifying the main heading renders.
+- **Frontend**: Removed `frontend/vite.config.js` as `frontend/vite.config.ts` is the primary configuration file.
+- **Frontend**: Addressed `icons.test.tsx`; no tests were needed as the component file (`frontend/src/components/icons.tsx`) was empty.
+- **Frontend**: Added comprehensive tests for the `Select` component (`frontend/src/components/ui/select.test.tsx`), covering rendering, opening/closing, and item selection.
+- **Frontend**: Added comprehensive tests for the `AlertDialog` component (`frontend/src/components/ui/alert-dialog.test.tsx`), covering rendering, opening/closing, and action execution.
+- **Frontend**: Added comprehensive tests for the `Alert` component (`frontend/src/components/ui/alert.test.tsx`), covering rendering with different variants, title, and description.
+- **Frontend**: Added comprehensive tests for the `ThemeProvider` component (`frontend/src/components/theme-provider.test.tsx`), covering initial theme loading, theme switching, and system theme preference.
+- **Frontend**: Added basic tests for the `ApplyToHelpPage` component (`frontend/src/pages/ApplyToHelpPage.test.tsx`), verifying the main heading renders.
 
 - Refactored all frontend test files to use global MSW server, renderWithRouter, and centralized mock data utilities. Removed local MSW server setups and decentralized mock data from test files.
 - Updated all MSW handlers and mock data to consistently return `{ data: ... }` or `{ data: { notifications, unread_count } }` as required by the app and tests. Fixed notification mocks and NotificationBell to use correct unread count and array shape.
@@ -168,6 +180,7 @@ All notable changes to this project will be documented in this file.
 - **Frontend**: Fixed edit button visibility on cat profile pages for authenticated cat owners.
 
 ### Removed
+- **Frontend**: Removed `frontend/vite.config.js` as `frontend/vite.config.ts` is the primary configuration file.
 - **Frontend**: Removed `next-themes` library.
 - **Frontend**: Deleted `DropdownMenuTest.tsx`, `HomePage.tsx`, and `HomePage.test.tsx`.
 

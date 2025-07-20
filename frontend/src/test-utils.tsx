@@ -18,7 +18,7 @@ const testQueryClient = new QueryClient({
 interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
   initialAuthSate?: {
     isAuthenticated: boolean
-    user: any
+    user: import('@/types/user').User | null
     token: string | null
   }
   memoryRouterProps?: MemoryRouterProps

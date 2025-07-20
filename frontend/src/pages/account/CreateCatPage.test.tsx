@@ -1,4 +1,3 @@
-
 import { screen, waitFor, fireEvent } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { renderWithRouter, userEvent } from '@/test-utils'
@@ -31,6 +30,7 @@ describe('CreateCatPage', () => {
   it('renders the form fields with birthday instead of age', () => {
     renderWithRouter(<CreateCatPage />)
     expect(screen.getByLabelText('Name')).toBeInTheDocument()
+    
     expect(screen.getByLabelText('Breed')).toBeInTheDocument()
     expect(screen.getByLabelText('Birthday')).toBeInTheDocument()
     expect(screen.getByLabelText('Location')).toBeInTheDocument()

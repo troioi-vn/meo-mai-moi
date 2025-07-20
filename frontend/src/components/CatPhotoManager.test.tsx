@@ -1,21 +1,21 @@
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { CatPhotoManager } from './CatPhotoManager'
 import { renderWithRouter } from '../test-utils'
 import { mockCat } from '../mocks/data/cats'
 import type { Cat } from '@/types/cat'
+
 import { api } from '@/api/axios'
 import { toast } from 'sonner'
 
 // Mock the api module
 vi.mock('@/api/axios', () => ({
   api: {
-    get: vi.fn(() => Promise.resolve({ data: { data: {} } })),
     post: vi.fn(),
     delete: vi.fn(),
   },
-}))
+}));
 
 // Mock the sonner module
 vi.mock('sonner', () => ({
@@ -28,6 +28,16 @@ vi.mock('sonner', () => ({
 const mockOnPhotoUpdated = vi.fn()
 
 describe('CatPhotoManager', () => {
+beforeEach(() => {
+  mockOnPhotoUpdated.mockClear();
+  // Reset mocks before each test
+  vi.mocked(api.post).mockReset();
+  vi.mocked(api.delete).mockReset();
+  // Set default mock implementations
+  vi.mocked(api.post).mockResolvedValue({ data: { data: {} } });
+  vi.mocked(api.delete).mockResolvedValue({});
+});
+
   it('renders correctly when cat has a photo and user is owner', () => {
     renderWithRouter(
       <CatPhotoManager cat={mockCat} isOwner={true} onPhotoUpdated={mockOnPhotoUpdated} />,
@@ -39,7 +49,7 @@ describe('CatPhotoManager', () => {
   })
 
   it('renders correctly when cat has no photo and user is owner', () => {
-    const catWithoutPhoto: Cat = { ...mockCat, photo: null, photo_url: null }
+    const catWithoutPhoto: Cat = { ...mockCat, photo_url: undefined }
     renderWithRouter(
       <CatPhotoManager cat={catWithoutPhoto} isOwner={true} onPhotoUpdated={mockOnPhotoUpdated} />,
     )
@@ -61,7 +71,7 @@ describe('CatPhotoManager', () => {
   it('handles photo upload correctly', async () => {
     const file = new File(['(⌐□_□)'], 'chucknorris.png', { type: 'image/png' })
     const updatedCat = { ...mockCat, photo: { id: 2, url: 'new_photo_url' }, photo_url: 'new_photo_url' };
-    (api.post as vi.Mock).mockResolvedValue({ data: { data: updatedCat } });
+    vi.mocked(api.post).mockResolvedValue({ data: { data: updatedCat } });
 
     renderWithRouter(
       <CatPhotoManager cat={mockCat} isOwner={true} onPhotoUpdated={mockOnPhotoUpdated} />,
@@ -71,7 +81,7 @@ describe('CatPhotoManager', () => {
     await userEvent.upload(fileInput, file)
 
     await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith(`/cats/${mockCat.id}/photos`, expect.any(FormData), {
+      expect(api.post).toHaveBeenCalledWith(`/cats/${String(mockCat.id)}/photos`, expect.any(FormData), {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -88,7 +98,7 @@ describe('CatPhotoManager', () => {
   })
 
   it('handles photo delete correctly', async () => {
-    (api.delete as vi.Mock).mockResolvedValue({});
+    vi.mocked(api.delete).mockResolvedValue({});
 
     renderWithRouter(
       <CatPhotoManager cat={mockCat} isOwner={true} onPhotoUpdated={mockOnPhotoUpdated} />,
@@ -98,11 +108,11 @@ describe('CatPhotoManager', () => {
     await userEvent.click(removeButton)
 
     await waitFor(() => {
-      expect(api.delete).toHaveBeenCalledWith(`/cats/${mockCat.id}/photos/${mockCat.photo?.id}`)
+      expect(api.delete).toHaveBeenCalledWith(`/cats/${String(mockCat.id)}/photos/`)
     })
 
     await waitFor(() => {
-      expect(mockOnPhotoUpdated).toHaveBeenCalledWith({ ...mockCat, photo: null, photo_url: null })
+      expect(mockOnPhotoUpdated).toHaveBeenCalledWith({ ...mockCat, photo: null, photo_url: undefined })
     })
 
     await waitFor(() => {

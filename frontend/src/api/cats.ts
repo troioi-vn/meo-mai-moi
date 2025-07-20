@@ -53,7 +53,7 @@ export const uploadCatPhoto = async (catId: number, photo: File): Promise<Cat> =
   const formData = new FormData()
   formData.append('photo', photo)
 
-  const response = await api.post<{ data: Cat }>(`/cats/${catId}/photos`, formData, {
+  const response = await api.post<{ data: Cat }>(`/cats/${String(catId)}/photos`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -62,6 +62,6 @@ export const uploadCatPhoto = async (catId: number, photo: File): Promise<Cat> =
 }
 
 export const deleteCatPhoto = async (catId: number): Promise<Cat> => {
-  const response = await api.delete<{ data: Cat }>(`/cats/${catId}/photo`)
+  const response = await api.delete<{ data: Cat }>(`/cats/${String(catId)}/photo`)
   return response.data.data
 }

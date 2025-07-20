@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { api } from '@/api/axios'
+import { AxiosError } from 'axios'
 import type { Cat } from '@/types/cat'
 
 interface CatPhotoManagerProps {
@@ -24,9 +25,9 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
     }
 
     // TODO: Move this into admin config page!
-    //  Check file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Please select an image smaller than 5MB.')
+    //  Check file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Please select an image smaller than 10MB.')
       return
     }
 
@@ -44,9 +45,14 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
       
       onPhotoUpdated(response.data.data)
       toast.success('Photo uploaded successfully')
-    } catch (error) {
-      console.error('Photo upload failed in component:', error)
-      toast.error('Failed to upload the photo. Please try again.')
+    } catch (error: unknown) {
+      let errorMessage = 'Failed to upload the photo. Please try again.'
+      if (error instanceof AxiosError) {
+        errorMessage = error.response?.data?.message ?? error.message
+      } else if (error instanceof Error) {
+        errorMessage = error.message
+      }
+      toast.error(errorMessage)
     } finally {
       setIsUploading(false)
       if (fileInputRef.current) {
@@ -59,15 +65,20 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
     setIsDeleting(true)
     
     try {
-      await api.delete<Cat>(`/cats/${String(cat.id)}/photos/${String(cat.photo?.id)}`);
+      await api.delete<Cat>(`/cats/${String(cat.id)}/photos/${String(cat.photo?.id ?? '')}`);
       
       // Manually update the cat object to reflect photo deletion
-      const updatedCat = { ...cat, photo: null, photo_url: null };
+      const updatedCat: Cat = { ...cat, photo: null, photo_url: undefined };
       onPhotoUpdated(updatedCat);
       toast.success('Photo deleted successfully');
-    } catch (error) {
-      console.error('Photo deletion failed:', error)
-      toast.error('Failed to delete the photo. Please try again.')
+    } catch (error: unknown) {
+      let errorMessage = 'Failed to delete the photo. Please try again.'
+      if (error instanceof AxiosError) {
+        errorMessage = error.response?.data?.message ?? error.message
+      } else if (error instanceof Error) {
+        errorMessage = error.message
+      }
+      toast.error(errorMessage)
     } finally {
       setIsDeleting(false)
     }
@@ -99,9 +110,9 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
               <img
                 src={cat.photo_url}
                 alt={`Photo of ${cat.name}`}
-                className="w-full max-w-md mx-auto rounded-lg object-cover aspect-square"
+                className="w-full max-w-md mx-auto rounded-lg object-cover aspect-[3/2]"
               />
-              
+
               {isOwner && (
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-200 rounded-lg flex items-center justify-center">
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 space-x-2">
@@ -127,7 +138,7 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={() => void handlePhotoDelete()}
+                      onClick={() => void handlePhotoDelete().catch(console.error)}
                       disabled={isDeleting}
                     >
                       {isDeleting ? (
@@ -144,7 +155,7 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
               )}
             </div>
           ) : (
-            <div className="w-full max-w-md mx-auto aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-500">
+            <div className="w-full max-w-md mx-auto aspect-[3/2] border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-500">
               <Camera className="h-12 w-12 mb-2" />
               <p className="text-sm text-center">No photo uploaded</p>
               {isOwner && (
@@ -187,7 +198,7 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
             )}
             
             <p className="text-xs text-gray-500 text-center">
-              Supported formats: JPG, PNG, GIF. Max size: 5MB
+              Supported formats: JPG, PNG, GIF. Max size: 10MB
             </p>
           </div>
         )}

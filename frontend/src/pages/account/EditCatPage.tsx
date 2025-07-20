@@ -63,7 +63,7 @@ const EditCatPage: React.FC = () => {
 
         if (!catData || !catData.viewer_permissions?.can_edit) {
           toast.error("You don't have permission to edit this cat.")
-          navigate('/')
+          void navigate('/')
           return
         }
 
@@ -94,7 +94,7 @@ const EditCatPage: React.FC = () => {
     }
 
     void fetchCat()
-  }, [id])
+  }, [id, navigate])
 
   const updateField = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -207,7 +207,7 @@ const EditCatPage: React.FC = () => {
             <CatPhotoManager
               cat={cat}
               isOwner={!!cat.viewer_permissions?.can_edit}
-              onPhotoUpdated={(updatedCat) => setCat(updatedCat)}
+              onPhotoUpdated={(updatedCat) => { void setCat(updatedCat) }}
             />
           </div>
           <form

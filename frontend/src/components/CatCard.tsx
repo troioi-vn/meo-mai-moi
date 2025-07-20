@@ -12,10 +12,14 @@ interface CatCardProps {
 
 export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
   // Prefer photos[0].url, then photo_url, then placeholder
-  const imageUrl = (cat as any).photos?.[0]?.url || cat.photo_url || placeholderImage;
+  const imageUrl = (Array.isArray((cat as { photos?: { url?: string }[] }).photos)
+    ? (cat as { photos?: { url?: string }[] }).photos?.[0]?.url
+    : undefined)
+    ?? cat.photo_url
+    ?? placeholderImage;
   return (
     <Card className="flex flex-col overflow-hidden rounded-lg shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl">
-      <Link to={`/cats/${cat.id}`} className="block">
+      <Link to={`/cats/${String(cat.id)}`} className="block">
         <img
           src={imageUrl}
           alt={cat.name}
@@ -30,7 +34,7 @@ export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
         <p className="text-sm text-gray-600">Location: {cat.location}</p>
         <p className="text-sm text-gray-600">Status: {cat.status}</p>
         <div className="mt-4">
-          <Link to={`/cats/${cat.id}`}>
+          <Link to={`/cats/${String(cat.id)}`}>
             <Button className="w-full">View Profile</Button>
           </Link>
         </div>

@@ -69,7 +69,7 @@ class CatPhotoController extends Controller
         $this->authorize('update', $cat);
 
         $request->validate([
-            'photo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'photo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10240', // 10MB
         ]);
 
         $file = $request->file('photo');

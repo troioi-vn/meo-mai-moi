@@ -29,3 +29,6 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: vi.fn(),
   })) as unknown as typeof window.matchMedia,
 })
+
+// Mock scrollIntoView as it's not implemented in JSDOM
+HTMLElement.prototype.scrollIntoView = vi.fn();

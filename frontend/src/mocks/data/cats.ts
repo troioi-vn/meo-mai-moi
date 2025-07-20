@@ -13,15 +13,6 @@ export const mockCat: Cat = {
   created_at: '2023-01-01T00:00:00Z',
   updated_at: '2023-01-01T00:00:00Z',
   photo_url: 'https://example.com/cat.jpg',
-  photo_id: 1,
-  photo: {
-    id: 1,
-    cat_id: 1,
-    filename: 'cat.jpg',
-    path: 'cats/profiles/cat.jpg',
-    size: 1024,
-    mime_type: 'image/jpeg',
-  },
   user: {
     id: 1,
     name: 'Test User',
@@ -110,7 +101,7 @@ export const catHandlers = [
     return HttpResponse.json({ data: newCat }, { status: 201 })
   }),
   // Returns a { data: { ... } } object
-  http.post('http://localhost:3000/api/cats/:id/photos', async ({ params }) => {
+  http.post('http://localhost:3000/api/cats/:id/photos', ({ params }) => {
     // Do not call request.json(); just respond for FormData/file upload
     if (Number(params.id) === 999) {
       return HttpResponse.json({ message: 'Failed to upload the photo. Please try again.' }, { status: 500 })
@@ -119,19 +110,11 @@ export const catHandlers = [
       ...mockCat,
       id: Number(params.id),
       photo_url: 'https://example.com/new-cat-photo.jpg',
-      photo: {
-        id: 1,
-        cat_id: Number(params.id),
-        filename: 'new-cat-photo.jpg',
-        path: 'cats/profiles/new-cat-photo.jpg',
-        size: 1024,
-        mime_type: 'image/jpeg',
-      },
     }
     return HttpResponse.json({ data: updatedCat }, { status: 200 })
   }),
   // Relative path mock for upload (for MSW compatibility)
-  http.post('/api/cats/:id/photos', async ({ params }) => {
+  http.post('/api/cats/:id/photos', ({ params }) => {
     // Do not call request.json(); just respond for FormData/file upload
     if (Number(params.id) === 999) {
       return HttpResponse.json({ message: 'Failed to upload the photo. Please try again.' }, { status: 500 })
@@ -140,14 +123,6 @@ export const catHandlers = [
       ...mockCat,
       id: Number(params.id),
       photo_url: 'https://example.com/new-cat-photo.jpg',
-      photo: {
-        id: 1,
-        cat_id: Number(params.id),
-        filename: 'new-cat-photo.jpg',
-        path: 'cats/profiles/new-cat-photo.jpg',
-        size: 1024,
-        mime_type: 'image/jpeg',
-      },
     }
     return HttpResponse.json({ data: updatedCat }, { status: 200 })
   }),

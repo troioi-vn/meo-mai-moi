@@ -41,7 +41,7 @@ describe('RegisterPage', () => {
           if (data.email === mockUser.email) {
             return HttpResponse.json({ message: 'Email already taken.' }, { status: 422 })
           }
-          return HttpResponse.json({ user: { ...mockUser, ...(data as Record<string, any>) } }, { status: 201 })
+          return HttpResponse.json({ user: { ...mockUser, ...(data as Record<string, unknown>) } }, { status: 201 })
         }
         return HttpResponse.json({ message: 'Invalid request' }, { status: 400 })
       })

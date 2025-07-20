@@ -38,7 +38,7 @@ describe('CatProfilePage', () => {
       <Routes>
         <Route path="/cats/:id" element={<CatProfilePage />} />
       </Routes>,
-      { route: `/cats/${mockCat.id}` },
+      { route: `/cats/${String(mockCat.id)}` },
     )
 
     // Should show loading initially
@@ -76,7 +76,7 @@ describe('CatProfilePage', () => {
   it('shows placeholder image when imageUrl is not provided', async () => {
     const catWithoutPhoto = { ...anotherMockCat, photo_url: null }
     server.use(
-      http.get(`http://localhost:3000/api/cats/${catWithoutPhoto.id}`, () => {
+      http.get(`http://localhost:3000/api/cats/${String(catWithoutPhoto.id)}`, () => {
         return HttpResponse.json({ data: catWithoutPhoto })
       }),
     )
@@ -84,7 +84,7 @@ describe('CatProfilePage', () => {
       <Routes>
         <Route path="/cats/:id" element={<CatProfilePage />} />
       </Routes>,
-      { route: `/cats/${catWithoutPhoto.id}` },
+      { route: `/cats/${String(catWithoutPhoto.id)}` },
     )
 
     await waitFor(() => {
@@ -133,7 +133,7 @@ describe('CatProfilePage', () => {
     it("shows only Back button when user doesn't have edit permissions", async () => {
       const catWithoutPerms = { ...anotherMockCat, viewer_permissions: { can_edit: false, can_view_contact: false } }
       server.use(
-        http.get(`http://localhost:3000/api/cats/${catWithoutPerms.id}`, () => {
+      http.get(`http://localhost:3000/api/cats/${String(catWithoutPerms.id)}`, () => {
           return HttpResponse.json({ data: catWithoutPerms })
         }),
       )
@@ -141,7 +141,7 @@ describe('CatProfilePage', () => {
         <Routes>
           <Route path="/cats/:id" element={<CatProfilePage />} />
         </Routes>,
-        { route: `/cats/${catWithoutPerms.id}` },
+        { route: `/cats/${String(catWithoutPerms.id)}` },
       )
 
       await waitFor(() => {
@@ -161,7 +161,7 @@ describe('CatProfilePage', () => {
         <Routes>
           <Route path="/cats/:id" element={<CatProfilePage />} />
         </Routes>,
-        { route: `/cats/${mockCat.id}` },
+        { route: `/cats/${String(mockCat.id)}` },
       )
 
       await waitFor(() => {
@@ -173,7 +173,7 @@ describe('CatProfilePage', () => {
 
       // Click Edit and assert navigation
       await screen.getByRole('button', { name: /edit/i }).click()
-      expect(mockNavigate).toHaveBeenCalledWith(`/cats/${mockCat.id}/edit`)
+      expect(mockNavigate).toHaveBeenCalledWith(`/cats/${String(mockCat.id)}/edit`)
 
       // Click My Cats and assert navigation
       await screen.getByRole('button', { name: /my cats/i }).click()

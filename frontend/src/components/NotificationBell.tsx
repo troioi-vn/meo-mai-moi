@@ -18,6 +18,7 @@ interface Notification {
   notifiable_id: number;
   data: {
     message: string;
+    link?: string;
   };
   read_at: string | null;
   created_at: string;
@@ -33,12 +34,16 @@ export function NotificationBell() {
     setIsLoading(true)
     setError(null)
     try {
-      const response = await api.get<{ data: { notifications: Notification[], unread_count: number } }>('/notifications')
-      const { notifications: fetchedNotifications, unread_count: fetchedUnreadCount } = response.data.data || { notifications: [], unread_count: 0 }
+      const response = await api.get<{ data: Notification[] }>('/notifications')
+      const fetchedNotifications = response.data.data
       setNotifications(fetchedNotifications)
-      setUnreadCount(fetchedUnreadCount)
+      setUnreadCount(fetchedNotifications.filter(n => !n.read_at).length)
     } catch (error: unknown) {
-      console.error('Error fetching notifications:', error)
+      if (error instanceof Error) {
+        console.error('Error fetching notifications:', error.message)
+      } else {
+        console.error('Error fetching notifications:', error)
+      }
       setError('Failed to fetch notifications')
     } finally {
       setIsLoading(false)
@@ -97,13 +102,13 @@ export function NotificationBell() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {notifications && notifications.length === 0 ? (
+        {notifications.length === 0 ? (
           <DropdownMenuItem>No new notifications</DropdownMenuItem>
         ) : (
-          notifications && notifications.map((notification) => (
+          notifications.map((notification) => (
             <DropdownMenuItem key={notification.id} asChild>
-              <a href={notification.link} className="w-full">
-                {notification.message}
+              <a href={notification.data.link ?? '#'} className="w-full">
+                {notification.data.message}
               </a>
             </DropdownMenuItem>
           ))

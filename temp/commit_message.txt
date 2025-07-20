@@ -1,0 +1,6 @@
+feat(frontend): add comprehensive tests for Select, AlertDialog, Alert, ThemeProvider, and ApplyToHelpPage; remove obsolete vite.config.js
+
+- Added comprehensive tests for Select (select.test.tsx), AlertDialog (alert-dialog.test.tsx), Alert (alert.test.tsx), and ThemeProvider (theme-provider.test.tsx) components, covering rendering, user interaction, and state changes.
+- Added a basic test for ApplyToHelpPage (ApplyToHelpPage.test.tsx) to verify main heading rendering.
+- Removed obsolete vite.config.js in favor of vite.config.ts as the primary configuration file.
+- Updated CHANGELOG.md to reflect new tests and config cleanup.

@@ -2,7 +2,7 @@
 vi.mock('@/hooks/use-auth', () => ({
   useAuth: () => ({ user: mockUser, logout: vi.fn() })
 }))
-import { screen, waitFor } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { renderWithRouter } from '@/test-utils'
 import ProfilePage from './ProfilePage'

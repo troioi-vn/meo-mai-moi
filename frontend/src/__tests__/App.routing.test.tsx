@@ -35,12 +35,6 @@ beforeEach(() => {
 })
 
 describe('App Routing', () => {
-  const authenticatedState = {
-    isAuthenticated: true,
-    user: mockUser,
-    token: 'test-token',
-  }
-
   describe('Cat profile routes', () => {
     it('renders CatProfilePage for /cats/:id route', async () => {
       renderWithRouter(<App />, { route: '/cats/1' })

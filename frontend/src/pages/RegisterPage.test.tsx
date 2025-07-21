@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-unsafe-return
 vi.mock('react-router-dom', async (importOriginal) => {
-  const actual = await importOriginal() as any
+  const actual = (await importOriginal()) as any
   return {
     ...actual,
     useNavigate: () => vi.fn(),
@@ -26,15 +26,17 @@ import { HttpResponse, http } from 'msw'
 import { mockUser } from '@/mocks/data/user'
 
 describe('RegisterPage', () => {
-  it('renders the register page correctly', () => {
+  it('renders the register page correctly', async () => {
     renderWithRouter(<RegisterPage />, { route: '/register' })
 
-    expect(screen.getByRole('heading', { name: /create an account/i })).toBeInTheDocument()
-    expect(screen.getByLabelText(/name/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/^Password$/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /register/i })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /create an account/i })).toBeInTheDocument()
+      expect(screen.getByLabelText(/name/i)).toBeInTheDocument()
+      expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
+      expect(screen.getByLabelText(/^Password$/i)).toBeInTheDocument()
+      expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /register/i })).toBeInTheDocument()
+    })
   })
 
   it('registers a new user and navigates to login on success', async () => {

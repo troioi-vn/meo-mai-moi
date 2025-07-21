@@ -5,7 +5,7 @@ import { renderWithRouter } from '@/test-utils'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select'
 
 describe('Select', () => {
-  it('renders correctly with a placeholder', () => {
+  it('renders correctly with a placeholder', async () => {
     renderWithRouter(
       <Select>
         <SelectTrigger>
@@ -18,8 +18,9 @@ describe('Select', () => {
       </Select>
     )
 
-    // Use getByText to find the placeholder text within the rendered span
-    expect(screen.getByText('Select a fruit')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('Select a fruit')).toBeInTheDocument()
+    })
   })
 
   it('opens and closes the select content on trigger click', async () => {

@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 import { renderWithRouter } from '@/test-utils'
 
@@ -8,18 +8,22 @@ describe('NotFoundPage', () => {
   // Render NotFoundPage via router for a non-existent route
   const render404 = () => renderWithRouter(<AppRoutes />, { route: '/some/bad/route' })
 
-  it('renders the 404 error number', () => {
+  it('renders the 404 error number', async () => {
     render404()
-    const errorCode = screen.getByText('404')
-    expect(errorCode).toBeInTheDocument()
-    expect(errorCode).toHaveClass('text-9xl', 'font-bold', 'text-primary')
+    await waitFor(() => {
+      const errorCode = screen.getByText('404')
+      expect(errorCode).toBeInTheDocument()
+      expect(errorCode).toHaveClass('text-9xl', 'font-bold', 'text-primary')
+    })
   })
 
-  it('renders the page not found heading', () => {
+  it('renders the page not found heading', async () => {
     render404()
-    const heading = screen.getByRole('heading', { level: 2 })
-    expect(heading).toBeInTheDocument()
-    expect(heading).toHaveTextContent('Page Not Found')
+    await waitFor(() => {
+      const heading = screen.getByRole('heading', { level: 2 })
+      expect(heading).toBeInTheDocument()
+      expect(heading).toHaveTextContent('Page Not Found')
+    })
   })
 
   it('renders the explanatory message', () => {

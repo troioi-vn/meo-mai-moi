@@ -70,46 +70,6 @@ class CatController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/cats",
-     *     summary="Get a list of all available cats",
-     *     tags={"Cats"},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             type="array",
-     *             @OA\Items(ref="#/components/schemas/Cat")
-     *         )
-     *     )
-     * )
-     */
-    public function index(Request $request)
-    {
-        $query = Cat::query()->whereNotIn('status', [CatStatus::DECEASED, CatStatus::DELETED]);
-
-        if ($request->has('location')) {
-            $query->where('location', 'like', '%' . $request->input('location') . '%');
-        }
-
-        if ($request->has('breed')) {
-            $query->where('breed', 'like', '%' . $request->input('breed') . '%');
-        }
-
-        if ($request->has('sort_by')) {
-            $sortBy = $request->input('sort_by');
-            $sortDirection = $request->input('sort_direction', 'asc'); // Default to ascending
-
-            if (in_array($sortBy, ['name', 'birthday'])) {
-                $query->orderBy($sortBy, $sortDirection);
-            }
-        }
-
-        $cats = $query->get();
-        return $this->sendSuccess($cats);
-    }
-
-    /**
-     * @OA\Get(
      *     path="/api/my-cats",
      *     summary="Get a list of the authenticated user's cats",
      *     tags={"Cats"},

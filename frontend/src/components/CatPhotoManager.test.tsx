@@ -14,6 +14,7 @@ vi.mock('@/api/axios', () => ({
   api: {
     post: vi.fn(),
     delete: vi.fn(),
+    get: vi.fn(() => Promise.resolve({ data: { data: {} } })),
   },
 }))
 
@@ -30,10 +31,7 @@ describe('CatPhotoManager', () => {
     mockApiDelete = vi.spyOn(api, 'delete')
     mockToastSuccess = vi.spyOn(toast, 'success')
     mockToastError = vi.spyOn(toast, 'error')
-    mockApiPost.mockClear()
-    mockApiDelete.mockClear()
-    mockToastSuccess.mockClear()
-    mockToastError.mockClear()
+    
     // Set default mock implementations
     mockApiPost.mockResolvedValue({ data: { data: {} } })
     mockApiDelete.mockResolvedValue({})
@@ -41,34 +39,37 @@ describe('CatPhotoManager', () => {
     mockToastError.mockImplementation(() => {})
   })
 
-  it('renders correctly when cat has a photo and user is owner', () => {
+  it('renders correctly when cat has a photo and user is owner', async () => {
     renderWithRouter(
       <CatPhotoManager cat={mockCat} isOwner={true} onPhotoUpdated={mockOnPhotoUpdated} />
     )
-
-    expect(screen.getByAltText(`Photo of ${mockCat.name}`)).toBeInTheDocument()
-    expect(screen.getByText('Replace')).toBeInTheDocument()
-    expect(screen.getByText('Remove')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByAltText(`Photo of ${mockCat.name}`)).toBeInTheDocument()
+      expect(screen.getByText('Replace')).toBeInTheDocument()
+      expect(screen.getByText('Remove')).toBeInTheDocument()
+    })
   })
 
-  it('renders correctly when cat has no photo and user is owner', () => {
+  it('renders correctly when cat has no photo and user is owner', async () => {
     const catWithoutPhoto: Cat = { ...mockCat, photo_url: undefined }
     renderWithRouter(
       <CatPhotoManager cat={catWithoutPhoto} isOwner={true} onPhotoUpdated={mockOnPhotoUpdated} />
     )
-
-    expect(screen.getByText('No photo uploaded')).toBeInTheDocument()
-    expect(screen.getByText('Upload Photo')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('No photo uploaded')).toBeInTheDocument()
+      expect(screen.getByText('Upload Photo')).toBeInTheDocument()
+    })
   })
 
-  it('renders correctly when user is not owner', () => {
+  it('renders correctly when user is not owner', async () => {
     renderWithRouter(
       <CatPhotoManager cat={mockCat} isOwner={false} onPhotoUpdated={mockOnPhotoUpdated} />
     )
-
-    expect(screen.getByAltText(`Photo of ${mockCat.name}`)).toBeInTheDocument()
-    expect(screen.queryByText('Replace')).not.toBeInTheDocument()
-    expect(screen.queryByText('Remove')).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByAltText(`Photo of ${mockCat.name}`)).toBeInTheDocument()
+      expect(screen.queryByText('Replace')).not.toBeInTheDocument()
+      expect(screen.queryByText('Remove')).not.toBeInTheDocument()
+    })
   })
 
   it('handles photo upload correctly', async () => {

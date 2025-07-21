@@ -1,5 +1,4 @@
 import { HeroSection } from '@/components/HeroSection'
-import { CatsSection } from '@/components/CatsSection'
 import { Footer } from '@/components/Footer'
 
 export default function MainPage() {
@@ -7,7 +6,10 @@ export default function MainPage() {
     <div className="flex flex-col min-h-screen bg-background">
       <main className="flex-1">
         <HeroSection />
-        <CatsSection />
+        { /* TODO: This should be a list of cats looking for a home.
+        Formed on the base of PlacementRequesrt 
+        <CatsSection /> 
+        */ }
       </main>
       <Footer />
     </div>

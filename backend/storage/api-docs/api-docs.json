@@ -192,121 +192,6 @@
                 ]
             }
         },
-        "/api/cats": {
-            "get": {
-                "tags": [
-                    "Cats"
-                ],
-                "summary": "Get a list of all available cats",
-                "operationId": "37b784597020a23064dfd2b60befdd41",
-                "responses": {
-                    "200": {
-                        "description": "Successful operation",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Cat"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "Cats"
-                ],
-                "summary": "Create a new cat listing",
-                "operationId": "6a153b29cdb539163e80104ea2fb0f47",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "name",
-                                    "breed",
-                                    "birthday",
-                                    "location",
-                                    "description"
-                                ],
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "example": "Whiskers"
-                                    },
-                                    "breed": {
-                                        "type": "string",
-                                        "example": "Siamese"
-                                    },
-                                    "birthday": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2023-01-01"
-                                    },
-                                    "location": {
-                                        "type": "string",
-                                        "example": "New York, USA"
-                                    },
-                                    "description": {
-                                        "type": "string",
-                                        "example": "A friendly and playful cat."
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Cat created successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Cat"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Validation Error"
-                                        },
-                                        "errors": {
-                                            "type": "object",
-                                            "example": {
-                                                "name": [
-                                                    "The name field is required."
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
         "/api/my-cats": {
             "get": {
                 "tags": [
@@ -536,6 +421,99 @@
                         }
                     }
                 }
+            }
+        },
+        "/api/cats": {
+            "post": {
+                "tags": [
+                    "Cats"
+                ],
+                "summary": "Create a new cat listing",
+                "operationId": "6a153b29cdb539163e80104ea2fb0f47",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "breed",
+                                    "birthday",
+                                    "location",
+                                    "description"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Whiskers"
+                                    },
+                                    "breed": {
+                                        "type": "string",
+                                        "example": "Siamese"
+                                    },
+                                    "birthday": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2023-01-01"
+                                    },
+                                    "location": {
+                                        "type": "string",
+                                        "example": "New York, USA"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "A friendly and playful cat."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Cat created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Cat"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation Error"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": {
+                                                "name": [
+                                                    "The name field is required."
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             }
         },
         "/api/cats/{cat}/photos": {
@@ -1081,7 +1059,12 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/User"
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -1455,6 +1438,33 @@
                         "sanctum": []
                     }
                 ]
+            }
+        },
+        "/api/version": {
+            "get": {
+                "tags": [
+                    "System"
+                ],
+                "summary": "Get API version",
+                "operationId": "2fc5e7cb989a6e76d38f4f3d97a7daf0",
+                "responses": {
+                    "200": {
+                        "description": "Current API version",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "version": {
+                                            "type": "string",
+                                            "example": "v0.0.1"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         "/api/cats/{cat_id}/weight-history": {
@@ -1962,6 +1972,10 @@
         {
             "name": "User Profile",
             "description": "User Profile"
+        },
+        {
+            "name": "System",
+            "description": "System"
         }
     ]
 }

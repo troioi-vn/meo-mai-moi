@@ -43,7 +43,8 @@ const userHandlers = [
   // Login endpoint - returns a { data: { ... } } object
   http.post('http://localhost:3000/api/login', async ({ request }) => {
     const raw = await request.json()
-    const body = raw && typeof raw === 'object' ? (raw as { email?: string; password?: string }) : {};
+    const body =
+      raw && typeof raw === 'object' ? (raw as { email?: string; password?: string }) : {}
     if (body.email === 'fail@example.com') {
       return HttpResponse.json({ message: 'Invalid credentials' }, { status: 401 })
     }

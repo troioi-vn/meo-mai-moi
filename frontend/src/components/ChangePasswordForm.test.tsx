@@ -7,6 +7,7 @@ import { renderWithRouter, userEvent } from '@/test-utils'
 import { toast } from '@/components/ui/use-toast'
 
 // Stable mock for changePassword
+
 import { mockUser } from '@/mocks/data/user'
 const changePasswordMock = vi.fn(async () => Promise.resolve())
 
@@ -35,17 +36,19 @@ describe('ChangePasswordForm', () => {
     vi.mocked(toast).mockClear()
   })
 
-  it('renders all form fields', () => {
+  it('renders all form fields', async () => {
     renderWithRouter(<ChangePasswordForm />)
 
-    // Check that all three password inputs exist
-    const inputs = document.querySelectorAll('input[type="password"]')
-    expect(inputs).toHaveLength(3)
+    await waitFor(() => {
+      // Check that all three password inputs exist
+      const inputs = document.querySelectorAll('input[type="password"]')
+      expect(inputs).toHaveLength(3)
 
-    expect(screen.getByText('Current Password')).toBeInTheDocument()
-    expect(screen.getByText('New Password')).toBeInTheDocument()
-    expect(screen.getByText('Confirm New Password')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /change password/i })).toBeInTheDocument()
+      expect(screen.getByText('Current Password')).toBeInTheDocument()
+      expect(screen.getByText('New Password')).toBeInTheDocument()
+      expect(screen.getByText('Confirm New Password')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /change password/i })).toBeInTheDocument()
+    })
   })
 
   it('shows validation errors for empty fields', async () => {

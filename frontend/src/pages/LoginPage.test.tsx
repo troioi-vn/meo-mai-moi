@@ -20,13 +20,15 @@ describe('LoginPage', () => {
     mockNavigate = vi.fn()
   })
 
-  it('renders the login page correctly', () => {
+  it('renders the login page correctly', async () => {
     renderWithRouter(<LoginPage />)
 
-    expect(screen.getByRole('heading', { name: /login/i })).toBeInTheDocument()
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /login/i })).toBeInTheDocument()
+      expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
+      expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument()
+    })
   })
 
   it('logs in the user and navigates to /account/cats on success', async () => {
@@ -72,7 +74,7 @@ describe('LoginPage', () => {
     await userEvent.type(screen.getByLabelText(/password/i), 'wrongpassword')
     await userEvent.click(screen.getByRole('button', { name: /login/i }))
     await waitFor(() => {
-      expect(screen.getByText(/failed to login/i)).toBeInTheDocument()
+      expect(await screen.findByText(/Failed to login. Please check your credentials./i)).toBeInTheDocument()
     })
   })
 })

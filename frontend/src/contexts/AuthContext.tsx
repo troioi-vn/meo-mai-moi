@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { api, csrf } from '@/api/axios'
+import { api, csrf } from '@/api/axios';
 
 interface RegisterPayload {
   name: string

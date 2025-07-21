@@ -7,12 +7,15 @@ export const getAllCats = async (): Promise<Cat[]> => {
 }
 
 export const getMyCats = async (): Promise<Cat[]> => {
-  const response = await api.get<{ data: Cat[] }>('/cats')
+  const response = await api.get<{ data: Cat[] }>('/my-cats')
   return response.data.data
 }
 
 export const createCat = async (
-  catData: Omit<Cat, 'id' | 'user_id' | 'status' | 'created_at' | 'updated_at' | 'user' | 'viewer_permissions'>
+  catData: Omit<
+    Cat,
+    'id' | 'user_id' | 'status' | 'created_at' | 'updated_at' | 'user' | 'viewer_permissions'
+  >
 ): Promise<Cat> => {
   const response = await api.post<{ data: Cat }>('/cats', catData)
   return response.data.data

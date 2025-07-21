@@ -34,7 +34,8 @@ describe('MyCatsPage', () => {
   it('renders the page title', async () => {
     renderWithRouter(<MyCatsPage />)
     await waitFor(() => {
-      expect(screen.getByText('My Cats')).toBeInTheDocument()
+      const title = screen.getByText('My Cats')
+      expect(title).toBeInTheDocument()
     })
   })
 

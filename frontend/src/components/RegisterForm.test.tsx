@@ -11,14 +11,16 @@ describe('RegisterForm', () => {
     user = userEvent.setup()
   })
 
-  it('renders the registration form correctly', () => {
+  it('renders the registration form correctly', async () => {
     renderWithRouter(<RegisterForm />)
 
-    expect(screen.getByLabelText(/name/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/^Password$/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /register/i })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByLabelText(/name/i)).toBeInTheDocument()
+      expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
+      expect(screen.getByLabelText(/^Password$/i)).toBeInTheDocument()
+      expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /register/i })).toBeInTheDocument()
+    })
   })
 
   it('shows an error message on failed registration', async () => {
@@ -32,7 +34,7 @@ describe('RegisterForm', () => {
 
     await waitFor(() => {
       // The UI shows the error message from Axios: 'Registration failed'
-      expect(screen.getByText(/Email already taken./i)).toBeInTheDocument()
+      expect(await screen.findByText(/Email already taken./i)).toBeInTheDocument()
     })
   })
 

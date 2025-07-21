@@ -1,24 +1,28 @@
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 import { renderWithRouter } from '@/test-utils'
 
 import { Alert, AlertTitle, AlertDescription } from './alert'
 
 describe('Alert', () => {
-  it('renders correctly with default variant', () => {
+  it('renders correctly with default variant', async () => {
     renderWithRouter(<Alert>Default Alert</Alert>)
-    const alertElement = screen.getByRole('alert')
-    expect(alertElement).toBeInTheDocument()
-    expect(alertElement).toHaveTextContent('Default Alert')
-    expect(alertElement).toHaveClass('bg-background') // Default variant class
+    await waitFor(() => {
+      const alertElement = screen.getByRole('alert')
+      expect(alertElement).toBeInTheDocument()
+      expect(alertElement).toHaveTextContent('Default Alert')
+      expect(alertElement).toHaveClass('bg-background') // Default variant class
+    })
   })
 
-  it('renders correctly with destructive variant', () => {
+  it('renders correctly with destructive variant', async () => {
     renderWithRouter(<Alert variant="destructive">Destructive Alert</Alert>)
-    const alertElement = screen.getByRole('alert')
-    expect(alertElement).toBeInTheDocument()
-    expect(alertElement).toHaveTextContent('Destructive Alert')
-    expect(alertElement).toHaveClass('border-destructive/50') // Destructive variant class
+    await waitFor(() => {
+      const alertElement = screen.getByRole('alert')
+      expect(alertElement).toBeInTheDocument()
+      expect(alertElement).toHaveTextContent('Destructive Alert')
+      expect(alertElement).toHaveClass('border-destructive/50') // Destructive variant class
+    })
   })
 
   it('renders with a title and description', () => {

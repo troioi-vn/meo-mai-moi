@@ -21,11 +21,13 @@ describe('LoginForm', () => {
       })
     )
   })
-  it('renders the login form correctly', () => {
+  it('renders the login form correctly', async () => {
     renderWithRouter(<LoginForm />)
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
+      expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument()
+    })
   })
 
   it('allows the user to fill out the form', async () => {

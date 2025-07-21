@@ -66,7 +66,7 @@ This project uses different databases for different environments:
 
 1. **Start the application**:
    ```bash
-   docker compose up -d --build
+   docker compose up -d --build backend
    ```
 
 2. **Set up the database** (required after first build):
@@ -193,7 +193,7 @@ This guide outlines the steps to deploy the Meo Mai Moi application to a product
    From the project root directory, build and start the Docker containers in detached mode:
 
    ```bash
-   docker compose up -d --build
+   docker compose up -d --build backend
    ```
 
 4. **Configure Nginx as a Reverse Proxy**

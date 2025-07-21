@@ -15,7 +15,7 @@ import {
 } from './alert-dialog'
 
 describe('AlertDialog', () => {
-  it('renders the trigger button', () => {
+  it('renders the trigger button', async () => {
     renderWithRouter(
       <AlertDialog>
         <AlertDialogTrigger>Open Dialog</AlertDialogTrigger>
@@ -32,7 +32,9 @@ describe('AlertDialog', () => {
       </AlertDialog>
     )
 
-    expect(screen.getByRole('button', { name: /open dialog/i })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /open dialog/i })).toBeInTheDocument()
+    })
   })
 
   it('opens the dialog when the trigger is clicked', async () => {

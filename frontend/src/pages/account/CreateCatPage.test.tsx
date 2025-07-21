@@ -28,22 +28,24 @@ describe('CreateCatPage', () => {
     )
   })
 
-  it('renders the form fields with birthday instead of age', () => {
+  it('renders the form fields with birthday instead of age', async () => {
     renderWithRouter(<CreateCatPage />)
-    expect(screen.getByLabelText('Name')).toBeInTheDocument()
-
-    expect(screen.getByLabelText('Breed')).toBeInTheDocument()
-    expect(screen.getByLabelText('Birthday')).toBeInTheDocument()
-    expect(screen.getByLabelText('Location')).toBeInTheDocument()
-    expect(screen.getByLabelText('Description')).toBeInTheDocument()
-
-    // Should NOT have age field
-    expect(screen.queryByLabelText('Age')).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByLabelText('Name')).toBeInTheDocument()
+      expect(screen.getByLabelText('Breed')).toBeInTheDocument()
+      expect(screen.getByLabelText('Birthday')).toBeInTheDocument()
+      expect(screen.getByLabelText('Location')).toBeInTheDocument()
+      expect(screen.getByLabelText('Description')).toBeInTheDocument()
+      // Should NOT have age field
+      expect(screen.queryByLabelText('Age')).not.toBeInTheDocument()
+    })
   })
 
-  it('renders cancel button that navigates back to my cats page', () => {
+  it('renders cancel button that navigates back to my cats page', async () => {
     renderWithRouter(<CreateCatPage />)
-    expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
+    })
   })
 
   it('submits the form with birthday and redirects on success', async () => {

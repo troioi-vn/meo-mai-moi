@@ -30,9 +30,11 @@ describe('EnhancedCatRemovalModal', () => {
     vi.clearAllMocks()
   })
 
-  it('renders the trigger button', () => {
+  it('renders the trigger button', async () => {
     renderWithRouter(<EnhancedCatRemovalModal {...mockProps} />)
-    expect(screen.getByRole('button', { name: /remove cat/i })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /remove cat/i })).toBeInTheDocument()
+    })
   })
 
   it('opens the modal and shows step 1 when trigger is clicked', async () => {

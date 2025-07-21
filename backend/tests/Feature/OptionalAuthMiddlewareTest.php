@@ -12,30 +12,6 @@ class OptionalAuthMiddlewareTest extends TestCase
 {
     use RefreshDatabase;
 
-    #[Test]
-    public function test_optional_auth_processes_valid_token(): void
-    {
-        $user = User::factory()->create();
-        Sanctum::actingAs($user);
-        
-        // Test an endpoint that uses OptionalAuth middleware
-        $response = $this->getJson('/api/cats');
-        
-        // Should succeed and user should be authenticated
-        $response->assertStatus(200);
-        $this->assertAuthenticatedAs($user);
-    }
-
-    #[Test]
-    public function test_optional_auth_continues_without_token(): void
-    {
-        // Make request without any authorization header
-        $response = $this->getJson('/api/cats');
-        
-        // Should succeed even without authentication
-        $response->assertStatus(200);
-        $this->assertGuest();
-    }
 
     #[Test]
     public function test_optional_auth_ignores_invalid_token(): void
@@ -43,7 +19,7 @@ class OptionalAuthMiddlewareTest extends TestCase
         // Make request with invalid bearer token
         $response = $this->withHeaders([
             'Authorization' => 'Bearer invalid-token-xyz'
-        ])->getJson('/api/cats');
+        ])->getJson('/api/version');
         
         // Should succeed and treat as guest
         $response->assertStatus(200);
@@ -64,7 +40,7 @@ class OptionalAuthMiddlewareTest extends TestCase
         foreach ($malformedHeaders as $authHeader) {
             $response = $this->withHeaders([
                 'Authorization' => $authHeader
-            ])->getJson('/api/cats');
+            ])->getJson('/api/version');
             
             $response->assertStatus(200);
             $this->assertGuest();
@@ -82,7 +58,7 @@ class OptionalAuthMiddlewareTest extends TestCase
         
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $token->plainTextToken
-        ])->getJson('/api/cats');
+        ])->getJson('/api/version');
         
         // Should succeed and treat as guest
         $response->assertStatus(200);
@@ -96,8 +72,8 @@ class OptionalAuthMiddlewareTest extends TestCase
         Sanctum::actingAs($user);
         
         // Make multiple requests to verify user context is maintained
-        $response1 = $this->getJson('/api/cats');
-        $response2 = $this->getJson('/api/cats');
+        $response1 = $this->getJson('/api/version');
+        $response2 = $this->getJson('/api/version');
         
         $response1->assertStatus(200);
         $response2->assertStatus(200);

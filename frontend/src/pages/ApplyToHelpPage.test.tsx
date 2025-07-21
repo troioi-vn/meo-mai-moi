@@ -1,12 +1,13 @@
-import { screen } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
 import { renderWithRouter } from '@/test-utils'
+import { screen, waitFor } from '@testing-library/react'
 
 import ApplyToHelpPage from './ApplyToHelpPage'
 
 describe('ApplyToHelpPage', () => {
-  it('renders the main heading', () => {
+  it('renders the main heading', async () => {
     renderWithRouter(<ApplyToHelpPage />)
-    expect(screen.getByRole('heading', { name: /apply to help page/i })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /apply to help page/i })).toBeInTheDocument()
+    })
   })
 })

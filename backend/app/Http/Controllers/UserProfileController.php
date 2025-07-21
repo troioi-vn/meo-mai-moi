@@ -67,7 +67,9 @@ class UserProfileController extends Controller
      *     @OA\Response(
      *         response=200,
      *         description="Successful operation",
-     *         @OA\JsonContent(ref="#/components/schemas/User")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", ref="#/components/schemas/User")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=401,
@@ -77,7 +79,7 @@ class UserProfileController extends Controller
      */
     public function show(Request $request)
     {
-        return $this->sendSuccess($request->user());
+        return $this->sendSuccess(['data' => $request->user()]);
     }
 
     /**
@@ -260,7 +262,7 @@ class UserProfileController extends Controller
     public function uploadAvatar(Request $request, FileUploadService $fileUploadService)
     {
         $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10240', // 10MB
         ]);
 
         $user = $request->user();

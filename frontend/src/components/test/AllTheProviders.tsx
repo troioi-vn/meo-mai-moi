@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { Toaster } from '@/components/ui/sonner'
 
-const testQueryClient = new QueryClient({
+export const testQueryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: false,

@@ -6,18 +6,12 @@ export const mockCat: Cat = {
   name: 'Fluffy',
   breed: 'Persian',
   birthday: '2020-01-15',
-  location: 'New York, NY',
-  description: 'A very friendly and fluffy cat.',
-  user_id: 1,
   status: 'active',
+  description: 'A very friendly and fluffy cat.',
+  location: 'New York, NY',
+  photo_url: 'http://localhost:3000/storage/cats/profiles/fluffy.jpg',
   created_at: '2023-01-01T00:00:00Z',
   updated_at: '2023-01-01T00:00:00Z',
-  photo_url: 'https://example.com/cat.jpg',
-  user: {
-    id: 1,
-    name: 'Test User',
-    email: 'test@example.com',
-  },
   viewer_permissions: {
     can_edit: true,
     can_view_contact: true,
@@ -29,18 +23,11 @@ export const anotherMockCat: Cat = {
   name: 'Whiskers',
   breed: 'Siamese',
   birthday: '2019-05-20',
-  location: 'Los Angeles, CA',
-  description: 'A curious and playful cat.',
-  user_id: 2, // Different user
   status: 'active',
+  description: 'A curious and playful cat.',
+  location: 'Los Angeles, CA',
   created_at: '2023-01-01T00:00:00Z',
   updated_at: '2023-01-01T00:00:00Z',
-  photo_url: 'http://example.com/whiskers.jpg',
-  user: {
-    id: 2,
-    name: 'Another User',
-    email: 'another@example.com',
-  },
   viewer_permissions: {
     can_edit: false,
     can_view_contact: false,
@@ -52,21 +39,13 @@ export const deceasedMockCat: Cat = {
   name: 'Deceased Cat',
   breed: 'Unknown',
   birthday: '2010-01-01',
-  location: 'Rainbow Bridge',
-  description: 'A beloved cat who has passed away.',
-  user_id: 1,
   status: 'deceased',
+  description: 'A beloved cat who has passed away.',
   created_at: '2023-01-01T00:00:00Z',
   updated_at: '2023-01-01T00:00:00Z',
-  photo_url: 'http://example.com/deceased-cat.jpg',
-  user: {
-    id: 1,
-    name: 'Test User',
-    email: 'test@example.com',
-  },
   viewer_permissions: {
-    can_edit: true,
-    can_view_contact: true,
+    can_edit: false,
+    can_view_contact: false,
   },
 }
 
@@ -74,6 +53,10 @@ export const catHandlers = [
   // Returns a { data: [ ... ] } object
   http.get('http://localhost:3000/api/cats', () => {
     return HttpResponse.json({ data: [mockCat, anotherMockCat, deceasedMockCat] })
+  }),
+  // Returns a { data: [ ... ] } object for the authenticated user's cats
+  http.get('http://localhost:3000/api/my-cats', () => {
+    return HttpResponse.json({ data: [mockCat, anotherMockCat] })
   }),
   // Returns a { data: { ... } } object
   http.get('http://localhost:3000/api/cats/:id', ({ params }) => {
@@ -112,7 +95,7 @@ export const catHandlers = [
     const updatedCat = {
       ...mockCat,
       id: Number(params.id),
-      photo_url: 'https://example.com/new-cat-photo.jpg',
+      photo_url: 'new_photo_url',
     }
     return HttpResponse.json({ data: updatedCat }, { status: 200 })
   }),
@@ -128,7 +111,7 @@ export const catHandlers = [
     const updatedCat = {
       ...mockCat,
       id: Number(params.id),
-      photo_url: 'https://example.com/new-cat-photo.jpg',
+      photo_url: 'new_photo_url',
     }
     return HttpResponse.json({ data: updatedCat }, { status: 200 })
   }),

@@ -24,6 +24,7 @@ describe('RegisterForm', () => {
   })
 
   it('shows an error message on failed registration', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     renderWithRouter(<RegisterForm />)
 
     await user.type(screen.getByLabelText(/name/i), 'Test User')
@@ -32,10 +33,10 @@ describe('RegisterForm', () => {
     await user.type(screen.getByLabelText(/confirm password/i), 'password123')
     await user.click(screen.getByRole('button', { name: /register/i }))
 
-    await waitFor(() => {
-      // The UI shows the error message from Axios: 'Registration failed'
-      expect(await screen.findByText(/Email already taken./i)).toBeInTheDocument()
+    await waitFor(async () => {
+      expect(await screen.findByTestId('register-error-message')).toHaveTextContent(/Email already taken./i)
     })
+    vi.restoreAllMocks();
   })
 
   it('shows a success message on successful registration', async () => {

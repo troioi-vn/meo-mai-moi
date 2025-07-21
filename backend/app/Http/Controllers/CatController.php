@@ -78,8 +78,8 @@ class CatController extends Controller
      *         response=200,
      *         description="Successful operation",
      *         @OA\JsonContent(
-     *             type="array",
-     *             @OA\Items(ref="#/components/schemas/Cat")
+     *             type="object",
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Cat"))
      *         )
      *     ),
      *      @OA\Response(
@@ -113,18 +113,8 @@ class CatController extends Controller
      *         response=200,
      *         description="Successful operation",
      *         @OA\JsonContent(
-     *             allOf={
-     *                 @OA\Schema(ref="#/components/schemas/Cat"),
-     *                 @OA\Schema(
-     *                     @OA\Property(
-     *                         property="viewer_permissions",
-     *                         type="object",
-     *                         description="Permissions for the current viewer",
-     *                         @OA\Property(property="can_edit", type="boolean", example=true),
-     *                         @OA\Property(property="can_view_contact", type="boolean", example=false)
-     *                     )
-     *                 )
-     *             }
+     *             type="object",
+     *             @OA\Property(property="data", ref="#/components/schemas/Cat")
      *         )
      *     ),
      *     @OA\Response(
@@ -175,8 +165,8 @@ class CatController extends Controller
      *         response=200,
      *         description="Successful operation",
      *         @OA\JsonContent(
-     *             type="array",
-     *             @OA\Items(ref="#/components/schemas/Cat")
+     *             type="object",
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Cat"))
      *         )
      *     )
      * )
@@ -208,7 +198,10 @@ class CatController extends Controller
      *     @OA\Response(
      *         response=201,
      *         description="Cat created successfully",
-     *         @OA\JsonContent(ref="#/components/schemas/Cat")
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="data", ref="#/components/schemas/Cat")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=422,
@@ -265,7 +258,10 @@ class CatController extends Controller
      *     @OA\Response(
      *         response=200,
      *         description="Cat updated successfully",
-     *         @OA\JsonContent(ref="#/components/schemas/Cat")
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="data", ref="#/components/schemas/Cat")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=404,

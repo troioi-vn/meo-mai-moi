@@ -43,6 +43,7 @@ describe('LoginForm', () => {
   })
 
   it('shows an error message on failed login', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     server.use(
       http.post('http://localhost:3000/api/login', () => {
         return HttpResponse.json({ message: 'Invalid credentials' }, { status: 401 })
@@ -61,5 +62,6 @@ describe('LoginForm', () => {
         screen.getByText('Failed to login. Please check your credentials.')
       ).toBeInTheDocument()
     })
+    vi.restoreAllMocks();
   })
 })

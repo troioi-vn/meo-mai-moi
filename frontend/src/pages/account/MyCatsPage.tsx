@@ -20,8 +20,8 @@ export default function MyCatsPage() {
     const fetchCats = async () => {
       try {
         setLoading(true)
-        const myCats = await getMyCats()
-        setCats(myCats)
+        const response = await getMyCats()
+        setCats(Array.isArray(response) ? response : [])
         setError(null)
       } catch (err) {
         setError('Failed to fetch your cats. Please try again later.')

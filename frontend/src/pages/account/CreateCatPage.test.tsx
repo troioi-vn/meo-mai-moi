@@ -144,9 +144,8 @@ describe('CreateCatPage', () => {
     // Submit the form
     await user.click(screen.getByRole('button', { name: 'Create Cat' }))
 
-    await waitFor(() => {
-      // Check for the form error message (not the toast)
-      expect(screen.getByTestId('form-error')).toHaveTextContent(/failed to create cat/i)
+    await waitFor(async () => {
+      expect(await screen.findByTestId('form-error')).toHaveTextContent(/failed to create cat/i)
     })
     // Assert toast.error was called
     expect(toast.error).toHaveBeenCalledWith('Failed to create cat.')

@@ -205,10 +205,15 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Cat"
-                                    }
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Cat"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -248,30 +253,12 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "allOf": [
-                                        {
+                                    "properties": {
+                                        "data": {
                                             "$ref": "#/components/schemas/Cat"
-                                        },
-                                        {
-                                            "properties": {
-                                                "viewer_permissions": {
-                                                    "description": "Permissions for the current viewer",
-                                                    "properties": {
-                                                        "can_edit": {
-                                                            "type": "boolean",
-                                                            "example": true
-                                                        },
-                                                        "can_view_contact": {
-                                                            "type": "boolean",
-                                                            "example": false
-                                                        }
-                                                    },
-                                                    "type": "object"
-                                                }
-                                            },
-                                            "type": "object"
                                         }
-                                    ]
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -337,7 +324,12 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Cat"
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Cat"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -412,10 +404,15 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Cat"
-                                    }
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Cat"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -476,7 +473,12 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Cat"
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Cat"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }

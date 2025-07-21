@@ -17,8 +17,8 @@ export const createCat = async (
     'id' | 'user_id' | 'status' | 'created_at' | 'updated_at' | 'user' | 'viewer_permissions'
   >
 ): Promise<Cat> => {
-  const response = await api.post<{ data: Cat }>('/cats', catData)
-  return response.data.data
+  const response = await api.post<Cat>('/cats', catData)
+  return response.data
 }
 
 export const getCat = async (id: string): Promise<Cat> => {
@@ -30,8 +30,8 @@ export const updateCat = async (
   id: string,
   catData: Omit<Cat, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'user' | 'viewer_permissions'>
 ): Promise<Cat> => {
-  const response = await api.put<{ data: Cat }>(`/cats/${id}`, catData)
-  return response.data.data
+  const response = await api.put<Cat>(`/cats/${id}`, catData)
+  return response.data
 }
 
 export const deleteCat = async (id: string, password: string): Promise<void> => {
@@ -45,26 +45,26 @@ export const updateCatStatus = async (
   status: string,
   password: string
 ): Promise<Cat> => {
-  const response = await api.put<{ data: Cat }>(`/cats/${id}/status`, {
+  const response = await api.put<Cat>(`/cats/${id}/status`, {
     status,
     password,
   })
-  return response.data.data
+  return response.data
 }
 
 export const uploadCatPhoto = async (catId: number, photo: File): Promise<Cat> => {
   const formData = new FormData()
   formData.append('photo', photo)
 
-  const response = await api.post<{ data: Cat }>(`/cats/${String(catId)}/photos`, formData, {
+  const response = await api.post<Cat>(`/cats/${String(catId)}/photos`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
   })
-  return response.data.data
+  return response.data
 }
 
 export const deleteCatPhoto = async (catId: number): Promise<Cat> => {
-  const response = await api.delete<{ data: Cat }>(`/cats/${String(catId)}/photo`)
-  return response.data.data
+  const response = await api.delete<Cat>(`/cats/${String(catId)}/photo`)
+  return response.data
 }

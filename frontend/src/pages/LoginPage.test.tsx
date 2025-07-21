@@ -73,8 +73,8 @@ describe('LoginPage', () => {
     await userEvent.type(screen.getByLabelText(/email/i), 'fail@example.com')
     await userEvent.type(screen.getByLabelText(/password/i), 'wrongpassword')
     await userEvent.click(screen.getByRole('button', { name: /login/i }))
-    await waitFor(() => {
-      expect(await screen.findByText(/Failed to login. Please check your credentials./i)).toBeInTheDocument()
+    await waitFor(async () => {
+      expect(await screen.findByTestId('login-error-message')).toHaveTextContent('Failed to login. Please check your credentials.')
     })
   })
 })

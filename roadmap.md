@@ -90,13 +90,32 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
 - **Goal:** Build upon the MVP by implementing the core workflows of the application, including the helper application process and the NEW placement request system for cat rehoming.
 
 #### Epic 1: User & Helper Account Management
-- **Task: API Documentation & Tests**
+**Task: API Documentation & Tests**
   - **Status:** `To Do`
   - **Backend:**
     - [ ] Add Swagger docs for auth endpoints
   - **Frontend:**
     - [ ] Write tests for `RegisterPage`, `LoginPage`, `ProfilePage`
     - [ ] Write tests for main navigation
+
+**Task: Add "Remember Me" to Login Page**
+  - **Status:** `To Do`
+  - **Backend:**
+    - [ ] Update authentication logic to support persistent sessions
+  - **Frontend:**
+    - [ ] Add "Remember Me" checkbox to `LoginPage`
+    - [ ] Ensure session persists when selected
+
+**Task: Add Password Recovery (via Email)**
+  - **Status:** `To Do`
+  - **Backend:**
+    - [ ] Implement password reset token generation and email delivery
+    - [ ] Add endpoint for password reset requests
+    - [ ] Securely handle password updates
+  - **Frontend:**
+    - [ ] Add "Forgot Password?" link to `LoginPage`
+    - [ ] Create password reset form and flow
+    - [ ] Display confirmation and error messages
 - **Task: User Avatar Management**
   - **Status:** `To Do`
   - **Backend:**

@@ -28,6 +28,16 @@ describe('CatProfilePage', () => {
           email: 'test@example.com',
           avatar_url: 'https://example.com/avatar.jpg',
         })
+      }),
+      http.get('http://localhost:3000/api/cats/:id', ({ params }) => {
+        const { id } = params
+        if (id === String(mockCat.id)) {
+          return HttpResponse.json({ data: mockCat })
+        }
+        if (id === String(anotherMockCat.id)) {
+          return HttpResponse.json({ data: anotherMockCat })
+        }
+        return new HttpResponse(null, { status: 404 })
       })
     )
   })
@@ -44,17 +54,17 @@ describe('CatProfilePage', () => {
     expect(screen.getByText(/loading/i)).toBeInTheDocument()
 
     // Wait for cat data to load
-    await waitFor(() => {
-      expect(screen.getByText(mockCat.name)).toBeInTheDocument()
+    await waitFor(async () => {
+      expect(await screen.findByText(mockCat.name)).toBeInTheDocument()
     })
 
     // Check all cat information is displayed
-    expect(screen.getByText(/persian/i, { exact: false })).toBeInTheDocument()
+    expect(await screen.findByText(/persian/i, { exact: false })).toBeInTheDocument()
     // Note: Age calculation might be brittle. Consider mocking the date or testing the age calculation separately.
-    expect(screen.getByText(/years old/)).toBeInTheDocument()
-    expect(screen.getByText(mockCat.location)).toBeInTheDocument()
-    expect(screen.getByText(mockCat.description)).toBeInTheDocument()
-    expect(screen.getByText(new RegExp(mockCat.status, 'i'))).toBeInTheDocument()
+    expect(await screen.findByText(/years old/)).toBeInTheDocument()
+    expect(await screen.findByText(mockCat.location)).toBeInTheDocument()
+    expect(await screen.findByText(mockCat.description)).toBeInTheDocument()
+    expect(await screen.findByText(new RegExp(mockCat.status, 'i'))).toBeInTheDocument()
   })
 
   it('displays cat image with correct alt text', async () => {
@@ -65,8 +75,8 @@ describe('CatProfilePage', () => {
       { route: `/cats/${String(mockCat.id)}` }
     )
 
-    await waitFor(() => {
-      const image = screen.getByAltText(mockCat.name)
+    await waitFor(async () => {
+      const image = await screen.findByAltText(mockCat.name)
       expect(image).toBeInTheDocument()
       expect(image).toHaveAttribute('src', mockCat.photo_url)
     })
@@ -86,13 +96,14 @@ describe('CatProfilePage', () => {
       { route: `/cats/${String(catWithoutPhoto.id)}` }
     )
 
-    await waitFor(() => {
-      const image = screen.getByAltText(anotherMockCat.name)
+    await waitFor(async () => {
+      const image = await screen.findByAltText(anotherMockCat.name)
       expect(image.getAttribute('src')).toMatch(/placeholder--cat.webp/)
     })
   })
 
   it('displays an error message when the cat is not found', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     server.use(
       http.get('http://localhost:3000/api/cats/999', () => {
         return new HttpResponse(null, { status: 404 })
@@ -105,12 +116,14 @@ describe('CatProfilePage', () => {
       { route: '/cats/999' }
     )
 
-    await waitFor(() => {
-      expect(screen.getByText(/cat not found/i)).toBeInTheDocument()
+    await waitFor(async () => {
+      expect(await screen.findByText(/cat not found/i)).toBeInTheDocument()
     })
+    vi.restoreAllMocks();
   })
 
   it('displays a generic error message on server failure', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     server.use(
       http.get('http://localhost:3000/api/cats/1', () => {
         return new HttpResponse(null, { status: 500 })
@@ -123,9 +136,10 @@ describe('CatProfilePage', () => {
       { route: '/cats/1' }
     )
 
-    await waitFor(() => {
-      expect(screen.getByText(/failed to load cat information/i)).toBeInTheDocument()
+    await waitFor(async () => {
+      expect(await screen.findByText(/failed to load cat information/i)).toBeInTheDocument()
     })
+    vi.restoreAllMocks();
   })
 
   describe('Conditional button rendering', () => {
@@ -166,11 +180,11 @@ describe('CatProfilePage', () => {
         { route: `/cats/${String(mockCat.id)}` }
       )
 
-      await waitFor(() => {
+      await waitFor(async () => {
         // Should show all three buttons
-        expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument()
-        expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument()
-        expect(screen.getByRole('button', { name: /my cats/i })).toBeInTheDocument()
+        expect(await screen.findByRole('button', { name: /back/i })).toBeInTheDocument()
+        expect(await screen.findByRole('button', { name: /edit/i })).toBeInTheDocument()
+        expect(await screen.findByRole('button', { name: /my cats/i })).toBeInTheDocument()
       })
 
       // Click Edit and assert navigation

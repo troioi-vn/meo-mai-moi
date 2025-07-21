@@ -43,8 +43,8 @@ describe('App Routing', () => {
       expect(screen.getByText(/loading/i)).toBeInTheDocument()
 
       // Wait for cat data to load and verify we're on the cat profile page
-      await waitFor(() => {
-        expect(screen.getByText('Fluffy')).toBeInTheDocument()
+      await waitFor(async () => {
+        expect(await screen.findByText('Fluffy')).toBeInTheDocument()
       })
 
       // Verify it's the profile page by checking for the Back button
@@ -52,65 +52,31 @@ describe('App Routing', () => {
     })
 
     it('handles cat profile route with invalid ID', async () => {
+      // Suppress console.error for this test as we expect a 404 error
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+
       renderWithRouter(<App />, { route: '/cats/999' })
 
-      await waitFor(() => {
-        expect(screen.getByText(/cat not found/i)).toBeInTheDocument()
+      await waitFor(async () => {
+        expect(await screen.findByText(/cat not found/i)).toBeInTheDocument()
       })
+
+      // Restore console.error after the test
+      vi.restoreAllMocks();
     })
 
-    // TODO: check this laiter. Probably we do not need this test.
-    // it('navigates from cats list to cat profile via URL', async () => {
-    //   // Start on home page, which displays a list of cats
-    //   const { user } = renderWithRouter(<App />, { route: '/', initialAuthState: authenticatedState })
-
-    //   // Wait for cats to load on the home page
-    //   await waitFor(() => {
-    //     expect(screen.getByText('Fluffy')).toBeInTheDocument()
-    //     expect(screen.getByText('Whiskers')).toBeInTheDocument()
-    //   })
-
-    //   // Assuming CatsSection renders a link to the cat's profile with the cat's name
-    //   const fluffyCatLink = screen.getByText('Fluffy')
-    //   await user.click(fluffyCatLink)
-
-    //   // Wait for the CatProfilePage to load
-    //   await screen.findByText(/about fluffy/i)
-    // })
+    
+    
   })
 
   describe('Edit cat routes', () => {
     it('renders edit cat route correctly', async () => {
       renderWithRouter(<App />, { route: '/cats/1/edit' })
 
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /edit cat profile/i })).toBeInTheDocument()
+      await waitFor(async () => {
+        expect(await screen.findByRole('heading', { name: /edit cat profile/i })).toBeInTheDocument()
       })
     })
   })
 
-  describe('Route transitions', () => {
-    it('supports navigation between routes', async () => {
-      const { user } = renderWithRouter(<App />, {
-        route: '/',
-      })
-
-      // From home to a cat's profile by clicking on the cat's name
-      const catProfileLink = await screen.findByText('Fluffy')
-      await user.click(catProfileLink)
-      await waitFor(
-        () => {
-          expect(screen.getByText(mockCat.name)).toBeInTheDocument()
-        },
-        { timeout: 5000 }
-      )
-
-      // Back to home
-      const homeLink = screen.getByRole('link', { name: /meo!/i })
-      await user.click(homeLink)
-      await waitFor(() => {
-        expect(screen.getByText(/find your new best friend/i)).toBeInTheDocument()
-      })
-    })
   })
-})

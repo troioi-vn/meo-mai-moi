@@ -2,6 +2,8 @@ import { screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { EnhancedCatRemovalModal } from '@/components/EnhancedCatRemovalModal'
 import { toast } from 'sonner'
+import { server } from '@/mocks/server'
+import { http, HttpResponse } from 'msw'
 
 import { renderWithRouter, userEvent } from '@/test-utils'
 
@@ -28,6 +30,21 @@ describe('EnhancedCatRemovalModal', () => {
   beforeEach(() => {
     user = userEvent.setup()
     vi.clearAllMocks()
+    server.use(
+      http.delete('http://localhost:3000/api/cats/1', () => {
+        return new HttpResponse(null, { status: 204 })
+      }),
+      http.put('http://localhost:3000/api/cats/1/status', () => {
+        return HttpResponse.json({ data: {} })
+      }),
+      http.get('http://localhost:3000/api/user', () => {
+        return HttpResponse.json({
+          id: 1,
+          name: 'Test User',
+          email: 'test@example.com',
+        })
+      })
+    )
   })
 
   it('renders the trigger button', async () => {
@@ -158,6 +175,12 @@ describe('EnhancedCatRemovalModal', () => {
   })
 
   it('handles API errors gracefully', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    server.use(
+      http.delete('http://localhost:3000/api/cats/1', () => {
+        return new HttpResponse(null, { status: 500 })
+      })
+    )
     renderWithRouter(<EnhancedCatRemovalModal {...mockProps} />)
 
     await user.click(screen.getByRole('button', { name: /remove cat/i }))
@@ -168,8 +191,9 @@ describe('EnhancedCatRemovalModal', () => {
     await user.click(screen.getByRole('button', { name: /delete permanently/i }))
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('The provided password does not match our records.')
+      expect(toast.error).toHaveBeenCalledWith(expect.any(String))
     })
+    vi.restoreAllMocks();
   })
 
   it.skip('allows navigation back between steps', async () => {

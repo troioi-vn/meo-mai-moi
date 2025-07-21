@@ -79,8 +79,8 @@ describe('EditCatPage', () => {
     // The spinner should be present before the data loads
     expect(screen.getByTestId('loading-spinner')).toBeInTheDocument()
     // Wait for the form to appear
-    await waitFor(() => {
-      expect(screen.getByDisplayValue(mockCat.name)).toBeInTheDocument()
+    await waitFor(async () => {
+      expect(await screen.findByDisplayValue(mockCat.name)).toBeInTheDocument()
     })
   })
 
@@ -93,13 +93,13 @@ describe('EditCatPage', () => {
     mockUseParams.mockReturnValue({ id: '1' })
     renderComponent()
 
-    await waitFor(() => {
-      expect(screen.getByDisplayValue(mockCat.name)).toBeInTheDocument()
-      expect(screen.getByDisplayValue(mockCat.breed)).toBeInTheDocument()
-      expect(screen.getByDisplayValue(mockCat.birthday)).toBeInTheDocument()
-      expect(screen.getByDisplayValue(mockCat.location)).toBeInTheDocument()
-      expect(screen.getByDisplayValue(mockCat.description)).toBeInTheDocument()
-      expect(screen.getByRole('combobox')).toHaveTextContent(/active/i)
+    await waitFor(async () => {
+      expect(await screen.findByDisplayValue(mockCat.name)).toBeInTheDocument()
+      expect(await screen.findByDisplayValue(mockCat.breed)).toBeInTheDocument()
+      expect(await screen.findByDisplayValue(mockCat.birthday)).toBeInTheDocument()
+      expect(await screen.findByDisplayValue(mockCat.location)).toBeInTheDocument()
+      expect(await screen.findByDisplayValue(mockCat.description)).toBeInTheDocument()
+      expect(await screen.findByRole('combobox')).toHaveTextContent(/active/i)
     })
   })
 
@@ -114,8 +114,8 @@ describe('EditCatPage', () => {
     mockUseParams.mockReturnValue({ id: '1' })
     renderComponent()
 
-    await waitFor(() => {
-      expect(screen.getByDisplayValue(mockCat.name)).toBeInTheDocument()
+    await waitFor(async () => {
+      expect(await screen.findByDisplayValue(mockCat.name)).toBeInTheDocument()
     })
 
     await user.clear(screen.getByLabelText(/name/i))
@@ -134,8 +134,8 @@ describe('EditCatPage', () => {
     mockUseParams.mockReturnValue({ id: '1' })
     renderComponent()
 
-    await waitFor(() => {
-      expect(screen.getByDisplayValue(mockCat.name)).toBeInTheDocument()
+    await waitFor(async () => {
+      expect(await screen.findByDisplayValue(mockCat.name)).toBeInTheDocument()
     })
 
     await user.clear(screen.getByLabelText(/name/i))
@@ -165,8 +165,8 @@ describe('EditCatPage', () => {
     mockUseParams.mockReturnValue({ id: '1' })
     renderComponent()
 
-    await waitFor(() => {
-      expect(screen.getByDisplayValue(mockCat.name)).toBeInTheDocument()
+    await waitFor(async () => {
+      expect(await screen.findByDisplayValue(mockCat.name)).toBeInTheDocument()
     })
 
     await user.click(screen.getByRole('button', { name: /update cat/i }))
@@ -190,8 +190,8 @@ describe('EditCatPage', () => {
   it('navigates to the cat list on cancel', async () => {
     mockUseParams.mockReturnValue({ id: '1' })
     renderComponent()
-    await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /edit cat profile/i })).toBeInTheDocument()
+    await waitFor(async () => {
+      expect(await screen.findByRole('heading', { name: /edit cat profile/i })).toBeInTheDocument()
     })
     await user.click(screen.getByRole('button', { name: /cancel/i }))
     await waitFor(() => {

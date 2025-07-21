@@ -1,9 +1,9 @@
 import { http, HttpResponse } from 'msw'
-import { catHandlers, mockCat } from './data/cats'
+import { catHandlers } from './data/cats'
 import { mockUser } from './data/user'
 
 const userHandlers = [
-  // Register endpoint - returns a { data: { ... } } object
+  // Register endpoint
   http.post('http://localhost:3000/api/register', async ({ request }) => {
     const raw = await request.json()
     const body = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
@@ -30,17 +30,15 @@ const userHandlers = [
     }
     return HttpResponse.json(
       {
-        data: {
-          message: 'User registered successfully',
-          access_token: 'mock-token-registered',
-          token_type: 'Bearer',
-        },
+        message: 'User registered successfully',
+        access_token: 'mock-token-registered',
+        token_type: 'Bearer',
       },
       { status: 201 }
     )
   }),
 
-  // Login endpoint - returns a { data: { ... } } object
+  // Login endpoint
   http.post('http://localhost:3000/api/login', async ({ request }) => {
     const raw = await request.json()
     const body =
@@ -50,73 +48,20 @@ const userHandlers = [
     }
     return HttpResponse.json(
       {
-        data: {
-          message: 'Logged in successfully',
-          access_token: 'mock-token-logged-in',
-          token_type: 'Bearer',
-        },
+        message: 'Logged in successfully',
+        access_token: 'mock-token-logged-in',
+        token_type: 'Bearer',
       },
       { status: 200 }
     )
   }),
 
-  // Cat removal (delete) - returns no content
-  http.delete('http://localhost:3000/api/cats/:id', async ({ params, request }) => {
-    let password = undefined
-    try {
-      const body = await request.json()
-      if (body && typeof body === 'object' && 'password' in body) {
-        password = (body as Record<string, unknown>).password as string
-      }
-    } catch {
-      /* do nothing */
-    }
-
-    if (params.id === String(mockCat.id)) {
-      if (password === 'wrongpassword') {
-        return HttpResponse.json(
-          {
-            message: 'Invalid password',
-            errors: { password: ['The provided password does not match our records.'] },
-          },
-          { status: 422 }
-        )
-      }
-      return new HttpResponse(null, { status: 204 })
-    }
-    return new HttpResponse(null, { status: 404 })
-  }),
-
-  // Cat status update (mark as deceased) - returns a { data: { ... } } object
-  http.put('http://localhost:3000/api/cats/:id/status', async ({ params, request }) => {
-    let status = undefined
-    let password = undefined
-    try {
-      const body = await request.json()
-      if (body && typeof body === 'object') {
-        status = (body as Record<string, unknown>).status as string
-        password = (body as Record<string, unknown>).password as string
-      }
-    } catch {
-      /* do nothing */
-    }
-    if (params.id === String(mockCat.id) && status === 'deceased' && password) {
-      return HttpResponse.json({
-        data: {
-          ...mockCat,
-          status: 'deceased',
-        },
-      })
-    }
-    return new HttpResponse(null, { status: 404 })
-  }),
-
-  // Get current user - returns a { data: { ... } } object
-  http.get('http://localhost:3000/api/user', () => {
+  // Get current user
+  http.get('http://localhost:3000/api/users/me', () => {
     return HttpResponse.json({ data: mockUser })
   }),
 
-  // Update password - returns a success message
+  // Update password
   http.put('http://localhost:3000/api/users/me/password', async ({ request }) => {
     const raw = await request.json()
     const body =
@@ -172,29 +117,6 @@ const userHandlers = [
   }),
 ]
 
-const notificationHandlers = [
-  http.get('http://localhost:3000/api/notifications', () => {
-    return HttpResponse.json({
-      data: {
-        notifications: [
-          {
-            id: '1',
-            type: 'App\\Notifications\\NewFollower',
-            notifiable_type: 'App\\Models\\User',
-            notifiable_id: 1,
-            data: { message: 'You have a new follower' },
-            read_at: null,
-            created_at: new Date().toISOString(),
-          },
-        ],
-        unread_count: 1,
-      },
-    })
-  }),
+export const handlers = [...catHandlers, ...userHandlers]
 
-  http.post('http://localhost:3000/api/notifications/mark-as-read', () => {
-    return new HttpResponse(null, { status: 204 })
-  }),
-]
 
-export const handlers = [...catHandlers, ...userHandlers, ...notificationHandlers]

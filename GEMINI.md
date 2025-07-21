@@ -38,6 +38,7 @@ This outlines the high-level map of the application from the perspective of its 
 ## 3. Tech Stack
 
 - **Backend:** Laravel (PHP) - REST API with Filament Admin Panel
+    - **ApiResponseTrait:** A custom trait used across controllers to standardize JSON responses for both success and error scenarios, ensuring consistent data wrapping (e.g., all successful responses are wrapped in a `data` key).
 - **Frontend:** React (TypeScript) - Single Page Application
     -   **Tailwind CSS:** A utility-first CSS framework that provides low-level utility classes to build custom designs directly in your JSX. It promotes rapid UI development and highly customizable styling.
     -   **shadcn/ui:** Not a traditional component library, but a collection of re-usable components whose source code is added directly to your project. This provides full control and easy customization, as components are built with Tailwind CSS.
@@ -151,6 +152,7 @@ The frontend test suite uses **Vitest** for running tests, **React Testing Libra
 2.  **Use Centralized Mock Data**: All mock data, especially for primary models like `Cat`, should be defined in and imported from `frontend/src/mocks/data/`. This prevents data duplication and ensures that tests are consistent.
 3.  **Rely on the Global Mock Server**: Individual test files must **not** set up their own MSW server. The global server is configured in `frontend/src/setupTests.ts` and uses a modular handler system.
 4.  **Write User-Centric Tests**: Tests should focus on what the user sees and does. Assert against the rendered output (e.g., `screen.getByText('Fluffy')`) rather than component state or implementation details.
+5.  **Avoid Global `axios` Mocks**: Do not use `vi.mock('axios', ...)` or similar global mocks for the API client in `setupTests.ts`. This can conflict with MSW's network-level interception and lead to hard-to-debug issues. Rely on MSW handlers to mock API responses.
 
 ##### Testing Architecture with TanStack Query and MSW
 
@@ -166,32 +168,6 @@ The frontend test suite uses **Vitest** for running tests, **React Testing Libra
         3.  **Central Handler Composition**: The main `frontend/src/mocks/handlers.ts` file imports and combines these modular handlers into a single `handlers` array for the global server.
         4.  **Correct API Structure**: All mock handlers are configured to return data in the same structure as the real API (e.g., wrapping responses in a `{ "data": ... }` object).
 
-##### Example: Testing a Component that Fetches Data
-
-```tsx
-// In your test file:
-import { screen, waitFor } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
-import { renderWithRouter } from '@/test-utils' // Import the shared utility
-import { mockCat } from '@/mocks/data/cats' // Import the shared mock data
-import CatProfilePage from './CatProfilePage'
-
-describe('CatProfilePage', () => {
-  it('renders cat profile information correctly', async () => {
-    // Use the utility to render the component with a specific route
-    renderWithRouter(<CatProfilePage />, { route: `/cats/${mockCat.id}` })
-
-    // Assert that the loading state appears first
-    expect(screen.getByText(/loading/i)).toBeInTheDocument()
-
-    // Wait for the data to be fetched and rendered
-    await waitFor(() => {
-      // Assert against the content using the centralized mock data
-      expect(screen.getByText(mockCat.name)).toBeInTheDocument()
-    })
-  })
-})
-```
 
 ### Debugging and Problem Solving Strategy
 

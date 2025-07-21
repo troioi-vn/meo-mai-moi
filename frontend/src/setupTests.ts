@@ -5,56 +5,12 @@ import { http, HttpResponse } from 'msw'
 import { vi } from 'vitest'
 import { mockCat, anotherMockCat } from './mocks/data/cats'
 
-// Mock axios and the api instance it creates
-vi.mock('axios', () => {
-  const mockAxios = {
-    create: vi.fn(() => ({
-      get: vi.fn(() => Promise.resolve({ data: { data: { id: 1, name: 'Test User', email: 'test@example.com' } } })),
-      post: vi.fn((url) => {
-        if (url === '/login') {
-          return Promise.resolve({ data: { data: { access_token: 'mock_access_token' } } });
-        }
-        return Promise.resolve({ data: { data: {} } });
-      }),
-      put: vi.fn(() => Promise.resolve()),
-      delete: vi.fn(() => Promise.resolve()),
-      defaults: {
-        headers: {
-          common: {},
-        },
-      },
-      interceptors: {
-        request: {
-          use: vi.fn(),
-        },
-        response: {
-          use: vi.fn(),
-        },
-      },
-    })),
-    get: vi.fn(() => Promise.resolve()),
-    post: vi.fn(() => Promise.resolve()),
-    put: vi.fn(() => Promise.resolve()),
-    delete: vi.fn(() => Promise.resolve()),
-  };
-  return {
-    __esModule: true,
-    default: mockAxios,
-    ...mockAxios,
-    AxiosError: class AxiosError extends Error {
-      response?: { data: { message: string } };
-      constructor(message: string, response?: { data: { message: string } }) {
-        super(message);
-        this.name = 'AxiosError';
-        this.response = response;
-      }
-    },
-  };
-});
-
 // Establish API mocking before all tests.
+let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
 beforeAll(() => {
-  server.listen()
+  server.listen();
+  consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
   // Mock the /user endpoint for AuthContext
   server.use(
@@ -73,17 +29,21 @@ beforeAll(() => {
     http.post('http://localhost:3000/api/login', () => {
       return HttpResponse.json({ data: { access_token: 'mock_access_token' } })
     })
-  )
-})
+  );
+});
+
 // Reset any request handlers that are declared as a part of tests
 // (i.e. for testing one-time error scenarios)
 afterEach(() => {
-  server.resetHandlers()
-})
+  server.resetHandlers();
+  vi.clearAllTimers();
+  consoleErrorSpy.mockRestore();
+});
+
 // Clean up after the tests are finished.
 afterAll(() => {
-  server.close()
-})
+  server.close();
+});
 
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -100,3 +60,8 @@ Object.defineProperty(window, 'matchMedia', {
 
 // Mock scrollIntoView as it's not implemented in JSDOM
 HTMLElement.prototype.scrollIntoView = vi.fn()
+
+// Mock the Toaster component from sonner
+vi.mock('@/components/ui/sonner', () => ({
+  Toaster: () => null,
+}));

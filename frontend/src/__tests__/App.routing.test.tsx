@@ -78,11 +78,14 @@ describe('App Routing', () => {
         initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
       })
 
-      await waitFor(async () => {
-        expect(
-          await screen.findByRole('heading', { name: /edit cat profile/i })
-        ).toBeInTheDocument()
-      }, { timeout: 5000 })
+      await waitFor(
+        async () => {
+          expect(
+            await screen.findByRole('heading', { name: /edit cat profile/i })
+          ).toBeInTheDocument()
+        },
+        { timeout: 5000 }
+      )
     })
   })
 })

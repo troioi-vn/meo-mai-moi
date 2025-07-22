@@ -6,14 +6,18 @@ import { server } from './mocks/server'
 // Mock matchMedia for components that use it (e.g., shadcn/ui components)
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn<[], MediaQueryList>().mockImplementation((query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
+  value: vi.fn().mockImplementation(
+    (query: string): MediaQueryList => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(), // deprecated
+      removeListener: vi.fn(), // deprecated
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })
+  ),
 })
 
 // Mock IntersectionObserver

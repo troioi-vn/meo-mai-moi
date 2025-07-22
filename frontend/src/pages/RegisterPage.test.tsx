@@ -12,7 +12,7 @@ const navigate = vi.fn()
 vi.mock('react-router-dom', async (importOriginal) => {
   const actual = await importOriginal()
   return {
-    ...actual,
+    ...(actual as object),
     useNavigate: () => navigate,
   }
 })
@@ -20,7 +20,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
 vi.mock('sonner', async () => {
   const actual = await vi.importActual('sonner')
   return {
-    ...actual,
+    ...(actual as object),
     toast: {
       success: vi.fn(),
     },

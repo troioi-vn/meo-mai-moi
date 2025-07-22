@@ -1,109 +1,73 @@
-# Multi-stage build: First stage for building frontend
-FROM node:18 AS frontend-build
+# Multi-stage build: First stage for building the entire application
+FROM node:18 AS app-build
 
-WORKDIR /frontend
+# Set the working directory for the entire application
+WORKDIR /app
 
-# Copy package files first for better caching
-COPY frontend/package*.json ./
+# Copy all source code into the build stage
+COPY . .
 
-# Install dependencies (cached if package.json hasn't changed)
+# Navigate to the frontend directory to build it
+WORKDIR /app/frontend
 RUN npm ci
-
-# Copy source code after dependencies
-COPY frontend ./
-
-# Build the application
+# This script now builds Vite and updates the blade file in /app/backend/
 RUN npm run build:docker
 
-# Second stage: PHP backend with built frontend
+# Second stage: Final PHP image
 FROM php:8.4-fpm
 
 # Set working directory
 WORKDIR /var/www
 
-# Install system dependencies including nginx
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    # Runtime dependencies
-    libpng-dev \
-    libjpeg62-turbo-dev \
-    libfreetype6-dev \
-    libonig-dev \
-    libzip-dev \
-    libpq-dev \
-    libicu-dev \
-    locales \
-    zip \
-    unzip \
-    curl \
-    nginx \
-    supervisor \
-    # Build dependencies (will be removed later)
-    build-essential
+    libpng-dev libjpeg62-turbo-dev libfreetype6-dev libonig-dev libzip-dev \
+    libpq-dev libicu-dev locales zip unzip curl nginx supervisor
 
 # Install PHP extensions
-RUN docker-php-ext-install mbstring zip exif pcntl intl \
+RUN docker-php-ext-install mbstring zip exif pcntl intl pdo_pgsql \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd \
-    && docker-php-ext-install pdo_pgsql
+    && docker-php-ext-install gd
 
-# Remove build dependencies to reduce image size
-RUN apt-get purge -y build-essential && apt-get autoremove -y
-
-# Clear cache
+# Clean up
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy custom PHP-FPM pool configuration
 COPY backend/www.conf /usr/local/etc/php-fpm.d/www.conf
 
-# Create log files and set permissions
-RUN touch /var/log/php-fpm-error.log /var/log/php-fpm-access.log \
-    && chown www-data:www-data /var/log/php-fpm-error.log /var/log/php-fpm-access.log \
-    && chmod 664 /var/log/php-fpm-error.log /var/log/php-fpm-access.log
-
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set up permissions for www-data user early
+# Copy the entire backend application from the build stage,
+# including the Blade file that was updated by the frontend build.
+COPY --from=app-build /app/backend .
+
+# Copy the built frontend assets from the build stage
+COPY --from=app-build /app/frontend/dist ./public/build
+
+# Create Laravel's cache and storage directories
+RUN mkdir -p bootstrap/cache storage/framework/sessions storage/framework/views storage/logs
+
+# Correctly set ownership for the entire application directory
 RUN chown -R www-data:www-data /var/www
+RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
-# Copy composer files first for better dependency caching
-COPY backend/composer.json backend/composer.lock ./
-
-# Switch to www-data user to install dependencies
+# Switch to the application user to install Composer dependencies
 USER www-data
-RUN composer install --no-dev --optimize-autoloader --no-scripts --no-plugins
-
-# Switch back to root for copying files and system operations
-USER root
-
-# Copy backend application
-COPY backend .
-
-# Copy built frontend from first stage
-COPY --from=frontend-build /frontend/dist ./public/build
-
-# Copy Docker-specific environment file
-COPY backend/.env.docker /var/www/.env
-
-# Create necessary Laravel directories and set permissions
-RUN mkdir -p bootstrap/cache storage/app storage/framework/cache storage/framework/sessions storage/framework/views storage/logs \
-    && chown -R www-data:www-data /var/www \
-    && chmod -R 775 storage bootstrap/cache
-
-# Complete composer installation with scripts (as root since we need Laravel setup)
 RUN composer install --no-dev --optimize-autoloader
 
-# Create storage link for file uploads
+# Switch back to root for final setup
+USER root
+
+# Create the symbolic link for storage
 RUN php artisan storage:link
 
-# Copy nginx configuration
+# Copy Nginx and Supervisor configurations
 COPY backend/nginx-docker.conf /etc/nginx/sites-available/default
-
-# Copy supervisor configuration
 COPY backend/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Expose port 80
+# Expose port 80 for Nginx
 EXPOSE 80
 
-# Start supervisor (manages both nginx and php-fpm)
+# Start Supervisor to manage Nginx and PHP-FPM
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

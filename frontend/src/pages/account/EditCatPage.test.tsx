@@ -14,10 +14,10 @@ vi.mock('sonner')
 const mockUseParams = vi.fn()
 const mockUseNavigate = vi.fn()
 vi.mock('react-router-dom', async () => {
-  const actual = await import('react-router-dom')
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
   return {
     ...actual,
-    useParams: () => mockUseParams(),
+    useParams: () => mockUseParams() as { id: string },
     useNavigate: () => mockUseNavigate,
   }
 })
@@ -127,12 +127,18 @@ describe('EditCatPage', () => {
     await user.type(screen.getByLabelText(/name/i), updatedName)
     await user.click(screen.getByRole('button', { name: /update cat/i }))
 
-    await waitFor(() => {
-      expect(toast.success).toHaveBeenCalledWith('Cat profile updated successfully!')
-    }, { timeout: 5000 })
-    await waitFor(() => {
-      expect(mockUseNavigate).toHaveBeenCalledWith('/account/cats')
-    }, { timeout: 5000 })
+    await waitFor(
+      () => {
+        expect(toast.success).toHaveBeenCalledWith('Cat profile updated successfully!')
+      },
+      { timeout: 5000 }
+    )
+    await waitFor(
+      () => {
+        expect(mockUseNavigate).toHaveBeenCalledWith('/account/cats')
+      },
+      { timeout: 5000 }
+    )
     vi.restoreAllMocks()
   })
 

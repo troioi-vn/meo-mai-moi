@@ -18,7 +18,6 @@ describe('CreateCatPage', () => {
     user = userEvent.setup()
     server.use(
       http.get('http://localhost:3000/api/user', () => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return HttpResponse.json(mockUser)
       }),
       http.get('http://localhost:3000/api/cats', () => {

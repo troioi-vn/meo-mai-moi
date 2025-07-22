@@ -197,7 +197,9 @@ class TransferRequestController extends Controller
      *     @OA\Response(
      *         response=200,
      *         description="Transfer request accepted successfully",
-     *         @OA\JsonContent(ref="#/components/schemas/TransferRequest")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", ref="#/components/schemas/TransferRequest")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=404,

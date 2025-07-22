@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { UserMenu } from './UserMenu'
+import { mockUser } from '@/mocks/data/user'
 import { useAuth } from '@/hooks/use-auth'
 
 vi.mock('@/hooks/use-auth')
@@ -20,13 +21,6 @@ vi.mock('@/assets/images/default-avatar.webp', () => ({
 
 const renderWithRouter = (ui: React.ReactElement) => {
   return render(<MemoryRouter>{ui}</MemoryRouter>)
-}
-
-const mockUser = {
-  id: 1,
-  name: 'John Doe',
-  email: 'john@example.com',
-  avatar_url: 'https://example.com/avatar.jpg',
 }
 
 describe('UserMenu', () => {
@@ -51,7 +45,7 @@ describe('UserMenu', () => {
     renderWithRouter(<UserMenu />)
 
     // Since the avatar image might not load in tests, check for fallback
-    const fallback = screen.getByText('JD')
+    const fallback = screen.getByText('TU')
     expect(fallback).toBeInTheDocument()
   })
 
@@ -71,7 +65,7 @@ describe('UserMenu', () => {
 
     renderWithRouter(<UserMenu />)
 
-    const fallback = screen.getByText('JD')
+    const fallback = screen.getByText('TU')
     expect(fallback).toBeInTheDocument()
   })
 
@@ -177,6 +171,7 @@ describe('UserMenu', () => {
   })
 
   it('handles logout error gracefully', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     const user = userEvent.setup()
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {
       // Mock console.error for testing
@@ -201,5 +196,6 @@ describe('UserMenu', () => {
     expect(consoleErrorSpy).toHaveBeenCalledWith('Logout error:', expect.any(Error))
 
     consoleErrorSpy.mockRestore()
+    vi.restoreAllMocks();
   })
 })

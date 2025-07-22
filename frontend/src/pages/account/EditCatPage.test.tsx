@@ -4,6 +4,7 @@ import { http, HttpResponse } from 'msw'
 import { server } from '@/mocks/server'
 import { toast } from 'sonner'
 import { mockCat, anotherMockCat } from '@/mocks/data/cats'
+import { mockUser } from '@/mocks/data/user'
 import EditCatPage from '@/pages/account/EditCatPage'
 
 // Mock the toast module
@@ -12,21 +13,14 @@ vi.mock('sonner')
 // Mock react-router-dom hooks
 const mockUseParams = vi.fn()
 const mockUseNavigate = vi.fn()
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual = await importOriginal()
+vi.mock('react-router-dom', async () => {
+  const actual = await import('react-router-dom')
   return {
     ...actual,
     useParams: () => mockUseParams(), // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     useNavigate: () => mockUseNavigate, // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   }
 })
-
-const mockUser = {
-  id: 1,
-  name: 'Test User',
-  email: 'test@example.com',
-  role: 'cat_owner',
-}
 
 describe('EditCatPage', () => {
   const user = userEvent.setup()
@@ -104,6 +98,8 @@ describe('EditCatPage', () => {
   })
 
   it('submits updated data and navigates on success', async () => {
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     const updatedName = 'Fluffy II'
     server.use(
       http.put('http://localhost:3000/api/cats/1', () => {
@@ -128,9 +124,12 @@ describe('EditCatPage', () => {
     await waitFor(() => {
       expect(mockUseNavigate).toHaveBeenCalledWith('/account/cats')
     })
+    vi.restoreAllMocks();
   })
 
   it('displays validation errors for empty required fields', async () => {
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     mockUseParams.mockReturnValue({ id: '1' })
     renderComponent()
 
@@ -153,9 +152,12 @@ describe('EditCatPage', () => {
       expect(screen.getByText('Location is required.')).toBeInTheDocument()
       expect(screen.getByText('Description is required.')).toBeInTheDocument()
     })
+    vi.restoreAllMocks();
   })
 
   it('handles server errors during submission', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'log').mockImplementation(() => {});
     server.use(
       http.put('http://localhost:3000/api/cats/1', () => {
         return new HttpResponse(null, { status: 500 })
@@ -174,9 +176,11 @@ describe('EditCatPage', () => {
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('Failed to update cat profile. Please try again.')
     })
+    vi.restoreAllMocks();
   })
 
   it('redirects if user does not own the cat', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     mockUseParams.mockReturnValue({ id: '2' })
     renderComponent()
     await waitFor(() => {
@@ -185,6 +189,7 @@ describe('EditCatPage', () => {
     await waitFor(() => {
       expect(mockUseNavigate).toHaveBeenCalledWith('/')
     })
+    vi.restoreAllMocks();
   })
 
   it('navigates to the cat list on cancel', async () => {

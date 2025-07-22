@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Fixed
+- Fixed user data not loading on profile page due to double-wrapped API response by unwrapping `data.data.data` in `AuthContext.tsx`.
+- Resolved `TypeError: can't access property "split", user.name is undefined` in `UserAvatar.tsx` by adding a defensive check for `user.name`.
+- Improved UI responsiveness during authentication by using `isLoading` state in `MainNav.tsx` and `UserMenu.tsx` to display skeleton loaders.
+- Ensured `ProfilePage.tsx` explicitly loads user data on mount and displays appropriate loading/not logged in states.
+- Updated frontend mock handlers (`frontend/src/mocks/handlers.ts`, `frontend/src/mocks/data/cats.ts`, `frontend/src/mocks/data/user.ts`) to align with backend API paths and response structures, and to include comprehensive mock data for various endpoints.
+- Corrected backend `UserProfileController` to remove redundant data wrapping in `/api/users/me` response.
+- Updated OpenAPI annotations for `CatPhotoController`, `MessageController`, `TransferRequestController`, and `WeightHistoryController` to reflect `data` property wrapping.
+- Refined frontend test utilities and individual test files for better mock handling, error suppression, and consistency.
+
 ### Changed
 - Removed `/api/cats` GET endpoint from backend and corresponding frontend `CatsSection` component.
 - Updated backend logout functionality to delete all user tokens.

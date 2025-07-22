@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { CatPhotoManager } from './CatPhotoManager'
@@ -15,8 +15,8 @@ const mockOnPhotoUpdated = vi.fn()
 describe('CatPhotoManager', () => {
   beforeEach(() => {
     mockOnPhotoUpdated.mockClear()
-    vi.spyOn(toast, 'success').mockImplementation(() => {})
-    vi.spyOn(toast, 'error').mockImplementation(() => {})
+    vi.spyOn(toast, 'success').mockImplementation(() => '')
+    vi.spyOn(toast, 'error').mockImplementation(() => '')
 
     server.use(
       http.post('http://localhost:3000/api/cats/1/photos', () => {
@@ -25,10 +25,9 @@ describe('CatPhotoManager', () => {
         })
       }),
       http.delete('http://localhost:3000/api/cats/1/photos/', () => {
-        return HttpResponse.json(
-          { message: 'Failed to delete photo. Please try again.' },
-          { status: 500 }
-        )
+        return HttpResponse.json({
+          data: { ...mockCat, photo_url: undefined, photo: null },
+        })
       }),
       http.get('http://localhost:3000/api/user', () => {
         return HttpResponse.json({
@@ -81,7 +80,6 @@ describe('CatPhotoManager', () => {
   })
 
   it('handles photo upload correctly', async () => {
-    const user = userEvent.setup()
     const file = new File(['(⌐□_□)'], 'chucknorris.png', { type: 'image/png' })
     const catWithoutPhoto: Cat = { ...mockCat, id: 1, photo_url: undefined }
     const updatedCat: Cat = { ...catWithoutPhoto, photo_url: 'new_photo_url' }
@@ -91,11 +89,14 @@ describe('CatPhotoManager', () => {
         cat={catWithoutPhoto}
         isOwner={true}
         onPhotoUpdated={mockOnPhotoUpdated}
-      />,
+      />, 
     )
 
     const fileInput = screen.getByLabelText(/upload photo/i)
-    await userEvent.upload(fileInput, file)
+    Object.defineProperty(fileInput, 'files', {
+      value: [file],
+    })
+    fireEvent.change(fileInput)
 
     await waitFor(() => {
       expect(mockOnPhotoUpdated).toHaveBeenCalledWith(updatedCat)
@@ -113,7 +114,7 @@ describe('CatPhotoManager', () => {
   })
 
   it('handles photo delete correctly', async () => {
-    const user = userEvent.setup()
+    
     const catWithPhoto: Cat = { ...mockCat, id: 1, photo_url: 'some_photo_url' }
     const updatedCat: Cat = { ...catWithPhoto, photo_url: undefined, photo: null }
 
@@ -147,7 +148,7 @@ describe('CatPhotoManager', () => {
       }),
     )
 
-    const user = userEvent.setup()
+    
     const file = new File(['(⌐□_□)'], 'chucknorris.png', { type: 'image/png' })
     const catWithoutPhoto: Cat = { ...mockCat, id: 1, photo_url: undefined }
 
@@ -160,7 +161,10 @@ describe('CatPhotoManager', () => {
     )
 
     const fileInput = screen.getByLabelText(/upload photo/i)
-    await userEvent.upload(fileInput, file)
+    Object.defineProperty(fileInput, 'files', {
+      value: [file],
+    })
+    fireEvent.change(fileInput)
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('Failed to upload photo. Please try again.')
@@ -179,7 +183,7 @@ describe('CatPhotoManager', () => {
       }),
     )
 
-    const user = userEvent.setup()
+    
     const catWithPhoto: Cat = { ...mockCat, id: 1, photo_url: 'some_photo_url' }
 
     renderWithRouter(

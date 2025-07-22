@@ -13,10 +13,10 @@ export const testQueryClient = new QueryClient({
   },
 })
 
-export const AllTheProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AllTheProviders: React.FC<{ children: React.ReactNode; initialAuthState?: { user: any; isLoading: boolean; isAuthenticated: boolean } }> = ({ children, initialAuthState }) => {
   return (
     <QueryClientProvider client={testQueryClient}>
-      <AuthProvider>
+      <AuthProvider initialUser={initialAuthState?.user} initialLoading={initialAuthState?.isLoading} skipInitialLoad={true}>
         {children}
         <Toaster />
       </AuthProvider>

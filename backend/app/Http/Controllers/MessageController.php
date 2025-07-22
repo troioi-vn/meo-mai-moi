@@ -164,7 +164,9 @@ class MessageController extends Controller
      *     @OA\Response(
      *         response=200,
      *         description="Successful operation",
-     *         @OA\JsonContent(ref="#/components/schemas/Message")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", ref="#/components/schemas/Message")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=401,

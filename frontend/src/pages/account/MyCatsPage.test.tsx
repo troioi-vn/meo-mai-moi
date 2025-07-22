@@ -5,7 +5,7 @@ import MyCatsPage from './MyCatsPage'
 import { mockCat, anotherMockCat, deceasedMockCat } from '@/mocks/data/cats'
 import { HttpResponse, http } from 'msw'
 import { server } from '@/mocks/server'
-import { type User } from '@/types'
+import { mockUser } from '@/mocks/data/user'
 
 // Mock useNavigate
 const mockNavigate = vi.fn()
@@ -16,16 +16,6 @@ vi.mock('react-router-dom', async () => {
     useNavigate: () => mockNavigate,
   }
 })
-
-const mockUser: User = {
-  id: 1,
-  name: 'Test User',
-  email: 'test@example.com',
-  avatar_url: 'https://example.com/avatar.jpg',
-  created_at: '2023-01-01T00:00:00.000000Z',
-  updated_at: '2023-01-01T00:00:00.000000Z',
-  email_verified_at: '2023-01-01T00:00:00.000000Z',
-}
 
 describe('MyCatsPage', () => {
   beforeEach(() => {
@@ -52,6 +42,7 @@ describe('MyCatsPage', () => {
   })
 
   it('displays an error message if fetching cats fails', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     server.use(
       http.get('http://localhost:3000/api/my-cats', () => {
         return new HttpResponse(null, { status: 500 })
@@ -61,6 +52,7 @@ describe('MyCatsPage', () => {
     expect(
       await screen.findByText('Failed to fetch your cats. Please try again later.')
     ).toBeInTheDocument()
+    vi.restoreAllMocks();
   })
 
   it('has a button to create a new cat and navigates on click', async () => {

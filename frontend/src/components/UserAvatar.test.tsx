@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { UserAvatar } from './UserAvatar'
 import { useAuth } from '@/hooks/use-auth'
+import { mockUser } from '@/mocks/data/user'
 
 // Mock dependencies
 vi.mock('@/hooks/use-auth')
@@ -21,12 +22,6 @@ vi.mock('sonner', () => ({
 const mockUseAuth = vi.mocked(useAuth)
 
 describe('UserAvatar', () => {
-  const mockUser = {
-    id: 1,
-    name: 'John Doe',
-    email: 'john@example.com',
-    avatar_url: 'https://example.com/avatar.jpg',
-  }
 
   const mockLoadUser = vi.fn()
 
@@ -81,7 +76,7 @@ describe('UserAvatar', () => {
       expect(avatarImage).toHaveAttribute('src', expect.stringContaining('default-avatar'))
     }
 
-    expect(screen.getByText('JD')).toBeInTheDocument()
+    expect(screen.getByText('TU')).toBeInTheDocument()
   })
 
   it('shows upload controls when showUploadControls is true', () => {

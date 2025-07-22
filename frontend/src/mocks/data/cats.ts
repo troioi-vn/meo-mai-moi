@@ -10,6 +10,12 @@ export const mockCat: Cat = {
   description: 'A very friendly and fluffy cat.',
   location: 'New York, NY',
   photo_url: 'http://localhost:3000/storage/cats/profiles/fluffy.jpg',
+  user_id: 1,
+  user: {
+    id: 1,
+    name: 'Test User',
+    email: 'test@example.com',
+  },
   created_at: '2023-01-01T00:00:00Z',
   updated_at: '2023-01-01T00:00:00Z',
   viewer_permissions: {
@@ -26,6 +32,12 @@ export const anotherMockCat: Cat = {
   status: 'active',
   description: 'A curious and playful cat.',
   location: 'Los Angeles, CA',
+  user_id: 2,
+  user: {
+    id: 2,
+    name: 'Another User',
+    email: 'another@example.com',
+  },
   created_at: '2023-01-01T00:00:00Z',
   updated_at: '2023-01-01T00:00:00Z',
   viewer_permissions: {
@@ -41,6 +53,13 @@ export const deceasedMockCat: Cat = {
   birthday: '2010-01-01',
   status: 'deceased',
   description: 'A beloved cat who has passed away.',
+  location: 'Rainbow Bridge',
+  user_id: 3,
+  user: {
+    id: 3,
+    name: 'Past Owner',
+    email: 'past@example.com',
+  },
   created_at: '2023-01-01T00:00:00Z',
   updated_at: '2023-01-01T00:00:00Z',
   viewer_permissions: {
@@ -56,12 +75,12 @@ export const catHandlers = [
   }),
   // Returns a { data: [ ... ] } object for the authenticated user's cats
   http.get('http://localhost:3000/api/my-cats', () => {
-    return HttpResponse.json({ data: [mockCat, anotherMockCat] })
+    return HttpResponse.json({ data: [mockCat] })
   }),
   // Returns a { data: { ... } } object
   http.get('http://localhost:3000/api/cats/:id', ({ params }) => {
     const catId = Number(params.id)
-    let cat = null
+    let cat: Cat | null = null
     if (catId === 1) {
       cat = mockCat
     } else if (catId === 2) {
@@ -79,51 +98,18 @@ export const catHandlers = [
   }),
   // Returns a { data: { ... } } object
   http.post('http://localhost:3000/api/cats', async ({ request }) => {
-    const newCatData = await request.json()
-    const newCat = { ...mockCat, id: Date.now(), ...(newCatData as object) }
+    const newCatData = (await request.json()) as Partial<Cat>
+    const newCat: Cat = { ...mockCat, id: Date.now(), ...newCatData }
     return HttpResponse.json({ data: newCat }, { status: 201 })
   }),
   // Returns a { data: { ... } } object
-  http.post('http://localhost:3000/api/cats/:id/photos', ({ params }) => {
-    // Do not call request.json(); just respond for FormData/file upload
-    if (Number(params.id) === 999) {
-      return HttpResponse.json(
-        { message: 'Failed to upload the photo. Please try again.' },
-        { status: 500 }
-      )
-    }
-    const updatedCat = {
-      ...mockCat,
-      id: Number(params.id),
-      photo_url: 'new_photo_url',
-    }
+  http.put('http://localhost:3000/api/cats/:id', async ({ request, params }) => {
+    const updatedCatData = (await request.json()) as Partial<Cat>
+    const updatedCat: Cat = { ...mockCat, id: Number(params.id), ...updatedCatData }
     return HttpResponse.json({ data: updatedCat }, { status: 200 })
   }),
-  // Relative path mock for upload (for MSW compatibility)
-  http.post('/api/cats/:id/photos', ({ params }) => {
-    // Do not call request.json(); just respond for FormData/file upload
-    if (Number(params.id) === 999) {
-      return HttpResponse.json(
-        { message: 'Failed to upload the photo. Please try again.' },
-        { status: 500 }
-      )
-    }
-    const updatedCat = {
-      ...mockCat,
-      id: Number(params.id),
-      photo_url: 'new_photo_url',
-    }
-    return HttpResponse.json({ data: updatedCat }, { status: 200 })
-  }),
-  // Returns no content
-  http.delete('http://localhost:3000/api/cats/:catId/photos/:photoId', ({ params }) => {
-    if (Number(params.catId) === 999) {
-      // Error responses do not have the 'data' wrapper
-      return HttpResponse.json(
-        { message: 'Failed to delete the photo. Please try again.' },
-        { status: 500 }
-      )
-    }
+  // Returns a 204 No Content response
+  http.delete('http://localhost:3000/api/cats/:id', () => {
     return new HttpResponse(null, { status: 204 })
   }),
 ]

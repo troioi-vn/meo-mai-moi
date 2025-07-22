@@ -13,12 +13,21 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { useTheme } from '@/hooks/use-theme'
 import { Moon, Sun } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 // import defaultAvatar from '@/assets/images/default-avatar.webp'
 const defaultAvatar = '/build/assets/default-avatar-Dio_8tmr.webp'
 
 export function UserMenu() {
-  const { user, logout } = useAuth()
+  const { user, logout, isLoading } = useAuth()
   const { theme, setTheme } = useTheme()
+
+  if (isLoading) {
+    return <Skeleton className="h-9 w-9 rounded-full" />
+  }
+
+  if (!user) {
+    return null
+  }
 
   return (
     <DropdownMenu data-testid="user-menu">
@@ -26,12 +35,12 @@ export function UserMenu() {
         <Avatar className="h-9 w-9 cursor-pointer">
           <AvatarImage
             src={
-              user?.avatar_url && user.avatar_url.trim() !== '' ? user.avatar_url : defaultAvatar
+              user.avatar_url && user.avatar_url.trim() !== '' ? user.avatar_url : defaultAvatar
             }
-            alt={user?.name ?? 'User avatar'}
+            alt={user.name ?? 'User avatar'}
           />
           <AvatarFallback className="bg-blue-500 text-white font-medium text-sm">
-            {user?.name
+            {user.name
               ? user.name
                   .split(' ')
                   .map((n) => n[0])

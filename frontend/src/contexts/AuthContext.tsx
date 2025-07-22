@@ -1,5 +1,8 @@
+
 import React, { useCallback, useEffect, useState } from 'react'
 import { api, csrf } from '@/api/axios';
+import type { User } from '@/types/user'
+import { AuthContext } from './auth-context'
 
 interface RegisterPayload {
   name: string
@@ -13,28 +16,30 @@ interface LoginPayload {
   password: string
 }
 
-import type { User } from '@/types/user'
-import { AuthContext } from './auth-context'
-
 export { AuthContext }
+
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(true)
 
   const loadUser = useCallback(async () => {
-    try {
-      const token = localStorage.getItem('access_token')
-      if (token) {
+    const token = localStorage.getItem('access_token')
+    if (token) {
+      try {
         api.defaults.headers.common.Authorization = `Bearer ${token}`
+        const { data } = await api.get<{ data: User }>('users/me')
+        setUser(data.data)
+      } catch (error) {
+        console.error('Error loading user:', error)
+        setUser(null)
+        localStorage.removeItem('access_token') // Also remove invalid token
+      } finally {
+        setIsLoading(false)
       }
-      const { data } = await api.get<{ data: User }>('/user')
-      setUser(data.data)
-    } catch (error) {
-      console.error('Error loading user:', error)
-      setUser(null)
-    } finally {
+    } else {
       setIsLoading(false)
+      setUser(null)
     }
   }, [])
 
@@ -50,8 +55,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = useCallback(
     async (payload: LoginPayload) => {
       await csrf()
-      const response = await api.post<{ data: { access_token: string } }>('/login', payload)
-      localStorage.setItem('access_token', response.data.data.access_token)
+      const response = await api.post<{ access_token: string }>('/login', payload)
+      localStorage.setItem('access_token', response.data.access_token)
       await loadUser()
     },
     [loadUser]
@@ -76,6 +81,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const deleteAccount = useCallback(async (password: string) => {
     await api.delete('/users/me', { data: { password } })
+    setUser(null)
+    localStorage.removeItem('access_token')
   }, [])
 
   useEffect(() => {
@@ -109,5 +116,5 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     ]
   )
 
-  return <AuthContext value={value}>{children}</AuthContext>
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

@@ -21,7 +21,7 @@ describe('LoginPage', () => {
   })
 
   it('renders the login page correctly', async () => {
-    renderWithRouter(<LoginPage />)
+    renderWithRouter(<LoginPage />, { initialAuthState: { user: null, isLoading: false, isAuthenticated: false } })
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /login/i })).toBeInTheDocument()
@@ -51,7 +51,7 @@ describe('LoginPage', () => {
         })
       })
     )
-    renderWithRouter(<LoginPage />)
+    renderWithRouter(<LoginPage />, { initialAuthState: { user: null, isLoading: false, isAuthenticated: false } })
     const emailInput = screen.getByLabelText(/email/i)
     const passwordInput = screen.getByLabelText(/password/i)
     const loginButton = screen.getByRole('button', { name: /login/i })
@@ -64,17 +64,19 @@ describe('LoginPage', () => {
   })
 
   it('shows an error message on failed login', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     server.use(
       http.post('http://localhost:3000/api/login', () => {
         return HttpResponse.json({ message: 'Invalid credentials' }, { status: 401 })
       })
     )
-    renderWithRouter(<LoginPage />)
+    renderWithRouter(<LoginPage />, { initialAuthState: { user: null, isLoading: false, isAuthenticated: false } })
     await userEvent.type(screen.getByLabelText(/email/i), 'fail@example.com')
     await userEvent.type(screen.getByLabelText(/password/i), 'wrongpassword')
     await userEvent.click(screen.getByRole('button', { name: /login/i }))
     await waitFor(async () => {
       expect(await screen.findByTestId('login-error-message')).toHaveTextContent('Failed to login. Please check your credentials.')
     })
+    vi.restoreAllMocks();
   })
 })

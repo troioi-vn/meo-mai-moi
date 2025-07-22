@@ -1,17 +1,16 @@
 import { screen, waitFor } from '@testing-library/react'
 import { renderWithRouter } from '@/test-utils'
 import { NotificationBell } from './NotificationBell'
-import { vi, type Mock } from 'vitest'
+import { vi } from 'vitest'
 import { useAuth } from '@/hooks/use-auth'
 import { api } from '@/api/axios'
+import { mockUser } from '@/mocks/data/user'
 
 vi.mock('@/hooks/use-auth')
 vi.mock('@/api/axios')
 
-const mockUser = { id: 1, name: 'Test User', email: 'test@example.com' }
-
 describe('NotificationBell', () => {
-  let mockApiGet: Mock
+  let mockApiGet: any
   beforeEach(() => {
     vi.mocked(useAuth).mockReturnValue({
       user: mockUser,
@@ -27,7 +26,7 @@ describe('NotificationBell', () => {
 
     // Mock the API response for notifications
     mockApiGet = vi.spyOn(api, 'get')
-    mockApiGet.mockImplementation(async (url) => {
+    mockApiGet.mockImplementation(async (url: string) => {
       if (url === '/notifications') {
         return Promise.resolve({
           data: {

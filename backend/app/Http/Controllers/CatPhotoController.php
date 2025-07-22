@@ -48,7 +48,9 @@ class CatPhotoController extends Controller
      *     @OA\Response(
      *         response=200,
      *         description="Photo uploaded successfully",
-     *         @OA\JsonContent(ref="#/components/schemas/Cat")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", ref="#/components/schemas/Cat")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=401,

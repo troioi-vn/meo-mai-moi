@@ -37,7 +37,7 @@ beforeAll(() => {
 afterEach(() => {
   server.resetHandlers();
   vi.clearAllTimers();
-  consoleErrorSpy.mockRestore();
+  vi.restoreAllMocks(); // Restore all mocks, including console.error
 });
 
 // Clean up after the tests are finished.

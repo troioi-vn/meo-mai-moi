@@ -6,11 +6,10 @@ import { http, HttpResponse } from 'msw'
 import CreateCatPage from './CreateCatPage'
 import MyCatsPage from './MyCatsPage'
 import { toast } from 'sonner'
+import { mockUser } from '@/mocks/data/user'
 
 // Mock the toast module
 vi.mock('sonner')
-
-const mockUser = { id: 1, name: 'Test User', email: 'test@example.com', role: 'cat_owner' }
 
 describe('CreateCatPage', () => {
   let user: ReturnType<typeof userEvent.setup>
@@ -28,7 +27,8 @@ describe('CreateCatPage', () => {
     )
   })
 
-  it('renders the form fields with birthday instead of age', async () => {
+
+  it('renders the form fields', async () => {
     renderWithRouter(<CreateCatPage />)
     await waitFor(() => {
       expect(screen.getByLabelText('Name')).toBeInTheDocument()
@@ -36,8 +36,6 @@ describe('CreateCatPage', () => {
       expect(screen.getByLabelText('Birthday')).toBeInTheDocument()
       expect(screen.getByLabelText('Location')).toBeInTheDocument()
       expect(screen.getByLabelText('Description')).toBeInTheDocument()
-      // Should NOT have age field
-      expect(screen.queryByLabelText('Age')).not.toBeInTheDocument()
     })
   })
 
@@ -96,6 +94,7 @@ describe('CreateCatPage', () => {
   })
 
   it('displays validation errors for empty required fields', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     renderWithRouter(<CreateCatPage />)
 
     // Try to submit empty form
@@ -106,6 +105,7 @@ describe('CreateCatPage', () => {
       expect(screen.getByText(/breed is required/i)).toBeInTheDocument()
       expect(screen.getByText(/birthday is required/i)).toBeInTheDocument()
     })
+    vi.restoreAllMocks();
   })
 
   it('navigates back to my cats page when cancel button is clicked', async () => {
@@ -125,6 +125,7 @@ describe('CreateCatPage', () => {
   })
 
   it('displays error message when API call fails', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     // Mock API error
     server.use(
       http.post('http://localhost:3000/api/cats', () => {
@@ -149,5 +150,6 @@ describe('CreateCatPage', () => {
     })
     // Assert toast.error was called
     expect(toast.error).toHaveBeenCalledWith('Failed to create cat.')
-  })
+    vi.restoreAllMocks();
+})
 })

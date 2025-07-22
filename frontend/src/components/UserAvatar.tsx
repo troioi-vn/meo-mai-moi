@@ -108,11 +108,13 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
   if (!user) return null
 
   const initials = user.name
-    .split(' ')
-    .map((name) => name.charAt(0))
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
+    ? user.name
+        .split(' ')
+        .map((name) => name.charAt(0))
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+    : ''
 
   return (
     <div className="flex flex-col items-center space-y-4">

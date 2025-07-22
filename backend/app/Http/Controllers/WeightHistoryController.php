@@ -37,7 +37,9 @@ class WeightHistoryController extends Controller
      *     @OA\Response(
      *         response=201,
      *         description="Weight record created successfully",
-     *         @OA\JsonContent(ref="#/components/schemas/WeightHistory")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", ref="#/components/schemas/WeightHistory")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=422,

@@ -79,7 +79,7 @@ class UserProfileController extends Controller
      */
     public function show(Request $request)
     {
-        return $this->sendSuccess(['data' => $request->user()]);
+        return $this->sendSuccess($request->user());
     }
 
     /**

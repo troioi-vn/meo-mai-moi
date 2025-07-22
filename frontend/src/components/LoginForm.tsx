@@ -29,7 +29,7 @@ const LoginForm: React.FC = () => {
 
   return (
     <form onSubmit={handleSubmit}>
-      {error && <p className="text-destructive text-sm mb-4">{error}</p>}
+      {error && <p data-testid="login-error-message" className="text-destructive text-sm mb-4">{error}</p>}
       <div className="mb-4">
         <Label htmlFor="email">Email</Label>
         <Input

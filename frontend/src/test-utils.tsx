@@ -10,7 +10,11 @@ const customRender = (ui: React.ReactElement, options?: Omit<RenderOptions, 'wra
 
 const renderWithRouter = (
   ui: ReactElement,
-  { route = '/', ...renderOptions }: { route?: string } & Omit<RenderOptions, 'wrapper'> = {}
+  {
+    route = '/',
+    initialAuthState = { user: null, isLoading: false, isAuthenticated: false },
+    ...renderOptions
+  }: { route?: string; initialAuthState?: { user: any; isLoading: boolean; isAuthenticated: boolean } } & Omit<RenderOptions, 'wrapper'> = {},
 ) => {
   const history = {
     push: vi.fn(),
@@ -22,7 +26,7 @@ const renderWithRouter = (
 
   const utils = render(
     <MemoryRouter initialEntries={[route]}>
-      <AllTheProviders>{ui}</AllTheProviders>
+      <AllTheProviders initialAuthState={initialAuthState}>{ui}</AllTheProviders>
     </MemoryRouter>,
     renderOptions
   )

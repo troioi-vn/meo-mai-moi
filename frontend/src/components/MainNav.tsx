@@ -4,9 +4,10 @@ import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { NotificationBell } from '@/components/NotificationBell'
 import { UserMenu } from './UserMenu'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const MainNav: React.FC = () => {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isLoading } = useAuth()
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b p-2">
@@ -20,7 +21,9 @@ const MainNav: React.FC = () => {
 
         {/* Right: Actions padding right 5 */}
         <div className="flex items-center space-x-4 pr-5">
-          {isAuthenticated ? (
+          {isLoading ? (
+            <Skeleton className="h-9 w-24" />
+          ) : isAuthenticated ? (
             <>
               <NotificationBell />
               <UserMenu />

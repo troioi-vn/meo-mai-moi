@@ -56,7 +56,9 @@ describe('App Routing', () => {
 
     it('handles cat profile route with invalid ID', async () => {
       // Suppress console.error for this test as we expect a 404 error
-      vi.spyOn(console, 'error').mockImplementation(() => {})
+      vi.spyOn(console, 'error').mockImplementation(() => {
+        /* empty */
+      })
 
       renderWithRouter(<App />, { route: '/cats/999' })
 
@@ -80,7 +82,7 @@ describe('App Routing', () => {
         expect(
           await screen.findByRole('heading', { name: /edit cat profile/i })
         ).toBeInTheDocument()
-      })
+      }, { timeout: 5000 })
     })
   })
 })

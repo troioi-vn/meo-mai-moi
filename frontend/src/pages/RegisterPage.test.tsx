@@ -10,7 +10,7 @@ import { mockUser } from '@/mocks/data/user'
 const navigate = vi.fn()
 
 vi.mock('react-router-dom', async (importOriginal) => {
-  const actual = (await importOriginal()) as any
+  const actual = await importOriginal()
   return {
     ...actual,
     useNavigate: () => navigate,

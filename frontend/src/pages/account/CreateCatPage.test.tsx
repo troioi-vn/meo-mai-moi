@@ -49,7 +49,7 @@ describe('CreateCatPage', () => {
     // Mock the API response
     server.use(
       http.post('http://localhost:8000/api/cats', async ({ request }) => {
-        const newCat = (await request.json()) as Record<string, any>
+        const newCat = (await request.json()) as Record<string, unknown>
         return HttpResponse.json({ data: { id: 1, ...newCat } }, { status: 201 })
       })
     )
@@ -86,7 +86,9 @@ describe('CreateCatPage', () => {
   })
 
   it('displays validation errors for empty required fields', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {
+      /* empty */
+    })
     renderWithRouter(<CreateCatPage />)
 
     // Try to submit empty form
@@ -120,7 +122,9 @@ describe('CreateCatPage', () => {
   })
 
   it('displays error message when API call fails', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {
+      /* empty */
+    })
     // Mock API error
     server.use(
       http.post('http://localhost:3000/api/cats', () => {

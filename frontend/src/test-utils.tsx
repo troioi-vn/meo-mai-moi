@@ -3,10 +3,13 @@ import type { RenderOptions } from '@testing-library/react'
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { AllTheProviders, testQueryClient } from '@/components/test/AllTheProviders'
+import { AllTheProviders } from '@/components/test/AllTheProviders'
+import { testQueryClient } from '@/test-query-client'
 
 const customRender = (ui: React.ReactElement, options?: Omit<RenderOptions, 'wrapper'>) =>
   render(ui, { wrapper: AllTheProviders, ...options })
+
+import type { User } from '@/types/user'
 
 const renderWithRouter = (
   ui: ReactElement,
@@ -16,17 +19,9 @@ const renderWithRouter = (
     ...renderOptions
   }: {
     route?: string
-    initialAuthState?: { user: any; isLoading: boolean; isAuthenticated: boolean }
+    initialAuthState?: { user: User | null; isLoading: boolean; isAuthenticated: boolean }
   } & Omit<RenderOptions, 'wrapper'> = {}
 ) => {
-  const history = {
-    push: vi.fn(),
-    replace: vi.fn(),
-    go: vi.fn(),
-    back: vi.fn(),
-    forward: vi.fn(),
-  }
-
   const utils = render(
     <MemoryRouter initialEntries={[route]}>
       <AllTheProviders initialAuthState={initialAuthState}>{ui}</AllTheProviders>
@@ -36,7 +31,6 @@ const renderWithRouter = (
 
   return {
     ...utils,
-    history,
     user: userEvent.setup(),
   }
 }

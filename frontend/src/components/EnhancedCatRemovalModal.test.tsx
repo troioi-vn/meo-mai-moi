@@ -1,22 +1,11 @@
 import { screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { EnhancedCatRemovalModal } from '@/components/EnhancedCatRemovalModal'
-import { toast } from 'sonner'
 import { server } from '@/mocks/server'
 import { http, HttpResponse } from 'msw'
 
 import { renderWithRouter, userEvent } from '@/test-utils'
-
-vi.mock('sonner', async () => {
-  const actual = await vi.importActual('sonner')
-  return {
-    ...actual,
-    toast: {
-      success: vi.fn(),
-      error: vi.fn(),
-    },
-  }
-})
+import { toast } from 'sonner'
 
 describe('EnhancedCatRemovalModal', () => {
   const mockProps = {
@@ -175,7 +164,9 @@ describe('EnhancedCatRemovalModal', () => {
   })
 
   it('handles API errors gracefully', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {
+      /* empty */
+    })
     server.use(
       http.delete('http://localhost:3000/api/cats/1', () => {
         return new HttpResponse(null, { status: 500 })
@@ -210,12 +201,16 @@ describe('EnhancedCatRemovalModal', () => {
     // Go back to step 2 - look for the first back button
     const backButtons = screen.getAllByRole('button', { name: /back/i })
     await user.click(backButtons[0])
-    expect(screen.getByText('Choose Action')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('Choose Action')).toBeInTheDocument()
+    })
 
     // Go back to step 1
     const backButtonsStep2 = screen.getAllByRole('button', { name: /back/i })
     await user.click(backButtonsStep2[0])
-    expect(screen.getByText('Confirm Cat Name')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('Confirm Cat Name')).toBeInTheDocument()
+    })
   })
 
   it('resets modal state when closed', async () => {

@@ -46,7 +46,9 @@ describe('MyCatsPage', () => {
   })
 
   it('displays an error message if fetching cats fails', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {
+      /* empty */
+    })
     server.use(
       http.get('http://localhost:3000/api/my-cats', () => {
         return new HttpResponse(null, { status: 500 })

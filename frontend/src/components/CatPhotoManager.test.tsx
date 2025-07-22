@@ -10,12 +10,17 @@ import { http, HttpResponse } from 'msw'
 import { toast } from 'sonner'
 
 // Mock the toast module
-vi.mock('sonner', () => ({
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-  },
-}))
+vi.mock('sonner', async () => {
+  const actual = await vi.importActual('sonner')
+  return {
+    ...actual,
+    toast: {
+      success: vi.fn(),
+      error: vi.fn(),
+    },
+    Toaster: vi.fn(), // Mock the Toaster component
+  }
+})
 
 const mockOnPhotoUpdated = vi.fn()
 
@@ -157,7 +162,7 @@ describe('CatPhotoManager', () => {
   })
 
   // --- Non-failing tests for regression ---
-  it('renders correctly when cat has a photo and user is owner', async () => {
+  it('renders correctly when cat has a photo and user is owner', () => {
     const catWithPhoto = {
       ...mockCat,
       id: 1,
@@ -172,7 +177,7 @@ describe('CatPhotoManager', () => {
     expect(screen.getByText('Remove')).toBeInTheDocument()
   })
 
-  it('renders correctly when cat has no photo and user is owner', async () => {
+  it('renders correctly when cat has no photo and user is owner', () => {
     const catNoPhoto = { ...mockCat, id: 1, photo: null, photo_url: undefined }
     renderWithRouter(
       <CatPhotoManager cat={catNoPhoto} isOwner={true} onPhotoUpdated={mockOnPhotoUpdated} />
@@ -181,7 +186,7 @@ describe('CatPhotoManager', () => {
     expect(screen.getByText('Upload Photo')).toBeInTheDocument()
   })
 
-  it('renders correctly when user is not owner', async () => {
+  it('renders correctly when user is not owner', () => {
     const catWithPhoto = {
       ...mockCat,
       id: 1,

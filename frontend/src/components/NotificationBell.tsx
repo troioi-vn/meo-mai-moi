@@ -40,8 +40,7 @@ export function NotificationBell() {
       const responseData = response.data.data
       const fetchedNotifications = responseData.notifications || []
       setNotifications(fetchedNotifications)
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      setUnreadCount(fetchedNotifications.filter((n) => !n.read_at).length)
+      setUnreadCount(responseData.unread_count)
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.error('Error fetching notifications:', error.message)

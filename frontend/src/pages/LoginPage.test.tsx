@@ -36,8 +36,8 @@ describe('LoginPage', () => {
   it('logs in the user and navigates to /account/cats on success', async () => {
     server.use(
       http.post('http://localhost:8000/api/login', async ({ request }) => {
-        const body = (await request.json()) as Record<string, any>
-        if (body && body.email === 'test@example.com' && body.password === 'password123') {
+        const body = (await request.json()) as { email?: string; password?: string }
+        if (body.email === 'test@example.com' && body.password === 'password123') {
           return HttpResponse.json({ data: { access_token: 'mock-token' } })
         }
         return HttpResponse.json({ message: 'Invalid credentials' }, { status: 401 })
@@ -83,7 +83,9 @@ describe('LoginPage', () => {
   })
 
   it('shows an error message on failed login', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {
+      /* empty */
+    })
     server.use(
       http.post('http://localhost:3000/api/login', () => {
         return HttpResponse.json({ message: 'Invalid credentials' }, { status: 401 })

@@ -63,7 +63,9 @@ describe('ChangePasswordForm', () => {
   })
 
   it('shows error when new passwords do not match', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {
+      /* empty */
+    })
     renderWithRouter(<ChangePasswordForm />)
 
     // Use querySelector to find inputs by name since password inputs don't have textbox role

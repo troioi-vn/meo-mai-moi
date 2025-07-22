@@ -103,7 +103,9 @@ describe('CatProfilePage', () => {
   })
 
   it('displays an error message when the cat is not found', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {
+      /* empty */
+    })
     server.use(
       http.get('http://localhost:3000/api/cats/999', () => {
         return new HttpResponse(null, { status: 404 })
@@ -123,7 +125,9 @@ describe('CatProfilePage', () => {
   })
 
   it('displays a generic error message on server failure', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {
+      /* empty */
+    })
     server.use(
       http.get('http://localhost:3000/api/cats/1', () => {
         return new HttpResponse(null, { status: 500 })

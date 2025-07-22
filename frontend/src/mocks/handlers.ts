@@ -71,7 +71,7 @@ const userHandlers = [
   }),
 
   // Upload or update authenticated user's avatar
-  http.post('http://localhost:3000/api/users/me/avatar', async () => {
+  http.post('http://localhost:3000/api/users/me/avatar', () => {
     return HttpResponse.json({
       message: 'Avatar uploaded successfully.',
       avatar_url: 'http://localhost:8000/storage/users/avatars/user_1_1678886400.png',

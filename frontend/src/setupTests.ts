@@ -6,12 +6,10 @@ import { server } from './mocks/server'
 // Mock matchMedia for components that use it (e.g., shadcn/ui components)
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation((query) => ({
+  value: vi.fn<[], MediaQueryList>().mockImplementation((query: string) => ({
     matches: false,
     media: query,
     onchange: null,
-    addListener: vi.fn(), // Deprecated
-    removeListener: vi.fn(), // Deprecated
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(),
@@ -29,6 +27,19 @@ Object.defineProperty(window, 'IntersectionObserver', {
   writable: true,
   value: IntersectionObserver,
 })
+
+// Mock sonner globally
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    warning: vi.fn(),
+    loading: vi.fn(),
+    custom: vi.fn(),
+  },
+  Toaster: () => null, // Mock the Toaster component to render nothing
+}))
 
 // Establish API mocking before all tests.
 beforeAll(() => {

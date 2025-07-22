@@ -43,7 +43,9 @@ describe('LoginForm', () => {
   })
 
   it('shows an error message on failed login', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {
+      /* empty */
+    })
     server.use(
       http.post('http://localhost:3000/api/login', () => {
         return HttpResponse.json({ message: 'Invalid credentials' }, { status: 401 })

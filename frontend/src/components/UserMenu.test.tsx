@@ -171,7 +171,9 @@ describe('UserMenu', () => {
   })
 
   it('handles logout error gracefully', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {
+      /* empty */
+    })
     const user = userEvent.setup()
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {
       // Mock console.error for testing

@@ -1,26 +1,19 @@
 import React from 'react'
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { testQueryClient } from '@/test-query-client'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { Toaster } from '@/components/ui/sonner'
-
-export const testQueryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
-      staleTime: Infinity,
-    },
-  },
-})
+import type { User } from '@/types/user'
+import { QueryClientProvider } from '@tanstack/react-query'
 
 export const AllTheProviders: React.FC<{
   children: React.ReactNode
-  initialAuthState?: { user: any; isLoading: boolean; isAuthenticated: boolean }
+  initialAuthState?: { user: User | null; isLoading: boolean; isAuthenticated: boolean }
 }> = ({ children, initialAuthState }) => {
   return (
     <QueryClientProvider client={testQueryClient}>
       <AuthProvider
-        initialUser={initialAuthState?.user}
+        initialUser={initialAuthState?.user ?? null}
         initialLoading={initialAuthState?.isLoading}
         skipInitialLoad={true}
       >

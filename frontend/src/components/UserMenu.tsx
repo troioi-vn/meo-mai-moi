@@ -35,7 +35,7 @@ export function UserMenu() {
         <Avatar className="h-9 w-9 cursor-pointer">
           <AvatarImage
             src={user.avatar_url && user.avatar_url.trim() !== '' ? user.avatar_url : defaultAvatar}
-            alt={user.name ?? 'User avatar'}
+            alt={user.name}
           />
           <AvatarFallback className="bg-blue-500 text-white font-medium text-sm">
             {user.name

@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { Button } from '@/components/ui/button'
+import { type Control } from 'react-hook-form'
 import {
   Form,
   FormControl,
@@ -66,11 +67,14 @@ const ChangePasswordForm: React.FC = () => {
         const axiosError = error as AxiosError<ApiError>
         errorMessage = axiosError.response?.data.message ?? axiosError.message
         if (axiosError.response?.data.errors) {
-          for (const key in axiosError.response.data.errors) {
-            form.setError(key as keyof PasswordChangeFormValues, {
-              type: 'server',
-              message: axiosError.response.data.errors[key][0],
-            })
+          const errors = axiosError.response.data.errors
+          for (const key in errors) {
+            if (Object.prototype.hasOwnProperty.call(errors, key)) {
+              form.setError(key as keyof PasswordChangeFormValues, {
+                type: 'server',
+                message: errors[key][0],
+              })
+            }
           }
         }
       } else if (error instanceof Error) {
@@ -91,7 +95,7 @@ const ChangePasswordForm: React.FC = () => {
     <Form {...form}>
       <form onSubmit={(e) => void form.handleSubmit(onSubmit)(e)} className="space-y-4">
         <FormField
-          control={form.control as any}
+          control={form.control as unknown as Control}
           name="current_password"
           render={({ field }) => (
             <FormItem>
@@ -104,7 +108,7 @@ const ChangePasswordForm: React.FC = () => {
           )}
         />
         <FormField
-          control={form.control as any}
+          control={form.control as unknown as Control}
           name="new_password"
           render={({ field }) => (
             <FormItem>
@@ -117,7 +121,7 @@ const ChangePasswordForm: React.FC = () => {
           )}
         />
         <FormField
-          control={form.control as any}
+          control={form.control as unknown as Control}
           name="new_password_confirmation"
           render={({ field }) => (
             <FormItem>

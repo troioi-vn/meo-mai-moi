@@ -1,15 +1,15 @@
-import { useContext, useEffect } from 'react'
+import { use, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import LoginForm from '@/components/LoginForm'
 import { AuthContext } from '@/contexts/AuthContext'
 
 export default function LoginPage() {
-  const auth = useContext(AuthContext)
+  const auth = use(AuthContext)
   const navigate = useNavigate()
 
   useEffect(() => {
     if (auth && !auth.isLoading && auth.isAuthenticated) {
-      navigate('/account')
+      void navigate('/account')
     }
   }, [auth, navigate])
 

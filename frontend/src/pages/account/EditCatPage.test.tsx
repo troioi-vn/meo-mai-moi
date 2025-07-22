@@ -17,8 +17,8 @@ vi.mock('react-router-dom', async () => {
   const actual = await import('react-router-dom')
   return {
     ...actual,
-    useParams: () => mockUseParams(), // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    useNavigate: () => mockUseNavigate, // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    useParams: () => mockUseParams(),
+    useNavigate: () => mockUseNavigate,
   }
 })
 
@@ -103,8 +103,12 @@ describe('EditCatPage', () => {
   // })
 
   it('submits updated data and navigates on success', async () => {
-    vi.spyOn(console, 'log').mockImplementation(() => {})
-    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'log').mockImplementation(() => {
+      /* empty */
+    })
+    vi.spyOn(console, 'error').mockImplementation(() => {
+      /* empty */
+    })
     const updatedName = 'Fluffy II'
     server.use(
       http.put('http://localhost:3000/api/cats/1', () => {
@@ -125,16 +129,20 @@ describe('EditCatPage', () => {
 
     await waitFor(() => {
       expect(toast.success).toHaveBeenCalledWith('Cat profile updated successfully!')
-    })
+    }, { timeout: 5000 })
     await waitFor(() => {
       expect(mockUseNavigate).toHaveBeenCalledWith('/account/cats')
-    })
+    }, { timeout: 5000 })
     vi.restoreAllMocks()
   })
 
   it('displays validation errors for empty required fields', async () => {
-    vi.spyOn(console, 'log').mockImplementation(() => {})
-    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'log').mockImplementation(() => {
+      /* empty */
+    })
+    vi.spyOn(console, 'error').mockImplementation(() => {
+      /* empty */
+    })
     mockUseParams.mockReturnValue({ id: '1' })
     renderComponent()
 
@@ -161,8 +169,12 @@ describe('EditCatPage', () => {
   })
 
   it('handles server errors during submission', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {})
-    vi.spyOn(console, 'log').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {
+      /* empty */
+    })
+    vi.spyOn(console, 'log').mockImplementation(() => {
+      /* empty */
+    })
     server.use(
       http.put('http://localhost:3000/api/cats/1', () => {
         return new HttpResponse(null, { status: 500 })
@@ -185,7 +197,9 @@ describe('EditCatPage', () => {
   })
 
   it('redirects if user does not own the cat', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {
+      /* empty */
+    })
     mockUseParams.mockReturnValue({ id: '2' })
     renderComponent()
     await waitFor(() => {

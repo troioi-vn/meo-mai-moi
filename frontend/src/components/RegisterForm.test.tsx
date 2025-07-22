@@ -24,7 +24,9 @@ describe('RegisterForm', () => {
   })
 
   it('shows an error message on failed registration', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {
+      /* empty */
+    })
     renderWithRouter(<RegisterForm />)
 
     await user.type(screen.getByLabelText(/name/i), 'Test User')

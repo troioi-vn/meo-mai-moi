@@ -103,7 +103,7 @@ describe('CatProfilePage', () => {
   })
 
   it('displays an error message when the cat is not found', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     server.use(
       http.get('http://localhost:3000/api/cats/999', () => {
         return new HttpResponse(null, { status: 404 })
@@ -119,11 +119,11 @@ describe('CatProfilePage', () => {
     await waitFor(async () => {
       expect(await screen.findByText(/cat not found/i)).toBeInTheDocument()
     })
-    vi.restoreAllMocks();
+    vi.restoreAllMocks()
   })
 
   it('displays a generic error message on server failure', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     server.use(
       http.get('http://localhost:3000/api/cats/1', () => {
         return new HttpResponse(null, { status: 500 })
@@ -139,7 +139,7 @@ describe('CatProfilePage', () => {
     await waitFor(async () => {
       expect(await screen.findByText(/failed to load cat information/i)).toBeInTheDocument()
     })
-    vi.restoreAllMocks();
+    vi.restoreAllMocks()
   })
 
   describe('Conditional button rendering', () => {

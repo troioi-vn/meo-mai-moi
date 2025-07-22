@@ -232,6 +232,7 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
     - [x] UI controls for photo management
   - **Testing:**
     - [x] Comprehensive feature tests for upload, resize, and delete functionality.
+    - [ ] Fix CatPhotoManager.test.tsx
 
 - **Task: Enhanced Cat Removal**
   - **Status:** `Done` (needs minor updates for new status)

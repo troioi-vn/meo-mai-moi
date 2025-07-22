@@ -19,7 +19,7 @@ const LoginForm: React.FC = () => {
     void (async () => {
       try {
         await login({ email, password })
-        void navigate('/account/cats')
+        void navigate('/profile')
       } catch (err: unknown) {
         setError('Failed to login. Please check your credentials.')
         console.error(err)
@@ -29,7 +29,11 @@ const LoginForm: React.FC = () => {
 
   return (
     <form onSubmit={handleSubmit}>
-      {error && <p data-testid="login-error-message" className="text-destructive text-sm mb-4">{error}</p>}
+      {error && (
+        <p data-testid="login-error-message" className="text-destructive text-sm mb-4">
+          {error}
+        </p>
+      )}
       <div className="mb-4">
         <Label htmlFor="email">Email</Label>
         <Input

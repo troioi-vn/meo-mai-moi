@@ -105,7 +105,7 @@ describe('UserMenu', () => {
     const profileLink = screen.getByRole('menuitem', { name: 'Profile' })
     const myCatsLink = screen.getByRole('menuitem', { name: 'My Cats' })
 
-    expect(profileLink).toHaveAttribute('href', '/profile')
+    expect(profileLink).toHaveAttribute('href', '/account')
     expect(myCatsLink).toHaveAttribute('href', '/account/cats')
   })
 
@@ -171,7 +171,7 @@ describe('UserMenu', () => {
   })
 
   it('handles logout error gracefully', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     const user = userEvent.setup()
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {
       // Mock console.error for testing
@@ -196,6 +196,6 @@ describe('UserMenu', () => {
     expect(consoleErrorSpy).toHaveBeenCalledWith('Logout error:', expect.any(Error))
 
     consoleErrorSpy.mockRestore()
-    vi.restoreAllMocks();
+    vi.restoreAllMocks()
   })
 })

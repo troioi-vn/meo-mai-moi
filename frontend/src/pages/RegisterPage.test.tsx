@@ -1,16 +1,22 @@
-// eslint-disable-next-line @typescript-eslint/no-unsafe-return
+import { screen, waitFor } from '@testing-library/react'
+import { describe, it, expect, vi } from 'vitest'
+import { renderWithRouter, userEvent } from '@/test-utils'
+import RegisterPage from './RegisterPage'
+import { toast } from 'sonner'
+import { server } from '@/mocks/server'
+import { HttpResponse, http } from 'msw'
+import { mockUser } from '@/mocks/data/user'
+
+const navigate = vi.fn()
+
 vi.mock('react-router-dom', async (importOriginal) => {
   const actual = (await importOriginal()) as any
   return {
     ...actual,
-    useNavigate: () => vi.fn(),
+    useNavigate: () => navigate,
   }
 })
-import { screen, waitFor } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
-import { renderWithRouter, userEvent } from '@/test-utils'
-import RegisterPage from './RegisterPage'
-import { useNavigate } from 'react-router-dom'
+
 vi.mock('sonner', async () => {
   const actual = await vi.importActual('sonner')
   return {
@@ -20,10 +26,6 @@ vi.mock('sonner', async () => {
     },
   }
 })
-import { toast } from 'sonner'
-import { server } from '@/mocks/server'
-import { HttpResponse, http } from 'msw'
-import { mockUser } from '@/mocks/data/user'
 
 describe('RegisterPage', () => {
   it('renders the register page correctly', async () => {
@@ -57,8 +59,6 @@ describe('RegisterPage', () => {
       })
     )
 
-    const navigate = vi.fn()
-    ;(useNavigate as unknown as () => typeof navigate) = () => navigate
     renderWithRouter(<RegisterPage />, { route: '/register' })
     const user = userEvent.setup()
 

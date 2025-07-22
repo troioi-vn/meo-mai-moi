@@ -6,7 +6,6 @@ export default function MainPage() {
     <div className="flex flex-col min-h-screen bg-background">
       <main className="flex-1">
         <HeroSection />
-        
       </main>
       <Footer />
     </div>

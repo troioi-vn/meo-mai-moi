@@ -1,6 +1,5 @@
-
 import React, { useCallback, useEffect, useState } from 'react'
-import { api, csrf } from '@/api/axios';
+import { api, csrf } from '@/api/axios'
 import type { User } from '@/types/user'
 import { AuthContext } from './auth-context'
 
@@ -18,10 +17,21 @@ interface LoginPayload {
 
 export { AuthContext }
 
+interface AuthProviderProps {
+  children: React.ReactNode
+  initialUser?: User | null
+  initialLoading?: boolean
+  skipInitialLoad?: boolean
+}
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState<boolean>(true)
+export function AuthProvider({
+  children,
+  initialUser = null,
+  initialLoading = true,
+  skipInitialLoad = false,
+}: AuthProviderProps) {
+  const [user, setUser] = useState<User | null>(initialUser)
+  const [isLoading, setIsLoading] = useState<boolean>(!skipInitialLoad && initialLoading)
 
   const loadUser = useCallback(async () => {
     const token = localStorage.getItem('access_token')
@@ -86,8 +96,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
-    void loadUser()
-  }, [loadUser])
+    if (!skipInitialLoad) {
+      void loadUser()
+    }
+  }, [loadUser, skipInitialLoad])
 
   const isAuthenticated = user !== null
 

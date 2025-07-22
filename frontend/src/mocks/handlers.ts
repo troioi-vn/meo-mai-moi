@@ -11,7 +11,8 @@ const userHandlers = [
   // Update authenticated user's profile
   http.put('http://localhost:3000/api/users/me', async ({ request }) => {
     const raw = await request.json()
-    return HttpResponse.json({ data: { ...mockUser, ...raw } })
+    const body = raw && typeof raw === 'object' ? raw : {}
+    return HttpResponse.json({ data: { ...mockUser, ...body } })
   }),
 
   // Delete authenticated user's account
@@ -36,7 +37,7 @@ const userHandlers = [
           message: 'Current password is required.',
           errors: { current_password: ['Current password is required.'] },
         },
-        { status: 422 },
+        { status: 422 }
       )
     }
     if (!body.new_password || body.new_password.length < 8) {
@@ -45,7 +46,7 @@ const userHandlers = [
           message: 'New password must be at least 8 characters.',
           errors: { new_password: ['New password must be at least 8 characters.'] },
         },
-        { status: 422 },
+        { status: 422 }
       )
     }
     if (!body.new_password_confirmation) {
@@ -54,7 +55,7 @@ const userHandlers = [
           message: 'Confirm new password is required.',
           errors: { new_password_confirmation: ['Confirm new password is required.'] },
         },
-        { status: 422 },
+        { status: 422 }
       )
     }
     if (body.new_password !== body.new_password_confirmation) {
@@ -63,7 +64,7 @@ const userHandlers = [
           message: 'New password and confirmation do not match.',
           errors: { new_password_confirmation: ['New password and confirmation do not match.'] },
         },
-        { status: 422 },
+        { status: 422 }
       )
     }
     return HttpResponse.json({ message: 'Password updated successfully.' }, { status: 200 })
@@ -88,13 +89,13 @@ const userHandlers = [
     if (body.email === 'fail@example.com') {
       return HttpResponse.json(
         { message: 'Email already taken.', errors: { email: ['Email already taken.'] } },
-        { status: 422 },
+        { status: 422 }
       )
     }
     if (!body.name || !body.email || !body.password || !body.password_confirmation) {
       return HttpResponse.json(
         { message: 'Validation Error', errors: { general: ['All fields are required.'] } },
-        { status: 422 },
+        { status: 422 }
       )
     }
     if (body.password !== body.password_confirmation) {
@@ -103,7 +104,7 @@ const userHandlers = [
           message: 'Passwords do not match.',
           errors: { password_confirmation: ['Passwords do not match.'] },
         },
-        { status: 422 },
+        { status: 422 }
       )
     }
     return HttpResponse.json(
@@ -112,7 +113,7 @@ const userHandlers = [
         access_token: 'mock-token-registered',
         token_type: 'Bearer',
       },
-      { status: 201 },
+      { status: 201 }
     )
   }),
 
@@ -130,7 +131,7 @@ const userHandlers = [
         access_token: 'mock-token-logged-in',
         token_type: 'Bearer',
       },
-      { status: 200 },
+      { status: 200 }
     )
   }),
 
@@ -205,6 +206,3 @@ export const handlers = [
   ...versionHandlers,
   ...weightHistoryHandlers,
 ]
-
-
-

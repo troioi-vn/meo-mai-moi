@@ -1,6 +1,22 @@
+import { useContext, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import LoginForm from '@/components/LoginForm'
+import { AuthContext } from '@/contexts/AuthContext'
 
 export default function LoginPage() {
+  const auth = useContext(AuthContext)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (auth && !auth.isLoading && auth.isAuthenticated) {
+      navigate('/account')
+    }
+  }, [auth, navigate])
+
+  if (!auth || auth.isLoading || auth.isAuthenticated) {
+    return null
+  }
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
       <div className="w-full max-w-md p-8 space-y-8 bg-card rounded-lg shadow-lg">

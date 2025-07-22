@@ -175,7 +175,7 @@ describe('EnhancedCatRemovalModal', () => {
   })
 
   it('handles API errors gracefully', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     server.use(
       http.delete('http://localhost:3000/api/cats/1', () => {
         return new HttpResponse(null, { status: 500 })
@@ -193,7 +193,7 @@ describe('EnhancedCatRemovalModal', () => {
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith(expect.any(String))
     })
-    vi.restoreAllMocks();
+    vi.restoreAllMocks()
   })
 
   it.skip('allows navigation back between steps', async () => {

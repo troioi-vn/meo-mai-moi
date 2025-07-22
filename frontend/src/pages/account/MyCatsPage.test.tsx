@@ -31,32 +31,40 @@ describe('MyCatsPage', () => {
   })
 
   it('renders the page title', async () => {
-    renderWithRouter(<MyCatsPage />)
+    renderWithRouter(<MyCatsPage />, {
+      initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
+    })
     expect(await screen.findByText('My Cats')).toBeInTheDocument()
   })
 
   it("fetches and displays the user's cats", async () => {
-    renderWithRouter(<MyCatsPage />)
+    renderWithRouter(<MyCatsPage />, {
+      initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
+    })
     expect(await screen.findByText(mockCat.name)).toBeInTheDocument()
     expect(await screen.findByText(anotherMockCat.name)).toBeInTheDocument()
   })
 
   it('displays an error message if fetching cats fails', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     server.use(
       http.get('http://localhost:3000/api/my-cats', () => {
         return new HttpResponse(null, { status: 500 })
       })
     )
-    renderWithRouter(<MyCatsPage />)
+    renderWithRouter(<MyCatsPage />, {
+      initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
+    })
     expect(
       await screen.findByText('Failed to fetch your cats. Please try again later.')
     ).toBeInTheDocument()
-    vi.restoreAllMocks();
+    vi.restoreAllMocks()
   })
 
   it('has a button to create a new cat and navigates on click', async () => {
-    renderWithRouter(<MyCatsPage />)
+    renderWithRouter(<MyCatsPage />, {
+      initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
+    })
     const newCatButton = await screen.findByRole('button', { name: /new cat/i })
     await userEvent.click(newCatButton)
     expect(mockNavigate).toHaveBeenCalledWith('/account/cats/create')
@@ -64,7 +72,9 @@ describe('MyCatsPage', () => {
 
   describe('Show All Switch', () => {
     it('renders the switch to show all cats including deceased', async () => {
-      renderWithRouter(<MyCatsPage />)
+      renderWithRouter(<MyCatsPage />, {
+        initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
+      })
       expect(await screen.findByLabelText(/show all/i)).toBeInTheDocument()
     })
 
@@ -74,7 +84,9 @@ describe('MyCatsPage', () => {
           return HttpResponse.json({ data: [mockCat, deceasedMockCat] })
         })
       )
-      renderWithRouter(<MyCatsPage />)
+      renderWithRouter(<MyCatsPage />, {
+        initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
+      })
 
       await waitFor(async () => {
         expect(await screen.findByText(mockCat.name)).toBeInTheDocument()
@@ -88,7 +100,9 @@ describe('MyCatsPage', () => {
           return HttpResponse.json({ data: [mockCat, deceasedMockCat] })
         })
       )
-      renderWithRouter(<MyCatsPage />)
+      renderWithRouter(<MyCatsPage />, {
+        initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
+      })
 
       // Initially dead cat should not be visible
       await waitFor(async () => {

@@ -24,7 +24,7 @@ describe('RegisterForm', () => {
   })
 
   it('shows an error message on failed registration', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     renderWithRouter(<RegisterForm />)
 
     await user.type(screen.getByLabelText(/name/i), 'Test User')
@@ -34,9 +34,11 @@ describe('RegisterForm', () => {
     await user.click(screen.getByRole('button', { name: /register/i }))
 
     await waitFor(async () => {
-      expect(await screen.findByTestId('register-error-message')).toHaveTextContent(/Email already taken./i)
+      expect(await screen.findByTestId('register-error-message')).toHaveTextContent(
+        /Email already taken./i
+      )
     })
-    vi.restoreAllMocks();
+    vi.restoreAllMocks()
   })
 
   it('shows a success message on successful registration', async () => {

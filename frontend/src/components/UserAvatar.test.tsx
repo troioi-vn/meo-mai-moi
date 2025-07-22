@@ -22,7 +22,6 @@ vi.mock('sonner', () => ({
 const mockUseAuth = vi.mocked(useAuth)
 
 describe('UserAvatar', () => {
-
   const mockLoadUser = vi.fn()
 
   beforeEach(() => {

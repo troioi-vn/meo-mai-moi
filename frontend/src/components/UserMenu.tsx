@@ -34,9 +34,7 @@ export function UserMenu() {
       <DropdownMenuTrigger asChild>
         <Avatar className="h-9 w-9 cursor-pointer">
           <AvatarImage
-            src={
-              user.avatar_url && user.avatar_url.trim() !== '' ? user.avatar_url : defaultAvatar
-            }
+            src={user.avatar_url && user.avatar_url.trim() !== '' ? user.avatar_url : defaultAvatar}
             alt={user.name ?? 'User avatar'}
           />
           <AvatarFallback className="bg-blue-500 text-white font-medium text-sm">
@@ -53,7 +51,7 @@ export function UserMenu() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link to="/profile">Profile</Link>
+          <Link to="/account">Profile</Link>
         </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer" asChild>
           <Link to="/account/cats">My Cats</Link>

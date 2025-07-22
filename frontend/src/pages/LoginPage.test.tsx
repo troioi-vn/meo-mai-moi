@@ -21,7 +21,9 @@ describe('LoginPage', () => {
   })
 
   it('renders the login page correctly', async () => {
-    renderWithRouter(<LoginPage />, { initialAuthState: { user: null, isLoading: false, isAuthenticated: false } })
+    renderWithRouter(<LoginPage />, {
+      initialAuthState: { user: null, isLoading: false, isAuthenticated: false },
+    })
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /login/i })).toBeInTheDocument()
@@ -33,9 +35,9 @@ describe('LoginPage', () => {
 
   it('logs in the user and navigates to /account/cats on success', async () => {
     server.use(
-      http.post('http://localhost:3000/api/login', async ({ request }) => {
-        const body = await request.json()
-        if (body.email === 'test@example.com' && body.password === 'password123') {
+      http.post('http://localhost:8000/api/login', async ({ request }) => {
+        const body = (await request.json()) as Record<string, any>
+        if (body && body.email === 'test@example.com' && body.password === 'password123') {
           return HttpResponse.json({ data: { access_token: 'mock-token' } })
         }
         return HttpResponse.json({ message: 'Invalid credentials' }, { status: 401 })
@@ -51,7 +53,9 @@ describe('LoginPage', () => {
         })
       })
     )
-    renderWithRouter(<LoginPage />, { initialAuthState: { user: null, isLoading: false, isAuthenticated: false } })
+    renderWithRouter(<LoginPage />, {
+      initialAuthState: { user: null, isLoading: false, isAuthenticated: false },
+    })
     const emailInput = screen.getByLabelText(/email/i)
     const passwordInput = screen.getByLabelText(/password/i)
     const loginButton = screen.getByRole('button', { name: /login/i })
@@ -59,24 +63,43 @@ describe('LoginPage', () => {
     await userEvent.type(passwordInput, 'password123')
     await userEvent.click(loginButton)
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/account/cats')
+      expect(mockNavigate).toHaveBeenCalledWith('/account')
+    })
+  })
+
+  it('redirects authenticated users to /account', async () => {
+    renderWithRouter(<LoginPage />, {
+      initialAuthState: {
+        user: { id: 1, name: 'Test User', email: 'test@example.com' },
+        isAuthenticated: true,
+        isLoading: false,
+      },
+      route: '/login',
+    })
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/account')
     })
   })
 
   it('shows an error message on failed login', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     server.use(
       http.post('http://localhost:3000/api/login', () => {
         return HttpResponse.json({ message: 'Invalid credentials' }, { status: 401 })
       })
     )
-    renderWithRouter(<LoginPage />, { initialAuthState: { user: null, isLoading: false, isAuthenticated: false } })
+    renderWithRouter(<LoginPage />, {
+      initialAuthState: { user: null, isLoading: false, isAuthenticated: false },
+    })
     await userEvent.type(screen.getByLabelText(/email/i), 'fail@example.com')
     await userEvent.type(screen.getByLabelText(/password/i), 'wrongpassword')
     await userEvent.click(screen.getByRole('button', { name: /login/i }))
     await waitFor(async () => {
-      expect(await screen.findByTestId('login-error-message')).toHaveTextContent('Failed to login. Please check your credentials.')
+      expect(await screen.findByTestId('login-error-message')).toHaveTextContent(
+        'Failed to login. Please check your credentials.'
+      )
     })
-    vi.restoreAllMocks();
+    vi.restoreAllMocks()
   })
 })

@@ -42,9 +42,8 @@ export function AppRoutes() {
       />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/account" element={<Navigate to="/profile" replace />} />
       <Route
-        path="/profile"
+        path="/account"
         element={
           <PrivateRoute>
             <ProfilePage />

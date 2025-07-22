@@ -27,7 +27,6 @@ describe('CreateCatPage', () => {
     )
   })
 
-
   it('renders the form fields', async () => {
     renderWithRouter(<CreateCatPage />)
     await waitFor(() => {
@@ -49,19 +48,9 @@ describe('CreateCatPage', () => {
   it('submits the form with birthday and redirects on success', async () => {
     // Mock the API response
     server.use(
-      http.post('http://localhost:3000/api/cats', async ({ request }) => {
-        const newCat = await request.json()
-        return HttpResponse.json(
-          {
-            id: 1,
-            ...newCat,
-            user_id: 1,
-            status: 'active',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-          { status: 201 }
-        )
+      http.post('http://localhost:8000/api/cats', async ({ request }) => {
+        const newCat = (await request.json()) as Record<string, any>
+        return HttpResponse.json({ data: { id: 1, ...newCat } }, { status: 201 })
       })
     )
 
@@ -70,7 +59,10 @@ describe('CreateCatPage', () => {
         <CreateCatPage />
         <MyCatsPage />
       </>,
-      { route: '/account/cats/create' }
+      {
+        route: '/account/cats/create',
+        initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
+      }
     )
 
     await user.type(screen.getByLabelText('Name'), 'Fluffy')
@@ -94,7 +86,7 @@ describe('CreateCatPage', () => {
   })
 
   it('displays validation errors for empty required fields', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     renderWithRouter(<CreateCatPage />)
 
     // Try to submit empty form
@@ -105,7 +97,7 @@ describe('CreateCatPage', () => {
       expect(screen.getByText(/breed is required/i)).toBeInTheDocument()
       expect(screen.getByText(/birthday is required/i)).toBeInTheDocument()
     })
-    vi.restoreAllMocks();
+    vi.restoreAllMocks()
   })
 
   it('navigates back to my cats page when cancel button is clicked', async () => {
@@ -114,7 +106,10 @@ describe('CreateCatPage', () => {
         <CreateCatPage />
         <MyCatsPage />
       </>,
-      { route: '/account/cats/create' }
+      {
+        route: '/account/cats/create',
+        initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
+      }
     )
 
     await user.click(screen.getByRole('button', { name: /cancel/i }))
@@ -125,7 +120,7 @@ describe('CreateCatPage', () => {
   })
 
   it('displays error message when API call fails', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     // Mock API error
     server.use(
       http.post('http://localhost:3000/api/cats', () => {
@@ -150,6 +145,6 @@ describe('CreateCatPage', () => {
     })
     // Assert toast.error was called
     expect(toast.error).toHaveBeenCalledWith('Failed to create cat.')
-    vi.restoreAllMocks();
-})
+    vi.restoreAllMocks()
+  })
 })

@@ -46,7 +46,7 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
       onPhotoUpdated(response.data.data)
       toast.success('Photo uploaded successfully')
     } catch (error: unknown) {
-      let errorMessage = 'Failed to upload the photo. Please try again.'
+      let errorMessage = 'Failed to upload photo. Please try again.'
       if (error instanceof AxiosError) {
         if (
           error.response?.data &&
@@ -84,7 +84,7 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
       onPhotoUpdated(updatedCat)
       toast.success('Photo deleted successfully')
     } catch (error: unknown) {
-      let errorMessage = 'Failed to delete the photo. Please try again.'
+      let errorMessage = 'Failed to delete photo. Please try again.'
       if (error instanceof AxiosError) {
         if (
           error.response?.data &&
@@ -196,7 +196,7 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              onChange={handleFileSelect}
+              onChange={(e) => void handleFileSelect(e)}
               className="hidden"
               aria-label="Upload Photo"
             />

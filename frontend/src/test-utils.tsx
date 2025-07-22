@@ -14,7 +14,10 @@ const renderWithRouter = (
     route = '/',
     initialAuthState = { user: null, isLoading: false, isAuthenticated: false },
     ...renderOptions
-  }: { route?: string; initialAuthState?: { user: any; isLoading: boolean; isAuthenticated: boolean } } & Omit<RenderOptions, 'wrapper'> = {},
+  }: {
+    route?: string
+    initialAuthState?: { user: any; isLoading: boolean; isAuthenticated: boolean }
+  } & Omit<RenderOptions, 'wrapper'> = {}
 ) => {
   const history = {
     push: vi.fn(),

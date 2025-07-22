@@ -19,7 +19,10 @@ beforeEach(() => {
     http.get('http://localhost:3000/api/cats/:id', ({ params }) => {
       const { id } = params
       if (id === '1') {
-        return HttpResponse.json({ data: { ...mockCat, viewer_permissions: { can_edit: true } } })
+        return HttpResponse.json(
+          { data: { ...mockCat, viewer_permissions: { can_edit: true } } },
+          { headers: { 'Content-Type': 'application/json' } }
+        )
       }
       return new HttpResponse(null, { status: 404 })
     }),
@@ -53,7 +56,7 @@ describe('App Routing', () => {
 
     it('handles cat profile route with invalid ID', async () => {
       // Suppress console.error for this test as we expect a 404 error
-      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'error').mockImplementation(() => {})
 
       renderWithRouter(<App />, { route: '/cats/999' })
 
@@ -62,21 +65,22 @@ describe('App Routing', () => {
       })
 
       // Restore console.error after the test
-      vi.restoreAllMocks();
+      vi.restoreAllMocks()
     })
-
-    
-    
   })
 
   describe('Edit cat routes', () => {
     it('renders edit cat route correctly', async () => {
-      renderWithRouter(<App />, { route: '/cats/1/edit' })
+      renderWithRouter(<App />, {
+        route: '/cats/1/edit',
+        initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
+      })
 
       await waitFor(async () => {
-        expect(await screen.findByRole('heading', { name: /edit cat profile/i })).toBeInTheDocument()
+        expect(
+          await screen.findByRole('heading', { name: /edit cat profile/i })
+        ).toBeInTheDocument()
       })
     })
   })
-
-  })
+})

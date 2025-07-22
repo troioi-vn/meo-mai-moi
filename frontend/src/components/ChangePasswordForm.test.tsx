@@ -63,7 +63,7 @@ describe('ChangePasswordForm', () => {
   })
 
   it('shows error when new passwords do not match', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     renderWithRouter(<ChangePasswordForm />)
 
     // Use querySelector to find inputs by name since password inputs don't have textbox role
@@ -76,7 +76,7 @@ describe('ChangePasswordForm', () => {
     expect(confirmPasswordInput).toBeInTheDocument()
 
     if (!currentPasswordInput || !newPasswordInput || !confirmPasswordInput) {
-      vi.restoreAllMocks();
+      vi.restoreAllMocks()
       throw new Error('Required form inputs not found')
     }
 
@@ -88,7 +88,7 @@ describe('ChangePasswordForm', () => {
     await user.click(submitButton)
 
     expect(screen.getByText(/new password and confirmation do not match/i)).toBeInTheDocument()
-    vi.restoreAllMocks();
+    vi.restoreAllMocks()
   })
 
   it('calls changePassword with correct values on valid form submission', async () => {

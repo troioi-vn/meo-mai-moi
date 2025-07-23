@@ -6,8 +6,7 @@ import { api } from '@/api/axios'
 import { toast } from 'sonner'
 import { User as UserIcon, Upload, Trash2 } from 'lucide-react'
 import type { AxiosError } from 'axios'
-// import defaultAvatar from '@/assets/images/default-avatar.webp'
-const defaultAvatar = '/build/assets/default-avatar-Dio_8tmr.webp'
+import defaultAvatar from '@/assets/images/default-avatar.webp'
 
 interface UserAvatarProps {
   size?: 'sm' | 'md' | 'lg' | 'xl'

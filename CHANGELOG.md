@@ -13,6 +13,7 @@ All notable changes to this project are documented here, following the [Keep a C
   - `frontend/scripts/postbuild-copy-assets.js`: Copies latest frontend build assets to backend public assets directory.
   - `frontend/scripts/update-blade.cjs`: Reads the Vite manifest and updates the Blade template with the new asset filenames.
 - `NotificationBell.test.tsx` to test rendering of the notification bell icon in the frontend.
+- Dockerfile: Added `procps` and `net-tools` for debugging within the container.
 
 ### Changed
 - Refactored backend authentication to use session-based login/logout, removing token creation and deletion in AuthController.
@@ -23,9 +24,22 @@ All notable changes to this project are documented here, following the [Keep a C
 - Updated Dockerfile and docker-compose.yml for persistent uploads and cache clearing.
 - Updated welcome.blade.php to use latest built asset.
 - Updated composer dependencies and lockfile.
+- Dockerfile: Removed conflicting PHP-FPM configurations (`www.conf.default`, `zz-docker.conf`).
+- Nginx configuration (`nginx-docker.conf`): Switched to Unix socket for PHP-FPM communication.
+- Supervisor configuration (`supervisord.conf`): Adjusted logfile path and process priorities.
+- PHP-FPM configuration (`www.conf`): Configured to listen on Unix socket.
+- Docker Compose (`docker-compose.yml`): Added `env_file` for backend service.
+- Frontend `package.json`: Modified `build:docker` script to include `assets:copy`.
+- Frontend components (`UserAvatar.tsx`, `UserMenu.tsx`): Updated default avatar import method.
+- Roadmap (`roadmap.md`): Added task to update Node.js version.
 
 ### Breaking Change
 - API now uses session/cookie authentication instead of token-based. Frontend and backend must be deployed together for authentication to work.
+
+### Fixed
+- Resolved 502 Bad Gateway error in Dockerized backend.
+- Resolved missing default avatar image in frontend.
+- Resolved "Undefined table" error by running Laravel migrations and seeders.
 
 ---
 

@@ -6,6 +6,8 @@ services:
       dockerfile: ./backend/Dockerfile
     ports:
       - "8000:80"
+    env_file:
+      - ./backend/.env.docker
     networks:
       - meo-mai-moi-network
     depends_on:

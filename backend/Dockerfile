@@ -20,20 +20,18 @@ FROM php:8.4-fpm
 WORKDIR /var/www
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
-    libpng-dev libjpeg62-turbo-dev libfreetype6-dev libonig-dev libzip-dev \
-    libpq-dev libicu-dev locales zip unzip curl nginx supervisor
+RUN apt-get update && apt-get install -y     libpng-dev libjpeg62-turbo-dev libfreetype6-dev libonig-dev libzip-dev     libpq-dev libicu-dev locales zip unzip curl nginx supervisor procps net-tools
 
 # Install PHP extensions
-RUN docker-php-ext-install mbstring zip exif pcntl intl pdo_pgsql \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd
+RUN docker-php-ext-install mbstring zip exif pcntl intl pdo_pgsql     && docker-php-ext-configure gd --with-freetype --with-jpeg     && docker-php-ext-install gd
 
 # Clean up
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy custom PHP-FPM pool configuration
 COPY backend/www.conf /usr/local/etc/php-fpm.d/www.conf
+RUN rm /usr/local/etc/php-fpm.d/www.conf.default \
+    && rm /usr/local/etc/php-fpm.d/zz-docker.conf
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -59,15 +57,16 @@ RUN composer install --no-dev --optimize-autoloader
 # Switch back to root for final setup
 USER root
 
-# Create the symbolic link for storage
-RUN php artisan storage:link
-
-# Copy Nginx and Supervisor configurations
+# Copy configurations and the new entrypoint script
 COPY backend/nginx-docker.conf /etc/nginx/sites-available/default
 COPY backend/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+
+# Make the entrypoint script executable
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Expose port 80 for Nginx
 EXPOSE 80
 
-# Start Supervisor to manage Nginx and PHP-FPM
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Set the entrypoint to our new script
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

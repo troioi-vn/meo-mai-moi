@@ -14,8 +14,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { useTheme } from '@/hooks/use-theme'
 import { Moon, Sun } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
-// import defaultAvatar from '@/assets/images/default-avatar.webp'
-const defaultAvatar = '/build/assets/default-avatar-Dio_8tmr.webp'
+import defaultAvatar from '@/assets/images/default-avatar.webp'
 
 export function UserMenu() {
   const { user, logout, isLoading } = useAuth()

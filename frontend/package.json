@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && npm run blade:update && npm run assets:copy",
-    "build:docker": "vite build && npm run blade:update",
+    "build:docker": "vite build && npm run blade:update && npm run assets:copy",
     "assets:copy": "node ./scripts/copy-assets.cjs",
     "blade:update": "node ./scripts/update-blade.cjs",
     "lint": "eslint . --cache",

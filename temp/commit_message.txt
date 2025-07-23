@@ -1,6 +1,22 @@
-feat(frontend): add comprehensive tests for Select, AlertDialog, Alert, ThemeProvider, and ApplyToHelpPage; remove obsolete vite.config.js
+feat: Resolve Docker 502, login, and asset loading issues
 
-- Added comprehensive tests for Select (select.test.tsx), AlertDialog (alert-dialog.test.tsx), Alert (alert.test.tsx), and ThemeProvider (theme-provider.test.tsx) components, covering rendering, user interaction, and state changes.
-- Added a basic test for ApplyToHelpPage (ApplyToHelpPage.test.tsx) to verify main heading rendering.
-- Removed obsolete vite.config.js in favor of vite.config.ts as the primary configuration file.
-- Updated CHANGELOG.md to reflect new tests and config cleanup.
+This commit addresses several critical issues in the Dockerized environment and frontend asset loading:
+
+- **Resolved 502 Bad Gateway Error:**
+  - Removed conflicting PHP-FPM configurations (`www.conf.default`, `zz-docker.conf`) from the Dockerfile.
+  - Configured Nginx to use a Unix socket for PHP-FPM communication.
+  - Adjusted Supervisor and PHP-FPM configurations for proper socket listening and process management.
+  - Updated `docker-compose.yml` to correctly load environment variables for the backend service.
+
+- **Fixed 500 Internal Server Error on Login:**
+  - Executed Laravel database migrations (`php artisan migrate --force`) to create necessary tables in the PostgreSQL database.
+  - Seeded the database (`php artisan db:seed --force`) with initial data, including a test user.
+
+- **Corrected Missing Default Avatar Image:**
+  - Modified `frontend/package.json` to include `npm run assets:copy` in the `build:docker` script, ensuring frontend assets are copied to the backend's public directory during Docker builds.
+  - Updated frontend components (`UserAvatar.tsx`, `UserMenu.tsx`) to correctly import the default avatar asset.
+
+- **Other Improvements:**
+  - Added debugging tools (`procps`, `net-tools`) to the backend Dockerfile.
+  - Updated `welcome.blade.php` to reflect the latest frontend asset paths.
+  - Added a task to `roadmap.md` to update the Node.js version.

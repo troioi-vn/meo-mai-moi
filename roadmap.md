@@ -11,6 +11,9 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
 - **Goal:** Establish the core project infrastructure, including backend and frontend scaffolding, development tools, and documentation setup.
 
 #### Infrastructure & DevOps
+- **Task: Update Node.js Version**
+  - **Status:** `To Do`
+  - **Notes:** The current Node.js version (18.x) is causing warnings with Vite. We need to upgrade to a newer LTS version (e.g., 20.x) across the entire project (local development, Docker, CI/CD) to ensure compatibility and avoid future issues.
 - **Task: Docker Optimization**
   - **Status:** `Done`
   - **Notes:** Implemented multi-stage builds with optimized caching and permission management.

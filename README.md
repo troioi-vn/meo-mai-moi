@@ -157,105 +157,118 @@ For detailed testing documentation, see [docs/testing.md](docs/testing.md).
 
 ## Deployment
 
-This guide outlines the steps to deploy the Meo Mai Moi application to a production environment using Docker and Nginx.
+This guide outlines the steps to deploy the Meo Mai Moi application to a production environment using Docker.
 
 ### Prerequisites
 
-* A server running Ubuntu
-* Docker and Docker Compose installed
-* Nginx installed
-* A registered domain name
+* A server (e.g., running Ubuntu) with Docker and Docker Compose installed.
+* A registered domain name pointed at your server's IP address.
 
-### Deployment Steps
+### Step 1: Clone the Repository
 
-1. **Clone the Repository**
+Clone the Meo Mai Moi repository to your server:
 
-   Clone the Meo Mai Moi repository to your server:
+```bash
+git clone https://github.com/your-username/meo-mai-moi.git
+cd meo-mai-moi
+```
 
-   ```bash
-   git clone https://github.com/your-username/meo-mai-moi.git
-   cd meo-mai-moi
-   ```
+### Step 2: Configure Environment Variables
 
-2. **Configure the Backend**
+Navigate to the `backend` directory and create your production `.env` file from the example.
 
-   Navigate to the `backend` directory and create a `.env` file from the example file:
+```bash
+cd backend
+cp .env.example .env
+```
 
-   ```bash
-   cd backend
-   cp .env.example .env
-   ```
+Now, edit the `.env` file and set the production values. Pay close attention to the following variables:
 
-   Update the `.env` file with your database credentials and other environment-specific settings.
+```env
+# Set to production to disable debug features
+APP_ENV=production
+APP_DEBUG=false
 
-3. **Build and Run the Docker Containers**
+# Set this to your domain name
+APP_URL=https://your-domain.com
 
-   From the project root directory, build and start the Docker containers in detached mode:
+# Database credentials (these should match the values in your docker-compose.yml)
+DB_HOST=db
+DB_PORT=5432
+DB_DATABASE=meo_mai_moi
+DB_USERNAME=user
+DB_PASSWORD=password
 
-   ```bash
-   docker compose up -d --build backend
-   ```
+# Ensure Sanctum knows your frontend domain
+SANCTUM_STATEFUL_DOMAINS=your-domain.com
+SESSION_DOMAIN=.your-domain.com
+```
 
-4. **Configure Nginx as a Reverse Proxy**
+### Step 3: Build and Run with Docker
 
-   Copy the provided Nginx configuration file to the Nginx `sites-available` directory:
+From the project's root directory, build and start the Docker containers in detached mode:
 
-   ```bash
-   sudo cp ttt.catarchy.space.conf /etc/nginx/sites-available/
-   ```
+```bash
+docker compose up -d --build
+```
+This command builds the images and starts the `backend` and `db` services. The application will be running and exposed on port 8000.
 
-   Create a symbolic link to the `sites-enabled` directory:
+### Step 4: Final Application Setup
 
-   ```bash
-   sudo ln -s /etc/nginx/sites-available/ttt.catarchy.space.conf /etc/nginx/sites-enabled/
-   ```
+Run the necessary setup commands inside the running `backend` container:
 
-   Test the Nginx configuration for syntax errors:
+```bash
+# Run database migrations
+docker compose exec backend php artisan migrate --force
 
-   ```bash
-   sudo nginx -t
-   ```
+# Seed the database with initial data (including the admin user)
+docker compose exec backend php artisan db:seed --force
 
-   If the test is successful, restart Nginx to apply the changes:
+# Generate permissions for the admin panel
+docker compose exec backend php artisan shield:generate --all
+```
 
-   ```bash
-   sudo systemctl restart nginx
-   ```
+### Step 5: Configure a Web Server (Nginx/Apache) and SSL
 
-5. **Set Up the Database**
+For a production site, you should use a web server like Nginx as a reverse proxy to forward traffic to the application running on port 8000. This also allows you to easily set up SSL for HTTPS.
 
-   Access the backend container to run the database migrations:
+1.  **Install Nginx**:
+    ```bash
+    sudo apt-get update
+    sudo apt-get install nginx
+    ```
 
-   ```bash
-   docker compose exec backend php artisan migrate --force
-   ```
+2.  **Configure Nginx**: Create a new Nginx configuration file at `/etc/nginx/sites-available/your-domain.com`:
+    ```nginx
+    server {
+        listen 80;
+        server_name your-domain.com;
 
-   Seed the database with initial data and admin user:
+        location / {
+            proxy_pass http://localhost:8000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
+    ```
 
-   ```bash
-   docker compose exec backend php artisan db:seed --force
-   ```
+3.  **Enable the Site**:
+    ```bash
+    sudo ln -s /etc/nginx/sites-available/your-domain.com /etc/nginx/sites-enabled/
+    sudo nginx -t
+    sudo systemctl restart nginx
+    ```
 
-   Generate admin panel permissions:
+4.  **Set Up SSL (Recommended)**: Install Certbot and get a free SSL certificate from Let's Encrypt.
+    ```bash
+    sudo apt-get install certbot python3-certbot-nginx
+    sudo certbot --nginx -d your-domain.com
+    ```
+    Certbot will automatically update your Nginx configuration for HTTPS.
 
-   ```bash
-   docker compose exec backend php artisan shield:generate --all
-   ```
-
-6. **Secure with SSL (Recommended)**
-
-   Install Certbot and obtain a free SSL certificate from Let's Encrypt:
-
-   ```bash
-   sudo apt-get install certbot python3-certbot-nginx
-   sudo certbot --nginx -d ttt.catarchy.space
-   ```
-
-   Certbot will automatically update your Nginx configuration to use SSL.
-
-### Accessing the Application
-
-Your application should now be accessible at `https://ttt.catarchy.space`.
+Your application is now live and accessible at `https://your-domain.com`.
 
 ## License
 

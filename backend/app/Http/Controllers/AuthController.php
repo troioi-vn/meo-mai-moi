@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
+use Illuminate\Support\Facades\Auth;
+
 class AuthController extends Controller
 {
     use ApiResponseTrait;
@@ -58,11 +60,10 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        Auth::login($user);
 
         return $this->sendSuccess([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
+            'user' => $user,
         ], 201);
     }
 
@@ -98,24 +99,21 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $request->validate([
+        $credentials = $request->validate([
             'email' => 'required|string|email',
             'password' => 'required|string',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials do not match our records.'],
+            return $this->sendSuccess([
+                'user' => Auth::user(),
             ]);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return $this->sendSuccess([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
+        throw ValidationException::withMessages([
+            'email' => [__('auth.failed')],
         ]);
     }
 
@@ -141,7 +139,11 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        $request->user()->tokens()->delete();
+        Auth::guard('web')->logout();
+
+        $request->session()->invalidate();
+
+        $request->session()->regenerateToken();
 
         return $this->sendSuccess(null, 204);
     }

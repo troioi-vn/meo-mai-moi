@@ -59,6 +59,9 @@ RUN composer install --no-dev --optimize-autoloader
 # Switch back to root for final setup
 USER root
 
+# Clear all Laravel caches to ensure the new assets are used
+RUN php artisan optimize:clear
+
 # Create the symbolic link for storage
 RUN php artisan storage:link
 

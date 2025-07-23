@@ -34,22 +34,14 @@ export function AuthProvider({
   const [isLoading, setIsLoading] = useState<boolean>(!skipInitialLoad && initialLoading)
 
   const loadUser = useCallback(async () => {
-    const token = localStorage.getItem('access_token')
-    if (token) {
-      try {
-        api.defaults.headers.common.Authorization = `Bearer ${token}`
-        const { data } = await api.get<{ data: User }>('users/me')
-        setUser(data.data)
-      } catch (error) {
-        console.error('Error loading user:', error)
-        setUser(null)
-        localStorage.removeItem('access_token') // Also remove invalid token
-      } finally {
-        setIsLoading(false)
-      }
-    } else {
-      setIsLoading(false)
+    try {
+      const { data } = await api.get<{ data: User }>('users/me')
+      setUser(data.data)
+    } catch (error) {
+      console.error('Error loading user:', error)
       setUser(null)
+    } finally {
+      setIsLoading(false)
     }
   }, [])
 
@@ -65,15 +57,13 @@ export function AuthProvider({
   const login = useCallback(
     async (payload: LoginPayload) => {
       await csrf()
-      const response = await api.post<{ access_token: string }>('/login', payload)
-      localStorage.setItem('access_token', response.data.access_token)
+      await api.post('/login', payload)
       await loadUser()
     },
     [loadUser]
   )
 
   const logout = useCallback(async () => {
-    localStorage.removeItem('access_token')
     await api.post('/logout')
     setUser(null)
   }, [])

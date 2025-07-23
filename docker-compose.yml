@@ -10,6 +10,8 @@ services:
       - meo-mai-moi-network
     depends_on:
       - db
+    volumes:
+      - ./backend/public/uploads:/var/www/html/public/uploads
 
   # Database
   db:
@@ -22,6 +24,8 @@ services:
       POSTGRES_PASSWORD: password
     networks:
       - meo-mai-moi-network
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
   # Database migration service (run once)
   migrate:
@@ -53,3 +57,7 @@ services:
 networks:
   meo-mai-moi-network:
     driver: bridge
+
+volumes:
+  pgdata:
+    driver: local

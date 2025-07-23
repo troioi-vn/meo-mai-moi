@@ -14,6 +14,19 @@ All notable changes to this project are documented here, following the [Keep a C
   - `frontend/scripts/update-blade.cjs`: Reads the Vite manifest and updates the Blade template with the new asset filenames.
 - `NotificationBell.test.tsx` to test rendering of the notification bell icon in the frontend.
 
+### Changed
+- Refactored backend authentication to use session-based login/logout, removing token creation and deletion in AuthController.
+- Updated Sanctum config to use only 'web' guard and simplified stateful domains.
+- Added session and cookie middleware to Laravel API routes in bootstrap/app.php.
+- Removed Authorization header logic from frontend axios interceptor.
+- Refactored frontend AuthContext to remove localStorage token handling and rely on session.
+- Updated Dockerfile and docker-compose.yml for persistent uploads and cache clearing.
+- Updated welcome.blade.php to use latest built asset.
+- Updated composer dependencies and lockfile.
+
+### Breaking Change
+- API now uses session/cookie authentication instead of token-based. Frontend and backend must be deployed together for authentication to work.
+
 ---
 
 ## [0.3.0] - 2025-07-15

@@ -175,11 +175,11 @@ cd meo-mai-moi
 
 ### Step 2: Configure Environment Variables
 
-Navigate to the `backend` directory and create your production `.env` file from the example.
+Navigate to the `backend` directory and create your production `.env` file from the Docker-specific example.
 
 ```bash
 cd backend
-cp .env.example .env
+cp .env.docker .env
 ```
 
 Now, edit the `.env` file and set the production values. Pay close attention to the following variables:

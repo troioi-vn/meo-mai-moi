@@ -2,7 +2,9 @@
 
 This document outlines the strategic development plan for the Meo Mai Moi project. The primary goal is to build a robust, community-driven platform for cat rehoming.
 
----
+## Bugs
+- **Task: /admin returns 403 Forbidden**
+  - [ ] Investigate and resolve 403 Forbidden error when accessing /admin panel.
 
 ## Current Milestone: Minimum Viable Product (MVP)
 

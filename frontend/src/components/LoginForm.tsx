@@ -19,7 +19,7 @@ const LoginForm: React.FC = () => {
     void (async () => {
       try {
         await login({ email, password })
-        void navigate('/account')
+        void navigate('/account/cats')
       } catch (err: unknown) {
         setError('Failed to login. Please check your credentials.')
         console.error(err)

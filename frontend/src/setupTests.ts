@@ -32,6 +32,9 @@ Object.defineProperty(window, 'IntersectionObserver', {
   value: IntersectionObserver,
 })
 
+window.HTMLElement.prototype.scrollIntoView = vi.fn();
+window.HTMLElement.prototype.hasPointerCapture = vi.fn();
+
 // Mock sonner globally
 vi.mock('sonner', () => ({
   toast: {

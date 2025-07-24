@@ -50,8 +50,8 @@ describe('App Routing', () => {
         expect(await screen.findByText('Fluffy')).toBeInTheDocument()
       })
 
-      // Verify it's the profile page by checking for the Back button
-      expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument()
+      // Verify it's the profile page by checking for the cat's name
+      expect(screen.getByText('Fluffy')).toBeInTheDocument()
     })
 
     it('handles cat profile route with invalid ID', async () => {

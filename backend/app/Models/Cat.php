@@ -11,6 +11,22 @@ class Cat extends Model
 {
     use HasFactory;
 
+/**
+ * @OA\Schema(
+ *     schema="Cat",
+ *     type="object",
+ *     title="Cat",
+ *     required={"id", "name", "breed", "birthday", "location", "description", "status", "user_id"},
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="name", type="string", example="Whiskers"),
+ *     @OA\Property(property="breed", type="string", example="Siamese"),
+ *     @OA\Property(property="birthday", type="string", format="date", example="2020-01-01"),
+ *     @OA\Property(property="location", type="string", example="Hanoi"),
+ *     @OA\Property(property="description", type="string", example="A friendly cat."),
+ *     @OA\Property(property="status", type="string", example="active"),
+ *     @OA\Property(property="user_id", type="integer", example=5)
+ * )
+ */
     // Returns the latest photo (main photo) for the cat
     public function photo()
     {
@@ -61,5 +77,10 @@ class Cat extends Model
     public function photos(): HasMany
     {
         return $this->hasMany(CatPhoto::class);
+    }
+
+    public function placementRequests(): HasMany
+    {
+        return $this->hasMany(PlacementRequest::class);
     }
 }

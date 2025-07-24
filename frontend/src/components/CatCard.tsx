@@ -28,6 +28,16 @@ export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
         <CardDescription className="text-muted-foreground">
           {cat.breed} - {calculateAge(cat.birthday)} years old
         </CardDescription>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {cat.placement_requests?.map((request) => (
+            <span
+              key={request.id}
+              className="inline-block bg-secondary text-secondary-foreground px-2 py-1 rounded-full text-xs font-medium"
+            >
+              {request.request_type.replace('_', ' ').toUpperCase()}
+            </span>
+          ))}
+        </div>
       </CardHeader>
       <CardContent className="flex flex-grow flex-col justify-between p-4">
         <p className="text-sm text-gray-600">Location: {cat.location}</p>

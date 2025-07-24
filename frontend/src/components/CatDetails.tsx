@@ -54,6 +54,22 @@ export const CatDetails: React.FC<CatDetailsProps> = ({ cat }) => {
                 <h3 className="font-semibold text-card-foreground">About {cat.name}</h3>
                 <p className="text-muted-foreground leading-relaxed">{cat.description}</p>
               </div>
+
+              {cat.placement_requests && cat.placement_requests.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-card-foreground">Active Placement Requests</h3>
+                  <div className="mt-2 space-y-4">
+                    {cat.placement_requests.map((request) => (
+                      <div key={request.id} className="p-4 bg-muted rounded-lg">
+                        <p className="font-semibold text-sm text-muted-foreground">
+                          {request.request_type.replace('_', ' ').toUpperCase()} - <span className="font-normal">Expires: {new Date(request.expires_at).toLocaleDateString()}</span>
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">{request.notes}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

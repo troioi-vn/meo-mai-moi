@@ -197,6 +197,14 @@ const weightHistoryHandlers = [
   }),
 ]
 
+const placementRequestHandlers = [
+  http.post('http://localhost:3000/api/placement-requests', async ({ request }) => {
+    const raw = await request.json()
+    const body = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
+    return HttpResponse.json({ data: { id: 1, ...body } }, { status: 201 })
+  }),
+]
+
 export const handlers = [
   ...catHandlers,
   ...userHandlers,
@@ -205,4 +213,5 @@ export const handlers = [
   ...transferRequestHandlers,
   ...versionHandlers,
   ...weightHistoryHandlers,
+  ...placementRequestHandlers,
 ]

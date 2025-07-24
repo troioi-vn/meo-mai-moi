@@ -15,6 +15,7 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CatPhotoController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\PlacementRequestController;
 use App\Http\Controllers\VersionController;
 
 Route::get('/version', [VersionController::class, 'show']);
@@ -55,6 +56,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/cats/{cat}/status', [CatController::class, 'updateStatus'])->name('cats.updateStatus');
     Route::post('/cats/{cat}/photos', [CatPhotoController::class, 'store']);
     Route::delete('/cats/{cat}/photos/{photo}', [CatPhotoController::class, 'destroy']);
+    Route::post('/placement-requests', [PlacementRequestController::class, 'store']);
     #Route::post('/cats/{cat}/medical-records', [MedicalRecordController::class, 'store']);
     #Route::post('/cats/{cat}/weight-history', [WeightHistoryController::class, 'store']);
     #Route::post('/cats/{cat}/comments', [CatCommentController::class, 'store']);

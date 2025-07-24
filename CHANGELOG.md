@@ -4,10 +4,20 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Added
+- Implemented the initial Placement Request feature, allowing cat owners to create foster and adoption requests.
+- Added a modal for creating placement requests on the cat profile page.
+
 ### Changed
-- Refactored and streamlined project documentation (`README.md`, `GEMINI.md`).
-- Re-structured `roadmap.md` to clearly define MVP and Post-MVP features.
-- Formalized the Alpha release process in `CHANGELOG.md`.
+- Updated frontend dependencies: `react-router-dom` to 7.7.1 and `zod` to 4.0.8.
+- Upgraded npm to version 11.5.1 for improved stability and new features.
+
+### Fixed
+- Corrected a build issue with the `PlacementRequest` type import.
+- Fixed a UI bug where the select component in the placement request dialog had a transparent background.
+
+### Removed
+- Removed the "Back" button from the cat profile page for a cleaner user interface.
 
 ## [0.4.0] - 2025-07-24 - Alpha Release
 

@@ -22,6 +22,19 @@ export interface Cat {
     can_edit: boolean
     can_view_contact: boolean
   }
+  placement_requests?: PlacementRequest[];
+}
+
+export interface PlacementRequest {
+  id: number;
+  cat_id: number;
+  user_id: number;
+  request_type: 'foster_payed' | 'foster_free' | 'permanent';
+  status: 'open' | 'pending_review' | 'fulfilled' | 'expired' | 'cancelled';
+  notes: string;
+  expires_at: string;
+  created_at: string;
+  updated_at: string;
 }
 
 // Helper function to calculate age from birthday

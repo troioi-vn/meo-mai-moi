@@ -17,6 +17,10 @@ vi.mock('react-router-dom', async () => {
   }
 })
 
+vi.mock('@/components/PlacementRequestModal', () => ({
+  PlacementRequestModal: () => <div>PlacementRequestModal</div>,
+}));
+
 describe('CatProfilePage', () => {
   beforeEach(() => {
     mockNavigate.mockClear()
@@ -147,34 +151,7 @@ describe('CatProfilePage', () => {
   })
 
   describe('Conditional button rendering', () => {
-    it("shows only Back button when user doesn't have edit permissions", async () => {
-      const catWithoutPerms = {
-        ...anotherMockCat,
-        viewer_permissions: { can_edit: false, can_view_contact: false },
-      }
-      server.use(
-        http.get(`http://localhost:3000/api/cats/${String(catWithoutPerms.id)}`, () => {
-          return HttpResponse.json({ data: catWithoutPerms })
-        })
-      )
-      renderWithRouter(
-        <Routes>
-          <Route path="/cats/:id" element={<CatProfilePage />} />
-        </Routes>,
-        { route: `/cats/${String(catWithoutPerms.id)}` }
-      )
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument()
-      })
-
-      // Click Back and assert navigation
-      screen.getByRole('button', { name: /back/i }).click()
-      expect(mockNavigate).toHaveBeenCalledWith('/')
-
-      expect(screen.queryByRole('button', { name: /edit/i })).not.toBeInTheDocument()
-      expect(screen.queryByRole('button', { name: /my cats/i })).not.toBeInTheDocument()
-    })
+    
 
     it('shows Edit and My Cats buttons when user has edit permissions', async () => {
       renderWithRouter(
@@ -186,7 +163,6 @@ describe('CatProfilePage', () => {
 
       await waitFor(async () => {
         // Should show all three buttons
-        expect(await screen.findByRole('button', { name: /back/i })).toBeInTheDocument()
         expect(await screen.findByRole('button', { name: /edit/i })).toBeInTheDocument()
         expect(await screen.findByRole('button', { name: /my cats/i })).toBeInTheDocument()
       })

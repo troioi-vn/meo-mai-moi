@@ -101,13 +101,13 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
     - [ ] Write tests for `RegisterPage`, `LoginPage`, `ProfilePage`
     - [ ] Write tests for main navigation
 
-**Task: Add "Remember Me" to Login Page**
+**Task: Add "Stay Logged In" Option to Login Page**
   - **Status:** `To Do`
   - **Backend:**
-    - [ ] Update authentication logic to support persistent sessions
+    - [ ] Update authentication logic to support persistent sessions when selected.
   - **Frontend:**
-    - [ ] Add "Remember Me" checkbox to `LoginPage`
-    - [ ] Ensure session persists when selected
+    - [ ] Add a "Stay Logged In" checkbox to the `LoginPage`.
+    - [ ] Ensure user session persists when this option is enabled.
 
 **Task: Add Password Recovery (via Email)**
   - **Status:** `To Do`
@@ -251,6 +251,7 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
     - [x] Step 2: Present two buttons: `Delete Permanently` and `Mark as Deceased`
     - [x] Step 3: Require the user to enter their password to finalize the action
     - [x] Add toggle switch on "My Cats" page to show/hide deceased cats
+    - [ ] Hide the "Show All (Including Deceased)" toggle on the "My Cats" page if the user has no deceased cats.
     - [x] Comprehensive test coverage for all new components and functionality
 
 #### Epic 4: NEW - Placement Response System (Helper Interaction)
@@ -388,7 +389,7 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
     - [ ] Add a "Track Weight" button to cat profile.
     - [ ] Implement UI for adding new weight entries.
     - [ ] Display weight history (e.g., chart or list) on cat profile.
-- **Task: Manage Vaccination Records**
+**Task: Manage Vaccination Records**
   - **Status:** `To Do`
   - **Backend:**
     - [ ] Add `MedicalRecord` model and migration (for vaccinations).
@@ -397,6 +398,16 @@ This document outlines the strategic development plan for the Meo Mai Moi projec
     - [ ] Add a "Vaccination Record" button to cat profile.
     - [ ] Implement UI for adding new vaccination entries.
     - [ ] Display vaccination history on cat profile.
+
+**Task: AI-Powered Vaccination Note Recognition**
+  - **Status:** `Future Enhancement`
+  - **Notes:** Implement an AI feature to automatically recognize and extract vaccination notes from cat passport images. (Not part of MVP)
+  - **Backend:**
+    - [ ] Integrate AI service for image recognition of vaccination records.
+    - [ ] Store extracted data in the medical records system.
+  - **Frontend:**
+    - [ ] Add UI for uploading cat passport images.
+    - [ ] Display recognized vaccination notes for user review and confirmation.
 
 ---
 

@@ -19,6 +19,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'optional.auth' => OptionalAuth::class,
         ]);
 
+        $middleware->trustProxies(at: '*');
+
         $middleware->api(append: [
             Illuminate\Http\Middleware\HandleCors::class,
             \Illuminate\Cookie\Middleware\EncryptCookies::class,

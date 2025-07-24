@@ -40,7 +40,7 @@ class CatPhotoController extends Controller
      *                     property="photo",
      *                     type="string",
      *                     format="binary",
-     *                     description="The photo file (max 2MB, jpeg, png, jpg, gif, svg)"
+     *                     description="The photo file (max 10MB, jpeg, png, jpg, gif, svg)"
      *                 )
      *             )
      *         )

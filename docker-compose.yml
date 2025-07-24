@@ -13,7 +13,7 @@ services:
     depends_on:
       - db
     volumes:
-      - ./backend/public/uploads:/var/www/html/public/uploads
+      - uploads_data:/var/www/storage/app/public
 
   # Database
   db:
@@ -62,4 +62,6 @@ networks:
 
 volumes:
   pgdata:
+    driver: local
+  uploads_data:
     driver: local

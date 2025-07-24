@@ -22,7 +22,11 @@ echo "Permissions set. Current permissions:"
 ls -ld /var/run/php-fpm
 ls -ld /var/www/storage
 
-echo "[Step 3] Linking storage..."
+echo "[Step 3] Ensuring correct ownership for public storage..."
+chown -R www-data:www-data /var/www/storage/app/public
+chmod -R 775 /var/www/storage/app/public
+
+echo "[Step 4] Linking storage..."
 su -s /bin/sh -c "php artisan storage:link" www-data
 echo "Storage linked."
 

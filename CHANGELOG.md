@@ -13,6 +13,7 @@ All notable changes to this project are documented here, following the [Keep a C
 - Upgraded npm to version 11.5.1 for improved stability and new features.
 
 ### Fixed
+- Resolved critical data loss issue by configuring a Docker named volume (`uploads_data`) to ensure user-uploaded images persist across deployments.
 - Corrected a build issue with the `PlacementRequest` type import.
 - Fixed a UI bug where the select component in the placement request dialog had a transparent background.
 

@@ -30,8 +30,8 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy custom PHP-FPM pool configuration
 COPY backend/www.conf /usr/local/etc/php-fpm.d/www.conf
-RUN rm /usr/local/etc/php-fpm.d/www.conf.default \
-    && rm /usr/local/etc/php-fpm.d/zz-docker.conf
+COPY backend/php.ini /usr/local/etc/php/conf.d/custom.ini
+RUN rm /usr/local/etc/php-fpm.d/www.conf.default && rm /usr/local/etc/php-fpm.d/zz-docker.conf
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

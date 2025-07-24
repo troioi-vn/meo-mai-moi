@@ -1,10 +1,15 @@
 # CHANGELOG
 
-# CHANGELOG
-
 All notable changes to this project are documented here, following the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Changed
+- Refactored and streamlined project documentation (`README.md`, `GEMINI.md`).
+- Re-structured `roadmap.md` to clearly define MVP and Post-MVP features.
+- Formalized the Alpha release process in `CHANGELOG.md`.
+
+## [0.4.0] - 2025-07-24 - Alpha Release
 
 ### Added
 - New scripts to automate frontend-backend asset integration:
@@ -40,6 +45,9 @@ All notable changes to this project are documented here, following the [Keep a C
 - Resolved 502 Bad Gateway error in Dockerized backend.
 - Resolved missing default avatar image in frontend.
 - Resolved "Undefined table" error by running Laravel migrations and seeders.
+- Resolved 413, 422, and 500 errors related to file uploads by correcting Nginx, PHP, and Docker configurations.
+- Fixed routing issue for direct URL access in the SPA.
+- Corrected file permissions for user-uploaded images, resolving 404 errors.
 
 ---
 
@@ -115,7 +123,3 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Fixed
 - Numerous bug fixes across backend and frontend, including authentication, API response handling, test stability, and UI issues.
 - Improved error handling and test coverage for all major features.
-
----
-
-For a detailed, line-by-line history, see the git log or previous versions of this file.

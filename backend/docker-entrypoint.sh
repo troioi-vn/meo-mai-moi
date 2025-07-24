@@ -23,7 +23,7 @@ ls -ld /var/run/php-fpm
 ls -ld /var/www/storage
 
 echo "[Step 3] Linking storage..."
-php artisan storage:link
+su -s /bin/sh -c "php artisan storage:link" www-data
 echo "Storage linked."
 
 echo "[Step 4] Testing PHP-FPM configuration..."

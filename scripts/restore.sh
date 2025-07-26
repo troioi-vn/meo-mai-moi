@@ -14,6 +14,10 @@ set -e
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 PROJECT_ROOT=$(dirname "$SCRIPT_DIR")
 BACKUP_DIR="$PROJECT_ROOT/backups"
+
+# Dynamically get config from the running container
+DB_USER=$(docker compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T db printenv POSTGRES_USER | tr -d '\r')
+DB_NAME=$(docker compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T db printenv POSTGRES_DB | tr -d '\r')
 # IMPORTANT: The volume name is based on the project's directory name.
 # If your root directory is 'meo-mai-moi', the volume will be 'meo-mai-moi_uploads_data'.
 DOCKER_VOLUME_NAME="$(basename "$PROJECT_ROOT")_uploads_data"
@@ -29,8 +33,10 @@ restore_db() {
             read -p "Are you sure you want to restore '$DB_BACKUP_FILE'? This will overwrite the current database. (y/n) " -n 1 -r
             echo
             if [[ $REPLY =~ ^[Yy]$ ]]; then
-                echo "Restoring database..."
-                cat "$BACKUP_DIR/$DB_BACKUP_FILE" | docker compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T db psql -U user
+                echo "Restoring database '$DB_NAME' as user '$DB_USER'..."
+                docker compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T db dropdb -U "$DB_USER" "$DB_NAME" --if-exists
+                docker compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T db createdb -U "$DB_USER" "$DB_NAME"
+                cat "$BACKUP_DIR/$DB_BACKUP_FILE" | docker compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T db psql -U "$DB_USER" -d "$DB_NAME"
                 echo "Database restoration complete."
             else
                 echo "Restore cancelled."

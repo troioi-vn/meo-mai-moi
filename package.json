@@ -1,0 +1,7 @@
+{
+  "name": "meo-mai-moi",
+  "private": true,
+  "scripts": {
+    "test:backend": "docker compose exec backend php artisan test"
+  }
+}

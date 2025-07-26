@@ -1,11 +1,12 @@
 # Multi-stage build: First stage for building the entire application
-FROM node:18 AS app-build
+FROM node:22.17.1 AS app-build
 
 # Set the working directory for the entire application
 WORKDIR /app
 
 # Copy all source code into the build stage
-COPY . .
+COPY ./frontend /app/frontend
+COPY ./backend /app/backend
 
 # Navigate to the frontend directory to build it
 WORKDIR /app/frontend
@@ -33,6 +34,8 @@ COPY backend/www.conf /usr/local/etc/php-fpm.d/www.conf
 COPY backend/php.ini /usr/local/etc/php/conf.d/custom.ini
 RUN rm /usr/local/etc/php-fpm.d/www.conf.default && rm /usr/local/etc/php-fpm.d/zz-docker.conf
 
+RUN mkdir -p /var/run/php-fpm && chown www-data:www-data /var/run/php-fpm && chmod 775 /var/run/php-fpm
+
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -52,7 +55,7 @@ RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 # Switch to the application user to install Composer dependencies
 USER www-data
-RUN composer install --no-dev --optimize-autoloader
+RUN rm -f bootstrap/cache/packages.php && composer install --no-dev --optimize-autoloader
 
 # Switch back to root for final setup
 USER root

@@ -1,5 +1,7 @@
-# User-specific
+# User-specific & Project-specific
 tmp/
+/backups/
+/.venv/
 
 # Laravel
 /bootstrap/cache/*.php
@@ -15,7 +17,8 @@ tmp/
 /public/hot
 /public/storage
 /public/build
-/node_modules/
+/backend/database/database.sqlite
+node_modules/
 npm-debug.log
 yarn-error.log
 

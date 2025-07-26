@@ -39,14 +39,10 @@ php artisan serve
 To run with Docker:
 ```bash
 # Start the application
-docker-compose up -d
+docker compose up -d
 
 # First time setup - run migrations and seeding
-docker-compose --profile setup up migrate seed
-
-# Or run manually if needed
-docker-compose exec backend php artisan migrate
-docker-compose exec backend php artisan db:seed
+docker compose exec backend php artisan migrate:fresh --seed
 ```
 
 ### Environment Files

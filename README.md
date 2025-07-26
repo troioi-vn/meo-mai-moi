@@ -19,9 +19,19 @@ This project can be run with Docker (recommended) or with local PHP/Node servers
 
 ### Option 1: Docker (Recommended)
 
-This is the easiest way to get started, as it handles the database and server configuration for you.
+This is the easiest way to get started. The setup uses a single `docker-compose.yml` file for all services.
 
-**1. First-Time Setup**
+**1. Environment Setup**
+
+This project uses a `.env.docker` file for Docker-based development. To get started, copy the Docker-specific example file:
+
+```bash
+# From the project root directory
+cp backend/.env.docker.example backend/.env.docker
+```
+This file is pre-configured to connect to the PostgreSQL container. You do not need to change it for the standard setup.
+
+**2. First-Time Setup**
 
 ```bash
 # Clone the project
@@ -31,7 +41,8 @@ cd meo-mai-moi
 # Build and start the Docker containers in the background
 docker compose up -d --build
 
-# Run the initial application setup
+# Run the initial application setup (for development)
+# This command drops the database and seeds it with test data.
 docker compose exec backend php artisan migrate:fresh --seed && \
 docker compose exec backend php artisan shield:generate --all && \
 docker compose exec backend php artisan storage:link
@@ -39,16 +50,19 @@ docker compose exec backend php artisan storage:link
 
 **2. Accessing the Application**
 
--	**Application URL:** [http://localhost:8000](http://localhost:8000)
--	**Admin Panel:** [http://localhost:8000/admin](http://localhost:8000/admin)
-    -	**Email:** `test@example.com`
-    -	**Password:** `password`
+-   **Application URL:** [http://localhost:8000](http://localhost:8000)
+-   **Admin Panel:** [http://localhost:8000/admin](http://localhost:8000/admin)
+    -   **Email:** `test@example.com`
+    -   **Password:** `password`
 
 **3. Daily Workflow**
 
--	**Start containers:** `docker compose up -d`
--	**Stop containers:** `docker compose down`
--	**Rebuild and restart:** `docker compose up -d --build`
+-   **Start containers:** `docker compose up -d`
+-   **Stop containers:** `docker compose down`
+-   **Rebuild and restart:** `docker compose up -d --build`
+
+**Note on Production:** For a production deployment, you would not use the `docker-compose.override.yml` file. A full, safe deployment guide is available in [docs/deploy.md](./docs/deploy.md).
+
 
 ### Option 2: Local Development (Without Docker)
 

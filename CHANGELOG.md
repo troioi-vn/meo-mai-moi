@@ -4,6 +4,16 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Fixed
+- **Docker Environment**: The Docker setup was completely overhauled to be more robust and reliable.
+- **Authentication**: The entire authentication flow (register, login, logout) was fixed.
+- **API Documentation**: The OpenAPI (Swagger) documentation was fixed.
+- **File Permissions**: The file permissions for the `storage` directory were corrected.
+
+### Changed
+- **Backup & Restore Scripts**: The backup and restore scripts were improved to be more robust and user-friendly.
+- **`.gitignore` & `.dockerignore`**: These files were updated to correctly ignore unnecessary files and directories.
+
 ### Added
 - Implemented the initial Placement Request feature, allowing cat owners to create foster and adoption requests.
 - Added a modal for creating placement requests on the cat profile page.

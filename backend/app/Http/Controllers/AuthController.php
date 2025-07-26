@@ -60,10 +60,11 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        Auth::login($user);
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return $this->sendSuccess([
-            'user' => $user,
+            'access_token' => $token,
+            'token_type' => 'Bearer',
         ], 201);
     }
 
@@ -105,10 +106,12 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
+            $user = Auth::user();
+            $token = $user->createToken('auth_token')->plainTextToken;
 
             return $this->sendSuccess([
-                'user' => Auth::user(),
+                'access_token' => $token,
+                'token_type' => 'Bearer',
             ]);
         }
 
@@ -145,6 +148,6 @@ class AuthController extends Controller
 
         $request->session()->regenerateToken();
 
-        return $this->sendSuccess(null, 204);
+        return $this->sendSuccess(['message' => 'Logged out successfully']);
     }
 }

@@ -14,47 +14,31 @@ services:
       - db
     volumes:
       - uploads_data:/var/www/storage/app/public
+      - logs_data:/var/www/storage/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/api/version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # Database
   db:
     image: postgres:14-alpine
-    ports:
-      - "5432:5432"
     environment:
       POSTGRES_DB: meo_mai_moi
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     networks:
       - meo-mai-moi-network
+    ports:
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-
-  # Database migration service (run once)
-  migrate:
-    build:
-      context: .
-      dockerfile: ./backend/Dockerfile
-    command: php artisan migrate --force
-    depends_on:
-      - db
-    networks:
-      - meo-mai-moi-network
-    profiles:
-      - setup
-
-  # Database seeding service (run once)
-  seed:
-    build:
-      context: .
-      dockerfile: ./backend/Dockerfile
-    command: php artisan db:seed --force
-    depends_on:
-      - db
-      - migrate
-    networks:
-      - meo-mai-moi-network
-    profiles:
-      - setup
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d meo_mai_moi"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 networks:
   meo-mai-moi-network:
@@ -64,4 +48,6 @@ volumes:
   pgdata:
     driver: local
   uploads_data:
+    driver: local
+  logs_data:
     driver: local

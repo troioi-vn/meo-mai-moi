@@ -139,7 +139,7 @@ class AuthTest extends TestCase
 
         $response = $this->postJson('/api/logout');
 
-        $response->assertStatus(204);
+        $response->assertStatus(200);
 
         // Verify that the token is deleted from the database
         $this->assertDatabaseMissing('personal_access_tokens', [

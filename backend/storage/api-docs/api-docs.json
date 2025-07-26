@@ -1414,6 +1414,55 @@
     },
     "components": {
         "schemas": {
+            "Cat": {
+                "title": "Cat",
+                "required": [
+                    "id",
+                    "name",
+                    "breed",
+                    "birthday",
+                    "location",
+                    "description",
+                    "status",
+                    "user_id"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Whiskers"
+                    },
+                    "breed": {
+                        "type": "string",
+                        "example": "Siamese"
+                    },
+                    "birthday": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2020-01-01"
+                    },
+                    "location": {
+                        "type": "string",
+                        "example": "Hanoi"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "A friendly cat."
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "active"
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 5
+                    }
+                },
+                "type": "object"
+            },
             "Message": {
                 "title": "Message",
                 "description": "Message model",
@@ -1452,6 +1501,48 @@
                         "description": "Timestamp of last message update",
                         "type": "string",
                         "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "PlacementRequest": {
+                "title": "PlacementRequest",
+                "required": [
+                    "id",
+                    "cat_id",
+                    "user_id",
+                    "request_type",
+                    "status"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "cat_id": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "request_type": {
+                        "type": "string",
+                        "example": "adoption"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "pending"
+                    },
+                    "notes": {
+                        "type": "string",
+                        "example": "Looking for a loving home."
+                    },
+                    "expires_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-08-01T00:00:00Z"
                     }
                 },
                 "type": "object"
@@ -1573,51 +1664,39 @@
                 },
                 "type": "object"
             },
-            "Cat": {
-                "title": "Cat",
-                "required": [
-                    "id",
-                    "name",
-                    "breed",
-                    "birthday",
-                    "location",
-                    "description",
-                    "status",
-                    "user_id"
-                ],
+            "WeightHistory": {
+                "title": "WeightHistory",
+                "description": "Weight History model",
                 "properties": {
                     "id": {
+                        "description": "Weight History ID",
                         "type": "integer",
-                        "example": 1
+                        "format": "int64"
                     },
-                    "name": {
-                        "type": "string",
-                        "example": "Whiskers"
-                    },
-                    "breed": {
-                        "type": "string",
-                        "example": "Siamese"
-                    },
-                    "birthday": {
-                        "type": "string",
-                        "format": "date",
-                        "example": "2020-01-01"
-                    },
-                    "location": {
-                        "type": "string",
-                        "example": "Hanoi"
-                    },
-                    "description": {
-                        "type": "string",
-                        "example": "A friendly cat."
-                    },
-                    "status": {
-                        "type": "string",
-                        "example": "active"
-                    },
-                    "user_id": {
+                    "cat_id": {
+                        "description": "ID of the associated cat",
                         "type": "integer",
-                        "example": 5
+                        "format": "int64"
+                    },
+                    "weight_kg": {
+                        "description": "Recorded weight in kilograms",
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "record_date": {
+                        "description": "Date the weight was recorded",
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "created_at": {
+                        "description": "Timestamp of weight record creation",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "description": "Timestamp of last weight record update",
+                        "type": "string",
+                        "format": "date-time"
                     }
                 },
                 "type": "object"
@@ -1656,183 +1735,6 @@
                     },
                     "updated_at": {
                         "description": "Timestamp of last helper profile update",
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                },
-                "type": "object"
-            },
-            "MedicalRecord": {
-                "title": "MedicalRecord",
-                "description": "Medical Record model",
-                "properties": {
-                    "id": {
-                        "description": "Medical Record ID",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "cat_id": {
-                        "description": "ID of the associated cat",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "record_type": {
-                        "description": "Type of medical event",
-                        "type": "string",
-                        "enum": [
-                            "vaccination",
-                            "vet_visit",
-                            "medication",
-                            "treatment",
-                            "other"
-                        ]
-                    },
-                    "description": {
-                        "description": "Detailed description of the medical event",
-                        "type": "string"
-                    },
-                    "record_date": {
-                        "description": "Date the medical event occurred",
-                        "type": "string",
-                        "format": "date"
-                    },
-                    "vet_name": {
-                        "description": "Name of the veterinarian or clinic",
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "attachment_url": {
-                        "description": "URL to any attached documents",
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "created_at": {
-                        "description": "Timestamp of medical record creation",
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "updated_at": {
-                        "description": "Timestamp of last medical record update",
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                },
-                "type": "object"
-            },
-            "PlacementRequest": {
-                "title": "PlacementRequest",
-                "required": [
-                    "id",
-                    "cat_id",
-                    "user_id",
-                    "request_type",
-                    "status"
-                ],
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "cat_id": {
-                        "type": "integer",
-                        "example": 2
-                    },
-                    "user_id": {
-                        "type": "integer",
-                        "example": 5
-                    },
-                    "request_type": {
-                        "type": "string",
-                        "example": "adoption"
-                    },
-                    "status": {
-                        "type": "string",
-                        "example": "pending"
-                    },
-                    "notes": {
-                        "type": "string",
-                        "example": "Looking for a loving home."
-                    },
-                    "expires_at": {
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2025-08-01T00:00:00Z"
-                    }
-                },
-                "type": "object"
-            },
-            "Review": {
-                "title": "Review",
-                "description": "Review model",
-                "properties": {
-                    "id": {
-                        "description": "Review ID",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "reviewer_id": {
-                        "description": "ID of the user who wrote the review",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "reviewed_id": {
-                        "description": "ID of the user being reviewed",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "rating": {
-                        "description": "Rating (e.g., 1-5 stars)",
-                        "type": "integer"
-                    },
-                    "comment": {
-                        "description": "Review comment",
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "created_at": {
-                        "description": "Timestamp of review creation",
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "updated_at": {
-                        "description": "Timestamp of last review update",
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                },
-                "type": "object"
-            },
-            "WeightHistory": {
-                "title": "WeightHistory",
-                "description": "Weight History model",
-                "properties": {
-                    "id": {
-                        "description": "Weight History ID",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "cat_id": {
-                        "description": "ID of the associated cat",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "weight_kg": {
-                        "description": "Recorded weight in kilograms",
-                        "type": "number",
-                        "format": "float"
-                    },
-                    "record_date": {
-                        "description": "Date the weight was recorded",
-                        "type": "string",
-                        "format": "date"
-                    },
-                    "created_at": {
-                        "description": "Timestamp of weight record creation",
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "updated_at": {
-                        "description": "Timestamp of last weight record update",
                         "type": "string",
                         "format": "date-time"
                     }

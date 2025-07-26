@@ -12,6 +12,22 @@ use App\Enums\CatStatus;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * @OA\Schema(
+ *     schema="Cat",
+ *     type="object",
+ *     title="Cat",
+ *     required={"id", "name", "breed", "birthday", "location", "description", "status", "user_id"},
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="name", type="string", example="Whiskers"),
+ *     @OA\Property(property="breed", type="string", example="Siamese"),
+ *     @OA\Property(property="birthday", type="string", format="date", example="2020-01-01"),
+ *     @OA\Property(property="location", type="string", example="Hanoi"),
+ *     @OA\Property(property="description", type="string", example="A friendly cat."),
+ *     @OA\Property(property="status", type="string", example="active"),
+ *     @OA\Property(property="user_id", type="integer", example=5)
+ * )
+ */
 class CatController extends Controller
 {
     use ApiResponseTrait;

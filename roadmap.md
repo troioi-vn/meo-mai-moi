@@ -189,6 +189,12 @@ These are features that will be developed after the MVP is complete and stable. 
  - **Task: Display Real Cats on Homepage:** Replace static content with a dynamic list of cats needing homes.
    - [ ] Write tests for dynamic homepage cat list.
 
+### Infrastructure & Deployment
+ - **Task: CI/CD Integration:** Implement a full CI/CD pipeline (e.g., using GitHub Actions) to automate testing and deployments, ensuring code quality and providing a safe, repeatable process for releasing updates.
+   - [ ] Write tests for CI/CD pipeline configuration.
+ - **Task: Production Secret Management:** Replace the development-focused .env file with a secure production solution like Docker Secrets or a cloud provider's secret manager (e.g., AWS Secrets Manager, HashiCorp Vault) to protect sensitive data like API keys and database credentials.
+   - [ ] Write tests for production secret management implementation.
+
 
 ---
 

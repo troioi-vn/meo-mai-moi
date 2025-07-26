@@ -1,53 +1,30 @@
-# Git
+# Git & version control
 .git
 .gitignore
 
-# Documentation
-*.md
-docs/
+# Node dependencies
+node_modules
+frontend/node_modules
+npm-debug.log
+yarn-error.log
 
-# Logs
-*.log
-logs/
+# Python virtual environment
+.venv
 
-# Runtime data
-tmp/
-
-# Dependency directories
-node_modules/
-vendor/
-
-# Environment files
+# Local development & secrets
+.vscode
+.idea
 .env
 .env.local
-.env.*.local
+.env.docker
 
-# Build outputs
-frontend/dist/
-frontend/build/
-
-# Cache and temp files
-backend/storage/logs/
-backend/storage/framework/cache/
-backend/storage/framework/sessions/
-backend/storage/framework/views/
-backend/bootstrap/cache/
-
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
+# Project-specific build artifacts & logs
+backups/
+tmp/
+/backend/database/database.sqlite
+entrypoint-*.log
+docker_error.md
 
 # OS files
 .DS_Store
 Thumbs.db
-
-# Testing
-coverage/
-.phpunit.result.cache
-
-# Docker files
-Dockerfile
-docker-compose.yml
-docker-compose.*.yml

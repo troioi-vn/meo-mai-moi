@@ -12,6 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from "@/components/ui/textarea"
 
 interface PlacementRequestModalProps {
   catId: number;
@@ -72,13 +73,14 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({ ca
               <Label htmlFor="notes" className="text-right">
                 Notes
               </Label>
-              <Input
+              <Textarea
                 id="notes"
                 value={notes}
                 onChange={(e) => {
                   setNotes(e.target.value);
                 }}
                 className="col-span-3"
+                placeholder="Describe your cat and any specific needs or requirements."
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">

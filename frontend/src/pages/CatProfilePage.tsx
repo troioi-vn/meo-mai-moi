@@ -7,7 +7,6 @@ import { ErrorState } from '@/components/ui/ErrorState'
 import { CatDetails } from '@/components/CatDetails'
 import { PlacementRequestModal } from '@/components/PlacementRequestModal'
 
-
 const CatProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()

@@ -79,7 +79,7 @@ If something goes wrong during or after deployment, follow these steps to revert
 2.  **Restore from Backup:**
     Run the interactive restore script. You can choose to restore the database, the user uploads, or both.
     ```bash
-    ./restore.sh
+    ./scripts/restore.sh
     ```
 
 3.  **Revert the Code:**

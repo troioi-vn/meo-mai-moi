@@ -16,7 +16,7 @@ PROJECT_ROOT=$(dirname "$SCRIPT_DIR")
 BACKUP_DIR="$PROJECT_ROOT/backups"
 # IMPORTANT: The volume name is based on the project's directory name.
 # If your root directory is 'meo-mai-moi', the volume will be 'meo-mai-moi_uploads_data'.
-DOCKER_VOLUME_NAME=$(basename "$PROJECT_ROOT")_uploads_data"
+DOCKER_VOLUME_NAME="$(basename "$PROJECT_ROOT")_uploads_data"
 
 # --- Functions ---
 

@@ -34,8 +34,8 @@ restore_db() {
             echo
             if [[ $REPLY =~ ^[Yy]$ ]]; then
                 echo "Restoring database '$DB_NAME' as user '$DB_USER'..."
-                docker compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T db dropdb -U "$DB_USER" "$DB_NAME" --if-exists
-                docker compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T db createdb -U "$DB_USER" "$DB_NAME"
+                docker compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T db psql -U "$DB_USER" -d postgres -c "DROP DATABASE IF EXISTS \"$DB_NAME\";"
+                docker compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T db psql -U "$DB_USER" -d postgres -c "CREATE DATABASE \"$DB_NAME\";"
                 cat "$BACKUP_DIR/$DB_BACKUP_FILE" | docker compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T db psql -U "$DB_USER" -d "$DB_NAME"
                 echo "Database restoration complete."
             else
@@ -90,9 +90,42 @@ select choice in "Database" "Uploads" "Both" "Exit"; do
             break
             ;;
         "Both")
-            restore_db
-            echo "---"
-            restore_uploads
+            echo "Please select a database backup file to restore:"
+            (cd "$BACKUP_DIR" && select DB_BACKUP_FILE in db_backup_*.sql; do
+                if [ -n "$DB_BACKUP_FILE" ]; then
+                    echo "Please select an uploads backup file to restore:"
+                    (cd "$BACKUP_DIR" && select UPLOADS_BACKUP_FILE in uploads_backup_*.tar.gz; do
+                        if [ -n "$UPLOADS_BACKUP_FILE" ]; then
+                            read -p "Are you sure you want to restore both '$DB_BACKUP_FILE' and '$UPLOADS_BACKUP_FILE'? This will overwrite the current database and uploads. (y/n) " -n 1 -r
+                            echo
+                            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                                echo "Restoring database '$DB_NAME' as user '$DB_USER'..."
+                                docker compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T db psql -U "$DB_USER" -d postgres -c "DROP DATABASE IF EXISTS \"$DB_NAME\";"
+                                docker compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T db psql -U "$DB_USER" -d postgres -c "CREATE DATABASE \"$DB_NAME\";"
+                                cat "$BACKUP_DIR/$DB_BACKUP_FILE" | docker compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T db psql -U "$DB_USER" -d "$DB_NAME"
+                                echo "Database restoration complete."
+                                echo "---"
+                                echo "Restoring uploads..."
+                                echo "Clearing existing uploads..."
+                                docker run --rm -v "${DOCKER_VOLUME_NAME}:/volume" alpine sh -c "rm -rf /volume/*"
+                                echo "Copying from backup..."
+                                docker run --rm -v "${DOCKER_VOLUME_NAME}:/volume" -v "$BACKUP_DIR:/backup" alpine tar -xzvf "/backup/${UPLOADS_BACKUP_FILE}" -C /volume
+                                echo "Uploads restoration complete."
+                            else
+                                echo "Restore cancelled."
+                            fi
+                            break
+                        else
+                            echo "Invalid selection. No backup files found or selection out of range."
+                            break
+                        fi
+                    done)
+                    break
+                else
+                    echo "Invalid selection. No backup files found or selection out of range."
+                    break
+                fi
+            done)
             break
             ;;
         "Exit")

@@ -25,7 +25,7 @@ class PlacementRequest extends Model
     protected $casts = [
         'request_type' => PlacementRequestType::class,
         'status' => PlacementRequestStatus::class,
-        'expires_at' => 'datetime',
+        'expires_at' => 'date',
     ];
 
     public function cat(): BelongsTo

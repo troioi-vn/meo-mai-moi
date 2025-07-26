@@ -45,34 +45,20 @@ class CatController extends Controller
     {
         $cat->load('placementRequests');
 
-        $viewerPermissions = [
-            'can_edit' => false,
-            'can_view_contact' => false,
-        ];
+        $user = $request->user();
+        $isOwner = $user && $cat->user_id === $user->id;
+        $userRole = $user ? $user->role : null;
+        $isAdmin = $userRole === UserRole::ADMIN || $userRole === UserRole::ADMIN->value;
 
-        if ($request->user()) {
-            $user = $request->user();
-            $userRole = $user->role;
-
-            $isAdmin = $userRole === UserRole::ADMIN || $userRole === UserRole::ADMIN->value;
-            $isOwner = $cat->user_id === $user->id;
-            $isHelper = $userRole === UserRole::HELPER || $userRole === UserRole::HELPER->value;
-
-            if ($isAdmin) {
-                $viewerPermissions['can_edit'] = true;
-                $viewerPermissions['can_view_contact'] = true;
-            } elseif ($isOwner) {
-                $viewerPermissions['can_edit'] = true;
-                if ($isHelper) {
-                    $viewerPermissions['can_view_contact'] = true;
-                }
-            } elseif ($isHelper) {
-                $viewerPermissions['can_view_contact'] = true;
-            }
+        if (!$user || (!$isOwner && !$isAdmin)) {
+            return $this->sendError('Forbidden: You are not authorized to view this cat.', 403);
         }
 
+        $viewerPermissions = [
+            'can_edit' => $isOwner || $isAdmin,
+            'can_view_contact' => $isAdmin,
+        ];
         $cat->setAttribute('viewer_permissions', $viewerPermissions);
-
         return $this->sendSuccess($cat);
     }
 

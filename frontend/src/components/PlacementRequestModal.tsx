@@ -85,17 +85,34 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({ ca
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="expires-at" className="text-right">
-                Expires At
+                Expires In
               </Label>
-              <Input
-                id="expires-at"
-                type="datetime-local"
-                value={expiresAt}
-                onChange={(e) => {
-                  setExpiresAt(e.target.value);
+              <Select
+                onValueChange={(value) => {
+                  if (value) {
+                    const date = new Date();
+                    const [amount, unit] = value.split('_');
+                    if (unit === 'week') {
+                      date.setDate(date.getDate() + parseInt(amount, 10) * 7);
+                    } else if (unit === 'month') {
+                      date.setMonth(date.getMonth() + parseInt(amount, 10));
+                    }
+                    setExpiresAt(date.toISOString().split('T')[0]);
+                  } else {
+                    setExpiresAt('');
+                  }
                 }}
-                className="col-span-3"
-              />
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select a duration" />
+                </SelectTrigger>
+                <SelectContent className="bg-background">
+                  <SelectItem value="1_week">1 week</SelectItem>
+                  <SelectItem value="1_month">1 month</SelectItem>
+                  <SelectItem value="3_month">3 months</SelectItem>
+                  <SelectItem value="6_month">6 months</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>

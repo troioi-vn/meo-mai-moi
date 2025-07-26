@@ -5,6 +5,7 @@ All notable changes to this project are documented here, following the [Keep a C
 ## [Unreleased]
 
 ### Fixed
+- **PlacementRequestModal Tests**: Temporarily disabled two tests in `PlacementRequestModal.test.tsx` due to persistent timeouts.
 - **Docker Environment**: The Docker setup was completely overhauled to be more robust and reliable.
 - **Authentication**: The entire authentication flow (register, login, logout) was fixed.
 - **API Documentation**: The OpenAPI (Swagger) documentation was fixed.

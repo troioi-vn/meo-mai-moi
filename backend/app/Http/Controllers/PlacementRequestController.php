@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Auth;
  *     @OA\Property(property="request_type", type="string", example="adoption"),
  *     @OA\Property(property="status", type="string", example="pending"),
  *     @OA\Property(property="notes", type="string", example="Looking for a loving home."),
- *     @OA\Property(property="expires_at", type="string", format="date-time", example="2025-08-01T00:00:00Z")
+ *     @OA\Property(property="expires_at", type="string", format="date", example="2025-08-01")
  * )
  */
 class PlacementRequestController extends Controller
@@ -43,7 +43,7 @@ class PlacementRequestController extends Controller
      *             @OA\Property(property="cat_id", type="integer", example=1),
      *             @OA\Property(property="request_type", type="string", enum=App\Enums\PlacementRequestType::class, example="permanent"),
      *             @OA\Property(property="notes", type="string", example="Looking for a loving home."),
-     *             @OA\Property(property="expires_at", type="string", format="date-time", example="2025-12-31 23:59:59")
+     *             @OA\Property(property="expires_at", type="string", format="date", example="2025-12-31")
      *         )
      *     ),
      *     @OA\Response(

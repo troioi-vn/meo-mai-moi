@@ -21,7 +21,7 @@ class PlacementRequestResource extends JsonResource
             'request_type' => $this->request_type,
             'status' => $this->status,
             'notes' => $this->notes,
-            'expires_at' => $this->expires_at,
+            'expires_at' => $this->expires_at ? $this->expires_at->toDateString() : null,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

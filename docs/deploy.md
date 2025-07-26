@@ -23,7 +23,7 @@ This workflow is designed to minimize downtime and provide a safe rollback path.
 2.  **Create a Full Backup:**
         The `backup.sh` script creates timestamped backups of both the database and all user-uploaded files in the `backups/` directory.
     ```bash
-    ./backup.sh
+    ./scripts/backup.sh
     ```
 
 ### Phase 2: Deployment

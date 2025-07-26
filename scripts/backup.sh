@@ -8,13 +8,14 @@ set -e
 # Find the project root (assuming this script is in a 'scripts' directory)
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 PROJECT_ROOT=$(dirname "$SCRIPT_DIR")
+
 BACKUP_DIR="$PROJECT_ROOT/backups"
 TIMESTAMP=$(date +%F-%H%M%S)
 DB_BACKUP_FILE="db_backup_${TIMESTAMP}.sql"
 UPLOADS_BACKUP_FILE="uploads_backup_${TIMESTAMP}.tar.gz"
 # IMPORTANT: The volume name is based on the project's directory name.
 # If your root directory is 'meo-mai-moi', the volume will be 'meo-mai-moi_uploads_data'.
-DOCKER_VOLUME_NAME=$(basename "$PROJECT_ROOT")_uploads_data"
+DOCKER_VOLUME_NAME="$(basename "$PROJECT_ROOT")_uploads_data"
 
 # --- Main Script ---
 echo "Starting backup process..."

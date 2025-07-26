@@ -11,7 +11,7 @@ All notable changes to this project are documented here, following the [Keep a C
 - **File Permissions**: The file permissions for the `storage` directory were corrected.
 
 ### Changed
-- **Backup & Restore Scripts**: The backup and restore scripts were improved to be more robust and user-friendly. They now dynamically load database credentials from the running container.
+- **Backup & Restore Scripts**: The backup and restore scripts were improved to be more robust and user-friendly. They now dynamically load database credentials from the running container and correctly drop the database before restoring.
 - **`.gitignore` & `.dockerignore`**: These files were updated to correctly ignore unnecessary files and directories.
 
 ### Added

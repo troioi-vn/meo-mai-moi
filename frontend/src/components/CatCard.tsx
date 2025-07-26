@@ -41,12 +41,6 @@ export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
       </CardHeader>
       <CardContent className="flex flex-grow flex-col justify-between p-4">
         <p className="text-sm text-gray-600">Location: {cat.location}</p>
-        <p className="text-sm text-gray-600">Status: {cat.status}</p>
-        <div className="mt-4">
-          <Link to={`/cats/${String(cat.id)}`}>
-            <Button className="w-full">View Profile</Button>
-          </Link>
-        </div>
       </CardContent>
     </Card>
   )

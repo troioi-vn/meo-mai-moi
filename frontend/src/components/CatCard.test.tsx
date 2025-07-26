@@ -38,7 +38,7 @@ describe('CatCard', () => {
   it('has a link to the cat profile page', () => {
     renderWithRouter(<CatCard cat={mockCat} />)
 
-    const profileLink = screen.getByRole('link', { name: /view profile/i })
+    const profileLink = screen.getByRole('link', { name: /fluffy/i })
     expect(profileLink).toBeInTheDocument()
     expect(profileLink).toHaveAttribute('href', '/cats/1')
   })
@@ -51,9 +51,6 @@ describe('CatCard', () => {
 
     // Check that the image has alt text
     expect(screen.getByAltText('Fluffy')).toBeInTheDocument()
-
-    // Check that the action button is accessible
-    expect(screen.getByRole('button', { name: /view profile/i })).toBeInTheDocument()
   })
 
   it('applies hover effects through CSS classes', () => {

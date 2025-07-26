@@ -28,8 +28,9 @@ describe('EditCatPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockUseNavigate.mockClear()
+    server.resetHandlers()
 
-    // MSW handler for /api/cats/:id (getCat)
+    // MSW handlers
     server.use(
       http.get('http://localhost:3000/api/cats/:id', ({ params }) => {
         const catId = String(params.id)
@@ -46,14 +47,10 @@ describe('EditCatPage', () => {
           )
         }
         return new HttpResponse(null, { status: 404 })
-      })
-    )
-
-    server.use(
+      }),
       http.get('http://localhost:3000/api/user', () => {
         return HttpResponse.json(mockUser)
       }),
-      // Removed http.get('/api/cats/:id') handler as getCat is now mocked directly
       http.get('http://localhost:3000/api/cats', () => {
         return HttpResponse.json([mockCat])
       })

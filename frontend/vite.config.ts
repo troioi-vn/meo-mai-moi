@@ -7,7 +7,7 @@ import path from 'path';
 
 export default defineConfig(({ mode }) => ({
   base: mode === 'production' ? '/build/' : '/',
-  plugins: [react(), tsconfigPaths(), tailwindcss()],
+  plugins: [react(), tsconfigPaths(), tailwindcss('./tailwind.config.js')],
   server: {
     port: 5173,
     proxy: {
@@ -32,7 +32,7 @@ export default defineConfig(({ mode }) => ({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/setupTests.ts',
-    css: true,
+    css: false,
 
     testTimeout: 30000,
   },

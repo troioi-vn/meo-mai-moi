@@ -650,6 +650,16 @@
                                         "type": "string",
                                         "format": "date",
                                         "example": "2025-12-31"
+                                    },
+                                    "start_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-08-05"
+                                    },
+                                    "end_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-08-20"
                                     }
                                 },
                                 "type": "object"
@@ -1543,6 +1553,16 @@
                         "type": "string",
                         "format": "date",
                         "example": "2025-08-01"
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-08-05"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-08-20"
                     }
                 },
                 "type": "object"

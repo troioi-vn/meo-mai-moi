@@ -22,6 +22,7 @@ The focus is on delivering the core features required for the platform to be fun
     - [x] Write tests for business rule enforcement.
     - [x] Ensure a cat's profile is publicly visible if it has an active placement request.
     - [x] Write tests for cat profile visibility logic.
+    - [x] Add `start_date` and `end_date` fields to `PlacementRequest` model and API.
   - **Frontend:**
     - [x] Create `PlacementRequestForm` for owners.
     - [x] Write component/UI tests for PlacementRequestForm.
@@ -31,6 +32,7 @@ The focus is on delivering the core features required for the platform to be fun
     - [x] Write tests for placement request management UI.
     - [x] Show active placement requests in Cat's Card
     - [x] Write tests for Cat's Card active request display.
+    - [x] Add `start_date` and `end_date` fields to `PlacementRequestModal.tsx`.
 
   - **Task: Implement Placement Response System**
     - **Notes:** Allows helpers to respond to specific placement requests.

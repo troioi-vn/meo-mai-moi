@@ -11,6 +11,8 @@
   --muted-foreground: 107 114 128;
   --accent: 243 244 246;
   --accent-foreground: 17 24 39;
+  --popover: 255 255 255;
+  --popover-foreground: 17 24 39;
 }
 
 .dark {
@@ -23,6 +25,8 @@
   --muted-foreground: 156 163 175;
   --accent: 55 65 81;
   --accent-foreground: 255 255 255;
+  --popover: 17 24 39;
+  --popover-foreground: 243 244 246;
 }
 
 @layer base {
@@ -42,6 +46,14 @@
 @layer utilities {
   .bg-background {
     background-color: rgb(var(--bg));
+  }
+
+  .bg-popover {
+    background-color: rgb(var(--popover));
+  }
+
+  .text-popover-foreground {
+    color: rgb(var(--popover-foreground));
   }
 
   .bg-accent {

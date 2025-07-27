@@ -4,7 +4,12 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Added
+- Added `start_date` and `end_date` fields to the `PlacementRequest` model and API.
+- Added date picker components (`react-day-picker`, `date-fns`) to the frontend for placement request forms.
+
 ### Fixed
+- Adjusted backend tests (`CatListingTest`, `CatProfileTest`, `OwnershipPermissionTest`) to reflect owner/admin-only access for cat profiles.
 - **PlacementRequestModal Tests**: Temporarily disabled two tests in `PlacementRequestModal.test.tsx` due to persistent timeouts.
 - **Docker Environment**: The Docker setup was completely overhauled to be more robust and reliable.
 - **Authentication**: The entire authentication flow (register, login, logout) was fixed.

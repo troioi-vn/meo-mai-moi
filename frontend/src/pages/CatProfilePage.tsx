@@ -56,10 +56,10 @@ const CatProfilePage: React.FC = () => {
             {/* Owner-only buttons */}
             {cat.viewer_permissions?.can_edit && (
               <>
-                <Button onClick={handleEditClick} variant="default">
+                <Button onClick={handleEditClick} variant="outline">
                   Edit
                 </Button>
-                <Button onClick={handleOpenModal} variant="default">
+                <Button onClick={handleOpenModal} variant="outline">
                   Placement Request
                 </Button>
                 <Button onClick={handleMyCatsClick} variant="outline">

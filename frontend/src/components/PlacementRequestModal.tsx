@@ -109,13 +109,15 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({ ca
                     {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={startDate}
-                    onSelect={setStartDate}
-                    initialFocus
-                  />
+                <PopoverContent className="w-auto p-0 bg-popover">
+                  <PopoverContent className="w-auto p-0 bg-white dark:bg-zinc-900 text-black dark:text-white rounded-lg">
+                    <Calendar
+                      mode="single"
+                      selected={startDate}
+                      onSelect={setStartDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
                 </PopoverContent>
               </Popover>
             </div>
@@ -136,13 +138,15 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({ ca
                     {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={endDate}
-                    onSelect={setEndDate}
-                    initialFocus
-                  />
+                <PopoverContent className="w-auto p-0 bg-popover">
+                  <PopoverContent className="w-auto p-0 bg-white dark:bg-zinc-900 text-black dark:text-white rounded-lg">
+                    <Calendar
+                      mode="single"
+                      selected={endDate}
+                      onSelect={setEndDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
                 </PopoverContent>
               </Popover>
             </div>
@@ -163,13 +167,15 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({ ca
                     {expiresAt ? format(expiresAt, "PPP") : <span>Pick a date</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={expiresAt}
-                    onSelect={setExpiresAt}
-                    initialFocus
-                  />
+                <PopoverContent className="w-auto p-0 bg-popover">
+                  <PopoverContent className="w-auto p-0 bg-white dark:bg-zinc-900 text-black dark:text-white rounded-lg">
+                    <Calendar
+                      mode="single"
+                      selected={expiresAt}
+                      onSelect={setExpiresAt}
+                      initialFocus
+                    />
+                  </PopoverContent>
                 </PopoverContent>
               </Popover>
             </div>

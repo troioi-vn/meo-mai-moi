@@ -15,9 +15,6 @@ describe('PlacementRequestModal', () => {
   const mockOnClose = vi.fn();
 
   beforeEach(() => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2025-01-01T12:00:00Z')); // Set a fixed date for consistent testing
-
     (useCreatePlacementRequest as jest.Mock<Partial<UseMutationResult<PlacementRequest, AxiosError<unknown>, PlacementRequestPayload>>>).mockReturnValue({
       mutate: (payload, options) => {
         mockMutate(payload, options);
@@ -29,7 +26,6 @@ describe('PlacementRequestModal', () => {
 
   afterEach(() => {
     vi.clearAllMocks();
-    vi.useRealTimers(); // Restore real timers after each test
   });
 
   it('renders correctly when open', () => {
@@ -42,24 +38,22 @@ describe('PlacementRequestModal', () => {
     expect(screen.queryByText('Create Placement Request')).not.toBeInTheDocument();
   });
 
-  // Temporarily disabled due to persistent timeouts.
-  // it(
-  //   'calls onClose when the cancel button is clicked',
-  //   async () => {
-  //     const user = userEvent.setup();
-  //     render(<PlacementRequestModal catId={1} isOpen={true} onClose={mockOnClose} />);
-  //     // Wait for dialog to appear
-  //     expect(await screen.findByText('Create Placement Request')).toBeInTheDocument();
-  //     // Use findByRole for the Cancel button (async, in case of portal)
-  //     const cancelButton = await screen.findByRole('button', { name: /cancel/i });
-  //     await user.click(cancelButton);
-  //     vi.runAllTimers();
-  //     await waitFor(() => {
-  //       expect(mockOnClose).toHaveBeenCalledTimes(1);
-  //     });
-  //   },
-  //   10000
-  // );
+  it(
+    'calls onClose when the cancel button is clicked',
+    async () => {
+      const user = userEvent.setup();
+      render(<PlacementRequestModal catId={1} isOpen={true} onClose={mockOnClose} />);
+      // Wait for dialog to appear
+      expect(await screen.findByText('Create Placement Request')).toBeInTheDocument();
+      // Use findByRole for the Cancel button (async, in case of portal)
+      const cancelButton = await screen.findByRole('button', { name: /cancel/i });
+      await user.click(cancelButton);
+      await waitFor(() => {
+        expect(mockOnClose).toHaveBeenCalledTimes(1);
+      });
+    },
+    10000
+  );
 
   // Temporarily disabled due to persistent timeouts.
   // it(
@@ -71,7 +65,8 @@ describe('PlacementRequestModal', () => {
   //     expect(await screen.findByText('Create Placement Request')).toBeInTheDocument();
 
   //     // Open and select request type
-  //     const requestTypeTrigger = await screen.findByRole('button', { name: /select a request type/i });
+  
+  //     const requestTypeTrigger = await screen.findByText('Select a request type');
   //     await user.click(requestTypeTrigger);
   //     const permanentOption = await screen.findByText('Permanent');
   //     await user.click(permanentOption);
@@ -80,21 +75,9 @@ describe('PlacementRequestModal', () => {
   //     const notesInput = await screen.findByLabelText('Notes');
   //     await user.type(notesInput, 'Test notes');
 
-  //     // Open and select duration
-  //     const durationTrigger = await screen.findByRole('button', { name: /select a duration/i });
-  //     await user.click(durationTrigger);
-  //     const oneMonthOption = await screen.findByText('1 month');
-  //     await user.click(oneMonthOption);
-  //     vi.runAllTimers();
-
   //     // Submit the form
   //     const submitButton = await screen.findByRole('button', { name: /create request/i });
   //     await user.click(submitButton);
-  //     vi.runAllTimers();
-
-  //     const expectedDate = new Date('2025-01-01T12:00:00Z');
-  //     expectedDate.setMonth(expectedDate.getMonth() + 1);
-  //     const expectedDateString = expectedDate.toISOString().split('T')[0];
 
   //     await waitFor(() => {
   //       expect(mockMutate).toHaveBeenCalledWith(
@@ -102,7 +85,7 @@ describe('PlacementRequestModal', () => {
   //           cat_id: 1,
   //           request_type: 'permanent',
   //           notes: 'Test notes',
-  //           expires_at: expectedDateString,
+  //           expires_at: undefined,
   //         },
   //         { onSuccess: expect.any(Function) }
   //       );

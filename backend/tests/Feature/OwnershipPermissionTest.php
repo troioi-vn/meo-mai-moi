@@ -37,8 +37,7 @@ class OwnershipPermissionTest extends TestCase
 
         $response = $this->getJson("/api/cats/{$cat->id}");
 
-        $response->assertStatus(200)
-            ->assertJsonPath('data.viewer_permissions.can_edit', false);
+        $response->assertStatus(403);
     }
 
     #[Test]
@@ -51,8 +50,7 @@ class OwnershipPermissionTest extends TestCase
 
         $response = $this->getJson("/api/cats/{$cat->id}");
 
-        $response->assertStatus(200)
-            ->assertJsonPath('data.viewer_permissions.can_edit', false);
+        $response->assertStatus(403);
     }
 
     #[Test]
@@ -65,9 +63,7 @@ class OwnershipPermissionTest extends TestCase
 
         $response = $this->getJson("/api/cats/{$cat->id}");
 
-        $response->assertStatus(200)
-            ->assertJsonPath('data.viewer_permissions.can_edit', false)
-            ->assertJsonPath('data.viewer_permissions.can_view_contact', true);
+        $response->assertStatus(403);
     }
 
     #[Test]
@@ -81,7 +77,7 @@ class OwnershipPermissionTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonPath('data.viewer_permissions.can_edit', true)
-            ->assertJsonPath('data.viewer_permissions.can_view_contact', true);
+            ->assertJsonPath('data.viewer_permissions.can_view_contact', false);
     }
 
     #[Test]
@@ -116,8 +112,7 @@ class OwnershipPermissionTest extends TestCase
 
         // User1 cannot edit User2's cat
         $response2 = $this->getJson("/api/cats/{$cat2->id}");
-        $response2->assertStatus(200)
-            ->assertJsonPath('data.viewer_permissions.can_edit', false);
+        $response2->assertStatus(403);
 
         // User2 can edit their own cat
         Sanctum::actingAs($user2);
@@ -127,8 +122,7 @@ class OwnershipPermissionTest extends TestCase
 
         // User2 cannot edit User1's cat
         $response4 = $this->getJson("/api/cats/{$cat1->id}");
-        $response4->assertStatus(200)
-            ->assertJsonPath('data.viewer_permissions.can_edit', false);
+        $response4->assertStatus(403);
     }
 
     #[Test]

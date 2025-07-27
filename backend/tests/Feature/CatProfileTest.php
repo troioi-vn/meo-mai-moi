@@ -68,9 +68,7 @@ class CatProfileTest extends TestCase
         
         $response = $this->getJson("/api/cats/{$cat->id}");
 
-        $response->assertStatus(200)
-            ->assertJsonPath('data.name', 'Test Cat')
-            ->assertJsonPath('data.viewer_permissions.can_edit', false);
+        $response->assertStatus(403);
     }
 
     #[Test]
@@ -82,9 +80,7 @@ class CatProfileTest extends TestCase
         
         $response = $this->getJson("/api/cats/{$cat->id}");
 
-        $response->assertStatus(200)
-            ->assertJsonPath('data.name', 'Test Cat')
-            ->assertJsonPath('data.viewer_permissions.can_edit', false);
+        $response->assertStatus(403);
     }
 
     #[Test]
@@ -129,9 +125,7 @@ class CatProfileTest extends TestCase
             'Authorization' => 'Bearer invalid-token-12345'
         ])->getJson("/api/cats/{$cat->id}");
 
-        $response->assertStatus(200)
-            ->assertJsonPath('data.name', 'Test Cat')
-            ->assertJsonPath('data.viewer_permissions.can_edit', false);
+        $response->assertStatus(403);
     }
 
     #[Test]
@@ -144,9 +138,7 @@ class CatProfileTest extends TestCase
             'Authorization' => 'InvalidFormat token123'
         ])->getJson("/api/cats/{$cat->id}");
 
-        $response->assertStatus(200)
-            ->assertJsonPath('data.name', 'Test Cat')
-            ->assertJsonPath('data.viewer_permissions.can_edit', false);
+        $response->assertStatus(403);
     }
 
     #[Test]

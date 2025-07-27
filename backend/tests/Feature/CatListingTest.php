@@ -17,7 +17,10 @@ class CatListingTest extends TestCase
 
     public function test_can_get_single_cat_profile(): void
     {
-        $cat = Cat::factory()->create();
+        $user = User::factory()->create();
+        $cat = Cat::factory()->create(['user_id' => $user->id]);
+        Sanctum::actingAs($user);
+
         $response = $this->getJson("/api/cats/{$cat->id}");
         $response->assertStatus(200)->assertJson(['data' => ['id' => $cat->id]]);
     }

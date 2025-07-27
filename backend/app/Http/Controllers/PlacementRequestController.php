@@ -23,7 +23,9 @@ use Illuminate\Support\Facades\Auth;
  *     @OA\Property(property="request_type", type="string", example="adoption"),
  *     @OA\Property(property="status", type="string", example="pending"),
  *     @OA\Property(property="notes", type="string", example="Looking for a loving home."),
- *     @OA\Property(property="expires_at", type="string", format="date", example="2025-08-01")
+ *     @OA\Property(property="expires_at", type="string", format="date", example="2025-08-01"),
+ *     @OA\Property(property="start_date", type="string", format="date", example="2025-08-05"),
+ *     @OA\Property(property="end_date", type="string", format="date", example="2025-08-20")
  * )
  */
 class PlacementRequestController extends Controller
@@ -43,7 +45,9 @@ class PlacementRequestController extends Controller
      *             @OA\Property(property="cat_id", type="integer", example=1),
      *             @OA\Property(property="request_type", type="string", enum=App\Enums\PlacementRequestType::class, example="permanent"),
      *             @OA\Property(property="notes", type="string", example="Looking for a loving home."),
-     *             @OA\Property(property="expires_at", type="string", format="date", example="2025-12-31")
+     *             @OA\Property(property="expires_at", type="string", format="date", example="2025-12-31"),
+     *             @OA\Property(property="start_date", type="string", format="date", example="2025-08-05"),
+     *             @OA\Property(property="end_date", type="string", format="date", example="2025-08-20")
      *         )
      *     ),
      *     @OA\Response(
@@ -79,6 +83,8 @@ class PlacementRequestController extends Controller
             'request_type' => ['required', new \Illuminate\Validation\Rules\Enum(PlacementRequestType::class)],
             'notes' => 'nullable|string',
             'expires_at' => 'nullable|date|after:now',
+            'start_date' => 'required|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
         ]);
 
         $cat = Cat::findOrFail($validatedData['cat_id']);
@@ -98,6 +104,7 @@ class PlacementRequestController extends Controller
         }
 
         $placementRequest = PlacementRequest::create($validatedData + ['user_id' => Auth::id()]);
+        $placementRequest->refresh();
 
         return $this->sendSuccess(new PlacementRequestResource($placementRequest), 201);
     }

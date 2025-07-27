@@ -13,6 +13,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from "@/components/ui/textarea"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface PlacementRequestModalProps {
   catId: number;
@@ -23,7 +28,9 @@ interface PlacementRequestModalProps {
 export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({ catId, isOpen, onClose }) => {
   const [requestType, setRequestType] = useState('');
   const [notes, setNotes] = useState('');
-  const [expiresAt, setExpiresAt] = useState('');
+  const [expiresAt, setExpiresAt] = useState<Date | undefined>(undefined);
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const createPlacementRequestMutation = useCreatePlacementRequest();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -33,7 +40,9 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({ ca
         cat_id: catId,
         request_type: requestType,
         notes,
-        expires_at: expiresAt || undefined,
+        expires_at: expiresAt ? format(expiresAt, 'yyyy-MM-dd') : undefined,
+        start_date: startDate ? format(startDate, 'yyyy-MM-dd') : undefined,
+        end_date: endDate ? format(endDate, 'yyyy-MM-dd') : undefined,
       },
       {
         onSuccess: () => {
@@ -84,35 +93,85 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({ ca
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="expires-at" className="text-right">
-                Expires In
+              <Label htmlFor="start-date" className="text-right">
+                Start Date
               </Label>
-              <Select
-                onValueChange={(value) => {
-                  if (value) {
-                    const date = new Date();
-                    const [amount, unit] = value.split('_');
-                    if (unit === 'week') {
-                      date.setDate(date.getDate() + parseInt(amount, 10) * 7);
-                    } else if (unit === 'month') {
-                      date.setMonth(date.getMonth() + parseInt(amount, 10));
-                    }
-                    setExpiresAt(date.toISOString().split('T')[0]);
-                  } else {
-                    setExpiresAt('');
-                  }
-                }}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select a duration" />
-                </SelectTrigger>
-                <SelectContent className="bg-background">
-                  <SelectItem value="1_week">1 week</SelectItem>
-                  <SelectItem value="1_month">1 month</SelectItem>
-                  <SelectItem value="3_month">3 months</SelectItem>
-                  <SelectItem value="6_month">6 months</SelectItem>
-                </SelectContent>
-              </Select>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "col-span-3 justify-start text-left font-normal",
+                      !startDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={startDate}
+                    onSelect={setStartDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="end-date" className="text-right">
+                End Date
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "col-span-3 justify-start text-left font-normal",
+                      !endDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={endDate}
+                    onSelect={setEndDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="expires-at" className="text-right">
+                Expires At
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "col-span-3 justify-start text-left font-normal",
+                      !expiresAt && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {expiresAt ? format(expiresAt, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={expiresAt}
+                    onSelect={setExpiresAt}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
           <DialogFooter>

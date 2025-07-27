@@ -58,7 +58,7 @@ const LoginForm: React.FC = () => {
           required
         />
       </div>
-      <Button type="submit" className="w-full">
+      <Button variant="default" type="submit" className="w-full">
         Login
       </Button>
     </form>

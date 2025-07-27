@@ -302,7 +302,7 @@ const EditCatPage: React.FC = () => {
             />
 
             <div className="flex gap-4 pt-4">
-              <Button type="submit" disabled={submitting} className="flex-1">
+              <Button type="submit" variant="outline" disabled={submitting} className="flex-1 bg-blue-500 text-white">
                 {submitting ? 'Updating...' : 'Update Cat'}
               </Button>
               <Button

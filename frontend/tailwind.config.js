@@ -14,6 +14,7 @@ export default {
         'muted-foreground': 'rgb(var(--muted-foreground) / <alpha-value>)',
         accent: 'rgb(var(--accent) / <alpha-value>)',
         'accent-foreground': 'rgb(var(--accent-foreground) / <alpha-value>)',
+        destructive: 'rgb(var(--destructive) / <alpha-value>)',
       },
       borderRadius: {
         lg: 'var(--radius)',

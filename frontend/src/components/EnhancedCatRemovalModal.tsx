@@ -245,13 +245,9 @@ const EnhancedCatRemovalModal: React.FC<EnhancedCatRemovalModalProps> = ({
           Cancel
         </AlertDialogCancel>
         <AlertDialogAction
+          variant="destructive"
           onClick={() => void handleFinalSubmit()}
           disabled={isLoading || !password.trim()}
-          className={
-            action === 'delete'
-              ? 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'
-              : ''
-          }
         >
           {isLoading
             ? 'Processing...'

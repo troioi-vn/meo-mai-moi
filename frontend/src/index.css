@@ -13,6 +13,11 @@
   --accent-foreground: 17 24 39;
   --popover: 255 255 255;
   --popover-foreground: 17 24 39;
+  --destructive: 239 68 68;
+  --primary: 59 130 246;
+  --primary-foreground: 255 255 255;
+  --secondary: 107 114 128;
+  --secondary-foreground: 255 255 255;
 }
 
 .dark {
@@ -27,6 +32,11 @@
   --accent-foreground: 255 255 255;
   --popover: 17 24 39;
   --popover-foreground: 243 244 246;
+  --destructive: 239 68 68;
+  --primary: 59 130 246;
+  --primary-foreground: 255 255 255;
+  --secondary: 107 114 128;
+  --secondary-foreground: 255 255 255;
 }
 
 @layer base {
@@ -44,6 +54,24 @@
 }
 
 @layer utilities {
+  .bg-primary {
+    background-color: rgb(var(--primary));
+  }
+  .text-primary-foreground {
+    color: rgb(var(--primary-foreground));
+  }
+  .bg-secondary {
+    background-color: rgb(var(--secondary));
+  }
+  .text-secondary-foreground {
+    color: rgb(var(--secondary-foreground));
+  }
+  .hover\:bg-primary\/90:hover {
+    background-color: rgb(var(--primary) / 0.9);
+  }
+  .hover\:bg-secondary\/80:hover {
+    background-color: rgb(var(--secondary) / 0.8);
+  }
   .bg-background {
     background-color: rgb(var(--bg));
   }
@@ -91,5 +119,9 @@
 
   .dark .hover\:text-accent-foreground:hover {
     color: rgb(255 255 255); /* Pure white for better visibility */
+  }
+
+  .bg-destructive {
+    background-color: rgb(var(--destructive));
   }
 }

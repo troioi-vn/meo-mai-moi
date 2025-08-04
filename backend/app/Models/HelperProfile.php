@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use OpenApi\Annotations as OA;
 
 /**
@@ -25,10 +26,15 @@ use OpenApi\Annotations as OA;
  *         description="ID of the associated user"
  *     ),
  *     @OA\Property(
- *         property="approval_status",
+ *         property="status",
  *         type="string",
- *         enum={"pending", "approved", "rejected"},
- *         description="Approval status of the helper profile"
+ *         enum={"active", "cancelled", "deleted"},
+ *         description="Status of the helper profile"
+ *     ),
+ *     @OA\Property(
+ *         property="is_public",
+ *         type="boolean",
+ *         description="Is the helper profile public"
  *     ),
  *     @OA\Property(
  *         property="location",
@@ -55,22 +61,27 @@ class HelperProfile extends Model
 
     protected $fillable = [
         'user_id',
-        'approval_status',
         'location',
         'address',
         'city',
         'state',
-        'zip_code',
         'phone_number',
         'experience',
         'has_pets',
         'has_children',
         'can_foster',
         'can_adopt',
+        'status',
+        'is_public',
     ];
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function photos(): HasMany
+    {
+        return $this->hasMany(HelperProfilePhoto::class);
     }
 }

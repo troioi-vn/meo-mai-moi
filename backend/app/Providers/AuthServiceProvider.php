@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Models\Cat;
+use App\Models\HelperProfile;
 use App\Policies\CatPolicy;
+use App\Policies\HelperProfilePolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -15,6 +17,7 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         Cat::class => CatPolicy::class,
+        HelperProfile::class => HelperProfilePolicy::class,
     ];
 
     /**

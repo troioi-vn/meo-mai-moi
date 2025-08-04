@@ -120,3 +120,4 @@ When encountering an issue, follow this process:
 -   **Collaboration Style:** Iterative, feedback-driven.
 -   **Command Style:** Imperative (e.g., "Refactor this function").
 -   **User Language:** Intermediate English (native: Russian). Communication should be clear and direct.
+-   **Development Command Execution:** For development, use `php artisan ...` locally in the `backend/` directory, not via Docker.

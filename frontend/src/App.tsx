@@ -9,6 +9,10 @@ import MyCatsPage from './pages/account/MyCatsPage'
 import CreateCatPage from './pages/account/CreateCatPage'
 import EditCatPage from './pages/account/EditCatPage'
 import CatProfilePage from './pages/CatProfilePage'
+import HelperProfilePage from './pages/helper/HelperProfilePage'
+import HelperProfileEditPage from './pages/helper/HelperProfileEditPage'
+import CreateHelperProfilePage from './pages/helper/CreateHelperProfilePage'
+import HelperProfileViewPage from './pages/helper/HelperProfileViewPage'
 import NotFoundPage from './pages/NotFoundPage'
 import { Toaster } from '@/components/ui/sonner'
 import MainNav from '@/components/MainNav'
@@ -65,6 +69,34 @@ export function AppRoutes() {
             <CreateCatPage />
           </PrivateRoute>
         }
+      />
+      <Route
+        path="/helper"
+        element={
+          <PrivateRoute>
+            <HelperProfilePage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/helper/create"
+        element={
+          <PrivateRoute>
+            <CreateHelperProfilePage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/helper/:id/edit"
+        element={
+          <PrivateRoute>
+            <HelperProfileEditPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/helper/:id"
+        element={<HelperProfileViewPage />}
       />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

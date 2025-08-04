@@ -5,6 +5,11 @@ All notable changes to this project are documented here, following the [Keep a C
 ## [Unreleased]
 
 ### Added
+- **Helper Profile Feature**: Implemented full CRUD functionality for Helper Profiles.
+  - **Backend**: Added `HelperProfile` model, controller, policy, and photo uploads.
+  - **Frontend**: Created pages for listing, creating, and editing helper profiles.
+  - **Frontend**: Added a `CheckboxField` component and refactored forms to use a custom hook (`useHelperProfileForm`), aligning with project conventions.
+- Added a "Helper Profiles" link to the user navigation menu.
 - Added `start_date` and `end_date` fields to the `PlacementRequest` model and API.
 - Added date picker components (`react-day-picker`, `date-fns`) to the frontend for placement request forms.
 

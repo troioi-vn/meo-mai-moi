@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw'
 import { catHandlers, mockCat } from './data/cats'
 import { mockUser } from './data/user'
+import { helperProfileHandlers } from './data/helper-profiles'
 
 const userHandlers = [
   // Get authenticated user's profile
@@ -214,4 +215,5 @@ export const handlers = [
   ...versionHandlers,
   ...weightHistoryHandlers,
   ...placementRequestHandlers,
+  ...helperProfileHandlers,
 ]

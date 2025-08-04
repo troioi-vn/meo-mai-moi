@@ -371,6 +371,169 @@
                 ]
             }
         },
+        "/helper-profiles": {
+            "get": {
+                "tags": [
+                    "Helper Profiles"
+                ],
+                "summary": "List helper profiles",
+                "operationId": "d3126a7bac52faff5bf4a44e6e3f8183",
+                "responses": {
+                    "200": {
+                        "description": "A list of helper profiles",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/HelperProfile"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Helper Profiles"
+                ],
+                "summary": "Create a helper profile",
+                "operationId": "7f4a55bc955cbc6f808ae3499b4a7f2f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/HelperProfile"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Helper profile created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HelperProfile"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/helper-profiles/{id}": {
+            "get": {
+                "tags": [
+                    "Helper Profiles"
+                ],
+                "summary": "Get a specific helper profile",
+                "operationId": "4de739226049376462c5cc13bfa066b5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the helper profile",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The helper profile",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HelperProfile"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Helper profile not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Helper Profiles"
+                ],
+                "summary": "Update a helper profile",
+                "operationId": "4e09b23f1183359eb94f13fef454a27f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the helper profile",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/HelperProfile"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Helper profile updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HelperProfile"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Helper Profiles"
+                ],
+                "summary": "Delete a helper profile",
+                "operationId": "aa97ac4502128ab022046cea27713388",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the helper profile",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Helper profile deleted successfully"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
         "/api/messages": {
             "get": {
                 "tags": [
@@ -1735,14 +1898,18 @@
                         "type": "integer",
                         "format": "int64"
                     },
-                    "approval_status": {
-                        "description": "Approval status of the helper profile",
+                    "status": {
+                        "description": "Status of the helper profile",
                         "type": "string",
                         "enum": [
-                            "pending",
-                            "approved",
-                            "rejected"
+                            "active",
+                            "cancelled",
+                            "deleted"
                         ]
+                    },
+                    "is_public": {
+                        "description": "Is the helper profile public",
+                        "type": "boolean"
                     },
                     "location": {
                         "description": "Location of the helper",
@@ -1775,6 +1942,10 @@
         {
             "name": "Cat Photos",
             "description": "Cat Photos"
+        },
+        {
+            "name": "Helper Profiles",
+            "description": "Helper Profiles"
         },
         {
             "name": "Messages",

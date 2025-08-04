@@ -55,6 +55,9 @@ export function UserMenu() {
         <DropdownMenuItem className="cursor-pointer" asChild>
           <Link to="/account/cats">My Cats</Link>
         </DropdownMenuItem>
+        <DropdownMenuItem className="cursor-pointer" asChild>
+          <Link to="/helper">Helper Profiles</Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuLabel>Theme</DropdownMenuLabel>
         <DropdownMenuRadioGroup

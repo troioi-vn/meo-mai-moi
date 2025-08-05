@@ -7,8 +7,9 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Added
 - **Helper Profile Feature**: Implemented full CRUD functionality for Helper Profiles.
   - **Backend**: Added `HelperProfile` model, controller, policy, and photo uploads.
-  - **Frontend**: Created pages for listing, creating, and editing helper profiles.
+  - **Frontend**: Created pages for listing, viewing, creating, and editing helper profiles.
   - **Frontend**: Added a `CheckboxField` component and refactored forms to use a custom hook (`useHelperProfileForm`), aligning with project conventions.
+  - **Frontend**: Added `Carousel` and `Table` components for improved UI.
 - Added a "Helper Profiles" link to the user navigation menu.
 - Added `start_date` and `end_date` fields to the `PlacementRequest` model and API.
 - Added date picker components (`react-day-picker`, `date-fns`) to the frontend for placement request forms.
@@ -21,10 +22,12 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Authentication**: The entire authentication flow (register, login, logout) was fixed.
 - **API Documentation**: The OpenAPI (Swagger) documentation was fixed.
 - **File Permissions**: The file permissions for the `storage` directory were corrected.
+- **Test Failures**: Fixed a number of test failures related to the `sonner` library and incorrect test selectors.
 
 ### Changed
 - **Backup & Restore Scripts**: The backup and restore scripts were improved to be more robust and user-friendly. They now dynamically load database credentials from the running container and correctly drop the database before restoring.
 - **`.gitignore` & `.dockerignore`**: These files were updated to correctly ignore unnecessary files and directories.
+- **Helper Profile**: After a helper profile is updated, the user is now routed to the view page instead of the list page.
 
 ### Added
 - Implemented the initial Placement Request feature, allowing cat owners to create foster and adoption requests.

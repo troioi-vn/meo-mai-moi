@@ -33,4 +33,30 @@ class HelperProfileApiTest extends TestCase
         $response->assertStatus(200)
             ->assertJson(['data' => ['id' => $helperProfile->id]]);
     }
+
+    public function test_can_create_a_helper_profile()
+    {
+        $user = User::factory()->create();
+
+        $data = [
+            'country' => 'Test Country',
+            'address' => '123 Test St',
+            'city' => 'Testville',
+            'state' => 'TS',
+            'phone_number' => '123-456-7890',
+            'experience' => 'Lots of experience',
+            'has_pets' => true,
+            'has_children' => false,
+            'can_foster' => true,
+            'can_adopt' => false,
+            'is_public' => true,
+        ];
+
+        $response = $this->actingAs($user)->postJson('/api/helper-profiles', $data);
+
+        $response->assertStatus(201)
+            ->assertJson(['data' => $data]);
+
+        $this->assertDatabaseHas('helper_profiles', $data);
+    }
 }

@@ -1911,8 +1911,8 @@
                         "description": "Is the helper profile public",
                         "type": "boolean"
                     },
-                    "location": {
-                        "description": "Location of the helper",
+                    "country": {
+                        "description": "Country of the helper",
                         "type": "string"
                     },
                     "created_at": {

@@ -3,7 +3,7 @@ import { http, HttpResponse } from 'msw';
 export const mockHelperProfile = {
   id: 1,
   user_id: 1,
-  location: 'Test Location',
+  country: 'Test Country',
   address: '123 Test St',
   city: 'Testville',
   state: 'TS',

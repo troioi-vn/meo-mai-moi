@@ -37,9 +37,9 @@ use OpenApi\Annotations as OA;
  *         description="Is the helper profile public"
  *     ),
  *     @OA\Property(
- *         property="location",
+ *         property="country",
  *         type="string",
- *         description="Location of the helper"
+ *         description="Country of the helper"
  *     ),
  *     @OA\Property(
  *         property="created_at",
@@ -61,7 +61,7 @@ class HelperProfile extends Model
 
     protected $fillable = [
         'user_id',
-        'location',
+        'country',
         'address',
         'city',
         'state',
@@ -73,6 +73,14 @@ class HelperProfile extends Model
         'can_adopt',
         'status',
         'is_public',
+    ];
+
+    protected $casts = [
+        'has_pets' => 'boolean',
+        'has_children' => 'boolean',
+        'can_foster' => 'boolean',
+        'can_adopt' => 'boolean',
+        'is_public' => 'boolean',
     ];
 
     public function user(): BelongsTo

@@ -2,26 +2,46 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/FormField';
 import { CheckboxField } from '@/components/ui/CheckboxField';
+import { FileInput } from '@/components/ui/FileInput';
 import useHelperProfileForm from '@/hooks/useHelperProfileForm';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { getHelperProfile, deleteHelperProfile } from '@/api/helper-profiles';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getHelperProfile, deleteHelperProfile, deleteHelperProfilePhoto } from '@/api/helper-profiles';
 import { useParams, useNavigate } from 'react-router-dom';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 const HelperProfileEditPage: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data, isLoading, isError } = useQuery({
     queryKey: ['helper-profile', id],
     queryFn: () => getHelperProfile(id!),
   });
 
-  const { formData, setFormData, errors, isSubmitting, updateField, handleSubmit, handleCancel } =
+  const { formData, errors, isSubmitting, updateField, handleSubmit, handleCancel } =
     useHelperProfileForm(id, data?.data);
 
   const deleteMutation = useMutation({
     mutationFn: () => deleteHelperProfile(id!),
     onSuccess: () => {
       navigate('/helper');
+    },
+  });
+
+  const deletePhotoMutation = useMutation({
+    mutationFn: (photoId: number) => deleteHelperProfilePhoto(id!, photoId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['helper-profile', id] });
     },
   });
 
@@ -32,8 +52,25 @@ const HelperProfileEditPage: React.FC = () => {
     <div className="flex items-center justify-center min-h-screen bg-background">
       <div className="w-full max-w-2xl p-8 space-y-8 bg-card rounded-lg shadow-lg border">
         <h1 className="text-3xl font-bold text-center text-card-foreground mb-6">Edit Helper Profile</h1>
+        <div className="grid grid-cols-3 gap-4">
+          {data.data.photos.map((photo: any) => (
+            <div key={photo.id} className="relative">
+              <img src={`http://localhost:8000/storage/${photo.path}`} alt="Helper profile photo" className="w-full h-full object-cover" />
+              <Button
+                  aria-label={`Delete photo ${photo.id}`}
+                  variant="destructive"
+                  size="sm"
+                  className="absolute top-2 right-2"
+                  onClick={() => deletePhotoMutation.mutate(photo.id)}
+                  disabled={deletePhotoMutation.isPending}
+                >
+                  Delete
+                </Button>
+            </div>
+          ))}
+        </div>
         <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-            <FormField id="location" label="Location" value={formData.location} onChange={updateField('location')} error={errors.location} placeholder="Enter your location" />
+            <FormField id="country" label="Country" value={formData.country} onChange={updateField('country')} error={errors.country} placeholder="Enter your country" />
             <FormField id="address" label="Address" value={formData.address} onChange={updateField('address')} error={errors.address} placeholder="Enter your address" />
             <FormField id="city" label="City" value={formData.city} onChange={updateField('city')} error={errors.city} placeholder="Enter your city" />
             <FormField id="state" label="State" value={formData.state} onChange={updateField('state')} error={errors.state} placeholder="Enter your state" />
@@ -44,7 +81,7 @@ const HelperProfileEditPage: React.FC = () => {
             <CheckboxField id="can_foster" label="Can Foster" checked={formData.can_foster} onChange={updateField('can_foster')} error={errors.can_foster} />
             <CheckboxField id="can_adopt" label="Can Adopt" checked={formData.can_adopt} onChange={updateField('can_adopt')} error={errors.can_adopt} />
             <CheckboxField id="is_public" label="Is Public" checked={formData.is_public} onChange={updateField('is_public')} error={errors.is_public} />
-            <FormField id="photos" label="Photos" type="file" onChange={(e) => updateField('photos')(e.target.files)} error={errors.photos} multiple />
+            <FileInput id="photos" label="Photos" onChange={updateField('photos')} error={errors.photos} multiple />
 
             <div className="flex gap-4">
                 <Button type="submit" aria-label="Update Helper Profile" disabled={isSubmitting}>
@@ -53,9 +90,25 @@ const HelperProfileEditPage: React.FC = () => {
                 <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
                     Cancel
                 </Button>
-                <Button type="button" variant="destructive" onClick={() => deleteMutation.mutate()} disabled={deleteMutation.isPending}>
-                    {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button type="button" variant="destructive" disabled={deleteMutation.isPending}>
+                        {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete your helper profile.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => deleteMutation.mutate()}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
             </div>
         </form>
       </div>

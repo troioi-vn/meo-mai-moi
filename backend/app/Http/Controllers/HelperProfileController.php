@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\HelperProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use OpenApi\Annotations as OA;
 
 class HelperProfileController extends Controller
@@ -54,7 +56,7 @@ class HelperProfileController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'location' => 'required|string|max:255',
+            'country' => 'required|string|max:255',
             'address' => 'required|string|max:255',
             'city' => 'required|string|max:255',
             'state' => 'required|string|max:255',
@@ -66,7 +68,7 @@ class HelperProfileController extends Controller
             'can_adopt' => 'required|boolean',
             'is_public' => 'required|boolean',
             'photos' => 'sometimes|array|max:5',
-            'photos.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'photos.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:10240',
         ]);
 
         $helperProfile = Auth::user()->helperProfile()->create($validatedData);
@@ -106,7 +108,7 @@ class HelperProfileController extends Controller
      */
     public function show(HelperProfile $helperProfile)
     {
-        return response()->json(['data' => $helperProfile->load('photos')]);
+        return response()->json(['data' => $helperProfile->load('photos', 'user')]);
     }
 
     /**
@@ -142,33 +144,38 @@ class HelperProfileController extends Controller
      */
     public function update(Request $request, HelperProfile $helperProfile)
     {
+        Log::info('Update request received', ['request_data' => $request->all(), 'files' => $request->files->all()]);
+
         $this->authorize('update', $helperProfile);
 
         $validatedData = $request->validate([
-            'location' => 'sometimes|required|string|max:255',
-            'address' => 'sometimes|required|string|max:255',
-            'city' => 'sometimes|required|string|max:255',
-            'state' => 'sometimes|required|string|max:255',
-            'phone_number' => 'sometimes|required|string|max:20',
-            'experience' => 'sometimes|required|string',
-            'has_pets' => 'sometimes|required|boolean',
-            'has_children' => 'sometimes|required|boolean',
-            'can_foster' => 'sometimes|required|boolean',
-            'can_adopt' => 'sometimes|required|boolean',
-            'is_public' => 'sometimes|required|boolean',
-            'status' => 'sometimes|required|string|in:active,cancelled,deleted',
+            'country' => 'sometimes|string|max:255',
+            'address' => 'sometimes|string|max:255',
+            'city' => 'sometimes|string|max:255',
+            'state' => 'sometimes|string|max:255',
+            'phone_number' => 'sometimes|string|max:20',
+            'experience' => 'sometimes|string',
+            'has_pets' => 'sometimes|boolean',
+            'has_children' => 'sometimes|boolean',
+            'can_foster' => 'sometimes|boolean',
+            'can_adopt' => 'sometimes|boolean',
+            'is_public' => 'sometimes|boolean',
+            'status' => 'sometimes|string|in:active,cancelled,deleted',
             'photos' => 'sometimes|array|max:5',
-            'photos.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'photos.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:10240',
         ]);
 
         $helperProfile->update($validatedData);
 
         if ($request->hasFile('photos')) {
+            Log::info('Photos found in request');
             // TODO: Delete old photos
             foreach ($request->file('photos') as $photo) {
                 $path = $photo->store('helper-profile-photos', 'public');
                 $helperProfile->photos()->create(['path' => $path]);
             }
+        } else {
+            Log::info('No photos found in request');
         }
 
         return response()->json(['data' => $helperProfile->load('photos')]);
@@ -201,6 +208,21 @@ class HelperProfileController extends Controller
         $this->authorize('delete', $helperProfile);
 
         $helperProfile->delete();
+
+        return response()->json(null, 204);
+    }
+
+    public function destroyPhoto(HelperProfile $helperProfile, $photoId)
+    {
+        $this->authorize('update', $helperProfile);
+
+        $photo = $helperProfile->photos()->findOrFail($photoId);
+
+        // Delete the photo file from storage
+        Storage::disk('public')->delete($photo->path);
+
+        // Delete the photo record from the database
+        $photo->delete();
 
         return response()->json(null, 204);
     }

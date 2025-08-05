@@ -7,7 +7,7 @@ import { mockHelperProfile } from '@/mocks/data/helper-profiles';
 const queryClient = new QueryClient();
 
 describe('HelperProfilePage', () => {
-  it('renders a list of helper profiles', async () => {
+  it('renders a table of helper profiles with an edit button', async () => {
     render(
       <QueryClientProvider client={queryClient}>
         <MemoryRouter>
@@ -17,6 +17,11 @@ describe('HelperProfilePage', () => {
     );
 
     expect(await screen.findByText('My Helper Profiles')).toBeInTheDocument();
-    expect(await screen.findByText(mockHelperProfile.location)).toBeInTheDocument();
+    expect(await screen.findByText('City')).toBeInTheDocument();
+    expect(await screen.findByText('Public')).toBeInTheDocument();
+    expect(await screen.findByText('Actions')).toBeInTheDocument();
+    expect(await screen.findByText(mockHelperProfile.city)).toBeInTheDocument();
+    expect(await screen.findByText('Yes')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /edit/i })).toBeInTheDocument();
   });
 });

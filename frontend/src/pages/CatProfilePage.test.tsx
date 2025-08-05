@@ -36,7 +36,7 @@ describe('CatProfilePage', () => {
       http.get('http://localhost:3000/api/cats/:id', ({ params }) => {
         const { id } = params
         if (id === String(mockCat.id)) {
-          return HttpResponse.json({ data: mockCat })
+          return HttpResponse.json({ data: { ...mockCat, viewer_permissions: { can_edit: true } } })
         }
         if (id === String(anotherMockCat.id)) {
           return HttpResponse.json({ data: anotherMockCat })

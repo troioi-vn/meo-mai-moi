@@ -25,7 +25,7 @@ class HelperProfileFactory extends Factory
             'can_adopt' => $this->faker->boolean(),
             'status' => $this->faker->randomElement(['active', 'cancelled', 'deleted']),
             'is_public' => $this->faker->boolean(),
-            'location' => $this->faker->city(),
+            'country' => $this->faker->country(),
         ];
     }
 }

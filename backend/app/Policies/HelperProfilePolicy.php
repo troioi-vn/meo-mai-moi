@@ -48,6 +48,11 @@ class HelperProfilePolicy
         return $user->id === $helperProfile->user_id;
     }
 
+    public function deletePhoto(User $user, HelperProfile $helperProfile): bool
+    {
+        return $user->id === $helperProfile->user_id;
+    }
+
     /**
      * Determine whether the user can restore the model.
      */

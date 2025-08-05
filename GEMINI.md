@@ -85,6 +85,27 @@ For API mocking, we use **Mock Service Worker (MSW)**. It intercepts network req
 3.  **Use Absolute URLs:** Handlers must use absolute URLs (e.g., `http://localhost:3000/api/cats`).
 4.  **Match API Structure:** Mock responses must match the real API structure, including the `{ "data": ... }` wrapper.
 
+#### Mocking UI Libraries (`sonner`)
+
+The `sonner` library, used for toast notifications, requires a specific mock configuration in `frontend/src/setupTests.ts` to prevent widespread test failures. If tests are failing with errors related to `Toaster` or `matches`, ensure the following mock is in place:
+
+```typescript
+// In frontend/src/setupTests.ts
+vi.mock('sonner', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    Toaster: () => null, // Mock Toaster component
+    toast: {
+      success: vi.fn(),
+      error: vi.fn(),
+      info: vi.fn(),
+      warning: vi.fn(),
+    },
+  };
+});
+```
+
 ### Debugging Strategy
 
 When encountering an issue, follow this process:

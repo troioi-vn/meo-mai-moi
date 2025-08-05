@@ -20,6 +20,7 @@ class TransferRequest extends Model
         'price',
         'accepted_at',
         'rejected_at',
+        'placement_request_id',
     ];
 
     protected $casts = [
@@ -40,5 +41,10 @@ class TransferRequest extends Model
     public function recipient(): BelongsTo
     {
         return $this->belongsTo(User::class, 'recipient_user_id');
+    }
+
+    public function placementRequest(): BelongsTo
+    {
+        return $this->belongsTo(PlacementRequest::class);
     }
 }

@@ -3,6 +3,17 @@ import { cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import { server } from './mocks/server';
 
+// Polyfill for PointerEvent
+if (!global.PointerEvent) {
+  class PointerEvent extends MouseEvent {
+    constructor(type: string, params: PointerEventInit) {
+      super(type, params);
+    }
+  }
+  global.PointerEvent = PointerEvent as any;
+}
+
+
 vi.mock('sonner', async (importOriginal) => {
   const actual = await importOriginal();
   return {

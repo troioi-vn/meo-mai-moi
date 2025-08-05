@@ -22,6 +22,7 @@ class PlacementRequest extends Model
         'expires_at',
         'start_date',
         'end_date',
+        'is_active',
     ];
 
     protected $casts = [

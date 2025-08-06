@@ -127,6 +127,50 @@ This section documents common issues encountered during development and their ef
     -   **Cause:** Syntax errors within `@OA` annotations in PHP files. These are often subtle, like a missing comma, bracket, or parenthesis.
     -   **Solution:** The error message usually provides a file path and line number. Carefully inspect the annotations around that line for any syntax mistakes.
 
+-   **Frontend Test Environment - Missing Browser APIs:**
+    -   **Symptom:** Tests, especially for components using libraries like Radix UI, fail with obscure errors. This can manifest as timeouts in `waitFor`, or TypeErrors like `target.hasPointerCapture is not a function` or `candidate.scrollIntoView is not a function`. Another symptom is that interactions (like clicking a dropdown) don't work as expected, and elements that should appear are not found.
+    -   **Cause:** The `jsdom` environment, used by Vitest for running tests, is a pure JavaScript implementation of web browser standards and does not include all browser APIs, particularly those related to rendering, layout, and complex user interactions.
+    -   **Solution:** Add polyfills for the missing APIs to the test setup file (`frontend/src/setupTests.ts`). This ensures the components behave in the test environment as they would in a real browser.
+
+        **Example Polyfills for `frontend/src/setupTests.ts`:**
+
+        ```typescript
+        // Polyfill for PointerEvents
+        if (!global.PointerEvent) {
+          class PointerEvent extends MouseEvent {
+            public pointerId?: number;
+            constructor(type: string, params: PointerEventInit) {
+              super(type, params);
+              this.pointerId = params.pointerId;
+            }
+          }
+          global.PointerEvent = PointerEvent as any;
+        }
+
+        // Polyfills for PointerEvent methods on Element
+        if (!Element.prototype.hasPointerCapture) {
+          Element.prototype.hasPointerCapture = function (pointerId: number): boolean {
+            // Return a mock value
+            return false;
+          };
+        }
+        if (!Element.prototype.setPointerCapture) {
+          Element.prototype.setPointerCapture = function (pointerId: number): void {
+            // No-op
+          };
+        }
+        if (!Element.prototype.releasePointerCapture) {
+          Element.prototype.releasePointerCapture = function (pointerId: number): void {
+            // No-op
+          };
+        }
+
+        // Polyfill for scrollIntoView
+        if (!window.HTMLElement.prototype.scrollIntoView) {
+          window.HTMLElement.prototype.scrollIntoView = function () {};
+        }
+        ```
+
 ### Coding Style
 
 -   **PHP/Laravel:** PSR-12, enforced by `PHP-CS-Fixer`.

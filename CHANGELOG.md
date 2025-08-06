@@ -36,6 +36,7 @@ All notable changes to this project are documented here, following the [Keep a C
 - **API Documentation**: The OpenAPI (Swagger) documentation was fixed.
 - **File Permissions**: The file permissions for the `storage` directory were corrected.
 - **Test Failures**: Fixed a number of test failures related to the `sonner` library and incorrect test selectors.
+- **Frontend Tests**: Resolved multiple test failures across various components by adding polyfills for `PointerEvent` and `scrollIntoView` to the test setup, fixing brittle test logic, and addressing timeout issues.
 
 ### Changed
 - **Backup & Restore Scripts**: The backup and restore scripts were improved to be more robust and user-friendly. They now dynamically load database credentials from the running container and correctly drop the database before restoring.

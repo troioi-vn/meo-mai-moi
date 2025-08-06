@@ -17,6 +17,9 @@ const MainNav: React.FC = () => {
           <Link to="/" className="text-2xl font-bold text-foreground">
             Meo!
           </Link>
+          <Link to="/requests" className="text-lg font-medium text-foreground ml-4">
+            Requests
+          </Link>
         </div>
 
         {/* Right: Actions padding right 5 */}

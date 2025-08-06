@@ -23,9 +23,15 @@ class CatPolicy
         return true;
     }
 
-    public function view(User $user, Cat $cat)
+    public function view(?User $user, Cat $cat)
     {
-        return true;
+        // Allow access if the cat has an active placement request.
+        if ($cat->placementRequests()->where('is_active', true)->exists()) {
+            return true;
+        }
+
+        // Allow access if the user is the owner of the cat.
+        return $user && $user->id === $cat->user_id;
     }
 
     public function create(User $user)

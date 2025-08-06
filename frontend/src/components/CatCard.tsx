@@ -2,7 +2,6 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import type { Cat } from '@/types/cat'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import placeholderImage from '@/assets/images/placeholder--cat.webp'
 import { calculateAge } from '@/utils/date'
 

@@ -142,13 +142,12 @@ class TransferRequestController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', TransferRequest::class);
         $user = $request->user();
-        if (!$user || $user->role !== \App\Enums\UserRole::HELPER) {
-            return $this->sendError('Forbidden: Only helpers can initiate transfer requests.', 403);
-        }
 
         $validatedData = $request->validate([
             'cat_id' => 'required|exists:cats,id',
+            'placement_request_id' => 'required|exists:placement_requests,id',
             'requested_relationship_type' => 'required|in:fostering,permanent_foster',
             'fostering_type' => 'nullable|in:free,paid|required_if:requested_relationship_type,fostering',
             'price' => 'nullable|numeric|min:0|required_if:fostering_type,paid',
@@ -160,7 +159,7 @@ class TransferRequestController extends Controller
             return $this->sendError('Cat not found.', 404);
         }
 
-        if ($cat->status !== 'available') {
+        if ($cat->status !== \App\Enums\CatStatus::ACTIVE) {
             return $this->sendError('Cat is not available for transfer.', 403);
         }
 
@@ -217,15 +216,17 @@ class TransferRequestController extends Controller
      */
     public function accept(Request $request, TransferRequest $transferRequest)
     {
-        if ($transferRequest->recipient_user_id !== $request->user()->id || $transferRequest->status !== 'pending') {
-            return $this->sendError('You are not the recipient of this request or the request is not pending.', 403);
-        }
+        $this->authorize('accept', $transferRequest);
 
         $transferRequest->status = 'accepted';
         $transferRequest->accepted_at = now();
         $transferRequest->save();
 
         $transferRequest->cat->update(['user_id' => $transferRequest->recipient_user_id]);
+
+        if ($transferRequest->placementRequest) {
+            $transferRequest->placementRequest->update(['is_active' => false]);
+        }
 
         return $this->sendSuccess($transferRequest);
     }
@@ -264,9 +265,7 @@ class TransferRequestController extends Controller
      */
     public function reject(Request $request, TransferRequest $transferRequest)
     {
-        if ($transferRequest->recipient_user_id !== $request->user()->id || $transferRequest->status !== 'pending') {
-            return $this->sendError('You are not the recipient of this request or the request is not pending.', 403);
-        }
+        $this->authorize('reject', $transferRequest);
 
         $transferRequest->status = 'rejected';
         $transferRequest->rejected_at = now();

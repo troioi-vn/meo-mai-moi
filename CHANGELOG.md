@@ -15,6 +15,19 @@ All notable changes to this project are documented here, following the [Keep a C
 - Added date picker components (`react-day-picker`, `date-fns`) to the frontend for placement request forms.
 
 ### Fixed
+- **Backend Test Environment**: Resolved persistent database migration issues in the test environment by:
+    - Deleting conflicting `create_initial_tables` migration.
+    - Including `is_active` column directly in `create_placement_requests_table` migration.
+    - Configuring in-memory SQLite for tests in `phpunit.xml`.
+- **Transfer Request Functionality**: Fixed `TransferRequestCreationTest` failures by:
+    - Uncommenting `transfer-requests` API routes.
+    - Adding `placement_request_id` to `transfer_requests` table migration.
+    - Ensuring `CAT_OWNER` role for owner user in tests.
+    - Correcting `CatStatus` enum usage in controller and tests.
+    - Eager loading `placementRequest` relationship in tests.
+    - Explicitly setting `TransferRequest` status to `pending` in test factory.
+    - Adding `placement_request_id` to `$fillable` array in `TransferRequest` model.
+- **API Documentation**: Resolved OpenAPI documentation generation syntax errors.
 - **Vite/Vitest CSS Handling**: Resolved a critical issue where Vitest tests were failing due to incorrect CSS parsing. The fix involved disabling Vitest's built-in CSS handling and importing the main stylesheet directly into the test setup file, ensuring styles are loaded correctly without conflicting with the Tailwind CSS Vite plugin.
 - Adjusted backend tests (`CatListingTest`, `CatProfileTest`, `OwnershipPermissionTest`) to reflect owner/admin-only access for cat profiles.
 - **PlacementRequestModal Tests**: Temporarily disabled two tests in `PlacementRequestModal.test.tsx` due to persistent timeouts.
@@ -23,6 +36,7 @@ All notable changes to this project are documented here, following the [Keep a C
 - **API Documentation**: The OpenAPI (Swagger) documentation was fixed.
 - **File Permissions**: The file permissions for the `storage` directory were corrected.
 - **Test Failures**: Fixed a number of test failures related to the `sonner` library and incorrect test selectors.
+- **Frontend Tests**: Resolved multiple test failures across various components by adding polyfills for `PointerEvent` and `scrollIntoView` to the test setup, fixing brittle test logic, and addressing timeout issues.
 
 ### Changed
 - **Backup & Restore Scripts**: The backup and restore scripts were improved to be more robust and user-friendly. They now dynamically load database credentials from the running container and correctly drop the database before restoring.

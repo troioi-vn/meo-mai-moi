@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { FileInput } from '@/components/ui/FileInput';
 import { CheckboxField } from '@/components/ui/CheckboxField';
+import { FormField } from '@/components/ui/FormField';
 import useHelperProfileForm from '@/hooks/useHelperProfileForm';
 
 const CreateHelperProfilePage: React.FC = () => {

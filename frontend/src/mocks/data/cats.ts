@@ -22,6 +22,18 @@ export const mockCat: Cat = {
     can_edit: true,
     can_view_contact: true,
   },
+  placement_requests: [
+    {
+      id: 1,
+      cat_id: 1,
+      request_type: 'adoption',
+      start_date: '2025-08-01',
+      end_date: '2025-09-01',
+      notes: 'Looking for a loving home.',
+      created_at: '2025-07-20T00:00:00Z',
+      updated_at: '2025-07-20T00:00:00Z',
+    },
+  ],
 }
 
 export const anotherMockCat: Cat = {

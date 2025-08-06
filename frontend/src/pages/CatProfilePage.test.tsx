@@ -68,7 +68,10 @@ describe('CatProfilePage', () => {
     expect(await screen.findByText(/years old/)).toBeInTheDocument()
     expect(await screen.findByText(mockCat.location)).toBeInTheDocument()
     expect(await screen.findByText(mockCat.description)).toBeInTheDocument()
-    expect(await screen.findByText(new RegExp(mockCat.status, 'i'))).toBeInTheDocument()
+    const statusElement = await screen.findByText(/status/i)
+    expect(statusElement).toBeInTheDocument()
+    const statusValue = statusElement.nextElementSibling
+    expect(statusValue).toHaveTextContent(new RegExp(mockCat.status, 'i'))
   })
 
   it('displays cat image with correct alt text', async () => {

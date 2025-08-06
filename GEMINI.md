@@ -115,6 +115,83 @@ When encountering an issue, follow this process:
 4.  **Implement a Targeted Fix:** Make a small, isolated change.
 5.  **Verify the Fix:** Rebuild and restart containers (`docker compose up -d --build --force-recreate`), clear caches (`php artisan optimize:clear`), and re-test.
 
+### Common Debugging Scenarios & Solutions
+
+This section documents common issues encountered during development and their effective solutions.
+
+-   **Backend Test Environment - Database Schema Mismatches:**
+    -   **Symptom:** Tests fail with "no such column" or similar schema-related errors, even when `RefreshDatabase` trait is used.
+    -   **Cause:** Often due to conflicting migration files (e.g., a consolidated migration trying to recreate existing tables) or new columns not being present in the *initial* table creation migration. The `RefreshDatabase` trait might not always re-run *all* migrations if it perceives the schema as already migrated based on the `migrations` table.
+    -   **Solution:**
+        1.  **Identify and Remove Conflicting Migrations:** If a migration attempts to create tables that already exist (e.g., a consolidated `create_initial_tables` migration), remove it.
+        2.  **Ensure New Columns are in Initial Migration:** For new columns, add them directly to the *initial* migration that creates the table, rather than a separate `add_column_to_table` migration. This ensures the column is always present when the table is first created in a fresh test environment.
+        3.  **Verify `phpunit.xml`:** Ensure `DB_CONNECTION` is `sqlite` and `DB_DATABASE` is `:memory:` for a clean, in-memory database for each test run.
+        4.  **Clear Caches:** Always run `php artisan optimize:clear` to ensure Laravel's configuration and route caches are fresh.
+
+-   **`403 Forbidden` Errors in Backend Tests (Authorization Issues):**
+    -   **Symptom:** API requests in feature tests return `403 Forbidden` even when the user appears to have the correct role/permissions.
+    -   **Causes:**
+        1.  **Incorrect User Role/Authentication:** The test user's role might not be correctly set, or the authentication method (`Sanctum::actingAs()`, `$this->be()`) might not be fully simulating the production environment.
+        2.  **Missing/Incorrect Policy Definition:** The relevant policy might not be registered in `AuthServiceProvider.php`, or its authorization logic (`create`, `view`, `update`, `accept`, `reject` methods) might be flawed.
+        3.  **Incorrect Data State:** The model's attributes (e.g., `cat->status`, `transferRequest->status`) might not be in the expected state for the authorization check to pass.
+        4.  **Missing Relationships:** Required relationships (e.g., `placementRequest` on `TransferRequest`) might not be eager loaded in the test, causing `null` objects and subsequent authorization failures.
+        5.  **Mass Assignment Issues:** Missing attributes in the model's `$fillable` array can prevent data from being saved, leading to unexpected states.
+    -   **Solution:**
+        1.  **Systematic Debugging with `dd()`:** Use `dd($response->json())` to inspect the full API response, including error messages. Use `dd($user->role)`, `dd($cat->status)`, `dd($transferRequest->status)`, and `dd($transferRequest->placementRequest)` at critical points in the controller and policy methods to inspect object states and pinpoint where the authorization check fails.
+        2.  **Verify User Roles and Data in Test Factories:** Ensure test factories create users with the correct roles and models with the necessary attributes and relationships in the expected states (e.g., `CatStatus::ACTIVE`, `PlacementRequestStatus::OPEN`, `TransferRequestStatus::PENDING`).
+        3.  **Eager Load Relationships:** If a policy or controller relies on a relationship, ensure it's eager loaded in the test (e.g., `->load('placementRequest')`) to prevent `null` object issues.
+        4.  **Check `$fillable` Arrays:** Confirm all mass-assignable attributes are included in the model's `$fillable` array.
+        5.  **Clear Caches:** Always run `php artisan optimize:clear` after making changes to policies or controllers.
+
+-   **OpenAPI Documentation Generation Failures:**
+    -   **Symptom:** `php artisan l5-swagger:generate` command fails with syntax errors (e.g., "unexpected '}', expecting EOF").
+    -   **Cause:** Syntax errors within `@OA` annotations in PHP files. These are often subtle, like a missing comma, bracket, or parenthesis.
+    -   **Solution:** The error message usually provides a file path and line number. Carefully inspect the annotations around that line for any syntax mistakes.
+
+-   **Frontend Test Environment - Missing Browser APIs:**
+    -   **Symptom:** Tests, especially for components using libraries like Radix UI, fail with obscure errors. This can manifest as timeouts in `waitFor`, or TypeErrors like `target.hasPointerCapture is not a function` or `candidate.scrollIntoView is not a function`. Another symptom is that interactions (like clicking a dropdown) don't work as expected, and elements that should appear are not found.
+    -   **Cause:** The `jsdom` environment, used by Vitest for running tests, is a pure JavaScript implementation of web browser standards and does not include all browser APIs, particularly those related to rendering, layout, and complex user interactions.
+    -   **Solution:** Add polyfills for the missing APIs to the test setup file (`frontend/src/setupTests.ts`). This ensures the components behave in the test environment as they would in a real browser.
+
+        **Example Polyfills for `frontend/src/setupTests.ts`:**
+
+        ```typescript
+        // Polyfill for PointerEvents
+        if (!global.PointerEvent) {
+          class PointerEvent extends MouseEvent {
+            public pointerId?: number;
+            constructor(type: string, params: PointerEventInit) {
+              super(type, params);
+              this.pointerId = params.pointerId;
+            }
+          }
+          global.PointerEvent = PointerEvent as any;
+        }
+
+        // Polyfills for PointerEvent methods on Element
+        if (!Element.prototype.hasPointerCapture) {
+          Element.prototype.hasPointerCapture = function (pointerId: number): boolean {
+            // Return a mock value
+            return false;
+          };
+        }
+        if (!Element.prototype.setPointerCapture) {
+          Element.prototype.setPointerCapture = function (pointerId: number): void {
+            // No-op
+          };
+        }
+        if (!Element.prototype.releasePointerCapture) {
+          Element.prototype.releasePointerCapture = function (pointerId: number): void {
+            // No-op
+          };
+        }
+
+        // Polyfill for scrollIntoView
+        if (!window.HTMLElement.prototype.scrollIntoView) {
+          window.HTMLElement.prototype.scrollIntoView = function () {};
+        }
+        ```
+
 ### Coding Style
 
 -   **PHP/Laravel:** PSR-12, enforced by `PHP-CS-Fixer`.

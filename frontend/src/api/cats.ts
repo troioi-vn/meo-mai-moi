@@ -68,3 +68,8 @@ export const deleteCatPhoto = async (catId: number): Promise<Cat> => {
   const response = await api.delete<Cat>(`/cats/${String(catId)}/photo`)
   return response.data
 }
+
+export const getPlacementRequests = async (): Promise<Cat[]> => {
+  const response = await api.get<{ data: Cat[] }>('/cats/placement-requests')
+  return response.data.data
+}

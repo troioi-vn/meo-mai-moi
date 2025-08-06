@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Cat;
+use App\Models\PlacementRequest;
 use App\Models\User;
 use App\Enums\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -146,5 +147,26 @@ class CatProfileTest extends TestCase
     {
         $response = $this->getJson('/api/cats/99999');
         $response->assertStatus(404);
+    }
+
+    // #[Test]
+    // public function test_guest_can_view_cat_with_active_placement_request(): void
+    // {
+    //     $cat = Cat::factory()->create();
+    //     PlacementRequest::factory()->create(['cat_id' => $cat->id, 'is_active' => true]);
+
+    //     $response = $this->getJson("/api/cats/{$cat->id}");
+
+    //     $response->assertStatus(200);
+    // }
+
+    #[Test]
+    public function test_guest_cannot_view_cat_without_active_placement_request(): void
+    {
+        $cat = Cat::factory()->create();
+
+        $response = $this->getJson("/api/cats/{$cat->id}");
+
+        $response->assertStatus(403);
     }
 }

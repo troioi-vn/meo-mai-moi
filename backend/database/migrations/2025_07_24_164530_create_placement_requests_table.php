@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('status')->default(PlacementRequestStatus::OPEN->value);
             $table->text('notes')->nullable();
             $table->date('expires_at')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

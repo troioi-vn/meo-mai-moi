@@ -14,6 +14,7 @@ import HelperProfileEditPage from './pages/helper/HelperProfileEditPage'
 import CreateHelperProfilePage from './pages/helper/CreateHelperProfilePage'
 import HelperProfileViewPage from './pages/helper/HelperProfileViewPage'
 import NotFoundPage from './pages/NotFoundPage'
+import RequestsPage from './pages/RequestsPage'
 import { Toaster } from '@/components/ui/sonner'
 import MainNav from '@/components/MainNav'
 import './App.css'
@@ -35,6 +36,7 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<MainPage />} />
+      <Route path="/requests" element={<RequestsPage />} />
       <Route path="/cats/:id" element={<CatProfilePage />} />
       <Route
         path="/cats/:id/edit"

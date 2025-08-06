@@ -66,9 +66,9 @@ Route::middleware('auth:sanctum')->group(function () {
     #Route::post('/helper-profiles', [HelperProfileController::class, 'store']);
     #Route::get('/helper-profiles', [HelperProfileController::class, 'index']);
     #Route::get('/helper-profiles/me', [HelperProfileController::class, 'show']);
-    #Route::post('/transfer-requests', [TransferRequestController::class, 'store']);
-    #Route::post('/transfer-requests/{transferRequest}/accept', [TransferRequestController::class, 'accept']);
-    #Route::post('/transfer-requests/{transferRequest}/reject', [TransferRequestController::class, 'reject']);
+    Route::post('/transfer-requests', [TransferRequestController::class, 'store']);
+    Route::post('/transfer-requests/{transferRequest}/accept', [TransferRequestController::class, 'accept']);
+    Route::post('/transfer-requests/{transferRequest}/reject', [TransferRequestController::class, 'reject']);
     #Route::post('/reviews', [ReviewController::class, 'store']);
 
     // Message Routes
@@ -80,3 +80,4 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::get('/cats/{cat}', [CatController::class, 'show'])->middleware('optional.auth');
+Route::get('/cats/placement-requests', [CatController::class, 'placementRequests']);

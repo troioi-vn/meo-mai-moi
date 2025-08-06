@@ -8,7 +8,7 @@ const useHelperProfileForm = (profileId, initialData) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState(
-    initialData || {
+    initialData ?? {
       country: '',
       address: '',
       city: '',

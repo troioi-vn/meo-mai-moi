@@ -80,3 +80,4 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::get('/cats/{cat}', [CatController::class, 'show'])->middleware('optional.auth');
+Route::get('/cats/placement-requests', [CatController::class, 'placementRequests']);

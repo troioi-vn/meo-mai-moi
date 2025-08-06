@@ -2,7 +2,6 @@ import { render, screen, waitFor, userEvent } from '@/test-utils';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { http, HttpResponse } from 'msw';
 import { server } from '@/mocks/server';
-import { toast } from 'sonner';
 import { mockHelperProfile } from '@/mocks/data/helper-profiles';
 import { mockUser } from '@/mocks/data/user';
 import HelperProfileEditPage from './HelperProfileEditPage';

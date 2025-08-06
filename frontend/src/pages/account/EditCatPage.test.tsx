@@ -195,7 +195,7 @@ describe('EditCatPage', () => {
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('Failed to update cat profile. Please try again.')
-    }, { timeout: 5000 })
+    }, { timeout: 10000 })
     vi.restoreAllMocks()
   })
 

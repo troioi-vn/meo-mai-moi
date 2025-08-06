@@ -29,7 +29,7 @@ export function DatePicker({ date, setDate, placeholder }: DatePickerProps) {
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? format(date, "PPP") : <span>{placeholder || "Pick a date"}</span>}
+          {date ? format(date, "PPP") : <span>{placeholder ?? "Pick a date"}</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">

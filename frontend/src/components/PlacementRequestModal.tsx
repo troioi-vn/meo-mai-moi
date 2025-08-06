@@ -9,7 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from "@/components/ui/textarea"
@@ -115,7 +114,7 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({ ca
                       mode="single"
                       selected={startDate}
                       onSelect={setStartDate}
-                      initialFocus
+                      autoFocus
                     />
                   </PopoverContent>
                 </PopoverContent>
@@ -144,7 +143,7 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({ ca
                       mode="single"
                       selected={endDate}
                       onSelect={setEndDate}
-                      initialFocus
+                      autoFocus
                     />
                   </PopoverContent>
                 </PopoverContent>
@@ -173,7 +172,7 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({ ca
                       mode="single"
                       selected={expiresAt}
                       onSelect={setExpiresAt}
-                      initialFocus
+                      autoFocus
                     />
                   </PopoverContent>
                 </PopoverContent>

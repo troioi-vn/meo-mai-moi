@@ -1,16 +1,36 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CatCard } from '@/components/CatCard'
-import { mockCat } from '@/mocks/data/cats'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DatePicker } from '@/components/ui/date-picker'
+import { getPlacementRequests } from '@/api/cats'
+import type { Cat } from '@/types/cat'
 
 const RequestsPage = () => {
-  // Mock data for now, will be replaced with API call
-  const cats = [mockCat]
+  const [cats, setCats] = useState<Cat[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const [typeFilter, setTypeFilter] = useState('all')
   const [startDate, setStartDate] = useState<Date | undefined>()
   const [endDate, setEndDate] = useState<Date | undefined>()
+
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        setLoading(true)
+        const response = await getPlacementRequests()
+        setCats(response)
+        setError(null)
+      } catch (err) {
+        setError('Failed to fetch placement requests. Please try again later.')
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    void fetchRequests()
+  }, [])
 
   const filteredCats = cats.filter((cat) => {
     if (!cat.placement_requests) return false
@@ -49,11 +69,16 @@ const RequestsPage = () => {
         <DatePicker date={endDate} setDate={setEndDate} placeholder="End Date" />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {filteredCats.map((cat) => (
-          <CatCard key={cat.id} cat={cat} />
-        ))}
-      </div>
+      {loading && <p className="text-muted-foreground text-center">Loading placement requests...</p>}
+      {error && <p className="text-destructive text-center">{error}</p>}
+
+      {!loading && !error && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {filteredCats.map((cat) => (
+            <CatCard key={cat.id} cat={cat} />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

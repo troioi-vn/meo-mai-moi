@@ -8,7 +8,7 @@
 
         <!-- Built assets from frontend build process -->
         <link rel="stylesheet" href="{{ asset('build/assets/index-8Nzq5opi.css') }}">
-        <script type="module" src="{{ asset('build/assets/index-f_M1U-s3.js') }}"></script>
+        <script type="module" src="{{ asset('build/assets/index-BRkpqTme.js') }}"></script>
     </head>
     <body>
         <div id="root"></div>

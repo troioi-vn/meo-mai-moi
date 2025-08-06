@@ -6,11 +6,50 @@ import { server } from './mocks/server';
 // Polyfill for PointerEvent
 if (!global.PointerEvent) {
   class PointerEvent extends MouseEvent {
+    public pointerId?: number
+    public width?: number
+    public height?: number
+    public pressure?: number
+    public tangentialPressure?: number
+    public tiltX?: number
+    public tiltY?: number
+    public twist?: number
+    public pointerType?: string
+    public isPrimary?: boolean
+
     constructor(type: string, params: PointerEventInit) {
-      super(type, params);
+      super(type, params)
+      this.pointerId = params.pointerId
+      this.width = params.width
+      this.height = params.height
+      this.pressure = params.pressure
+      this.tangentialPressure = params.tangentialPressure
+      this.tiltX = params.tiltX
+      this.tiltY = params.tiltY
+      this.twist = params.twist
+      this.pointerType = params.pointerType
+      this.isPrimary = params.isPrimary
     }
   }
-  global.PointerEvent = PointerEvent as any;
+  global.PointerEvent = PointerEvent as any
+}
+
+if (!Element.prototype.hasPointerCapture) {
+  Element.prototype.hasPointerCapture = function (pointerId: number): boolean {
+    return false
+  }
+}
+
+if (!Element.prototype.setPointerCapture) {
+  Element.prototype.setPointerCapture = function (pointerId: number): void {}
+}
+
+if (!Element.prototype.releasePointerCapture) {
+  Element.prototype.releasePointerCapture = function (pointerId: number): void {}
+}
+
+if (!window.HTMLElement.prototype.scrollIntoView) {
+  window.HTMLElement.prototype.scrollIntoView = function () {}
 }
 
 

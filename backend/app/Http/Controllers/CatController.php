@@ -69,6 +69,15 @@ class CatController extends Controller
         return $this->sendSuccess($featuredCats);
     }
 
+    public function placementRequests(Request $request)
+    {
+        $cats = Cat::whereHas('placementRequests', function ($query) {
+            $query->where('is_active', true)->where('status', \App\Enums\PlacementRequestStatus::OPEN->value);
+        })->with('placementRequests')->get();
+
+        return $this->sendSuccess($cats);
+    }
+
     public function store(Request $request)
     {
         $validatedData = $request->validate([

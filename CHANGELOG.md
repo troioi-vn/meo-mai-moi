@@ -15,6 +15,9 @@ All notable changes to this project are documented here, following the [Keep a C
 - Added date picker components (`react-day-picker`, `date-fns`) to the frontend for placement request forms.
 
 ### Fixed
+- **API**: Resolved an issue where the `/api/cats/placement-requests` endpoint was returning a 404 error due to incorrect route ordering.
+- **API**: Fixed a bug where the `/api/cats/placement-requests` endpoint was returning an empty array because the `is_active` flag was not being set when creating a new placement request.
+- **Database**: Resolved several database migration issues that were preventing the application from migrating correctly.
 - **Backend Test Environment**: Resolved persistent database migration issues in the test environment by:
     - Deleting conflicting `create_initial_tables` migration.
     - Including `is_active` column directly in `create_placement_requests_table` migration.

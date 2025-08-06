@@ -79,5 +79,5 @@ Route::middleware('auth:sanctum')->group(function () {
     #Route::delete('/messages/{message}', [MessageController::class, 'destroy']);
 });
 
-Route::get('/cats/{cat}', [CatController::class, 'show'])->middleware('optional.auth');
 Route::get('/cats/placement-requests', [CatController::class, 'placementRequests']);
+Route::get('/cats/{cat}', [CatController::class, 'show'])->middleware('optional.auth');

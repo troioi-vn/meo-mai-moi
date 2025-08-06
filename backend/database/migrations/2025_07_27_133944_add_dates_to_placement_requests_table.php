@@ -23,8 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('placement_requests', function (Blueprint $table) {
-            $table->date('start_date')->nullable()->after('expires_at');
-            $table->date('end_date')->nullable()->after('start_date');
+            $table->dropColumn(['start_date', 'end_date']);
         });
     }
 };

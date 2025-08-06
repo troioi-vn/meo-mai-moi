@@ -103,7 +103,7 @@ class PlacementRequestController extends Controller
             return $this->sendError('An active placement request of this type already exists for this cat.', 409);
         }
 
-        $placementRequest = PlacementRequest::create($validatedData + ['user_id' => Auth::id()]);
+        $placementRequest = PlacementRequest::create($validatedData + ['user_id' => Auth::id(), 'is_active' => true]);
         $placementRequest->refresh();
 
         return $this->sendSuccess(new PlacementRequestResource($placementRequest), 201);

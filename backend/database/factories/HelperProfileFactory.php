@@ -26,6 +26,7 @@ class HelperProfileFactory extends Factory
             'status' => $this->faker->randomElement(['active', 'cancelled', 'deleted']),
             'is_public' => $this->faker->boolean(),
             'country' => $this->faker->country(),
+            'zip_code' => $this->faker->postcode,
         ];
     }
 }

@@ -179,4 +179,46 @@ describe('CatProfilePage', () => {
       expect(mockNavigate).toHaveBeenCalledWith('/account/cats')
     })
   })
+
+  describe('Responses section', () => {
+    it('shows the responses section when the user is the owner', async () => {
+      const catWithResponses = {
+        ...mockCat,
+        viewer_permissions: { can_edit: true },
+        placement_requests: [
+          {
+            id: 1,
+            request_type: 'foster',
+            transfer_requests: [
+              {
+                id: 1,
+                helper_profile: {
+                  id: 1,
+                  user: { name: 'Helper One' },
+                },
+              },
+            ],
+          },
+        ],
+      };
+
+      server.use(
+        http.get(`http://localhost:3000/api/cats/${String(catWithResponses.id)}`, () => {
+          return HttpResponse.json({ data: catWithResponses })
+        })
+      )
+
+      renderWithRouter(
+        <Routes>
+          <Route path="/cats/:id" element={<CatProfilePage />} />
+        </Routes>,
+        { route: `/cats/${String(catWithResponses.id)}` }
+      )
+
+      await waitFor(async () => {
+        expect(await screen.findByText('Responses for FOSTER')).toBeInTheDocument()
+        expect(await screen.findByText('Helper One')).toBeInTheDocument()
+      })
+    })
+  })
 })

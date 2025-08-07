@@ -108,4 +108,25 @@ class PlacementRequestController extends Controller
 
         return $this->sendSuccess(new PlacementRequestResource($placementRequest), 201);
     }
+
+    public function destroy(PlacementRequest $placementRequest)
+    {
+        $this->authorize('delete', $placementRequest);
+        $placementRequest->delete();
+        return $this->sendSuccess(null, 204);
+    }
+
+    public function confirm(PlacementRequest $placementRequest)
+    {
+        $this->authorize('confirm', $placementRequest);
+        // TODO: Add logic to confirm the placement request
+        return $this->sendSuccess($placementRequest);
+    }
+
+    public function reject(PlacementRequest $placementRequest)
+    {
+        $this->authorize('reject', $placementRequest);
+        // TODO: Add logic to reject the placement request
+        return $this->sendSuccess($placementRequest);
+    }
 }

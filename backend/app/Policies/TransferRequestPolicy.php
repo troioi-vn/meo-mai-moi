@@ -29,7 +29,7 @@ class TransferRequestPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->helperProfiles()->exists();
     }
 
     /**
@@ -38,6 +38,11 @@ class TransferRequestPolicy
     public function update(User $user, TransferRequest $transferRequest): bool
     {
         return false;
+    }
+
+    public function accept(User $user, TransferRequest $transferRequest): bool
+    {
+        return $user->id === $transferRequest->recipient_user_id;
     }
 
     /**

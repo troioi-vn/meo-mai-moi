@@ -55,9 +55,9 @@ class User extends Authenticatable implements FilamentUser
         ];
     }
 
-    public function helperProfile(): HasOne
+    public function helperProfiles(): HasMany
     {
-        return $this->hasOne(HelperProfile::class);
+        return $this->hasMany(HelperProfile::class);
     }
 
     public function reviewsGiven(): HasMany

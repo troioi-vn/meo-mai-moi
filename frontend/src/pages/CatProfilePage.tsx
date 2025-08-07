@@ -1,3 +1,4 @@
+import { api } from '@/api/axios';
 import React, { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useCatProfile } from '@/hooks/useCatProfile'
@@ -14,6 +15,18 @@ const CatProfilePage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   
+
+  const handleDeletePlacementRequest = async (id: number) => {
+    await api.delete(`/api/placement-requests/${id}`);
+  };
+
+  const handleConfirmPlacementRequest = async (id: number) => {
+    await api.post(`/api/placement-requests/${id}/confirm`);
+  };
+
+  const handleRejectPlacementRequest = async (id: number) => {
+    await api.post(`/api/placement-requests/${id}/reject`);
+  };
 
   const handleEditClick = () => {
     if (cat?.id) {
@@ -72,6 +85,36 @@ const CatProfilePage: React.FC = () => {
 
         {/* Cat Profile Content */}
         <CatDetails cat={cat} />
+
+        {/* Responses Section */}
+        {cat.viewer_permissions?.can_edit && (
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold mb-4">Responses</h2>
+            {cat.placement_requests?.map((placementRequest) => (
+              <div key={placementRequest.id} className="mb-4 p-4 border rounded-lg">
+                <div className="flex justify-between items-center">
+                  <h3 className="font-bold">Responses for {placementRequest.request_type.replace('_', ' ').toUpperCase()}</h3>
+                  <Button variant="destructive" size="sm" onClick={() => handleDeletePlacementRequest(placementRequest.id)}>Delete</Button>
+                </div>
+                {placementRequest.transfer_requests?.length > 0 ? (
+                  <ul>
+                    {placementRequest.transfer_requests.map((transferRequest) => (
+                      <li key={transferRequest.id} className="flex justify-between items-center">
+                        <span>{transferRequest.helper_profile?.user?.name}</span>
+                        <div>
+                          <Button variant="outline" size="sm" className="mr-2">Confirm</Button>
+                          <Button variant="destructive" size="sm">Reject</Button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>No responses yet.</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
 
         <PlacementRequestModal
           catId={cat.id}

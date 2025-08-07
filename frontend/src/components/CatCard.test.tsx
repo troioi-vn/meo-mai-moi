@@ -1,7 +1,19 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { CatCard } from './CatCard'
+import { useAuth } from '@/hooks/use-auth'
+import { PlacementResponseModal } from '@/components/PlacementResponseModal'
+
+// Mock the useAuth hook
+vi.mock('@/hooks/use-auth', () => ({
+  useAuth: vi.fn(),
+}))
+
+// Mock the PlacementResponseModal component
+vi.mock('@/components/PlacementResponseModal', () => ({
+  PlacementResponseModal: vi.fn(() => null), // Render nothing, but we can check if it's called
+}))
 
 const renderWithRouter = (ui: React.ReactElement) => {
   return render(<MemoryRouter>{ui}</MemoryRouter>)
@@ -10,6 +22,16 @@ const renderWithRouter = (ui: React.ReactElement) => {
 import { mockCat } from '@/mocks/data/cats'
 
 describe('CatCard', () => {
+  beforeEach(() => {
+    // Reset mocks before each test
+    vi.clearAllMocks()
+    // Default mock for useAuth
+    (useAuth as vi.Mock).mockReturnValue({
+      isAuthenticated: true,
+      user: { id: 2, role: 'helper' }, // A different user than mockCat.user_id
+    })
+  })
+
   it('renders cat information correctly', () => {
     renderWithRouter(<CatCard cat={mockCat} />)
 
@@ -59,5 +81,48 @@ describe('CatCard', () => {
     // Check that the card has the hover transition classes
     const card = screen.getByText('Fluffy').closest('.shadow-lg')
     expect(card).toHaveClass('hover:shadow-xl', 'transition-all')
+  })
+
+  // New tests for "Respond" button and modal
+  it('does not render "Respond" button if not authenticated', () => {
+    (useAuth as vi.Mock).mockReturnValue({ isAuthenticated: false, user: null })
+    renderWithRouter(<CatCard cat={{ ...mockCat, placement_request_active: true }} />)
+    expect(screen.queryByRole('button', { name: /respond/i })).not.toBeInTheDocument()
+  })
+
+  it('does not render "Respond" button if user is the cat owner', () => {
+    (useAuth as vi.Mock).mockReturnValue({ isAuthenticated: true, user: { id: mockCat.user_id } })
+    renderWithRouter(<CatCard cat={{ ...mockCat, placement_request_active: true }} />)
+    expect(screen.queryByRole('button', { name: /respond/i })).not.toBeInTheDocument()
+  })
+
+  it('does not render "Respond" button if no active placement request', () => {
+    (useAuth as vi.Mock).mockReturnValue({ isAuthenticated: true, user: { id: 2 } })
+    renderWithRouter(<CatCard cat={{ ...mockCat, placement_request_active: false }} />)
+    expect(screen.queryByRole('button', { name: /respond/i })).not.toBeInTheDocument()
+  })
+
+  it('renders "Respond" button if authenticated, not owner, and active placement request', () => {
+    (useAuth as vi.Mock).mockReturnValue({ isAuthenticated: true, user: { id: 2 } })
+    renderWithRouter(<CatCard cat={{ ...mockCat, placement_request_active: true }} />)
+    expect(screen.getByRole('button', { name: /respond/i })).toBeInTheDocument()
+  })
+
+  it('opens PlacementResponseModal when "Respond" button is clicked', () => {
+    (useAuth as vi.Mock).mockReturnValue({ isAuthenticated: true, user: { id: 2 } })
+    renderWithRouter(<CatCard cat={{ ...mockCat, placement_request_active: true, placement_requests: [{ id: 101, is_active: true, request_type: 'fostering' }] }} />)
+
+    const respondButton = screen.getByRole('button', { name: /respond/i })
+    fireEvent.click(respondButton)
+
+    expect(PlacementResponseModal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        isOpen: true,
+        catName: mockCat.name,
+        catId: mockCat.id,
+        placementRequestId: 101,
+      }),
+      {}
+    )
   })
 })

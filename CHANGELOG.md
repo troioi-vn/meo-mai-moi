@@ -5,13 +5,27 @@ All notable changes to this project are documented here, following the [Keep a C
 ## [Unreleased]
 
 ### Added
+- **Placement Response System**: Implemented the core functionality for helpers to respond to placement requests.
+  - **Backend**:
+    - Cat profiles are now publicly visible if they have an active placement request.
+    - Added tests for cat profile visibility logic.
+    - Confirmed and tested linkage of `TransferRequest` to `PlacementRequest` with a foreign key.
+    - Confirmed and tested creation/acceptance logic for `TransferRequest`.
+    - Cat owners can now view HelperProfile data.
+  - **Frontend**:
+    - Added a "Respond" button to Cat Cards for cats with active placement requests.
+    - Implemented `PlacementResponseModal` for helpers to submit responses:
+      - Prompts to create a HelperProfile if none exists.
+      - Displays active HelperProfiles as options.
+      - Includes a confirmation step before submission.
+    - Added tests for `CatCard` and `PlacementResponseModal` functionality.
 - **Helper Profile Feature**: Implemented full CRUD functionality for Helper Profiles.
   - **Backend**: Added `HelperProfile` model, controller, policy, and photo uploads.
   - **Frontend**: Created pages for listing, viewing, creating, and editing helper profiles.
   - **Frontend**: Added a `CheckboxField` component and refactored forms to use a custom hook (`useHelperProfileForm`), aligning with project conventions.
   - **Frontend**: Added `Carousel` and `Table` components for improved UI.
 - Added a "Helper Profiles" link to the user navigation menu.
-- Added `start_date` and `end_date` fields to the `PlacementRequest` model and API.
+- Added `start_date` and `end_date` to the `PlacementRequest` model and API.
 - Added date picker components (`react-day-picker`, `date-fns`) to the frontend for placement request forms.
 
 ### Fixed
@@ -99,8 +113,6 @@ All notable changes to this project are documented here, following the [Keep a C
 - Fixed routing issue for direct URL access in the SPA.
 - Corrected file permissions for user-uploaded images, resolving 404 errors.
 
----
-
 ## [0.3.0] - 2025-07-15
 
 ### Added
@@ -120,8 +132,6 @@ All notable changes to this project are documented here, following the [Keep a C
 - Linting: Resolved majority of ESLint errors and improved type safety.
 - React Best Practices: Improved component implementations and promise handling.
 - Note: Some React 19 warnings remain for `forwardRef` usage and context providers, which are acceptable for current shadcn/ui components.
-
----
 
 ## [0.2.0] - 2025-07-15
 
@@ -149,8 +159,6 @@ All notable changes to this project are documented here, following the [Keep a C
 - Configuration: Updated `frontend/tsconfig.json` to correctly include all necessary files.
 - Testing: Repaired broken tests by mocking dependencies correctly and updating providers.
 - UI/UX: Removed the now-redundant `HomeButton` from login and registration pages.
-
----
 
 ## [Earlier]
 

@@ -1,6 +1,9 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import type { Cat } from '@/types/cat'
+import { PlacementResponseModal } from '@/components/PlacementResponseModal';
+import { useAuth } from '@/hooks/use-auth';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import placeholderImage from '@/assets/images/placeholder--cat.webp'
 import { calculateAge } from '@/utils/date'
@@ -10,6 +13,9 @@ interface CatCardProps {
 }
 
 export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
+  const { isAuthenticated, user } = useAuth()
+  const [isModalOpen, setIsModalOpen] = React.useState(false)
+
   // Prefer photos[0].url, then photo_url, then placeholder
   const imageUrl =
     (Array.isArray((cat as { photos?: { url?: string }[] }).photos)
@@ -40,6 +46,22 @@ export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
       </CardHeader>
       <CardContent className="flex flex-grow flex-col justify-between p-4">
         <p className="text-sm text-gray-600">Location: {cat.location}</p>
+        <div className="mt-4">
+          {isAuthenticated && user?.id !== cat.user_id && cat.placement_request_active && (
+            <>
+              <Button className="w-full" onClick={() => setIsModalOpen(true)}>
+                Respond
+              </Button>
+              <PlacementResponseModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                catName={cat.name}
+                catId={cat.id}
+                placementRequestId={cat.placement_requests?.find(req => req.is_active)?.id}
+              />
+            </>
+          )}
+        </div>
       </CardContent>
     </Card>
   )

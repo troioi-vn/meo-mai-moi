@@ -20,7 +20,6 @@ class PlacementRequestFactory extends Factory
             'user_id' => User::factory(),
             'request_type' => $this->faker->randomElement(PlacementRequestType::cases())->value,
             'status' => $this->faker->randomElement(PlacementRequestStatus::cases())->value,
-            'notes' => $this->faker->sentence,
             'expires_at' => $this->faker->dateTimeBetween('+1 week', '+1 month'),
             'is_active' => true,
         ];

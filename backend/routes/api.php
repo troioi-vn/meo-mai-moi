@@ -57,6 +57,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cats/{cat}/photos', [CatPhotoController::class, 'store']);
     Route::delete('/cats/{cat}/photos/{photo}', [CatPhotoController::class, 'destroy']);
     Route::post('/placement-requests', [PlacementRequestController::class, 'store']);
+    Route::delete('/placement-requests/{placementRequest}', [PlacementRequestController::class, 'destroy']);
+    Route::post('/placement-requests/{placementRequest}/confirm', [PlacementRequestController::class, 'confirm']);
+    Route::post('/placement-requests/{placementRequest}/reject', [PlacementRequestController::class, 'reject']);
     Route::apiResource('helper-profiles', HelperProfileController::class);
     Route::post('helper-profiles/{helperProfile}', [HelperProfileController::class, 'update']);
     Route::delete('helper-profiles/{helperProfile}/photos/{photo}', [HelperProfileController::class, 'destroyPhoto']);

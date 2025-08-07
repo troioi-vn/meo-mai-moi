@@ -20,6 +20,7 @@ class AuthServiceProvider extends ServiceProvider
         Cat::class => CatPolicy::class,
         HelperProfile::class => HelperProfilePolicy::class,
         TransferRequest::class => TransferRequestPolicy::class,
+        \App\Models\PlacementRequest::class => \App\Policies\PlacementRequestPolicy::class,
     ];
 
     /**

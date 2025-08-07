@@ -43,20 +43,22 @@ class CatController extends Controller
     }
     public function show(Request $request, Cat $cat)
     {
-        $cat->load('placementRequests');
+        $cat->load(['placementRequests.transferRequests.helperProfile.user']);
 
         $user = $request->user();
         $isOwner = $user && $cat->user_id === $user->id;
         $userRole = $user ? $user->role : null;
         $isAdmin = $userRole === UserRole::ADMIN || $userRole === UserRole::ADMIN->value;
 
-        if (!$user || (!$isOwner && !$isAdmin)) {
+        $hasActivePlacementRequest = $cat->placementRequests->where('is_active', true)->isNotEmpty();
+
+        if (!$hasActivePlacementRequest && (!$user || (!$isOwner && !$isAdmin))) {
             return $this->sendError('Forbidden: You are not authorized to view this cat.', 403);
         }
 
         $viewerPermissions = [
             'can_edit' => $isOwner || $isAdmin,
-            'can_view_contact' => $isAdmin,
+            'can_view_contact' => $isAdmin || $isOwner,
         ];
         $cat->setAttribute('viewer_permissions', $viewerPermissions);
         return $this->sendSuccess($cat);

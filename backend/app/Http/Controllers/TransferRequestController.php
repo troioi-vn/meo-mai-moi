@@ -148,6 +148,7 @@ class TransferRequestController extends Controller
         $validatedData = $request->validate([
             'cat_id' => 'required|exists:cats,id',
             'placement_request_id' => 'required|exists:placement_requests,id',
+            'helper_profile_id' => 'required|exists:helper_profiles,id',
             'requested_relationship_type' => 'required|in:fostering,permanent_foster',
             'fostering_type' => 'nullable|in:free,paid|required_if:requested_relationship_type,fostering',
             'price' => 'nullable|numeric|min:0|required_if:fostering_type,paid',
@@ -159,13 +160,18 @@ class TransferRequestController extends Controller
             return $this->sendError('Cat not found.', 404);
         }
 
+        if ($cat->user_id === $user->id) {
+            return $this->sendError('You cannot create a transfer request for your own cat.', 403);
+        }
+
         if ($cat->status !== \App\Enums\CatStatus::ACTIVE) {
             return $this->sendError('Cat is not available for transfer.', 403);
         }
 
-        $transferRequest = TransferRequest::create(array_merge($validatedData, [
+                $transferRequest = TransferRequest::create(array_merge($validatedData, [
             'initiator_user_id' => $user->id,
             'recipient_user_id' => $cat->user_id, // Cat owner is the recipient
+            'requester_id' => $user->id, // User making the request
             'status' => 'pending',
         ]));
 

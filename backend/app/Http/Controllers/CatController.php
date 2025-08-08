@@ -11,6 +11,7 @@ use App\Enums\UserRole;
 use App\Enums\CatStatus;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use App\Models\FosterAssignment;
 
 /**
  * @OA\Schema(
@@ -41,9 +42,55 @@ class CatController extends Controller
         $cats = $request->user()->cats;
         return $this->sendSuccess($cats);
     }
+
+    public function myCatsSections(Request $request)
+    {
+        $user = $request->user();
+        if (!$user) {
+            return $this->sendError('Unauthenticated.', 401);
+        }
+
+        // Owned (current owner)
+        $owned = Cat::where('user_id', $user->id)->get();
+
+        // Fostering active/past via assignments
+        $activeFostering = \App\Models\FosterAssignment::where('foster_user_id', $user->id)
+            ->where('status', 'active')
+            ->with('cat')
+            ->get()
+            ->pluck('cat');
+
+        $pastFostering = \App\Models\FosterAssignment::where('foster_user_id', $user->id)
+            ->whereIn('status', ['completed', 'canceled'])
+            ->with('cat')
+            ->get()
+            ->pluck('cat');
+
+        // Transferred away: cats that the user used to own but no longer does
+        $transferredAway = Cat::whereHas('placementRequests', function ($q) use ($user) {
+            $q->where('status', \App\Enums\PlacementRequestStatus::FULFILLED->value);
+        })->where('user_id', '!=', $user->id)
+          ->whereIn('id', function ($sub) use ($user) {
+              $sub->select('cat_id')
+                  ->from('cats') // placeholder to satisfy builder
+                  ->whereRaw('1=0');
+          })->get();
+
+        // Note: The above transferredAway is a placeholder as we don't keep historical owners yet.
+        // For now, return empty for that section.
+        $transferredAway = collect([]);
+
+        return $this->sendSuccess([
+            'owned' => $owned->values(),
+            'fostering_active' => $activeFostering->values(),
+            'fostering_past' => $pastFostering->values(),
+            'transferred_away' => $transferredAway->values(),
+        ]);
+    }
     public function show(Request $request, Cat $cat)
     {
-        $cat->load(['placementRequests.transferRequests.helperProfile.user']);
+    // Load placement requests and their transfer requests with helper profiles and users
+    $cat->load(['placementRequests.transferRequests.helperProfile.user']);
 
         $user = $request->user();
         $isOwner = $user && $cat->user_id === $user->id;
@@ -51,14 +98,22 @@ class CatController extends Controller
         $isAdmin = $userRole === UserRole::ADMIN || $userRole === UserRole::ADMIN->value;
 
         $hasActivePlacementRequest = $cat->placementRequests->where('is_active', true)->isNotEmpty();
+        $isActiveFosterer = false;
+        if ($user) {
+            $isActiveFosterer = FosterAssignment::where('cat_id', $cat->id)
+                ->where('foster_user_id', $user->id)
+                ->where('status', 'active')
+                ->exists();
+        }
 
-        if (!$hasActivePlacementRequest && (!$user || (!$isOwner && !$isAdmin))) {
+        if (!$hasActivePlacementRequest && (!$user || (!$isOwner && !$isAdmin && !$isActiveFosterer))) {
             return $this->sendError('Forbidden: You are not authorized to view this cat.', 403);
         }
 
         $viewerPermissions = [
             'can_edit' => $isOwner || $isAdmin,
-            'can_view_contact' => $isAdmin || $isOwner,
+            // Owners don't need to view their own contact details; expose contact for admins and non-owner authenticated users
+            'can_view_contact' => $isAdmin || ($user && !$isOwner),
         ];
         $cat->setAttribute('viewer_permissions', $viewerPermissions);
         return $this->sendSuccess($cat);
@@ -97,10 +152,13 @@ class CatController extends Controller
     public function update(Request $request, Cat $cat)
     {
         $user = $request->user();
-        $role = $user ? ($user->role instanceof \BackedEnum ? $user->role->value : $user->role) : null;
+        if (!$user) {
+            return $this->sendError('Unauthenticated.', 401);
+        }
+        $role = $user->role instanceof \BackedEnum ? $user->role->value : $user->role;
         $isAdmin = $role === UserRole::ADMIN->value || $role === 'admin';
-        $isOwner = $user && $cat->user_id === $user->id;
-        if (!$user || (!$isAdmin && !$isOwner)) {
+        $isOwner = $cat->user_id === $user->id;
+        if (!$isAdmin && !$isOwner) {
             return $this->sendError('Forbidden: You are not authorized to update this cat.', 403);
         }
 
@@ -121,11 +179,14 @@ class CatController extends Controller
     public function destroy(Request $request, Cat $cat)
     {
         $user = $request->user();
-        $role = $user ? ($user->role instanceof \BackedEnum ? $user->role->value : $user->role) : null;
+        if (!$user) {
+            return $this->sendError('Unauthenticated.', 401);
+        }
+        $role = $user->role instanceof \BackedEnum ? $user->role->value : $user->role;
         $isAdmin = $role === UserRole::ADMIN->value || $role === 'admin';
-        $isOwner = $user && $cat->user_id === $user->id;
+        $isOwner = $cat->user_id === $user->id;
 
-        if (!$user || (!$isAdmin && !$isOwner)) {
+        if (!$isAdmin && !$isOwner) {
             return $this->sendError('Forbidden: You are not authorized to delete this cat.', 403);
         }
 
@@ -165,11 +226,14 @@ class CatController extends Controller
     public function updateStatus(Request $request, Cat $cat)
     {
         $user = $request->user();
-        $role = $user ? ($user->role instanceof \BackedEnum ? $user->role->value : $user->role) : null;
+        if (!$user) {
+            return $this->sendError('Unauthenticated.', 401);
+        }
+        $role = $user->role instanceof \BackedEnum ? $user->role->value : $user->role;
         $isAdmin = $role === UserRole::ADMIN->value || $role === 'admin';
-        $isOwner = $user && $cat->user_id === $user->id;
+        $isOwner = $cat->user_id === $user->id;
 
-        if (!$user || (!$isAdmin && !$isOwner)) {
+        if (!$isAdmin && !$isOwner) {
             return $this->sendError('Forbidden: You are not authorized to update this cat.', 403);
         }
 

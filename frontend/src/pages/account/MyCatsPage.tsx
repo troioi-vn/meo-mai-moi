@@ -4,12 +4,17 @@ import { useNavigate } from 'react-router-dom'
 import { CatCard } from '@/components/CatCard'
 import { PlusCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { getMyCats } from '@/api/cats'
+import { getMyCatsSections } from '@/api/cats'
 import type { Cat } from '@/types/cat'
 import { useAuth } from '@/hooks/use-auth'
 
 export default function MyCatsPage() {
-  const [cats, setCats] = useState<Cat[]>([])
+  const [sections, setSections] = useState<{
+    owned: Cat[]
+    fostering_active: Cat[]
+    fostering_past: Cat[]
+    transferred_away: Cat[]
+  }>({ owned: [], fostering_active: [], fostering_past: [], transferred_away: [] })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showAll, setShowAll] = useState(false)
@@ -20,8 +25,8 @@ export default function MyCatsPage() {
     const fetchCats = async () => {
       try {
         setLoading(true)
-        const response = await getMyCats()
-        setCats(Array.isArray(response) ? response : [])
+        const response = await getMyCatsSections()
+        setSections(response)
         setError(null)
       } catch (err) {
         setError('Failed to fetch your cats. Please try again later.')
@@ -66,32 +71,53 @@ export default function MyCatsPage() {
       {error && <p className="text-destructive">{error}</p>}
 
       {!loading && !error && (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-6">
-            {cats
-              .filter((cat) => showAll || cat.status !== 'deceased')
-              .map((cat) => (
-                <CatCard key={cat.id} cat={cat} />
-              ))}
-          </div>
+        <div className="space-y-10">
+          {/* Owned */}
+          <section>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-2xl font-semibold">Owned</h2>
+              <div className="flex items-center gap-2">
+                <Switch id="show-all" checked={showAll} onCheckedChange={setShowAll} className="scale-75" />
+                <label htmlFor="show-all" className="text-xs font-medium cursor-pointer">
+                  Show all (including deceased)
+                </label>
+              </div>
+            </div>
+            <SectionGrid cats={showAll ? sections.owned : sections.owned.filter(c => c.status !== 'deceased')} />
+          </section>
 
-          {/* Show All Toggle - Below the cards */}
-          <div className="flex items-center justify-center space-x-2 mt-8">
-            <Switch
-              id="show-all"
-              checked={showAll}
-              onCheckedChange={setShowAll}
-              className="scale-75"
-            />
-            <label
-              htmlFor="show-all"
-              className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-            >
-              Show all (including deceased)
-            </label>
-          </div>
-        </>
+          {/* Fostering (Active) */}
+          <section>
+            <h2 className="text-2xl font-semibold mb-3">Fostering (Active)</h2>
+            <SectionGrid cats={sections.fostering_active} emptyText="You are not currently fostering any cats." />
+          </section>
+
+          {/* Fostering (Past) */}
+          <section>
+            <h2 className="text-2xl font-semibold mb-3">Fostering (Past)</h2>
+            <SectionGrid cats={sections.fostering_past} emptyText="No past fostering history yet." />
+          </section>
+
+          {/* Transferred Away */}
+          <section>
+            <h2 className="text-2xl font-semibold mb-3">Transferred Away</h2>
+            <SectionGrid cats={sections.transferred_away} emptyText="No transferred-away cats to show yet." />
+          </section>
+        </div>
       )}
+    </div>
+  )
+}
+
+function SectionGrid({ cats, emptyText }: { cats: Cat[]; emptyText?: string }) {
+  if (!cats?.length) {
+    return <p className="text-sm text-muted-foreground">{emptyText ?? 'Nothing here yet.'}</p>
+  }
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+      {cats.map((cat) => (
+        <CatCard key={cat.id} cat={cat} />
+      ))}
     </div>
   )
 }

@@ -50,6 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/users/me/avatar', [UserProfileController::class, 'uploadAvatar']);
     Route::delete('/users/me/avatar', [UserProfileController::class, 'deleteAvatar']);
     Route::get('/my-cats', [CatController::class, 'myCats']);
+    Route::get('/my-cats/sections', [CatController::class, 'myCatsSections']);
     Route::post('/cats', [CatController::class, 'store']);
     Route::put('/cats/{cat}', [CatController::class, 'update']);
     Route::delete('/cats/{cat}', [CatController::class, 'destroy'])->name('cats.destroy');
@@ -82,5 +83,6 @@ Route::middleware('auth:sanctum')->group(function () {
     #Route::delete('/messages/{message}', [MessageController::class, 'destroy']);
 });
 
-Route::get('/cats/{cat}', [CatController::class, 'show'])->middleware('optional.auth');
+// Place static routes before parameter routes and constrain {cat} to numbers to avoid conflicts
 Route::get('/cats/placement-requests', [CatController::class, 'placementRequests']);
+Route::get('/cats/{cat}', [CatController::class, 'show'])->middleware('optional.auth')->whereNumber('cat');

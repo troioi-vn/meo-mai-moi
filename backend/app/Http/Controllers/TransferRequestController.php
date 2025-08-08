@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Annotations as OA;
 use App\Enums\UserRole;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use App\Enums\PlacementRequestStatus;
 
 /**
  * @OA\Schema(
@@ -168,6 +171,16 @@ class TransferRequestController extends Controller
             return $this->sendError('Cat is not available for transfer.', 403);
         }
 
+        // Prevent duplicate pending responses from the same user for the same placement request
+        $alreadyPending = TransferRequest::where('placement_request_id', $validatedData['placement_request_id'])
+            ->where('initiator_user_id', $user->id)
+            ->where('status', 'pending')
+            ->exists();
+
+        if ($alreadyPending) {
+            return $this->sendError('You have already responded to this placement request and it is pending.', 409);
+        }
+
                 $transferRequest = TransferRequest::create(array_merge($validatedData, [
             'initiator_user_id' => $user->id,
             'recipient_user_id' => $cat->user_id, // Cat owner is the recipient
@@ -224,17 +237,62 @@ class TransferRequestController extends Controller
     {
         $this->authorize('accept', $transferRequest);
 
-        $transferRequest->status = 'accepted';
-        $transferRequest->accepted_at = now();
-        $transferRequest->save();
-
-        $transferRequest->cat->update(['user_id' => $transferRequest->recipient_user_id]);
-
-        if ($transferRequest->placementRequest) {
-            $transferRequest->placementRequest->update(['is_active' => false]);
+        // Ensure pending before proceeding
+        if ($transferRequest->status !== 'pending') {
+            return $this->sendError('Only pending requests can be accepted.', 409);
         }
 
-        return $this->sendSuccess($transferRequest);
+    DB::transaction(function () use ($transferRequest) {
+            $transferRequest->status = 'accepted';
+            $transferRequest->accepted_at = now();
+            $transferRequest->save();
+
+            $placement = $transferRequest->placementRequest;
+
+            if ($placement) {
+                // Fulfill the placement request
+                $placement->is_active = false;
+                // If status enum supports it, set to fulfilled
+                if (in_array('status', $placement->getFillable(), true)) {
+                    $placement->status = PlacementRequestStatus::FULFILLED;
+                }
+                if (Schema::hasColumn('placement_requests', 'fulfilled_at')) {
+                    $placement->fulfilled_at = now();
+                }
+                if (Schema::hasColumn('placement_requests', 'fulfilled_by_transfer_request_id')) {
+                    $placement->fulfilled_by_transfer_request_id = $transferRequest->id;
+                }
+                $placement->save();
+
+                // Auto-reject other pending transfer requests for the same placement
+                \App\Models\TransferRequest::where('placement_request_id', $placement->id)
+                    ->where('id', '!=', $transferRequest->id)
+                    ->where('status', 'pending')
+                    ->update(['status' => 'rejected', 'rejected_at' => now()]);
+            }
+
+            // Relationship branching: permanent vs fostering
+            $type = $transferRequest->requested_relationship_type;
+            if ($type === 'permanent_foster') {
+                // Permanent transfer of ownership to initiator (helper)
+                $transferRequest->cat->update(['user_id' => $transferRequest->initiator_user_id]);
+
+                // Optional: record ownership transfer (future enhancement)
+            } elseif ($type === 'fostering') {
+                // Create a foster assignment granting view rights to helper
+                \App\Models\FosterAssignment::create([
+                    'cat_id' => $transferRequest->cat_id,
+                    'owner_user_id' => $transferRequest->recipient_user_id,
+                    'foster_user_id' => $transferRequest->initiator_user_id,
+                    'transfer_request_id' => $transferRequest->id,
+                    'start_date' => now()->toDateString(),
+                    'expected_end_date' => optional($transferRequest->placementRequest)->end_date,
+                    'status' => 'active',
+                ]);
+            }
+        });
+
+        return $this->sendSuccess($transferRequest->fresh(['placementRequest']));
     }
 
     /**

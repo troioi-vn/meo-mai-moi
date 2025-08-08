@@ -22,19 +22,43 @@ export interface Cat {
     can_edit: boolean
     can_view_contact: boolean
   }
-  placement_requests?: PlacementRequest[];
+  placement_requests?: PlacementRequest[]
+  // Convenience flag from backend (optional) used by CatCard
+  placement_request_active?: boolean
 }
 
 export interface PlacementRequest {
   id: number;
   cat_id: number;
   user_id: number;
-  request_type: 'foster_payed' | 'foster_free' | 'permanent';
+  // Support backend enums and existing test/mocks values
+  request_type: 'foster_payed' | 'foster_free' | 'permanent' | 'fostering' | 'permanent_foster' | 'adoption';
   status: 'open' | 'pending_review' | 'fulfilled' | 'expired' | 'cancelled';
   notes: string;
-  expires_at: string;
+  expires_at?: string;
+  // Optional date-range fields used by filters/tests
+  start_date?: string;
+  end_date?: string;
+  is_active?: boolean;
+  transfer_requests?: TransferRequest[];
   created_at: string;
   updated_at: string;
+}
+
+export interface TransferRequest {
+  id: number;
+  cat_id?: number;
+  placement_request_id?: number;
+  helper_profile_id?: number;
+  initiator_user_id?: number;
+  requested_relationship_type?: 'fostering' | 'permanent_foster' | 'adoption' | string;
+  status?: 'pending' | 'accepted' | 'rejected' | string;
+  helper_profile?: {
+    id?: number;
+  city?: string;
+  state?: string;
+    user?: { id?: number; name?: string; email?: string };
+  };
 }
 
 // Helper function to calculate age from birthday

@@ -6,9 +6,12 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Changed
 - **Login Redirect**: Improved the login redirect logic to be more secure and flexible. It now supports relative redirect paths while preventing open redirects to external sites.
+- **Transfer Acceptance Flow**: Accepting a transfer response now fulfills the related placement request transactionally and auto-rejects other pending responses.
+- **Cat Visibility Policy**: Active fosterers are allowed to view the cat profile while the assignment is active.
 
 ### Fixed
 - **Test Stability**: Improved the reliability of tests in `EditCatPage.test.tsx` by adding explicit `waitFor` assertions to prevent race conditions.
+- **MyCatsPage Hooks Order**: Fixed a React hooks ordering error by removing a conditional `useMemo` within JSX props.
 
 ### Added
 - **Placement Response System**: Implemented the core functionality for helpers to respond to placement requests.
@@ -18,6 +21,9 @@ All notable changes to this project are documented here, following the [Keep a C
     - Confirmed and tested linkage of `TransferRequest` to `PlacementRequest` with a foreign key.
     - Confirmed and tested creation/acceptance logic for `TransferRequest`.
     - Cat owners can now view HelperProfile data.
+  - Added Postgres partial unique index to prevent duplicate pending responses by the same user to the same placement request.
+  - Fulfillment fields on `PlacementRequest` (status `fulfilled`, `fulfilled_at`, `fulfilled_by_transfer_request_id`).
+  - New `FosterAssignment` model and migration for fostering lifecycle.
   - **Frontend**:
     - Added a "Respond" button to Cat Cards for cats with active placement requests.
     - Implemented `PlacementResponseModal` for helpers to submit responses:
@@ -25,6 +31,8 @@ All notable changes to this project are documented here, following the [Keep a C
       - Displays active HelperProfiles as options.
       - Includes a confirmation step before submission.
     - Added tests for `CatCard` and `PlacementResponseModal` functionality.
+  - My Cats page reworked to consume `/api/my-cats/sections` and render sections: Owned, Fostering (Active), Fostering (Past), and Transferred Away; includes a "Show all (including deceased)" toggle with tests.
+  - Cat Card now shows a "Fulfilled" badge when applicable.
 - **Helper Profile Feature**: Implemented full CRUD functionality for Helper Profiles.
   - **Backend**: Added `HelperProfile` model, controller, policy, and photo uploads.
   - **Frontend**: Created pages for listing, viewing, creating, and editing helper profiles.

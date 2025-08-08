@@ -45,6 +45,13 @@ class TransferRequestPolicy
         return $user->id === $transferRequest->recipient_user_id;
     }
 
+    public function reject(User $user, TransferRequest $transferRequest): bool
+    {
+        // Cat owner (recipient) can reject, and the initiator (helper) can cancel their own pending request
+        return $user->id === $transferRequest->recipient_user_id
+            || $user->id === $transferRequest->initiator_user_id;
+    }
+
     /**
      * Determine whether the user can delete the model.
      */

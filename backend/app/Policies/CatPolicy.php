@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Models\Cat;
 use App\Models\User;
 use App\Enums\UserRole;
+use App\Models\FosterAssignment;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class CatPolicy
@@ -31,7 +32,22 @@ class CatPolicy
         }
 
         // Allow access if the user is the owner of the cat.
-        return $user && $user->id === $cat->user_id;
+        if ($user && $user->id === $cat->user_id) {
+            return true;
+        }
+
+        // Allow access if the user is the active fosterer for this cat.
+        if ($user) {
+            $hasActiveFoster = FosterAssignment::where('cat_id', $cat->id)
+                ->where('foster_user_id', $user->id)
+                ->where('status', 'active')
+                ->exists();
+            if ($hasActiveFoster) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function create(User $user)

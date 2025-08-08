@@ -23,10 +23,8 @@ import { mockCat } from '@/mocks/data/cats'
 
 describe('CatCard', () => {
   beforeEach(() => {
-    // Reset mocks before each test
-    vi.clearAllMocks()
     // Default mock for useAuth
-    (useAuth as vi.Mock).mockReturnValue({
+    ;(useAuth as unknown as { mockReturnValue: (v: any) => void }).mockReturnValue({
       isAuthenticated: true,
       user: { id: 2, role: 'helper' }, // A different user than mockCat.user_id
     })
@@ -85,44 +83,65 @@ describe('CatCard', () => {
 
   // New tests for "Respond" button and modal
   it('does not render "Respond" button if not authenticated', () => {
-    (useAuth as vi.Mock).mockReturnValue({ isAuthenticated: false, user: null })
+  ;(useAuth as unknown as { mockReturnValue: (v: any) => void }).mockReturnValue({ isAuthenticated: false, user: null })
     renderWithRouter(<CatCard cat={{ ...mockCat, placement_request_active: true }} />)
     expect(screen.queryByRole('button', { name: /respond/i })).not.toBeInTheDocument()
   })
 
   it('does not render "Respond" button if user is the cat owner', () => {
-    (useAuth as vi.Mock).mockReturnValue({ isAuthenticated: true, user: { id: mockCat.user_id } })
+  ;(useAuth as unknown as { mockReturnValue: (v: any) => void }).mockReturnValue({ isAuthenticated: true, user: { id: mockCat.user_id } })
     renderWithRouter(<CatCard cat={{ ...mockCat, placement_request_active: true }} />)
     expect(screen.queryByRole('button', { name: /respond/i })).not.toBeInTheDocument()
   })
 
   it('does not render "Respond" button if no active placement request', () => {
-    (useAuth as vi.Mock).mockReturnValue({ isAuthenticated: true, user: { id: 2 } })
+  ;(useAuth as unknown as { mockReturnValue: (v: any) => void }).mockReturnValue({ isAuthenticated: true, user: { id: 2 } })
     renderWithRouter(<CatCard cat={{ ...mockCat, placement_request_active: false }} />)
     expect(screen.queryByRole('button', { name: /respond/i })).not.toBeInTheDocument()
   })
 
   it('renders "Respond" button if authenticated, not owner, and active placement request', () => {
-    (useAuth as vi.Mock).mockReturnValue({ isAuthenticated: true, user: { id: 2 } })
+  ;(useAuth as unknown as { mockReturnValue: (v: any) => void }).mockReturnValue({ isAuthenticated: true, user: { id: 2 } })
     renderWithRouter(<CatCard cat={{ ...mockCat, placement_request_active: true }} />)
     expect(screen.getByRole('button', { name: /respond/i })).toBeInTheDocument()
   })
 
   it('opens PlacementResponseModal when "Respond" button is clicked', () => {
-    (useAuth as vi.Mock).mockReturnValue({ isAuthenticated: true, user: { id: 2 } })
-    renderWithRouter(<CatCard cat={{ ...mockCat, placement_request_active: true, placement_requests: [{ id: 101, is_active: true, request_type: 'fostering' }] }} />)
+    ;(useAuth as unknown as { mockReturnValue: (v: any) => void }).mockReturnValue({ isAuthenticated: true, user: { id: 2 } })
+    renderWithRouter(
+      <CatCard
+        cat={{
+          ...mockCat,
+          placement_request_active: true,
+          placement_requests: [
+            {
+              id: 101,
+              cat_id: mockCat.id,
+              user_id: 999,
+              request_type: 'fostering',
+              status: 'open',
+              notes: '',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              is_active: true,
+            },
+          ],
+        }}
+      />
+    )
 
     const respondButton = screen.getByRole('button', { name: /respond/i })
     fireEvent.click(respondButton)
 
-    expect(PlacementResponseModal).toHaveBeenCalledWith(
+    const calls = (PlacementResponseModal as unknown as { mock: { calls: any[] } }).mock.calls
+    const lastProps = calls[calls.length - 1]?.[0]
+    expect(lastProps).toEqual(
       expect.objectContaining({
         isOpen: true,
         catName: mockCat.name,
         catId: mockCat.id,
         placementRequestId: 101,
-      }),
-      {}
+      })
     )
   })
 })

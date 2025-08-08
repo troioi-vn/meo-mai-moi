@@ -190,14 +190,15 @@ const EnhancedCatRemovalModal: React.FC<EnhancedCatRemovalModalProps> = ({
         </div>
       </div>
       <AlertDialogFooter>
-        <AlertDialogCancel
+        <Button
+          variant="outline"
           onClick={() => {
             setStep(1)
           }}
           disabled={isLoading}
         >
           Back
-        </AlertDialogCancel>
+        </Button>
         <AlertDialogCancel onClick={handleClose} disabled={isLoading}>
           Cancel
         </AlertDialogCancel>
@@ -233,14 +234,15 @@ const EnhancedCatRemovalModal: React.FC<EnhancedCatRemovalModalProps> = ({
         </div>
       </div>
       <AlertDialogFooter>
-        <AlertDialogCancel
+        <Button
+          variant="outline"
           onClick={() => {
             setStep(2)
           }}
           disabled={isLoading}
         >
           Back
-        </AlertDialogCancel>
+        </Button>
         <AlertDialogCancel onClick={handleClose} disabled={isLoading}>
           Cancel
         </AlertDialogCancel>

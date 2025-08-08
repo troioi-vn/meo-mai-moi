@@ -1,6 +1,6 @@
-# GEMINI.md - Meo Mai Moi Project
+# GEMINI.md — AI Agent Guide for Meo Mai Moi
 
-This document outlines the high-level strategy, architecture, conventions, and goals for the Meo Mai Moi project.
+This document is the AI-agent-oriented project description and development guide. Use it to understand the architecture, conventions, workflows, and safe/practical ways to contribute autonomously.
 
 ## 1. Project Summary
 
@@ -193,6 +193,83 @@ This section documents common issues encountered during development and their ef
 -   **Admin Panel:** `http://localhost:8000/admin` (Credentials: `test@example.com` / `password`)
 
 ## 7. User Preferences
+
+**Development Command Execution:** For development, use `php artisan ...` locally in the `backend/` directory, not via Docker.
+
+## Agent Quickstart (Read Me First)
+
+This section is for AI coding agents (Copilots) to be effective, safe, and fast in this repo.
+
+### Quick Repo Map
+
+- Backend (Laravel): `backend/` (API, models, policies, Filament admin)
+- Frontend (React+TS): `frontend/` (Vite, shadcn/ui, MSW mocks, Vitest)
+- Docs/ops: `docs/`, `docker-compose.yml`, `GEMINI.md`
+
+### Frontend Rules of the Road
+
+- Axios baseURL is `/api`. Use relative paths like `api.get('cats/1')` (NOT `/api/cats/1`) to avoid `/api/api` issues.
+- Tests use MSW with absolute URLs (e.g., `http://localhost:3000/api/cats`). Keep handlers consistent with API shapes (usually `{ data: ... }`).
+- Prefer `await screen.findBy...` over nested `waitFor(async () => await screen.findBy...)` to avoid flakiness.
+- shadcn/ui Select and Dialog are Radix-based. In tests:
+  - Select trigger role is `combobox`. Use visible option text; avoid role name guesses.
+  - Provide DialogDescription to avoid a11y warnings.
+- When editing lists, ensure items have stable React keys.
+
+### Backend Rules of the Road
+
+- Keep OpenAPI annotations updated; generate docs after changes.
+- Respect policies/permissions; most controllers assume policy checks.
+
+### Common Pitfalls & Fixes
+
+- Double `/api` in frontend: use relative endpoints when axios baseURL is set.
+- Flaky waits: avoid nested waitFor; rely on `findBy...` and stable UI states.
+- Missing top-level fields in MSW responses cause undefined errors — mirror real API structure.
+- JSDOM missing APIs: see setupTests polyfills (PointerEvents, scrollIntoView).
+
+### Typical Agent Workflow
+
+1) Read the ask, extract requirements into a short checklist. Execute directly if safe.
+2) Locate files quickly using semantic search; favor reading larger contiguous blocks.
+3) Implement smallest viable change; keep public APIs and styles intact.
+4) If changing runtime behavior, add/adjust unit tests first or alongside.
+5) Run targeted tests before full suite for speed; iterate until green.
+6) Add toasts and refresh hooks for user feedback and state sync.
+7) Document non-obvious behavior or patterns here when you learn something new.
+
+### Patterns Added in This Session
+
+- Placement responses flow:
+  - Cat card shows Respond when eligible -> PlacementResponseModal collects helper profile and relationship type, has a confirmation step, and submits to `POST transfer-requests`.
+  - Cat profile page lists transfer responses per placement request. Owner can Confirm/Reject with success/error toasts; UI calls `refresh()` hook to re-fetch.
+- Filters on /requests page: type and date range, purely client-side.
+- Test stability principles applied across modal, profile, and edit pages.
+
+- My Cats sections pattern:
+  - Backend exposes GET `/api/my-cats/sections` returning `{ owned: Cat[], fostering_active: Cat[], fostering_past: Cat[], transferred_away: Cat[] }`.
+  - Frontend `MyCatsPage` consumes this shape; UI shows sections and a "Show all (including deceased)" toggle for Owned.
+  - Note: keep API responses aligned with MSW handlers in tests (absolute URLs; `{ data: ... }` wrapper if applicable).
+
+- React Hooks ordering guard:
+  - Never call hooks conditionally or inline within JSX props if the call site can be skipped/added between renders. Avoid patterns like `useMemo(...)` directly inside a prop when the containing element may be conditionally rendered.
+  - Prefer deriving values inline without `useMemo` unless profiling shows a need. If using `useMemo`, declare it unconditionally at the top of the component.
+
+### Speedrun Commands (optional)
+
+```bash
+# Frontend
+cd frontend
+npm test --silent
+
+# Backend
+cd ../backend
+php artisan test
+```
+
+### When in Doubt
+
+- Don’t guess file paths or API shapes — search and read. If a task seems risky, propose a minimal, reversible change and add tests.
 
 -   **Collaboration Style:** Iterative, feedback-driven.
 -   **Command Style:** Imperative (e.g., "Refactor this function").

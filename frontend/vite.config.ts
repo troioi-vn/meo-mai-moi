@@ -7,7 +7,7 @@ import path from 'path';
 
 export default defineConfig(({ mode }) => ({
   base: mode === 'production' ? '/build/' : '/',
-  plugins: [react(), tsconfigPaths(), tailwindcss('./tailwind.config.js')],
+  plugins: [react(), tsconfigPaths(), tailwindcss()],
   server: {
     port: 5173,
     proxy: {

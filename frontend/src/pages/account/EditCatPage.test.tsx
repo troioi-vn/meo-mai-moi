@@ -99,7 +99,7 @@ describe('EditCatPage', () => {
   //   })
   // })
 
-  it.skip('submits updated data and navigates on success', async () => {
+  it('submits updated data and navigates on success', async () => {
     vi.spyOn(console, 'log').mockImplementation(() => {
       /* empty */
     })
@@ -116,9 +116,7 @@ describe('EditCatPage', () => {
     mockUseParams.mockReturnValue({ id: '1' })
     renderComponent()
 
-    await waitFor(async () => {
-      expect(await screen.findByDisplayValue(mockCat.name)).toBeInTheDocument()
-    })
+  expect(await screen.findByDisplayValue(mockCat.name)).toBeInTheDocument()
 
     await user.clear(screen.getByLabelText(/name/i))
     await user.type(screen.getByLabelText(/name/i), updatedName)
@@ -139,7 +137,7 @@ describe('EditCatPage', () => {
     vi.restoreAllMocks()
   })
 
-  it.skip('displays validation errors for empty required fields', async () => {
+    it('displays validation errors for empty required fields', async () => {
     vi.spyOn(console, 'log').mockImplementation(() => {
       /* empty */
     })
@@ -187,9 +185,8 @@ describe('EditCatPage', () => {
     mockUseParams.mockReturnValue({ id: '1' })
     renderComponent()
 
-    await waitFor(async () => {
-      expect(await screen.findByDisplayValue(mockCat.name)).toBeInTheDocument()
-    })
+  // Wait for form to load by asserting on a known field value
+  expect(await screen.findByDisplayValue(mockCat.name)).toBeInTheDocument()
 
     try {
       await user.click(screen.getByRole('button', { name: /update cat/i }))
@@ -199,7 +196,7 @@ describe('EditCatPage', () => {
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('Failed to update cat profile. Please try again.')
-    }, { timeout: 10000 })
+    })
     vi.restoreAllMocks()
   })
 
@@ -221,9 +218,7 @@ describe('EditCatPage', () => {
   it('navigates to the cat list on cancel', async () => {
     mockUseParams.mockReturnValue({ id: '1' })
     renderComponent()
-    await waitFor(async () => {
-      expect(await screen.findByRole('heading', { name: /edit cat profile/i })).toBeInTheDocument()
-    })
+  expect(await screen.findByRole('heading', { name: /edit cat profile/i })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: /cancel/i }))
     await waitFor(() => {
       expect(mockUseNavigate).toHaveBeenCalledWith('/account/cats')

@@ -46,6 +46,7 @@ export default defineConfig(({ mode }) => ({
     emptyOutDir: true,
     manifest: true,
     assetsDir: 'assets',
+    chunkSizeWarningLimit: 1000,
   },
   optimizeDeps: {
     exclude: ['@radix-ui/number'],

@@ -4,6 +4,9 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Fixed
+- **Test Stability**: Improved the reliability of tests in `EditCatPage.test.tsx` by adding explicit `waitFor` assertions to prevent race conditions.
+
 ### Added
 - **Placement Response System**: Implemented the core functionality for helpers to respond to placement requests.
   - **Backend**:

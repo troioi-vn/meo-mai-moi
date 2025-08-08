@@ -116,7 +116,8 @@ describe('EditCatPage', () => {
     mockUseParams.mockReturnValue({ id: '1' })
     renderComponent()
 
-  expect(await screen.findByDisplayValue(mockCat.name)).toBeInTheDocument()
+  const nameInput1 = await screen.findByLabelText(/name/i)
+  await waitFor(() => expect(nameInput1).toHaveValue(mockCat.name))
 
     await user.clear(screen.getByLabelText(/name/i))
     await user.type(screen.getByLabelText(/name/i), updatedName)
@@ -147,8 +148,9 @@ describe('EditCatPage', () => {
     mockUseParams.mockReturnValue({ id: '1' })
     renderComponent()
 
-    await waitFor(async () => {
-      expect(await screen.findByDisplayValue(mockCat.name)).toBeInTheDocument()
+    const nameInput = await screen.findByLabelText(/name/i)
+    await waitFor(() => {
+      expect(nameInput).toHaveValue(mockCat.name)
     })
 
     await user.clear(screen.getByLabelText(/name/i))
@@ -186,7 +188,8 @@ describe('EditCatPage', () => {
     renderComponent()
 
   // Wait for form to load by asserting on a known field value
-  expect(await screen.findByDisplayValue(mockCat.name)).toBeInTheDocument()
+  const nameInput2 = await screen.findByLabelText(/name/i)
+  await waitFor(() => expect(nameInput2).toHaveValue(mockCat.name))
 
     try {
       await user.click(screen.getByRole('button', { name: /update cat/i }))
@@ -218,6 +221,7 @@ describe('EditCatPage', () => {
   it('navigates to the cat list on cancel', async () => {
     mockUseParams.mockReturnValue({ id: '1' })
     renderComponent()
+  // Ensure page is rendered before clicking cancel
   expect(await screen.findByRole('heading', { name: /edit cat profile/i })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: /cancel/i }))
     await waitFor(() => {

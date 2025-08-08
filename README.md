@@ -52,7 +52,7 @@ docker compose exec backend php artisan storage:link
 
 -   **Application URL:** [http://localhost:8000](http://localhost:8000)
 -   **Admin Panel:** [http://localhost:8000/admin](http://localhost:8000/admin)
-    -   **Email:** `test@example.com`
+    -   **Email:** `admin@example.com`
     -   **Password:** `password`
 
 **3. Daily Workflow**

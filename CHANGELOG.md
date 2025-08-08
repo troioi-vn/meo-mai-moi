@@ -4,6 +4,9 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Changed
+- **Login Redirect**: Improved the login redirect logic to be more secure and flexible. It now supports relative redirect paths while preventing open redirects to external sites.
+
 ### Fixed
 - **Test Stability**: Improved the reliability of tests in `EditCatPage.test.tsx` by adding explicit `waitFor` assertions to prevent race conditions.
 

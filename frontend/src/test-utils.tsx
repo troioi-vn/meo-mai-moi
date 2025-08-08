@@ -2,7 +2,7 @@ import type { ReactElement } from 'react'
 import type { RenderOptions } from '@testing-library/react'
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import { AllTheProviders } from '@/components/test/AllTheProviders'
 import { testQueryClient } from '@/test-query-client'
 
@@ -11,20 +11,39 @@ const customRender = (ui: React.ReactElement, options?: Omit<RenderOptions, 'wra
 
 import type { User } from '@/types/user'
 
+type RouteDef = { path: string; element: React.ReactElement }
+
 const renderWithRouter = (
   ui: ReactElement,
-  {
-    route = '/',
-    initialAuthState = { user: null, isLoading: false, isAuthenticated: false },
-    ...renderOptions
-  }: {
+  options: {
     route?: string
+    initialEntries?: string[]
+    routes?: RouteDef[]
     initialAuthState?: { user: User | null; isLoading: boolean; isAuthenticated: boolean }
   } & Omit<RenderOptions, 'wrapper'> = {}
 ) => {
+  const {
+    route = '/',
+    initialEntries,
+    routes,
+    initialAuthState = { user: null, isLoading: false, isAuthenticated: false },
+    ...renderOptions
+  } = options
+
+  const entries = initialEntries ?? [route]
+
   const utils = render(
-    <MemoryRouter initialEntries={[route]}>
-      <AllTheProviders initialAuthState={initialAuthState}>{ui}</AllTheProviders>
+    <MemoryRouter initialEntries={entries}>
+      <AllTheProviders initialAuthState={initialAuthState}>
+        <Routes>
+          {/* Render the UI at the current route by default */}
+          <Route path="*" element={ui} />
+          {/* Additional routes for assertions (e.g., redirect targets) */}
+          {routes?.map((r) => (
+            <Route key={r.path} path={r.path} element={r.element} />
+          ))}
+        </Routes>
+      </AllTheProviders>
     </MemoryRouter>,
     renderOptions
   )

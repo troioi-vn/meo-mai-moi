@@ -10,7 +10,11 @@ describe('LoginForm', () => {
 
   beforeEach(() => {
     user = userEvent.setup()
+    // Mock successful login by default
     server.use(
+      http.post('http://localhost:3000/api/login', () => {
+        return new HttpResponse(null, { status: 204 })
+      }),
       http.get('http://localhost:3000/api/user', () => {
         return HttpResponse.json({
           id: 1,
@@ -21,6 +25,15 @@ describe('LoginForm', () => {
       })
     )
   })
+
+  const TestComponent = ({ text }: { text: string }) => <div>{text}</div>
+
+  const fillAndSubmit = async () => {
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com')
+    await user.type(screen.getByLabelText(/password/i), 'password123')
+    await user.click(screen.getByRole('button', { name: /login/i }))
+  }
+
   it('renders the login form correctly', async () => {
     renderWithRouter(<LoginForm />)
     await waitFor(() => {
@@ -60,10 +73,62 @@ describe('LoginForm', () => {
     await user.click(screen.getByRole('button', { name: /login/i }))
 
     await waitFor(() => {
-      expect(
-        screen.getByText('Failed to login. Please check your credentials.')
-      ).toBeInTheDocument()
+      expect(screen.getByTestId('login-error-message')).toHaveTextContent(
+        'Failed to login. Please check your credentials.'
+      )
     })
     vi.restoreAllMocks()
+  })
+
+  it('redirects to /account/cats on successful login by default', async () => {
+    renderWithRouter(<LoginForm />, {
+      initialEntries: ['/login'],
+      routes: [{ path: '/account/cats', element: <TestComponent text="Cat Account Page" /> }],
+    })
+
+    await fillAndSubmit()
+
+    await waitFor(() => {
+      expect(screen.getByText('Cat Account Page')).toBeInTheDocument()
+    })
+  })
+
+  it('redirects to the provided relative path on successful login', async () => {
+    renderWithRouter(<LoginForm />, {
+      initialEntries: ['/login?redirect=/custom-path'],
+      routes: [{ path: '/custom-path', element: <TestComponent text="Custom Page" /> }],
+    })
+
+    await fillAndSubmit()
+
+    await waitFor(() => {
+      expect(screen.getByText('Custom Page')).toBeInTheDocument()
+    })
+  })
+
+  it('redirects to default path if redirect param is an absolute URL', async () => {
+    renderWithRouter(<LoginForm />, {
+      initialEntries: ['/login?redirect=http://scam.com/malicious'],
+      routes: [{ path: '/account/cats', element: <TestComponent text="Cat Account Page" /> }],
+    })
+
+    await fillAndSubmit()
+
+    await waitFor(() => {
+      expect(screen.getByText('Cat Account Page')).toBeInTheDocument()
+    })
+  })
+
+  it('redirects to default path if redirect param starts with //', async () => {
+    renderWithRouter(<LoginForm />, {
+      initialEntries: ['/login?redirect=//scam.com/malicious'],
+      routes: [{ path: '/account/cats', element: <TestComponent text="Cat Account Page" /> }],
+    })
+
+    await fillAndSubmit()
+
+    await waitFor(() => {
+      expect(screen.getByText('Cat Account Page')).toBeInTheDocument()
+    })
   })
 })

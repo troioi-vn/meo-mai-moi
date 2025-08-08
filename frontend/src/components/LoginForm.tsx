@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,6 +11,17 @@ const LoginForm: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const { login } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const getRedirectPath = (): string => {
+    const params = new URLSearchParams(location.search)
+    const redirect = params.get('redirect') || ''
+    // Basic open-redirect protection: allow only relative paths starting with a single '/'
+    if (redirect.startsWith('/') && !redirect.startsWith('//') && !/^https?:/i.test(redirect)) {
+      return redirect
+    }
+    return '/account/cats'
+  }
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault()
@@ -18,8 +29,8 @@ const LoginForm: React.FC = () => {
 
     void (async () => {
       try {
-        await login({ email, password })
-        void navigate('/account/cats')
+  await login({ email, password })
+  void navigate(getRedirectPath())
       } catch (err: unknown) {
         setError('Failed to login. Please check your credentials.')
         console.error(err)

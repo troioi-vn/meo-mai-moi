@@ -4,6 +4,9 @@ FROM node:22.17.1 AS app-build
 # Set the working directory for the entire application
 WORKDIR /app
 
+# Update npm to the latest version
+RUN npm install -g npm@11.5.2
+
 # Copy all source code into the build stage
 COPY ./frontend /app/frontend
 COPY ./backend /app/backend

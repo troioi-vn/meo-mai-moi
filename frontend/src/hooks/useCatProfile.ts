@@ -48,7 +48,7 @@ export const useCatProfile = (id: string | undefined): UseCatProfileResult => {
     void fetchCat()
   }, [id, version])
 
-  const refresh = () => setVersion((v) => v + 1)
+  const refresh = () => { setVersion((v) => v + 1); }
 
   return { cat, loading, error, refresh }
 }

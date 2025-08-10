@@ -19,7 +19,7 @@ describe('PlacementRequestModal', () => {
 
   beforeEach(() => {
     (useCreatePlacementRequest as unknown as Mock<
-      () => Partial<UseMutationResult<PlacementRequest, AxiosError<unknown>, PlacementRequestPayload>>
+      () => Partial<UseMutationResult<PlacementRequest, AxiosError, PlacementRequestPayload>>
     >).mockReturnValue({
       mutate: mockMutate as UseMutationResult<PlacementRequest, AxiosError, PlacementRequestPayload>['mutate'],
       isPending: false,
@@ -33,7 +33,7 @@ describe('PlacementRequestModal', () => {
   it('renders correctly when open', () => {
     render(<PlacementRequestModal catId={1} isOpen={true} onClose={mockOnClose} />);
     expect(screen.getByText('Create Placement Request')).toBeInTheDocument();
-    const submit = screen.getByRole('button', { name: /create request/i }) as HTMLButtonElement;
+    const submit = screen.getByRole('button', { name: /create request/i });
     expect(submit.disabled).toBe(true);
   });
 

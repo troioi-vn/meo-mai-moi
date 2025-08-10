@@ -27,7 +27,7 @@ interface DeleteAccountDialogProps {
 }
 
 const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDeleted }) => {
-  const { deleteAccount, logout } = useAuth()
+  const { deleteAccount } = useAuth()
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isOpen, setIsOpen] = useState(false)

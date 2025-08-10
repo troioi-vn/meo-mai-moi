@@ -15,7 +15,7 @@ const LoginForm: React.FC = () => {
 
   const getRedirectPath = (): string => {
     const params = new URLSearchParams(location.search)
-    const redirect = params.get('redirect') || ''
+  const redirect = params.get('redirect') ?? ''
     // Basic open-redirect protection: allow only relative paths starting with a single '/'
     if (redirect.startsWith('/') && !redirect.startsWith('//') && !/^https?:/i.test(redirect)) {
       return redirect

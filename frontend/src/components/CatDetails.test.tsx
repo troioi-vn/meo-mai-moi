@@ -1,21 +1,26 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { vi } from 'vitest';
+import { vi, beforeEach, describe, it, expect } from 'vitest';
 import { CatDetails } from './CatDetails';
-import { useAuth } from '@/hooks/use-auth';
-import { useLocation, useNavigate } from 'react-router-dom';
+import type { AuthContextType } from '@/contexts/auth-context';
+// imports removed; module is mocked below
 import { toast } from 'sonner';
 import type { Cat } from '@/types/cat';
 import { MemoryRouter } from 'react-router-dom';
 
 // Mocks
-vi.mock('@/hooks/use-auth');
+let mockAuth: Partial<AuthContextType> = {};
+vi.mock('@/hooks/use-auth', () => ({
+  useAuth: () => (mockAuth as AuthContextType),
+}));
+const mockNavigate = vi.fn();
+const mockUseLocation = { pathname: '/cats/1' };
 vi.mock('react-router-dom', async () => {
-  const original = await vi.importActual('react-router-dom');
+  const original = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
   return {
     ...original,
-    useNavigate: vi.fn(),
-    useLocation: vi.fn(),
+    useNavigate: () => mockNavigate,
+    useLocation: () => mockUseLocation,
   };
 });
 vi.mock('sonner', () => ({
@@ -27,10 +32,7 @@ vi.mock('@/components/PlacementResponseModal', () => ({
   PlacementResponseModal: ({ isOpen }: { isOpen: boolean }) => (isOpen ? <div>PlacementResponseModal</div> : null),
 }));
 
-const mockNavigate = vi.fn();
-const mockUseLocation = {
-  pathname: '/cats/1',
-};
+// mocks moved above
 
 const baseCat: Cat = {
   id: 1,
@@ -56,9 +58,7 @@ const renderWithRouter = (ui: React.ReactElement) => {
 describe('CatDetails', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
-    (useLocation as jest.Mock).mockReturnValue(mockUseLocation);
-    (useAuth as jest.Mock).mockReturnValue({ isAuthenticated: false }); // Default mock
+    mockAuth = { isAuthenticated: false } as Partial<AuthContextType>;
   });
 
   it('renders cat details correctly', () => {
@@ -108,7 +108,7 @@ describe('CatDetails', () => {
     });
 
     it('shows respond button for non-owner', () => {
-      (useAuth as jest.Mock).mockReturnValue({ isAuthenticated: true });
+  mockAuth = { isAuthenticated: true } as Partial<AuthContextType>;
       const catForResponder: Cat = {
         ...baseCat,
         viewer_permissions: { can_edit: false, can_delete: false },
@@ -134,7 +134,7 @@ describe('CatDetails', () => {
     });
 
     it('opens modal on respond click when authenticated', async () => {
-      (useAuth as jest.Mock).mockReturnValue({ isAuthenticated: true });
+  mockAuth = { isAuthenticated: true } as Partial<AuthContextType>;
       const catForResponder: Cat = {
         ...baseCat,
         placement_requests: [{ id: 103, status: 'open', is_active: true, cat_id: 1, request_type: 'foster', notes: '', expires_at: '' }],
@@ -149,7 +149,7 @@ describe('CatDetails', () => {
     });
 
     it('redirects to login on respond click when not authenticated', async () => {
-      (useAuth as jest.Mock).mockReturnValue({ isAuthenticated: false });
+  mockAuth = { isAuthenticated: false } as Partial<AuthContextType>;
       const catForResponder: Cat = {
         ...baseCat,
         placement_requests: [{ id: 104, status: 'open', is_active: true, cat_id: 1, request_type: 'foster', notes: '', expires_at: '' }],

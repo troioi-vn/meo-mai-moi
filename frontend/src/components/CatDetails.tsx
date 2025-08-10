@@ -25,12 +25,11 @@ export const CatDetails: React.FC<CatDetailsProps> = ({ cat, onDeletePlacementRe
   const { isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const hasActivePlacementRequest = Boolean(
-    cat.placement_request_active || (cat.placement_requests?.some((r) => r.is_active || r.status === 'open' || r.status === 'pending_review') ?? false)
-  )
+  const anyActive = Boolean(cat.placement_requests?.some((r) => r.is_active || r.status === 'open' || r.status === 'pending_review'))
+  const hasActivePlacementRequest = (cat.placement_request_active === true) ? true : anyActive
   const activePlacementRequest = (
-    cat.placement_requests?.find((r) => r.is_active) ??
-    cat.placement_requests?.find((r) => r.status === 'open' || r.status === 'pending_review') ??
+  cat.placement_requests?.find((r) => r.is_active) ??
+  cat.placement_requests?.find((r) => (r.status === 'open' || r.status === 'pending_review')) ??
     cat.placement_requests?.[0]
   )
   const activePlacementRequestId = activePlacementRequest?.id
@@ -125,7 +124,7 @@ export const CatDetails: React.FC<CatDetailsProps> = ({ cat, onDeletePlacementRe
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => onDeletePlacementRequest(request.id)}>Continue</AlertDialogAction>
+                                <AlertDialogAction onClick={() => { onDeletePlacementRequest(request.id); }}>Continue</AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>
@@ -159,7 +158,7 @@ export const CatDetails: React.FC<CatDetailsProps> = ({ cat, onDeletePlacementRe
                                         const id = myPendingTransfer.id
                                         if (id) {
                                           if (typeof onCancelTransferRequest === 'function') {
-                                            void onCancelTransferRequest(id)
+                                            onCancelTransferRequest(id)
                                           } else {
                                             toast.info('Cancel action is not available here.')
                                           }
@@ -175,10 +174,10 @@ export const CatDetails: React.FC<CatDetailsProps> = ({ cat, onDeletePlacementRe
                           </div>
                         ) : (
                           <>
-                            <Button onClick={handleRespondClick} disabled={!!myPendingTransfer}>Respond</Button>
+                            <Button onClick={() => { handleRespondClick() }} disabled={!!myPendingTransfer}>Respond</Button>
                             <PlacementResponseModal
                               isOpen={isRespondOpen}
-                              onClose={() => setIsRespondOpen(false)}
+                              onClose={() => { setIsRespondOpen(false); }}
                               catName={cat.name}
                               catId={cat.id}
                               placementRequestId={activePlacementRequestId}

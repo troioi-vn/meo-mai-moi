@@ -32,11 +32,11 @@ interface PlacementRequestModalProps {
 }
 
 export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({ catId, isOpen, onClose, onSuccess, initialValues }) => {
-  const [requestType, setRequestType] = useState(initialValues?.request_type || '');
-  const [notes, setNotes] = useState(initialValues?.notes || '');
+  const [requestType, setRequestType] = useState(initialValues?.request_type ?? '');
+  const [notes, setNotes] = useState(initialValues?.notes ?? '');
   const [expiresAt, setExpiresAt] = useState<Date | undefined>(undefined);
-  const [startDate, setStartDate] = useState<Date | undefined>(initialValues?.start_date);
-  const [endDate, setEndDate] = useState<Date | undefined>(initialValues?.end_date);
+  const [startDate, setStartDate] = useState<Date | undefined>(initialValues?.start_date ?? undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(initialValues?.end_date ?? undefined);
   const createPlacementRequestMutation = useCreatePlacementRequest();
 
   useEffect(() => {

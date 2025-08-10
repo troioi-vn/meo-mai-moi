@@ -61,7 +61,7 @@ const HelperProfileEditPage: React.FC = () => {
                   variant="destructive"
                   size="sm"
                   className="absolute top-2 right-2"
-                  onClick={() => deletePhotoMutation.mutate(photo.id)}
+                  onClick={() => { deletePhotoMutation.mutate(photo.id); }}
                   disabled={deletePhotoMutation.isPending}
                 >
                   Delete
@@ -105,7 +105,7 @@ const HelperProfileEditPage: React.FC = () => {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => deleteMutation.mutate()}>Delete</AlertDialogAction>
+                      <AlertDialogAction onClick={() => { deleteMutation.mutate(); }}>Delete</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>

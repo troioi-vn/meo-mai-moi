@@ -26,13 +26,13 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({ 
   const [submitting, setSubmitting] = useState(false);
 
   const handleInitialSubmit = () => {
-    if (!selectedProfile || !requestedRelationshipType) {
+  if ((selectedProfile ?? '') === '' || (requestedRelationshipType ?? '') === '') {
       toast.error('Please select a helper profile and a relationship type.');
       return;
     }
     if (requestedRelationshipType === 'fostering' && fosteringType === 'paid') {
       const amount = parseFloat(price);
-      if (isNaN(amount) || amount <= 0) {
+  if (Number.isNaN(amount) || amount <= 0) {
         toast.error('Please enter a valid price greater than 0 for paid fostering.');
         return;
       }
@@ -54,9 +54,7 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({ 
       });
       toast.success('Placement response submitted successfully!');
       // Let parent refresh the cat data so the new pending response appears
-      if (onSuccess) {
-        onSuccess();
-      }
+  onSuccess?.();
       onClose();
       setShowConfirmation(false);
     } catch (error) {
@@ -65,14 +63,14 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({ 
       const anyErr = error as { response?: { status?: number; data?: { message?: string; errors?: Record<string, string[]> } } };
       if (anyErr.response?.status === 409) {
         toast.info("You've already responded to this request. We'll refresh the page.");
-        if (onSuccess) onSuccess();
+        onSuccess?.();
         onClose();
         setShowConfirmation(false);
         return;
       }
       if (anyErr.response?.status === 422) {
-        const errs = anyErr.response.data?.errors;
-        const msg = Object.values(errs ?? {}).flat().join('\n') || anyErr.response.data?.message || 'Validation error.';
+        const errs = anyErr.response?.data?.errors ?? {};
+        const msg = Object.values(errs).flat().join('\n') || anyErr.response?.data?.message || 'Validation error.';
         toast.error(msg);
       } else {
         toast.error('Failed to submit placement response.');
@@ -86,8 +84,8 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({ 
       const fetchHelperProfiles = async () => {
         try {
           setLoading(true);
-          const response = await api.get('helper-profiles');
-          setHelperProfiles(response.data.data);
+          const response = await api.get<{ data: HelperProfile[] }>('helper-profiles');
+          setHelperProfiles(response.data.data as HelperProfile[]);
         } catch (error) {
           console.error('Failed to fetch helper profiles', error);
           toast.error('Failed to fetch helper profiles.');
@@ -153,7 +151,7 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({ 
                   <>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <label htmlFor="fostering-type" className="text-right">Fostering Type</label>
-                      <Select onValueChange={(v) => setFosteringType(v as 'free' | 'paid')} value={fosteringType}>
+                      <Select onValueChange={(v) => { setFosteringType(v as 'free' | 'paid'); }} value={fosteringType}>
                         <SelectTrigger className="col-span-3">
                           <SelectValue placeholder="Select fostering type..." />
                         </SelectTrigger>
@@ -173,7 +171,7 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({ 
                           step="0.01"
                           className="col-span-3 rounded-md border bg-background px-3 py-2"
                           value={price}
-                          onChange={(e) => setPrice(e.target.value)}
+                          onChange={(e) => { setPrice(e.target.value); }}
                           placeholder="Enter price"
                         />
                       </div>

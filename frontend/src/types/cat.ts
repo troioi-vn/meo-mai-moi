@@ -19,8 +19,9 @@ export interface Cat {
     location?: string
   }
   viewer_permissions?: {
-    can_edit: boolean
-    can_view_contact: boolean
+    can_edit?: boolean
+    can_view_contact?: boolean
+    can_delete?: boolean
   }
   placement_requests?: PlacementRequest[]
   // Convenience flag from backend (optional) used by CatCard
@@ -30,19 +31,19 @@ export interface Cat {
 export interface PlacementRequest {
   id: number;
   cat_id: number;
-  user_id: number;
-  // Support backend enums and existing test/mocks values
-  request_type: 'foster_payed' | 'foster_free' | 'permanent' | 'fostering' | 'permanent_foster' | 'adoption';
-  status: 'open' | 'pending_review' | 'fulfilled' | 'expired' | 'cancelled';
-  notes: string;
+  user_id?: number;
+  // Support backend enums and allow arbitrary strings to avoid redundant type constituents rule
+  request_type: string;
+  status: string;
+  notes?: string;
   expires_at?: string;
   // Optional date-range fields used by filters/tests
   start_date?: string;
   end_date?: string;
   is_active?: boolean;
   transfer_requests?: TransferRequest[];
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface TransferRequest {
@@ -51,8 +52,8 @@ export interface TransferRequest {
   placement_request_id?: number;
   helper_profile_id?: number;
   initiator_user_id?: number;
-  requested_relationship_type?: 'fostering' | 'permanent_foster' | 'adoption' | string;
-  status?: 'pending' | 'accepted' | 'rejected' | string;
+  requested_relationship_type?: string;
+  status?: string;
   helper_profile?: {
     id?: number;
   city?: string;

@@ -63,7 +63,7 @@ export function UserMenu() {
         <DropdownMenuLabel>Theme</DropdownMenuLabel>
         <DropdownMenuRadioGroup
           value={theme}
-          onValueChange={(value) => {
+          onValueChange={(value: string) => {
             if (value === 'light' || value === 'dark' || value === 'system') {
               setTheme(value)
             }
@@ -88,7 +88,7 @@ export function UserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => {
-            logout()
+            void logout()
               .then(() => {
                 navigate('/login')
               })

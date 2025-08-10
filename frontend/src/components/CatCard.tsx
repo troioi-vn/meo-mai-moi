@@ -44,7 +44,7 @@ export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
             </span>
           )}
           {cat.placement_requests?.map((request) => {
-            const key = `${cat.id}-${request.id ?? request.request_type}-${request.expires_at ?? request.start_date ?? ''}`
+            const key = `${String(cat.id)}-${String(request.id)}-${request.expires_at ?? request.start_date ?? ''}`
             return (
               <span
                 key={key}
@@ -64,12 +64,12 @@ export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
             cat.placement_request_active &&
             activePlacementRequestId !== undefined && (
               <>
-                <Button className="w-full" onClick={() => setIsModalOpen(true)}>
+                <Button className="w-full" onClick={() => { setIsModalOpen(true); }}>
                   Respond
                 </Button>
                 <PlacementResponseModal
                   isOpen={isModalOpen}
-                  onClose={() => setIsModalOpen(false)}
+                  onClose={() => { setIsModalOpen(false); }}
                   catName={cat.name}
                   catId={cat.id}
                   placementRequestId={activePlacementRequestId}

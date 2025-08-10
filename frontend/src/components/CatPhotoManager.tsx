@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Upload, X, Camera, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -14,9 +14,14 @@ interface CatPhotoManagerProps {
 }
 
 export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManagerProps) {
+  const [internalCat, setInternalCat] = useState(cat)
   const [isUploading, setIsUploading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    setInternalCat(cat)
+  }, [cat])
 
   const handlePhotoUpload = async (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -37,12 +42,13 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
       formData.append('photo', file)
 
       // Use the correct backend endpoint for photo upload
-      const response = await api.post<{ data: Cat }>(`/cats/${String(cat.id)}/photos`, formData, {
+      const response = await api.post<{ data: Cat }>(`/cats/${String(internalCat.id)}/photos`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       })
 
+      setInternalCat(response.data.data)
       onPhotoUpdated(response.data.data)
       toast.success('Photo uploaded successfully')
     } catch (error: unknown) {
@@ -76,11 +82,12 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
 
     try {
       const photoId =
-        cat.photo && 'id' in cat.photo ? String((cat.photo as { id: unknown }).id) : ''
-      await api.delete<Cat>(`/cats/${String(cat.id)}/photos/${photoId}`)
+        internalCat.photo && 'id' in internalCat.photo ? String((internalCat.photo as { id: unknown }).id) : ''
+      await api.delete<Cat>(`/cats/${String(internalCat.id)}/photos/${photoId}`)
 
       // Manually update the cat object to reflect photo deletion
-      const updatedCat: Cat = { ...cat, photo: null, photo_url: undefined }
+      const updatedCat: Cat = { ...internalCat, photo: null, photo_url: undefined }
+      setInternalCat(updatedCat)
       onPhotoUpdated(updatedCat)
       toast.success('Photo deleted successfully')
     } catch (error: unknown) {
@@ -131,11 +138,11 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
 
         {/* Photo Display */}
         <div className="relative">
-          {cat.photo_url ? (
+          {internalCat.photo_url ? (
             <div className="relative group">
               <img
-                src={cat.photo_url}
-                alt={`Photo of ${cat.name}`}
+                src={internalCat.photo_url}
+                alt={`Photo of ${internalCat.name}`}
                 className="w-full max-w-md mx-auto rounded-lg object-cover aspect-[3/2]"
               />
 
@@ -201,7 +208,7 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
               aria-label="Upload Photo"
             />
 
-            {!cat.photo_url && (
+            {!internalCat.photo_url && (
               <Button onClick={triggerFileSelect} disabled={isUploading} className="w-full">
                 {isUploading ? (
                   <>

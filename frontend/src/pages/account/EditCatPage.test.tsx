@@ -165,8 +165,8 @@ describe('EditCatPage', () => {
       expect(screen.getByText('Name is required.')).toBeInTheDocument()
       expect(screen.getByText('Breed is required.')).toBeInTheDocument()
       expect(screen.getByText('Birthday is required.')).toBeInTheDocument()
-      expect(screen.getByText('Location is required.')).toBeInTheDocument()
-      expect(screen.getByText('Description is required.')).toBeInTheDocument()
+      expect(screen.queryByText('Location is required.')).not.toBeInTheDocument()
+      expect(screen.queryByText('Description is required.')).not.toBeInTheDocument()
     })
     vi.restoreAllMocks()
   })
@@ -227,5 +227,84 @@ describe('EditCatPage', () => {
     await waitFor(() => {
       expect(mockUseNavigate).toHaveBeenCalledWith('/account/cats')
     })
+  })
+
+  it('submits the form successfully when optional fields are empty', async () => {
+    vi.spyOn(console, 'log').mockImplementation(() => {
+      /* empty */
+    })
+    vi.spyOn(console, 'error').mockImplementation(() => {
+      /* empty */
+    })
+    server.use(
+      http.put('http://localhost:3000/api/cats/1', () => {
+        return HttpResponse.json({ data: { ...mockCat, location: '', description: '' } })
+      })
+    )
+
+    mockUseParams.mockReturnValue({ id: '1' })
+    renderComponent()
+
+    // Wait for the form to load
+    const nameInput = await screen.findByLabelText(/name/i)
+    await waitFor(() => expect(nameInput).toHaveValue(mockCat.name))
+
+    // Clear optional fields
+    await user.clear(screen.getByLabelText(/location/i))
+    await user.clear(screen.getByLabelText(/description/i))
+
+    // Submit the form
+    await user.click(screen.getByRole('button', { name: /update cat/i }))
+
+    // Assert success
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith('Cat profile updated successfully!')
+    })
+    await waitFor(() => {
+      expect(mockUseNavigate).toHaveBeenCalledWith('/account/cats')
+    })
+    vi.restoreAllMocks()
+  })
+
+  it('shows a confirmation dialog and updates status to lost on confirm', async () => {
+    vi.spyOn(console, 'log').mockImplementation(() => {
+      /* empty */
+    })
+    vi.spyOn(console, 'error').mockImplementation(() => {
+      /* empty */
+    })
+    server.use(
+      http.put('http://localhost:3000/api/cats/1', async ({ request }) => {
+        const data = await request.json()
+        expect(data.status).toBe('lost')
+        return HttpResponse.json({ data: { ...mockCat, status: 'lost' } })
+      })
+    )
+
+    mockUseParams.mockReturnValue({ id: '1' })
+    renderComponent()
+
+    // Wait for the form to load
+    const nameInput = await screen.findByLabelText(/name/i)
+    await waitFor(() => expect(nameInput).toHaveValue(mockCat.name))
+
+    // Click the "Mark as Lost" button
+    await user.click(screen.getByRole('button', { name: /mark as lost/i }))
+
+    // Check that the dialog is open
+    expect(await screen.findByRole('alertdialog')).toBeInTheDocument()
+    expect(screen.getByText('Are you sure?')).toBeInTheDocument()
+
+    // Confirm the dialog
+    await user.click(screen.getByRole('button', { name: /confirm/i }))
+
+    // Assert success
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith('Cat status updated to LOST.')
+    })
+    await waitFor(() => {
+      expect(mockUseNavigate).toHaveBeenCalledWith('/account/cats')
+    })
+    vi.restoreAllMocks()
   })
 })

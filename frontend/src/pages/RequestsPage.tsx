@@ -38,7 +38,7 @@ const RequestsPage = () => {
       {/* Filters */}
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
-          <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as 'all' | 'foster' | 'adoption')}>
+          <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v as 'all' | 'foster' | 'adoption'); }}>
             <SelectTrigger className="w-[220px]" aria-label="Type Filter">
               <SelectValue placeholder="All Types" />
             </SelectTrigger>

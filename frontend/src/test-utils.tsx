@@ -11,7 +11,7 @@ const customRender = (ui: React.ReactElement, options?: Omit<RenderOptions, 'wra
 
 import type { User } from '@/types/user'
 
-type RouteDef = { path: string; element: React.ReactElement }
+interface RouteDef { path: string; element: React.ReactElement }
 
 const renderWithRouter = (
   ui: ReactElement,

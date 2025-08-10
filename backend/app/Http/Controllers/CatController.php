@@ -66,19 +66,9 @@ class CatController extends Controller
             ->get()
             ->pluck('cat');
 
-        // Transferred away: cats that the user used to own but no longer does
-        $transferredAway = Cat::whereHas('placementRequests', function ($q) use ($user) {
-            $q->where('status', \App\Enums\PlacementRequestStatus::FULFILLED->value);
-        })->where('user_id', '!=', $user->id)
-          ->whereIn('id', function ($sub) use ($user) {
-              $sub->select('cat_id')
-                  ->from('cats') // placeholder to satisfy builder
-                  ->whereRaw('1=0');
-          })->get();
-
-        // Note: The above transferredAway is a placeholder as we don't keep historical owners yet.
-        // For now, return empty for that section.
-        $transferredAway = collect([]);
+    // Transferred away: cats that the user used to own but no longer does
+    // TODO: Replace with query based on ownership_history once wired in.
+    $transferredAway = collect([]);
 
         return $this->sendSuccess([
             'owned' => $owned->values(),

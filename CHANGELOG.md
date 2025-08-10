@@ -5,6 +5,7 @@ All notable changes to this project are documented here, following the [Keep a C
 ## [Unreleased]
 
 ### Changed
+- **Redirect to login page after logout:** After a user logs out, they are now redirected to the login page.
 - **Authorization Centralization:** `CatController@show` now relies on policies via `$this->authorize('view', $cat)`; controller logic simplified while preserving `viewer_permissions` in the response.
 - **Admin Middleware:** Updated to support both enum-backed roles and string roles, improving robustness across environments (and future Spatie-only direction).
 - **Docker Entrypoint/Env:** Entry point now generates `.env` as a fallback and creates `APP_KEY` when missing, instead of depending on `.env.docker`.

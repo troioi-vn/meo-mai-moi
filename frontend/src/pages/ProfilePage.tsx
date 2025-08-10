@@ -5,9 +5,11 @@ import { DeleteAccountDialog } from '@/components/DeleteAccountDialog'
 import { UserAvatar } from '@/components/UserAvatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export default function ProfilePage() {
   const { user, logout, isLoading, loadUser } = useAuth()
+  const navigate = useNavigate()
 
   useEffect(() => {
     void loadUser()
@@ -72,9 +74,13 @@ export default function ProfilePage() {
 
           <Button
             onClick={() => {
-              logout().catch((err: unknown) => {
-                console.error('Logout error:', err)
-              })
+              logout()
+                .then(() => {
+                  navigate('/login')
+                })
+                .catch((err: unknown) => {
+                  console.error('Logout error:', err)
+                })
             }}
             className="my-4 border-gray-200 dark:border-gray-700"
             variant="destructive"
@@ -85,9 +91,13 @@ export default function ProfilePage() {
           <hr className="my-4 border-gray-200 dark:border-gray-700" />
           <DeleteAccountDialog
             onAccountDeleted={() => {
-              logout().catch((err: unknown) => {
-                console.error('Logout error:', err)
-              })
+              logout()
+                .then(() => {
+                  navigate('/login')
+                })
+                .catch((err: unknown) => {
+                  console.error('Logout error:', err)
+                })
             }}
           />
         </div>

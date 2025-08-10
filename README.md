@@ -44,8 +44,7 @@ docker compose up -d --build
 # Run the initial application setup (for development)
 # This command drops the database and seeds it with test data.
 docker compose exec backend php artisan migrate:fresh --seed && \
-docker compose exec backend php artisan shield:generate --all && \
-docker compose exec backend php artisan storage:link
+docker compose exec backend php artisan shield:generate --all
 ```
 
 **2. Accessing the Application**

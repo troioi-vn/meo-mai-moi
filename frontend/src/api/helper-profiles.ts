@@ -1,5 +1,5 @@
 import { api } from './axios';
-import { HelperProfile } from '../types/helper-profile';
+import type { HelperProfile } from '../types/helper-profile';
 
 interface HelperProfileResponse {
   data: HelperProfile;

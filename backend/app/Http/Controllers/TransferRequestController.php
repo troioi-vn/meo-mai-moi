@@ -271,23 +271,14 @@ class TransferRequestController extends Controller
                     ->update(['status' => 'rejected', 'rejected_at' => now()]);
             }
 
-            // Relationship branching: permanent vs fostering
-            $type = $transferRequest->requested_relationship_type;
-            if ($type === 'permanent_foster') {
-                // Permanent transfer of ownership to initiator (helper)
-                $transferRequest->cat->update(['user_id' => $transferRequest->initiator_user_id]);
-
-                // Optional: record ownership transfer (future enhancement)
-            } elseif ($type === 'fostering') {
-                // Create a foster assignment granting view rights to helper
-                \App\Models\FosterAssignment::create([
-                    'cat_id' => $transferRequest->cat_id,
-                    'owner_user_id' => $transferRequest->recipient_user_id,
-                    'foster_user_id' => $transferRequest->initiator_user_id,
+            // Create initial handover record; finalization occurs on handover completion
+            if (class_exists(\App\Models\TransferHandover::class) && \Illuminate\Support\Facades\Schema::hasTable('transfer_handovers')) {
+                \App\Models\TransferHandover::create([
                     'transfer_request_id' => $transferRequest->id,
-                    'start_date' => now()->toDateString(),
-                    'expected_end_date' => optional($transferRequest->placementRequest)->end_date,
-                    'status' => 'active',
+                    'owner_user_id' => $transferRequest->recipient_user_id,
+                    'helper_user_id' => $transferRequest->initiator_user_id,
+                    'status' => 'pending',
+                    'owner_initiated_at' => now(),
                 ]);
             }
         });

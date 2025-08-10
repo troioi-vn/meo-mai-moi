@@ -17,6 +17,7 @@ use App\Http\Controllers\CatPhotoController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PlacementRequestController;
 use App\Http\Controllers\VersionController;
+use App\Http\Controllers\TransferHandoverController;
 
 Route::get('/version', [VersionController::class, 'show']);
 Route::middleware('auth:sanctum')->group(function () {
@@ -70,6 +71,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/transfer-requests', [TransferRequestController::class, 'store']);
     Route::post('/transfer-requests/{transferRequest}/accept', [TransferRequestController::class, 'accept']);
     Route::post('/transfer-requests/{transferRequest}/reject', [TransferRequestController::class, 'reject']);
+    // Transfer handover lifecycle
+    Route::post('/transfer-requests/{transferRequest}/handover', [TransferHandoverController::class, 'store']);
+    Route::post('/transfer-handovers/{handover}/confirm', [TransferHandoverController::class, 'helperConfirm']);
+    Route::post('/transfer-handovers/{handover}/complete', [TransferHandoverController::class, 'complete']);
     #Route::post('/reviews', [ReviewController::class, 'store']);
 
     // Message Routes

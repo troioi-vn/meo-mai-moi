@@ -1,17 +1,26 @@
 import { api } from './axios';
+import { HelperProfile } from '../types/helper-profile';
 
-export const getHelperProfiles = async () => {
-  const response = await api.get('/helper-profiles');
+interface HelperProfileResponse {
+  data: HelperProfile;
+}
+
+interface HelperProfilesResponse {
+    data: HelperProfile[];
+}
+
+export const getHelperProfiles = async (): Promise<HelperProfilesResponse> => {
+  const response = await api.get<HelperProfilesResponse>('/helper-profiles');
   return response.data;
 };
 
-export const getHelperProfile = async (id: string) => {
-    const response = await api.get(`/helper-profiles/${id}`);
+export const getHelperProfile = async (id: string): Promise<HelperProfileResponse> => {
+    const response = await api.get<HelperProfileResponse>(`/helper-profiles/${id}`);
     return response.data;
 }
 
-export const createHelperProfile = async (data: any) => {
-  const response = await api.post('/helper-profiles', data, {
+export const createHelperProfile = async (data: FormData): Promise<HelperProfileResponse> => {
+  const response = await api.post<HelperProfileResponse>('/helper-profiles', data, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -19,20 +28,19 @@ export const createHelperProfile = async (data: any) => {
   return response.data;
 };
 
-export const updateHelperProfile = ({ id, data }) => {
-  return api.post(`/helper-profiles/${id}`, data, {
+export const updateHelperProfile = async ({ id, data }: { id: string | number; data: FormData }): Promise<HelperProfileResponse> => {
+  const response = await api.post<HelperProfileResponse>(`/helper-profiles/${String(id)}`, data, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
   });
+  return response.data;
 };
 
-export const deleteHelperProfile = async (id: string) => {
-    const response = await api.delete(`/helper-profiles/${id}`);
-    return response.data;
+export const deleteHelperProfile = async (id: string): Promise<void> => {
+    await api.delete(`/helper-profiles/${id}`);
 }
 
-export const deleteHelperProfilePhoto = async (profileId: string, photoId: number) => {
-    const response = await api.delete(`/helper-profiles/${profileId}/photos/${photoId}`);
-    return response.data;
+export const deleteHelperProfilePhoto = async (profileId: string, photoId: number): Promise<void> => {
+    await api.delete(`/helper-profiles/${profileId}/photos/${String(photoId)}`);
 }

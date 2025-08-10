@@ -12,6 +12,7 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Auth Session Behavior:** Register/Login also establish a Sanctum session (cookies) while continuing to return a token for API clients.
 - **Login Redirect**: Improved the login redirect logic to be more secure and flexible. It now supports relative redirect paths while preventing open redirects to external sites.
 - **Transfer Acceptance Flow**: Accepting a transfer response now fulfills the related placement request transactionally and auto-rejects other pending responses.
+- **Transfer Acceptance Flow (deferred finalization)**: Accept no longer immediately transfers ownership or creates a foster assignment. It now creates a `TransferHandover` record and defers finalization to handover completion (see Added).
 - **Cat Visibility Policy**: Active fosterers are allowed to view the cat profile while the assignment is active.
 
 ### Fixed
@@ -20,6 +21,13 @@ All notable changes to this project are documented here, following the [Keep a C
 - **MyCatsPage Hooks Order**: Fixed a React hooks ordering error by removing a conditional `useMemo` within JSX props.
 
 ### Added
+- **Transfer Handover Lifecycle:** Introduced a post-accept procedure to safely hand over the cat.
+  - New `TransferHandover` model and migration to track handover scheduling and confirmations.
+  - Endpoints: initiate handover (owner), confirm condition (helper), complete handover (either party).
+  - On completion, apply final effects:
+    - Permanent: transfer ownership to helper.
+    - Foster: create an active `FosterAssignment`; owner remains.
+  - OpenAPI documentation updated and tests added for lifecycle.
 - **Ownership History:** New `ownership_history` table with `OwnershipHistory` model and relations on `Cat` and `User` to support the `transferred_away` section.
 - **Placement Response System**: Implemented the core functionality for helpers to respond to placement requests.
   - **Backend**:

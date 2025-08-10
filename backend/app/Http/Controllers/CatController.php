@@ -12,6 +12,7 @@ use App\Enums\CatStatus;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use App\Models\FosterAssignment;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * @OA\Schema(
@@ -53,18 +54,23 @@ class CatController extends Controller
         // Owned (current owner)
         $owned = Cat::where('user_id', $user->id)->get();
 
-        // Fostering active/past via assignments
-        $activeFostering = \App\Models\FosterAssignment::where('foster_user_id', $user->id)
-            ->where('status', 'active')
-            ->with('cat')
-            ->get()
-            ->pluck('cat');
+        // Fostering active/past via assignments (guard if table not yet migrated in local/test envs)
+        if (Schema::hasTable('foster_assignments')) {
+            $activeFostering = \App\Models\FosterAssignment::where('foster_user_id', $user->id)
+                ->where('status', 'active')
+                ->with('cat')
+                ->get()
+                ->pluck('cat');
 
-        $pastFostering = \App\Models\FosterAssignment::where('foster_user_id', $user->id)
-            ->whereIn('status', ['completed', 'canceled'])
-            ->with('cat')
-            ->get()
-            ->pluck('cat');
+            $pastFostering = \App\Models\FosterAssignment::where('foster_user_id', $user->id)
+                ->whereIn('status', ['completed', 'canceled'])
+                ->with('cat')
+                ->get()
+                ->pluck('cat');
+        } else {
+            $activeFostering = collect();
+            $pastFostering = collect();
+        }
 
     // Transferred away: cats that the user used to own but no longer does
     // TODO: Replace with query based on ownership_history once wired in.

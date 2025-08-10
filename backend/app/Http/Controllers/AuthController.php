@@ -150,9 +150,12 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        // Revoke all tokens for this device/user (optional)
+        // Revoke current personal access token if present (skip TransientToken for cookie-based sessions)
         if ($request->user()) {
-            $request->user()->currentAccessToken()?->delete();
+            $token = $request->user()->currentAccessToken();
+            if ($token instanceof \Laravel\Sanctum\PersonalAccessToken) {
+                $token->delete();
+            }
         }
         Auth::guard('web')->logout();
 

@@ -57,7 +57,26 @@ class TransferAcceptanceLifecycleTest extends TestCase
         $response = $this->postJson("/api/transfer-requests/{$accepted->id}/accept");
         $response->assertStatus(200);
 
-        // Ownership transferred to helper
+        // After accept, a handover should be created; ownership not yet transferred
+        $this->assertEquals($owner->id, $cat->fresh()->user_id);
+
+        $handover = \App\Models\TransferHandover::where('transfer_request_id', $accepted->id)->first();
+        $this->assertNotNull($handover);
+
+        // Helper confirms condition
+        \Laravel\Sanctum\Sanctum::actingAs($helper);
+        $confirm = $this->postJson("/api/transfer-handovers/{$handover->id}/confirm", [
+            'condition_confirmed' => true,
+            'condition_notes' => 'Matches profile',
+        ]);
+        $confirm->assertStatus(200);
+
+        // Either party completes; owner completes here
+        \Laravel\Sanctum\Sanctum::actingAs($owner);
+        $complete = $this->postJson("/api/transfer-handovers/{$handover->id}/complete");
+        $complete->assertStatus(200);
+
+        // Ownership transferred to helper now
         $this->assertEquals($helper->id, $cat->fresh()->user_id);
 
     // Placement fulfilled and inactive
@@ -97,15 +116,26 @@ class TransferAcceptanceLifecycleTest extends TestCase
         $response = $this->postJson("/api/transfer-requests/{$accepted->id}/accept");
         $response->assertStatus(200);
 
-        // Ownership stays with owner
+        // After accept, handover exists and owner remains
         $this->assertEquals($owner->id, $cat->fresh()->user_id);
+
+        $handover = \App\Models\TransferHandover::where('transfer_request_id', $accepted->id)->first();
+        $this->assertNotNull($handover);
+
+        // Helper confirms and complete
+        \Laravel\Sanctum\Sanctum::actingAs($helper);
+        $this->postJson("/api/transfer-handovers/{$handover->id}/confirm", [
+            'condition_confirmed' => true,
+        ])->assertStatus(200);
+        \Laravel\Sanctum\Sanctum::actingAs($owner);
+        $this->postJson("/api/transfer-handovers/{$handover->id}/complete")->assertStatus(200);
 
     // Placement fulfilled
     $this->assertFalse((bool) $placement->fresh()->is_active);
         $this->assertEquals(\App\Enums\PlacementRequestStatus::FULFILLED, $placement->fresh()->status);
 
-        // Foster assignment created
-        $this->assertDatabaseHas('foster_assignments', [
+    // Foster assignment created on completion
+    $this->assertDatabaseHas('foster_assignments', [
             'cat_id' => $cat->id,
             'owner_user_id' => $owner->id,
             'foster_user_id' => $helper->id,

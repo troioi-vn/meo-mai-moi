@@ -124,6 +124,17 @@ export const catHandlers = [
   http.get('http://localhost:3000/api/my-cats', () => {
     return HttpResponse.json({ data: [mockCat] })
   }),
+  // Returns sectioned cats for the authenticated user
+  http.get('http://localhost:3000/api/my-cats/sections', () => {
+    return HttpResponse.json({
+      data: {
+        owned: [mockCat],
+        fostering_active: [],
+        fostering_past: [],
+        transferred_away: [],
+      },
+    })
+  }),
   // Returns a { data: { ... } } object
   http.get('http://localhost:3000/api/cats/:id', ({ params }) => {
     const catId = Number(params.id)

@@ -121,3 +121,10 @@ npm test
 ## License
 
 This project is licensed under the **MIT License**.
+
+---
+
+## Contributor Guide for Humans and AI Agents
+
+For a concise, agent-oriented overview of architecture, workflows, testing, and common pitfalls, see `GEMINI.md`.
+

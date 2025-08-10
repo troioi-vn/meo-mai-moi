@@ -75,6 +75,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(\App\Models\Cat::class);
     }
 
+    public function ownershipHistory(): HasMany
+    {
+        return $this->hasMany(\App\Models\OwnershipHistory::class);
+    }
+
     /**
      * Determine if the user can access the Filament admin panel.
      */

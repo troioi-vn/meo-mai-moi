@@ -89,30 +89,19 @@ class CatController extends Controller
     }
     public function show(Request $request, Cat $cat)
     {
-    // Load placement requests and their transfer requests with helper profiles and users
-    $cat->load(['placementRequests.transferRequests.helperProfile.user']);
+        // Load placement requests and nested relations needed for the view
+        $cat->load(['placementRequests.transferRequests.helperProfile.user']);
+
+        // Centralize access via policy
+        $this->authorize('view', $cat);
 
         $user = $request->user();
+        $roleValue = $user && $user->role instanceof \BackedEnum ? $user->role->value : ($user->role ?? null);
         $isOwner = $user && $cat->user_id === $user->id;
-        $userRole = $user ? $user->role : null;
-        $isAdmin = $userRole === UserRole::ADMIN || $userRole === UserRole::ADMIN->value;
-
-        $hasActivePlacementRequest = $cat->placementRequests->where('is_active', true)->isNotEmpty();
-        $isActiveFosterer = false;
-        if ($user) {
-            $isActiveFosterer = FosterAssignment::where('cat_id', $cat->id)
-                ->where('foster_user_id', $user->id)
-                ->where('status', 'active')
-                ->exists();
-        }
-
-        if (!$hasActivePlacementRequest && (!$user || (!$isOwner && !$isAdmin && !$isActiveFosterer))) {
-            return $this->sendError('Forbidden: You are not authorized to view this cat.', 403);
-        }
+        $isAdmin = $roleValue === UserRole::ADMIN->value || $roleValue === 'admin';
 
         $viewerPermissions = [
             'can_edit' => $isOwner || $isAdmin,
-            // Owners don't need to view their own contact details; expose contact for admins and non-owner authenticated users
             'can_view_contact' => $isAdmin || ($user && !$isOwner),
         ];
         $cat->setAttribute('viewer_permissions', $viewerPermissions);

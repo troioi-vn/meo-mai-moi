@@ -25,12 +25,17 @@ chown -R www-data:www-data /var/www/storage/app/public
 chmod -R 775 /var/www/storage/app/public
 
 echo "[Step 4] Generating app key if it does not exist..."
-if ! grep -q "APP_KEY=base64" /var/www/.env.docker; then
-    echo "No APP_KEY found, generating one..."
-    su -s /bin/sh -c "php /var/www/artisan key:generate --env=docker" www-data
-    echo "APP_KEY generated."
+if [ ! -f /var/www/.env ]; then
+    echo ".env not found, copying from example..."
+    cp /var/www/.env.example /var/www/.env || true
+    chown www-data:www-data /var/www/.env
+fi
+if ! grep -q "^APP_KEY=base64:" /var/www/.env 2>/dev/null; then
+        echo "No APP_KEY found, generating one..."
+        su -s /bin/sh -c "php /var/www/artisan key:generate --force" www-data
+        echo "APP_KEY generated."
 else
-    echo "APP_KEY already exists."
+        echo "APP_KEY already exists."
 fi
 
 echo "[Step 5] Linking storage..."

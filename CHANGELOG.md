@@ -5,15 +5,21 @@ All notable changes to this project are documented here, following the [Keep a C
 ## [Unreleased]
 
 ### Changed
+- **Authorization Centralization:** `CatController@show` now relies on policies via `$this->authorize('view', $cat)`; controller logic simplified while preserving `viewer_permissions` in the response.
+- **Admin Middleware:** Updated to support both enum-backed roles and string roles, improving robustness across environments (and future Spatie-only direction).
+- **Docker Entrypoint/Env:** Entry point now generates `.env` as a fallback and creates `APP_KEY` when missing, instead of depending on `.env.docker`.
+- **Auth Session Behavior:** Register/Login also establish a Sanctum session (cookies) while continuing to return a token for API clients.
 - **Login Redirect**: Improved the login redirect logic to be more secure and flexible. It now supports relative redirect paths while preventing open redirects to external sites.
 - **Transfer Acceptance Flow**: Accepting a transfer response now fulfills the related placement request transactionally and auto-rejects other pending responses.
 - **Cat Visibility Policy**: Active fosterers are allowed to view the cat profile while the assignment is active.
 
 ### Fixed
+- **API Routing:** Removed duplicate `/api/version` route declaration to keep `VersionController` as the single source of truth.
 - **Test Stability**: Improved the reliability of tests in `EditCatPage.test.tsx` by adding explicit `waitFor` assertions to prevent race conditions.
 - **MyCatsPage Hooks Order**: Fixed a React hooks ordering error by removing a conditional `useMemo` within JSX props.
 
 ### Added
+- **Ownership History:** New `ownership_history` table with `OwnershipHistory` model and relations on `Cat` and `User` to support the `transferred_away` section.
 - **Placement Response System**: Implemented the core functionality for helpers to respond to placement requests.
   - **Backend**:
     - Cat profiles are now publicly visible if they have an active placement request.
@@ -86,6 +92,7 @@ All notable changes to this project are documented here, following the [Keep a C
 - Fixed a UI bug where the select component in the placement request dialog had a transparent background.
 
 ### Removed
+- **Frontend Axios Client:** Removed redundant `frontend/src/api/api.ts` in favor of the standardized `frontend/src/api/axios.ts` client.
 - Removed the "Back" button from the cat profile page for a cleaner user interface.
 
 ## [0.4.0] - 2025-07-24 - Alpha Release

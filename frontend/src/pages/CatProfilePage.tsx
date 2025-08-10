@@ -149,7 +149,10 @@ const CatProfilePage: React.FC = () => {
               return (
                 <div key={placementRequest.id} className="mb-4 p-4 border rounded-lg">
                   <div className="flex justify-between items-center">
-                    <h3 className="font-bold">Responses for {placementRequest.request_type.replace('_', ' ').toUpperCase()}</h3>
+                    <h3 className="font-bold">
+                      Responses for{' '}
+                      <span>{placementRequest.request_type.replace('_', ' ').toUpperCase()}</span>
+                    </h3>
                   </div>
                   {pendingTransfers.length > 0 ? (
                     <ul>

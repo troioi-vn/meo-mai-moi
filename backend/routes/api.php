@@ -35,9 +35,6 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
-Route::get('/version', function () {
-    return response()->json(['version' => 'v0.0.1']);
-});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {

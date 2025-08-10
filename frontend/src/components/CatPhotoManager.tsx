@@ -20,7 +20,12 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    setInternalCat(cat)
+    // Merge incoming cat with any local-only fields the backend may omit
+    setInternalCat((prev) => ({
+      ...prev,
+      ...cat,
+      viewer_permissions: cat.viewer_permissions ?? prev.viewer_permissions,
+    }))
   }, [cat])
 
   const handlePhotoUpload = async (file: File) => {
@@ -37,7 +42,7 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
     }
 
     setIsUploading(true)
-    try {
+  try {
       const formData = new FormData()
       formData.append('photo', file)
 
@@ -48,8 +53,15 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
         },
       })
 
-      setInternalCat(response.data.data)
-      onPhotoUpdated(response.data.data)
+      // Merge to preserve local-only fields like viewer_permissions that backend may omit
+      const merged: Cat = {
+        ...internalCat,
+        ...response.data.data,
+        viewer_permissions: internalCat.viewer_permissions,
+      }
+
+      setInternalCat(merged)
+      onPhotoUpdated(merged)
       toast.success('Photo uploaded successfully')
     } catch (error: unknown) {
       let errorMessage = 'Failed to upload photo. Please try again.'
@@ -86,7 +98,13 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
       await api.delete<Cat>(`/cats/${String(internalCat.id)}/photos/${photoId}`)
 
       // Manually update the cat object to reflect photo deletion
-      const updatedCat: Cat = { ...internalCat, photo: null, photo_url: undefined }
+      const updatedCat: Cat = {
+        ...internalCat,
+        photo: null,
+        photo_url: undefined,
+        // keep any local permission flags
+        viewer_permissions: internalCat.viewer_permissions,
+      }
       setInternalCat(updatedCat)
       onPhotoUpdated(updatedCat)
       toast.success('Photo deleted successfully')
@@ -138,15 +156,19 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
 
         {/* Photo Display */}
         <div className="relative">
-          {internalCat.photo_url ? (
+          {(() => {
+            const imageUrl = internalCat.photo_url ?? internalCat.photo?.url ?? null
+            const canEdit = isOwner || internalCat.viewer_permissions?.can_edit === true
+            return imageUrl ? (
             <div className="relative group">
               <img
-                src={internalCat.photo_url}
+                src={imageUrl}
                 alt={`Photo of ${internalCat.name}`}
                 className="w-full max-w-md mx-auto rounded-lg object-cover aspect-[3/2]"
               />
 
-              {isOwner && (
+        {/* Determine editability from either prop or preserved viewer permissions */}
+              {canEdit && (
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-200 rounded-lg flex items-center justify-center">
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 space-x-2">
                     <Button
@@ -187,17 +209,19 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
                 </div>
               )}
             </div>
-          ) : (
+            ) : (
             <div className="w-full max-w-md mx-auto aspect-[3/2] border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-500">
               <Camera className="h-12 w-12 mb-2" />
               <p className="text-sm text-center">No photo uploaded</p>
-              {isOwner && <p className="text-xs text-center mt-1">Click below to add one</p>}
+              {canEdit && (
+                <p className="text-xs text-center mt-1">Click below to add one</p>
+              )}
             </div>
-          )}
+          )})()}
         </div>
 
         {/* Upload Controls (for owners only) */}
-        {isOwner && (
+        {(isOwner || internalCat.viewer_permissions?.can_edit === true) && (
           <div className="space-y-2">
             <input
               ref={fileInputRef}

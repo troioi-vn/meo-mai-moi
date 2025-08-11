@@ -255,6 +255,38 @@ This section is for AI coding agents (Copilots) to be effective, safe, and fast 
   - Never call hooks conditionally or inline within JSX props if the call site can be skipped/added between renders. Avoid patterns like `useMemo(...)` directly inside a prop when the containing element may be conditionally rendered.
   - Prefer deriving values inline without `useMemo` unless profiling shows a need. If using `useMemo`, declare it unconditionally at the top of the component.
 
+### Session Notes — 2025-08-11
+
+- Vite/ESM type imports
+  - If a module is used only for TypeScript types (e.g., `HelperProfile`), import it with `import type { HelperProfile } from '@/types/helper-profile'` to avoid runtime “doesn’t provide an export named …” errors.
+  - Audit API helpers for value vs type imports; types should never be imported as runtime values.
+
+- shadcn/ui exports and consumers
+  - Some components (e.g., `alert-dialog.tsx`) import `buttonVariants` from `@/components/ui/button`. Ensure `button.tsx` re-exports `buttonVariants`, or update import sites to source `button-variants` directly. Re-exporting avoids broad refactors and fixes missing export runtime errors.
+
+- Test environment polyfills (Vitest + jsdom)
+  - Pointer events: polyfill `PointerEvent` and add `hasPointerCapture`, `setPointerCapture`, `releasePointerCapture` on `Element.prototype` when missing.
+  - Scrolling: polyfill `HTMLElement.prototype.scrollIntoView`.
+  - Prefer feature checks using `in` operator and assign safely with narrow casts to avoid `any` and unnecessary-assertion lint warnings. Use `globalThis` for global feature detection.
+  - Mock libraries that render portals/toasters (e.g., `sonner`) with lightweight stubs in `setupTests.ts` to stabilize tests.
+
+- ESLint/TS rules alignment (practical tips)
+  - prefer-nullish-coalescing: Use `??` instead of `||` for defaulting values that may be `0`, `''`, or `false`.
+  - no-floating-promises: Always await Promises, add `.catch`, or mark explicit fire-and-forget calls with `void` when appropriate.
+  - restrict-template-expressions: Convert non-strings before interpolation (e.g., `String(id)` for numeric keys).
+  - react-x/no-nested-component-definitions: Move inline component definitions to top-level to satisfy rules and improve performance.
+
+- Radix/shadcn components typing
+  - Avoid custom `ref` props in wrapper components if lint complains (`react-x/no-forward-ref`). Prefer the simplest pass-through signature or standard `forwardRef` only when truly needed.
+
+- CatPhotoManager behavior (owner controls)
+  - Preserve `viewer_permissions` when merging server responses after photo upload/delete to keep overlay controls visible.
+  - Compute `canEdit` from `isOwner || viewer_permissions?.can_edit === true`. Don’t rely solely on incoming server payload, as some local-only flags may be omitted.
+  - After successful upload, update local state and call `onPhotoUpdated` with a merged Cat to sync parent views.
+
+- API helpers shape
+  - Axios responses commonly use `{ data: ... }`. Prefer typed generics like `api.get<{ data: T }>(...)` and destructure `response.data.data` to keep types accurate and avoid `any`.
+
 ### Speedrun Commands (optional)
 
 ```bash

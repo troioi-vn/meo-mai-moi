@@ -53,12 +53,23 @@ export interface TransferRequest {
   helper_profile_id?: number;
   initiator_user_id?: number;
   requested_relationship_type?: string;
+  fostering_type?: string | null;
+  price?: number | null;
   status?: string;
+  created_at?: string;
+  updated_at?: string;
   helper_profile?: {
     id?: number;
   city?: string;
   state?: string;
+  address?: string;
+  zip_code?: string;
+  phone?: string;
     user?: { id?: number; name?: string; email?: string };
+  photos?: unknown[];
+  about?: string;
+  created_at?: string;
+  updated_at?: string;
   };
 }
 

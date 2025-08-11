@@ -192,6 +192,320 @@
                 ]
             }
         },
+        "/api/my-cats": {
+            "get": {
+                "tags": [
+                    "Cats"
+                ],
+                "summary": "Get the cats of the authenticated user",
+                "operationId": "aca1cbfb17aa8e0598a78236684cc112",
+                "responses": {
+                    "200": {
+                        "description": "A list of the user's cats",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Cat"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/my-cats/sections": {
+            "get": {
+                "tags": [
+                    "Cats"
+                ],
+                "summary": "Get the cats of the authenticated user, organized by section",
+                "operationId": "5c3ca0b1147c19bb3bf847f32099fce4",
+                "responses": {
+                    "200": {
+                        "description": "A list of the user's cats, organized by section",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "owned": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Cat"
+                                            }
+                                        },
+                                        "fostering_active": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Cat"
+                                            }
+                                        },
+                                        "fostering_past": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Cat"
+                                            }
+                                        },
+                                        "transferred_away": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Cat"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/cats/{id}": {
+            "get": {
+                "tags": [
+                    "Cats"
+                ],
+                "summary": "Get a specific cat",
+                "operationId": "eaa20273bdc90d751ce892bd1b1a946c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the cat",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The cat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Cat"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Cat not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Cats"
+                ],
+                "summary": "Update a cat",
+                "operationId": "9f46fb83dc8254f9d21782fe3e55c98b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the cat to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Cat"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cat updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Cat"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Cats"
+                ],
+                "summary": "Delete a cat",
+                "operationId": "cf39966608b6cade9fdfac9999b6845d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the cat to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "password"
+                                ],
+                                "properties": {
+                                    "password": {
+                                        "description": "User's current password for confirmation",
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "Cat deleted successfully"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/cats/featured": {
+            "get": {
+                "tags": [
+                    "Cats"
+                ],
+                "summary": "Get a list of featured cats",
+                "operationId": "5e3e89e650ae933133f0b5a96611015c",
+                "responses": {
+                    "200": {
+                        "description": "A list of featured cats",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Cat"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/cats/placement-requests": {
+            "get": {
+                "tags": [
+                    "Cats"
+                ],
+                "summary": "Get a list of cats with open placement requests",
+                "operationId": "67ad601aaba9b61dcc775f965df36fc4",
+                "responses": {
+                    "200": {
+                        "description": "A list of cats with open placement requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Cat"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/cats": {
+            "post": {
+                "tags": [
+                    "Cats"
+                ],
+                "summary": "Create a new cat",
+                "operationId": "6a153b29cdb539163e80104ea2fb0f47",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Cat"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Cat created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Cat"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/cats/{id}/status": {
             "put": {
                 "tags": [
@@ -866,6 +1180,119 @@
                 ]
             }
         },
+        "/api/placement-requests/{id}": {
+            "delete": {
+                "tags": [
+                    "Placement Requests"
+                ],
+                "summary": "Delete a placement request",
+                "operationId": "48a5ddd255bee3a024cbbbd2ecb4fb67",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the placement request to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Placement request deleted successfully"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/placement-requests/{id}/confirm": {
+            "post": {
+                "tags": [
+                    "Placement Requests"
+                ],
+                "summary": "Confirm a placement request",
+                "operationId": "048f37d4d621221e26f5f2b4cabd8789",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the placement request to confirm",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Placement request confirmed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlacementRequest"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/placement-requests/{id}/reject": {
+            "post": {
+                "tags": [
+                    "Placement Requests"
+                ],
+                "summary": "Reject a placement request",
+                "operationId": "e577058803dd1d49c92a17d52e54fdac",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the placement request to reject",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Placement request rejected successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlacementRequest"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/transfer-requests/{id}/handover": {
             "post": {
                 "tags": [
@@ -1220,6 +1647,49 @@
                     },
                     "403": {
                         "description": "Forbidden: You are not the recipient of this request or the request is not pending."
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/transfer-requests/{id}/responder-profile": {
+            "get": {
+                "tags": [
+                    "Transfer Requests"
+                ],
+                "summary": "Get the responder's helper profile for a given transfer request",
+                "operationId": "ea3092fa72dccf484d9bad661294d69b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the transfer request",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The responder's helper profile",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HelperProfile"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Helper profile not found"
                     }
                 },
                 "security": [
@@ -1763,39 +2233,114 @@
                     "status",
                     "user_id"
                 ],
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Pagination"
+                    },
+                    {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "Whiskers"
+                            },
+                            "breed": {
+                                "type": "string",
+                                "example": "Siamese"
+                            },
+                            "birthday": {
+                                "type": "string",
+                                "format": "date",
+                                "example": "2020-01-01"
+                            },
+                            "location": {
+                                "type": "string",
+                                "example": "Hanoi"
+                            },
+                            "description": {
+                                "type": "string",
+                                "example": "A friendly cat."
+                            },
+                            "status": {
+                                "type": "string",
+                                "example": "active"
+                            },
+                            "user_id": {
+                                "type": "integer",
+                                "example": 5
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "Pagination": {
+                "title": "Pagination",
+                "description": "Pagination object",
                 "properties": {
-                    "id": {
-                        "type": "integer",
-                        "example": 1
+                    "current_page": {
+                        "description": "Current page number",
+                        "type": "integer"
                     },
-                    "name": {
+                    "data": {
+                        "description": "List of items on the current page",
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "first_page_url": {
+                        "description": "URL of the first page",
+                        "type": "string"
+                    },
+                    "from": {
+                        "description": "The starting number of the items on the current page",
+                        "type": "integer"
+                    },
+                    "last_page": {
+                        "description": "The last page number",
+                        "type": "integer"
+                    },
+                    "last_page_url": {
+                        "description": "URL of the last page",
+                        "type": "string"
+                    },
+                    "links": {
+                        "description": "List of pagination links",
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "next_page_url": {
+                        "description": "URL of the next page",
                         "type": "string",
-                        "example": "Whiskers"
+                        "nullable": true
                     },
-                    "breed": {
+                    "path": {
+                        "description": "Base URL for the paginator",
+                        "type": "string"
+                    },
+                    "per_page": {
+                        "description": "Number of items per page",
+                        "type": "integer"
+                    },
+                    "prev_page_url": {
+                        "description": "URL of the previous page",
                         "type": "string",
-                        "example": "Siamese"
+                        "nullable": true
                     },
-                    "birthday": {
-                        "type": "string",
-                        "format": "date",
-                        "example": "2020-01-01"
+                    "to": {
+                        "description": "The ending number of the items on the current page",
+                        "type": "integer"
                     },
-                    "location": {
-                        "type": "string",
-                        "example": "Hanoi"
-                    },
-                    "description": {
-                        "type": "string",
-                        "example": "A friendly cat."
-                    },
-                    "status": {
-                        "type": "string",
-                        "example": "active"
-                    },
-                    "user_id": {
-                        "type": "integer",
-                        "example": 5
+                    "total": {
+                        "description": "Total number of items",
+                        "type": "integer"
                     }
                 },
                 "type": "object"
@@ -1803,44 +2348,52 @@
             "Message": {
                 "title": "Message",
                 "description": "Message model",
-                "properties": {
-                    "id": {
-                        "description": "Message ID",
-                        "type": "integer",
-                        "format": "int64"
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Pagination"
                     },
-                    "sender_id": {
-                        "description": "ID of the user who sent the message",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "recipient_id": {
-                        "description": "ID of the user who received the message",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "content": {
-                        "description": "Content of the message",
-                        "type": "string"
-                    },
-                    "read_at": {
-                        "description": "Timestamp when the message was read",
-                        "type": "string",
-                        "format": "date-time",
-                        "nullable": true
-                    },
-                    "created_at": {
-                        "description": "Timestamp of message creation",
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "updated_at": {
-                        "description": "Timestamp of last message update",
-                        "type": "string",
-                        "format": "date-time"
+                    {
+                        "properties": {
+                            "id": {
+                                "description": "Message ID",
+                                "type": "integer",
+                                "format": "int64"
+                            },
+                            "sender_id": {
+                                "description": "ID of the user who sent the message",
+                                "type": "integer",
+                                "format": "int64"
+                            },
+                            "recipient_id": {
+                                "description": "ID of the user who received the message",
+                                "type": "integer",
+                                "format": "int64"
+                            },
+                            "content": {
+                                "description": "Content of the message",
+                                "type": "string"
+                            },
+                            "read_at": {
+                                "description": "Timestamp when the message was read",
+                                "type": "string",
+                                "format": "date-time",
+                                "nullable": true
+                            },
+                            "created_at": {
+                                "description": "Timestamp of message creation",
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "updated_at": {
+                                "description": "Timestamp of last message update",
+                                "type": "string",
+                                "format": "date-time"
+                            }
+                        },
+                        "type": "object"
                     }
-                },
-                "type": "object"
+                ]
             },
             "PlacementRequest": {
                 "title": "PlacementRequest",
@@ -1851,202 +2404,234 @@
                     "request_type",
                     "status"
                 ],
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "example": 1
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Pagination"
                     },
-                    "cat_id": {
-                        "type": "integer",
-                        "example": 2
-                    },
-                    "user_id": {
-                        "type": "integer",
-                        "example": 5
-                    },
-                    "request_type": {
-                        "type": "string",
-                        "example": "adoption"
-                    },
-                    "status": {
-                        "type": "string",
-                        "example": "pending"
-                    },
-                    "notes": {
-                        "type": "string",
-                        "example": "Looking for a loving home."
-                    },
-                    "expires_at": {
-                        "type": "string",
-                        "format": "date",
-                        "example": "2025-08-01"
-                    },
-                    "start_date": {
-                        "type": "string",
-                        "format": "date",
-                        "example": "2025-08-05"
-                    },
-                    "end_date": {
-                        "type": "string",
-                        "format": "date",
-                        "example": "2025-08-20"
+                    {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "cat_id": {
+                                "type": "integer",
+                                "example": 2
+                            },
+                            "user_id": {
+                                "type": "integer",
+                                "example": 5
+                            },
+                            "request_type": {
+                                "type": "string",
+                                "example": "adoption"
+                            },
+                            "status": {
+                                "type": "string",
+                                "example": "pending"
+                            },
+                            "notes": {
+                                "type": "string",
+                                "example": "Looking for a loving home."
+                            },
+                            "expires_at": {
+                                "type": "string",
+                                "format": "date",
+                                "example": "2025-08-01"
+                            },
+                            "start_date": {
+                                "type": "string",
+                                "format": "date",
+                                "example": "2025-08-05"
+                            },
+                            "end_date": {
+                                "type": "string",
+                                "format": "date",
+                                "example": "2025-08-20"
+                            }
+                        },
+                        "type": "object"
                     }
-                },
-                "type": "object"
+                ]
             },
             "TransferRequest": {
                 "title": "TransferRequest",
                 "description": "Transfer Request model",
-                "properties": {
-                    "id": {
-                        "description": "Transfer Request ID",
-                        "type": "integer",
-                        "format": "int64"
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Pagination"
                     },
-                    "cat_id": {
-                        "description": "ID of the cat being transferred",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "initiator_user_id": {
-                        "description": "ID of the user initiating the transfer",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "recipient_user_id": {
-                        "description": "ID of the user intended to receive the cat",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "status": {
-                        "description": "Current status of the transfer request",
-                        "type": "string",
-                        "enum": [
-                            "pending",
-                            "accepted",
-                            "rejected"
-                        ]
-                    },
-                    "requested_relationship_type": {
-                        "description": "Type of custodianship requested",
-                        "type": "string",
-                        "enum": [
-                            "fostering",
-                            "permanent_foster"
-                        ]
-                    },
-                    "fostering_type": {
-                        "description": "Type of fostering (free or paid)",
-                        "type": "string",
-                        "enum": [
-                            "free",
-                            "paid"
-                        ],
-                        "nullable": true
-                    },
-                    "price": {
-                        "description": "Price for paid fostering",
-                        "type": "number",
-                        "format": "float",
-                        "nullable": true
-                    },
-                    "accepted_at": {
-                        "description": "Timestamp when the request was accepted",
-                        "type": "string",
-                        "format": "date-time",
-                        "nullable": true
-                    },
-                    "rejected_at": {
-                        "description": "Timestamp when the request was rejected",
-                        "type": "string",
-                        "format": "date-time",
-                        "nullable": true
-                    },
-                    "created_at": {
-                        "description": "Timestamp of transfer request creation",
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "updated_at": {
-                        "description": "Timestamp of last transfer request update",
-                        "type": "string",
-                        "format": "date-time"
+                    {
+                        "properties": {
+                            "id": {
+                                "description": "Transfer Request ID",
+                                "type": "integer",
+                                "format": "int64"
+                            },
+                            "cat_id": {
+                                "description": "ID of the cat being transferred",
+                                "type": "integer",
+                                "format": "int64"
+                            },
+                            "initiator_user_id": {
+                                "description": "ID of the user initiating the transfer",
+                                "type": "integer",
+                                "format": "int64"
+                            },
+                            "recipient_user_id": {
+                                "description": "ID of the user intended to receive the cat",
+                                "type": "integer",
+                                "format": "int64"
+                            },
+                            "status": {
+                                "description": "Current status of the transfer request",
+                                "type": "string",
+                                "enum": [
+                                    "pending",
+                                    "accepted",
+                                    "rejected"
+                                ]
+                            },
+                            "requested_relationship_type": {
+                                "description": "Type of custodianship requested",
+                                "type": "string",
+                                "enum": [
+                                    "fostering",
+                                    "permanent_foster"
+                                ]
+                            },
+                            "fostering_type": {
+                                "description": "Type of fostering (free or paid)",
+                                "type": "string",
+                                "enum": [
+                                    "free",
+                                    "paid"
+                                ],
+                                "nullable": true
+                            },
+                            "price": {
+                                "description": "Price for paid fostering",
+                                "type": "number",
+                                "format": "float",
+                                "nullable": true
+                            },
+                            "accepted_at": {
+                                "description": "Timestamp when the request was accepted",
+                                "type": "string",
+                                "format": "date-time",
+                                "nullable": true
+                            },
+                            "rejected_at": {
+                                "description": "Timestamp when the request was rejected",
+                                "type": "string",
+                                "format": "date-time",
+                                "nullable": true
+                            },
+                            "created_at": {
+                                "description": "Timestamp of transfer request creation",
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "updated_at": {
+                                "description": "Timestamp of last transfer request update",
+                                "type": "string",
+                                "format": "date-time"
+                            }
+                        },
+                        "type": "object"
                     }
-                },
-                "type": "object"
+                ]
             },
             "User": {
                 "title": "User",
                 "description": "User model",
-                "properties": {
-                    "id": {
-                        "description": "User ID",
-                        "type": "integer",
-                        "format": "int64"
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Pagination"
                     },
-                    "name": {
-                        "description": "User's name",
-                        "type": "string"
-                    },
-                    "email": {
-                        "description": "User's email address",
-                        "type": "string",
-                        "format": "email"
-                    },
-                    "avatar_url": {
-                        "description": "URL to the user's avatar image",
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "created_at": {
-                        "description": "Timestamp of user creation",
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "updated_at": {
-                        "description": "Timestamp of last user update",
-                        "type": "string",
-                        "format": "date-time"
+                    {
+                        "properties": {
+                            "id": {
+                                "description": "User ID",
+                                "type": "integer",
+                                "format": "int64"
+                            },
+                            "name": {
+                                "description": "User's name",
+                                "type": "string"
+                            },
+                            "email": {
+                                "description": "User's email address",
+                                "type": "string",
+                                "format": "email"
+                            },
+                            "avatar_url": {
+                                "description": "URL to the user's avatar image",
+                                "type": "string",
+                                "nullable": true
+                            },
+                            "created_at": {
+                                "description": "Timestamp of user creation",
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "updated_at": {
+                                "description": "Timestamp of last user update",
+                                "type": "string",
+                                "format": "date-time"
+                            }
+                        },
+                        "type": "object"
                     }
-                },
-                "type": "object"
+                ]
             },
             "WeightHistory": {
                 "title": "WeightHistory",
                 "description": "Weight History model",
-                "properties": {
-                    "id": {
-                        "description": "Weight History ID",
-                        "type": "integer",
-                        "format": "int64"
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Pagination"
                     },
-                    "cat_id": {
-                        "description": "ID of the associated cat",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "weight_kg": {
-                        "description": "Recorded weight in kilograms",
-                        "type": "number",
-                        "format": "float"
-                    },
-                    "record_date": {
-                        "description": "Date the weight was recorded",
-                        "type": "string",
-                        "format": "date"
-                    },
-                    "created_at": {
-                        "description": "Timestamp of weight record creation",
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "updated_at": {
-                        "description": "Timestamp of last weight record update",
-                        "type": "string",
-                        "format": "date-time"
+                    {
+                        "properties": {
+                            "id": {
+                                "description": "Weight History ID",
+                                "type": "integer",
+                                "format": "int64"
+                            },
+                            "cat_id": {
+                                "description": "ID of the associated cat",
+                                "type": "integer",
+                                "format": "int64"
+                            },
+                            "weight_kg": {
+                                "description": "Recorded weight in kilograms",
+                                "type": "number",
+                                "format": "float"
+                            },
+                            "record_date": {
+                                "description": "Date the weight was recorded",
+                                "type": "string",
+                                "format": "date"
+                            },
+                            "created_at": {
+                                "description": "Timestamp of weight record creation",
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "updated_at": {
+                                "description": "Timestamp of last weight record update",
+                                "type": "string",
+                                "format": "date-time"
+                            }
+                        },
+                        "type": "object"
                     }
-                },
-                "type": "object"
+                ]
             },
             "HelperProfile": {
                 "title": "HelperProfile",

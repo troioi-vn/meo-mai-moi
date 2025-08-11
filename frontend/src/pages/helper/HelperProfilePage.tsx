@@ -41,7 +41,7 @@ export default function HelperProfilePage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.data.map((profile: any) => (
+          {(data?.data ?? []).map((profile: any) => (
             <TableRow key={profile.id}>
               <TableCell className="text-left">
                 <Link to={`/helper/${profile.id}`}>

@@ -53,6 +53,14 @@ class TransferRequestPolicy
     }
 
     /**
+     * Allow the cat owner (recipient) to view the responder's helper profile for this transfer.
+     */
+    public function viewResponderProfile(User $user, TransferRequest $transferRequest): bool
+    {
+        return $user->id === $transferRequest->recipient_user_id;
+    }
+
+    /**
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, TransferRequest $transferRequest): bool

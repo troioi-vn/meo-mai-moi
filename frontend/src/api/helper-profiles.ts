@@ -44,3 +44,9 @@ export const deleteHelperProfile = async (id: string): Promise<void> => {
 export const deleteHelperProfilePhoto = async (profileId: string, photoId: number): Promise<void> => {
     await api.delete(`/helper-profiles/${profileId}/photos/${String(photoId)}`);
 }
+
+// Owner-only fetch: get the responder's helper profile for a transfer request
+export const getResponderHelperProfile = async (transferRequestId: number): Promise<HelperProfile> => {
+  const res = await api.get<{ data: HelperProfile }>(`/transfer-requests/${String(transferRequestId)}/responder-profile`)
+  return res.data.data
+}

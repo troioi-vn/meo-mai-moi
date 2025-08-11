@@ -12,6 +12,8 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use App\Models\HelperProfile;
+use App\Models\Review;
 
 class User extends Authenticatable implements FilamentUser
 {

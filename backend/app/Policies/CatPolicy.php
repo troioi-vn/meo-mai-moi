@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Models\Cat;
 use App\Models\User;
 use App\Enums\UserRole;
+use App\Enums\PlacementRequestStatus;
 use App\Models\FosterAssignment;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
@@ -26,8 +27,11 @@ class CatPolicy
 
     public function view(?User $user, Cat $cat)
     {
-        // Allow access if the cat has an active placement request.
-        if ($cat->placementRequests()->where('is_active', true)->exists()) {
+        // Allow public access ONLY if there is an active and open placement request
+        if ($cat->placementRequests()
+            ->where('is_active', true)
+            ->where('status', PlacementRequestStatus::OPEN->value)
+            ->exists()) {
             return true;
         }
 

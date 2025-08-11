@@ -2,6 +2,9 @@
   "name": "meo-mai-moi",
   "private": true,
   "scripts": {
-    "test:backend": "docker compose exec backend php artisan test"
+  "test:backend": "docker compose exec backend php artisan test",
+  "test": "cd frontend && npm test",
+  "test:frontend": "cd frontend && npm test",
+  "typecheck:frontend": "cd frontend && npx tsc -p tsconfig.typecheck.json --noEmit"
   }
 }

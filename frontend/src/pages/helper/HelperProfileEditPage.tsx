@@ -28,8 +28,26 @@ const HelperProfileEditPage: React.FC = () => {
     queryFn: () => getHelperProfile(id!),
   });
 
+  const numericId = id ? Number(id) : undefined;
+  const initialFormData = data?.data
+    ? {
+        country: data.data.country ?? '',
+        address: data.data.address ?? '',
+        city: data.data.city ?? '',
+        state: data.data.state ?? '',
+        phone_number: data.data.phone_number ?? data.data.phone ?? '',
+        experience: data.data.experience ?? '',
+        has_pets: Boolean(data.data.has_pets),
+        has_children: Boolean(data.data.has_children),
+        can_foster: Boolean(data.data.can_foster),
+        can_adopt: Boolean(data.data.can_adopt),
+        is_public: Boolean(data.data.is_public),
+        status: data.data.status,
+        photos: [],
+      }
+    : undefined;
   const { formData, errors, isSubmitting, updateField, handleSubmit, handleCancel } =
-    useHelperProfileForm(id, data?.data);
+    useHelperProfileForm(numericId, initialFormData);
 
   const deleteMutation = useMutation({
     mutationFn: () => deleteHelperProfile(id!),
@@ -53,7 +71,7 @@ const HelperProfileEditPage: React.FC = () => {
       <div className="w-full max-w-2xl p-8 space-y-8 bg-card rounded-lg shadow-lg border">
         <h1 className="text-3xl font-bold text-center text-card-foreground mb-6">Edit Helper Profile</h1>
         <div className="grid grid-cols-3 gap-4">
-          {data.data.photos.map((photo: any) => (
+          {data?.data?.photos?.map((photo: any) => (
             <div key={photo.id} className="relative">
               <img src={`http://localhost:8000/storage/${photo.path}`} alt="Helper profile photo" className="w-full h-full object-cover" />
               <Button

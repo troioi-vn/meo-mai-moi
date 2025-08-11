@@ -1,4 +1,4 @@
-import { screen, waitFor, fireEvent } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { CatPhotoManager } from './CatPhotoManager'
@@ -193,6 +193,11 @@ describe('CatPhotoManager', () => {
       id: 1,
       photo: { id: 99, url: 'some_photo_url' },
       photo_url: 'some_photo_url',
+      // Ensure non-owner also lacks edit permissions
+      viewer_permissions: {
+        can_edit: false,
+        can_view_contact: false,
+      },
     }
     renderWithRouter(
       <CatPhotoManager cat={catWithPhoto} isOwner={false} onPhotoUpdated={mockOnPhotoUpdated} />

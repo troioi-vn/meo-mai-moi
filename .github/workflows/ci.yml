@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build and start containers
+        run: docker-compose up -d --build
+
+      - name: Wait for containers to be healthy
+        run: |
+          echo "Waiting for backend to be healthy..."
+          timeout 300s bash -c \
+            'while [[ "$(docker inspect -f {{.State.Health.Status}} meo-mai-moi-backend-1)" != "healthy" ]]; do sleep 5; done'
+          echo "Backend is healthy!"
+
+      - name: Smoke test
+        run: curl -f http://localhost:8000/api/version

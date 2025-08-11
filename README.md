@@ -23,13 +23,17 @@ This is the easiest way to get started. The setup uses a single `docker-compose.
 
 **1. Environment Setup**
 
-This project uses a `.env.docker` file for Docker-based development. To get started, copy the Docker-specific example file:
+The Docker container uses a layered environment configuration:
+
+1.  **Base Configuration:** A `.env` file is automatically generated from `.env.example` inside the container if it doesn't exist. An `APP_KEY` is also generated on first run.
+2.  **Docker Overrides:** The `docker-compose.yml` file is configured to use `backend/.env.docker` as an `env_file`. This is the **recommended way to override** default settings for development.
+
+To get started, copy the Docker-specific example file. This file is pre-configured to connect to the PostgreSQL container.
 
 ```bash
 # From the project root directory
 cp backend/.env.docker.example backend/.env.docker
 ```
-This file is pre-configured to connect to the PostgreSQL container. You do not need to change it for the standard setup.
 
 **2. First-Time Setup**
 

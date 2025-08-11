@@ -49,7 +49,6 @@ export const mockCat: Cat = {
           updated_at: '2025-08-05T10:00:00Z',
           helper_profile: {
             id: 1,
-            user_id: 2,
             city: 'Helper City',
             state: 'Helper State',
             address: '123 Helper St',

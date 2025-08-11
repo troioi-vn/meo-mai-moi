@@ -71,6 +71,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/transfer-requests', [TransferRequestController::class, 'store']);
     Route::post('/transfer-requests/{transferRequest}/accept', [TransferRequestController::class, 'accept']);
     Route::post('/transfer-requests/{transferRequest}/reject', [TransferRequestController::class, 'reject']);
+    // Owner-only: view responder's helper profile for a transfer request
+    Route::get('/transfer-requests/{transferRequest}/responder-profile', [TransferRequestController::class, 'responderProfile']);
     // Transfer handover lifecycle
     Route::post('/transfer-requests/{transferRequest}/handover', [TransferHandoverController::class, 'store']);
     Route::post('/transfer-handovers/{handover}/confirm', [TransferHandoverController::class, 'helperConfirm']);

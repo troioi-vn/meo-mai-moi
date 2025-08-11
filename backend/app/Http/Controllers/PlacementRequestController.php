@@ -109,6 +109,29 @@ class PlacementRequestController extends Controller
         return $this->sendSuccess(new PlacementRequestResource($placementRequest), 201);
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/api/placement-requests/{id}",
+     *     summary="Delete a placement request",
+     *     tags={"Placement Requests"},
+     *     security={{"sanctum": {}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the placement request to delete",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=204,
+     *         description="Placement request deleted successfully"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden"
+     *     )
+     * )
+     */
     public function destroy(PlacementRequest $placementRequest)
     {
         $this->authorize('delete', $placementRequest);
@@ -116,6 +139,30 @@ class PlacementRequestController extends Controller
         return $this->sendSuccess(null, 204);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/placement-requests/{id}/confirm",
+     *     summary="Confirm a placement request",
+     *     tags={"Placement Requests"},
+     *     security={{"sanctum": {}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the placement request to confirm",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Placement request confirmed successfully",
+     *         @OA\JsonContent(ref="#/components/schemas/PlacementRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden"
+     *     )
+     * )
+     */
     public function confirm(PlacementRequest $placementRequest)
     {
         $this->authorize('confirm', $placementRequest);
@@ -123,6 +170,30 @@ class PlacementRequestController extends Controller
         return $this->sendSuccess($placementRequest);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/placement-requests/{id}/reject",
+     *     summary="Reject a placement request",
+     *     tags={"Placement Requests"},
+     *     security={{"sanctum": {}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the placement request to reject",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Placement request rejected successfully",
+     *         @OA\JsonContent(ref="#/components/schemas/PlacementRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden"
+     *     )
+     * )
+     */
     public function reject(PlacementRequest $placementRequest)
     {
         $this->authorize('reject', $placementRequest);

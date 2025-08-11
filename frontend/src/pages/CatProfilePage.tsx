@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useCatProfile } from '@/hooks/useCatProfile'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import type { HelperProfile } from '@/types/helper-profile'
 import type { TransferRequest } from '@/types/cat'
 import { getResponderHelperProfile } from '@/api/helper-profiles'
@@ -249,6 +249,9 @@ function HelperProfileDialog({ open, onOpenChange, profile, transfer, loading, e
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Helper Profile</DialogTitle>
+          <DialogDescription className="sr-only">
+            Review the responder’s helper profile details, then confirm or reject the response.
+          </DialogDescription>
         </DialogHeader>
         {loading ? (
           <p>Loading…</p>

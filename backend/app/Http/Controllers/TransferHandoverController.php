@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\TransferHandover;
+use App\Models\OwnershipHistory;
+use App\Models\Notification;
 use App\Models\TransferRequest;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
@@ -75,7 +77,13 @@ class TransferHandoverController extends Controller
             'status' => 'pending',
             'owner_initiated_at' => now(),
         ]);
-
+        // Notify helper about scheduled handover
+        Notification::create([
+            'user_id' => $handover->helper_user_id,
+            'message' => 'Handover scheduled for your accepted transfer. Please confirm details.',
+            'link' => '/account/handovers/' . $handover->id,
+            'is_read' => false,
+        ]);
         return $this->sendSuccess($handover, 201);
     }
 
@@ -109,7 +117,13 @@ class TransferHandoverController extends Controller
         $handover->condition_notes = $data['condition_notes'] ?? null;
         $handover->helper_confirmed_at = now();
         $handover->save();
-
+        // Notify owner about helper confirmation
+        Notification::create([
+            'user_id' => $handover->owner_user_id,
+            'message' => 'Helper has ' . ($handover->status === 'confirmed' ? 'confirmed' : 'disputed') . ' the handover conditions.',
+            'link' => '/account/handovers/' . $handover->id,
+            'is_read' => false,
+        ]);
         return $this->sendSuccess($handover);
     }
 
@@ -144,7 +158,22 @@ class TransferHandoverController extends Controller
             // Finalize transfer effects depending on relationship type
             $type = $tr->requested_relationship_type;
             if ($type === 'permanent_foster') {
+                // Close previous ownership record for current owner
+                OwnershipHistory::where('cat_id', $tr->cat_id)
+                    ->where('user_id', $tr->recipient_user_id)
+                    ->whereNull('to_ts')
+                    ->update(['to_ts' => now()]);
+
+                // Assign new owner
                 $tr->cat->update(['user_id' => $tr->initiator_user_id]);
+
+                // Create new ownership history for new owner
+                OwnershipHistory::create([
+                    'cat_id' => $tr->cat_id,
+                    'user_id' => $tr->initiator_user_id,
+                    'from_ts' => now(),
+                    'to_ts' => null,
+                ]);
             } elseif ($type === 'fostering' && Schema::hasTable('foster_assignments')) {
                 \App\Models\FosterAssignment::firstOrCreate([
                     'cat_id' => $tr->cat_id,
@@ -158,7 +187,25 @@ class TransferHandoverController extends Controller
                 ]);
             }
         });
-
+        // Notify both parties of completion
+        Notification::insert([
+            [
+                'user_id' => $handover->owner_user_id,
+                'message' => 'Handover completed.',
+                'link' => '/account/handovers/' . $handover->id,
+                'is_read' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'user_id' => $handover->helper_user_id,
+                'message' => 'Handover completed.',
+                'link' => '/account/handovers/' . $handover->id,
+                'is_read' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
         return $this->sendSuccess($handover->fresh());
     }
 }

@@ -121,6 +121,27 @@ cd frontend
 npm test
 ```
 
+---
+
+## Build Process
+
+The frontend and backend builds are interconnected. For a production-like build, you need to compile the frontend assets and move them to the backend.
+
+**1. Build the Frontend**
+
+```bash
+cd frontend
+npm run build
+```
+
+This command does the following:
+
+1.  **`vite build`**: Compiles the React/TypeScript application into static HTML, CSS, and JavaScript files in the `frontend/dist` directory.
+2.  **`npm run blade:update`**: Updates the `backend/resources/views/welcome.blade.php` file with the correct, hashed asset paths from the build output.
+3.  **`npm run assets:copy`**: Copies the compiled assets from `frontend/dist/assets` to `backend/public/build/assets`.
+
+After running this command, your Laravel backend will be able to serve the compiled frontend application.
+
 ## License
 
 This project is licensed under the **MIT License**.

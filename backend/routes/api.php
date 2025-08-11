@@ -18,6 +18,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PlacementRequestController;
 use App\Http\Controllers\VersionController;
 use App\Http\Controllers\TransferHandoverController;
+use App\Http\Controllers\FosterReturnHandoverController;
 
 Route::get('/version', [VersionController::class, 'show']);
 Route::middleware('auth:sanctum')->group(function () {
@@ -77,6 +78,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/transfer-requests/{transferRequest}/handover', [TransferHandoverController::class, 'store']);
     Route::post('/transfer-handovers/{handover}/confirm', [TransferHandoverController::class, 'helperConfirm']);
     Route::post('/transfer-handovers/{handover}/complete', [TransferHandoverController::class, 'complete']);
+    // Foster return handover lifecycle
+    Route::post('/foster-assignments/{assignment}/return-handover', [FosterReturnHandoverController::class, 'store']);
+    Route::post('/foster-return-handovers/{handover}/confirm', [FosterReturnHandoverController::class, 'ownerConfirm']);
+    Route::post('/foster-return-handovers/{handover}/complete', [FosterReturnHandoverController::class, 'complete']);
     #Route::post('/reviews', [ReviewController::class, 'store']);
 
     // Message Routes

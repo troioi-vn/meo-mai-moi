@@ -1,7 +1,10 @@
 import axios, { AxiosError } from 'axios'
 
+// Use absolute API base in tests so MSW handlers match and requests don't hang
+const API_BASE = import.meta.env.MODE === 'test' ? 'http://localhost:3000/api' : '/api'
+
 export const api = axios.create({
-  baseURL: '/api',
+  baseURL: API_BASE,
   withCredentials: true, // send cookies
 })
 
@@ -15,5 +18,7 @@ api.interceptors.request.use(
 )
 
 export const csrf = async () => {
-  await axios.get('/sanctum/csrf-cookie', { withCredentials: true })
+  // Use absolute origin in tests to match MSW handlers; relative otherwise
+  const origin = import.meta.env.MODE === 'test' ? 'http://localhost:3000' : ''
+  await axios.get(`${origin}/sanctum/csrf-cookie`, { withCredentials: true })
 }

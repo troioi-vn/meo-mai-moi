@@ -3,59 +3,39 @@ import { cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import { server } from './mocks/server';
 
-// Polyfill for PointerEvent
-if (!('PointerEvent' in globalThis)) {
+// Polyfill for PointerEvents
+if (!global.PointerEvent) {
   class PointerEvent extends MouseEvent {
-    public pointerId?: number
-    public width?: number
-    public height?: number
-    public pressure?: number
-    public tangentialPressure?: number
-    public tiltX?: number
-    public tiltY?: number
-    public twist?: number
-    public pointerType?: string
-    public isPrimary?: boolean
-
+    public pointerId?: number;
     constructor(type: string, params: PointerEventInit) {
-      super(type, params)
-      this.pointerId = params.pointerId
-      this.width = params.width
-      this.height = params.height
-      this.pressure = params.pressure
-      this.tangentialPressure = params.tangentialPressure
-      this.tiltX = params.tiltX
-      this.tiltY = params.tiltY
-      this.twist = params.twist
-      this.pointerType = params.pointerType
-      this.isPrimary = params.isPrimary
+      super(type, params);
+      this.pointerId = params.pointerId;
     }
   }
-  ;(globalThis as unknown as { PointerEvent: typeof MouseEvent }).PointerEvent = PointerEvent as unknown as typeof MouseEvent
+  global.PointerEvent = PointerEvent as any;
 }
 
-if (!('hasPointerCapture' in Element.prototype)) {
-  (Element.prototype as unknown as { hasPointerCapture: (pointerId: number) => boolean }).hasPointerCapture = function (): boolean {
-    return false
-  }
+// Polyfills for PointerEvent methods on Element
+if (!Element.prototype.hasPointerCapture) {
+  Element.prototype.hasPointerCapture = function (pointerId: number): boolean {
+    // Return a mock value
+    return false;
+  };
+}
+if (!Element.prototype.setPointerCapture) {
+  Element.prototype.setPointerCapture = function (pointerId: number): void {
+    // No-op
+  };
+}
+if (!Element.prototype.releasePointerCapture) {
+  Element.prototype.releasePointerCapture = function (pointerId: number): void {
+    // No-op
+  };
 }
 
-if (!('setPointerCapture' in Element.prototype)) {
-  (Element.prototype as unknown as { setPointerCapture: (pointerId: number) => void }).setPointerCapture = function (): void {
-    // no-op for tests
-  }
-}
-
-if (!('releasePointerCapture' in Element.prototype)) {
-  (Element.prototype as unknown as { releasePointerCapture: (pointerId: number) => void }).releasePointerCapture = function (): void {
-    // no-op for tests
-  }
-}
-
-if (!('scrollIntoView' in window.HTMLElement.prototype)) {
-  (window.HTMLElement.prototype as unknown as { scrollIntoView: () => void }).scrollIntoView = function () {
-    // no-op for tests
-  }
+// Polyfill for scrollIntoView
+if (!window.HTMLElement.prototype.scrollIntoView) {
+  window.HTMLElement.prototype.scrollIntoView = function () {};
 }
 
 

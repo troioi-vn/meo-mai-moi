@@ -246,6 +246,15 @@ This section is for AI coding agents (Copilots) to be effective, safe, and fast 
 - Filters on /requests page: type and date range, purely client-side.
 - Test stability principles applied across modal, profile, and edit pages.
 
+- Handover lifecycle UI (post-accept):
+  - On accept, an initial pending TransferHandover is created server-side. Frontend auto-opens a scheduling modal and shows a "Schedule handover" action per accepted transfer.
+  - The schedule button hides once a handover exists. A status chip for each accepted response is backed by the fetched handover status; inline meeting details (scheduled_at, location) are shown.
+  - Helper gets a confirm/dispute panel while status is pending. Both parties see a meeting banner (pending/confirmed) with Cancel and Mark-as-completed.
+  - On completion, ownership or foster assignment is finalized server-side. UI refreshes and hides inactive/fulfilled placement requests.
+
+- Placement Request visibility rule:
+  - In `CatDetails`, render the "Active Placement Requests" block only when there are active/open requests (`is_active || status in {open,pending_review}`). This hides requests after acceptance/fulfillment.
+
 - My Cats sections pattern:
   - Backend exposes GET `/api/my-cats/sections` returning `{ owned: Cat[], fostering_active: Cat[], fostering_past: Cat[], transferred_away: Cat[] }`.
   - Frontend `MyCatsPage` consumes this shape; UI shows sections and a "Show all (including deceased)" toggle for Owned.
@@ -286,6 +295,30 @@ This section is for AI coding agents (Copilots) to be effective, safe, and fast 
 
 - API helpers shape
   - Axios responses commonly use `{ data: ... }`. Prefer typed generics like `api.get<{ data: T }>(...)` and destructure `response.data.data` to keep types accurate and avoid `any`.
+
+### Session Notes — 2025-08-13 (Rehoming/Handover Flow)
+
+- Endpoints integrated
+  - Added/used GET `/api/transfer-requests/{id}/handover` to fetch the latest handover for a transfer.
+  - Added/used POST `/api/transfer-handovers/{id}/cancel` to allow owner/helper to cancel pending/confirmed/disputed.
+  - Completed flow already present: POST `/api/transfer-handovers/{id}/confirm`, POST `/api/transfer-handovers/{id}/complete`.
+
+- Frontend integration points
+  - `CatProfilePage`: maintains a map of existing handovers per accepted transfer; derives chips and inline meeting details from fetched data.
+  - Helper-facing confirm/dispute panel rendered only when status is `pending` for the helper's accepted transfer.
+  - Meeting banner appears for `pending`/`confirmed` with Cancel + Complete; actions toast and call `refresh()`.
+  - `CatDetails`: shows only active/open placement requests; fulfilled/inactive ones are hidden post-accept/complete.
+
+- Policy fix
+  - Updated `CatPolicy@view` to allow the accepted responder (helper) to view the cat profile post-acceptance, preventing a 403 until handover completes.
+
+- Testing notes
+  - MSW handlers must use absolute URLs and return `{ data: ... }` shapes.
+  - Prefer `findBy...` queries for async UI; avoid nested `waitFor`.
+
+- Follow-ups
+  - Post-completion redirect UX (permanent: "You are now the owner"; foster: "Foster period started").
+  - Foster return UI to surface backend endpoints and mirror handover patterns.
 
 ### Speedrun Commands (optional)
 

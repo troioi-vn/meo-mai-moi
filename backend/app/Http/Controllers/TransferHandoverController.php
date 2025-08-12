@@ -68,15 +68,30 @@ class TransferHandoverController extends Controller
             'location' => 'nullable|string|max:255',
         ]);
 
-        $handover = TransferHandover::create([
-            'transfer_request_id' => $transferRequest->id,
-            'owner_user_id' => $transferRequest->recipient_user_id,
-            'helper_user_id' => $transferRequest->initiator_user_id,
-            'scheduled_at' => $data['scheduled_at'] ?? null,
-            'location' => $data['location'] ?? null,
-            'status' => 'pending',
-            'owner_initiated_at' => now(),
-        ]);
+        // Prefer updating the initial pending handover created at acceptance, if it exists
+        $handover = TransferHandover::where('transfer_request_id', $transferRequest->id)
+            ->where('status', 'pending')
+            ->orderBy('id')
+            ->first();
+
+        if ($handover) {
+            $handover->scheduled_at = $data['scheduled_at'] ?? $handover->scheduled_at;
+            $handover->location = $data['location'] ?? $handover->location;
+            if (!$handover->owner_initiated_at) {
+                $handover->owner_initiated_at = now();
+            }
+            $handover->save();
+        } else {
+            $handover = TransferHandover::create([
+                'transfer_request_id' => $transferRequest->id,
+                'owner_user_id' => $transferRequest->recipient_user_id,
+                'helper_user_id' => $transferRequest->initiator_user_id,
+                'scheduled_at' => $data['scheduled_at'] ?? null,
+                'location' => $data['location'] ?? null,
+                'status' => 'pending',
+                'owner_initiated_at' => now(),
+            ]);
+        }
         // Notify helper about scheduled handover
         Notification::create([
             'user_id' => $handover->helper_user_id,
@@ -207,5 +222,73 @@ class TransferHandoverController extends Controller
             ],
         ]);
         return $this->sendSuccess($handover->fresh());
+    }
+
+    /**
+     * @OA\Post(
+     *   path="/api/transfer-handovers/{id}/cancel",
+     *   summary="Cancel a handover (owner or helper)",
+     *   tags={"Transfer Handover"},
+     *   security={{"sanctum": {}}},
+     *   @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *   @OA\Response(response=200, description="OK", @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/TransferHandover")))
+     * )
+     */
+    public function cancel(Request $request, TransferHandover $handover)
+    {
+        $user = $request->user();
+        if ($user->id !== $handover->owner_user_id && $user->id !== $handover->helper_user_id) {
+            return $this->sendError('Forbidden', 403);
+        }
+        if (!in_array($handover->status, ['pending', 'confirmed', 'disputed'])) {
+            return $this->sendError('Handover cannot be canceled in the current state.', 409);
+        }
+
+        $handover->status = 'canceled';
+        $handover->canceled_at = now();
+        $handover->save();
+
+        Notification::insert([
+            [
+                'user_id' => $handover->owner_user_id,
+                'message' => 'Handover was canceled.',
+                'link' => '/account/handovers/' . $handover->id,
+                'is_read' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'user_id' => $handover->helper_user_id,
+                'message' => 'Handover was canceled.',
+                'link' => '/account/handovers/' . $handover->id,
+                'is_read' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        return $this->sendSuccess($handover->fresh());
+    }
+
+    /**
+     * @OA\Get(
+     *   path="/api/transfer-requests/{id}/handover",
+     *   summary="Get the latest handover for a transfer request (owner or helper)",
+     *   tags={"Transfer Handover"},
+     *   security={{"sanctum": {}}},
+     *   @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *   @OA\Response(response=200, description="OK", @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/TransferHandover")))
+     * )
+     */
+    public function showForTransfer(Request $request, TransferRequest $transferRequest)
+    {
+        $user = $request->user();
+        if (!$user || ($user->id !== $transferRequest->recipient_user_id && $user->id !== $transferRequest->initiator_user_id)) {
+            return $this->sendError('Forbidden', 403);
+        }
+        $handover = TransferHandover::where('transfer_request_id', $transferRequest->id)
+            ->orderByDesc('id')
+            ->first();
+        return $this->sendSuccess($handover);
     }
 }

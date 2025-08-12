@@ -48,7 +48,7 @@ export const CatDetails: React.FC<CatDetailsProps> = ({ cat, onDeletePlacementRe
 
   const handleRespondClick = () => {
     if (!isAuthenticated) {
-      toast.info('Please log in to respond to this placement request.')
+      void toast.info('Please log in to respond to this placement request.')
       const redirect = encodeURIComponent(location.pathname)
       navigate(`/login?redirect=${redirect}`)
       return
@@ -98,11 +98,13 @@ export const CatDetails: React.FC<CatDetailsProps> = ({ cat, onDeletePlacementRe
                 <p className="text-muted-foreground leading-relaxed">{cat.description}</p>
               </div>
 
-              {cat.placement_requests && cat.placement_requests.length > 0 && (
+              {hasActivePlacementRequest && cat.placement_requests && (
                 <div>
                   <h3 className="font-semibold text-card-foreground">Active Placement Requests</h3>
                   <div className="mt-2 space-y-4">
-                    {cat.placement_requests.map((request) => (
+                    {cat.placement_requests
+                      .filter((r) => r.is_active || r.status === 'open' || r.status === 'pending_review')
+                      .map((request) => (
                       <div key={request.id} className="p-4 bg-muted rounded-lg flex justify-between items-center">
                         <div>
                           <p className="font-semibold text-sm text-muted-foreground">
@@ -160,7 +162,7 @@ export const CatDetails: React.FC<CatDetailsProps> = ({ cat, onDeletePlacementRe
                                           if (typeof onCancelTransferRequest === 'function') {
                                             onCancelTransferRequest(id)
                                           } else {
-                                            toast.info('Cancel action is not available here.')
+                                            void toast.info('Cancel action is not available here.')
                                           }
                                         }
                                       }}

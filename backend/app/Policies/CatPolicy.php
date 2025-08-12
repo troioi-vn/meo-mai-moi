@@ -8,6 +8,7 @@ use App\Enums\UserRole;
 use App\Enums\PlacementRequestStatus;
 use App\Models\FosterAssignment;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use App\Models\TransferRequest;
 
 class CatPolicy
 {
@@ -47,6 +48,15 @@ class CatPolicy
                 ->where('status', 'active')
                 ->exists();
             if ($hasActiveFoster) {
+                return true;
+            }
+
+            // Allow access if the user is the accepted responder awaiting handover (owner has accepted the transfer)
+            $isAcceptedResponder = TransferRequest::where('cat_id', $cat->id)
+                ->where('initiator_user_id', $user->id)
+                ->where('status', 'accepted')
+                ->exists();
+            if ($isAcceptedResponder) {
                 return true;
             }
         }

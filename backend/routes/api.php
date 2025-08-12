@@ -75,9 +75,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Owner-only: view responder's helper profile for a transfer request
     Route::get('/transfer-requests/{transferRequest}/responder-profile', [TransferRequestController::class, 'responderProfile']);
     // Transfer handover lifecycle
+    Route::get('/transfer-requests/{transferRequest}/handover', [TransferHandoverController::class, 'showForTransfer']);
     Route::post('/transfer-requests/{transferRequest}/handover', [TransferHandoverController::class, 'store']);
     Route::post('/transfer-handovers/{handover}/confirm', [TransferHandoverController::class, 'helperConfirm']);
     Route::post('/transfer-handovers/{handover}/complete', [TransferHandoverController::class, 'complete']);
+    Route::post('/transfer-handovers/{handover}/cancel', [TransferHandoverController::class, 'cancel']);
     // Foster return handover lifecycle
     Route::post('/foster-assignments/{assignment}/return-handover', [FosterReturnHandoverController::class, 'store']);
     Route::post('/foster-return-handovers/{handover}/confirm', [FosterReturnHandoverController::class, 'ownerConfirm']);

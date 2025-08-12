@@ -9,16 +9,23 @@ This document outlines the lifecycle after a placement request receives a matche
   - Fulfills and deactivates the associated PlacementRequest.
   - Auto-rejects all other pending responses for that PlacementRequest.
   - Creates an initial TransferHandover record (status=pending).
+  - Frontend hides the Placement Request block once it is no longer active/open.
 
 ## 2) Schedule & Complete the Physical Handover
 - Create/Schedule (Owner):
   - POST /api/transfer-requests/{transferRequest}/handover
   - Body: scheduled_at?, location?
   - Result: TransferHandover created (status=pending).
+- Fetch latest handover (Owner or Helper):
+  - GET /api/transfer-requests/{transferRequest}/handover
+  - Returns the most recent TransferHandover for the transfer (authorized for owner/helper).
 - Helper confirms condition (Helper):
   - POST /api/transfer-handovers/{handover}/confirm
   - Body: condition_confirmed: boolean, condition_notes?
   - Sets status=confirmed or disputed.
+- Cancel handover (Owner or Helper):
+  - POST /api/transfer-handovers/{handover}/cancel
+  - Valid when status ∈ {pending, confirmed, disputed}. Sets status=canceled.
 - Complete handover (Either party):
   - POST /api/transfer-handovers/{handover}/complete
   - Effects:
@@ -26,7 +33,6 @@ This document outlines the lifecycle after a placement request receives a matche
     - Permanent placement: change Cat.user_id (ownership) to the helper; update OwnershipHistory (close previous owner record and open new one).
     - Foster placement: create or ensure an active FosterAssignment (owner_user_id = original owner, foster_user_id = helper, expected_end_date = placement.end_date when set).
 
-Notifications are sent at key milestones (handover scheduled, helper confirmed, handover completed).
 
 ## 3) Foster Return Procedure (only for fostering)
 When fostering ends, the fosterer initiates the return to the original owner.
@@ -45,8 +51,6 @@ When fostering ends, the fosterer initiates the return to the original owner.
     - status=completed on return handover
     - Marks the FosterAssignment as completed (completed_at set, status=completed).
 
-Notifications are sent when a return is scheduled, confirmed, and completed.
-
 ## Permissions
 - Accept/Reject transfer: cat owner (recipient).
 - Handover scheduling: owner (transfer recipient).
@@ -64,12 +68,16 @@ Notifications are sent when a return is scheduled, confirmed, and completed.
 - OwnershipHistory: (cat_id, user_id, from_ts, to_ts?) tracks permanent ownership changes.
 
 ## Client UX (Frontend) – Suggested
-- After owner accepts a response, show a banner to "Schedule handover" with date/time and location.
-- Helper sees the pending handover in their account with a "Confirm condition" step.
-- On completion, for permanent transfers, redirect helper to "You are now the owner" page; for foster, show "Foster period started" with expected end date.
-- For fostering, near expected end date, prompt fosterer to schedule a return. Provide status chips and actions mirroring the APIs above.
+- After the owner accepts a response, the UI auto-opens a scheduling modal and shows a "Schedule handover" button in the Accepted section. The button is hidden once a handover exists for that transfer.
+- Helper sees a pending handover panel with "Confirm" and "Dispute" actions. Both owner and helper see a meeting banner (pending/confirmed) with "Cancel" and "Mark as completed" actions.
+- Accepted responses display a small status chip that reflects the latest fetched handover status (pending/confirmed/disputed/canceled/completed) with meeting details inline (scheduled_at, location).
+- On completion:
+  - Permanent: redirect helper to a "You are now the owner" experience (planned).
+  - Foster: show a "Foster period started" message with expected end date (planned).
+- For fostering, near expected_end_date, prompt the fosterer to schedule a return. Provide status chips and actions mirroring the APIs above.
 
 ## Future Enhancements
-- Cancel/dispute flows for both handovers.
 - Rescheduling, messaging, and file upload (agreements) attached to handovers.
 - Reminders around expected_end_date and missed confirmations.
+- Post-completion redirects/UX polish for permanent and foster flows.
+- Optional: Cancel flow for FosterReturnHandover mirroring transfer handover cancel.

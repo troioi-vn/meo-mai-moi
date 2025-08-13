@@ -24,8 +24,7 @@ This is the easiest way to get started. The setup uses a single `docker-compose.
 **1. First-Time Setup**
 
 ```bash
-# Clone the project
-git clone https://github.com/meo-mai-moi/meo-mai-moi.git
+git clone https://github.com/troioi-vn/meo-mai-moi.git
 cd meo-mai-moi
 ```
 To get started, copy the Docker-specific example file:

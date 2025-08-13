@@ -21,9 +21,14 @@ This project can be run with Docker (recommended) or with local PHP/Node servers
 
 This is the easiest way to get started. The setup uses a single `docker-compose.yml` file for all services.
 
-**1. Environment Setup**
+**1. First-Time Setup**
 
-This project uses a `.env.docker` file for Docker-based development. To get started, copy the Docker-specific example file:
+```bash
+# Clone the project
+git clone https://github.com/meo-mai-moi/meo-mai-moi.git
+cd meo-mai-moi
+```
+To get started, copy the Docker-specific example file:
 
 ```bash
 # From the project root directory
@@ -31,12 +36,6 @@ cp backend/.env.docker.example backend/.env.docker
 ```
 This file is pre-configured to connect to the PostgreSQL container. You do not need to change it for the standard setup.
 
-**2. First-Time Setup**
-
-```bash
-# Clone the project
-git clone https://github.com/your-username/meo-mai-moi.git
-cd meo-mai-moi
 
 # Build and start the Docker containers in the background
 docker compose up -d --build

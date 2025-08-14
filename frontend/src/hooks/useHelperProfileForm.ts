@@ -4,11 +4,28 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createHelperProfile, updateHelperProfile } from '@/api/helper-profiles';
 import { toast } from 'sonner';
 
-const useHelperProfileForm = (profileId, initialData) => {
+type HelperProfileForm = {
+  country: string;
+  address: string;
+  city: string;
+  state: string;
+  phone_number: string;
+  experience: string;
+  has_pets: boolean;
+  has_children: boolean;
+  can_foster: boolean;
+  can_adopt: boolean;
+  is_public: boolean;
+  status?: string;
+  photos: FileList | File[] | [];
+};
+
+type ApiError = { response?: { data?: { errors?: Record<string, string> } } };
+
+const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperProfileForm>) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [formData, setFormData] = useState(
-    initialData ?? {
+  const [formData, setFormData] = useState<HelperProfileForm>({
       country: '',
       address: '',
       city: '',
@@ -21,34 +38,27 @@ const useHelperProfileForm = (profileId, initialData) => {
       can_adopt: false,
       is_public: true,
       photos: [],
-    }
-  );
-  const [errors, setErrors] = useState({});
+      ...initialData,
+    });
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     // Only set the form data if we are on the edit page and the initial data has been loaded.
     if (profileId && initialData) {
-      setFormData(initialData);
+      setFormData((prev) => ({ ...prev, ...initialData }));
     }
   }, [initialData, profileId]);
 
-  const mutation = useMutation({
-    mutationFn: profileId ? updateHelperProfile : createHelperProfile,
-    onSuccess: (data) => {
+  const createMutation = useMutation({
+    mutationFn: createHelperProfile,
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['helper-profiles'] });
-      if (profileId) {
-        queryClient.invalidateQueries({ queryKey: ['helper-profile', profileId] });
-      }
       toast.success(profileId ? 'Helper profile updated successfully!' : 'Helper profile created successfully!');
-      if (profileId) {
-        navigate(`/helper/${profileId}`);
-      } else {
-        navigate(`/helper/${data.data.id}`);
-      }
+      navigate(`/helper/${String(data.data.id)}`);
     },
-    onError: (error) => {
-      setErrors(error.response.data.errors);
+    onError: (error: ApiError) => {
+      setErrors(error.response?.data?.errors ?? {});
       toast.error(profileId ? 'Failed to update helper profile. Please try again.' : 'Failed to create helper profile. Please try again.');
     },
     onSettled: () => {
@@ -56,12 +66,35 @@ const useHelperProfileForm = (profileId, initialData) => {
     },
   });
 
-  const updateField = (field) => (valueOrEvent) => {
-    let value;
-    if (valueOrEvent && valueOrEvent.target) {
-      const { target } = valueOrEvent;
+  const updateMutation = useMutation({
+    mutationFn: updateHelperProfile,
+    onSuccess: (_data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['helper-profiles'] });
+      if (profileId) {
+        queryClient.invalidateQueries({ queryKey: ['helper-profile', profileId] });
+      }
+      toast.success('Helper profile updated successfully!');
+      if (profileId) {
+        navigate(`/helper/${String(profileId)}`);
+      }
+    },
+    onError: (error: ApiError) => {
+      setErrors(error.response?.data?.errors ?? {});
+      toast.error('Failed to update helper profile. Please try again.');
+    },
+    onSettled: () => {
+      setIsSubmitting(false);
+    },
+  });
+
+  const updateField = (field: keyof HelperProfileForm) => (valueOrEvent: unknown) => {
+    let value: unknown;
+    if (valueOrEvent && typeof valueOrEvent === 'object' && 'target' in (valueOrEvent as any)) {
+      const { target } = valueOrEvent as {
+        target: { type?: string; checked?: boolean; files?: FileList; value?: unknown };
+      };
       if (target.type === 'checkbox') {
-        value = target.checked;
+        value = Boolean(target.checked);
       } else if (target.files) {
         value = target.files;
       } else {
@@ -70,11 +103,11 @@ const useHelperProfileForm = (profileId, initialData) => {
     } else {
       value = valueOrEvent;
     }
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value as any }));
   };
 
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors: Record<string, string> = {};
     if (!formData.country) newErrors.country = 'Country is required';
     if (!formData.address) newErrors.address = 'Address is required';
     if (!formData.city) newErrors.city = 'City is required';
@@ -85,7 +118,7 @@ const useHelperProfileForm = (profileId, initialData) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     if (!validateForm()) return;
     setIsSubmitting(true);
@@ -106,8 +139,8 @@ const useHelperProfileForm = (profileId, initialData) => {
       'status',
     ];
 
-    fieldsToSubmit.forEach(key => {
-      const value = formData[key];
+    fieldsToSubmit.forEach((key) => {
+      const value = formData[key as keyof HelperProfileForm] as unknown;
       if (key === 'photos' && value instanceof FileList) {
         for (let i = 0; i < value.length; i++) {
           dataToSend.append('photos[]', value[i]);
@@ -115,11 +148,15 @@ const useHelperProfileForm = (profileId, initialData) => {
       } else if (typeof value === 'boolean') {
         dataToSend.append(key, value ? '1' : '0');
       } else if (value !== null && value !== undefined) {
-        dataToSend.append(key, value);
+        dataToSend.append(key, String(value));
       }
     });
 
-    mutation.mutate(profileId ? { id: profileId, data: dataToSend } : dataToSend);
+    if (profileId) {
+      updateMutation.mutate({ id: profileId, data: dataToSend } as any);
+    } else {
+      createMutation.mutate(dataToSend as any);
+    }
   };
 
   const handleCancel = () => {

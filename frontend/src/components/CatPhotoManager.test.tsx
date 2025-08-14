@@ -32,18 +32,18 @@ describe('CatPhotoManager', () => {
   })
 
   // --- Test for successful photo upload ---
-  // it('handles photo upload correctly', async () => {
+  // it('handles photo upload correctly and displays new buttons', async () => {
   //   // ARRANGE
   //   const file = new File(['(⌐□_□)'], 'chucknorris.png', { type: 'image/png' });
   //   const catWithoutPhoto: Cat = { ...mockCat, id: 1, photo: null, photo_url: undefined };
   //   const expectedUpdatedCat: Cat = { ...mockCat, id: 1, photo_url: 'new_photo_url' };
-
+  //
   //   server.use(
   //     http.post('http://localhost:3000/api/cats/1/photos', () => {
   //       return HttpResponse.json({ data: expectedUpdatedCat });
   //     })
   //   );
-
+  //
   //   renderWithRouter(
   //     <CatPhotoManager
   //       cat={catWithoutPhoto}
@@ -51,18 +51,19 @@ describe('CatPhotoManager', () => {
   //       onPhotoUpdated={mockOnPhotoUpdated}
   //     />
   //   );
-
+  //
   //   // ACT
   //   const fileInput = screen.getByLabelText(/upload photo/i);
-  //   await user.upload(fileInput, file);
-
+  //   fireEvent.change(fileInput, { target: { files: [file] } });
+  //
   //   // ASSERT
-  //   await waitFor(() => {
-  //     expect(toast.success).toHaveBeenCalledWith('Photo uploaded successfully');
-  //   });
   //   await waitFor(() => {
   //       expect(mockOnPhotoUpdated).toHaveBeenCalledWith(expectedUpdatedCat);
   //   });
+  //
+  //   // Check that the new buttons are visible
+  //   expect(screen.getByText('Replace')).toBeInTheDocument();
+  //   expect(screen.getByText('Remove')).toBeInTheDocument();
   // });
 
   // --- Test for photo upload failure ---
@@ -192,6 +193,11 @@ describe('CatPhotoManager', () => {
       id: 1,
       photo: { id: 99, url: 'some_photo_url' },
       photo_url: 'some_photo_url',
+      // Ensure non-owner also lacks edit permissions
+      viewer_permissions: {
+        can_edit: false,
+        can_view_contact: false,
+      },
     }
     renderWithRouter(
       <CatPhotoManager cat={catWithPhoto} isOwner={false} onPhotoUpdated={mockOnPhotoUpdated} />

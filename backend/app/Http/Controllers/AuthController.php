@@ -54,13 +54,19 @@ class AuthController extends Controller
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $user = User::create([
+    /** @var User $user */
+    $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        // Create a personal access token (optional) and also start a session for Sanctum SPA
+    // Personal access token for API clients
+    $token = $user->createToken('auth_token')->plainTextToken;
+        // Log the user in to establish a first-party session
+        \Illuminate\Support\Facades\Auth::login($user);
+        $request->session()->regenerate();
 
         return $this->sendSuccess([
             'access_token' => $token,
@@ -106,6 +112,8 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
+            /** @var User $user */
             $user = Auth::user();
             $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -142,6 +150,13 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
+        // Revoke current personal access token if present (skip TransientToken for cookie-based sessions)
+        if ($request->user()) {
+            $token = $request->user()->currentAccessToken();
+            if ($token instanceof \Laravel\Sanctum\PersonalAccessToken) {
+                $token->delete();
+            }
+        }
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

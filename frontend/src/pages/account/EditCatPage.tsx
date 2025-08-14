@@ -7,6 +7,7 @@ import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { FormField } from '@/components/ui/FormField'
 import { EnhancedCatRemovalModal } from '@/components/EnhancedCatRemovalModal'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { CatPhotoManager } from '@/components/CatPhotoManager'
 import { toast } from 'sonner'
 
@@ -120,13 +121,7 @@ const EditCatPage: React.FC = () => {
       newErrors.birthday = 'Birthday is required.'
     }
 
-    if (!formData.location.trim()) {
-      newErrors.location = 'Location is required.'
-    }
-
-    if (!formData.description.trim()) {
-      newErrors.description = 'Description is required.'
-    }
+    
 
     console.log('validateForm called, errors:', newErrors)
     setErrors(newErrors)
@@ -160,6 +155,25 @@ const EditCatPage: React.FC = () => {
 
   const handleCancel = () => {
     void navigate('/account/cats')
+  }
+
+  const handleSetToLost = async () => {
+    if (!id) {
+      toast.error('No cat ID provided')
+      return
+    }
+
+    try {
+      setSubmitting(true)
+      await updateCat(id, { ...formData, status: 'lost' })
+      toast.success('Cat status updated to LOST.')
+      void navigate('/account/cats')
+    } catch (error: unknown) {
+      console.error('Error updating cat status:', error)
+      toast.error('Failed to update cat status. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const handleRemovalSuccess = () => {
@@ -268,7 +282,6 @@ const EditCatPage: React.FC = () => {
               }}
               error={errors.location}
               placeholder="Enter location"
-              required
             />
 
             <FormField
@@ -298,7 +311,6 @@ const EditCatPage: React.FC = () => {
               }}
               error={errors.description}
               placeholder="Describe your cat's personality, habits, and any special needs"
-              required
             />
 
             <div className="flex gap-4 pt-4">
@@ -319,6 +331,31 @@ const EditCatPage: React.FC = () => {
 
           {/* Enhanced Cat Removal Section */}
           <div className="border-t border-border pt-6 mt-8">
+            <h3 className="text-lg font-semibold text-foreground mb-2">Update Status</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Update the cat status.
+            </p>
+            <div className="flex gap-4 pt-4">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="flex-1">
+                  Mark as Lost
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action will mark the cat as lost. This can be undone by changing the status back to active.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleSetToLost}>Confirm</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">Remove Cat Profile</h3>
             <p className="text-sm text-muted-foreground mb-4">
               Permanently delete this cat's profile or mark them as deceased. This action requires

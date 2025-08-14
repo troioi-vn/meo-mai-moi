@@ -7,8 +7,8 @@
         <title>Meo Mai Moi</title>
 
         <!-- Built assets from frontend build process -->
-        <link rel="stylesheet" href="{{ asset('build/assets/index-8Nzq5opi.css') }}">
-        <script type="module" src="{{ asset('build/assets/index-C4geu9WQ.js') }}"></script>
+        <link rel="stylesheet" href="{{ asset('build/assets/index-B0Rq5luw.css') }}">
+        <script type="module" src="{{ asset('build/assets/index-mKHsPWRa.js') }}"></script>
     </head>
     <body>
         <div id="root"></div>

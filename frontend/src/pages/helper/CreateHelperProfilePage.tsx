@@ -6,8 +6,8 @@ import { FormField } from '@/components/ui/FormField';
 import useHelperProfileForm from '@/hooks/useHelperProfileForm';
 
 const CreateHelperProfilePage: React.FC = () => {
-  const { formData, setFormData, errors, isSubmitting, updateField, handleSubmit, handleCancel } =
-    useHelperProfileForm(null, {
+  const { formData, errors, isSubmitting, updateField, handleSubmit, handleCancel } =
+    useHelperProfileForm(undefined, {
         country: '',
         address: '',
         city: '',

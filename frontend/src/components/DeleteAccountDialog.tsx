@@ -27,7 +27,7 @@ interface DeleteAccountDialogProps {
 }
 
 const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDeleted }) => {
-  const { deleteAccount, logout } = useAuth()
+  const { deleteAccount } = useAuth()
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
@@ -41,7 +41,6 @@ const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDele
         description: 'Your account has been successfully deleted.',
       })
       setIsOpen(false)
-      void logout()
       onAccountDeleted()
     } catch (error: unknown) {
       let errorMessage = 'An unexpected error occurred.'

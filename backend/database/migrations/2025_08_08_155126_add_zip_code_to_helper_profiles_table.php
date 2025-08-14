@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('placement_requests', function (Blueprint $table) {
-            //
+        Schema::table('helper_profiles', function (Blueprint $table) {
+            $table->string('zip_code')->nullable();
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('placement_requests', function (Blueprint $table) {
-            //
+        Schema::table('helper_profiles', function (Blueprint $table) {
+            $table->dropColumn('zip_code');
         });
     }
 };

@@ -50,6 +50,7 @@ class HelperProfileApiTest extends TestCase
             'can_foster' => true,
             'can_adopt' => false,
             'is_public' => true,
+            'zip_code' => '12345',
         ];
 
         $response = $this->actingAs($user)->postJson('/api/helper-profiles', $data);

@@ -29,7 +29,7 @@ class TransferRequestPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->helperProfiles()->exists();
     }
 
     /**
@@ -38,6 +38,26 @@ class TransferRequestPolicy
     public function update(User $user, TransferRequest $transferRequest): bool
     {
         return false;
+    }
+
+    public function accept(User $user, TransferRequest $transferRequest): bool
+    {
+        return $user->id === $transferRequest->recipient_user_id;
+    }
+
+    public function reject(User $user, TransferRequest $transferRequest): bool
+    {
+        // Cat owner (recipient) can reject, and the initiator (helper) can cancel their own pending request
+        return $user->id === $transferRequest->recipient_user_id
+            || $user->id === $transferRequest->initiator_user_id;
+    }
+
+    /**
+     * Allow the cat owner (recipient) to view the responder's helper profile for this transfer.
+     */
+    public function viewResponderProfile(User $user, TransferRequest $transferRequest): bool
+    {
+        return $user->id === $transferRequest->recipient_user_id;
     }
 
     /**

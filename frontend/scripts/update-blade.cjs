@@ -6,7 +6,8 @@ const path = require('path');
 
 // Corrected paths by resolving from the script's directory up to the project root.
 const manifestPath = path.resolve(__dirname, '../dist/.vite/manifest.json');
-const bladeTemplatePath = path.resolve(__dirname, '../../backend/resources/views/welcome.blade.php');
+const bladeTemplatePath = path.resolve(__dirname, '../../backend/resources/views/welcome.blade.php.template');
+const bladeFinalPath = path.resolve(__dirname, '../../backend/resources/views/welcome.blade.php');
 
 try {
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
@@ -40,8 +41,8 @@ try {
     templateContent = templateContent.replace(/<link rel="stylesheet" href="{{ asset\('build\/[^']+'\) }}">/, '');
   }
 
-  fs.writeFileSync(bladeTemplatePath, templateContent);
-  console.log(`✅ Successfully updated Blade template: ${bladeTemplatePath}`);
+  fs.writeFileSync(bladeFinalPath, templateContent);
+  console.log(`✅ Successfully updated Blade template: ${bladeFinalPath}`);
 
 } catch (error) {
   console.error('❌ Error updating Blade template:', error);

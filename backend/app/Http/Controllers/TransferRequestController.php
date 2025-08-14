@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Annotations as OA;
 use App\Enums\UserRole;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use App\Enums\PlacementRequestStatus;
 
 /**
  * @OA\Schema(
@@ -148,6 +151,7 @@ class TransferRequestController extends Controller
         $validatedData = $request->validate([
             'cat_id' => 'required|exists:cats,id',
             'placement_request_id' => 'required|exists:placement_requests,id',
+            'helper_profile_id' => 'required|exists:helper_profiles,id',
             'requested_relationship_type' => 'required|in:fostering,permanent_foster',
             'fostering_type' => 'nullable|in:free,paid|required_if:requested_relationship_type,fostering',
             'price' => 'nullable|numeric|min:0|required_if:fostering_type,paid',
@@ -159,13 +163,28 @@ class TransferRequestController extends Controller
             return $this->sendError('Cat not found.', 404);
         }
 
+        if ($cat->user_id === $user->id) {
+            return $this->sendError('You cannot create a transfer request for your own cat.', 403);
+        }
+
         if ($cat->status !== \App\Enums\CatStatus::ACTIVE) {
             return $this->sendError('Cat is not available for transfer.', 403);
         }
 
-        $transferRequest = TransferRequest::create(array_merge($validatedData, [
+        // Prevent duplicate pending responses from the same user for the same placement request
+        $alreadyPending = TransferRequest::where('placement_request_id', $validatedData['placement_request_id'])
+            ->where('initiator_user_id', $user->id)
+            ->where('status', 'pending')
+            ->exists();
+
+        if ($alreadyPending) {
+            return $this->sendError('You have already responded to this placement request and it is pending.', 409);
+        }
+
+                $transferRequest = TransferRequest::create(array_merge($validatedData, [
             'initiator_user_id' => $user->id,
             'recipient_user_id' => $cat->user_id, // Cat owner is the recipient
+            'requester_id' => $user->id, // User making the request
             'status' => 'pending',
         ]));
 
@@ -218,17 +237,53 @@ class TransferRequestController extends Controller
     {
         $this->authorize('accept', $transferRequest);
 
-        $transferRequest->status = 'accepted';
-        $transferRequest->accepted_at = now();
-        $transferRequest->save();
-
-        $transferRequest->cat->update(['user_id' => $transferRequest->recipient_user_id]);
-
-        if ($transferRequest->placementRequest) {
-            $transferRequest->placementRequest->update(['is_active' => false]);
+        // Ensure pending before proceeding
+        if ($transferRequest->status !== 'pending') {
+            return $this->sendError('Only pending requests can be accepted.', 409);
         }
 
-        return $this->sendSuccess($transferRequest);
+    DB::transaction(function () use ($transferRequest) {
+            $transferRequest->status = 'accepted';
+            $transferRequest->accepted_at = now();
+            $transferRequest->save();
+
+            $placement = $transferRequest->placementRequest;
+
+            if ($placement) {
+                // Fulfill the placement request
+                $placement->is_active = false;
+                // If status enum supports it, set to fulfilled
+                if (in_array('status', $placement->getFillable(), true)) {
+                    $placement->status = PlacementRequestStatus::FULFILLED;
+                }
+                if (Schema::hasColumn('placement_requests', 'fulfilled_at')) {
+                    $placement->fulfilled_at = now();
+                }
+                if (Schema::hasColumn('placement_requests', 'fulfilled_by_transfer_request_id')) {
+                    $placement->fulfilled_by_transfer_request_id = $transferRequest->id;
+                }
+                $placement->save();
+
+                // Auto-reject other pending transfer requests for the same placement
+                \App\Models\TransferRequest::where('placement_request_id', $placement->id)
+                    ->where('id', '!=', $transferRequest->id)
+                    ->where('status', 'pending')
+                    ->update(['status' => 'rejected', 'rejected_at' => now()]);
+            }
+
+            // Create initial handover record; finalization occurs on handover completion
+            if (class_exists(\App\Models\TransferHandover::class) && \Illuminate\Support\Facades\Schema::hasTable('transfer_handovers')) {
+                \App\Models\TransferHandover::create([
+                    'transfer_request_id' => $transferRequest->id,
+                    'owner_user_id' => $transferRequest->recipient_user_id,
+                    'helper_user_id' => $transferRequest->initiator_user_id,
+                    'status' => 'pending',
+                    'owner_initiated_at' => now(),
+                ]);
+            }
+        });
+
+        return $this->sendSuccess($transferRequest->fresh(['placementRequest']));
     }
 
     /**
@@ -272,5 +327,44 @@ class TransferRequestController extends Controller
         $transferRequest->save();
 
         return $this->sendSuccess($transferRequest);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/transfer-requests/{id}/responder-profile",
+     *     summary="Get the responder's helper profile for a given transfer request",
+     *     tags={"Transfer Requests"},
+     *     security={{"sanctum": {}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the transfer request",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="The responder's helper profile",
+     *         @OA\JsonContent(ref="#/components/schemas/HelperProfile")
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Helper profile not found"
+     *     )
+     * )
+     */
+    public function responderProfile(Request $request, TransferRequest $transferRequest)
+    {
+        $this->authorize('viewResponderProfile', $transferRequest);
+
+        $profile = $transferRequest->helperProfile?->load(['photos', 'user']);
+        if (!$profile) {
+            return $this->sendError('Helper profile not found.', 404);
+        }
+        return $this->sendSuccess($profile);
     }
 }

@@ -3,58 +3,44 @@ import { cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import { server } from './mocks/server';
 
-// Polyfill for PointerEvent
+// Polyfill for PointerEvents
 if (!global.PointerEvent) {
   class PointerEvent extends MouseEvent {
-    public pointerId?: number
-    public width?: number
-    public height?: number
-    public pressure?: number
-    public tangentialPressure?: number
-    public tiltX?: number
-    public tiltY?: number
-    public twist?: number
-    public pointerType?: string
-    public isPrimary?: boolean
-
+    public pointerId?: number;
     constructor(type: string, params: PointerEventInit) {
-      super(type, params)
-      this.pointerId = params.pointerId
-      this.width = params.width
-      this.height = params.height
-      this.pressure = params.pressure
-      this.tangentialPressure = params.tangentialPressure
-      this.tiltX = params.tiltX
-      this.tiltY = params.tiltY
-      this.twist = params.twist
-      this.pointerType = params.pointerType
-      this.isPrimary = params.isPrimary
+      super(type, params);
+      this.pointerId = params.pointerId;
     }
   }
-  global.PointerEvent = PointerEvent as any
+  global.PointerEvent = PointerEvent as any;
 }
 
+// Polyfills for PointerEvent methods on Element
 if (!Element.prototype.hasPointerCapture) {
   Element.prototype.hasPointerCapture = function (pointerId: number): boolean {
-    return false
-  }
+    // Return a mock value
+    return false;
+  };
 }
-
 if (!Element.prototype.setPointerCapture) {
-  Element.prototype.setPointerCapture = function (pointerId: number): void {}
+  Element.prototype.setPointerCapture = function (pointerId: number): void {
+    // No-op
+  };
 }
-
 if (!Element.prototype.releasePointerCapture) {
-  Element.prototype.releasePointerCapture = function (pointerId: number): void {}
+  Element.prototype.releasePointerCapture = function (pointerId: number): void {
+    // No-op
+  };
 }
 
+// Polyfill for scrollIntoView
 if (!window.HTMLElement.prototype.scrollIntoView) {
-  window.HTMLElement.prototype.scrollIntoView = function () {}
+  window.HTMLElement.prototype.scrollIntoView = function () {};
 }
 
 
 vi.mock('sonner', async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual = (await importOriginal()) as object;
   return {
     ...actual,
     Toaster: () => null, // Mock Toaster component
@@ -77,7 +63,7 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation((query: string) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -89,8 +75,16 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
-afterAll(() => server.close());
+vi.mock('@/components/ui/button', async () => {
+  const actual = await vi.importActual('@/components/ui/button');
+  return {
+    ...actual,
+    buttonVariants: () => '',
+  };
+});
+
+beforeAll(() => { server.listen({ onUnhandledRequest: 'error' }); });
+afterAll(() => { server.close(); });
 afterEach(() => {
   server.resetHandlers();
   cleanup();

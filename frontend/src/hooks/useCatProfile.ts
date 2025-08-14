@@ -6,15 +6,16 @@ interface UseCatProfileResult {
   cat: Cat | null
   loading: boolean
   error: string | null
+  refresh: () => void
 }
 
 export const useCatProfile = (id: string | undefined): UseCatProfileResult => {
   const [cat, setCat] = useState<Cat | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [version, setVersion] = useState(0)
 
-  useEffect(() => {
-    const fetchCat = async () => {
+  const fetchCat = async () => {
       if (!id) {
         setError('No cat ID provided')
         setLoading(false)
@@ -43,8 +44,11 @@ export const useCatProfile = (id: string | undefined): UseCatProfileResult => {
       }
     }
 
+  useEffect(() => {
     void fetchCat()
-  }, [id])
+  }, [id, version])
 
-  return { cat, loading, error }
+  const refresh = () => { setVersion((v) => v + 1); }
+
+  return { cat, loading, error, refresh }
 }

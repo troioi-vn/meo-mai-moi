@@ -17,6 +17,8 @@ use App\Http\Controllers\CatPhotoController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PlacementRequestController;
 use App\Http\Controllers\VersionController;
+use App\Http\Controllers\TransferHandoverController;
+use App\Http\Controllers\FosterReturnHandoverController;
 
 Route::get('/version', [VersionController::class, 'show']);
 Route::middleware('auth:sanctum')->group(function () {
@@ -35,9 +37,6 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
-Route::get('/version', function () {
-    return response()->json(['version' => 'v0.0.1']);
-});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
@@ -50,6 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/users/me/avatar', [UserProfileController::class, 'uploadAvatar']);
     Route::delete('/users/me/avatar', [UserProfileController::class, 'deleteAvatar']);
     Route::get('/my-cats', [CatController::class, 'myCats']);
+    Route::get('/my-cats/sections', [CatController::class, 'myCatsSections']);
     Route::post('/cats', [CatController::class, 'store']);
     Route::put('/cats/{cat}', [CatController::class, 'update']);
     Route::delete('/cats/{cat}', [CatController::class, 'destroy'])->name('cats.destroy');
@@ -57,6 +57,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cats/{cat}/photos', [CatPhotoController::class, 'store']);
     Route::delete('/cats/{cat}/photos/{photo}', [CatPhotoController::class, 'destroy']);
     Route::post('/placement-requests', [PlacementRequestController::class, 'store']);
+    Route::delete('/placement-requests/{placementRequest}', [PlacementRequestController::class, 'destroy']);
+    Route::post('/placement-requests/{placementRequest}/confirm', [PlacementRequestController::class, 'confirm']);
+    Route::post('/placement-requests/{placementRequest}/reject', [PlacementRequestController::class, 'reject']);
     Route::apiResource('helper-profiles', HelperProfileController::class);
     Route::post('helper-profiles/{helperProfile}', [HelperProfileController::class, 'update']);
     Route::delete('helper-profiles/{helperProfile}/photos/{photo}', [HelperProfileController::class, 'destroyPhoto']);
@@ -69,6 +72,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/transfer-requests', [TransferRequestController::class, 'store']);
     Route::post('/transfer-requests/{transferRequest}/accept', [TransferRequestController::class, 'accept']);
     Route::post('/transfer-requests/{transferRequest}/reject', [TransferRequestController::class, 'reject']);
+    // Owner-only: view responder's helper profile for a transfer request
+    Route::get('/transfer-requests/{transferRequest}/responder-profile', [TransferRequestController::class, 'responderProfile']);
+    // Transfer handover lifecycle
+    Route::get('/transfer-requests/{transferRequest}/handover', [TransferHandoverController::class, 'showForTransfer']);
+    Route::post('/transfer-requests/{transferRequest}/handover', [TransferHandoverController::class, 'store']);
+    Route::post('/transfer-handovers/{handover}/confirm', [TransferHandoverController::class, 'helperConfirm']);
+    Route::post('/transfer-handovers/{handover}/complete', [TransferHandoverController::class, 'complete']);
+    Route::post('/transfer-handovers/{handover}/cancel', [TransferHandoverController::class, 'cancel']);
+    // Foster return handover lifecycle
+    Route::post('/foster-assignments/{assignment}/return-handover', [FosterReturnHandoverController::class, 'store']);
+    Route::post('/foster-return-handovers/{handover}/confirm', [FosterReturnHandoverController::class, 'ownerConfirm']);
+    Route::post('/foster-return-handovers/{handover}/complete', [FosterReturnHandoverController::class, 'complete']);
     #Route::post('/reviews', [ReviewController::class, 'store']);
 
     // Message Routes
@@ -79,5 +94,6 @@ Route::middleware('auth:sanctum')->group(function () {
     #Route::delete('/messages/{message}', [MessageController::class, 'destroy']);
 });
 
+// Place static routes before parameter routes and constrain {cat} to numbers to avoid conflicts
 Route::get('/cats/placement-requests', [CatController::class, 'placementRequests']);
-Route::get('/cats/{cat}', [CatController::class, 'show'])->middleware('optional.auth');
+Route::get('/cats/{cat}', [CatController::class, 'show'])->middleware('optional.auth')->whereNumber('cat');

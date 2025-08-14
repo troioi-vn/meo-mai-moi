@@ -11,7 +11,8 @@ services:
     networks:
       - meo-mai-moi-network
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     volumes:
       - uploads_data:/var/www/storage/app/public
       - logs_data:/var/www/storage/logs

@@ -1,6 +1,6 @@
-# GEMINI.md - Meo Mai Moi Project
+# GEMINI.md — AI Agent Guide for Meo Mai Moi
 
-This document outlines the high-level strategy, architecture, conventions, and goals for the Meo Mai Moi project.
+This document is the AI-agent-oriented project description and development guide. Use it to understand the architecture, conventions, workflows, and safe/practical ways to contribute autonomously.
 
 ## 1. Project Summary
 
@@ -214,6 +214,148 @@ This section documents common issues encountered during development and their ef
 -   **Admin Panel:** `http://localhost:8000/admin` (Credentials: `test@example.com` / `password`)
 
 ## 7. User Preferences
+
+**Development Command Execution:** For development, use `php artisan ...` locally in the `backend/` directory, not via Docker.
+
+## Agent Quickstart (Read Me First)
+
+This section is for AI coding agents (Copilots) to be effective, safe, and fast in this repo.
+
+### Quick Repo Map
+
+- Backend (Laravel): `backend/` (API, models, policies, Filament admin)
+- Frontend (React+TS): `frontend/` (Vite, shadcn/ui, MSW mocks, Vitest)
+- Docs/ops: `docs/`, `docker-compose.yml`, `GEMINI.md`
+
+### Frontend Rules of the Road
+
+- Axios baseURL is `/api`. Use relative paths like `api.get('cats/1')` (NOT `/api/cats/1`) to avoid `/api/api` issues.
+- Tests use MSW with absolute URLs (e.g., `http://localhost:3000/api/cats`). Keep handlers consistent with API shapes (usually `{ data: ... }`).
+- Prefer `await screen.findBy...` over nested `waitFor(async () => await screen.findBy...)` to avoid flakiness.
+- shadcn/ui Select and Dialog are Radix-based. In tests:
+  - Select trigger role is `combobox`. Use visible option text; avoid role name guesses.
+  - Provide DialogDescription to avoid a11y warnings.
+- When editing lists, ensure items have stable React keys.
+
+### Backend Rules of the Road
+
+- Keep OpenAPI annotations updated; generate docs after changes.
+- Respect policies/permissions; most controllers assume policy checks.
+
+### Common Pitfalls & Fixes
+
+- Double `/api` in frontend: use relative endpoints when axios baseURL is set.
+- Flaky waits: avoid nested waitFor; rely on `findBy...` and stable UI states.
+- Missing top-level fields in MSW responses cause undefined errors — mirror real API structure.
+- JSDOM missing APIs: see setupTests polyfills (PointerEvents, scrollIntoView).
+
+### Typical Agent Workflow
+
+1) Read the ask, extract requirements into a short checklist. Execute directly if safe.
+2) Locate files quickly using semantic search; favor reading larger contiguous blocks.
+3) Implement smallest viable change; keep public APIs and styles intact.
+4) If changing runtime behavior, add/adjust unit tests first or alongside.
+5) Run targeted tests before full suite for speed; iterate until green.
+6) Add toasts and refresh hooks for user feedback and state sync.
+7) Document non-obvious behavior or patterns here when you learn something new.
+
+### Patterns Added in This Session
+
+- Placement responses flow:
+  - Cat card shows Respond when eligible -> PlacementResponseModal collects helper profile and relationship type, has a confirmation step, and submits to `POST transfer-requests`.
+  - Cat profile page lists transfer responses per placement request. Owner can Confirm/Reject with success/error toasts; UI calls `refresh()` hook to re-fetch.
+- Filters on /requests page: type and date range, purely client-side.
+- Test stability principles applied across modal, profile, and edit pages.
+
+- Handover lifecycle UI (post-accept):
+  - On accept, an initial pending TransferHandover is created server-side. Frontend auto-opens a scheduling modal and shows a "Schedule handover" action per accepted transfer.
+  - The schedule button hides once a handover exists. A status chip for each accepted response is backed by the fetched handover status; inline meeting details (scheduled_at, location) are shown.
+  - Helper gets a confirm/dispute panel while status is pending. Both parties see a meeting banner (pending/confirmed) with Cancel and Mark-as-completed.
+  - On completion, ownership or foster assignment is finalized server-side. UI refreshes and hides inactive/fulfilled placement requests.
+
+- Placement Request visibility rule:
+  - In `CatDetails`, render the "Active Placement Requests" block only when there are active/open requests (`is_active || status in {open,pending_review}`). This hides requests after acceptance/fulfillment.
+
+- My Cats sections pattern:
+  - Backend exposes GET `/api/my-cats/sections` returning `{ owned: Cat[], fostering_active: Cat[], fostering_past: Cat[], transferred_away: Cat[] }`.
+  - Frontend `MyCatsPage` consumes this shape; UI shows sections and a "Show all (including deceased)" toggle for Owned.
+  - Note: keep API responses aligned with MSW handlers in tests (absolute URLs; `{ data: ... }` wrapper if applicable).
+
+- React Hooks ordering guard:
+  - Never call hooks conditionally or inline within JSX props if the call site can be skipped/added between renders. Avoid patterns like `useMemo(...)` directly inside a prop when the containing element may be conditionally rendered.
+  - Prefer deriving values inline without `useMemo` unless profiling shows a need. If using `useMemo`, declare it unconditionally at the top of the component.
+
+### Session Notes — 2025-08-11
+
+- Vite/ESM type imports
+  - If a module is used only for TypeScript types (e.g., `HelperProfile`), import it with `import type { HelperProfile } from '@/types/helper-profile'` to avoid runtime “doesn’t provide an export named …” errors.
+  - Audit API helpers for value vs type imports; types should never be imported as runtime values.
+
+- shadcn/ui exports and consumers
+  - Some components (e.g., `alert-dialog.tsx`) import `buttonVariants` from `@/components/ui/button`. Ensure `button.tsx` re-exports `buttonVariants`, or update import sites to source `button-variants` directly. Re-exporting avoids broad refactors and fixes missing export runtime errors.
+
+- Test environment polyfills (Vitest + jsdom)
+  - Pointer events: polyfill `PointerEvent` and add `hasPointerCapture`, `setPointerCapture`, `releasePointerCapture` on `Element.prototype` when missing.
+  - Scrolling: polyfill `HTMLElement.prototype.scrollIntoView`.
+  - Prefer feature checks using `in` operator and assign safely with narrow casts to avoid `any` and unnecessary-assertion lint warnings. Use `globalThis` for global feature detection.
+  - Mock libraries that render portals/toasters (e.g., `sonner`) with lightweight stubs in `setupTests.ts` to stabilize tests.
+
+- ESLint/TS rules alignment (practical tips)
+  - prefer-nullish-coalescing: Use `??` instead of `||` for defaulting values that may be `0`, `''`, or `false`.
+  - no-floating-promises: Always await Promises, add `.catch`, or mark explicit fire-and-forget calls with `void` when appropriate.
+  - restrict-template-expressions: Convert non-strings before interpolation (e.g., `String(id)` for numeric keys).
+  - react-x/no-nested-component-definitions: Move inline component definitions to top-level to satisfy rules and improve performance.
+
+- Radix/shadcn components typing
+  - Avoid custom `ref` props in wrapper components if lint complains (`react-x/no-forward-ref`). Prefer the simplest pass-through signature or standard `forwardRef` only when truly needed.
+
+- CatPhotoManager behavior (owner controls)
+  - Preserve `viewer_permissions` when merging server responses after photo upload/delete to keep overlay controls visible.
+  - Compute `canEdit` from `isOwner || viewer_permissions?.can_edit === true`. Don’t rely solely on incoming server payload, as some local-only flags may be omitted.
+  - After successful upload, update local state and call `onPhotoUpdated` with a merged Cat to sync parent views.
+
+- API helpers shape
+  - Axios responses commonly use `{ data: ... }`. Prefer typed generics like `api.get<{ data: T }>(...)` and destructure `response.data.data` to keep types accurate and avoid `any`.
+
+### Session Notes — 2025-08-13 (Rehoming/Handover Flow)
+
+- Endpoints integrated
+  - Added/used GET `/api/transfer-requests/{id}/handover` to fetch the latest handover for a transfer.
+  - Added/used POST `/api/transfer-handovers/{id}/cancel` to allow owner/helper to cancel pending/confirmed/disputed.
+  - Completed flow already present: POST `/api/transfer-handovers/{id}/confirm`, POST `/api/transfer-handovers/{id}/complete`.
+
+- Frontend integration points
+  - `CatProfilePage`: maintains a map of existing handovers per accepted transfer; derives chips and inline meeting details from fetched data.
+  - Helper-facing confirm/dispute panel rendered only when status is `pending` for the helper's accepted transfer.
+  - Meeting banner appears for `pending`/`confirmed` with Cancel + Complete; actions toast and call `refresh()`.
+  - `CatDetails`: shows only active/open placement requests; fulfilled/inactive ones are hidden post-accept/complete.
+
+- Policy fix
+  - Updated `CatPolicy@view` to allow the accepted responder (helper) to view the cat profile post-acceptance, preventing a 403 until handover completes.
+
+- Testing notes
+  - MSW handlers must use absolute URLs and return `{ data: ... }` shapes.
+  - Prefer `findBy...` queries for async UI; avoid nested `waitFor`.
+
+- Follow-ups
+  - Post-completion redirect UX (permanent: "You are now the owner"; foster: "Foster period started").
+  - Foster return UI to surface backend endpoints and mirror handover patterns.
+
+### Speedrun Commands (optional)
+
+```bash
+# Frontend
+cd frontend
+npm test --silent
+
+# Backend
+cd ../backend
+php artisan test
+```
+
+### When in Doubt
+
+- Don’t guess file paths or API shapes — search and read. If a task seems risky, propose a minimal, reversible change and add tests.
 
 -   **Collaboration Style:** Iterative, feedback-driven.
 -   **Command Style:** Imperative (e.g., "Refactor this function").

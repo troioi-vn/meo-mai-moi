@@ -18,7 +18,8 @@ return new class extends Migration
             $table->foreignId('recipient_user_id')->constrained('users')->onDelete('cascade');
             $table->enum('status', ['pending', 'accepted', 'rejected'])->default('pending');
             $table->enum('requested_relationship_type', ['fostering', 'permanent_foster']);
-            $table->foreignId('placement_request_id')->nullable()->constrained()->onDelete('set null');
+            // Define the column now; attach the FK in a later migration after placement_requests exists
+            $table->foreignId('placement_request_id')->nullable()->index();
             $table->timestamp('accepted_at')->nullable();
             $table->timestamp('rejected_at')->nullable();
             $table->timestamps();

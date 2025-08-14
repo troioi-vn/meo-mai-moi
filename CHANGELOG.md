@@ -4,14 +4,57 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Changed
+- **Redirect to login page after logout:** After a user logs out, they are now redirected to the login page.
+- **Authorization Centralization:** `CatController@show` now relies on policies via `$this->authorize('view', $cat)`; controller logic simplified while preserving `viewer_permissions` in the response.
+- **Admin Middleware:** Updated to support both enum-backed roles and string roles, improving robustness across environments (and future Spatie-only direction).
+- **Docker Entrypoint/Env:** Entry point now generates `.env` as a fallback and creates `APP_KEY` when missing, instead of depending on `.env.docker`.
+- **Auth Session Behavior:** Register/Login also establish a Sanctum session (cookies) while continuing to return a token for API clients.
+- **Login Redirect**: Improved the login redirect logic to be more secure and flexible. It now supports relative redirect paths while preventing open redirects to external sites.
+- **Transfer Acceptance Flow**: Accepting a transfer response now fulfills the related placement request transactionally and auto-rejects other pending responses.
+- **Transfer Acceptance Flow (deferred finalization)**: Accept no longer immediately transfers ownership or creates a foster assignment. It now creates a `TransferHandover` record and defers finalization to handover completion (see Added).
+- **Cat Visibility Policy**: Active fosterers are allowed to view the cat profile while the assignment is active.
+
+### Fixed
+- **API Routing:** Removed duplicate `/api/version` route declaration to keep `VersionController` as the single source of truth.
+- **Test Stability**: Improved the reliability of tests in `EditCatPage.test.tsx` by adding explicit `waitFor` assertions to prevent race conditions.
+- **MyCatsPage Hooks Order**: Fixed a React hooks ordering error by removing a conditional `useMemo` within JSX props.
+
 ### Added
+- **Transfer Handover Lifecycle:** Introduced a post-accept procedure to safely hand over the cat.
+  - New `TransferHandover` model and migration to track handover scheduling and confirmations.
+  - Endpoints: initiate handover (owner), confirm condition (helper), complete handover (either party).
+  - On completion, apply final effects:
+    - Permanent: transfer ownership to helper.
+    - Foster: create an active `FosterAssignment`; owner remains.
+  - OpenAPI documentation updated and tests added for lifecycle.
+- **Ownership History:** New `ownership_history` table with `OwnershipHistory` model and relations on `Cat` and `User` to support the `transferred_away` section.
+- **Placement Response System**: Implemented the core functionality for helpers to respond to placement requests.
+  - **Backend**:
+    - Cat profiles are now publicly visible if they have an active placement request.
+    - Added tests for cat profile visibility logic.
+    - Confirmed and tested linkage of `TransferRequest` to `PlacementRequest` with a foreign key.
+    - Confirmed and tested creation/acceptance logic for `TransferRequest`.
+    - Cat owners can now view HelperProfile data.
+  - Added Postgres partial unique index to prevent duplicate pending responses by the same user to the same placement request.
+  - Fulfillment fields on `PlacementRequest` (status `fulfilled`, `fulfilled_at`, `fulfilled_by_transfer_request_id`).
+  - New `FosterAssignment` model and migration for fostering lifecycle.
+  - **Frontend**:
+    - Added a "Respond" button to Cat Cards for cats with active placement requests.
+    - Implemented `PlacementResponseModal` for helpers to submit responses:
+      - Prompts to create a HelperProfile if none exists.
+      - Displays active HelperProfiles as options.
+      - Includes a confirmation step before submission.
+    - Added tests for `CatCard` and `PlacementResponseModal` functionality.
+  - My Cats page reworked to consume `/api/my-cats/sections` and render sections: Owned, Fostering (Active), Fostering (Past), and Transferred Away; includes a "Show all (including deceased)" toggle with tests.
+  - Cat Card now shows a "Fulfilled" badge when applicable.
 - **Helper Profile Feature**: Implemented full CRUD functionality for Helper Profiles.
   - **Backend**: Added `HelperProfile` model, controller, policy, and photo uploads.
   - **Frontend**: Created pages for listing, viewing, creating, and editing helper profiles.
   - **Frontend**: Added a `CheckboxField` component and refactored forms to use a custom hook (`useHelperProfileForm`), aligning with project conventions.
   - **Frontend**: Added `Carousel` and `Table` components for improved UI.
 - Added a "Helper Profiles" link to the user navigation menu.
-- Added `start_date` and `end_date` fields to the `PlacementRequest` model and API.
+- Added `start_date` and `end_date` to the `PlacementRequest` model and API.
 - Added date picker components (`react-day-picker`, `date-fns`) to the frontend for placement request forms.
 
 ### Fixed
@@ -34,6 +77,7 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Vite/Vitest CSS Handling**: Resolved a critical issue where Vitest tests were failing due to incorrect CSS parsing. The fix involved disabling Vitest's built-in CSS handling and importing the main stylesheet directly into the test setup file, ensuring styles are loaded correctly without conflicting with the Tailwind CSS Vite plugin.
 - Adjusted backend tests (`CatListingTest`, `CatProfileTest`, `OwnershipPermissionTest`) to reflect owner/admin-only access for cat profiles.
 - **PlacementRequestModal Tests**: Temporarily disabled two tests in `PlacementRequestModal.test.tsx` due to persistent timeouts.
+- **Frontend Tests**: Re-enabled and fixed previously disabled tests in `EnhancedCatRemovalModal.test.tsx` and `EditCatPage.test.tsx`.
 - **Docker Environment**: The Docker setup was completely overhauled to be more robust and reliable.
 - **Authentication**: The entire authentication flow (register, login, logout) was fixed.
 - **API Documentation**: The OpenAPI (Swagger) documentation was fixed.
@@ -60,6 +104,7 @@ All notable changes to this project are documented here, following the [Keep a C
 - Fixed a UI bug where the select component in the placement request dialog had a transparent background.
 
 ### Removed
+- **Frontend Axios Client:** Removed redundant `frontend/src/api/api.ts` in favor of the standardized `frontend/src/api/axios.ts` client.
 - Removed the "Back" button from the cat profile page for a cleaner user interface.
 
 ## [0.4.0] - 2025-07-24 - Alpha Release
@@ -102,8 +147,6 @@ All notable changes to this project are documented here, following the [Keep a C
 - Fixed routing issue for direct URL access in the SPA.
 - Corrected file permissions for user-uploaded images, resolving 404 errors.
 
----
-
 ## [0.3.0] - 2025-07-15
 
 ### Added
@@ -123,8 +166,6 @@ All notable changes to this project are documented here, following the [Keep a C
 - Linting: Resolved majority of ESLint errors and improved type safety.
 - React Best Practices: Improved component implementations and promise handling.
 - Note: Some React 19 warnings remain for `forwardRef` usage and context providers, which are acceptable for current shadcn/ui components.
-
----
 
 ## [0.2.0] - 2025-07-15
 
@@ -152,8 +193,6 @@ All notable changes to this project are documented here, following the [Keep a C
 - Configuration: Updated `frontend/tsconfig.json` to correctly include all necessary files.
 - Testing: Repaired broken tests by mocking dependencies correctly and updating providers.
 - UI/UX: Removed the now-redundant `HomeButton` from login and registration pages.
-
----
 
 ## [Earlier]
 

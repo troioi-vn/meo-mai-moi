@@ -7,7 +7,7 @@ import path from 'path';
 
 export default defineConfig(({ mode }) => ({
   base: mode === 'production' ? '/build/' : '/',
-  plugins: [react(), tsconfigPaths(), tailwindcss('./tailwind.config.js')],
+  plugins: [react(), tsconfigPaths(), tailwindcss()],
   server: {
     port: 5173,
     proxy: {
@@ -22,6 +22,11 @@ export default defineConfig(({ mode }) => ({
         secure: false,
       },
       '/storage': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/requests': {
         target: 'http://localhost:8000',
         changeOrigin: true,
         secure: false,
@@ -41,6 +46,7 @@ export default defineConfig(({ mode }) => ({
     emptyOutDir: true,
     manifest: true,
     assetsDir: 'assets',
+    chunkSizeWarningLimit: 1000,
   },
   optimizeDeps: {
     exclude: ['@radix-ui/number'],

@@ -67,11 +67,12 @@ class HelperProfileController extends Controller
             'can_foster' => 'required|boolean',
             'can_adopt' => 'required|boolean',
             'is_public' => 'required|boolean',
+            'zip_code' => 'required|string|max:20',
             'photos' => 'sometimes|array|max:5',
             'photos.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:10240',
         ]);
 
-        $helperProfile = Auth::user()->helperProfile()->create($validatedData);
+        $helperProfile = Auth::user()->helperProfiles()->create($validatedData);
 
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $photo) {
@@ -106,9 +107,14 @@ class HelperProfileController extends Controller
      *     )
      * )
      */
-    public function show(HelperProfile $helperProfile)
+    public function show(Request $request, HelperProfile $helperProfile)
     {
-        return response()->json(['data' => $helperProfile->load('photos', 'user')]);
+        $user = $request->user();
+        // Allow viewing if the profile is public or owned by the requester
+        if ($helperProfile->is_public || ($user && $helperProfile->user_id === $user->id)) {
+            return response()->json(['data' => $helperProfile->load('photos', 'user')]);
+        }
+        return response()->json(['message' => 'Forbidden'], 403);
     }
 
     /**

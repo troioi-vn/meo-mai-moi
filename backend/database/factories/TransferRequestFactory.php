@@ -19,6 +19,8 @@ class TransferRequestFactory extends Factory
             'recipient_user_id' => User::factory(),
             'status' => $this->faker->randomElement(['pending', 'accepted', 'rejected']),
             'requested_relationship_type' => $this->faker->randomElement(['fostering', 'permanent_foster']),
+            'helper_profile_id' => \App\Models\HelperProfile::factory(),
+            'requester_id' => User::factory(),
         ];
     }
 }

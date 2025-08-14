@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { useTheme } from '@/hooks/use-theme'
 import { Moon, Sun } from 'lucide-react'
@@ -19,6 +19,7 @@ import defaultAvatar from '@/assets/images/default-avatar.webp'
 export function UserMenu() {
   const { user, logout, isLoading } = useAuth()
   const { theme, setTheme } = useTheme()
+  const navigate = useNavigate()
 
   if (isLoading) {
     return <Skeleton className="h-9 w-9 rounded-full" />
@@ -62,7 +63,7 @@ export function UserMenu() {
         <DropdownMenuLabel>Theme</DropdownMenuLabel>
         <DropdownMenuRadioGroup
           value={theme}
-          onValueChange={(value) => {
+          onValueChange={(value: string) => {
             if (value === 'light' || value === 'dark' || value === 'system') {
               setTheme(value)
             }
@@ -87,9 +88,13 @@ export function UserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => {
-            logout().catch((err: unknown) => {
-              console.error('Logout error:', err)
-            })
+            void logout()
+              .then(() => {
+                navigate('/login')
+              })
+              .catch((err: unknown) => {
+                console.error('Logout error:', err)
+              })
           }}
         >
           Log Out

@@ -17,20 +17,26 @@ class OptionalAuth
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Try to authenticate using Sanctum, but don't fail if it doesn't work
-        if ($request->bearerToken()) {
-            try {
+        // Try to authenticate using Sanctum token if present, otherwise fall back to session-authenticated user.
+        try {
+            $user = null;
+            if ($request->bearerToken()) {
                 $user = Auth::guard('sanctum')->user();
-                if ($user) {
-                    Auth::setUser($user);
-                    $request->setUserResolver(function () use ($user) {
-                        return $user;
-                    });
-                }
-            } catch (\Exception $e) {
-                // Authentication failed, but that's okay for optional auth
-                // Continue without authentication
             }
+
+            // If there's no bearer token or Sanctum didn't resolve, check existing session (web guard)
+            if (!$user) {
+                $user = Auth::guard('web')->user();
+            }
+
+            if ($user) {
+                Auth::setUser($user);
+                $request->setUserResolver(function () use ($user) {
+                    return $user;
+                });
+            }
+        } catch (\Exception $e) {
+            // Ignore auth errors for optional auth
         }
 
         return $next($request);

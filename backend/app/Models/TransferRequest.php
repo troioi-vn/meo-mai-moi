@@ -14,6 +14,7 @@ class TransferRequest extends Model
         'cat_id',
         'initiator_user_id',
         'recipient_user_id',
+        'requester_id',
         'status',
         'requested_relationship_type',
         'fostering_type',
@@ -21,6 +22,7 @@ class TransferRequest extends Model
         'accepted_at',
         'rejected_at',
         'placement_request_id',
+        'helper_profile_id',
     ];
 
     protected $casts = [
@@ -43,7 +45,17 @@ class TransferRequest extends Model
         return $this->belongsTo(User::class, 'recipient_user_id');
     }
 
-    public function placementRequest(): BelongsTo
+    public function requester(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'requester_id');
+    }
+
+    public function helperProfile()
+    {
+        return $this->belongsTo(HelperProfile::class);
+    }
+
+    public function placementRequest()
     {
         return $this->belongsTo(PlacementRequest::class);
     }

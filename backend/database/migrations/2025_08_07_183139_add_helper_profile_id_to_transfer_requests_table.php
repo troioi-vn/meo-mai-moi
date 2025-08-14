@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('placement_requests', function (Blueprint $table) {
-            $table->date('start_date')->nullable()->after('expires_at');
-            $table->date('end_date')->nullable()->after('start_date');
+        Schema::table('transfer_requests', function (Blueprint $table) {
+            $table->foreignId('helper_profile_id')->constrained()->onDelete('cascade');
         });
     }
 
@@ -22,8 +21,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('placement_requests', function (Blueprint $table) {
-            $table->dropColumn(['start_date', 'end_date']);
+        Schema::table('transfer_requests', function (Blueprint $table) {
+            $table->dropForeign(['helper_profile_id']);
+            $table->dropColumn('helper_profile_id');
         });
     }
 };

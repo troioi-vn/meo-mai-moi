@@ -21,8 +21,13 @@ describe('MyCatsPage', () => {
   beforeEach(() => {
     mockNavigate.mockClear()
     server.use(
-      http.get('http://localhost:3000/api/my-cats', () => {
-        return HttpResponse.json({ data: [mockCat, anotherMockCat, deceasedMockCat] })
+      http.get('http://localhost:3000/api/my-cats/sections', () => {
+        return HttpResponse.json({ data: {
+          owned: [mockCat, anotherMockCat, deceasedMockCat],
+          fostering_active: [],
+          fostering_past: [],
+          transferred_away: [],
+        } })
       }),
       http.get('http://localhost:3000/api/user', () => {
         return HttpResponse.json({ data: mockUser })
@@ -37,7 +42,7 @@ describe('MyCatsPage', () => {
     expect(await screen.findByText('My Cats')).toBeInTheDocument()
   })
 
-  it("fetches and displays the user's cats", async () => {
+  it("fetches and displays the user's owned cats", async () => {
     renderWithRouter(<MyCatsPage />, {
       initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
     })
@@ -49,11 +54,7 @@ describe('MyCatsPage', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {
       /* empty */
     })
-    server.use(
-      http.get('http://localhost:3000/api/my-cats', () => {
-        return new HttpResponse(null, { status: 500 })
-      })
-    )
+  server.use(http.get('http://localhost:3000/api/my-cats/sections', () => new HttpResponse(null, { status: 500 })))
     renderWithRouter(<MyCatsPage />, {
       initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
     })
@@ -81,11 +82,7 @@ describe('MyCatsPage', () => {
     })
 
     it('filters out dead cats by default', async () => {
-      server.use(
-        http.get('http://localhost:3000/api/my-cats', () => {
-          return HttpResponse.json({ data: [mockCat, deceasedMockCat] })
-        })
-      )
+  server.use(http.get('http://localhost:3000/api/my-cats/sections', () => HttpResponse.json({ data: { owned: [mockCat, deceasedMockCat], fostering_active: [], fostering_past: [], transferred_away: [] } })))
       renderWithRouter(<MyCatsPage />, {
         initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
       })
@@ -97,11 +94,7 @@ describe('MyCatsPage', () => {
     })
 
     it('shows dead cats when switch is toggled on', async () => {
-      server.use(
-        http.get('http://localhost:3000/api/my-cats', () => {
-          return HttpResponse.json({ data: [mockCat, deceasedMockCat] })
-        })
-      )
+  server.use(http.get('http://localhost:3000/api/my-cats/sections', () => HttpResponse.json({ data: { owned: [mockCat, deceasedMockCat], fostering_active: [], fostering_past: [], transferred_away: [] } })))
       renderWithRouter(<MyCatsPage />, {
         initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
       })

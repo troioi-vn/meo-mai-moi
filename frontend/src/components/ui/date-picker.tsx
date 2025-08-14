@@ -1,4 +1,3 @@
-import * as React from "react"
 import { format } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
 
@@ -37,7 +36,7 @@ export function DatePicker({ date, setDate, placeholder }: DatePickerProps) {
           mode="single"
           selected={date}
           onSelect={setDate}
-          initialFocus
+          autoFocus
         />
       </PopoverContent>
     </Popover>

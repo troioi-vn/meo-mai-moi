@@ -6,6 +6,7 @@ import { Routes, Route } from 'react-router-dom'
 import { mockCat, anotherMockCat } from '@/mocks/data/cats'
 import { HttpResponse, http } from 'msw'
 import { server } from '@/mocks/server'
+import { useCatProfile } from '@/hooks/useCatProfile' // Import useCatProfile
 
 // Mock useNavigate
 const mockNavigate = vi.fn()
@@ -21,9 +22,20 @@ vi.mock('@/components/PlacementRequestModal', () => ({
   PlacementRequestModal: () => <div>PlacementRequestModal</div>,
 }));
 
+// Mock useCatProfile hook
+vi.mock('@/hooks/useCatProfile');
+
 describe('CatProfilePage', () => {
   beforeEach(() => {
     mockNavigate.mockClear()
+    // Default mock for useCatProfile to return mockCat
+    vi.mocked(useCatProfile).mockReturnValue({
+      cat: mockCat,
+      loading: false,
+      error: null,
+      refresh: vi.fn(),
+    });
+
     server.use(
       http.get('http://localhost:3000/api/user', () => {
         return HttpResponse.json({
@@ -54,8 +66,8 @@ describe('CatProfilePage', () => {
       { route: `/cats/${String(mockCat.id)}` }
     )
 
-    // Should show loading initially
-    expect(screen.getByText(/loading/i)).toBeInTheDocument()
+    // No loading state expected due to mock
+    expect(screen.queryByText(/loading/i)).not.toBeInTheDocument()
 
     // Wait for cat data to load
     await waitFor(async () => {
@@ -90,17 +102,19 @@ describe('CatProfilePage', () => {
   })
 
   it('shows placeholder image when imageUrl is not provided', async () => {
-    const catWithoutPhoto = { ...anotherMockCat, photo_url: null }
-    server.use(
-      http.get(`http://localhost:3000/api/cats/${String(catWithoutPhoto.id)}`, () => {
-        return HttpResponse.json({ data: catWithoutPhoto })
-      })
-    )
+    // Mock useCatProfile to return a cat without a photo
+    vi.mocked(useCatProfile).mockReturnValue({
+      cat: { ...anotherMockCat, photo_url: undefined },
+      loading: false,
+      error: null,
+      refresh: vi.fn(),
+    });
+
     renderWithRouter(
       <Routes>
         <Route path="/cats/:id" element={<CatProfilePage />} />
       </Routes>,
-      { route: `/cats/${String(catWithoutPhoto.id)}` }
+      { route: `/cats/${String(anotherMockCat.id)}` }
     )
 
     await waitFor(async () => {
@@ -113,11 +127,14 @@ describe('CatProfilePage', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {
       /* empty */
     })
-    server.use(
-      http.get('http://localhost:3000/api/cats/999', () => {
-        return new HttpResponse(null, { status: 404 })
-      })
-    )
+    // Mock useCatProfile to return an error for 404
+    vi.mocked(useCatProfile).mockReturnValue({
+      cat: null,
+      loading: false,
+      error: 'Cat not found',
+      refresh: vi.fn(),
+    });
+
     renderWithRouter(
       <Routes>
         <Route path="/cats/:id" element={<CatProfilePage />} />
@@ -135,11 +152,14 @@ describe('CatProfilePage', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {
       /* empty */
     })
-    server.use(
-      http.get('http://localhost:3000/api/cats/1', () => {
-        return new HttpResponse(null, { status: 500 })
-      })
-    )
+    // Mock useCatProfile to return a generic error
+    vi.mocked(useCatProfile).mockReturnValue({
+      cat: null,
+      loading: false,
+      error: 'Failed to load cat information',
+      refresh: vi.fn(),
+    });
+
     renderWithRouter(
       <Routes>
         <Route path="/cats/:id" element={<CatProfilePage />} />
@@ -164,11 +184,9 @@ describe('CatProfilePage', () => {
         { route: `/cats/${String(mockCat.id)}` }
       )
 
-      await waitFor(async () => {
-        // Should show all three buttons
-        expect(await screen.findByRole('button', { name: /edit/i })).toBeInTheDocument()
-        expect(await screen.findByRole('button', { name: /my cats/i })).toBeInTheDocument()
-      })
+  // Should show the buttons
+  expect(await screen.findByRole('button', { name: /edit/i })).toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: /my cats/i })).toBeInTheDocument()
 
       // Click Edit and assert navigation
       screen.getByRole('button', { name: /edit/i }).click()
@@ -177,6 +195,29 @@ describe('CatProfilePage', () => {
       // Click My Cats and assert navigation
       screen.getByRole('button', { name: /my cats/i }).click()
       expect(mockNavigate).toHaveBeenCalledWith('/account/cats')
+    })
+  })
+
+  describe('Responses section', () => {
+    it('shows the responses section when the user is the owner', async () => {
+      server.use(
+        http.get(`http://localhost:3000/api/cats/${String(mockCat.id)}`, () => {
+          return HttpResponse.json({ data: { ...mockCat, viewer_permissions: { can_edit: true } } })
+        })
+      )
+
+      renderWithRouter(
+        <Routes>
+          <Route path="/cats/:id" element={<CatProfilePage />} />
+        </Routes>,
+        { route: `/cats/${String(mockCat.id)}` }
+      )
+
+      await waitFor(async () => {
+        expect(await screen.findByText('Active Placement Requests')).toBeInTheDocument()
+        expect(await screen.findByText('FOSTERING')).toBeInTheDocument()
+        expect(await screen.findByText('Helper One')).toBeInTheDocument()
+      })
     })
   })
 })

@@ -12,6 +12,8 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use App\Models\HelperProfile;
+use App\Models\Review;
 
 class User extends Authenticatable implements FilamentUser
 {
@@ -55,9 +57,9 @@ class User extends Authenticatable implements FilamentUser
         ];
     }
 
-    public function helperProfile(): HasOne
+    public function helperProfiles(): HasMany
     {
-        return $this->hasOne(HelperProfile::class);
+        return $this->hasMany(HelperProfile::class);
     }
 
     public function reviewsGiven(): HasMany
@@ -73,6 +75,11 @@ class User extends Authenticatable implements FilamentUser
     public function cats(): HasMany
     {
         return $this->hasMany(\App\Models\Cat::class);
+    }
+
+    public function ownershipHistory(): HasMany
+    {
+        return $this->hasMany(\App\Models\OwnershipHistory::class);
     }
 
     /**

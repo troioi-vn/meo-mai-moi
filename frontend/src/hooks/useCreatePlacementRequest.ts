@@ -9,6 +9,8 @@ export interface PlacementRequestPayload {
   request_type: string;
   notes?: string;
   expires_at?: string;
+  start_date?: string;
+  end_date?: string;
 }
 
 const createPlacementRequest = async (payload: PlacementRequestPayload): Promise<PlacementRequest> => {
@@ -32,7 +34,11 @@ export const useCreatePlacementRequest = () => {
       void queryClient.invalidateQueries({ queryKey: ['cat', data.cat_id.toString()] });
     },
     onError: (error) => {
-      const errorMessage = error.response?.data.message ?? 'Failed to create placement request.';
+      const status = error.response?.status;
+      const errorMessage =
+        status === 409
+          ? 'An active placement request of this type already exists for this cat.'
+          : error.response?.data.message ?? 'Failed to create placement request.';
       toast.error(errorMessage);
     },
   });

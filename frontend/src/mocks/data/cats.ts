@@ -26,12 +26,46 @@ export const mockCat: Cat = {
     {
       id: 1,
       cat_id: 1,
-      request_type: 'adoption',
+      request_type: 'fostering',
       start_date: '2025-08-01',
       end_date: '2025-09-01',
       notes: 'Looking for a loving home.',
       created_at: '2025-07-20T00:00:00Z',
       updated_at: '2025-07-20T00:00:00Z',
+      is_active: true,
+      status: 'open',
+      transfer_requests: [
+        {
+          id: 101,
+          placement_request_id: 1,
+          cat_id: 1,
+          helper_profile_id: 1,
+          initiator_user_id: 2,
+          status: 'pending',
+          requested_relationship_type: 'fostering',
+          fostering_type: 'free',
+          price: null,
+          created_at: '2025-08-05T10:00:00Z',
+          updated_at: '2025-08-05T10:00:00Z',
+          helper_profile: {
+            id: 1,
+            city: 'Helper City',
+            state: 'Helper State',
+            address: '123 Helper St',
+            zip_code: '12345',
+            phone: '555-123-4567',
+            about: 'A helpful person.',
+            user: {
+              id: 2,
+              name: 'Helper One',
+              email: 'helper@example.com',
+            },
+            photos: [],
+            created_at: '2025-08-01T00:00:00Z',
+            updated_at: '2025-08-01T00:00:00Z',
+          },
+        },
+      ],
     },
   ],
 }
@@ -88,6 +122,17 @@ export const catHandlers = [
   // Returns a { data: [ ... ] } object for the authenticated user's cats
   http.get('http://localhost:3000/api/my-cats', () => {
     return HttpResponse.json({ data: [mockCat] })
+  }),
+  // Returns sectioned cats for the authenticated user
+  http.get('http://localhost:3000/api/my-cats/sections', () => {
+    return HttpResponse.json({
+      data: {
+        owned: [mockCat],
+        fostering_active: [],
+        fostering_past: [],
+        transferred_away: [],
+      },
+    })
   }),
   // Returns a { data: { ... } } object
   http.get('http://localhost:3000/api/cats/:id', ({ params }) => {

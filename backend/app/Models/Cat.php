@@ -68,4 +68,9 @@ class Cat extends Model
     {
         return $this->hasMany(PlacementRequest::class);
     }
+
+    public function ownershipHistory(): HasMany
+    {
+        return $this->hasMany(\App\Models\OwnershipHistory::class);
+    }
 }

@@ -5,6 +5,13 @@ export const testQueryClient = new QueryClient({
     queries: {
       retry: false,
       staleTime: Infinity,
+      // Prevent background GC timers from keeping the event loop alive in tests
+      gcTime: 0,
+    },
+    mutations: {
+      retry: false,
+  // Prevent mutation GC timers from keeping the event loop alive
+  gcTime: 0,
     },
   },
 })

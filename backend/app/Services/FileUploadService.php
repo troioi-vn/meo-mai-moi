@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
 use App\Models\Cat;
 use App\Models\User;
-
 class FileUploadService
 {
     protected $imageManager;

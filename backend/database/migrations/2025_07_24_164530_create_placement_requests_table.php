@@ -20,7 +20,9 @@ return new class extends Migration
             $table->string('request_type')->default(PlacementRequestType::PERMANENT->value);
             $table->string('status')->default(PlacementRequestStatus::OPEN->value);
             $table->text('notes')->nullable();
-            $table->date('expires_at')->nullable();
+            $table->dateTime('start_date')->nullable();
+            $table->dateTime('end_date')->nullable();
+            $table->dateTime('expires_at')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

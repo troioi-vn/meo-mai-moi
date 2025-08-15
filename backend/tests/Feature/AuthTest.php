@@ -7,10 +7,11 @@ use Tests\TestCase;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\Traits\CreatesUsers;
 
 class AuthTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, CreatesUsers;
 
     #[Test]
     public function a_user_can_register_successfully()
@@ -36,38 +37,43 @@ class AuthTest extends TestCase
     }
 
     #[Test]
-    public function registration_fails_with_invalid_data()
+    public function registration_fails_without_email()
     {
-        // Missing email
         $response = $this->postJson('/api/register', [
             'name' => 'Test User',
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);
-        $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['email']);
+        $response->assertStatus(422)->assertJsonValidationErrors(['email']);
+    }
 
-        // Invalid email format
+    #[Test]
+    public function registration_fails_with_invalid_email_format()
+    {
         $response = $this->postJson('/api/register', [
             'name' => 'Test User',
             'email' => 'invalid-email',
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);
-        $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['email']);
+        $response->assertStatus(422)->assertJsonValidationErrors(['email']);
+    }
 
-        // Password mismatch
+    #[Test]
+    public function registration_fails_when_passwords_do_not_match()
+    {
         $response = $this->postJson('/api/register', [
             'name' => 'Test User',
             'email' => 'test2@example.com',
             'password' => 'password',
             'password_confirmation' => 'wrong_password',
         ]);
-        $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['password']);
+        $response->assertStatus(422)->assertJsonValidationErrors(['password']);
+    }
 
-        // Duplicate email
+    #[Test]
+    public function registration_fails_with_duplicate_email()
+    {
         $this->postJson('/api/register', [
             'name' => 'Test User',
             'email' => 'duplicate@example.com',
@@ -80,14 +86,13 @@ class AuthTest extends TestCase
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);
-        $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['email']);
+        $response->assertStatus(422)->assertJsonValidationErrors(['email']);
     }
 
     #[Test]
     public function a_user_can_login_successfully()
     {
-        $user = User::factory()->create([
+        User::factory()->create([
             'email' => 'login@example.com',
             'password' => bcrypt('password'),
         ]);
@@ -107,35 +112,34 @@ class AuthTest extends TestCase
     }
 
     #[Test]
-    public function login_fails_with_invalid_credentials()
+    public function login_fails_with_wrong_password()
     {
-        $user = User::factory()->create([
+        User::factory()->create([
             'email' => 'wrongpass@example.com',
             'password' => bcrypt('password'),
         ]);
 
-        // Wrong password
         $response = $this->postJson('/api/login', [
             'email' => 'wrongpass@example.com',
             'password' => 'wrong_password',
         ]);
-        $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['email']);
+        $response->assertStatus(422)->assertJsonValidationErrors(['email']);
+    }
 
-        // Non-existent email
+    #[Test]
+    public function login_fails_with_non_existent_email()
+    {
         $response = $this->postJson('/api/login', [
             'email' => 'nonexistent@example.com',
             'password' => 'password',
         ]);
-        $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['email']);
+        $response->assertStatus(422)->assertJsonValidationErrors(['email']);
     }
 
     #[Test]
     public function a_user_can_logout_successfully()
     {
-        $user = User::factory()->create();
-        Sanctum::actingAs($user);
+        $user = $this->createUserAndLogin();
 
         $response = $this->postJson('/api/logout');
 
@@ -151,8 +155,7 @@ class AuthTest extends TestCase
     #[Test]
     public function authenticated_user_can_access_api_user_endpoint()
     {
-        $user = User::factory()->create();
-        Sanctum::actingAs($user);
+        $user = $this->createUserAndLogin();
 
         $response = $this->getJson('/api/user');
 

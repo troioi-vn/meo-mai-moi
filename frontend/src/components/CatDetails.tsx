@@ -25,11 +25,11 @@ export const CatDetails: React.FC<CatDetailsProps> = ({ cat, onDeletePlacementRe
   const { isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const anyActive = Boolean(cat.placement_requests?.some((r) => r.is_active || r.status === 'open' || r.status === 'pending_review'))
+  const anyActive = Boolean(cat.placement_requests?.some((r) => r.is_active ?? (r.status === 'open' || r.status === 'pending_review')))
   const hasActivePlacementRequest = (cat.placement_request_active === true) ? true : anyActive
   const activePlacementRequest = (
-  cat.placement_requests?.find((r) => r.is_active) ??
-  cat.placement_requests?.find((r) => (r.status === 'open' || r.status === 'pending_review')) ??
+    cat.placement_requests?.find((r) => r.is_active === true) ??
+    cat.placement_requests?.find((r) => (r.status === 'open' || r.status === 'pending_review')) ??
     cat.placement_requests?.[0]
   )
   const activePlacementRequestId = activePlacementRequest?.id
@@ -48,9 +48,9 @@ export const CatDetails: React.FC<CatDetailsProps> = ({ cat, onDeletePlacementRe
 
   const handleRespondClick = () => {
     if (!isAuthenticated) {
-      void toast.info('Please log in to respond to this placement request.')
+  void toast.info('Please log in to respond to this placement request.')
       const redirect = encodeURIComponent(location.pathname)
-      navigate(`/login?redirect=${redirect}`)
+  void navigate(`/login?redirect=${redirect}`)
       return
     }
     setIsRespondOpen(true)
@@ -98,12 +98,12 @@ export const CatDetails: React.FC<CatDetailsProps> = ({ cat, onDeletePlacementRe
                 <p className="text-muted-foreground leading-relaxed">{cat.description}</p>
               </div>
 
-              {hasActivePlacementRequest && cat.placement_requests && (
+              {hasActivePlacementRequest && (cat.placement_requests?.length ?? 0) > 0 && (
                 <div>
                   <h3 className="font-semibold text-card-foreground">Active Placement Requests</h3>
                   <div className="mt-2 space-y-4">
-                    {cat.placement_requests
-                      .filter((r) => r.is_active || r.status === 'open' || r.status === 'pending_review')
+                    {(cat.placement_requests ?? [])
+                      .filter((r) => (r.is_active === true) || r.status === 'open' || r.status === 'pending_review')
                       .map((request) => (
                       <div key={request.id} className="p-4 bg-muted rounded-lg flex justify-between items-center">
                         <div>
@@ -134,7 +134,7 @@ export const CatDetails: React.FC<CatDetailsProps> = ({ cat, onDeletePlacementRe
                       </div>
                     ))}
                     {/* Non-owners can respond to active requests (publicly visible) */}
-                    {hasActivePlacementRequest && !cat.viewer_permissions?.can_edit && activePlacementRequestId && (
+                    {hasActivePlacementRequest && !cat.viewer_permissions?.can_edit && activePlacementRequestId != null && (
                       <div className="pt-2">
                         {myPendingTransfer ? (
                           <div className="flex flex-col gap-2">

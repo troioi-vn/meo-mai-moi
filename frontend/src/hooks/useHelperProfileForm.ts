@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createHelperProfile, updateHelperProfile } from '@/api/helper-profiles';
 import { toast } from 'sonner';
+import type React from 'react'
 
-type HelperProfileForm = {
+interface HelperProfileForm {
   country: string;
   address: string;
   city: string;
@@ -18,9 +19,9 @@ type HelperProfileForm = {
   is_public: boolean;
   status?: string;
   photos: FileList | File[] | [];
-};
+}
 
-type ApiError = { response?: { data?: { errors?: Record<string, string> } } };
+interface ApiError { response?: { data?: { errors?: Record<string, string> } } }
 
 const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperProfileForm>) => {
   const navigate = useNavigate();
@@ -52,10 +53,10 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
 
   const createMutation = useMutation({
     mutationFn: createHelperProfile,
-    onSuccess: (data: any) => {
-      queryClient.invalidateQueries({ queryKey: ['helper-profiles'] });
+    onSuccess: (data) => {
+      void queryClient.invalidateQueries({ queryKey: ['helper-profiles'] });
       toast.success(profileId ? 'Helper profile updated successfully!' : 'Helper profile created successfully!');
-      navigate(`/helper/${String(data.data.id)}`);
+  void navigate(`/helper/${String((data as { data?: { id?: string | number } }).data?.id ?? '')}`);
     },
     onError: (error: ApiError) => {
       setErrors(error.response?.data?.errors ?? {});
@@ -68,14 +69,14 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
 
   const updateMutation = useMutation({
     mutationFn: updateHelperProfile,
-    onSuccess: (_data: any) => {
-      queryClient.invalidateQueries({ queryKey: ['helper-profiles'] });
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['helper-profiles'] });
       if (profileId) {
-        queryClient.invalidateQueries({ queryKey: ['helper-profile', profileId] });
+        void queryClient.invalidateQueries({ queryKey: ['helper-profile', profileId] });
       }
       toast.success('Helper profile updated successfully!');
       if (profileId) {
-        navigate(`/helper/${String(profileId)}`);
+  void navigate(`/helper/${String(profileId)}`);
       }
     },
     onError: (error: ApiError) => {
@@ -89,7 +90,7 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
 
   const updateField = (field: keyof HelperProfileForm) => (valueOrEvent: unknown) => {
     let value: unknown;
-    if (valueOrEvent && typeof valueOrEvent === 'object' && 'target' in (valueOrEvent as any)) {
+    if (valueOrEvent && typeof valueOrEvent === 'object' && 'target' in valueOrEvent) {
       const { target } = valueOrEvent as {
         target: { type?: string; checked?: boolean; files?: FileList; value?: unknown };
       };
@@ -103,7 +104,7 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
     } else {
       value = valueOrEvent;
     }
-    setFormData((prev) => ({ ...prev, [field]: value as any }));
+  setFormData((prev) => ({ ...prev, [field]: value as never }));
   };
 
   const validateForm = () => {
@@ -118,7 +119,7 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: { preventDefault: () => void }) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validateForm()) return;
     setIsSubmitting(true);
@@ -139,28 +140,36 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
       'status',
     ];
 
-    fieldsToSubmit.forEach((key) => {
-      const value = formData[key as keyof HelperProfileForm] as unknown;
-      if (key === 'photos' && value instanceof FileList) {
-        for (let i = 0; i < value.length; i++) {
-          dataToSend.append('photos[]', value[i]);
-        }
-      } else if (typeof value === 'boolean') {
-        dataToSend.append(key, value ? '1' : '0');
-      } else if (value !== null && value !== undefined) {
-        dataToSend.append(key, String(value));
+    for (const key of fieldsToSubmit) {
+      const value = formData[key as keyof HelperProfileForm] as unknown
+      if (typeof value === 'boolean') {
+        dataToSend.append(key, value ? '1' : '0')
+      } else if (typeof value === 'string' || typeof value === 'number') {
+        dataToSend.append(key, String(value))
       }
-    });
+    }
+
+    // Append photos if present
+    const photos = formData.photos
+    if (photos instanceof FileList) {
+      for (const f of Array.from(photos)) {
+        dataToSend.append('photos[]', f)
+      }
+    } else if (Array.isArray(photos)) {
+      for (const f of photos) {
+        dataToSend.append('photos[]', f)
+      }
+    }
 
     if (profileId) {
-      updateMutation.mutate({ id: profileId, data: dataToSend } as any);
+  updateMutation.mutate({ id: profileId, data: dataToSend })
     } else {
-      createMutation.mutate(dataToSend as any);
+  createMutation.mutate(dataToSend)
     }
   };
 
   const handleCancel = () => {
-    navigate('/helper');
+    void navigate('/helper');
   };
 
   return {

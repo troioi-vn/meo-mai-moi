@@ -31,6 +31,39 @@ const RequestsPage = () => {
     void fetchRequests()
   }, [])
 
+  const filteredCats = useMemo(() => {
+    if (cats.length === 0) return [] as Cat[]
+    return cats.filter((cat) => {
+      const prs = cat.placement_requests
+      if (!prs || prs.length === 0) return false
+
+      // Type filter
+      const matchesType =
+        typeFilter === 'all' ||
+        prs.some((pr) => {
+          const t = (pr.request_type ? pr.request_type : '').toLowerCase()
+          const isFoster = t.includes('foster')
+          const isAdoption = t === 'adoption' || t === 'permanent'
+          return typeFilter === 'foster' ? isFoster : isAdoption
+        })
+
+      if (!matchesType) return false
+
+      // Date filter (optional, applied if provided)
+      const sd = startDate ? startDate.getTime() : undefined
+      const ed = endDate ? endDate.getTime() : undefined
+      if (!sd && !ed) return true
+
+      return prs.some((pr) => {
+        const prStart = pr.start_date ? new Date(pr.start_date).getTime() : undefined
+        const prEnd = pr.end_date ? new Date(pr.end_date).getTime() : undefined
+        if (sd && prEnd && prEnd < sd) return false
+        if (ed && prStart && prStart > ed) return false
+        return true
+      })
+    })
+  }, [cats, typeFilter, startDate, endDate])
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="mb-8 text-4xl font-bold text-center">Placement Requests</h1>
@@ -62,59 +95,21 @@ const RequestsPage = () => {
       </div>
 
       {/* Derived list */}
-      {(() => {
-        const filteredCats = useMemo(() => {
-          if (!cats?.length) return [] as Cat[]
-          return cats.filter((cat) => {
-            const prs = (cat as any).placement_requests as any[] | undefined
-            if (!prs || prs.length === 0) return false
+      <>
+        {loading && <p className="text-muted-foreground text-center">Loading placement requests...</p>}
+        {error && <p className="text-destructive text-center">{error}</p>}
 
-            // Type filter
-            const matchesType =
-              typeFilter === 'all' ||
-              prs.some((pr) => {
-                const t = String(pr.request_type ?? '').toLowerCase()
-                // Normalize various possible values from API/mocks
-                const isFoster = t.includes('foster')
-                const isAdoption = t === 'adoption' || t === 'permanent'
-                return typeFilter === 'foster' ? isFoster : isAdoption
-              })
-
-            if (!matchesType) return false
-
-            // Date filter (optional, applied if provided)
-            const sd = startDate ? startDate.getTime() : undefined
-            const ed = endDate ? endDate.getTime() : undefined
-            if (!sd && !ed) return true
-
-            return prs.some((pr) => {
-              const prStart = pr.start_date ? new Date(pr.start_date).getTime() : undefined
-              const prEnd = pr.end_date ? new Date(pr.end_date).getTime() : undefined
-              if (sd && prEnd && prEnd < sd) return false
-              if (ed && prStart && prStart > ed) return false
-              return true
-            })
-          })
-        }, [cats, typeFilter, startDate, endDate])
-
-        return (
-          <>
-            {loading && <p className="text-muted-foreground text-center">Loading placement requests...</p>}
-            {error && <p className="text-destructive text-center">{error}</p>}
-
-            {!loading && !error && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {filteredCats.map((cat) => (
-                  <CatCard key={cat.id} cat={cat} />
-                ))}
-                {filteredCats.length === 0 && (
-                  <p className="col-span-full text-center text-muted-foreground">No results match your filters.</p>
-                )}
-              </div>
+        {!loading && !error && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {filteredCats.map((cat) => (
+              <CatCard key={cat.id} cat={cat} />
+            ))}
+            {filteredCats.length === 0 && (
+              <p className="col-span-full text-center text-muted-foreground">No results match your filters.</p>
             )}
-          </>
-        )
-      })()}
+          </div>
+        )}
+      </>
 
     </div>
   )

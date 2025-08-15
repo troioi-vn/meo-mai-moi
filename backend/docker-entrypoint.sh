@@ -12,6 +12,13 @@ mkdir -p /var/www/storage/app/public
 mkdir -p /var/log
 echo "Directories created."
 
+echo "[Step 1.5] Waiting for database to be ready..."
+until pg_isready -h db -p 5432 -U user -d meo_mai_moi -q; do
+  echo "Database is unavailable - sleeping"
+  sleep 2
+done
+echo "Database is up - continuing..."
+
 echo "[Step 2] Setting permissions..."
 chown -R www-data:www-data /var/run/php-fpm
 chown -R www-data:www-data /var/www/storage

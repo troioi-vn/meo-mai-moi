@@ -110,7 +110,7 @@ export default function MyCatsPage() {
 }
 
 function SectionGrid({ cats, emptyText }: { cats: Cat[]; emptyText?: string }) {
-  if (!cats?.length) {
+  if (cats.length === 0) {
     return <p className="text-sm text-muted-foreground">{emptyText ?? 'Nothing here yet.'}</p>
   }
   return (

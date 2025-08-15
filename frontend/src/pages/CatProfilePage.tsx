@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { OwnerButtonGroup } from '@/components/OwnerButtonGroup'
 import { HelperProfileDialog } from '@/components/HelperProfileDialog'
 import type { HelperProfile } from '@/types/helper-profile'
-import type { TransferRequest } from '@/types/cat'
+import type { TransferRequest, PlacementRequest as PlacementRequestType } from '@/types/cat'
 import { getResponderHelperProfile } from '@/api/helper-profiles'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
@@ -14,7 +14,7 @@ import { CatDetails } from '@/components/CatDetails'
 import { PlacementRequestModal } from '@/components/PlacementRequestModal'
 import { toast } from 'sonner'
 import { ScheduleHandoverModal } from '@/components/ScheduleHandoverModal'
-import { getTransferHandover, helperConfirmHandover, cancelHandover, completeHandover } from '@/api/handovers'
+import { getTransferHandover, helperConfirmHandover, cancelHandover, completeHandover, type TransferHandoverDto } from '@/api/handovers'
 import { useAuth } from '@/hooks/use-auth'
 import { Badge } from '@/components/ui/badge'
 
@@ -32,21 +32,21 @@ const CatProfilePage: React.FC = () => {
   const [selectedTransfer, setSelectedTransfer] = useState<TransferRequest | null>(null)
   const [handoverForTransferId, setHandoverForTransferId] = useState<number | null>(null)
   const [handoverModalOpen, setHandoverModalOpen] = useState(false)
-  const [existingHandoverByTransfer, setExistingHandoverByTransfer] = useState<Record<number, any>>({})
+  const [existingHandoverByTransfer, setExistingHandoverByTransfer] = useState<Record<number, TransferHandoverDto>>({})
   const [myAcceptedTransferId, setMyAcceptedTransferId] = useState<number | null>(null)
-  const [myHandover, setMyHandover] = useState<any | null>(null)
+  const [myHandover, setMyHandover] = useState<TransferHandoverDto | null>(null)
 
   // Load existing handovers for accepted transfers to hide schedule button
   React.useEffect(() => {
     async function load() {
       if (!cat?.placement_requests) return
-      const accepted = cat.placement_requests.flatMap((pr: any) => (pr.transfer_requests ?? []).filter((tr: any) => tr.status === 'accepted'))
-      const map: Record<number, any> = {}
-      await Promise.all(accepted.map(async (tr: any) => {
+  const accepted = cat.placement_requests.flatMap((pr) => (pr.transfer_requests ?? []).filter((tr) => tr.status === 'accepted'))
+  const map: Record<number, TransferHandoverDto> = {}
+      await Promise.all(accepted.map(async (tr) => {
         try {
-          const ho = await getTransferHandover(Number(tr.id))
-          if (ho) map[Number(tr.id)] = ho
-        } catch (_) {
+          const ho = await getTransferHandover(tr.id)
+          if (ho) map[tr.id] = ho
+        } catch {
           /* ignore */
         }
       }))
@@ -59,11 +59,11 @@ const CatProfilePage: React.FC = () => {
   React.useEffect(() => {
     if (!cat?.placement_requests || !authUser?.id) { setMyAcceptedTransferId(null); setMyHandover(null); return }
     let foundId: number | null = null
-    for (const pr of cat.placement_requests as any[]) {
-      for (const tr of (pr.transfer_requests ?? []) as any[]) {
+    for (const pr of cat.placement_requests) {
+      for (const tr of (pr.transfer_requests ?? [])) {
         const helperId = tr.initiator_user_id ?? tr.helper_profile?.user?.id
         if (tr.status === 'accepted' && helperId === authUser.id) {
-          foundId = Number(tr.id)
+          foundId = tr.id
           break
         }
       }
@@ -73,8 +73,8 @@ const CatProfilePage: React.FC = () => {
     if (foundId != null) {
       void (async () => {
         try {
-          const ho = await getTransferHandover(foundId!)
-          setMyHandover(ho ?? null)
+          const ho = await getTransferHandover(foundId)
+          setMyHandover(ho)
         } catch {
           setMyHandover(null)
         }
@@ -134,14 +134,15 @@ const CatProfilePage: React.FC = () => {
     try {
       setLoadingProfile(true)
       setProfileError(null)
-      const p = await getResponderHelperProfile(Number(transfer.id))
+      const p = await getResponderHelperProfile(transfer.id)
       setSelectedProfile(p)
-      setSelectedTransferId(Number(transfer.id))
+      setSelectedTransferId(transfer.id)
       setSelectedTransfer(transfer)
       setProfileModalOpen(true)
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error('Failed to load helper profile', e)
-      const message = (e?.response?.status === 403)
+      const err = e as { response?: { status?: number } }
+      const message = (err.response?.status === 403)
         ? 'Access denied to helper profile.'
         : 'Failed to load helper profile'
       setProfileError(message)
@@ -174,11 +175,11 @@ const CatProfilePage: React.FC = () => {
   }
 
   if (error) {
-    return <ErrorState error={error} onRetry={() => navigate('/')} />
+    return <ErrorState error={error} onRetry={() => { void navigate('/') }} />
   }
 
   if (!cat) {
-    return <ErrorState error="Cat not found" onRetry={() => navigate('/')} />
+    return <ErrorState error="Cat not found" onRetry={() => { void navigate('/') }} />
   }
 
   return (
@@ -207,9 +208,9 @@ const CatProfilePage: React.FC = () => {
   {cat.viewer_permissions?.can_edit && hasPendingTransfers(cat) && (
     <div className="mt-8">
       <h2 className="text-2xl font-bold mb-4">Responses</h2>
-      {cat.placement_requests?.map((placementRequest) => (
+    {cat.placement_requests?.map((placementRequest) => (
         <ResponseSection
-          key={placementRequest.id}
+      key={String(placementRequest.id)}
           placementRequest={placementRequest}
           onViewProfile={handleViewResponderProfile}
           onConfirm={handleConfirmTransferRequest}
@@ -222,9 +223,9 @@ const CatProfilePage: React.FC = () => {
   {cat.viewer_permissions?.can_edit && hasAcceptedTransfers(cat) && (
     <div className="mt-8">
       <h2 className="text-2xl font-bold mb-4">Accepted Transfer</h2>
-      {cat.placement_requests?.map((placementRequest) => (
+    {cat.placement_requests?.map((placementRequest) => (
         <AcceptedSection
-          key={`acc-${placementRequest.id}`}
+      key={'acc-' + String(placementRequest.id)}
           placementRequest={placementRequest}
           hasHandover={(id: number) => Boolean(existingHandoverByTransfer[id])}
           getHandover={(id: number) => existingHandoverByTransfer[id]}
@@ -239,7 +240,7 @@ const CatProfilePage: React.FC = () => {
           <ScheduleHandoverModal
             transferRequestId={handoverForTransferId}
             isOpen={handoverModalOpen}
-            onClose={() => setHandoverModalOpen(false)}
+            onClose={() => { setHandoverModalOpen(false); }}
             onSuccess={refresh}
           />
         )}
@@ -259,12 +260,12 @@ const CatProfilePage: React.FC = () => {
           transfer={selectedTransfer}
           loading={loadingProfile}
           error={profileError}
-          onConfirm={() => selectedTransferId != null && handleConfirmTransferRequest(selectedTransferId)}
-          onReject={() => selectedTransferId != null && handleRejectTransferRequest(selectedTransferId)}
+          onConfirm={() => { if (selectedTransferId != null) { void handleConfirmTransferRequest(selectedTransferId) } }}
+          onReject={() => { if (selectedTransferId != null) { void handleRejectTransferRequest(selectedTransferId) } }}
         />
 
         {/* Helper-facing handover confirmation panel */}
-        {!cat.viewer_permissions?.can_edit && myAcceptedTransferId != null && myHandover && (myHandover.status === 'pending') && (
+    {!cat.viewer_permissions?.can_edit && myAcceptedTransferId != null && myHandover && (myHandover.status === 'pending') && (
           <div className="mt-8 border rounded-lg p-4">
             <h2 className="text-xl font-semibold mb-2">Handover scheduled</h2>
             <p className="text-sm text-muted-foreground mb-4">
@@ -272,16 +273,17 @@ const CatProfilePage: React.FC = () => {
               {myHandover.location ? `, Location: ${myHandover.location}` : ''}
             </p>
             <div className="flex gap-2">
-              <Button size="sm" onClick={async () => { await helperConfirmHandover(Number(myHandover.id), true); toast.success('Handover confirmed'); refresh() }}>Confirm</Button>
-              <Button variant="destructive" size="sm" onClick={async () => { await helperConfirmHandover(Number(myHandover.id), false); toast.info('Handover disputed'); refresh() }}>Dispute</Button>
+      <Button size="sm" onClick={() => { if (myHandover.id != null) { void helperConfirmHandover(myHandover.id, true).then(() => { toast.success('Handover confirmed'); refresh() }).catch(() => { /* ignore */ }) } }}>Confirm</Button>
+      <Button variant="destructive" size="sm" onClick={() => { if (myHandover.id != null) { void helperConfirmHandover(myHandover.id, false).then(() => { toast.info('Handover disputed'); refresh() }).catch(() => { /* ignore */ }) } }}>Dispute</Button>
             </div>
           </div>
         )}
 
         {/* Meeting notice (confirmed) for both roles with cancel */}
         {(() => {
-          const anyHandover = myHandover || Object.values(existingHandoverByTransfer)[0]
-          const show = anyHandover && (anyHandover.status === 'confirmed' || anyHandover.status === 'pending')
+          const anyHandover: TransferHandoverDto | undefined = myHandover ?? Object.values(existingHandoverByTransfer)[0]
+          if (!anyHandover) return null
+          const show = anyHandover.status === 'confirmed' || anyHandover.status === 'pending'
           if (!show) return null
           const canCancel = true // both parties can cancel
           return (
@@ -293,8 +295,8 @@ const CatProfilePage: React.FC = () => {
               </p>
               {canCancel && (
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={async () => { await cancelHandover(Number(anyHandover.id)); toast.info('Handover canceled'); refresh() }}>Cancel meeting</Button>
-                  <Button size="sm" onClick={async () => { await completeHandover(Number(anyHandover.id)); toast.success('Handover completed. We\'ll refresh your view.'); refresh() }}>Mark as completed</Button>
+                  <Button size="sm" variant="outline" onClick={() => { if (anyHandover.id != null) { void cancelHandover(anyHandover.id).then(() => { toast.info('Handover canceled'); refresh() }).catch(() => { /* ignore */ }) } }}>Cancel meeting</Button>
+                  <Button size="sm" onClick={() => { if (anyHandover.id != null) { void completeHandover(anyHandover.id).then(() => { toast.success("Handover completed. We'll refresh your view."); refresh() }).catch(() => { /* ignore */ }) } }}>Mark as completed</Button>
                 </div>
               )}
             </div>
@@ -310,22 +312,22 @@ export default CatProfilePage
 // ...existing code...
 
 // Helper: Check if there are any pending transfers
-function hasPendingTransfers(cat: any) {
-  return cat.placement_requests?.some((pr: any) => (pr.transfer_requests?.filter((tr: any) => tr.status === 'pending').length ?? 0) > 0)
+function hasPendingTransfers(cat: { placement_requests?: { transfer_requests?: { status?: string }[] }[] }) {
+  return cat.placement_requests?.some((pr) => ((pr.transfer_requests ?? []).filter((tr) => tr.status === 'pending').length) > 0)
 }
 
-function hasAcceptedTransfers(cat: any) {
-  return cat.placement_requests?.some((pr: any) => (pr.transfer_requests?.filter((tr: any) => tr.status === 'accepted').length ?? 0) > 0)
+function hasAcceptedTransfers(cat: { placement_requests?: { transfer_requests?: { status?: string }[] }[] }) {
+  return cat.placement_requests?.some((pr) => ((pr.transfer_requests ?? []).filter((tr) => tr.status === 'accepted').length) > 0)
 }
 
 // Helper: Response section for a placement request
 function ResponseSection({ placementRequest, onViewProfile, onConfirm, onReject }: {
-  placementRequest: any
-  onViewProfile: (tr: any) => void
+  placementRequest: PlacementRequestType
+  onViewProfile: (tr: TransferRequest) => void
   onConfirm: (id: number) => void
   onReject: (id: number) => void
 }) {
-  const pendingTransfers = placementRequest.transfer_requests?.filter((tr: any) => tr.status === 'pending') ?? []
+  const pendingTransfers = placementRequest.transfer_requests?.filter((tr) => tr.status === 'pending') ?? []
   if (pendingTransfers.length === 0) return null
   return (
     <div className="mb-4 p-4 border rounded-lg">
@@ -336,15 +338,15 @@ function ResponseSection({ placementRequest, onViewProfile, onConfirm, onReject 
         </h3>
       </div>
       <ul>
-  {pendingTransfers.map((transferRequest: any) => (
-          <li key={transferRequest.id} className="flex justify-between items-center">
+        {pendingTransfers.map((transferRequest) => (
+          <li key={String(transferRequest.id)} className="flex justify-between items-center">
             <span>{transferRequest.helper_profile?.user?.name}</span>
             <div>
               <Button
                 variant="secondary"
                 size="sm"
                 className="mr-2"
-                onClick={() => onViewProfile(transferRequest)}
+                  onClick={() => { onViewProfile(transferRequest); }}
               >
                 View helper profile
               </Button>
@@ -352,14 +354,14 @@ function ResponseSection({ placementRequest, onViewProfile, onConfirm, onReject 
                 variant="outline"
                 size="sm"
                 className="mr-2"
-                onClick={() => onConfirm(transferRequest.id)}
+                onClick={() => { onConfirm(transferRequest.id); }}
               >
                 Confirm
               </Button>
               <Button
                 variant="destructive"
                 size="sm"
-                onClick={() => onReject(transferRequest.id)}
+                onClick={() => { onReject(transferRequest.id); }}
               >
                 Reject
               </Button>
@@ -373,23 +375,23 @@ function ResponseSection({ placementRequest, onViewProfile, onConfirm, onReject 
 
 // Accepted transfers section
 function AcceptedSection({ placementRequest, onSchedule, hasHandover, getHandover }: {
-  placementRequest: any
+  placementRequest: { id: number; request_type: string; transfer_requests?: { id: number; status?: string; helper_profile?: { user?: { name?: string } } }[] }
   onSchedule: (id: number) => void
   hasHandover: (id: number) => boolean
-  getHandover: (id: number) => any | undefined
+  getHandover: (id: number) => { id?: number | string; status?: string; scheduled_at?: string | number | Date | null; location?: string | null } | undefined
 }) {
-  const accepted = placementRequest.transfer_requests?.filter((tr: any) => tr.status === 'accepted') ?? []
+  const accepted = placementRequest.transfer_requests?.filter((tr) => tr.status === 'accepted') ?? []
   if (accepted.length === 0) return null
   return (
     <div className="mb-4 p-4 border rounded-lg">
       <div className="flex justify-between items-center">
         <h3 className="font-bold">
-          Accepted for <span>{placementRequest.request_type.replace('_', ' ').toUpperCase()}</span>
+          Accepted for <span>{String(placementRequest.request_type).replace('_', ' ').toUpperCase()}</span>
         </h3>
       </div>
       <ul>
-        {accepted.map((tr: any) => {
-          const ho = getHandover(Number(tr.id))
+        {accepted.map((tr) => {
+          const ho = getHandover(tr.id)
           const status = (ho?.status as string | undefined) ?? undefined
           const chip = status
             ? (
@@ -399,7 +401,7 @@ function AcceptedSection({ placementRequest, onSchedule, hasHandover, getHandove
             )
             : (hasHandover(tr.id) ? <Badge variant="secondary">PENDING</Badge> : null)
           return (
-            <li key={`acc-${tr.id}`} className="flex justify-between items-center">
+            <li key={'acc-' + String(tr.id)} className="flex justify-between items-center">
               <div className="flex flex-col">
                 <span className="flex items-center gap-2">
                   {tr.helper_profile?.user?.name}
@@ -413,7 +415,7 @@ function AcceptedSection({ placementRequest, onSchedule, hasHandover, getHandove
               </div>
               <div className="flex items-center gap-2">
                 {!hasHandover(tr.id) && (
-                  <Button size="sm" onClick={() => onSchedule(tr.id)}>Schedule handover</Button>
+                  <Button size="sm" onClick={() => { onSchedule(tr.id); }}>Schedule handover</Button>
                 )}
               </div>
             </li>

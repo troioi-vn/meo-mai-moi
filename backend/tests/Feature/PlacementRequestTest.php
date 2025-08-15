@@ -8,12 +8,14 @@ use App\Enums\PlacementRequestType;
 use App\Models\PlacementRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class PlacementRequestTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_can_create_placement_request_with_start_and_end_dates(): void
+    #[Test]
+    public function can_create_placement_request_with_start_and_end_dates(): void
     {
         $user = User::factory()->create();
         $cat = Cat::factory()->create(['user_id' => $user->id]);
@@ -41,7 +43,8 @@ class PlacementRequestTest extends TestCase
         $this->assertEquals($data['end_date'], $placementRequest->end_date->toDateString());
     }
 
-    public function test_can_create_placement_request_with_date_expires_at(): void
+    #[Test]
+    public function can_create_placement_request_with_date_expires_at(): void
     {
         $user = User::factory()->create();
         $cat = Cat::factory()->create(['user_id' => $user->id]);

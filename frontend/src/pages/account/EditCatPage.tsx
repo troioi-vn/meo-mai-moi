@@ -142,9 +142,9 @@ const EditCatPage: React.FC = () => {
 
     try {
       setSubmitting(true)
-      await updateCat(id, formData)
-      toast.success('Cat profile updated successfully!')
-      void navigate('/account/cats')
+  await updateCat(id, formData)
+  toast.success('Cat profile updated successfully!')
+  navigate('/account/cats')
     } catch (error: unknown) {
       console.error('Error updating cat:', error)
       toast.error('Failed to update cat profile. Please try again.')
@@ -154,7 +154,7 @@ const EditCatPage: React.FC = () => {
   }
 
   const handleCancel = () => {
-    void navigate('/account/cats')
+    navigate('/account/cats')
   }
 
   const handleSetToLost = async () => {
@@ -165,9 +165,9 @@ const EditCatPage: React.FC = () => {
 
     try {
       setSubmitting(true)
-      await updateCat(id, { ...formData, status: 'lost' })
-      toast.success('Cat status updated to LOST.')
-      void navigate('/account/cats')
+  await updateCat(id, { ...formData, status: 'lost' })
+  toast.success('Cat status updated to LOST.')
+  navigate('/account/cats')
     } catch (error: unknown) {
       console.error('Error updating cat status:', error)
       toast.error('Failed to update cat status. Please try again.')
@@ -177,7 +177,7 @@ const EditCatPage: React.FC = () => {
   }
 
   const handleRemovalSuccess = () => {
-    void navigate('/account/cats')
+    navigate('/account/cats')
   }
 
   if (loading) {
@@ -320,7 +320,9 @@ const EditCatPage: React.FC = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={handleCancel}
+                onClick={() => {
+                  void handleCancel()
+                }}
                 disabled={submitting}
                 className="flex-1"
               >

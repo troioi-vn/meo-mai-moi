@@ -44,7 +44,7 @@ const CreateHelperProfilePage: React.FC = () => {
                 <Button type="submit" aria-label="Create Helper Profile" disabled={isSubmitting}>
                     {isSubmitting ? 'Creating...' : 'Create'}
                 </Button>
-                <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
+                  <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
                     Cancel
                 </Button>
             </div>

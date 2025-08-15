@@ -6,12 +6,14 @@ use App\Models\HelperProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class HelperProfileApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_can_get_all_public_helper_profiles()
+    #[Test]
+    public function can_get_all_public_helper_profiles()
     {
         $user = User::factory()->create();
         HelperProfile::factory()->count(3)->create(['is_public' => true]);
@@ -23,7 +25,8 @@ class HelperProfileApiTest extends TestCase
             ->assertJsonCount(3, 'data');
     }
 
-    public function test_can_get_a_specific_helper_profile()
+    #[Test]
+    public function can_get_a_specific_helper_profile()
     {
         $user = User::factory()->create();
         $helperProfile = HelperProfile::factory()->create();
@@ -34,7 +37,8 @@ class HelperProfileApiTest extends TestCase
             ->assertJson(['data' => ['id' => $helperProfile->id]]);
     }
 
-    public function test_can_create_a_helper_profile()
+    #[Test]
+    public function can_create_a_helper_profile()
     {
         $user = User::factory()->create();
 

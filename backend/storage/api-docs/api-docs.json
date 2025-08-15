@@ -1,0 +1,2876 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Meo Mai Moi API Documentation",
+        "description": "API documentation for the Meo Mai Moi application.",
+        "contact": {
+            "email": "admin@meomaimoi.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/register": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Register a new user",
+                "description": "Registers a new user and returns an authentication token.",
+                "operationId": "8a56853624e025573120a09a4c75d468",
+                "requestBody": {
+                    "description": "User registration details",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john.doe@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User registered successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User registered successfully"
+                                        },
+                                        "access_token": {
+                                            "type": "string",
+                                            "example": "2|aBcDeFgHiJkLmNoPqRsTuVwXyZ"
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Log in a user",
+                "description": "Logs in a user and returns an authentication token.",
+                "operationId": "a3b306d14572d1f4bd6c064b3233e7b8",
+                "requestBody": {
+                    "description": "User credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Logged in successfully"
+                                        },
+                                        "access_token": {
+                                            "type": "string",
+                                            "example": "1|aBcDeFgHiJkLmNoPqRsTuVwXyZ"
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error (e.g., invalid credentials)"
+                    }
+                }
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Log out the current user",
+                "description": "Logs out the current authenticated user by revoking their token.",
+                "operationId": "fe8f3429cd6979b3b4517e186505f9f9",
+                "responses": {
+                    "200": {
+                        "description": "Logged out successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Logged out successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/my-cats": {
+            "get": {
+                "tags": [
+                    "Cats"
+                ],
+                "summary": "Get the cats of the authenticated user",
+                "operationId": "aca1cbfb17aa8e0598a78236684cc112",
+                "responses": {
+                    "200": {
+                        "description": "A list of the user's cats",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Cat"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/my-cats/sections": {
+            "get": {
+                "tags": [
+                    "Cats"
+                ],
+                "summary": "Get the cats of the authenticated user, organized by section",
+                "operationId": "5c3ca0b1147c19bb3bf847f32099fce4",
+                "responses": {
+                    "200": {
+                        "description": "A list of the user's cats, organized by section",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "owned": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Cat"
+                                            }
+                                        },
+                                        "fostering_active": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Cat"
+                                            }
+                                        },
+                                        "fostering_past": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Cat"
+                                            }
+                                        },
+                                        "transferred_away": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Cat"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/cats/{id}": {
+            "get": {
+                "tags": [
+                    "Cats"
+                ],
+                "summary": "Get a specific cat",
+                "operationId": "eaa20273bdc90d751ce892bd1b1a946c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the cat",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The cat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Cat"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Cat not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Cats"
+                ],
+                "summary": "Update a cat",
+                "operationId": "9f46fb83dc8254f9d21782fe3e55c98b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the cat to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Cat"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cat updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Cat"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Cats"
+                ],
+                "summary": "Delete a cat",
+                "operationId": "cf39966608b6cade9fdfac9999b6845d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the cat to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "password"
+                                ],
+                                "properties": {
+                                    "password": {
+                                        "description": "User's current password for confirmation",
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "Cat deleted successfully"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/cats/featured": {
+            "get": {
+                "tags": [
+                    "Cats"
+                ],
+                "summary": "Get a list of featured cats",
+                "operationId": "5e3e89e650ae933133f0b5a96611015c",
+                "responses": {
+                    "200": {
+                        "description": "A list of featured cats",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Cat"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/cats/placement-requests": {
+            "get": {
+                "tags": [
+                    "Cats"
+                ],
+                "summary": "Get a list of cats with open placement requests",
+                "operationId": "67ad601aaba9b61dcc775f965df36fc4",
+                "responses": {
+                    "200": {
+                        "description": "A list of cats with open placement requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Cat"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/cats": {
+            "post": {
+                "tags": [
+                    "Cats"
+                ],
+                "summary": "Create a new cat",
+                "operationId": "6a153b29cdb539163e80104ea2fb0f47",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Cat"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Cat created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Cat"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/cats/{id}/status": {
+            "put": {
+                "tags": [
+                    "Cats"
+                ],
+                "summary": "Update a cat's status",
+                "operationId": "6b88666b45ef060ac5e4f1e5d303d3b4",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the cat to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "active",
+                                            "lost",
+                                            "deceased",
+                                            "deleted"
+                                        ],
+                                        "example": "lost"
+                                    },
+                                    "password": {
+                                        "description": "User's current password for confirmation",
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cat status updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Cat"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/cats/{cat}/photos": {
+            "post": {
+                "tags": [
+                    "Cat Photos"
+                ],
+                "summary": "Upload a photo for a specific cat",
+                "operationId": "b4cefd8627306812aa42500a36b8159c",
+                "parameters": [
+                    {
+                        "name": "cat",
+                        "in": "path",
+                        "description": "ID of the cat",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "photo": {
+                                        "description": "The photo file (max 10MB, jpeg, png, jpg, gif, svg)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Photo uploaded successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Cat"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Cat Photos"
+                ],
+                "summary": "Delete a photo for a specific cat",
+                "operationId": "ba3b6e914f8eb6252d4e9ea0ff1d5fb8",
+                "parameters": [
+                    {
+                        "name": "cat",
+                        "in": "path",
+                        "description": "ID of the cat",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Photo deleted successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Photo not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/helper-profiles": {
+            "get": {
+                "tags": [
+                    "Helper Profiles"
+                ],
+                "summary": "List helper profiles",
+                "operationId": "d3126a7bac52faff5bf4a44e6e3f8183",
+                "responses": {
+                    "200": {
+                        "description": "A list of helper profiles",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/HelperProfile"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Helper Profiles"
+                ],
+                "summary": "Create a helper profile",
+                "operationId": "7f4a55bc955cbc6f808ae3499b4a7f2f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/HelperProfile"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Helper profile created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HelperProfile"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/helper-profiles/{id}": {
+            "get": {
+                "tags": [
+                    "Helper Profiles"
+                ],
+                "summary": "Get a specific helper profile",
+                "operationId": "4de739226049376462c5cc13bfa066b5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the helper profile",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The helper profile",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HelperProfile"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Helper profile not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Helper Profiles"
+                ],
+                "summary": "Update a helper profile",
+                "operationId": "4e09b23f1183359eb94f13fef454a27f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the helper profile",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/HelperProfile"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Helper profile updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HelperProfile"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Helper Profiles"
+                ],
+                "summary": "Delete a helper profile",
+                "operationId": "aa97ac4502128ab022046cea27713388",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the helper profile",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Helper profile deleted successfully"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/messages": {
+            "get": {
+                "tags": [
+                    "Messages"
+                ],
+                "summary": "Get all messages for the authenticated user",
+                "operationId": "9d5effa2cb648df85be0ea9741ffb457",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Message"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Messages"
+                ],
+                "summary": "Send a new message",
+                "operationId": "db79bb7bcadfdb708e9f6c38ac928f4a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "recipient_id",
+                                    "content"
+                                ],
+                                "properties": {
+                                    "recipient_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "content": {
+                                        "type": "string",
+                                        "example": "Hello, how are you?"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Message sent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Message"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation Error"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": {
+                                                "recipient_id": [
+                                                    "The recipient id field is required."
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/messages/{id}": {
+            "get": {
+                "tags": [
+                    "Messages"
+                ],
+                "summary": "Get a single message by ID",
+                "operationId": "8938bb52056aef543d340164d37f9562",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the message to retrieve",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden: You are not the sender or recipient of this message."
+                    },
+                    "404": {
+                        "description": "Message not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Messages"
+                ],
+                "summary": "Delete a message",
+                "operationId": "2077fda8b81cc2fb355890827a1ea31c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the message to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Message deleted successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden: You are not the sender or recipient of this message."
+                    },
+                    "404": {
+                        "description": "Message not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/messages/{id}/read": {
+            "put": {
+                "tags": [
+                    "Messages"
+                ],
+                "summary": "Mark a message as read",
+                "operationId": "511adffb7231f17bf318efb3a92f603c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the message to mark as read",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Message marked as read successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Message"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden: You are not the recipient of this message."
+                    },
+                    "404": {
+                        "description": "Message not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/placement-requests": {
+            "post": {
+                "tags": [
+                    "Placement Requests"
+                ],
+                "summary": "Create a new placement request",
+                "operationId": "c2c370842aa5236ba1f5a8be5258d7eb",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "cat_id",
+                                    "request_type"
+                                ],
+                                "properties": {
+                                    "cat_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "request_type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "foster_payed",
+                                            "foster_free",
+                                            "permanent"
+                                        ],
+                                        "example": "permanent"
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Looking for a loving home."
+                                    },
+                                    "expires_at": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-12-31"
+                                    },
+                                    "start_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-08-05"
+                                    },
+                                    "end_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-08-20"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Placement request created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/PlacementRequest"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "409": {
+                        "description": "Conflict - Active placement request of this type already exists"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/placement-requests/{id}": {
+            "delete": {
+                "tags": [
+                    "Placement Requests"
+                ],
+                "summary": "Delete a placement request",
+                "operationId": "48a5ddd255bee3a024cbbbd2ecb4fb67",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the placement request to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Placement request deleted successfully"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/placement-requests/{id}/confirm": {
+            "post": {
+                "tags": [
+                    "Placement Requests"
+                ],
+                "summary": "Confirm a placement request",
+                "operationId": "048f37d4d621221e26f5f2b4cabd8789",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the placement request to confirm",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Placement request confirmed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlacementRequest"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/placement-requests/{id}/reject": {
+            "post": {
+                "tags": [
+                    "Placement Requests"
+                ],
+                "summary": "Reject a placement request",
+                "operationId": "e577058803dd1d49c92a17d52e54fdac",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the placement request to reject",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Placement request rejected successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlacementRequest"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/transfer-requests/{id}/handover": {
+            "get": {
+                "tags": [
+                    "Transfer Handover"
+                ],
+                "summary": "Get the latest handover for a transfer request (owner or helper)",
+                "operationId": "1a3ccca1e85d3857d44c9fe07c502a2a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/TransferHandover"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Transfer Handover"
+                ],
+                "summary": "Initiate a handover for an accepted transfer request (owner only)",
+                "operationId": "a4861323f4d6fa46914101db9bd49106",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "scheduled_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "nullable": true
+                                    },
+                                    "location": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/TransferHandover"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/transfer-handovers/{id}/confirm": {
+            "post": {
+                "tags": [
+                    "Transfer Handover"
+                ],
+                "summary": "Helper confirms cat condition at handover",
+                "operationId": "c2f37a0eea5623c1a48e7d7f568e1944",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "condition_confirmed"
+                                ],
+                                "properties": {
+                                    "condition_confirmed": {
+                                        "type": "boolean"
+                                    },
+                                    "condition_notes": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/TransferHandover"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/transfer-handovers/{id}/complete": {
+            "post": {
+                "tags": [
+                    "Transfer Handover"
+                ],
+                "summary": "Complete handover and finalize transfer effects",
+                "operationId": "dfcb2cbfdf0a3b822fc0524439df07ed",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/TransferHandover"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/transfer-handovers/{id}/cancel": {
+            "post": {
+                "tags": [
+                    "Transfer Handover"
+                ],
+                "summary": "Cancel a handover (owner or helper)",
+                "operationId": "0841abcd7c1a3b9740e764a0198aaa4f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/TransferHandover"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/transfer-requests": {
+            "post": {
+                "tags": [
+                    "Transfer Requests"
+                ],
+                "summary": "Initiate a transfer request for a cat (by a helper)",
+                "operationId": "e9fa0a38dc6eb14618f6dc40fb9b25c8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "cat_id",
+                                    "requested_relationship_type"
+                                ],
+                                "properties": {
+                                    "cat_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "requested_relationship_type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "fostering",
+                                            "permanent_foster"
+                                        ],
+                                        "example": "fostering"
+                                    },
+                                    "fostering_type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "free",
+                                            "paid"
+                                        ],
+                                        "example": "free",
+                                        "nullable": true
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 50,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Transfer request created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TransferRequest"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation Error"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": {
+                                                "cat_id": [
+                                                    "The cat id field is required."
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden: Only helpers can initiate transfer requests or cat is not available."
+                    },
+                    "404": {
+                        "description": "Cat not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/transfer-requests/{id}/accept": {
+            "post": {
+                "tags": [
+                    "Transfer Requests"
+                ],
+                "summary": "Accept a transfer request",
+                "operationId": "81b9877586172990705ab6c8a8bab8b5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the transfer request to accept",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transfer request accepted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/TransferRequest"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Transfer request not found"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden: You are not the recipient of this request or the request is not pending."
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/transfer-requests/{id}/reject": {
+            "post": {
+                "tags": [
+                    "Transfer Requests"
+                ],
+                "summary": "Reject a transfer request",
+                "operationId": "2c3e792b141a73744b9a5682ea82a97f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the transfer request to reject",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transfer request rejected successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TransferRequest"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Transfer request not found"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden: You are not the recipient of this request or the request is not pending."
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/transfer-requests/{id}/responder-profile": {
+            "get": {
+                "tags": [
+                    "Transfer Requests"
+                ],
+                "summary": "Get the responder's helper profile for a given transfer request",
+                "operationId": "ea3092fa72dccf484d9bad661294d69b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the transfer request",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The responder's helper profile",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HelperProfile"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Helper profile not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/users/me": {
+            "get": {
+                "tags": [
+                    "User Profile"
+                ],
+                "summary": "Get authenticated user's profile",
+                "operationId": "e56fce5bf4f1344be48cc8c542479090",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "User Profile"
+                ],
+                "summary": "Update authenticated user's profile",
+                "operationId": "833445586105733bdf11fd6839f9cd26",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john.doe@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation Error"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": {
+                                                "name": [
+                                                    "The name field is required."
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "User Profile"
+                ],
+                "summary": "Delete authenticated user's account",
+                "operationId": "e27716e7d99219fb15707af676a94597",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "password"
+                                ],
+                                "properties": {
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "your_current_password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Account deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Account deleted successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation Error"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": {
+                                                "password": [
+                                                    "The provided password does not match your current password."
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/users/me/password": {
+            "put": {
+                "tags": [
+                    "User Profile"
+                ],
+                "summary": "Update authenticated user's password",
+                "operationId": "445a5c6a8f04633f4019c951c0af961a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "current_password",
+                                    "new_password",
+                                    "new_password_confirmation"
+                                ],
+                                "properties": {
+                                    "current_password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "old_secret_password"
+                                    },
+                                    "new_password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "new_secret_password"
+                                    },
+                                    "new_password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "new_secret_password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Password updated successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation Error"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": {
+                                                "current_password": [
+                                                    "The provided password does not match your current password."
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/users/me/avatar": {
+            "post": {
+                "tags": [
+                    "User Profile"
+                ],
+                "summary": "Upload or update authenticated user's avatar",
+                "operationId": "c1c511280801188df6fee8d34b191bd8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "avatar": {
+                                        "description": "The avatar image file (max 2MB, jpeg, png, jpg, gif, svg)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Avatar uploaded successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Avatar uploaded successfully."
+                                        },
+                                        "avatar_url": {
+                                            "type": "string",
+                                            "example": "http://localhost:8000/storage/users/avatars/user_1_1678886400.png"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation Error"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": {
+                                                "avatar": [
+                                                    "The avatar must be an image."
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "User Profile"
+                ],
+                "summary": "Delete authenticated user's avatar",
+                "operationId": "c6034d9f214e9ddd7637a066a6119e5f",
+                "responses": {
+                    "200": {
+                        "description": "Avatar deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Avatar deleted successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "No avatar to delete"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/version": {
+            "get": {
+                "tags": [
+                    "System"
+                ],
+                "summary": "Get API version",
+                "operationId": "2fc5e7cb989a6e76d38f4f3d97a7daf0",
+                "responses": {
+                    "200": {
+                        "description": "Current API version",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "version": {
+                                            "type": "string",
+                                            "example": "v0.0.1"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/cats/{cat_id}/weight-history": {
+            "post": {
+                "tags": [
+                    "Cats"
+                ],
+                "summary": "Add a new weight record for a cat",
+                "operationId": "e9474f93e64caeb048fa22a043d0903d",
+                "parameters": [
+                    {
+                        "name": "cat_id",
+                        "in": "path",
+                        "description": "ID of the cat to add a weight record for",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "weight_kg",
+                                    "record_date"
+                                ],
+                                "properties": {
+                                    "weight_kg": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 5.2
+                                    },
+                                    "record_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-01-15"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Weight record created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/WeightHistory"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation Error"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": {
+                                                "weight_kg": [
+                                                    "The weight kg field is required."
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden: You are not authorized to add weight records for this cat."
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Cat": {
+                "title": "Cat",
+                "required": [
+                    "id",
+                    "name",
+                    "breed",
+                    "birthday",
+                    "location",
+                    "description",
+                    "status",
+                    "user_id"
+                ],
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Pagination"
+                    },
+                    {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "Whiskers"
+                            },
+                            "breed": {
+                                "type": "string",
+                                "example": "Siamese"
+                            },
+                            "birthday": {
+                                "type": "string",
+                                "format": "date",
+                                "example": "2020-01-01"
+                            },
+                            "location": {
+                                "type": "string",
+                                "example": "Hanoi"
+                            },
+                            "description": {
+                                "type": "string",
+                                "example": "A friendly cat."
+                            },
+                            "status": {
+                                "type": "string",
+                                "example": "active"
+                            },
+                            "user_id": {
+                                "type": "integer",
+                                "example": 5
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "Pagination": {
+                "title": "Pagination",
+                "description": "Pagination object",
+                "properties": {
+                    "current_page": {
+                        "description": "Current page number",
+                        "type": "integer"
+                    },
+                    "data": {
+                        "description": "List of items on the current page",
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "first_page_url": {
+                        "description": "URL of the first page",
+                        "type": "string"
+                    },
+                    "from": {
+                        "description": "The starting number of the items on the current page",
+                        "type": "integer"
+                    },
+                    "last_page": {
+                        "description": "The last page number",
+                        "type": "integer"
+                    },
+                    "last_page_url": {
+                        "description": "URL of the last page",
+                        "type": "string"
+                    },
+                    "links": {
+                        "description": "List of pagination links",
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "next_page_url": {
+                        "description": "URL of the next page",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "path": {
+                        "description": "Base URL for the paginator",
+                        "type": "string"
+                    },
+                    "per_page": {
+                        "description": "Number of items per page",
+                        "type": "integer"
+                    },
+                    "prev_page_url": {
+                        "description": "URL of the previous page",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "to": {
+                        "description": "The ending number of the items on the current page",
+                        "type": "integer"
+                    },
+                    "total": {
+                        "description": "Total number of items",
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "Message": {
+                "title": "Message",
+                "description": "Message model",
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Pagination"
+                    },
+                    {
+                        "properties": {
+                            "id": {
+                                "description": "Message ID",
+                                "type": "integer",
+                                "format": "int64"
+                            },
+                            "sender_id": {
+                                "description": "ID of the user who sent the message",
+                                "type": "integer",
+                                "format": "int64"
+                            },
+                            "recipient_id": {
+                                "description": "ID of the user who received the message",
+                                "type": "integer",
+                                "format": "int64"
+                            },
+                            "content": {
+                                "description": "Content of the message",
+                                "type": "string"
+                            },
+                            "read_at": {
+                                "description": "Timestamp when the message was read",
+                                "type": "string",
+                                "format": "date-time",
+                                "nullable": true
+                            },
+                            "created_at": {
+                                "description": "Timestamp of message creation",
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "updated_at": {
+                                "description": "Timestamp of last message update",
+                                "type": "string",
+                                "format": "date-time"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "PlacementRequest": {
+                "title": "PlacementRequest",
+                "required": [
+                    "id",
+                    "cat_id",
+                    "user_id",
+                    "request_type",
+                    "status"
+                ],
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Pagination"
+                    },
+                    {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "cat_id": {
+                                "type": "integer",
+                                "example": 2
+                            },
+                            "user_id": {
+                                "type": "integer",
+                                "example": 5
+                            },
+                            "request_type": {
+                                "type": "string",
+                                "example": "adoption"
+                            },
+                            "status": {
+                                "type": "string",
+                                "example": "pending"
+                            },
+                            "notes": {
+                                "type": "string",
+                                "example": "Looking for a loving home."
+                            },
+                            "expires_at": {
+                                "type": "string",
+                                "format": "date",
+                                "example": "2025-08-01"
+                            },
+                            "start_date": {
+                                "type": "string",
+                                "format": "date",
+                                "example": "2025-08-05"
+                            },
+                            "end_date": {
+                                "type": "string",
+                                "format": "date",
+                                "example": "2025-08-20"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "TransferRequest": {
+                "title": "TransferRequest",
+                "description": "Transfer Request model",
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Pagination"
+                    },
+                    {
+                        "properties": {
+                            "id": {
+                                "description": "Transfer Request ID",
+                                "type": "integer",
+                                "format": "int64"
+                            },
+                            "cat_id": {
+                                "description": "ID of the cat being transferred",
+                                "type": "integer",
+                                "format": "int64"
+                            },
+                            "initiator_user_id": {
+                                "description": "ID of the user initiating the transfer",
+                                "type": "integer",
+                                "format": "int64"
+                            },
+                            "recipient_user_id": {
+                                "description": "ID of the user intended to receive the cat",
+                                "type": "integer",
+                                "format": "int64"
+                            },
+                            "status": {
+                                "description": "Current status of the transfer request",
+                                "type": "string",
+                                "enum": [
+                                    "pending",
+                                    "accepted",
+                                    "rejected"
+                                ]
+                            },
+                            "requested_relationship_type": {
+                                "description": "Type of custodianship requested",
+                                "type": "string",
+                                "enum": [
+                                    "fostering",
+                                    "permanent_foster"
+                                ]
+                            },
+                            "fostering_type": {
+                                "description": "Type of fostering (free or paid)",
+                                "type": "string",
+                                "enum": [
+                                    "free",
+                                    "paid"
+                                ],
+                                "nullable": true
+                            },
+                            "price": {
+                                "description": "Price for paid fostering",
+                                "type": "number",
+                                "format": "float",
+                                "nullable": true
+                            },
+                            "accepted_at": {
+                                "description": "Timestamp when the request was accepted",
+                                "type": "string",
+                                "format": "date-time",
+                                "nullable": true
+                            },
+                            "rejected_at": {
+                                "description": "Timestamp when the request was rejected",
+                                "type": "string",
+                                "format": "date-time",
+                                "nullable": true
+                            },
+                            "created_at": {
+                                "description": "Timestamp of transfer request creation",
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "updated_at": {
+                                "description": "Timestamp of last transfer request update",
+                                "type": "string",
+                                "format": "date-time"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "User": {
+                "title": "User",
+                "description": "User model",
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Pagination"
+                    },
+                    {
+                        "properties": {
+                            "id": {
+                                "description": "User ID",
+                                "type": "integer",
+                                "format": "int64"
+                            },
+                            "name": {
+                                "description": "User's name",
+                                "type": "string"
+                            },
+                            "email": {
+                                "description": "User's email address",
+                                "type": "string",
+                                "format": "email"
+                            },
+                            "avatar_url": {
+                                "description": "URL to the user's avatar image",
+                                "type": "string",
+                                "nullable": true
+                            },
+                            "created_at": {
+                                "description": "Timestamp of user creation",
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "updated_at": {
+                                "description": "Timestamp of last user update",
+                                "type": "string",
+                                "format": "date-time"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "WeightHistory": {
+                "title": "WeightHistory",
+                "description": "Weight History model",
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Pagination"
+                    },
+                    {
+                        "properties": {
+                            "id": {
+                                "description": "Weight History ID",
+                                "type": "integer",
+                                "format": "int64"
+                            },
+                            "cat_id": {
+                                "description": "ID of the associated cat",
+                                "type": "integer",
+                                "format": "int64"
+                            },
+                            "weight_kg": {
+                                "description": "Recorded weight in kilograms",
+                                "type": "number",
+                                "format": "float"
+                            },
+                            "record_date": {
+                                "description": "Date the weight was recorded",
+                                "type": "string",
+                                "format": "date"
+                            },
+                            "created_at": {
+                                "description": "Timestamp of weight record creation",
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "updated_at": {
+                                "description": "Timestamp of last weight record update",
+                                "type": "string",
+                                "format": "date-time"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "HelperProfile": {
+                "title": "HelperProfile",
+                "description": "Helper Profile model",
+                "properties": {
+                    "id": {
+                        "description": "Helper Profile ID",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "user_id": {
+                        "description": "ID of the associated user",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "status": {
+                        "description": "Status of the helper profile",
+                        "type": "string",
+                        "enum": [
+                            "active",
+                            "cancelled",
+                            "deleted"
+                        ]
+                    },
+                    "is_public": {
+                        "description": "Is the helper profile public",
+                        "type": "boolean"
+                    },
+                    "country": {
+                        "description": "Country of the helper",
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "description": "Timestamp of helper profile creation",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "description": "Timestamp of last helper profile update",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "TransferHandover": {
+                "title": "TransferHandover",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "transfer_request_id": {
+                        "type": "integer"
+                    },
+                    "owner_user_id": {
+                        "type": "integer"
+                    },
+                    "helper_user_id": {
+                        "type": "integer"
+                    },
+                    "scheduled_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "location": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "confirmed",
+                            "completed",
+                            "canceled",
+                            "disputed"
+                        ]
+                    },
+                    "owner_initiated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "helper_confirmed_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "condition_confirmed": {
+                        "type": "boolean"
+                    },
+                    "condition_notes": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "completed_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "canceled_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentication",
+            "description": "Authentication"
+        },
+        {
+            "name": "Cats",
+            "description": "Cats"
+        },
+        {
+            "name": "Cat Photos",
+            "description": "Cat Photos"
+        },
+        {
+            "name": "Helper Profiles",
+            "description": "Helper Profiles"
+        },
+        {
+            "name": "Messages",
+            "description": "Messages"
+        },
+        {
+            "name": "Placement Requests",
+            "description": "Placement Requests"
+        },
+        {
+            "name": "Transfer Handover",
+            "description": "Transfer Handover"
+        },
+        {
+            "name": "Transfer Requests",
+            "description": "Transfer Requests"
+        },
+        {
+            "name": "User Profile",
+            "description": "User Profile"
+        },
+        {
+            "name": "System",
+            "description": "System"
+        }
+    ]
+}

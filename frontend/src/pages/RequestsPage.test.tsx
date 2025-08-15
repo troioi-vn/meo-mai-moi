@@ -8,7 +8,7 @@ import { mockCat } from '@/mocks/data/cats'
 describe('RequestsPage', () => {
   it('renders the page title', async () => {
     server.use(
-      http.get('http://localhost:3000/api/cats/placement-requests', (req, res, ctx) => {
+      http.get('http://localhost:3000/api/cats/placement-requests', () => {
         return HttpResponse.json({ data: [mockCat] })
       })
     )
@@ -18,7 +18,7 @@ describe('RequestsPage', () => {
 
   it('renders the filter controls', async () => {
     server.use(
-      http.get('http://localhost:3000/api/cats/placement-requests', (req, res, ctx) => {
+      http.get('http://localhost:3000/api/cats/placement-requests', () => {
         return HttpResponse.json({ data: [mockCat] })
       })
     )
@@ -30,7 +30,7 @@ describe('RequestsPage', () => {
 
   it('renders a cat card', async () => {
     server.use(
-      http.get('http://localhost:3000/api/cats/placement-requests', (req, res, ctx) => {
+      http.get('http://localhost:3000/api/cats/placement-requests', () => {
         return HttpResponse.json({ data: [mockCat] })
       })
     )
@@ -41,7 +41,7 @@ describe('RequestsPage', () => {
   it('filters cats by type', async () => {
     const user = userEvent.setup()
     server.use(
-      http.get('http://localhost:3000/api/cats/placement-requests', (req, res, ctx) => {
+      http.get('http://localhost:3000/api/cats/placement-requests', () => {
         return HttpResponse.json({ data: [
           { ...mockCat, placement_requests: [{ request_type: 'adoption', start_date: '2025-08-01', end_date: '2025-09-01' }] },
           { ...mockCat, id: 2, name: 'Whiskers', placement_requests: [{ request_type: 'foster', start_date: '2025-08-01', end_date: '2025-09-01' }] },

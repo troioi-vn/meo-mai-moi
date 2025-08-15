@@ -74,7 +74,7 @@ export default function ProfilePage() {
 
           <Button
             onClick={() => {
-              logout()
+          void logout()
                 .then(() => {
                   navigate('/login')
                 })
@@ -91,7 +91,7 @@ export default function ProfilePage() {
           <hr className="my-4 border-gray-200 dark:border-gray-700" />
           <DeleteAccountDialog
             onAccountDeleted={() => {
-              logout()
+          void logout()
                 .then(() => {
                   navigate('/login')
                 })

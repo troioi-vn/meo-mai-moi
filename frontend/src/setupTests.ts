@@ -3,62 +3,52 @@ import { cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import { server } from './mocks/server';
 
-// Polyfill for PointerEvents
-if (!global.PointerEvent) {
-  class PointerEvent extends MouseEvent {
-    public pointerId?: number;
-    constructor(type: string, params: PointerEventInit) {
-      super(type, params);
-      this.pointerId = params.pointerId;
-    }
+// Polyfill for PointerEvents (minimal, typed)
+class TestPointerEvent extends MouseEvent {
+  public pointerId?: number
+  constructor(type: string, params: PointerEventInit) {
+    super(type, params)
+    this.pointerId = params.pointerId
   }
-  global.PointerEvent = PointerEvent as any;
 }
+// Assign only if missing
+// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+;(globalThis as unknown as { PointerEvent?: typeof MouseEvent }).PointerEvent = TestPointerEvent as unknown as typeof MouseEvent
 
 // Polyfills for PointerEvent methods on Element
-if (!Element.prototype.hasPointerCapture) {
-  Element.prototype.hasPointerCapture = function (pointerId: number): boolean {
-    // Return a mock value
-    return false;
-  };
-}
-if (!Element.prototype.setPointerCapture) {
-  Element.prototype.setPointerCapture = function (pointerId: number): void {
-    // No-op
-  };
-}
-if (!Element.prototype.releasePointerCapture) {
-  Element.prototype.releasePointerCapture = function (pointerId: number): void {
-    // No-op
-  };
-}
+// Use arrow functions to avoid unbound-method rule
+// eslint-disable-next-line @typescript-eslint/unbound-method
+Element.prototype.hasPointerCapture = (() => false) as unknown as typeof Element.prototype.hasPointerCapture
+// eslint-disable-next-line @typescript-eslint/unbound-method
+Element.prototype.setPointerCapture = (() => { /* no-op */ }) as unknown as typeof Element.prototype.setPointerCapture
+// eslint-disable-next-line @typescript-eslint/unbound-method
+Element.prototype.releasePointerCapture = (() => { /* no-op */ }) as unknown as typeof Element.prototype.releasePointerCapture
 
 // Polyfill for scrollIntoView
-if (!window.HTMLElement.prototype.scrollIntoView) {
-  window.HTMLElement.prototype.scrollIntoView = function () {};
-}
+// eslint-disable-next-line @typescript-eslint/unbound-method
+window.HTMLElement.prototype.scrollIntoView = (() => { /* no-op */ }) as typeof window.HTMLElement.prototype.scrollIntoView
 
 
 vi.mock('sonner', async (importOriginal) => {
-  const actual = (await importOriginal()) as object;
+  const actual = await importOriginal<typeof import('sonner')>()
   return {
     ...actual,
-    Toaster: () => null, // Mock Toaster component
+    Toaster: () => null,
     toast: {
       success: vi.fn(),
       error: vi.fn(),
       info: vi.fn(),
       warning: vi.fn(),
     },
-  };
-});
+  }
+})
 
 // Mock ResizeObserver
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
+;(globalThis as unknown as { ResizeObserver?: unknown }).ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
-}));
+})) as unknown as typeof ResizeObserver
 
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -67,25 +57,19 @@ Object.defineProperty(window, 'matchMedia', {
     matches: false,
     media: query,
     onchange: null,
-    addListener: vi.fn(), // deprecated
-    removeListener: vi.fn(), // deprecated
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(),
   })),
-});
+})
 
-vi.mock('@/components/ui/button', async () => {
-  const actual = await vi.importActual('@/components/ui/button');
-  return {
-    ...actual,
-    buttonVariants: () => '',
-  };
-});
+// No need to mock buttonVariants export from button anymore
 
-beforeAll(() => { server.listen({ onUnhandledRequest: 'error' }); });
-afterAll(() => { server.close(); });
+beforeAll(() => { server.listen({ onUnhandledRequest: 'error' }) })
+afterAll(() => { server.close() })
 afterEach(() => {
-  server.resetHandlers();
-  cleanup();
-});
+  server.resetHandlers()
+  cleanup()
+})

@@ -192,7 +192,7 @@ const transferRequestHandlers = [
   }),
   http.post('http://localhost:3000/api/transfer-handovers/:id/confirm', async ({ request }) => {
     const body = await request.json()
-    const confirmed = Boolean((body as any).condition_confirmed)
+  const confirmed = Boolean((body as { condition_confirmed?: boolean }).condition_confirmed)
     return HttpResponse.json({ data: { id: 1, status: confirmed ? 'confirmed' : 'disputed' } })
   }),
   http.post('http://localhost:3000/api/transfer-handovers/:id/cancel', () => {

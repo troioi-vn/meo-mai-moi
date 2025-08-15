@@ -9,26 +9,27 @@ use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use App\Enums\CatStatus;
+use Tests\Traits\CreatesUsers;
 
 class CatListingTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, CreatesUsers;
 
 
-    public function test_can_get_single_cat_profile(): void
+    #[Test]
+    public function can_get_single_cat_profile(): void
     {
-        $user = User::factory()->create();
+        $user = $this->createUserAndLogin();
         $cat = Cat::factory()->create(['user_id' => $user->id]);
-        Sanctum::actingAs($user);
 
         $response = $this->getJson("/api/cats/{$cat->id}");
         $response->assertStatus(200)->assertJson(['data' => ['id' => $cat->id]]);
     }
 
-    public function test_authenticated_user_can_create_cat_listing(): void
+    #[Test]
+    public function authenticated_user_can_create_cat_listing(): void
     {
-        $user = User::factory()->create();
-        Sanctum::actingAs($user);
+        $this->createUserAndLogin();
 
         $catData = [
             'name' => 'Test Cat',
@@ -45,7 +46,8 @@ class CatListingTest extends TestCase
         $this->assertDatabaseHas('cats', $catData);
     }
 
-    public function test_guest_cannot_create_cat_listing(): void
+    #[Test]
+    public function guest_cannot_create_cat_listing(): void
     {
         $catData = [
             'name' => 'Test Cat',

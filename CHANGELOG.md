@@ -5,6 +5,11 @@ All notable changes to this project are documented here, following the [Keep a C
 ## [Unreleased]
 
 ### Changed
+- Frontend: Refined Cat Profile responses and handover UI.
+  - Streamlined acceptance flow to open the schedule handover modal after accepting a response.
+  - Added a helper-facing handover confirmation panel and improved meeting status chips.
+  - Standardized list keys and avoided unsafe template rendering.
+- Frontend: Helper Profile dialog tightened types and display logic; safer keys for photos and clearer transfer detail rendering.
 - **Redirect to login page after logout:** After a user logs out, they are now redirected to the login page.
 - **Authorization Centralization:** `CatController@show` now relies on policies via `$this->authorize('view', $cat)`; controller logic simplified while preserving `viewer_permissions` in the response.
 - **Admin Middleware:** Updated to support both enum-backed roles and string roles, improving robustness across environments (and future Spatie-only direction).
@@ -16,6 +21,9 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Cat Visibility Policy**: Active fosterers are allowed to view the cat profile while the assignment is active.
 
 ### Fixed
+- Frontend Linting/Type Safety: Large cleanup pass across multiple files (CatProfilePage, HelperProfileDialog, CatDetails, UserMenu, ScheduleHandoverModal, PlacementResponseModal, helper profile pages/hooks).
+  - Removed unnecessary type conversions and non-null assertions, eliminated unsafe any access, and fixed promise-handling (no-floating-promises/no-misused-promises).
+  - Resolved restrict-template-expressions and react-refresh issues without changing behavior; tests remain green.
 - **API Routing:** Removed duplicate `/api/version` route declaration to keep `VersionController` as the single source of truth.
 - **Test Stability**: Improved the reliability of tests in `EditCatPage.test.tsx` by adding explicit `waitFor` assertions to prevent race conditions.
 - **MyCatsPage Hooks Order**: Fixed a React hooks ordering error by removing a conditional `useMemo` within JSX props.

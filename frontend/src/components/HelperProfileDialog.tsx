@@ -35,11 +35,11 @@ export const HelperProfileDialog: React.FC<HelperProfileDialogProps> = ({ open, 
               <p className="font-semibold mb-1">Response Details</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                 <p><strong>Relationship:</strong> {transfer.requested_relationship_type ?? 'N/A'}</p>
-                {'fostering_type' in (transfer as any) && (
-                  <p><strong>Fostering Type:</strong> {(transfer as any).fostering_type ?? 'N/A'}</p>
+                {'fostering_type' in (transfer as Record<string, unknown>) && (
+                  <p><strong>Fostering Type:</strong> {String((transfer as Record<string, unknown>).fostering_type ?? 'N/A')}</p>
                 )}
-                {'price' in (transfer as any) && (
-                  <p><strong>Price:</strong> {(transfer as any).price ?? 'N/A'}</p>
+                {'price' in (transfer as Record<string, unknown>) && (
+                  <p><strong>Price:</strong> {String((transfer as Record<string, unknown>).price ?? 'N/A')}</p>
                 )}
                 <p><strong>Status:</strong> {transfer.status ?? 'pending'}</p>
               </div>
@@ -69,9 +69,11 @@ export const HelperProfileDialog: React.FC<HelperProfileDialogProps> = ({ open, 
             <div>
               <p className="font-semibold mb-1">Photos</p>
               <div className="grid grid-cols-3 gap-2">
-                {profile.photos.map((ph: any, idx: number) => (
-                  <img key={idx} src={typeof ph === 'string' ? ph : (`/storage/${ph.path ?? ''}`)} alt="Helper" className="rounded object-cover w-full h-24" />
-                ))}
+                {profile.photos.map((ph) => {
+                  const key = typeof ph === 'string' ? ph : (ph && typeof ph === 'object' && 'id' in ph ? String((ph as { id: string | number }).id) : JSON.stringify(ph))
+                  const src = typeof ph === 'string' ? ph : (ph && typeof ph === 'object' && 'path' in ph ? `/storage/${String((ph as { path?: string }).path ?? '')}` : '')
+                  return <img key={key} src={src} alt="Helper" className="rounded object-cover w-full h-24" />
+                })}
               </div>
             </div>
           )}

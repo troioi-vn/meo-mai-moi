@@ -9,18 +9,18 @@ use Laravel\Sanctum\Sanctum;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\Traits\CreatesUsers;
 
 class UserProfileTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, CreatesUsers;
 
     protected $user;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
-        Sanctum::actingAs($this->user);
+        $this->user = $this->createUserAndLogin();
     }
 
     #[Test]

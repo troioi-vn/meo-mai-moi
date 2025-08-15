@@ -9,12 +9,14 @@ use App\Models\Cat;
 use App\Models\PlacementRequest;
 use App\Models\TransferRequest;
 use App\Models\HelperProfile;
+use PHPUnit\Framework\Attributes\Test;
 
 class TransferRequestRelationshipTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_a_transfer_request_belongs_to_a_placement_request()
+    #[Test]
+    public function a_transfer_request_belongs_to_a_placement_request()
     {
         $owner = User::factory()->create();
         $cat = Cat::factory()->create(['user_id' => $owner->id]);
@@ -32,7 +34,8 @@ class TransferRequestRelationshipTest extends TestCase
         $this->assertEquals($placementRequest->id, $transferRequest->placementRequest->id);
     }
 
-    public function test_a_placement_request_can_have_many_transfer_requests()
+    #[Test]
+    public function a_placement_request_can_have_many_transfer_requests()
     {
         $owner = User::factory()->create();
         $cat = Cat::factory()->create(['user_id' => $owner->id]);

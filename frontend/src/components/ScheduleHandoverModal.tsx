@@ -27,8 +27,9 @@ export const ScheduleHandoverModal: React.FC<ScheduleHandoverModalProps> = ({ tr
       toast.success('Handover scheduled')
       onSuccess?.()
       onClose()
-    } catch (e: any) {
-      const status = e?.response?.status
+    } catch (e: unknown) {
+      const err = e as { response?: { status?: number } }
+      const status = err.response?.status
       if (status === 409) {
         toast.info('Request is not in a state that can be scheduled.')
       } else if (status === 422) {
@@ -72,7 +73,7 @@ export const ScheduleHandoverModal: React.FC<ScheduleHandoverModalProps> = ({ tr
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={submitting}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={submitting}>Save</Button>
+          <Button onClick={() => { void handleSubmit() }} disabled={submitting}>Save</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

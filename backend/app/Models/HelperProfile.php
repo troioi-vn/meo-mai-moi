@@ -72,7 +72,7 @@ class HelperProfile extends Model
         'has_children',
         'can_foster',
         'can_adopt',
-        'status',
+        'approval_status',
         'is_public',
     ];
 

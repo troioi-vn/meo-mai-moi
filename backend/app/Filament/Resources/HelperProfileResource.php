@@ -84,9 +84,7 @@ class HelperProfileResource extends Resource
                             ->label('Has Pets'),
                         Forms\Components\Checkbox::make('has_children')
                             ->label('Has Children'),
-                        Forms\Components\Toggle::make('is_public')
-                            ->label('Public Profile')
-                            ->default(true),
+
                     ])
                     ->columns(2),
 
@@ -145,10 +143,7 @@ class HelperProfileResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\IconColumn::make('is_public')
-                    ->label('Public')
-                    ->boolean()
-                    ->toggleable(),
+
 
                 Tables\Columns\TextColumn::make('approval_status')
                     ->label('Status')
@@ -206,8 +201,7 @@ class HelperProfileResource extends Resource
                     ->searchable()
                     ->preload(),
 
-                Tables\Filters\TernaryFilter::make('is_public')
-                    ->label('Public Profile'),
+
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

@@ -2,18 +2,20 @@
 
 namespace App\Policies;
 
-use App\Models\PlacementRequest;
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
+use App\Models\PlacementRequest;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class PlacementRequestPolicy
 {
+    use HandlesAuthorization;
+
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->can('view_any_placement::request');
     }
 
     /**
@@ -21,7 +23,7 @@ class PlacementRequestPolicy
      */
     public function view(User $user, PlacementRequest $placementRequest): bool
     {
-        return false;
+        return $user->can('view_placement::request');
     }
 
     /**
@@ -29,7 +31,7 @@ class PlacementRequestPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->can('create_placement::request');
     }
 
     /**
@@ -37,7 +39,7 @@ class PlacementRequestPolicy
      */
     public function update(User $user, PlacementRequest $placementRequest): bool
     {
-        return false;
+        return $user->can('update_placement::request');
     }
 
     /**
@@ -45,36 +47,66 @@ class PlacementRequestPolicy
      */
     public function delete(User $user, PlacementRequest $placementRequest): bool
     {
-        Log::info('Checking delete policy', [
-            'user_id' => $user->id,
-            'placement_request_user_id' => $placementRequest->user_id,
-        ]);
-        return $user->id === $placementRequest->user_id;
-    }
+        if ($user->id === $placementRequest->cat->user_id) {
+            return true;
+        }
 
-    public function confirm(User $user, PlacementRequest $placementRequest): bool
-    {
-        return $user->id === $placementRequest->user_id;
-    }
-
-    public function reject(User $user, PlacementRequest $placementRequest): bool
-    {
-        return $user->id === $placementRequest->user_id;
+        return $user->can('delete_placement::request');
     }
 
     /**
-     * Determine whether the user can restore the model.
+     * Determine whether the user can bulk delete.
      */
-    public function restore(User $user, PlacementRequest $placementRequest): bool
+    public function deleteAny(User $user): bool
     {
-        return false;
+        return $user->can('delete_any_placement::request');
     }
 
     /**
-     * Determine whether the user can permanently delete the model.
+     * Determine whether the user can permanently delete.
      */
     public function forceDelete(User $user, PlacementRequest $placementRequest): bool
     {
-        return false;
+        return $user->can('force_delete_placement::request');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_placement::request');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, PlacementRequest $placementRequest): bool
+    {
+        return $user->can('restore_placement::request');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_placement::request');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, PlacementRequest $placementRequest): bool
+    {
+        return $user->can('replicate_placement::request');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_placement::request');
     }
 }

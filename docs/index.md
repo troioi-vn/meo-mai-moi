@@ -7,11 +7,11 @@ hero:
   tagline: Community-driven cat rescue and rehoming.
   actions:
     - theme: brand
-      text: Get Started
-      link: /introduction
+  text: Development Guide
+  link: /development
     - theme: alt
       text: View on GitHub
-      link: https://github.com/your-repo-here
+  link: https://github.com/troioi-vn/meo-mai-moi
 
 features:
   - title: Community-Focused
@@ -36,6 +36,11 @@ Our primary goal is to create a geographically modular system that anyone can de
 
 The core technical design, data models, and development roadmap for this project are managed in our primary planning document. This document serves as the single source of truth for our development process.
 
--   **For a complete overview of the project's architecture, tech stack, and phased development plan, please see our [GEMINI.md file](../GEMINI.md).**
+-   For the architecture, tech stack, and phased plan, see the agent/architecture guide: [GEMINI.md](../GEMINI.md).
+
+## Developer Docs
+
+- Local setup, testing, tips: [Development Guide](./development.md)
+- Deployment steps: [Production Deployment](./deploy.md)
 
 This documentation site will be expanded over time to include user guides, API references, and deployment instructions.

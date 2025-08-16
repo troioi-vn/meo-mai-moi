@@ -89,7 +89,7 @@ class CatResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\FosterAssignmentsRelationManager::class,
         ];
     }
 

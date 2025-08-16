@@ -183,7 +183,7 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({ 
             ) : (
               <div className="text-center">
                 <p className="mb-4">You must have a helper profile to respond to a placement request.</p>
-  <Button onClick={() => { window.location.href = '/helper-profiles/create' }}>Create Helper Profile</Button>
+  <Button onClick={() => { window.location.href = '/helper/create' }}>Create Helper Profile</Button>
               </div>
             )}
           </div>

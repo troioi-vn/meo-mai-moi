@@ -25,7 +25,8 @@ return new class extends Migration
             $table->boolean('has_children');
             $table->boolean('can_foster');
             $table->boolean('can_adopt');
-            $table->string('location')->nullable();
+            $table->boolean('is_public')->default(false);
+            $table->string('country')->nullable();
             $table->timestamps();
         });
     }

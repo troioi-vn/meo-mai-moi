@@ -191,8 +191,8 @@ class TransferRequestController extends Controller
         // Send notification to cat owner
         \App\Models\Notification::create([
             'user_id' => $cat->user_id,
-            'message' => 'New transfer request for your cat: ' . $cat->name,
-            'link' => '/account/transfer-requests/' . $transferRequest->id,
+            'message' => $user->name . ' responded to your placement request for ' . $cat->name,
+            'link' => '/cats/' . $cat->id, // Deep-link to the cat profile page
             'is_read' => false,
         ]);
 
@@ -283,6 +283,21 @@ class TransferRequestController extends Controller
             }
         });
 
+        // Notify helper (initiator) on acceptance
+        try {
+            $cat = $transferRequest->cat ?: Cat::find($transferRequest->cat_id);
+            if ($cat) {
+                \App\Models\Notification::create([
+                    'user_id' => $transferRequest->initiator_user_id,
+                    'message' => 'Your request for ' . $cat->name . ' was accepted. Schedule a handover.',
+                    'link' => '/cats/' . $cat->id,
+                    'is_read' => false,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            // non-fatal
+        }
+
         return $this->sendSuccess($transferRequest->fresh(['placementRequest']));
     }
 
@@ -325,6 +340,21 @@ class TransferRequestController extends Controller
         $transferRequest->status = 'rejected';
         $transferRequest->rejected_at = now();
         $transferRequest->save();
+
+        // Notify helper (initiator) on rejection
+        try {
+            $cat = $transferRequest->cat ?: Cat::find($transferRequest->cat_id);
+            if ($cat) {
+                \App\Models\Notification::create([
+                    'user_id' => $transferRequest->initiator_user_id,
+                    'message' => 'Your request for ' . $cat->name . ' was rejected by the owner.',
+                    'link' => '/cats/' . $cat->id,
+                    'is_read' => false,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            // non-fatal
+        }
 
         return $this->sendSuccess($transferRequest);
     }

@@ -2,18 +2,20 @@
 
 namespace App\Policies;
 
-use App\Models\TransferRequest;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use App\Models\TransferRequest;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class TransferRequestPolicy
 {
+    use HandlesAuthorization;
+
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->can('view_any_transfer::request');
     }
 
     /**
@@ -21,7 +23,7 @@ class TransferRequestPolicy
      */
     public function view(User $user, TransferRequest $transferRequest): bool
     {
-        return false;
+        return $user->can('view_transfer::request');
     }
 
     /**
@@ -29,7 +31,7 @@ class TransferRequestPolicy
      */
     public function create(User $user): bool
     {
-        return $user->helperProfiles()->exists();
+        return $user->can('create_transfer::request');
     }
 
     /**
@@ -37,27 +39,7 @@ class TransferRequestPolicy
      */
     public function update(User $user, TransferRequest $transferRequest): bool
     {
-        return false;
-    }
-
-    public function accept(User $user, TransferRequest $transferRequest): bool
-    {
-        return $user->id === $transferRequest->recipient_user_id;
-    }
-
-    public function reject(User $user, TransferRequest $transferRequest): bool
-    {
-        // Cat owner (recipient) can reject, and the initiator (helper) can cancel their own pending request
-        return $user->id === $transferRequest->recipient_user_id
-            || $user->id === $transferRequest->initiator_user_id;
-    }
-
-    /**
-     * Allow the cat owner (recipient) to view the responder's helper profile for this transfer.
-     */
-    public function viewResponderProfile(User $user, TransferRequest $transferRequest): bool
-    {
-        return $user->id === $transferRequest->recipient_user_id;
+        return $user->can('update_transfer::request');
     }
 
     /**
@@ -65,22 +47,62 @@ class TransferRequestPolicy
      */
     public function delete(User $user, TransferRequest $transferRequest): bool
     {
-        return false;
+        return $user->can('delete_transfer::request');
     }
 
     /**
-     * Determine whether the user can restore the model.
+     * Determine whether the user can bulk delete.
      */
-    public function restore(User $user, TransferRequest $transferRequest): bool
+    public function deleteAny(User $user): bool
     {
-        return false;
+        return $user->can('delete_any_transfer::request');
     }
 
     /**
-     * Determine whether the user can permanently delete the model.
+     * Determine whether the user can permanently delete.
      */
     public function forceDelete(User $user, TransferRequest $transferRequest): bool
     {
-        return false;
+        return $user->can('force_delete_transfer::request');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_transfer::request');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, TransferRequest $transferRequest): bool
+    {
+        return $user->can('restore_transfer::request');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_transfer::request');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, TransferRequest $transferRequest): bool
+    {
+        return $user->can('replicate_transfer::request');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_transfer::request');
     }
 }

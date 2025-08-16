@@ -73,4 +73,14 @@ class Cat extends Model
     {
         return $this->hasMany(\App\Models\OwnershipHistory::class);
     }
+
+    public function fosterAssignments(): HasMany
+    {
+        return $this->hasMany(FosterAssignment::class);
+    }
+
+    public function activeFosterAssignment()
+    {
+        return $this->hasOne(FosterAssignment::class)->where('status', 'active');
+    }
 }

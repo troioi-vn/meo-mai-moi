@@ -23,7 +23,9 @@ use App\Http\Controllers\FosterReturnHandoverController;
 Route::get('/version', [VersionController::class, 'show']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index']);
-    Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead']); // legacy alias
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead']);
+    Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
 });
 
 /*

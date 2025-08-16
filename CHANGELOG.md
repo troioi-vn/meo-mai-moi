@@ -72,6 +72,9 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Test Stability**: Improved the reliability of tests in `EditCatPage.test.tsx` by adding explicit `waitFor` assertions to prevent race conditions.
 - **MyCatsPage Hooks Order**: Fixed a React hooks ordering error by removing a conditional `useMemo` within JSX props.
 
+### Removed
+- **Helper Profile**: Removed the `zip_code` field from the helper profile creation form, model, and database, as it is no longer required.
+
 ### Added
 - **Transfer Handover Lifecycle:** Introduced a post-accept procedure to safely hand over the cat.
   - New `TransferHandover` model and migration to track handover scheduling and confirmations.

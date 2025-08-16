@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class FosterAssignment extends Model
 {
@@ -47,5 +48,58 @@ class FosterAssignment extends Model
     public function transferRequest(): BelongsTo
     {
         return $this->belongsTo(TransferRequest::class);
+    }
+
+    public function fosterReturnHandover(): HasOne
+    {
+        return $this->hasOne(FosterReturnHandover::class);
+    }
+
+    // Computed attributes for admin display
+    public function getDurationInDaysAttribute(): ?int
+    {
+        if (!$this->start_date) {
+            return null;
+        }
+
+        $endDate = $this->completed_at ?? $this->canceled_at ?? now();
+        return $this->start_date->diffInDays($endDate);
+    }
+
+    public function getDaysRemainingAttribute(): ?int
+    {
+        if ($this->status !== 'active' || !$this->expected_end_date) {
+            return null;
+        }
+
+        return now()->diffInDays($this->expected_end_date, false);
+    }
+
+    public function getIsOverdueAttribute(): bool
+    {
+        return $this->status === 'active' 
+            && $this->expected_end_date 
+            && now()->isAfter($this->expected_end_date);
+    }
+
+    // Scopes for filtering
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    public function scopeOverdue($query)
+    {
+        return $query->where('status', 'active')
+                    ->whereNotNull('expected_end_date')
+                    ->whereDate('expected_end_date', '<', now());
+    }
+
+    public function scopeEndingSoon($query, $days = 7)
+    {
+        return $query->where('status', 'active')
+                    ->whereNotNull('expected_end_date')
+                    ->whereDate('expected_end_date', '<=', now()->addDays($days))
+                    ->whereDate('expected_end_date', '>=', now());
     }
 }

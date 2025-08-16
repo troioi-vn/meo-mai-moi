@@ -34,19 +34,6 @@ class RolesAndPermissionsSeeder extends Seeder
         ])->get();
         $adminRole->syncPermissions($adminPermissions);
 
-        // Create or update test user with super admin role
-        $testUser = User::firstOrCreate(
-            ['email' => 'test@example.com'],
-            [
-                'name' => 'Test User',
-                'password' => bcrypt('password'),
-                'role' => 'admin',
-            ]
-        );
-        
-        $testUser->assignRole('super_admin');
-
         echo "Roles and permissions seeded successfully!\n";
-        echo "Test user created with email: test@example.com and password: password\n";
     }
 }

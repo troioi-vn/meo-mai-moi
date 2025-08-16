@@ -59,4 +59,9 @@ class TransferRequest extends Model
     {
         return $this->belongsTo(PlacementRequest::class);
     }
+
+    public function transferHandover()
+    {
+        return $this->hasOne(TransferHandover::class);
+    }
 }

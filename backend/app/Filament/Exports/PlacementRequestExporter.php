@@ -3,6 +3,8 @@
 namespace App\Filament\Exports;
 
 use App\Models\PlacementRequest;
+use App\Enums\PlacementRequestType;
+use App\Enums\PlacementRequestStatus;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
@@ -26,21 +28,21 @@ class PlacementRequestExporter extends Exporter
                 ->label('Owner Email'),
             ExportColumn::make('request_type')
                 ->label('Request Type')
-                ->formatStateUsing(fn (string $state): string => match ($state) {
-                    'foster_payed' => 'Foster (Paid)',
-                    'foster_free' => 'Foster (Free)',
-                    'permanent' => 'Permanent',
-                    default => $state,
+                ->formatStateUsing(fn (PlacementRequestType $state): string => match ($state) {
+                    PlacementRequestType::FOSTER_PAYED => 'Foster (Paid)',
+                    PlacementRequestType::FOSTER_FREE => 'Foster (Free)',
+                    PlacementRequestType::PERMANENT => 'Permanent',
+                    default => $state->value,
                 }),
             ExportColumn::make('status')
                 ->label('Status')
-                ->formatStateUsing(fn (string $state): string => match ($state) {
-                    'open' => 'Open',
-                    'pending_review' => 'Pending Review',
-                    'fulfilled' => 'Fulfilled',
-                    'expired' => 'Expired',
-                    'cancelled' => 'Cancelled',
-                    default => $state,
+                ->formatStateUsing(fn (PlacementRequestStatus $state): string => match ($state) {
+                    PlacementRequestStatus::OPEN => 'Open',
+                    PlacementRequestStatus::PENDING_REVIEW => 'Pending Review',
+                    PlacementRequestStatus::FULFILLED => 'Fulfilled',
+                    PlacementRequestStatus::EXPIRED => 'Expired',
+                    PlacementRequestStatus::CANCELLED => 'Cancelled',
+                    default => $state->value,
                 }),
             ExportColumn::make('notes')
                 ->label('Description'),

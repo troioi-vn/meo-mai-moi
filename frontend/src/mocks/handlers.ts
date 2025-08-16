@@ -2,6 +2,7 @@ import { http, HttpResponse } from 'msw'
 import { catHandlers, mockCat } from './data/cats'
 import { mockUser } from './data/user'
 import { helperProfileHandlers } from './data/helper-profiles'
+import type { AppNotification } from '@/types/notification'
 
 const userHandlers = [
   // Get authenticated user's profile
@@ -233,4 +234,48 @@ export const handlers = [
   ...weightHistoryHandlers,
   ...placementRequestHandlers,
   ...helperProfileHandlers,
+  // notifications (simple in-memory mock)
+  ...(() => {
+    const mem: AppNotification[] = [
+      {
+        id: 'n1',
+        level: 'info',
+        title: 'Welcome to Meo!',
+        body: 'Thanks for joining the community.',
+        url: '/account',
+        created_at: new Date(Date.now() - 60_000).toISOString(),
+        read_at: null,
+      },
+      {
+        id: 'n2',
+        level: 'success',
+        title: 'Profile updated',
+        body: 'Your profile changes were saved.',
+        url: null,
+        created_at: new Date(Date.now() - 120_000).toISOString(),
+        read_at: null,
+      },
+    ]
+    return [
+      http.get('http://localhost:3000/api/notifications', ({ request }) => {
+        const url = new URL(request.url)
+        const status = url.searchParams.get('status')
+        const list = status === 'unread' ? mem.filter((n) => !n.read_at) : mem
+        return HttpResponse.json({ data: list })
+      }),
+      http.post('http://localhost:3000/api/notifications/mark-all-read', async () => {
+        const now = new Date().toISOString()
+        mem.forEach((n) => {
+          if (!n.read_at) n.read_at = now
+        })
+        return new HttpResponse(null, { status: 204 })
+      }),
+      http.patch('http://localhost:3000/api/notifications/:id/read', ({ params }) => {
+        const id = params.id as string
+        const item = mem.find((n) => n.id === id)
+        if (item && !item.read_at) item.read_at = new Date().toISOString()
+        return new HttpResponse(null, { status: 204 })
+      }),
+    ]
+  })(),
 ]

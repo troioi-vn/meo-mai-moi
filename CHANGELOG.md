@@ -59,7 +59,6 @@ All notable changes to this project are documented here, following the [Keep a C
  - Frontend: My Cats page UX polish; reduced console noise by suppressing successful test output in the test runner.
 
 ### Fixed
-- Frontend: CatCard "Fulfilled" badge incorrectly showed for new/open placement requests. Now it only appears when there are placement requests but none are active/open (derived from `is_active` or `status` in {`open`, `pending_review`, `pending`}); Respond button visibility also falls back to this derived state when the backend convenience flag is absent.
 - **API/Policy**: Fixed 403 when viewing your own cat. Broadened `CatPolicy@view` to allow owners, admins, and accepted helpers to view a cat, and to permit public read access for non-deleted cats. This aligns with the optional-auth show route and documented visibility rules.
 - Frontend Linting/Type Safety: Large cleanup pass across multiple files (CatProfilePage, HelperProfileDialog, CatDetails, UserMenu, ScheduleHandoverModal, PlacementResponseModal, helper profile pages/hooks).
   - Removed unnecessary type conversions and non-null assertions, eliminated unsafe any access, and fixed promise-handling (no-floating-promises/no-misused-promises).
@@ -71,9 +70,6 @@ All notable changes to this project are documented here, following the [Keep a C
 - **API Routing:** Removed duplicate `/api/version` route declaration to keep `VersionController` as the single source of truth.
 - **Test Stability**: Improved the reliability of tests in `EditCatPage.test.tsx` by adding explicit `waitFor` assertions to prevent race conditions.
 - **MyCatsPage Hooks Order**: Fixed a React hooks ordering error by removing a conditional `useMemo` within JSX props.
-
-### Removed
-- **Helper Profile**: Removed the `zip_code` field from the helper profile creation form, model, and database, as it is no longer required.
 
 ### Added
 - **Transfer Handover Lifecycle:** Introduced a post-accept procedure to safely hand over the cat.

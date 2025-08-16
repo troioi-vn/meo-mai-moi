@@ -36,7 +36,7 @@ docker compose exec backend php artisan storage:link
 **3. Access the Application**
 - **Frontend:** http://localhost:8000
 - **Admin Panel:** http://localhost:8000/admin
-  - **Email:** `test@example.com`
+  - **Email:** `admin@catarchy.space`
   - **Password:** `password`
 
 **Daily Workflow:**
@@ -92,7 +92,7 @@ npm run dev
 - **Backend API:** http://localhost:8000
 - **Frontend:** http://localhost:5173 (proxies to backend)
 - **Admin Panel:** http://localhost:8000/admin
-  - **Email:** `test@example.com`
+  - **Email:** `admin@catarchy.space`
   - **Password:** `password`
 
 ---

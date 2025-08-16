@@ -14,19 +14,19 @@ export default function HelperProfileViewPage() {
   const { id } = useParams();
   const { data, isLoading, isError } = useQuery({
     queryKey: ['helper-profile', id],
-    queryFn: () => getHelperProfile(id!),
+    queryFn: () => getHelperProfile(id ?? ''),
   });
 
   if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error fetching helper profile</div>;
-  const d = data!; // data is defined here due to early returns
+  if (isError || !data) return <div>Error fetching helper profile</div>;
+  const d = data; // defined after guards
 
   return (
     <div className="container mx-auto px-4 py-8 bg-background min-h-screen">
       <div className="flex justify-between items-center mb-8">
-  <h1 className="text-3xl font-bold text-foreground">{d.data.user?.name ?? 'User'}'s Helper Profile</h1>
+  <h1 className="text-3xl font-bold text-foreground">{(d.data.user?.name ?? 'User') + "'s Helper Profile"}</h1>
         <div>
-          <Link to={`/helper/${id}/edit`}>
+          <Link to={'/helper/' + (id ?? '') + '/edit'}>
             <Button variant="outline" className="mr-2">Edit</Button>
           </Link>
           <Link to="/helper">
@@ -50,9 +50,9 @@ export default function HelperProfileViewPage() {
         <div>
           <Carousel className="w-full max-w-xs">
             <CarouselContent>
-              {(d.data.photos ?? []).map((photo: any) => (
+        {(d.data.photos as { id: number; path: string }[] | undefined ?? []).map((photo) => (
                 <CarouselItem key={photo.id}>
-                  <img src={`http://localhost:8000/storage/${photo.path}`} alt="Helper profile photo" className="w-full h-full object-cover" />
+                  <img src={'http://localhost:8000/storage/' + photo.path} alt="Helper profile photo" className="w-full h-full object-cover" />
                 </CarouselItem>
               ))}
             </CarouselContent>

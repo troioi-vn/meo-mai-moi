@@ -12,20 +12,15 @@ class TestPointerEvent extends MouseEvent {
   }
 }
 // Assign only if missing
-// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 ;(globalThis as unknown as { PointerEvent?: typeof MouseEvent }).PointerEvent = TestPointerEvent as unknown as typeof MouseEvent
 
 // Polyfills for PointerEvent methods on Element
 // Use arrow functions to avoid unbound-method rule
-// eslint-disable-next-line @typescript-eslint/unbound-method
 Element.prototype.hasPointerCapture = (() => false) as unknown as typeof Element.prototype.hasPointerCapture
-// eslint-disable-next-line @typescript-eslint/unbound-method
 Element.prototype.setPointerCapture = (() => { /* no-op */ }) as unknown as typeof Element.prototype.setPointerCapture
-// eslint-disable-next-line @typescript-eslint/unbound-method
 Element.prototype.releasePointerCapture = (() => { /* no-op */ }) as unknown as typeof Element.prototype.releasePointerCapture
 
 // Polyfill for scrollIntoView
-// eslint-disable-next-line @typescript-eslint/unbound-method
 window.HTMLElement.prototype.scrollIntoView = (() => { /* no-op */ }) as typeof window.HTMLElement.prototype.scrollIntoView
 
 

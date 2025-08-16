@@ -142,9 +142,9 @@ const EditCatPage: React.FC = () => {
 
     try {
       setSubmitting(true)
-  await updateCat(id, formData)
-  toast.success('Cat profile updated successfully!')
-  navigate('/account/cats')
+      await updateCat(id, formData)
+      toast.success('Cat profile updated successfully!')
+  void navigate('/account/cats')
     } catch (error: unknown) {
       console.error('Error updating cat:', error)
       toast.error('Failed to update cat profile. Please try again.')
@@ -154,7 +154,7 @@ const EditCatPage: React.FC = () => {
   }
 
   const handleCancel = () => {
-    navigate('/account/cats')
+  void navigate('/account/cats')
   }
 
   const handleSetToLost = async () => {
@@ -165,9 +165,9 @@ const EditCatPage: React.FC = () => {
 
     try {
       setSubmitting(true)
-  await updateCat(id, { ...formData, status: 'lost' })
-  toast.success('Cat status updated to LOST.')
-  navigate('/account/cats')
+      await updateCat(id, { ...formData, status: 'lost' })
+      toast.success('Cat status updated to LOST.')
+  void navigate('/account/cats')
     } catch (error: unknown) {
       console.error('Error updating cat status:', error)
       toast.error('Failed to update cat status. Please try again.')
@@ -177,7 +177,7 @@ const EditCatPage: React.FC = () => {
   }
 
   const handleRemovalSuccess = () => {
-    navigate('/account/cats')
+  void navigate('/account/cats')
   }
 
   if (loading) {
@@ -320,9 +320,7 @@ const EditCatPage: React.FC = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => {
-                  void handleCancel()
-                }}
+                onClick={handleCancel}
                 disabled={submitting}
                 className="flex-1"
               >
@@ -353,7 +351,7 @@ const EditCatPage: React.FC = () => {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleSetToLost}>Confirm</AlertDialogAction>
+                  <AlertDialogAction onClick={() => { void handleSetToLost() }}>Confirm</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>

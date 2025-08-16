@@ -15,7 +15,8 @@ export const useCatProfile = (id: string | undefined): UseCatProfileResult => {
   const [error, setError] = useState<string | null>(null)
   const [version, setVersion] = useState(0)
 
-  const fetchCat = async () => {
+  useEffect(() => {
+    void (async () => {
       if (!id) {
         setError('No cat ID provided')
         setLoading(false)
@@ -42,10 +43,7 @@ export const useCatProfile = (id: string | undefined): UseCatProfileResult => {
       } finally {
         setLoading(false)
       }
-    }
-
-  useEffect(() => {
-    void fetchCat()
+    })()
   }, [id, version])
 
   const refresh = () => { setVersion((v) => v + 1); }

@@ -88,10 +88,10 @@ const CatProfilePage: React.FC = () => {
 
   const handleDeletePlacementRequest = async (id: number) => {
     try {
-      await api.delete(`placement-requests/${id}`);
+  await api.delete('placement-requests/' + String(id));
       toast.success('Placement request deleted');
       refresh();
-    } catch (e) {
+  } catch {
       toast.error('Failed to delete placement request');
     }
   };
@@ -100,32 +100,32 @@ const CatProfilePage: React.FC = () => {
 
   const handleConfirmTransferRequest = async (transferRequestId: number) => {
     try {
-      await api.post(`transfer-requests/${transferRequestId}/accept`)
+  await api.post('transfer-requests/' + String(transferRequestId) + '/accept')
       toast.success('Transfer accepted');
   refresh();
   // After accept, prompt owner to schedule the handover
   setHandoverForTransferId(transferRequestId)
   setHandoverModalOpen(true)
-    } catch (e) {
+  } catch {
       toast.error('Failed to accept transfer');
     }
   }
   const handleCancelMyTransferRequest = async (transferRequestId: number) => {
     try {
-      await api.post(`transfer-requests/${transferRequestId}/reject`)
+  await api.post('transfer-requests/' + String(transferRequestId) + '/reject')
       toast.success('Your response was cancelled');
       refresh();
-    } catch (e) {
+  } catch {
       toast.error('Failed to cancel your response');
     }
   }
 
   const handleRejectTransferRequest = async (transferRequestId: number) => {
     try {
-      await api.post(`transfer-requests/${transferRequestId}/reject`)
+  await api.post('transfer-requests/' + String(transferRequestId) + '/reject')
       toast.success('Transfer rejected');
       refresh();
-    } catch (e) {
+  } catch {
       toast.error('Failed to reject transfer');
     }
   }
@@ -154,7 +154,7 @@ const CatProfilePage: React.FC = () => {
 
   const handleEditClick = () => {
     if (cat?.id) {
-      void navigate(`/cats/${String(cat.id)}/edit`)
+  void navigate('/cats/' + String(cat.id) + '/edit')
     }
   }
 
@@ -189,7 +189,7 @@ const CatProfilePage: React.FC = () => {
         <div className="mb-6">
           {cat.viewer_permissions?.can_edit && (
             <OwnerButtonGroup
-              onEdit={handleEditClick}
+              onEdit={() => { handleEditClick() }}
               onPlacementRequest={handleOpenModal}
               onMyCats={handleMyCatsClick}
             />
@@ -199,8 +199,8 @@ const CatProfilePage: React.FC = () => {
         {/* Cat Profile Content */}
   <CatDetails
     cat={cat}
-    onDeletePlacementRequest={handleDeletePlacementRequest}
-    onCancelTransferRequest={handleCancelMyTransferRequest}
+    onDeletePlacementRequest={(pid) => { void handleDeletePlacementRequest(pid) }}
+    onCancelTransferRequest={(tid) => { void handleCancelMyTransferRequest(tid) }}
     onTransferResponseSuccess={refresh}
   />
 
@@ -212,9 +212,9 @@ const CatProfilePage: React.FC = () => {
         <ResponseSection
       key={String(placementRequest.id)}
           placementRequest={placementRequest}
-          onViewProfile={handleViewResponderProfile}
-          onConfirm={handleConfirmTransferRequest}
-          onReject={handleRejectTransferRequest}
+          onViewProfile={(tr) => { void handleViewResponderProfile(tr) }}
+          onConfirm={(id) => { void handleConfirmTransferRequest(id) }}
+          onReject={(id) => { void handleRejectTransferRequest(id) }}
         />
       ))}
     </div>
@@ -241,7 +241,7 @@ const CatProfilePage: React.FC = () => {
             transferRequestId={handoverForTransferId}
             isOpen={handoverModalOpen}
             onClose={() => { setHandoverModalOpen(false); }}
-            onSuccess={refresh}
+            onSuccess={() => { refresh() }}
           />
         )}
 
@@ -249,7 +249,7 @@ const CatProfilePage: React.FC = () => {
           catId={cat.id}
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          onSuccess={refresh}
+          onSuccess={() => { refresh() }}
         />
 
         {/* Owner-only helper profile preview */}
@@ -265,27 +265,26 @@ const CatProfilePage: React.FC = () => {
         />
 
         {/* Helper-facing handover confirmation panel */}
-    {!cat.viewer_permissions?.can_edit && myAcceptedTransferId != null && myHandover && (myHandover.status === 'pending') && (
+  {!cat.viewer_permissions?.can_edit && myAcceptedTransferId != null && myHandover?.status === 'pending' && (
           <div className="mt-8 border rounded-lg p-4">
             <h2 className="text-xl font-semibold mb-2">Handover scheduled</h2>
             <p className="text-sm text-muted-foreground mb-4">
               Please confirm the cat’s condition at meeting. Scheduled at {myHandover.scheduled_at ? new Date(myHandover.scheduled_at).toLocaleString() : 'TBD'}
               {myHandover.location ? `, Location: ${myHandover.location}` : ''}
             </p>
-            <div className="flex gap-2">
-      <Button size="sm" onClick={() => { if (myHandover.id != null) { void helperConfirmHandover(myHandover.id, true).then(() => { toast.success('Handover confirmed'); refresh() }).catch(() => { /* ignore */ }) } }}>Confirm</Button>
-      <Button variant="destructive" size="sm" onClick={() => { if (myHandover.id != null) { void helperConfirmHandover(myHandover.id, false).then(() => { toast.info('Handover disputed'); refresh() }).catch(() => { /* ignore */ }) } }}>Dispute</Button>
-            </div>
+    <div className="flex gap-2">
+  <Button size="sm" onClick={() => { void helperConfirmHandover(myHandover.id, true).then(() => { toast.success('Handover confirmed'); refresh() }).catch(() => { /* ignore */ }) }}>Confirm</Button>
+  <Button variant="destructive" size="sm" onClick={() => { void helperConfirmHandover(myHandover.id, false).then(() => { toast.info('Handover disputed'); refresh() }).catch(() => { /* ignore */ }) }}>Dispute</Button>
+    </div>
           </div>
         )}
 
         {/* Meeting notice (confirmed) for both roles with cancel */}
         {(() => {
-          const anyHandover: TransferHandoverDto | undefined = myHandover ?? Object.values(existingHandoverByTransfer)[0]
+          const entries = Object.values(existingHandoverByTransfer)
+          const anyHandover: TransferHandoverDto | null = myHandover ?? (entries.length > 0 ? entries[0] : null)
           if (!anyHandover) return null
-          const show = anyHandover.status === 'confirmed' || anyHandover.status === 'pending'
-          if (!show) return null
-          const canCancel = true // both parties can cancel
+          if (!(anyHandover.status === 'confirmed' || anyHandover.status === 'pending')) return null
           return (
             <div className="mt-8 rounded-md border border-emerald-300 bg-emerald-50 p-4">
               <h3 className="text-emerald-900 font-semibold mb-1">Handover {anyHandover.status === 'confirmed' ? 'confirmed' : 'scheduled'}</h3>
@@ -293,12 +292,10 @@ const CatProfilePage: React.FC = () => {
                 Meeting at {anyHandover.scheduled_at ? new Date(anyHandover.scheduled_at).toLocaleString() : 'TBD'}
                 {anyHandover.location ? `, Location: ${anyHandover.location}` : ''}
               </p>
-              {canCancel && (
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => { if (anyHandover.id != null) { void cancelHandover(anyHandover.id).then(() => { toast.info('Handover canceled'); refresh() }).catch(() => { /* ignore */ }) } }}>Cancel meeting</Button>
-                  <Button size="sm" onClick={() => { if (anyHandover.id != null) { void completeHandover(anyHandover.id).then(() => { toast.success("Handover completed. We'll refresh your view."); refresh() }).catch(() => { /* ignore */ }) } }}>Mark as completed</Button>
+              <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={() => { void cancelHandover(anyHandover.id).then(() => { toast.info('Handover canceled'); refresh() }).catch(() => { /* ignore */ }) }}>Cancel meeting</Button>
+          <Button size="sm" onClick={() => { void completeHandover(anyHandover.id).then(() => { toast.success("Handover completed. We'll refresh your view."); refresh() }).catch(() => { /* ignore */ }) }}>Mark as completed</Button>
                 </div>
-              )}
             </div>
           )
         })()}
@@ -386,13 +383,13 @@ function AcceptedSection({ placementRequest, onSchedule, hasHandover, getHandove
     <div className="mb-4 p-4 border rounded-lg">
       <div className="flex justify-between items-center">
         <h3 className="font-bold">
-          Accepted for <span>{String(placementRequest.request_type).replace('_', ' ').toUpperCase()}</span>
+          Accepted for <span>{placementRequest.request_type.replace('_', ' ').toUpperCase()}</span>
         </h3>
       </div>
       <ul>
         {accepted.map((tr) => {
           const ho = getHandover(tr.id)
-          const status = (ho?.status as string | undefined) ?? undefined
+          const status = ho?.status
           const chip = status
             ? (
               <Badge variant={status === 'confirmed' ? 'default' : status === 'disputed' ? 'destructive' : status === 'canceled' ? 'outline' : 'secondary'}>

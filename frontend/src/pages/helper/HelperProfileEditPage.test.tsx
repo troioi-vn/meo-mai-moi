@@ -1,12 +1,12 @@
 
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import HelperProfileEditPage from './HelperProfileEditPage';
 import { mockHelperProfile } from '@/mocks/data/helper-profiles';
 import { server } from '@/mocks/server';
 import { http, HttpResponse } from 'msw';
-import { toast } from 'sonner';
+// no toast usage in active tests
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,7 +19,7 @@ const queryClient = new QueryClient({
 const renderComponent = () => {
   return render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[`/helper-profiles/${mockHelperProfile.id}/edit`]}>
+  <MemoryRouter initialEntries={["/helper-profiles/" + String(mockHelperProfile.id) + '/edit']}>
         <Routes>
           <Route path="/helper-profiles/:id/edit" element={<HelperProfileEditPage />} />
           <Route path="/helper" element={<div>Helper Profiles Page</div>} />
@@ -33,7 +33,7 @@ describe('HelperProfileEditPage', () => {
   beforeEach(() => {
     queryClient.clear();
     server.use(
-      http.get(`http://localhost:3000/api/helper-profiles/${mockHelperProfile.id}`, () => {
+  http.get('http://localhost:3000/api/helper-profiles/' + String(mockHelperProfile.id), () => {
         return HttpResponse.json({ data: mockHelperProfile });
       })
     );

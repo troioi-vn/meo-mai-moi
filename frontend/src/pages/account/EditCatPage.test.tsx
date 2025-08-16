@@ -191,11 +191,7 @@ describe('EditCatPage', () => {
   const nameInput2 = await screen.findByLabelText(/name/i)
   await waitFor(() => expect(nameInput2).toHaveValue(mockCat.name))
 
-    try {
-      await user.click(screen.getByRole('button', { name: /update cat/i }))
-    } catch (error) {
-      // ignore
-    }
+  await user.click(screen.getByRole('button', { name: /update cat/i }))
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('Failed to update cat profile. Please try again.')
@@ -275,8 +271,8 @@ describe('EditCatPage', () => {
     })
     server.use(
       http.put('http://localhost:3000/api/cats/1', async ({ request }) => {
-        const data = await request.json()
-        expect(data.status).toBe('lost')
+        const data = (await request.json()) as { status?: string } | null
+        expect(data?.status).toBe('lost')
         return HttpResponse.json({ data: { ...mockCat, status: 'lost' } })
       })
     )

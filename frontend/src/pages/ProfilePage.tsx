@@ -4,12 +4,34 @@ import { ChangePasswordForm } from '@/components/ChangePasswordForm'
 import { DeleteAccountDialog } from '@/components/DeleteAccountDialog'
 import { UserAvatar } from '@/components/UserAvatar'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useEffect } from 'react'
+import { useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 export default function ProfilePage() {
   const { user, logout, isLoading, loadUser } = useAuth()
   const navigate = useNavigate()
+
+  const handleLogout = useCallback(() => {
+    void (async () => {
+      try {
+        await logout()
+        void navigate('/login')
+      } catch (err: unknown) {
+        console.error('Logout error:', err)
+      }
+    })()
+  }, [logout, navigate])
+
+  const handleAccountDeleted = useCallback(() => {
+    void (async () => {
+      try {
+        await logout()
+        void navigate('/login')
+      } catch (err: unknown) {
+        console.error('Logout error:', err)
+      }
+    })()
+  }, [logout, navigate])
 
   useEffect(() => {
     void loadUser()
@@ -73,15 +95,7 @@ export default function ProfilePage() {
           <ChangePasswordForm />
 
           <Button
-            onClick={() => {
-          void logout()
-                .then(() => {
-                  navigate('/login')
-                })
-                .catch((err: unknown) => {
-                  console.error('Logout error:', err)
-                })
-            }}
+            onClick={handleLogout}
             className="my-4 border-gray-200 dark:border-gray-700"
             variant="destructive"
           >
@@ -89,17 +103,7 @@ export default function ProfilePage() {
           </Button>
 
           <hr className="my-4 border-gray-200 dark:border-gray-700" />
-          <DeleteAccountDialog
-            onAccountDeleted={() => {
-          void logout()
-                .then(() => {
-                  navigate('/login')
-                })
-                .catch((err: unknown) => {
-                  console.error('Logout error:', err)
-                })
-            }}
-          />
+          <DeleteAccountDialog onAccountDeleted={handleAccountDeleted} />
         </div>
       </div>
     </div>

@@ -134,7 +134,7 @@ export const CatDetails: React.FC<CatDetailsProps> = ({ cat, onDeletePlacementRe
                       </div>
                     ))}
                     {/* Non-owners can respond to active requests (publicly visible) */}
-                    {hasActivePlacementRequest && !cat.viewer_permissions?.can_edit && activePlacementRequestId != null && (
+                    {!cat.viewer_permissions?.can_edit && activePlacementRequestId != null && (
                       <div className="pt-2">
                         {myPendingTransfer ? (
                           <div className="flex flex-col gap-2">

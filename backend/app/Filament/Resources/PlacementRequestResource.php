@@ -59,18 +59,18 @@ class PlacementRequestResource extends Resource
         return [
             'Owner' => $record->user->name,
             'Type' => match ($record->request_type) {
-                'foster_payed' => 'Foster (Paid)',
-                'foster_free' => 'Foster (Free)',
-                'permanent' => 'Permanent',
-                default => $record->request_type,
+                PlacementRequestType::FOSTER_PAYED => 'Foster (Paid)',
+                PlacementRequestType::FOSTER_FREE => 'Foster (Free)',
+                PlacementRequestType::PERMANENT => 'Permanent',
+                default => $record->request_type->value ?? $record->request_type,
             },
             'Status' => match ($record->status) {
-                'open' => 'Open',
-                'pending_review' => 'Pending Review',
-                'fulfilled' => 'Fulfilled',
-                'expired' => 'Expired',
-                'cancelled' => 'Cancelled',
-                default => $record->status,
+                PlacementRequestStatus::OPEN => 'Open',
+                PlacementRequestStatus::PENDING_REVIEW => 'Pending Review',
+                PlacementRequestStatus::FULFILLED => 'Fulfilled',
+                PlacementRequestStatus::EXPIRED => 'Expired',
+                PlacementRequestStatus::CANCELLED => 'Cancelled',
+                default => $record->status->value ?? $record->status,
             },
         ];
     }
@@ -165,32 +165,32 @@ class PlacementRequestResource extends Resource
 
                 BadgeColumn::make('request_type')
                     ->label('Type')
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'foster_payed' => 'Foster (Paid)',
-                        'foster_free' => 'Foster (Free)',
-                        'permanent' => 'Permanent',
-                        default => $state,
+                    ->formatStateUsing(fn (PlacementRequestType $state): string => match ($state) {
+                        PlacementRequestType::FOSTER_PAYED => 'Foster (Paid)',
+                        PlacementRequestType::FOSTER_FREE => 'Foster (Free)',
+                        PlacementRequestType::PERMANENT => 'Permanent',
+                        default => $state->value,
                     })
                     ->colors([
-                        'success' => 'permanent',
-                        'warning' => 'foster_payed',
-                        'info' => 'foster_free',
+                        'success' => PlacementRequestType::PERMANENT->value,
+                        'warning' => PlacementRequestType::FOSTER_PAYED->value,
+                        'info' => PlacementRequestType::FOSTER_FREE->value,
                     ]),
 
                 BadgeColumn::make('status')
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'open' => 'Open',
-                        'pending_review' => 'Pending Review',
-                        'fulfilled' => 'Fulfilled',
-                        'expired' => 'Expired',
-                        'cancelled' => 'Cancelled',
-                        default => $state,
+                    ->formatStateUsing(fn (PlacementRequestStatus $state): string => match ($state) {
+                        PlacementRequestStatus::OPEN => 'Open',
+                        PlacementRequestStatus::PENDING_REVIEW => 'Pending Review',
+                        PlacementRequestStatus::FULFILLED => 'Fulfilled',
+                        PlacementRequestStatus::EXPIRED => 'Expired',
+                        PlacementRequestStatus::CANCELLED => 'Cancelled',
+                        default => $state->value,
                     })
                     ->colors([
-                        'success' => 'fulfilled',
-                        'warning' => 'pending_review',
-                        'info' => 'open',
-                        'danger' => ['expired', 'cancelled'],
+                        'success' => PlacementRequestStatus::FULFILLED->value,
+                        'warning' => PlacementRequestStatus::PENDING_REVIEW->value,
+                        'info' => PlacementRequestStatus::OPEN->value,
+                        'danger' => [PlacementRequestStatus::EXPIRED->value, PlacementRequestStatus::CANCELLED->value],
                     ]),
 
                 TextColumn::make('notes')
@@ -249,11 +249,11 @@ class PlacementRequestResource extends Resource
                 SelectFilter::make('status')
                     ->label('Status')
                     ->options([
-                        'open' => 'Open',
-                        'pending_review' => 'Pending Review',
-                        'fulfilled' => 'Fulfilled',
-                        'expired' => 'Expired',
-                        'cancelled' => 'Cancelled',
+                        PlacementRequestStatus::OPEN->value => 'Open',
+                        PlacementRequestStatus::PENDING_REVIEW->value => 'Pending Review',
+                        PlacementRequestStatus::FULFILLED->value => 'Fulfilled',
+                        PlacementRequestStatus::EXPIRED->value => 'Expired',
+                        PlacementRequestStatus::CANCELLED->value => 'Cancelled',
                     ])
                     ->multiple()
                     ->searchable(),
@@ -261,9 +261,9 @@ class PlacementRequestResource extends Resource
                 SelectFilter::make('request_type')
                     ->label('Request Type')
                     ->options([
-                        'foster_payed' => 'Foster (Paid)',
-                        'foster_free' => 'Foster (Free)',
-                        'permanent' => 'Permanent',
+                        PlacementRequestType::FOSTER_PAYED->value => 'Foster (Paid)',
+                        PlacementRequestType::FOSTER_FREE->value => 'Foster (Free)',
+                        PlacementRequestType::PERMANENT->value => 'Permanent',
                     ])
                     ->multiple()
                     ->searchable(),

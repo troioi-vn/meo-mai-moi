@@ -11,6 +11,7 @@ use App\Models\TransferHandover;
 use App\Enums\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use Spatie\Permission\Models\Role;
 use Tests\Traits\CreatesUsers;
 
 class TransferRequestResourceTest extends TestCase
@@ -22,7 +23,9 @@ class TransferRequestResourceTest extends TestCase
         parent::setUp();
         
         // Create an admin user for testing
-        $this->adminUser = User::factory()->create(['role' => UserRole::ADMIN->value]);
+        $this->adminUser = User::factory()->create();
+        $role = Role::create(['name' => 'admin']);
+        $this->adminUser->assignRole($role);
     }
 
     public function test_admin_can_access_transfer_requests_index()

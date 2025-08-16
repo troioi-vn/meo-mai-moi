@@ -47,6 +47,10 @@ class PlacementRequestPolicy
      */
     public function delete(User $user, PlacementRequest $placementRequest): bool
     {
+        if ($user->id === $placementRequest->cat->user_id) {
+            return true;
+        }
+
         return $user->can('delete_placement::request');
     }
 

@@ -67,7 +67,6 @@ class HelperProfileController extends Controller
             'can_foster' => 'required|boolean',
             'can_adopt' => 'required|boolean',
             'is_public' => 'required|boolean',
-            'zip_code' => 'required|string|max:20',
             'photos' => 'sometimes|array|max:5',
             'photos.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:10240',
         ]);

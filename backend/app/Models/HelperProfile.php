@@ -65,7 +65,6 @@ class HelperProfile extends Model
         'address',
         'city',
         'state',
-        'zip_code',
         'phone_number',
         'experience',
         'has_pets',

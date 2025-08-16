@@ -15,7 +15,7 @@ class TransferRequestPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_transfer::request');
+        return $user->hasRole('admin') || $user->can('view_any_transfer::request');
     }
 
     /**
@@ -23,7 +23,7 @@ class TransferRequestPolicy
      */
     public function view(User $user, TransferRequest $transferRequest): bool
     {
-        return $user->can('view_transfer::request');
+        return $user->hasRole('admin') || $user->id === $transferRequest->initiator_user_id || $user->id === $transferRequest->cat->user_id || $user->can('view_transfer::request');
     }
 
     /**
@@ -31,7 +31,12 @@ class TransferRequestPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_transfer::request');
+        return $user->helperProfiles()->exists() || $user->can('create_transfer::request');
+    }
+
+    public function accept(User $user, TransferRequest $transferRequest): bool
+    {
+        return $user->id === $transferRequest->cat->user_id || $user->can('accept_transfer::request');
     }
 
     /**
@@ -39,7 +44,7 @@ class TransferRequestPolicy
      */
     public function update(User $user, TransferRequest $transferRequest): bool
     {
-        return $user->can('update_transfer::request');
+        return $user->id === $transferRequest->initiator_user_id || $user->can('update_transfer::request');
     }
 
     /**

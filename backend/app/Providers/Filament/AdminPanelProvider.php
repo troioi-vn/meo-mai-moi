@@ -44,6 +44,15 @@ class AdminPanelProvider extends PanelProvider
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
             ])
+            ->navigationGroups([
+                'Cats',
+                'Users & Helpers',
+                'Placements',
+                'Foster Care',
+                'Communication',
+                'Settings',
+            ])
+            ->collapsibleNavigationGroups(false)
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

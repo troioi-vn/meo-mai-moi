@@ -47,4 +47,12 @@ class PlacementRequest extends Model
     {
         return $this->hasMany(TransferRequest::class);
     }
+
+    /**
+     * Get the response count attribute for admin display
+     */
+    public function getResponseCountAttribute(): int
+    {
+        return $this->transferRequests()->count();
+    }
 }

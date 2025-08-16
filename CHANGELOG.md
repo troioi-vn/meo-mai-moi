@@ -21,6 +21,7 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Cat Visibility Policy**: Active fosterers are allowed to view the cat profile while the assignment is active.
 
 ### Fixed
+- **API/Policy**: Fixed 403 when viewing your own cat. Broadened `CatPolicy@view` to allow owners, admins, and accepted helpers to view a cat, and to permit public read access for non-deleted cats. This aligns with the optional-auth show route and documented visibility rules.
 - Frontend Linting/Type Safety: Large cleanup pass across multiple files (CatProfilePage, HelperProfileDialog, CatDetails, UserMenu, ScheduleHandoverModal, PlacementResponseModal, helper profile pages/hooks).
   - Removed unnecessary type conversions and non-null assertions, eliminated unsafe any access, and fixed promise-handling (no-floating-promises/no-misused-promises).
   - Resolved restrict-template-expressions and react-refresh issues without changing behavior; tests remain green.

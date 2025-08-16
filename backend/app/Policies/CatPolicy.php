@@ -2,90 +2,140 @@
 
 namespace App\Policies;
 
-use App\Models\Cat;
-use App\Models\User;
+use App\Enums\CatStatus;
 use App\Enums\UserRole;
-use App\Enums\PlacementRequestStatus;
-use App\Models\FosterAssignment;
-use Illuminate\Auth\Access\HandlesAuthorization;
+use App\Models\Cat;
 use App\Models\TransferRequest;
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class CatPolicy
 {
     use HandlesAuthorization;
 
-    public function before(User $user, $ability)
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
     {
-        if ($user->role === UserRole::ADMIN) {
-            return true;
-        }
+        return $user->can('view_any_cat');
     }
 
-    public function viewAny(User $user)
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(?User $user, Cat $cat): bool
     {
-        return true;
-    }
-
-    public function view(?User $user, Cat $cat)
-    {
-        // Allow public access ONLY if there is an active and open placement request
-        if ($cat->placementRequests()
-            ->where('is_active', true)
-            ->where('status', PlacementRequestStatus::OPEN->value)
-            ->exists()) {
-            return true;
-        }
-
-        // Allow access if the user is the owner of the cat.
-        if ($user && $user->id === $cat->user_id) {
-            return true;
-        }
-
-        // Allow access if the user is the active fosterer for this cat.
+        // Admins can always view
         if ($user) {
-            $hasActiveFoster = FosterAssignment::where('cat_id', $cat->id)
-                ->where('foster_user_id', $user->id)
-                ->where('status', 'active')
-                ->exists();
-            if ($hasActiveFoster) {
+            // Spatie role or enum role support
+            $role = $user->role instanceof \BackedEnum ? $user->role->value : ($user->role ?? null);
+            if ((method_exists($user, 'hasRole') && $user->hasRole('admin')) || $role === UserRole::ADMIN->value) {
                 return true;
             }
 
-            // Allow access if the user is the accepted responder awaiting handover (owner has accepted the transfer)
+            // Owner can view
+            if ($cat->user_id === $user->id) {
+                return true;
+            }
+
+            // Accepted responder (helper) can view post-acceptance
             $isAcceptedResponder = TransferRequest::where('cat_id', $cat->id)
-                ->where('initiator_user_id', $user->id)
                 ->where('status', 'accepted')
+                ->where('initiator_user_id', $user->id)
                 ->exists();
             if ($isAcceptedResponder) {
                 return true;
             }
+
+            // Explicit permission also grants access (e.g., via Filament/Spatie)
+            if ($user->can('view_cat')) {
+                return true;
+            }
         }
 
-        return false;
+        // Guests (or authenticated users without special rights) can view public cats
+        // Define "public" as any non-deleted cat; adjust if needed.
+        return $cat->status !== CatStatus::DELETED;
     }
 
-    public function create(User $user)
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
     {
-        return true;
+        return $user->can('create_cat');
     }
 
-    public function update(User $user, Cat $cat)
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, Cat $cat): bool
     {
-        return $user->id === $cat->user_id;
+        return $user->can('update_cat');
     }
 
-    public function delete(User $user, Cat $cat)
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, Cat $cat): bool
     {
-        return $user->id === $cat->user_id;
+        return $user->can('delete_cat');
     }
 
-    public function restore(User $user, Cat $cat)
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
     {
-        return $user->id === $cat->user_id;
+        return $user->can('delete_any_cat');
     }
 
-    public function forceDelete(User $user, Cat $cat)
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, Cat $cat): bool
     {
-        return $user->id === $cat->user_id;
+        return $user->can('force_delete_cat');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_cat');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, Cat $cat): bool
+    {
+        return $user->can('restore_cat');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_cat');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, Cat $cat): bool
+    {
+        return $user->can('replicate_cat');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_cat');
     }
 }

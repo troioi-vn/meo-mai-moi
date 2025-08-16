@@ -15,7 +15,7 @@ class PlacementRequestSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = User::where('email', 'user1@example.com')->first();
+        $user = User::where('email', 'user2@catarchy.space')->first();
         $cat = Cat::factory()->create(['user_id' => $user->id]);
 
         PlacementRequest::factory()->create([

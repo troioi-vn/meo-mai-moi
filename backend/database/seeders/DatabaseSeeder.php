@@ -23,11 +23,9 @@ class DatabaseSeeder extends Seeder
             ReviewSeeder::class,
         ]);
 
-        $users = User::where('email', '!=', 'admin@example.com')->get();
+        $users = User::all();
         foreach ($users as $user) {
-            Cat::factory(3)->create(['user_id' => $user->id]);
+            Cat::factory(2)->create(['user_id' => $user->id]);
         }
-
-        // User::factory(10)->create();
     }
 }

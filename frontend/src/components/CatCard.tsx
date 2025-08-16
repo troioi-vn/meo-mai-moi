@@ -16,9 +16,17 @@ export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
   const { isAuthenticated, user } = useAuth()
   const [isModalOpen, setIsModalOpen] = React.useState(false)
 
-  const activePlacementRequestId = cat.placement_requests?.find((req) => req.is_active)?.id
+  // Determine active/open placement requests per docs: is_active || status in {open,pending_review}
   const hasAnyPlacementRequests = (cat.placement_requests?.length ?? 0) > 0
-  const hasFulfilledPlacement = hasAnyPlacementRequests && !cat.placement_request_active
+  const isStatusOpen = (status?: string) => {
+    const s = (status ?? '').toLowerCase()
+    return s === 'open' || s === 'pending_review' || s === 'pending'
+  }
+  const activePlacementRequest = cat.placement_requests?.find((req) => req.is_active || isStatusOpen(req.status))
+  const activePlacementRequestId = activePlacementRequest?.id
+  // Show Fulfilled only when there were requests but none are currently active/open
+  const hasActivePlacementRequests = Boolean(activePlacementRequest)
+  const hasFulfilledPlacement = hasAnyPlacementRequests && !hasActivePlacementRequests
 
   // Prefer photos[0].url, then photo_url, then placeholder
   const imageUrl =
@@ -61,7 +69,8 @@ export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
         <div className="mt-4">
           {isAuthenticated &&
             user?.id !== cat.user_id &&
-            cat.placement_request_active &&
+            // Prefer backend convenience flag; fallback to derived active/open state
+            (cat.placement_request_active ?? hasActivePlacementRequests) &&
             activePlacementRequestId !== undefined && (
               <>
                 <Button className="w-full" onClick={() => { setIsModalOpen(true); }}>

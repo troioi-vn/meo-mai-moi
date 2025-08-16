@@ -54,9 +54,14 @@ class CatPolicy
             }
         }
 
-        // Guests (or authenticated users without special rights) can view public cats
-        // Define "public" as any non-deleted cat; adjust if needed.
-        return $cat->status !== CatStatus::DELETED;
+        // Guests (or authenticated users without special rights) can view cats with
+        // an active placement request.
+        if ($cat->placementRequests()->where('is_active', true)->exists()) {
+            return true;
+        }
+
+        // Deny by default.
+        return false;
     }
 
     /**
@@ -72,6 +77,10 @@ class CatPolicy
      */
     public function update(User $user, Cat $cat): bool
     {
+        if ($user->id === $cat->user_id) {
+            return true;
+        }
+
         return $user->can('update_cat');
     }
 

@@ -191,8 +191,8 @@ class TransferRequestController extends Controller
         // Send notification to cat owner
         \App\Models\Notification::create([
             'user_id' => $cat->user_id,
-            'message' => 'New transfer request for your cat: ' . $cat->name,
-            'link' => '/account/transfer-requests/' . $transferRequest->id,
+            'message' => $user->name . ' responded to your placement request for ' . $cat->name,
+            'link' => '/cats/' . $cat->id, // Deep-link to the cat profile page
             'is_read' => false,
         ]);
 

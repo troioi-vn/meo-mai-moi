@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             HelperProfileSeeder::class,
             PlacementRequestSeeder::class,
+            ShieldSeeder::class,
+            ReviewSeeder::class,
         ]);
 
         $users = User::where('email', '!=', 'admin@example.com')->get();

@@ -29,7 +29,7 @@ class HelperProfileApiTest extends TestCase
     public function can_get_a_specific_helper_profile()
     {
         $user = User::factory()->create();
-        $helperProfile = HelperProfile::factory()->create();
+        $helperProfile = HelperProfile::factory()->create(['is_public' => true]);
 
         $response = $this->actingAs($user)->getJson("/api/helper-profiles/{$helperProfile->id}");
 

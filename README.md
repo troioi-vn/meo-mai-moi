@@ -2,129 +2,242 @@
 
 Connecting owners, fosters, and adopters to help cats find new homes. Built with Laravel, React, and PostgreSQL.
 
-Badges: Dockerized • Laravel 12 • React 19 • Vite 7 • PostgreSQL 14
+**Badges:** Dockerized • Laravel 11 • React 19 • Vite 7 • PostgreSQL 14 • Filament 3
 
-Contents
-- Quick start (Docker)
-- Local development
-- Testing
-- Build pipeline (SPA + Blade)
-- Troubleshooting
-- Deployment
-- License and contributor notes
+## Contents
+- [Quick Start (Docker)](#quick-start-docker)
+- [Local Development](#local-development)
+- [Admin Panel Features](#admin-panel-features)
+- [Testing](#testing)
+- [Troubleshooting](#troubleshooting)
+- [Deployment](#deployment)
+- [License](#license)
 
-Quick start (Docker)
-1) Copy Docker env and start
-     - cp backend/.env.docker.example backend/.env.docker
-     - docker compose up -d --build
-2) Initialize (dev data, roles/permissions)
-     - docker compose exec backend php artisan migrate:fresh --seed
-     - docker compose exec backend php artisan shield:generate --all
-3) Open
-     - App: http://localhost:8000
-     - Admin: http://localhost:8000/admin (admin@example.com / password)
+## Quick Start (Docker)
 
-**1. First-Time Setup**
-
+**1. Clone and Setup**
 ```bash
 git clone https://github.com/troioi-vn/meo-mai-moi.git
 cd meo-mai-moi
+cp backend/.env.docker.example backend/.env.docker
 ```
-To get started, copy the Docker-specific example file:
 
+**2. Build and Initialize**
 ```bash
-# Build and start the Docker containers in the background
+# Start containers
 docker compose up -d --build
 
-# Run the initial application setup (for development)
-# This command drops the database and seeds it with test data.
-docker compose exec backend php artisan migrate:fresh --seed && \
-docker compose exec backend php artisan shield:generate --all && \
+# Initialize database with sample data
+docker compose exec backend php artisan migrate:fresh --seed
+docker compose exec backend php artisan shield:generate --all
 docker compose exec backend php artisan storage:link
 ```
 
-**2. Accessing the Application**
+**3. Access the Application**
+- **Frontend:** http://localhost:8000
+- **Admin Panel:** http://localhost:8000/admin
+  - **Email:** `test@example.com`
+  - **Password:** `password`
 
--   **Application URL:** [http://localhost:8000](http://localhost:8000)
--   **Admin Panel:** [http://localhost:8000/admin](http://localhost:8000/admin)
-    -   **Email:** `test@example.com`
-    -   **Password:** `password`
+**Daily Workflow:**
+- **Start:** `docker compose up -d`
+- **Stop:** `docker compose down`
+- **Rebuild:** `docker compose up -d --build`
+- **Reset Database:** `docker compose exec backend php artisan migrate:fresh --seed`
 
-**3. Daily Workflow**
+---
 
--   **Start containers:** `docker compose up -d`
--   **Stop containers:** `docker compose down`
--   **Rebuild and restart:** `docker compose up -d --build`
+## Local Development
 
-**Note on Production:** For a production deployment, you would not use the `docker-compose.override.yml` file. A full, safe deployment guide is available in [docs/deploy.md](./docs/deploy.md).
+### Option 1: Docker Development (Recommended)
 
+Follow the [Quick Start](#quick-start-docker) instructions above for the fastest setup with all dependencies included.
 
-### Option 2: Local Development (Without Docker)
+### Option 2: Native Development (Without Docker)
 
-This method requires you to have PHP, Composer, and Node.js installed on your machine.
+**Requirements:**admin@catarchy.space PHP 8.4+, Composer, Node.js 18+, SQLite
 
-**1. Backend Setup (SQLite)**
-
+**1. Backend Setup**
 ```bash
 cd backend
 
-# Set up environment file
+# Environment setup
 cp .env.example .env
 
 # Install dependencies
 composer install
 
-# Generate app key and run migrations
+# Application setup
 php artisan key:generate
 php artisan migrate:fresh --seed
+php artisan shield:generate --all
 php artisan storage:link
 
-# Start the backend server
+# Start development server
 php artisan serve
 ```
-Your backend will be running at `http://localhost:8000`.
 
 **2. Frontend Setup**
-
 ```bash
 cd frontend
 
 # Install dependencies
 npm install
 
-# Start the frontend dev server
+# Start development server with hot-reloading
 npm run dev
 ```
-Your frontend will be running at `http://localhost:5173` with hot-reloading. The Vite server will proxy API requests to your backend at `http://localhost:8000`.
+
+**3. Access Points**
+- **Backend API:** http://localhost:8000
+- **Frontend:** http://localhost:5173 (proxies to backend)
+- **Admin Panel:** http://localhost:8000/admin
+  - **Email:** `test@example.com`
+  - **Password:** `password`
+
+---
+
+## Admin Panel Features
+
+The admin panel is built with **Filament 3** and includes comprehensive management tools:
+
+### 🐱 **Cat Management**
+- View all cats with photos, status, and owner information
+- Filter by status (available, adopted, fostered, etc.)
+- Manage cat profiles, medical records, and weight history
+- Photo gallery management
+
+### 👥 **User & Helper Management**
+- User profiles with role-based permissions
+- Helper profile verification and approval
+- Suspension and moderation tools
+- Profile photo management
+
+### 🏠 **Placement & Transfer System**
+- Placement request management
+- Transfer request workflow
+- Foster assignment tracking
+- Handover documentation
+
+### ⭐ **Review Moderation** (New!)
+- View all user reviews with star ratings
+- **Moderation Tools:**
+  - Hide/show individual reviews
+  - Flag inappropriate content
+  - Bulk moderation actions
+- **Advanced Filtering:**
+  - Filter by status (active, hidden, flagged)
+  - Filter by rating (1-5 stars)
+  - Date range filtering
+- **Content Management:**
+  - Review content preview with tooltips
+  - Moderation notes and tracking
+  - Moderator assignment
+
+### 🔐 **Permissions & Roles**
+- Role-based access control with Spatie Laravel Permission
+- Filament Shield integration for granular permissions
+- Super admin capabilities
+
+### 📊 **Sample Data**
+The seeded database includes:
+- **20 sample reviews** (15 active, 3 flagged, 2 hidden)
+- **Multiple user roles** (admin, helper, cat owner)
+- **Sample cats** with photos and medical records
+- **Transfer and placement requests**
 
 ---
 
 ## Testing
 
-### Backend Tests (Pest)
+### Backend Tests (Pest/PHPUnit)
+```bash
+# With Docker
+docker compose exec backend php artisan test
 
-- 	**With Docker:** `docker compose exec backend php artisan test`
-- 	**Without Docker:** `cd backend && ./vendor/bin/pest`
+# Without Docker
+cd backend && php artisan test
+
+# Run specific test
+php artisan test tests/Feature/ReviewResourceTest.php
+```
 
 ### Frontend Tests (Vitest)
-
 ```bash
 cd frontend
 npm test
 ```
 
-Troubleshooting
-- storage:link permission denied
-    - The container runs storage:link as www-data with safe defaults.
-    - If bind-mounting the repo, ensure host perms allow write to backend/public and backend/public/storage.
-- Frontend build copy EACCES
-    - Fix host perms: chown -R $USER:$USER backend/public && chmod -R u+rwX,go+rX backend/public
-    - Re-run: npm --prefix frontend run build
-- View [welcome] not found
-    - Run frontend build to generate welcome.blade.php (npm --prefix frontend run build)
+### Test Coverage
+- **Feature Tests:** API endpoints, resource management, permissions
+- **Unit Tests:** Model relationships, validation, business logic
+- **Integration Tests:** Admin panel functionality, user workflows
 
-Deployment
-See docs/deploy.md for a safe, step-by-step flow with maintenance mode, backups, zero-downtime rebuild, and rollback.
+---
+
+## Troubleshooting
+
+### Common Issues
+
+**🔧 Storage Link Permission Denied**
+```bash
+# Docker
+docker compose exec backend php artisan storage:link
+
+# Native
+sudo chown -R $USER:$USER backend/storage backend/bootstrap/cache
+chmod -R 775 backend/storage backend/bootstrap/cache
+```
+
+**🔧 Frontend Build Errors**
+```bash
+# Fix permissions
+chown -R $USER:$USER backend/public
+chmod -R u+rwX,go+rX backend/public
+
+# Rebuild frontend
+cd frontend && npm run build
+```
+
+**🔧 Admin Panel 403 Errors**
+```bash
+# Regenerate permissions
+php artisan shield:generate --all
+php artisan db:seed --class=ShieldSeeder
+
+# Create super admin
+php artisan shield:super-admin
+```
+
+**🔧 Database Issues**
+```bash
+# Reset database with fresh data
+php artisan migrate:fresh --seed
+php artisan shield:generate --all
+```
+
+**🔧 Missing Welcome View**
+```bash
+# Build frontend to generate Blade views
+cd frontend && npm run build
+```
+
+### Development Tips
+
+- **Hot Reloading:** Frontend runs on port 5173 with Vite hot-reloading
+- **API Testing:** Use `/api/` endpoints for frontend integration
+- **Admin Access:** Always use super admin account for full permissions
+- **Sample Data:** Run seeders to populate with realistic test data
+
+---
+
+## Deployment
+
+See `docs/deploy.md` for production deployment with:
+- Maintenance mode and zero-downtime updates
+- Database backups and rollback procedures
+- Environment-specific configurations
+- SSL and security hardening
 
 ## License
 

@@ -28,25 +28,29 @@ describe('PlacementResponseModal', () => {
 
     // Two comboboxes should be present (profile and relationship type)
     const combos = await screen.findAllByRole('combobox')
-    expect(combos.length).toBeGreaterThanOrEqual(2)
-    expect(screen.getByRole('button', { name: /submit/i })).toBeDisabled()
+    await waitFor(() => {
+      expect(combos.length).toBeGreaterThanOrEqual(2)
+      expect(screen.getByRole('button', { name: /submit/i })).toBeDisabled()
+    })
   })
 
   it('shows confirmation step after selecting profile and relationship type', async () => {
     render(<PlacementResponseModal {...baseProps} />)
 
-  // Select a helper profile
-  const [profileCombo, typeCombo] = await screen.findAllByRole('combobox')
-  await user.click(profileCombo)
-  await user.click(await screen.findByText(/testville, ts/i))
+    // Select a helper profile
+    const [profileCombo, typeCombo] = await screen.findAllByRole('combobox')
+    await user.click(profileCombo)
+    await user.click(await screen.findByText(/testville, ts/i))
 
-  // Select relationship type
-  await user.click(typeCombo)
-  await user.click(await screen.findByText(/fostering/i))
+    // Select relationship type
+    await user.click(typeCombo)
+    await user.click(await screen.findByText(/fostering/i))
 
     await user.click(screen.getByRole('button', { name: /submit/i }))
 
-    expect(await screen.findByText(/are you sure you want to submit/i)).toBeInTheDocument()
+    await waitFor(async () => {
+      expect(await screen.findByText(/are you sure you want to submit/i)).toBeInTheDocument()
+    })
   })
 
   it('submits the response and closes modal on success', async () => {
@@ -54,12 +58,15 @@ describe('PlacementResponseModal', () => {
 
     // Ensure POST succeeds
     server.use(
-      http.post('http://localhost:3000/api/transfer-requests', async () => {
+      http.post('http://localhost:3000/api/transfer-requests', () => {
         return HttpResponse.json({ id: 999 }, { status: 201 })
       })
     )
 
     render(<PlacementResponseModal {...baseProps} onClose={onClose} />)
+    await waitFor(async () => {
+      expect(await screen.findAllByRole('combobox')).toHaveLength(2)
+    })
 
   // Select a helper profile
   const [profileCombo, typeCombo] = await screen.findAllByRole('combobox')
@@ -75,7 +82,7 @@ describe('PlacementResponseModal', () => {
     // Confirm
     await user.click(await screen.findByRole('button', { name: /confirm submission/i }))
 
-    await waitFor(() => {
+  await waitFor(() => {
       expect(toast.success).toHaveBeenCalled()
       expect(onClose).toHaveBeenCalled()
     })

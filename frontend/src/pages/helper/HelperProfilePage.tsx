@@ -25,8 +25,10 @@ export default function HelperProfilePage() {
   return (
     <div className="container mx-auto px-4 py-8 bg-background min-h-screen">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-foreground">My Helper Profiles</h1>
-        <Button onClick={() => navigate('/helper/create')}>
+  <h1 className="text-3xl font-bold text-foreground">My Helper Profiles</h1>
+        <Button onClick={() => {
+          void navigate('/helper/create');
+        }}>
           <PlusCircle className="mr-2 h-4 w-4" />
           New Helper Profile
         </Button>
@@ -41,16 +43,16 @@ export default function HelperProfilePage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {(data?.data ?? []).map((profile: any) => (
+      {(data?.data as { id: number; city?: string; is_public?: boolean }[] | undefined ?? []).map((profile) => (
             <TableRow key={profile.id}>
               <TableCell className="text-left">
-                <Link to={`/helper/${profile.id}`}>
+                <Link to={'/helper/' + String(profile.id)}>
                     {profile.city}
                 </Link>
               </TableCell>
               <TableCell className="text-left">{profile.is_public ? 'Yes' : 'No'}</TableCell>
               <TableCell className="text-left">
-                <Link to={`/helper/${profile.id}/edit`}>
+                <Link to={'/helper/' + String(profile.id) + '/edit'}>
                   <Button variant="outline">Edit</Button>
                 </Link>
               </TableCell>

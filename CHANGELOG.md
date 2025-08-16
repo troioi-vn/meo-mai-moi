@@ -24,6 +24,10 @@ All notable changes to this project are documented here, following the [Keep a C
 - Frontend Linting/Type Safety: Large cleanup pass across multiple files (CatProfilePage, HelperProfileDialog, CatDetails, UserMenu, ScheduleHandoverModal, PlacementResponseModal, helper profile pages/hooks).
   - Removed unnecessary type conversions and non-null assertions, eliminated unsafe any access, and fixed promise-handling (no-floating-promises/no-misused-promises).
   - Resolved restrict-template-expressions and react-refresh issues without changing behavior; tests remain green.
+- Frontend Linting/Type Safety: Final sweep to zero ESLint errors.
+  - Refined test suites to avoid unsafe any, require-await, and brittle selectors (PlacementRequestModal, PlacementResponseModal, EditCatPage).
+  - Standardized helper profile pages for array typing (T[]), template safety, and promise handling; removed non-null assertions.
+  - Addressed the last react-hooks/exhaustive-deps warning by tightening `useCatProfile` effect dependencies without altering behavior.
 - **API Routing:** Removed duplicate `/api/version` route declaration to keep `VersionController` as the single source of truth.
 - **Test Stability**: Improved the reliability of tests in `EditCatPage.test.tsx` by adding explicit `waitFor` assertions to prevent race conditions.
 - **MyCatsPage Hooks Order**: Fixed a React hooks ordering error by removing a conditional `useMemo` within JSX props.

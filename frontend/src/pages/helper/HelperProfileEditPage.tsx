@@ -25,7 +25,8 @@ const HelperProfileEditPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { data, isLoading, isError } = useQuery({
     queryKey: ['helper-profile', id],
-    queryFn: () => getHelperProfile(id!),
+    queryFn: () => (id ? getHelperProfile(id) : Promise.reject(new Error('missing id'))),
+    enabled: Boolean(id),
   });
 
   const numericId = id ? Number(id) : undefined;
@@ -50,42 +51,48 @@ const HelperProfileEditPage: React.FC = () => {
     useHelperProfileForm(numericId, initialFormData);
 
   const deleteMutation = useMutation({
-    mutationFn: () => deleteHelperProfile(id!),
+    mutationFn: () => (id ? deleteHelperProfile(id) : Promise.reject(new Error('missing id'))),
     onSuccess: () => {
-      navigate('/helper');
+      void navigate('/helper');
     },
   });
 
   const deletePhotoMutation = useMutation({
-    mutationFn: (photoId: number) => deleteHelperProfilePhoto(id!, photoId),
+    mutationFn: (photoId: number) => (id ? deleteHelperProfilePhoto(id, photoId) : Promise.reject(new Error('missing id'))),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['helper-profile', id] });
+  void queryClient.invalidateQueries({ queryKey: ['helper-profile', id] });
     },
   });
 
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error fetching helper profile</div>;
+  if (!data?.data) return null;
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
       <div className="w-full max-w-2xl p-8 space-y-8 bg-card rounded-lg shadow-lg border">
         <h1 className="text-3xl font-bold text-center text-card-foreground mb-6">Edit Helper Profile</h1>
         <div className="grid grid-cols-3 gap-4">
-          {data?.data?.photos?.map((photo: any) => (
+  {(() => {
+    const photos: { id: number; path: string }[] = (data.data.photos as { id: number; path: string }[] | undefined) ?? [];
+    return photos.map((photo) => (
             <div key={photo.id} className="relative">
-              <img src={`http://localhost:8000/storage/${photo.path}`} alt="Helper profile photo" className="w-full h-full object-cover" />
+  <img src={"http://localhost:8000/storage/" + photo.path} alt="Helper profile photo" className="w-full h-full object-cover" />
               <Button
-                  aria-label={`Delete photo ${photo.id}`}
+                  aria-label={"Delete photo " + String(photo.id)}
                   variant="destructive"
                   size="sm"
                   className="absolute top-2 right-2"
-                  onClick={() => { deletePhotoMutation.mutate(photo.id); }}
+    onClick={() => {
+      deletePhotoMutation.mutate(photo.id);
+    }}
                   disabled={deletePhotoMutation.isPending}
                 >
                   Delete
                 </Button>
             </div>
-          ))}
+    ));
+  })()}
         </div>
         <form onSubmit={handleSubmit} className="space-y-6" noValidate>
             <FormField id="country" label="Country" value={formData.country} onChange={updateField('country')} error={errors.country} placeholder="Enter your country" />

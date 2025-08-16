@@ -54,13 +54,13 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({ ca
     if (!requestType || !startDate) {
       return;
     }
-    createPlacementRequestMutation.mutate(
+  createPlacementRequestMutation.mutate(
       {
         cat_id: catId,
         request_type: requestType,
         notes,
         expires_at: expiresAt ? format(expiresAt, 'yyyy-MM-dd') : undefined,
-        start_date: startDate ? format(startDate, 'yyyy-MM-dd') : undefined,
+    start_date: format(startDate, 'yyyy-MM-dd'),
         end_date: requestType !== 'permanent' && endDate ? format(endDate, 'yyyy-MM-dd') : undefined,
       },
       {

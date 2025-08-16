@@ -128,6 +128,15 @@ This section documents common issues encountered during development and their ef
         3.  **Verify `phpunit.xml`:** Ensure `DB_CONNECTION` is `sqlite` and `DB_DATABASE` is `:memory:` for a clean, in-memory database for each test run.
         4.  **Clear Caches:** Always run `php artisan optimize:clear` to ensure Laravel's configuration and route caches are fresh.
 
+-   **Database Driver Issues (Local Development):**
+    -   **Symptom:** `could not find driver` error when running migrations or connecting to PostgreSQL.
+    -   **Cause:** Missing PostgreSQL PHP extension (pdo_pgsql) or database connection issues.
+    -   **Solution:**
+        1.  **Install PostgreSQL Extension:** `sudo apt install php8.4-pgsql` (Ubuntu/Debian) or equivalent for your system.
+        2.  **Switch to SQLite (Recommended for Local):** Update `.env` to use `DB_CONNECTION=sqlite` and `DB_DATABASE=database/database.sqlite`, then create the file with `touch database/database.sqlite`.
+        3.  **Clear Config Cache:** Run `php artisan config:clear` after changing database configuration.
+        4.  **Verify Connection:** Test with `php artisan tinker --execute="echo 'Connected'; \App\Models\User::count();"`
+
 -   **`403 Forbidden` Errors in Backend Tests (Authorization Issues):**
     -   **Symptom:** API requests in feature tests return `403 Forbidden` even when the user appears to have the correct role/permissions.
     -   **Causes:**
@@ -212,6 +221,8 @@ This section documents common issues encountered during development and their ef
 -   **Run Migrations/Seeders (Docker):** `docker compose exec backend php artisan migrate --seed`
 -   **Generate API Docs:** `docker compose exec backend php artisan l5-swagger:generate`
 -   **Admin Panel:** `http://localhost:8000/admin` (Credentials: `test@example.com` / `password`)
+    -   **Helper Profile Moderation:** Approve, reject, suspend, reactivate helper profiles with bulk actions
+    -   **Photo Management:** Upload, edit, and manage helper profile photos via relationship manager
 
 ## 7. User Preferences
 
@@ -340,6 +351,32 @@ This section is for AI coding agents (Copilots) to be effective, safe, and fast 
 - Follow-ups
   - Post-completion redirect UX (permanent: "You are now the owner"; foster: "Foster period started").
   - Foster return UI to surface backend endpoints and mirror handover patterns.
+
+### Session Notes — 2025-08-16 (Admin Panel & Database Setup)
+
+- **Local Development Database Setup**
+  - Switched from PostgreSQL to SQLite for local development to avoid driver installation issues
+  - Updated `.env` configuration to use `DB_CONNECTION=sqlite` and `DB_DATABASE=database/database.sqlite`
+  - Resolved migration conflicts by removing redundant migrations (e.g., duplicate `zip_code` column additions)
+  - Added troubleshooting documentation for common database setup issues
+
+- **HelperProfile Admin Moderation Capabilities**
+  - Enhanced `HelperProfileResource` with comprehensive moderation features:
+    - **Individual Actions**: Approve, reject, suspend, and reactivate actions with proper visibility conditions
+    - **Bulk Actions**: Bulk approve, reject, and suspend with confirmation dialogs and success notifications
+    - **Status Management**: Added 'suspended' status to approval_status enum with color-coded badges
+    - **Photo Management**: Created `PhotosRelationManager` with file upload, image editor, and photo management capabilities
+  - **Database Schema**: Added migration to extend approval_status enum with 'suspended' option
+  - **UI Enhancements**: 
+    - Color-coded status badges (approved=green, pending=yellow, rejected=red, suspended=gray)
+    - Confirmation dialogs for all moderation actions
+    - Success notifications with action feedback
+    - Photo relationship manager with upload, view, edit, and delete capabilities
+
+- **Development Workflow Improvements**
+  - Documented common migration conflict resolution patterns
+  - Added database troubleshooting section to README.md
+  - Established SQLite as the recommended local development database
 
 ### Speedrun Commands (optional)
 

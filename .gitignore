@@ -1,7 +1,8 @@
 # User-specific & Project-specific
 tmp/
-/backups/
-/.venv/
+.kiro/
+backups/
+.venv/
 
 # Laravel
 /bootstrap/cache/*.php

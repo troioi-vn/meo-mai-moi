@@ -39,8 +39,8 @@ RUN rm /usr/local/etc/php-fpm.d/www.conf.default && rm /usr/local/etc/php-fpm.d/
 
 RUN mkdir -p /var/run/php-fpm && chown www-data:www-data /var/run/php-fpm && chmod 775 /var/run/php-fpm
 
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Install Composer (pinned for reproducible builds; 2.8+ fixes E_STRICT notices on PHP 8.4)
+COPY --from=composer:2.8 /usr/bin/composer /usr/bin/composer
 
 # Copy the entire backend application from the build stage,
 # including the Blade file that was updated by the frontend build.

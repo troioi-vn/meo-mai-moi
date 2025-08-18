@@ -16,11 +16,13 @@ echo "[Step 1.5] Waiting for database to be ready..."
 # Use environment variables if provided (docker-compose env_file passes these in)
 DB_HOST_NAME=${DB_HOST:-db}
 DB_PORT_NUMBER=${DB_PORT:-5432}
+DB_CHECK_USER=${DB_USERNAME:-user}
+DB_CHECK_DB=postgres
 
 # Only check server reachability here (host:port). Don't depend on user/db existing yet.
 MAX_TRIES=60
 TRY=1
-until pg_isready -h "$DB_HOST_NAME" -p "$DB_PORT_NUMBER" -t 3 -q; do
+until pg_isready -h "$DB_HOST_NAME" -p "$DB_PORT_NUMBER" -U "$DB_CHECK_USER" -d "$DB_CHECK_DB" -t 3 -q; do
     if [ $TRY -ge $MAX_TRIES ]; then
         echo "Database is still unavailable after $MAX_TRIES attempts; proceeding anyway to let Laravel report details..."
         break

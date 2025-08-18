@@ -60,6 +60,7 @@ class HelperProfileController extends Controller
             'address' => 'required|string|max:255',
             'city' => 'required|string|max:255',
             'state' => 'required|string|max:255',
+            'zip_code' => 'required|string|max:20',
             'phone_number' => 'required|string|max:20',
             'experience' => 'required|string',
             'has_pets' => 'required|boolean',

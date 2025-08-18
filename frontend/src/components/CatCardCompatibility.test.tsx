@@ -120,7 +120,7 @@ describe('CatCard Compatibility in ActivePlacementRequestsSection', () => {
 
     renderWithRouter(<ActivePlacementRequestsSection />, {
       initialAuthState: {
-        user: { id: 1, name: 'Test User', email: 'test@example.com' } as any,
+        user: { id: 1, name: 'Test User', email: 'test@example.com' },
         isLoading: false,
         isAuthenticated: true,
       },
@@ -153,7 +153,7 @@ describe('CatCard Compatibility in ActivePlacementRequestsSection', () => {
 
     renderWithRouter(<ActivePlacementRequestsSection />, {
       initialAuthState: {
-        user: { id: 1, name: 'Test User', email: 'test@example.com' } as any,
+        user: { id: 1, name: 'Test User', email: 'test@example.com' },
         isLoading: false,
         isAuthenticated: true,
       },
@@ -203,7 +203,7 @@ describe('CatCard Compatibility in ActivePlacementRequestsSection', () => {
 
     renderWithRouter(<ActivePlacementRequestsSection />, {
       initialAuthState: {
-        user: { id: 1, name: 'Test User', email: 'test@example.com' } as any,
+        user: { id: 1, name: 'Test User', email: 'test@example.com' },
         isLoading: false,
         isAuthenticated: true,
       },
@@ -240,7 +240,7 @@ describe('CatCard Compatibility in ActivePlacementRequestsSection', () => {
 
     renderWithRouter(<ActivePlacementRequestsSection />, {
       initialAuthState: {
-        user: { id: 1, name: 'Test User', email: 'test@example.com' } as any,
+        user: { id: 1, name: 'Test User', email: 'test@example.com' },
         isLoading: false,
         isAuthenticated: true,
       },
@@ -267,7 +267,7 @@ describe('CatCard Compatibility in ActivePlacementRequestsSection', () => {
 
     renderWithRouter(<ActivePlacementRequestsSection />, {
       initialAuthState: {
-        user: { id: 1, name: 'Test User', email: 'test@example.com' } as any,
+        user: { id: 1, name: 'Test User', email: 'test@example.com' },
         isLoading: false,
         isAuthenticated: true,
       },
@@ -301,7 +301,7 @@ describe('CatCard Compatibility in ActivePlacementRequestsSection', () => {
 
     renderWithRouter(<ActivePlacementRequestsSection />, {
       initialAuthState: {
-        user: { id: 1, name: 'Test User', email: 'test@example.com' } as any,
+        user: { id: 1, name: 'Test User', email: 'test@example.com' },
         isLoading: false,
         isAuthenticated: true,
       },
@@ -331,7 +331,7 @@ describe('CatCard Compatibility in ActivePlacementRequestsSection', () => {
 
     renderWithRouter(<ActivePlacementRequestsSection />, {
       initialAuthState: {
-        user: { id: 1, name: 'Test User', email: 'test@example.com' } as any,
+        user: { id: 1, name: 'Test User', email: 'test@example.com' },
         isLoading: false,
         isAuthenticated: true,
       },

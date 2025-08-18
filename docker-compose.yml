@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   # Backend (serves both API and frontend)
   backend:
@@ -38,7 +36,8 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -q"]
+  # Only check server readiness (host:port), avoid specifying user/db to prevent noisy failures
+  test: ["CMD", "pg_isready", "-q", "-h", "127.0.0.1", "-p", "5432"]
       interval: 10s
       timeout: 5s
       retries: 5

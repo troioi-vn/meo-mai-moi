@@ -11,9 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('helper_profiles', function (Blueprint $table) {
-            $table->dropColumn('zip_code');
-        });
+    // Intentionally left blank: keep zip_code column for compatibility with API/tests
     }
 
     /**

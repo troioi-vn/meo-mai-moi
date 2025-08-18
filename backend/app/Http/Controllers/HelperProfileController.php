@@ -159,6 +159,7 @@ class HelperProfileController extends Controller
             'address' => 'sometimes|string|max:255',
             'city' => 'sometimes|string|max:255',
             'state' => 'sometimes|string|max:255',
+            'zip_code' => 'sometimes|string|max:20',
             'phone_number' => 'sometimes|string|max:20',
             'experience' => 'sometimes|string',
             'has_pets' => 'sometimes|boolean',

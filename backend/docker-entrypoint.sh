@@ -18,13 +18,11 @@ DB_HOST_NAME=${DB_HOST:-db}
 DB_PORT_NUMBER=${DB_PORT:-5432}
 DB_CHECK_USER=${DB_USERNAME:-user}
 DB_CHECK_DB=${DB_DATABASE:-postgres}
-# Ensure libpq sees the password for readiness/auth checks
-export PGPASSWORD="${DB_PASSWORD:-}"
 
 # Only check server reachability here (host:port). Don't depend on user/db existing yet.
 MAX_TRIES=60
 TRY=1
-until pg_isready -h "$DB_HOST_NAME" -p "$DB_PORT_NUMBER" -U "$DB_CHECK_USER" -d "$DB_CHECK_DB" -t 3 -q; do
+until pg_isready -h "$DB_HOST_NAME" -p "$DB_PORT_NUMBER" -U "$DB_CHECK_USER" -t 3 -q; do
     if [ $TRY -ge $MAX_TRIES ]; then
         echo "Database is still unavailable after $MAX_TRIES attempts; proceeding anyway to let Laravel report details..."
         break

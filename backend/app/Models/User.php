@@ -90,4 +90,22 @@ class User extends Authenticatable implements FilamentUser
         // Allow access if user has admin or super_admin role
         return $this->hasRole(['admin', 'super_admin']);
     }
+
+    /**
+     * Whether this user can start impersonation.
+     * Used by stechstudio/filament-impersonate if present.
+     */
+    public function canImpersonate(): bool
+    {
+        return $this->hasRole(['admin', 'super_admin']);
+    }
+
+    /**
+     * Whether this user can be impersonated.
+     * Prevent impersonating admins/super_admins.
+     */
+    public function canBeImpersonated(): bool
+    {
+        return !$this->hasRole(['admin', 'super_admin']);
+    }
 }

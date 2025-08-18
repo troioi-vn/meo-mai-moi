@@ -36,8 +36,8 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-  # Only check server readiness (host:port), avoid specifying user/db to prevent noisy failures
-  test: ["CMD", "pg_isready", "-q", "-h", "127.0.0.1", "-p", "5432"]
+      # Only check server readiness (host:port), avoid specifying user/db to prevent noisy failures
+      test: ["CMD", "pg_isready", "-q", "-h", "127.0.0.1", "-p", "5432"]
       interval: 10s
       timeout: 5s
       retries: 5

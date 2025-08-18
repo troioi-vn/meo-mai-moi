@@ -15,25 +15,32 @@ class RolesAndPermissionsSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create roles
+        // Create roles (single source of truth)
         $superAdminRole = Role::firstOrCreate(['name' => 'super_admin']);
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
-        $userRole = Role::firstOrCreate(['name' => 'user']);
+        $ownerRole = Role::firstOrCreate(['name' => 'owner']);
+        $helperRole = Role::firstOrCreate(['name' => 'helper']);
+        $viewerRole = Role::firstOrCreate(['name' => 'viewer']);
 
         // Get all permissions and assign to super_admin
         $allPermissions = Permission::all();
         $superAdminRole->syncPermissions($allPermissions);
 
-        // Assign specific permissions to admin role
+        // Admin gets most management permissions
         $adminPermissions = Permission::whereIn('name', [
-            'view_any_user',
-            'view_user',
-            'create_user',
-            'update_user',
-            'delete_user',
+            // Users
+            'view_any_user','view_user','create_user','update_user','delete_user','delete_any_user',
+            // Cats
+            'view_any_cat','view_cat','create_cat','update_cat','delete_cat','delete_any_cat',
+            // Placement/Transfer
+            'view_any_placement::request','view_placement::request','update_placement::request','delete_placement::request',
+            'view_any_transfer::request','view_transfer::request','update_transfer::request','delete_transfer::request',
         ])->get();
         $adminRole->syncPermissions($adminPermissions);
 
-        echo "Roles and permissions seeded successfully!\n";
+    // Owner/helper/viewer: rely primarily on policies; keep permissions minimal by default
+    $ownerRole->syncPermissions([]);
+    $helperRole->syncPermissions([]);
+    $viewerRole->syncPermissions([]);
     }
 }

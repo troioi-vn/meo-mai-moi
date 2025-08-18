@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use App\Models\Review;
 use App\Models\User;
 use App\Models\TransferRequest;
-use App\Enums\UserRole;
+use Spatie\Permission\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use Tests\Traits\CreatesUsers;
@@ -20,8 +20,10 @@ class ReviewResourceTest extends TestCase
     {
         parent::setUp();
         
-        // Create an admin user for testing
-        $this->adminUser = User::factory()->create(['role' => UserRole::ADMIN->value]);
+    // Create an admin user for testing
+    $this->adminUser = User::factory()->create();
+    Role::firstOrCreate(['name' => 'admin']);
+    $this->adminUser->assignRole('admin');
     }
 
     public function test_review_resource_exists(): void

@@ -3,7 +3,6 @@
 namespace App\Policies;
 
 use App\Enums\CatStatus;
-use App\Enums\UserRole;
 use App\Models\Cat;
 use App\Models\TransferRequest;
 use App\Models\User;
@@ -26,42 +25,48 @@ class CatPolicy
      */
     public function view(?User $user, Cat $cat): bool
     {
-        // Admins can always view
+        file_put_contents(storage_path('logs/policy-debug.log'), "------\n", FILE_APPEND);
+        file_put_contents(storage_path('logs/policy-debug.log'), "User: " . ($user ? $user->id : 'guest') . "\n", FILE_APPEND);
+        file_put_contents(storage_path('logs/policy-debug.log'), "Cat: " . $cat->id . "\n", FILE_APPEND);
+        file_put_contents(storage_path('logs/policy-debug.log'), "Cat Owner: " . $cat->user_id . "\n", FILE_APPEND);
+        file_put_contents(storage_path('logs/policy-debug.log'), "Has active placement request: " . ($cat->placementRequests()->where('is_active', true)->exists() ? 'yes' : 'no') . "\n", FILE_APPEND);
         if ($user) {
-            // Spatie role or enum role support
-            $role = $user->role instanceof \BackedEnum ? $user->role->value : ($user->role ?? null);
-            if ((method_exists($user, 'hasRole') && $user->hasRole('admin')) || $role === UserRole::ADMIN->value) {
-                return true;
-            }
-
-            // Owner can view
-            if ($cat->user_id === $user->id) {
-                return true;
-            }
-
-            // Accepted responder (helper) can view post-acceptance
-            $isAcceptedResponder = TransferRequest::where('cat_id', $cat->id)
-                ->where('status', 'accepted')
-                ->where('initiator_user_id', $user->id)
-                ->exists();
-            if ($isAcceptedResponder) {
-                return true;
-            }
-
-            // Explicit permission also grants access (e.g., via Filament/Spatie)
-            if ($user->can('view_cat')) {
-                return true;
-            }
+            file_put_contents(storage_path('logs/policy-debug.log'), "User Roles: " . json_encode($user->getRoleNames()) . "\n", FILE_APPEND);
+            file_put_contents(storage_path('logs/policy-debug.log'), "User can view_cat: " . ($user->can('view_cat') ? 'yes' : 'no') . "\n", FILE_APPEND);
         }
 
-        // Guests (or authenticated users without special rights) can view cats with
-        // an active placement request.
+        // Public cats with active placement requests are visible to everyone.
         if ($cat->placementRequests()->where('is_active', true)->exists()) {
             return true;
         }
 
-        // Deny by default.
-        return false;
+        // If there's no authenticated user, and no active placement, deny access.
+        if (!$user) {
+            return false;
+        }
+
+        // Authenticated users can proceed.
+        // Admins and super_admins can view anything.
+        if ($user->hasRole(['admin', 'super_admin'])) {
+            return true;
+        }
+
+        // The owner of the cat can always view it.
+        if ($cat->user_id === $user->id) {
+            return true;
+        }
+
+        // An accepted responder (helper) for a transfer request can view the cat.
+        $isAcceptedResponder = TransferRequest::where('cat_id', $cat->id)
+            ->where('status', 'accepted')
+            ->where('initiator_user_id', $user->id)
+            ->exists();
+        if ($isAcceptedResponder) {
+            return true;
+        }
+
+        // Finally, check for the explicit 'view_cat' permission.
+        return $user->can('view_cat');
     }
 
     /**
@@ -80,7 +85,9 @@ class CatPolicy
         if ($user->id === $cat->user_id) {
             return true;
         }
-
+        if (method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin'])) {
+            return true;
+        }
         return $user->can('update_cat');
     }
 
@@ -89,6 +96,12 @@ class CatPolicy
      */
     public function delete(User $user, Cat $cat): bool
     {
+        if ($user->id === $cat->user_id) {
+            return true;
+        }
+        if (method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin'])) {
+            return true;
+        }
         return $user->can('delete_cat');
     }
 

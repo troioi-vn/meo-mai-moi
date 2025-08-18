@@ -52,7 +52,7 @@ export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
             </span>
           )}
           {cat.placement_requests?.map((request) => {
-            const key = `${String(cat.id)}-${String(request.id)}-${request.expires_at ?? request.start_date ?? ''}`
+            const key = `${String(cat.id)}-${String(request.id)}-${String(request.expires_at ?? request.start_date ?? '')}`
             return (
               <span
                 key={key}

@@ -27,8 +27,8 @@ This is the AI-agent-oriented guide: architecture, conventions, workflows, and s
 
 ### Core Data Models
 
--   **User Roles:** `ADMIN`, `CAT_OWNER`, `HELPER`, `VIEWER`.
--   **Permissions:** A granular system (`CREATE_CAT`, `VIEW_CONTACT_INFO`, etc.) is managed by Spatie Laravel Permission.
+-   **User Roles (RBAC):** Spatie Laravel Permission is the single source of truth. Roles are assigned via Spatie (e.g., `admin`, `super_admin`, `owner`, `helper`, `viewer`). The legacy `users.role` column has been removed via migration and should not be used.
+-   **Permissions:** A granular system (`view_cat`, `create_cat`, etc.) is managed by Spatie + Filament Shield. Policies prefer ownership checks and `$user->can(...)`.
 -   **Cat Status:** The `Cat` model uses a status enum: `active`, `lost`, `deceased`, `deleted`.
 
 ### Authentication
@@ -153,6 +153,7 @@ This section is for AI coding agents (Copilots) to be effective, safe, and fast 
 
 - Keep OpenAPI annotations updated; regenerate docs with changes.
 - Enforce policies/permissions; controllers assume policy checks.
+- Do not read or write `users.role` column; use `$user->hasRole()` / `$user->assignRole()` and `$user->can()`.
 
 ### Common Pitfalls & Fixes
 

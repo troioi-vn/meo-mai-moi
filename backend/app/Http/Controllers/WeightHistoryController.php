@@ -74,8 +74,14 @@ class WeightHistoryController extends Controller
      */
     public function store(Request $request, Cat $cat)
     {
-        // Assuming only the cat's owner or an admin can add weight records
-        if ($request->user()->id !== $cat->user_id && $request->user()->role !== \App\Enums\UserRole::ADMIN) {
+        // Only the cat's owner or an admin can add weight records
+        $user = $request->user();
+        if (! $user) {
+            return $this->sendError('Unauthenticated.', 401);
+        }
+        $isOwner = $user->id === $cat->user_id;
+        $isAdmin = method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
+        if (! $isOwner && ! $isAdmin) {
             return $this->sendError('You are not authorized to add weight records for this cat.', 403);
         }
 

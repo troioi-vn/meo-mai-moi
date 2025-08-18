@@ -265,9 +265,12 @@ export const handlers = [
       }),
       http.post('http://localhost:3000/api/notifications/mark-all-read', async () => {
         const now = new Date().toISOString()
+        // Use nullish assignment to only set read_at when missing
         mem.forEach((n) => {
-          if (!n.read_at) n.read_at = now
+          n.read_at ??= now
         })
+        // small await to satisfy require-await rule in some linters
+        await Promise.resolve()
         return new HttpResponse(null, { status: 204 })
       }),
       http.patch('http://localhost:3000/api/notifications/:id/read', ({ params }) => {

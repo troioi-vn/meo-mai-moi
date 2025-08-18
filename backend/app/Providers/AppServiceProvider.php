@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(\App\Services\EmailConfigurationService::class);
     }
 
     /**
@@ -36,5 +36,14 @@ class AppServiceProvider extends ServiceProvider
             HelperProfileStatusUpdated::class,
             CreateHelperProfileNotification::class
         );
+
+        // Update mail configuration on application boot if there's an active email configuration
+        try {
+            $emailConfigService = $this->app->make(\App\Services\EmailConfigurationService::class);
+            $emailConfigService->updateMailConfig();
+        } catch (\Exception $e) {
+            // Silently fail during boot to prevent application startup issues
+            // The error will be logged by the service
+        }
     }
 }

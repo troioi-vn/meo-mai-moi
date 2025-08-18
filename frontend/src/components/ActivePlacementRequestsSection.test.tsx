@@ -1,19 +1,20 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import type { MockedFunction } from 'vitest'
 import { ActivePlacementRequestsSection } from './ActivePlacementRequestsSection'
 import { getPlacementRequests } from '@/api/cats'
 import type { Cat } from '@/types/cat'
 
-// Mock the API function
+// Mock the API function with a strongly-typed mocked function
 vi.mock('@/api/cats', () => ({
-  getPlacementRequests: vi.fn(),
+  getPlacementRequests: vi.fn() as unknown as MockedFunction<() => Promise<Cat[]>>,
 }))
 
 // Mock the CatCard component
 vi.mock('@/components/CatCard', () => ({
   CatCard: ({ cat }: { cat: Cat }) => (
-    <div data-testid={`cat-card-${cat.id}`}>
+    <div data-testid={`cat-card-${String(cat.id)}`}>
       <h3>{cat.name}</h3>
       <p>{cat.breed}</p>
     </div>
@@ -68,7 +69,7 @@ const createMockCat = (id: number, name: string): Cat => ({
 })
 
 describe('ActivePlacementRequestsSection', () => {
-  const mockGetPlacementRequests = getPlacementRequests as vi.MockedFunction<typeof getPlacementRequests>
+  const mockGetPlacementRequests = getPlacementRequests as unknown as MockedFunction<() => Promise<Cat[]>>
 
   beforeEach(() => {
     vi.clearAllMocks()

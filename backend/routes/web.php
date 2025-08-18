@@ -34,6 +34,9 @@ if (app()->environment('testing')) {
     });
 }
 
+// Unsubscribe route (must be before catch-all)
+Route::get('/unsubscribe', [\App\Http\Controllers\UnsubscribeController::class, 'show'])->name('unsubscribe');
+
 Route::get('/{any}', function () {
     return view('welcome');
 })->where('any', '.*');

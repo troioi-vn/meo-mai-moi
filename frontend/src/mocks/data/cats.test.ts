@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
   testScenarios,
-  setPlacementRequestScenario,
   mockCatWithFosterRequest,
   mockCatWithAdoptionRequest,
   mockCatWithPaidFosterRequest,
@@ -61,7 +60,8 @@ describe('Mock Cat Data Test Scenarios', () => {
       expect(cat.placement_request_active).toBe(true)
       expect(cat.placement_requests).toHaveLength(1)
       
-      const request = cat.placement_requests![0]
+  const request = cat.placement_requests?.[0]
+  if (!request) throw new Error('Expected placement request')
       expect(request.request_type).toBe('fostering')
       expect(request.is_active).toBe(true)
       expect(request.status).toBe('open')
@@ -74,7 +74,8 @@ describe('Mock Cat Data Test Scenarios', () => {
       expect(cat.placement_request_active).toBe(true)
       expect(cat.placement_requests).toHaveLength(1)
       
-      const request = cat.placement_requests![0]
+  const request = cat.placement_requests?.[0]
+  if (!request) throw new Error('Expected placement request')
       expect(request.request_type).toBe('adoption')
       expect(request.is_active).toBe(true)
       expect(request.status).toBe('open')
@@ -82,14 +83,16 @@ describe('Mock Cat Data Test Scenarios', () => {
 
     it('should have urgent status for urgent adoption request', () => {
       const cat = mockCatWithUrgentAdoptionRequest
-      const request = cat.placement_requests![0]
+  const request = cat.placement_requests?.[0]
+  if (!request) throw new Error('Expected placement request')
       expect(request.status).toBe('urgent')
       expect(request.request_type).toBe('adoption')
     })
 
     it('should have paid fostering details', () => {
       const cat = mockCatWithPaidFosterRequest
-      const request = cat.placement_requests![0]
+  const request = cat.placement_requests?.[0]
+  if (!request) throw new Error('Expected placement request')
       expect(request.request_type).toBe('fostering')
       expect(request.notes).toContain('Paid fostering')
     })

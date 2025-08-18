@@ -5,7 +5,8 @@ import { DeleteAccountDialog } from '@/components/DeleteAccountDialog'
 import { UserAvatar } from '@/components/UserAvatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
+import { Bell, ChevronRight } from 'lucide-react'
 
 export default function ProfilePage() {
   const { user, logout, isLoading, loadUser } = useAuth()
@@ -93,6 +94,26 @@ export default function ProfilePage() {
         </div>
         <div className="space-y-4 pt-4">
           <ChangePasswordForm />
+
+          {/* Notifications Section */}
+          <div className="space-y-2">
+            <h3 className="text-lg font-medium text-card-foreground">Notifications</h3>
+            <Link
+              to="/account/notifications"
+              className="flex items-center justify-between p-3 rounded-lg border bg-background hover:bg-accent transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <Bell className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="font-medium">Notification Preferences</p>
+                  <p className="text-sm text-muted-foreground">
+                    Manage email and in-app notification settings
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </Link>
+          </div>
 
           <Button
             onClick={handleLogout}

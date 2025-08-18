@@ -214,6 +214,21 @@ class HelperProfileController extends Controller
     {
         $this->authorize('delete', $helperProfile);
 
+        // Delete stored photo files first to avoid orphans
+        $helperProfile->loadMissing('photos');
+        foreach ($helperProfile->photos as $photo) {
+            try {
+                Storage::disk('public')->delete($photo->path);
+            } catch (\Throwable $e) {
+                // Log and continue; DB deletion will proceed
+                Log::warning('Failed to delete helper profile photo file', [
+                    'photo_id' => $photo->id,
+                    'path' => $photo->path,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
         $helperProfile->delete();
 
         return response()->json(null, 204);

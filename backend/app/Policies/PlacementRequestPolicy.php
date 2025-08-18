@@ -109,4 +109,30 @@ class PlacementRequestPolicy
     {
         return $user->can('reorder_placement::request');
     }
+
+    /**
+     * Confirm a placement request.
+     */
+    public function confirm(User $user, PlacementRequest $placementRequest): bool
+    {
+        // Cat owner can always confirm their own placement request
+        if ($user->id === $placementRequest->cat->user_id) {
+            return true;
+        }
+
+        return $user->can('confirm_placement::request');
+    }
+
+    /**
+     * Reject a placement request.
+     */
+    public function reject(User $user, PlacementRequest $placementRequest): bool
+    {
+        // Cat owner can always reject their own placement request
+        if ($user->id === $placementRequest->cat->user_id) {
+            return true;
+        }
+
+        return $user->can('reject_placement::request');
+    }
 }

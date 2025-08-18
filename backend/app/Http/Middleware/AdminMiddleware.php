@@ -19,12 +19,7 @@ class AdminMiddleware
         if (Auth::check()) {
             /** @var \App\Models\User $user */
             $user = Auth::user();
-            // Support string roles and backed enums
-            $role = is_object($user->role) && $user->role instanceof \BackedEnum
-                ? $user->role->value
-                : $user->role;
-
-            if ($role === 'admin' || $role === 'super_admin') {
+            if (method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin'])) {
                 return $next($request);
             }
         }

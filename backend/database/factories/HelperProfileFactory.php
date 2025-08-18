@@ -25,6 +25,7 @@ class HelperProfileFactory extends Factory
             'can_foster' => $this->faker->boolean(),
             'can_adopt' => $this->faker->boolean(),
             'approval_status' => 'approved',
+            'is_public' => true,
         ];
     }
 }

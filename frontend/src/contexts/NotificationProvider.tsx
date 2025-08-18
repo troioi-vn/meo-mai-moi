@@ -1,4 +1,5 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+/* eslint-disable react-refresh/only-export-components */
+import React, { createContext, useCallback, use, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { getNotifications, markAllRead, markRead } from '@/api/notifications'
 import type { AppNotification, NotificationLevel } from '@/types/notification'
@@ -24,9 +25,9 @@ const LEVEL_TO_TOAST: Record<NotificationLevel, (message: string, options?: { de
 function useVisibility(): boolean {
   const [visible, setVisible] = useState(() => typeof document !== 'undefined' ? document.visibilityState !== 'hidden' : true)
   useEffect(() => {
-    const onChange = () => setVisible(document.visibilityState !== 'hidden')
+    const onChange = () => { setVisible(document.visibilityState !== 'hidden'); }
     document.addEventListener('visibilitychange', onChange)
-    return () => document.removeEventListener('visibilitychange', onChange)
+    return () => { document.removeEventListener('visibilitychange', onChange); }
   }, [])
   return visible
 }
@@ -73,7 +74,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
       await refresh()
       timer = window.setTimeout(tick, pollMs)
     }
-    tick()
+  void tick()
     return () => {
       if (timer) window.clearTimeout(timer)
     }
@@ -114,11 +115,11 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
     setDropdownOpen,
   }), [loading, markOneRead, notifications, refresh, setDropdownOpen, unreadCount])
 
-  return <NotificationContext.Provider value={value}>{children}</NotificationContext.Provider>
+  return <NotificationContext value={value}>{children}</NotificationContext>
 }
 
 export function useNotifications() {
-  const ctx = useContext(NotificationContext)
+  const ctx = use(NotificationContext)
   if (!ctx) throw new Error('useNotifications must be used within NotificationProvider')
   return ctx
 }

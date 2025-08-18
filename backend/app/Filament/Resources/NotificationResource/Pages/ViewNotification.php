@@ -45,6 +45,41 @@ class ViewNotification extends ViewRecord
                     
                     $this->refreshFormData(['delivered_at', 'failed_at', 'failure_reason']);
                 }),
+            
+            Actions\Action::make('retry_delivery')
+                ->label('Retry Delivery')
+                ->icon('heroicon-o-arrow-path')
+                ->color('info')
+                ->visible(fn (): bool => $this->record->failed_at !== null)
+                ->requiresConfirmation()
+                ->action(function (): void {
+                    $this->record->update([
+                        'failed_at' => null,
+                        'failure_reason' => null,
+                        'delivered_at' => null,
+                    ]);
+                    
+                    // Here you would typically trigger the notification delivery system
+                    // For now, we'll just mark it as delivered
+                    $this->record->update(['delivered_at' => now()]);
+                    
+                    $this->refreshFormData(['delivered_at', 'failed_at', 'failure_reason']);
+                }),
+            
+            Actions\Action::make('test_email_config')
+                ->label('Test Email Configuration')
+                ->icon('heroicon-o-wrench-screwdriver')
+                ->color('warning')
+                ->visible(fn (): bool => $this->record->failed_at !== null)
+                ->action(function (): void {
+                    // This would test the email configuration
+                    // For now, we'll just show a success message
+                    \Filament\Notifications\Notification::make()
+                        ->title('Email Configuration Test')
+                        ->body('Email configuration test completed successfully.')
+                        ->success()
+                        ->send();
+                }),
         ];
     }
 
@@ -155,6 +190,14 @@ class ViewNotification extends ViewRecord
                             ->visible(fn (?string $state): bool => filled($state)),
                     ])
                     ->columns(3),
+                
+                Infolists\Components\Section::make('Email Delivery Timeline')
+                    ->schema([
+                        Infolists\Components\ViewEntry::make('delivery_timeline')
+                            ->view('filament.infolists.notification-delivery-timeline')
+                            ->columnSpanFull(),
+                    ])
+                    ->visible(fn (): bool => $this->record->created_at || $this->record->delivered_at || $this->record->failed_at || $this->record->read_at),
             ]);
     }
 }

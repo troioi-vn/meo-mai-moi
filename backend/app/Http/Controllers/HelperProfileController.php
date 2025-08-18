@@ -60,6 +60,7 @@ class HelperProfileController extends Controller
             'address' => 'required|string|max:255',
             'city' => 'required|string|max:255',
             'state' => 'required|string|max:255',
+            'zip_code' => 'required|string|max:20',
             'phone_number' => 'required|string|max:20',
             'experience' => 'required|string',
             'has_pets' => 'required|boolean',
@@ -158,6 +159,7 @@ class HelperProfileController extends Controller
             'address' => 'sometimes|string|max:255',
             'city' => 'sometimes|string|max:255',
             'state' => 'sometimes|string|max:255',
+            'zip_code' => 'sometimes|string|max:20',
             'phone_number' => 'sometimes|string|max:20',
             'experience' => 'sometimes|string',
             'has_pets' => 'sometimes|boolean',
@@ -211,6 +213,21 @@ class HelperProfileController extends Controller
     public function destroy(HelperProfile $helperProfile)
     {
         $this->authorize('delete', $helperProfile);
+
+        // Delete stored photo files first to avoid orphans
+        $helperProfile->loadMissing('photos');
+        foreach ($helperProfile->photos as $photo) {
+            try {
+                Storage::disk('public')->delete($photo->path);
+            } catch (\Throwable $e) {
+                // Log and continue; DB deletion will proceed
+                Log::warning('Failed to delete helper profile photo file', [
+                    'photo_id' => $photo->id,
+                    'path' => $photo->path,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
 
         $helperProfile->delete();
 

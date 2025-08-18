@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use App\Models\Cat;
 use App\Models\PlacementRequest;
 use App\Models\User;
-use App\Enums\UserRole;
+use Spatie\Permission\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -49,7 +49,9 @@ class CatProfileTest extends TestCase
 
     public function test_admin_can_update_any_cat_profile(): void
     {
-        $admin = User::factory()->create(['role' => UserRole::ADMIN->value]);
+    $admin = User::factory()->create();
+    Role::firstOrCreate(['name' => 'admin']);
+    $admin->assignRole('admin');
         $cat = Cat::factory()->create();
         Sanctum::actingAs($admin);
 
@@ -101,11 +103,13 @@ class CatProfileTest extends TestCase
     #[Test]
     public function test_admin_can_view_any_cat_profile_with_edit_permissions(): void
     {
-        $admin = User::factory()->create(['role' => UserRole::ADMIN->value]);
+    $admin = User::factory()->create();
+    Role::firstOrCreate(['name' => 'admin']);
+    $admin->assignRole('admin');
         $cat = Cat::factory()->create(['name' => 'Admin Test Cat']);
         
-        // Verify admin was created correctly
-        $this->assertEquals(UserRole::ADMIN, $admin->role);
+    // Verify admin has role assigned via Spatie
+    $this->assertTrue($admin->hasRole('admin'));
         
         Sanctum::actingAs($admin);
         

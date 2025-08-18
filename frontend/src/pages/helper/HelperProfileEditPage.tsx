@@ -130,7 +130,11 @@ const HelperProfileEditPage: React.FC = () => {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => { deleteMutation.mutate(); }}>Delete</AlertDialogAction>
+                      <AlertDialogAction asChild>
+                        <Button type="button" onClick={() => { deleteMutation.mutate(); }}>
+                          Delete
+                        </Button>
+                      </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>

@@ -13,11 +13,25 @@ mkdir -p /var/log
 echo "Directories created."
 
 echo "[Step 1.5] Waiting for database to be ready..."
-until pg_isready -h db -p 5432 -U user -d meo_mai_moi -q; do
-  echo "Database is unavailable - sleeping"
-  sleep 2
+# Use environment variables if provided (docker-compose env_file passes these in)
+DB_HOST_NAME=${DB_HOST:-db}
+DB_PORT_NUMBER=${DB_PORT:-5432}
+DB_CHECK_USER=${DB_USERNAME:-user}
+DB_CHECK_DB=${DB_DATABASE:-postgres}
+
+# Only check server reachability here (host:port). Don't depend on user/db existing yet.
+MAX_TRIES=60
+TRY=1
+until pg_isready -h "$DB_HOST_NAME" -p "$DB_PORT_NUMBER" -U "$DB_CHECK_USER" -t 3 -q; do
+    if [ $TRY -ge $MAX_TRIES ]; then
+        echo "Database is still unavailable after $MAX_TRIES attempts; proceeding anyway to let Laravel report details..."
+        break
+    fi
+    echo "Database is unavailable (attempt $TRY/$MAX_TRIES) - sleeping"
+    TRY=$((TRY+1))
+    sleep 2
 done
-echo "Database is up - continuing..."
+echo "Database check complete - continuing..."
 
 echo "[Step 2] Setting permissions..."
 chown -R www-data:www-data /var/run/php-fpm
@@ -68,9 +82,13 @@ if [ -n "$APP_KEY_FROM_DOTENV" ] && [ "$APP_KEY_FROM_DOTENV" != "$APP_KEY_FROM_E
     echo "Exported APP_KEY from .env for runtime."
 fi
 
-echo "[Step 5] Running Migrations..."
-su -s /bin/sh -c "php artisan migrate --force" www-data
-echo "Migrations executed."
+if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
+    echo "[Step 5] Running Migrations..."
+    su -s /bin/sh -c "php artisan migrate --force" www-data
+    echo "Migrations executed."
+else
+    echo "[Step 5] Skipped migrations (RUN_MIGRATIONS=false)."
+fi
 
 echo "[Step 6] Linking storage..."
 su -s /bin/sh -c "php artisan optimize:clear && php artisan storage:link --force" www-data

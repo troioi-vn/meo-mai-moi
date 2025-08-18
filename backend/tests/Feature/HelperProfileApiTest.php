@@ -64,4 +64,39 @@ class HelperProfileApiTest extends TestCase
 
         $this->assertDatabaseHas('helper_profiles', $data);
     }
+
+    #[Test]
+    public function owner_can_delete_their_helper_profile()
+    {
+        $user = User::factory()->create();
+        $profile = HelperProfile::factory()->for($user)->create();
+
+        $response = $this->actingAs($user)->deleteJson("/api/helper-profiles/{$profile->id}");
+
+        $response->assertStatus(204);
+        $this->assertDatabaseMissing('helper_profiles', ['id' => $profile->id]);
+    }
+
+    #[Test]
+    public function unauthenticated_delete_is_unauthorized()
+    {
+        $profile = HelperProfile::factory()->create();
+
+        $response = $this->deleteJson("/api/helper-profiles/{$profile->id}");
+
+        $response->assertStatus(401); // Sanctum guard should return 401
+    }
+
+    #[Test]
+    public function non_owner_cannot_delete_helper_profile()
+    {
+        $owner = User::factory()->create();
+        $other = User::factory()->create();
+        $profile = HelperProfile::factory()->for($owner)->create();
+
+        $response = $this->actingAs($other)->deleteJson("/api/helper-profiles/{$profile->id}");
+
+        $response->assertStatus(403);
+        $this->assertDatabaseHas('helper_profiles', ['id' => $profile->id]);
+    }
 }

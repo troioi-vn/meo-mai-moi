@@ -29,7 +29,6 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
-        'role',
         'avatar_url',
     ];
 
@@ -53,7 +52,6 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'role' => \App\Enums\UserRole::class,
         ];
     }
 
@@ -82,6 +80,16 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(\App\Models\OwnershipHistory::class);
     }
 
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    public function notificationPreferences(): HasMany
+    {
+        return $this->hasMany(NotificationPreference::class);
+    }
+
     /**
      * Determine if the user can access the Filament admin panel.
      */
@@ -89,5 +97,23 @@ class User extends Authenticatable implements FilamentUser
     {
         // Allow access if user has admin or super_admin role
         return $this->hasRole(['admin', 'super_admin']);
+    }
+
+    /**
+     * Whether this user can start impersonation.
+     * Used by stechstudio/filament-impersonate if present.
+     */
+    public function canImpersonate(): bool
+    {
+        return $this->hasRole(['admin', 'super_admin']);
+    }
+
+    /**
+     * Whether this user can be impersonated.
+     * Prevent impersonating admins/super_admins.
+     */
+    public function canBeImpersonated(): bool
+    {
+        return !$this->hasRole(['admin', 'super_admin']);
     }
 }

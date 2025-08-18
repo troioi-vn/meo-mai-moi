@@ -21,6 +21,8 @@ class DatabaseSeeder extends Seeder
             PlacementRequestSeeder::class,
             ShieldSeeder::class,
             ReviewSeeder::class,
+            NotificationPreferenceSeeder::class,
+            EmailConfigurationSeeder::class,
         ]);
 
         $users = User::all();

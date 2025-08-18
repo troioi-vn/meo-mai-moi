@@ -8,6 +8,7 @@ import ProfilePage from './pages/ProfilePage'
 import MyCatsPage from './pages/account/MyCatsPage'
 import CreateCatPage from './pages/account/CreateCatPage'
 import EditCatPage from './pages/account/EditCatPage'
+import NotificationsPage from './pages/account/NotificationsPage'
 import CatProfilePage from './pages/CatProfilePage'
 import HelperProfilePage from './pages/helper/HelperProfilePage'
 import HelperProfileEditPage from './pages/helper/HelperProfileEditPage'
@@ -69,6 +70,14 @@ export function AppRoutes() {
         element={
           <PrivateRoute>
             <CreateCatPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/account/notifications"
+        element={
+          <PrivateRoute>
+            <NotificationsPage />
           </PrivateRoute>
         }
       />

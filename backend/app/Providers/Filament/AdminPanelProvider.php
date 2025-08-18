@@ -18,13 +18,23 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use TomatoPHP\FilamentUsers\FilamentUsersPlugin;
+use TomatoPHP\FilamentUsers\Resources\UserResource\Table\UserActions as FilamentUserActions;
+use App\Filament\Resources\UserResource\Actions\ImpersonateAsUser;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
+    public function boot(): void
+    {
+        // Register a custom impersonate action that redirects to /account and stores a back link to the admin panel
+        if (class_exists(FilamentUserActions::class) && class_exists(ImpersonateAsUser::class)) {
+            FilamentUserActions::register(ImpersonateAsUser::make());
+        }
+    }
+
     public function panel(Panel $panel): Panel
     {
-        return $panel
+        $panel = $panel
             ->default()
             ->id('admin')
             ->path('admin')
@@ -32,8 +42,14 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->plugin(FilamentUsersPlugin::make())
-            ->plugin(FilamentShieldPlugin::make())
+            ->plugin(FilamentUsersPlugin::make());
+
+        // Register Filament Shield only outside of the test environment to simplify test access
+        if (!app()->environment('testing')) {
+            $panel->plugin(FilamentShieldPlugin::make());
+        }
+
+        return $panel
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([

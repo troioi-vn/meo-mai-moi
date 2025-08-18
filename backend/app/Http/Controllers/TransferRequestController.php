@@ -12,6 +12,8 @@ use App\Enums\UserRole;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use App\Enums\PlacementRequestStatus;
+use App\Services\NotificationService;
+use App\Enums\NotificationType;
 
 /**
  * @OA\Schema(
@@ -99,6 +101,13 @@ use App\Enums\PlacementRequestStatus;
 class TransferRequestController extends Controller
 {
     use ApiResponseTrait;
+
+    protected NotificationService $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
 
     /**
      * @OA\Post(
@@ -188,13 +197,22 @@ class TransferRequestController extends Controller
             'status' => 'pending',
         ]));
 
-        // Send notification to cat owner
-        \App\Models\Notification::create([
-            'user_id' => $cat->user_id,
-            'message' => $user->name . ' responded to your placement request for ' . $cat->name,
-            'link' => '/cats/' . $cat->id, // Deep-link to the cat profile page
-            'is_read' => false,
-        ]);
+        // Send notification to cat owner using NotificationService
+        $catOwner = \App\Models\User::find($cat->user_id);
+        if ($catOwner) {
+            $this->notificationService->send(
+                $catOwner,
+                NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
+                [
+                    'message' => $user->name . ' responded to your placement request for ' . $cat->name,
+                    'link' => '/cats/' . $cat->id,
+                    'helper_name' => $user->name,
+                    'cat_name' => $cat->name,
+                    'cat_id' => $cat->id,
+                    'transfer_request_id' => $transferRequest->id,
+                ]
+            );
+        }
 
         return $this->sendSuccess($transferRequest, 201);
     }
@@ -283,16 +301,24 @@ class TransferRequestController extends Controller
             }
         });
 
-        // Notify helper (initiator) on acceptance
+        // Notify helper (initiator) on acceptance using NotificationService
         try {
             $cat = $transferRequest->cat ?: Cat::find($transferRequest->cat_id);
             if ($cat) {
-                \App\Models\Notification::create([
-                    'user_id' => $transferRequest->initiator_user_id,
-                    'message' => 'Your request for ' . $cat->name . ' was accepted. Schedule a handover.',
-                    'link' => '/cats/' . $cat->id,
-                    'is_read' => false,
-                ]);
+                $helper = \App\Models\User::find($transferRequest->initiator_user_id);
+                if ($helper) {
+                    $this->notificationService->send(
+                        $helper,
+                        NotificationType::HELPER_RESPONSE_ACCEPTED->value,
+                        [
+                            'message' => 'Your request for ' . $cat->name . ' was accepted. Schedule a handover.',
+                            'link' => '/cats/' . $cat->id,
+                            'cat_name' => $cat->name,
+                            'cat_id' => $cat->id,
+                            'transfer_request_id' => $transferRequest->id,
+                        ]
+                    );
+                }
             }
         } catch (\Throwable $e) {
             // non-fatal
@@ -341,16 +367,24 @@ class TransferRequestController extends Controller
         $transferRequest->rejected_at = now();
         $transferRequest->save();
 
-        // Notify helper (initiator) on rejection
+        // Notify helper (initiator) on rejection using NotificationService
         try {
             $cat = $transferRequest->cat ?: Cat::find($transferRequest->cat_id);
             if ($cat) {
-                \App\Models\Notification::create([
-                    'user_id' => $transferRequest->initiator_user_id,
-                    'message' => 'Your request for ' . $cat->name . ' was rejected by the owner.',
-                    'link' => '/cats/' . $cat->id,
-                    'is_read' => false,
-                ]);
+                $helper = \App\Models\User::find($transferRequest->initiator_user_id);
+                if ($helper) {
+                    $this->notificationService->send(
+                        $helper,
+                        NotificationType::HELPER_RESPONSE_REJECTED->value,
+                        [
+                            'message' => 'Your request for ' . $cat->name . ' was rejected by the owner.',
+                            'link' => '/cats/' . $cat->id,
+                            'cat_name' => $cat->name,
+                            'cat_id' => $cat->id,
+                            'transfer_request_id' => $transferRequest->id,
+                        ]
+                    );
+                }
             }
         } catch (\Throwable $e) {
             // non-fatal

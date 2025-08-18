@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Cat;
 use App\Models\User;
-use App\Enums\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -29,7 +28,7 @@ class CatPhotoManagementTest extends TestCase
             $this->markTestSkipped('The GD extension is not available.');
         }
 
-        $this->owner = User::factory()->create(['role' => UserRole::CAT_OWNER]);
+    $this->owner = User::factory()->create();
         $this->cat = Cat::factory()->create(['user_id' => $this->owner->id]);
     }
 

@@ -6,7 +6,7 @@ use App\Models\Cat;
 use App\Models\PlacementRequest;
 use App\Models\TransferRequest;
 use App\Models\User;
-use App\Enums\UserRole;
+use Spatie\Permission\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -19,8 +19,8 @@ class TransferRequestCreationTest extends TestCase
     #[Test]
     public function test_helper_can_create_transfer_request_for_placement_request(): void
     {
-        $owner = User::factory()->create(['role' => UserRole::CAT_OWNER]);
-        $helper = User::factory()->create(['role' => UserRole::HELPER]);
+    $owner = User::factory()->create();
+    $helper = User::factory()->create();
         $helperProfile = \App\Models\HelperProfile::factory()->create(['user_id' => $helper->id]);
         $cat = Cat::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\CatStatus::ACTIVE]);
         $placementRequest = PlacementRequest::factory()->create(['cat_id' => $cat->id, 'is_active' => true, 'status' => \App\Enums\PlacementRequestStatus::OPEN->value]);
@@ -48,7 +48,7 @@ class TransferRequestCreationTest extends TestCase
     #[Test]
     public function test_user_without_helper_profile_cannot_create_transfer_request(): void
     {
-        $owner = User::factory()->create(['role' => UserRole::CAT_OWNER]);
+    $owner = User::factory()->create();
         $user = User::factory()->create(); // No helper profile
         $cat = Cat::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\CatStatus::ACTIVE]);
         $placementRequest = PlacementRequest::factory()->create(['cat_id' => $cat->id, 'is_active' => true, 'status' => \App\Enums\PlacementRequestStatus::OPEN->value]);
@@ -71,7 +71,7 @@ class TransferRequestCreationTest extends TestCase
     #[Test]
     public function test_owner_cannot_create_transfer_request_for_own_cat(): void
     {
-        $owner = User::factory()->create(['role' => UserRole::CAT_OWNER]);
+    $owner = User::factory()->create();
         $cat = Cat::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\CatStatus::ACTIVE]);
         $placementRequest = PlacementRequest::factory()->create(['cat_id' => $cat->id, 'is_active' => true, 'status' => \App\Enums\PlacementRequestStatus::OPEN->value]);
 
@@ -91,8 +91,8 @@ class TransferRequestCreationTest extends TestCase
     #[Test]
     public function test_accepting_transfer_request_deactivates_placement_request(): void
     {
-        $owner = User::factory()->create(['role' => UserRole::CAT_OWNER]);
-        $helper = User::factory()->create(['role' => UserRole::HELPER]);
+    $owner = User::factory()->create();
+    $helper = User::factory()->create();
         $cat = Cat::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\CatStatus::ACTIVE]);
         $placementRequest = PlacementRequest::factory()->create(['cat_id' => $cat->id, 'is_active' => true, 'status' => \App\Enums\PlacementRequestStatus::OPEN->value]);
         $transferRequest = TransferRequest::factory()->create([

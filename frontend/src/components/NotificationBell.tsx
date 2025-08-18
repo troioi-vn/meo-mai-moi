@@ -29,27 +29,28 @@ function LevelIcon({ level }: { level: 'info' | 'success' | 'warning' | 'error' 
 function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime()
   const s = Math.floor(diff / 1000)
-  if (s < 60) return `${s}s`
+  if (s < 60) return `${String(s)}s`
   const m = Math.floor(s / 60)
-  if (m < 60) return `${m}m`
+  if (m < 60) return `${String(m)}m`
   const h = Math.floor(m / 60)
-  if (h < 24) return `${h}h`
+  if (h < 24) return `${String(h)}h`
   const d = Math.floor(h / 24)
-  return `${d}d`
+  return `${String(d)}d`
 }
 
 export function NotificationBell() {
   // Allow rendering without provider in isolated tests
-  const ctx = React.useContext(NotificationContext)
+  const ctx = React.use(NotificationContext)
   const { notifications, unreadCount, setDropdownOpen, markRead } = ctx ?? {
     notifications: [],
     unreadCount: 0,
     loading: false,
-    refresh: async () => {},
-    markRead: async () => {},
-    setDropdownOpen: () => {},
+    // Provide no-op implementations that satisfy the linter (not empty functions)
+  refresh: async () => Promise.resolve(),
+  markRead: async () => Promise.resolve(),
+  setDropdownOpen: () => undefined,
   }
-  const handleOpenChange = (open: boolean) => setDropdownOpen(open)
+  const handleOpenChange = (open: boolean) => { setDropdownOpen(open); }
 
   return (
     <DropdownMenu onOpenChange={handleOpenChange}>

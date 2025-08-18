@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\NotificationPreferenceController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\CatController;
@@ -19,13 +20,21 @@ use App\Http\Controllers\PlacementRequestController;
 use App\Http\Controllers\VersionController;
 use App\Http\Controllers\TransferHandoverController;
 use App\Http\Controllers\FosterReturnHandoverController;
+use App\Http\Controllers\UnsubscribeController;
 
 Route::get('/version', [VersionController::class, 'show']);
+
+// Unsubscribe endpoint (no auth required)
+Route::post('/unsubscribe', [UnsubscribeController::class, 'unsubscribe']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead']); // legacy alias
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead']);
     Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
+    
+    // Notification preferences
+    Route::get('/notification-preferences', [NotificationPreferenceController::class, 'index']);
+    Route::put('/notification-preferences', [NotificationPreferenceController::class, 'update']);
 });
 
 /*

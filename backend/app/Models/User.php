@@ -29,7 +29,6 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
-        'role',
         'avatar_url',
     ];
 
@@ -53,7 +52,6 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'role' => \App\Enums\UserRole::class,
         ];
     }
 
@@ -80,6 +78,16 @@ class User extends Authenticatable implements FilamentUser
     public function ownershipHistory(): HasMany
     {
         return $this->hasMany(\App\Models\OwnershipHistory::class);
+    }
+
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    public function notificationPreferences(): HasMany
+    {
+        return $this->hasMany(NotificationPreference::class);
     }
 
     /**

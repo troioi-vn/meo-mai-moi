@@ -5,10 +5,33 @@ All notable changes to this project are documented here, following the [Keep a C
 ## [Unreleased]
 
 ### Added
+- **Email Notifications System**: Comprehensive email notification system for placement requests and helper responses.
+  - **Backend**:
+    - Database schema with `notification_preferences` and `email_configurations` tables
+    - `NotificationPreference` and `EmailConfiguration` models with full CRUD functionality
+    - `NotificationType` enum with placement request and helper response notification types
+    - `EmailConfigurationService` for managing SMTP/Mailgun provider settings with test connection functionality
+    - `NotificationService` for intelligent notification routing based on user preferences
+    - Email templates and mail classes for placement request responses, acceptances, and helper profile notifications
+    - `SendNotificationEmail` job for asynchronous email processing with delivery tracking
+    - Filament admin resource for email configuration management with dynamic provider forms
+    - API endpoints for user notification preference management
+    - Unsubscribe functionality with token generation and landing page
+    - Admin monitoring widgets for email delivery statistics and failure analysis
+    - Comprehensive test suite with unit, feature, and integration tests
+  - **Frontend**:
+    - `NotificationPreferences` component with toggle switches for email/in-app preferences
+    - Dedicated `NotificationsPage` in account settings with real-time preference updates
+    - Integration with existing account page structure and navigation
+    - Comprehensive test coverage for notification preference components
+  - **Integration**: Seamless integration with existing notification events while maintaining backward compatibility
 - Admin: User impersonation support in Filament.
   - Added packages: `lab404/laravel-impersonate` and `stechstudio/filament-impersonate`.
   - Enabled impersonation in `config/filament-users.php`.
   - Implemented `User::canImpersonate()` and `User::canBeImpersonated()` guards.
+ - API Auth semantics (api/*): Force JSON unauthenticated responses.
+   - API requests under `api/*` now consistently respond with HTTP 401 and a JSON body when unauthenticated (no redirects), improving SPA compatibility and error handling.
+ - Transfer responder visibility: New policy ability `viewResponderProfile` so owners/recipients/initiators can see the responder’s helper profile for a transfer request.
 
 ### Changed
 - Backend Docker build: Upgraded Composer from 2.7 to 2.8 to remove PHP 8.4 E_STRICT deprecation notices during composer install.
@@ -30,6 +53,10 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Transfer Acceptance Flow**: Accepting a transfer response now fulfills the related placement request transactionally and auto-rejects other pending responses.
 - **Transfer Acceptance Flow (deferred finalization)**: Accept no longer immediately transfers ownership or creates a foster assignment. It now creates a `TransferHandover` record and defers finalization to handover completion (see Added).
 - **Cat Visibility Policy**: Active fosterers are allowed to view the cat profile while the assignment is active.
+ - API exception handling: For `api/*`, exceptions render JSON by default; unauthenticated returns no longer attempt web-login redirects.
+ - Proxy/IP handling: Nginx now forwards `REMOTE_ADDR`, `X-Forwarded-For`, and `X-Forwarded-Proto` to PHP-FPM; removed wildcard `trustProxies` to avoid null-IP issues.
+ - TransferRequestPolicy: Broadened `accept`/`reject` to allow cat owner or `recipient_user_id`; denial reasons now use Response-based messages for clarity.
+ - Frontend: My Cats page UX polish; reduced console noise by suppressing successful test output in the test runner.
 
 ### Fixed
 - Frontend: CatCard "Fulfilled" badge incorrectly showed for new/open placement requests. Now it only appears when there are placement requests but none are active/open (derived from `is_active` or `status` in {`open`, `pending_review`, `pending`}); Respond button visibility also falls back to this derived state when the backend convenience flag is absent.
@@ -112,6 +139,9 @@ All notable changes to this project are documented here, following the [Keep a C
 - **File Permissions**: The file permissions for the `storage` directory were corrected.
 - **Test Failures**: Fixed a number of test failures related to the `sonner` library and incorrect test selectors.
 - **Frontend Tests**: Resolved multiple test failures across various components by adding polyfills for `PointerEvent` and `scrollIntoView` to the test setup, fixing brittle test logic, and addressing timeout issues.
+ - API unauthenticated 500s: Eliminated `Route [login] not defined` and Symfony `IpUtils` null-IP errors on unauthenticated API calls; guests now receive 401 JSON reliably.
+ - HelperProfile delete: Hardened deletion to clean up stored photos and return proper 401/403/204 codes across guest/non-owner/owner paths; added feature tests.
+ - Backend tests: Addressed flaky/failed tests in recent policy and controller updates.
 
 ### Changed
 - **Backup & Restore Scripts**: The backup and restore scripts were improved to be more robust and user-friendly. They now dynamically load database credentials from the running container and correctly drop the database before restoring.

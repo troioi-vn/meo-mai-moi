@@ -201,3 +201,19 @@ docker compose exec backend php artisan l5-swagger:generate
 
 - Branches: work on separate branches
 - Naming: `feature/task-description` or `fix/bug-description`
+
+## RBAC (short)
+
+- Source of truth: Spatie Laravel Permission. The legacy `users.role` column has been removed.
+- Assign roles (examples):
+	- In code: `$user->assignRole('admin');`, check with `$user->hasRole(['admin','super_admin'])`.
+	- In Tinker:
+		- `php artisan tinker`
+		- `\App\Models\User::firstWhere('email','admin@catarchy.space')->assignRole('super_admin');`
+- Use `$user->can('permission-name')` for granular checks; controllers should defer to policies via `$this->authorize()`.
+
+## Troubleshooting (short)
+
+- Storage link: docker compose exec backend php artisan storage:link
+- Admin 403: php artisan shield:generate --all && php artisan db:seed --class=ShieldSeeder
+- Reset DB: php artisan migrate:fresh --seed

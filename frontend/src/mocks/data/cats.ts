@@ -405,11 +405,12 @@ export const catHandlers = [
   // Returns cats with active placement requests - supports different test scenarios
   http.get('http://localhost:3000/api/cats/placement-requests', ({ request }) => {
     const url = new URL(request.url)
-    const scenario = url.searchParams.get('scenario') as keyof typeof testScenarios
-    
-    // Use scenario from query param if provided, otherwise use current scenario
-    const activeScenario = scenario && testScenarios[scenario] ? scenario : currentPlacementRequestScenario
-    const cats = testScenarios[activeScenario]
+  const scenarioParam = url.searchParams.get('scenario')
+  const scenarioKey = (scenarioParam && (scenarioParam in testScenarios ? scenarioParam : undefined)) as keyof typeof testScenarios | undefined
+
+  // Use scenario from query param if provided and valid, otherwise use current scenario
+  const activeScenario: keyof typeof testScenarios = scenarioKey ?? currentPlacementRequestScenario
+  const cats = testScenarios[activeScenario]
     
     return HttpResponse.json({ data: cats })
   }),

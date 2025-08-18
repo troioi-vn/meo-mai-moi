@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Models\User;
 use App\Models\TransferRequest;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Auth\Access\Response;
 
 class TransferRequestPolicy
 {
@@ -34,9 +35,28 @@ class TransferRequestPolicy
         return $user->helperProfiles()->exists() || $user->can('create_transfer::request');
     }
 
-    public function accept(User $user, TransferRequest $transferRequest): bool
+    public function accept(User $user, TransferRequest $transferRequest): Response
     {
-        return $user->id === $transferRequest->cat->user_id || $user->can('accept_transfer::request');
+        // Cat owner (recipient) can accept; also allow via explicit permission
+        if (($transferRequest->cat && $user->id === $transferRequest->cat->user_id)
+            || ($transferRequest->recipient_user_id && $user->id === $transferRequest->recipient_user_id)
+            || $user->can('accept_transfer::request')) {
+            return Response::allow();
+        }
+
+        return Response::deny('Only the cat owner can accept this transfer request.');
+    }
+
+    public function reject(User $user, TransferRequest $transferRequest): Response
+    {
+        // Recipient (cat owner) can reject; allow permission fallback
+        if (($transferRequest->cat && $user->id === $transferRequest->cat->user_id)
+            || ($transferRequest->recipient_user_id && $user->id === $transferRequest->recipient_user_id)
+            || $user->can('reject_transfer::request')) {
+            return Response::allow();
+        }
+
+        return Response::deny('Only the cat owner can reject this transfer request.');
     }
 
     /**
@@ -109,5 +129,18 @@ class TransferRequestPolicy
     public function reorder(User $user): bool
     {
         return $user->can('reorder_transfer::request');
+    }
+
+    /**
+     * Allow the cat owner (recipient) to view the responder's helper profile for this transfer request.
+     */
+    public function viewResponderProfile(User $user, TransferRequest $transferRequest): bool
+    {
+        // Owner (recipient) or the initiator can view the responder's profile
+        return ($transferRequest->cat && $user->id === $transferRequest->cat->user_id)
+            || ($transferRequest->recipient_user_id && $user->id === $transferRequest->recipient_user_id)
+            || ($transferRequest->initiator_user_id && $user->id === $transferRequest->initiator_user_id)
+            || $user->hasRole('admin')
+            || $user->can('view_transfer::request');
     }
 }

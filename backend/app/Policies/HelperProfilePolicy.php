@@ -51,17 +51,29 @@ class HelperProfilePolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, HelperProfile $helperProfile): bool
+    public function update(?User $user, HelperProfile $helperProfile): bool
     {
-        return $user->can('update_helper::profile');
+        // Reject if unauthenticated
+        if (! $user) {
+            return false;
+        }
+
+        // Owners can update their own helper profile; admins/others via permission
+        return $user->id === $helperProfile->user_id || $user->can('update_helper::profile');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, HelperProfile $helperProfile): bool
+    public function delete(?User $user, HelperProfile $helperProfile): bool
     {
-        return $user->can('delete_helper::profile');
+        // Reject if unauthenticated
+        if (! $user) {
+            return false;
+        }
+
+        // Owners can delete their own helper profile; admins/others via permission
+        return $user->id === $helperProfile->user_id || $user->can('delete_helper::profile');
     }
 
     /**

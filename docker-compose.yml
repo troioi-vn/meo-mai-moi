@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   # Backend (serves both API and frontend)
   backend:
@@ -36,7 +38,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d meo_mai_moi"]
+      test: ["CMD-SHELL", "pg_isready -U user -q"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -47,8 +49,5 @@ networks:
 
 volumes:
   pgdata:
-    driver: local
   uploads_data:
-    driver: local
   logs_data:
-    driver: local

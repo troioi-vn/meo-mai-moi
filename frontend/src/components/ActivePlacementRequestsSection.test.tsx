@@ -75,6 +75,9 @@ describe('ActivePlacementRequestsSection', () => {
     vi.clearAllMocks()
   })
 
+  // Helper that returns a never-resolving promise with an explicit never type
+  const neverResolved = (): Promise<never> => new Promise<never>(() => {})
+
   afterEach(() => {
     vi.resetAllMocks()
   })
@@ -82,7 +85,7 @@ describe('ActivePlacementRequestsSection', () => {
   describe('Loading State', () => {
     it('displays loading skeleton cards while fetching data', async () => {
       // Mock API to never resolve to test loading state
-      mockGetPlacementRequests.mockImplementation(() => new Promise(() => {}))
+  mockGetPlacementRequests.mockImplementation(() => neverResolved())
 
       renderWithRouter(<ActivePlacementRequestsSection />)
 
@@ -99,7 +102,7 @@ describe('ActivePlacementRequestsSection', () => {
     })
 
     it('shows proper loading structure with skeleton elements', () => {
-      mockGetPlacementRequests.mockImplementation(() => new Promise(() => {}))
+  mockGetPlacementRequests.mockImplementation(() => neverResolved())
 
       renderWithRouter(<ActivePlacementRequestsSection />)
 
@@ -159,7 +162,7 @@ describe('ActivePlacementRequestsSection', () => {
     it('shows loading state during retry', async () => {
       mockGetPlacementRequests
         .mockRejectedValueOnce(new Error('Network error'))
-        .mockImplementation(() => new Promise(() => {})) // Never resolves for loading test
+        .mockImplementation(() => neverResolved()) // Never resolves for loading test
 
       renderWithRouter(<ActivePlacementRequestsSection />)
 
@@ -213,12 +216,12 @@ describe('ActivePlacementRequestsSection', () => {
         createMockCat(1, 'Fluffy'),
         createMockCat(2, 'Whiskers'),
       ]
-      mockGetPlacementRequests.mockResolvedValue(mockCats)
+  mockGetPlacementRequests.mockResolvedValue(mockCats)
 
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByTestId('cat-card-1')).toBeInTheDocument()
+  expect(screen.getByTestId(`cat-card-${String(1)}`)).toBeInTheDocument()
         expect(screen.getByTestId('cat-card-2')).toBeInTheDocument()
       })
 
@@ -261,14 +264,14 @@ describe('ActivePlacementRequestsSection', () => {
       })
 
       // Should only show first 4 cats
-      expect(screen.getByTestId('cat-card-1')).toBeInTheDocument()
-      expect(screen.getByTestId('cat-card-2')).toBeInTheDocument()
-      expect(screen.getByTestId('cat-card-3')).toBeInTheDocument()
-      expect(screen.getByTestId('cat-card-4')).toBeInTheDocument()
+  expect(screen.getByTestId(`cat-card-${String(1)}`)).toBeInTheDocument()
+  expect(screen.getByTestId(`cat-card-${String(2)}`)).toBeInTheDocument()
+  expect(screen.getByTestId(`cat-card-${String(3)}`)).toBeInTheDocument()
+  expect(screen.getByTestId(`cat-card-${String(4)}`)).toBeInTheDocument()
 
       // Should not show 5th and 6th cats
-      expect(screen.queryByTestId('cat-card-5')).not.toBeInTheDocument()
-      expect(screen.queryByTestId('cat-card-6')).not.toBeInTheDocument()
+  expect(screen.queryByTestId(`cat-card-${String(5)}`)).not.toBeInTheDocument()
+  expect(screen.queryByTestId(`cat-card-${String(6)}`)).not.toBeInTheDocument()
     })
 
     it('shows all cats when 4 or fewer are available', async () => {

@@ -25,7 +25,7 @@ return [
      * ---------------------------------------------
      * if you are using filament impersonate, you can set this to true.
      */
-    'impersonate' => true,
+    'impersonate' => false,
 
     /**
      * ---------------------------------------------

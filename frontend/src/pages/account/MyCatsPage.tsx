@@ -61,10 +61,18 @@ export default function MyCatsPage() {
     <div className="container mx-auto px-4 py-8 bg-background min-h-screen">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-foreground">My Cats</h1>
-        <Button onClick={() => void navigate('/account/cats/create')}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          New Cat
-        </Button>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Switch id="show-all" checked={showAll} onCheckedChange={setShowAll} className="scale-75" />
+            <label htmlFor="show-all" className="text-xs font-medium cursor-pointer">
+              Show all (including deceased)
+            </label>
+          </div>
+          <Button onClick={() => void navigate('/account/cats/create')}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            New Cat
+          </Button>
+        </div>
       </div>
 
       {loading && <p className="text-muted-foreground">Loading your cats...</p>}
@@ -73,46 +81,65 @@ export default function MyCatsPage() {
       {!loading && !error && (
         <div className="space-y-10">
           {/* Owned */}
-          <section>
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-2xl font-semibold">Owned</h2>
-              <div className="flex items-center gap-2">
-                <Switch id="show-all" checked={showAll} onCheckedChange={setShowAll} className="scale-75" />
-                <label htmlFor="show-all" className="text-xs font-medium cursor-pointer">
-                  Show all (including deceased)
-                </label>
-              </div>
-            </div>
-            <SectionGrid cats={showAll ? sections.owned : sections.owned.filter(c => c.status !== 'deceased')} />
-          </section>
+          {(() => {
+            const ownedCats = showAll ? sections.owned : sections.owned.filter(c => c.status !== 'deceased')
+            return ownedCats.length > 0 && (
+              <section>
+                <h2 className="text-2xl font-semibold mb-3">Owned</h2>
+                <SectionGrid cats={ownedCats} />
+              </section>
+            )
+          })()}
 
           {/* Fostering (Active) */}
-          <section>
-            <h2 className="text-2xl font-semibold mb-3">Fostering (Active)</h2>
-            <SectionGrid cats={sections.fostering_active} emptyText="You are not currently fostering any cats." />
-          </section>
+          {sections.fostering_active.length > 0 && (
+            <section>
+              <h2 className="text-2xl font-semibold mb-3">Fostering (Active)</h2>
+              <SectionGrid cats={sections.fostering_active} />
+            </section>
+          )}
 
           {/* Fostering (Past) */}
-          <section>
-            <h2 className="text-2xl font-semibold mb-3">Fostering (Past)</h2>
-            <SectionGrid cats={sections.fostering_past} emptyText="No past fostering history yet." />
-          </section>
+          {sections.fostering_past.length > 0 && (
+            <section>
+              <h2 className="text-2xl font-semibold mb-3">Fostering (Past)</h2>
+              <SectionGrid cats={sections.fostering_past} />
+            </section>
+          )}
 
           {/* Transferred Away */}
-          <section>
-            <h2 className="text-2xl font-semibold mb-3">Transferred Away</h2>
-            <SectionGrid cats={sections.transferred_away} emptyText="No transferred-away cats to show yet." />
-          </section>
+          {sections.transferred_away.length > 0 && (
+            <section>
+              <h2 className="text-2xl font-semibold mb-3">Transferred Away</h2>
+              <SectionGrid cats={sections.transferred_away} />
+            </section>
+          )}
+
+          {/* Show message when no cats at all or no visible cats */}
+          {(() => {
+            const ownedCats = showAll ? sections.owned : sections.owned.filter(c => c.status !== 'deceased')
+            const hasVisibleCats = ownedCats.length > 0 || 
+                                   sections.fostering_active.length > 0 || 
+                                   sections.fostering_past.length > 0 || 
+                                   sections.transferred_away.length > 0
+            
+            return !hasVisibleCats && (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground mb-4">You don't have any cats yet.</p>
+                <Button onClick={() => void navigate('/account/cats/create')}>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Add Your First Cat
+                </Button>
+              </div>
+            )
+          })()}
         </div>
       )}
     </div>
   )
 }
 
-function SectionGrid({ cats, emptyText }: { cats: Cat[]; emptyText?: string }) {
-  if (cats.length === 0) {
-    return <p className="text-sm text-muted-foreground">{emptyText ?? 'Nothing here yet.'}</p>
-  }
+function SectionGrid({ cats }: { cats: Cat[] }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
       {cats.map((cat) => (

@@ -11,6 +11,7 @@ All notable changes to this project are documented here, following the [Keep a C
   - Implemented `User::canImpersonate()` and `User::canBeImpersonated()` guards.
 
 ### Changed
+- Backend Docker build: Upgraded Composer from 2.7 to 2.8 to remove PHP 8.4 E_STRICT deprecation notices during composer install.
 - Docker startup: stabilized DB readiness by using a simple `pg_isready` host:port probe in entrypoint and healthchecks; avoids requiring a specific database during boot.
 - Compose: simplified DB healthcheck; backend now consistently reaches healthy state.
 

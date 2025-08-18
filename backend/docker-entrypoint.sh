@@ -82,9 +82,13 @@ if [ -n "$APP_KEY_FROM_DOTENV" ] && [ "$APP_KEY_FROM_DOTENV" != "$APP_KEY_FROM_E
     echo "Exported APP_KEY from .env for runtime."
 fi
 
-echo "[Step 5] Running Migrations..."
-su -s /bin/sh -c "php artisan migrate --force" www-data
-echo "Migrations executed."
+if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
+    echo "[Step 5] Running Migrations..."
+    su -s /bin/sh -c "php artisan migrate --force" www-data
+    echo "Migrations executed."
+else
+    echo "[Step 5] Skipped migrations (RUN_MIGRATIONS=false)."
+fi
 
 echo "[Step 6] Linking storage..."
 su -s /bin/sh -c "php artisan optimize:clear && php artisan storage:link --force" www-data

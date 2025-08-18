@@ -1,8 +1,7 @@
 services:
-  # Backend (serves both API and frontend)
   backend:
     build:
-      context: .
+      context: ./
       dockerfile: ./backend/Dockerfile
     ports:
       - "8000:80"
@@ -17,12 +16,16 @@ services:
       - uploads_data:/var/www/storage/app/public
       - logs_data:/var/www/storage/logs
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/api/version"]
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost/api/version
       interval: 30s
       timeout: 10s
       retries: 3
+    restart: unless-stopped
 
-  # Database
   db:
     image: postgres:14-alpine
     environment:
@@ -36,11 +39,14 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      # Only check server readiness (host:port)
-      test: ["CMD", "pg_isready", "-q", "-h", "127.0.0.1", "-p", "5432", "-U", "user"]
+      # Use container env vars (escaped $ -> $$) so expansion happens inside container, not by compose
+      test:
+        - CMD-SHELL
+        - PGUSER=$${POSTGRES_USER} PGPASSWORD=$${POSTGRES_PASSWORD} pg_isready -q -d $${POSTGRES_DB} -h 127.0.0.1 -p 5432
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
 networks:
   meo-mai-moi-network:

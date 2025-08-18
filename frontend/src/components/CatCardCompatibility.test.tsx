@@ -53,24 +53,7 @@ describe('CatCard Compatibility in ActivePlacementRequestsSection', () => {
     placement_request_active: true,
   }
 
-  const mockCatWithoutPlacement: Cat = {
-    id: 2,
-    name: 'Whiskers',
-    breed: 'Siamese',
-    birthday: '2019-05-20',
-    status: 'active',
-    description: 'A curious and playful cat.',
-    location: 'Los Angeles, CA',
-    user_id: 2,
-    user: {
-      id: 2,
-      name: 'Another User',
-      email: 'another@example.com',
-    },
-    created_at: '2023-01-01T00:00:00Z',
-    updated_at: '2023-01-01T00:00:00Z',
-    placement_requests: [],
-  }
+  // Removed unused mockCatWithoutPlacement (not required by tests)
 
   const mockOwnedCat: Cat = {
     id: 3,
@@ -112,7 +95,7 @@ describe('CatCard Compatibility in ActivePlacementRequestsSection', () => {
 
     renderWithRouter(<ActivePlacementRequestsSection />, {
       initialAuthState: {
-        user: { id: 1, name: 'Test User', email: 'test@example.com' } as any,
+        user: { id: 1, name: 'Test User', email: 'test@example.com' },
         isLoading: false,
         isAuthenticated: true,
       },

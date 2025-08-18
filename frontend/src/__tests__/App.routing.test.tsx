@@ -33,6 +33,14 @@ beforeEach(() => {
     // Mock for notifications
     http.get('http://localhost:3000/api/notifications', () => {
       return HttpResponse.json({ data: { notifications: [], unread_count: 1 } })
+    }),
+    // Mock for notification preferences
+    http.get('http://localhost:3000/api/notification-preferences', () => {
+      return HttpResponse.json({ 
+        data: [
+          { type: 'placement_request_response', label: 'Response to Placement Request', email_enabled: true, in_app_enabled: true }
+        ] 
+      })
     })
   )
 })
@@ -86,6 +94,30 @@ describe('App Routing', () => {
         },
         { timeout: 5000 }
       )
+    })
+  })
+
+  describe('Account routes', () => {
+    it('renders notifications page route correctly', async () => {
+      renderWithRouter(<App />, {
+        route: '/account/notifications',
+        initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
+      })
+
+      await waitFor(
+        async () => {
+          expect(
+            await screen.findByRole('heading', { name: /notification settings/i })
+          ).toBeInTheDocument()
+        },
+        { timeout: 5000 }
+      )
+
+      // Verify breadcrumbs are present
+      expect(screen.getByText('Notifications')).toBeInTheDocument()
+      
+      // Verify back button is present
+      expect(screen.getByRole('link', { name: /back to account/i })).toBeInTheDocument()
     })
   })
 })

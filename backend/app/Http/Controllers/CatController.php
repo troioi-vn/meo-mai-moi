@@ -7,7 +7,6 @@ use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Annotations as OA;
-use App\Enums\UserRole;
 use App\Enums\CatStatus;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -157,10 +156,9 @@ class CatController extends Controller
         // Centralize access via policy
         $this->authorize('view', $cat);
 
-        $user = $request->user();
-        $roleValue = $user && $user->role instanceof \BackedEnum ? $user->role->value : ($user->role ?? null);
-        $isOwner = $user && $cat->user_id === $user->id;
-        $isAdmin = $roleValue === UserRole::ADMIN->value || $roleValue === 'admin';
+    $user = $request->user();
+    $isOwner = $user && $cat->user_id === $user->id;
+    $isAdmin = $user && method_exists($user, 'hasRole') ? $user->hasRole(['admin', 'super_admin']) : false;
 
         $viewerPermissions = [
             'can_edit' => $isOwner || $isAdmin,
@@ -290,12 +288,7 @@ class CatController extends Controller
         if (!$user) {
             return $this->sendError('Unauthenticated.', 401);
         }
-        $role = $user->role instanceof \BackedEnum ? $user->role->value : $user->role;
-        $isAdmin = $role === UserRole::ADMIN->value || $role === 'admin';
-        $isOwner = $cat->user_id === $user->id;
-        if (!$isAdmin && !$isOwner) {
-            return $this->sendError('Forbidden: You are not authorized to update this cat.', 403);
-        }
+        $this->authorize('update', $cat);
 
         $validatedData = $request->validate([
             'name' => 'sometimes|required|string|max:255',
@@ -351,13 +344,7 @@ class CatController extends Controller
         if (!$user) {
             return $this->sendError('Unauthenticated.', 401);
         }
-        $role = $user->role instanceof \BackedEnum ? $user->role->value : $user->role;
-        $isAdmin = $role === UserRole::ADMIN->value || $role === 'admin';
-        $isOwner = $cat->user_id === $user->id;
-
-        if (!$isAdmin && !$isOwner) {
-            return $this->sendError('Forbidden: You are not authorized to delete this cat.', 403);
-        }
+        $this->authorize('delete', $cat);
 
         if (!Hash::check($request->input('password'), $user->password)) {
             return $this->sendError('The provided password does not match our records.', 422);
@@ -398,13 +385,7 @@ class CatController extends Controller
         if (!$user) {
             return $this->sendError('Unauthenticated.', 401);
         }
-        $role = $user->role instanceof \BackedEnum ? $user->role->value : $user->role;
-        $isAdmin = $role === UserRole::ADMIN->value || $role === 'admin';
-        $isOwner = $cat->user_id === $user->id;
-
-        if (!$isAdmin && !$isOwner) {
-            return $this->sendError('Forbidden: You are not authorized to update this cat.', 403);
-        }
+        $this->authorize('update', $cat);
 
         $validated = $request->validate([
             'status' => ['required', 'string', new \Illuminate\Validation\Rules\Enum(CatStatus::class)],

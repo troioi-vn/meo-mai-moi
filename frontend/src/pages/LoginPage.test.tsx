@@ -63,11 +63,11 @@ describe('LoginPage', () => {
     await userEvent.type(passwordInput, 'password123')
     await userEvent.click(loginButton)
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/account')
+      expect(mockNavigate).toHaveBeenCalledWith('/account/cats')
     })
   })
 
-  it('redirects authenticated users to /account', async () => {
+  it('redirects authenticated users to /account/cats', async () => {
     renderWithRouter(<LoginPage />, {
       initialAuthState: {
         user: { id: 1, name: 'Test User', email: 'test@example.com' },
@@ -78,7 +78,7 @@ describe('LoginPage', () => {
     })
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/account')
+      expect(mockNavigate).toHaveBeenCalledWith('/account/cats')
     })
   })
 

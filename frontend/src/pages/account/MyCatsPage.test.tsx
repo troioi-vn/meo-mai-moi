@@ -116,4 +116,130 @@ describe('MyCatsPage', () => {
       })
     })
   })
+
+  describe('Section Visibility', () => {
+    it('hides section titles when sections are empty', async () => {
+      server.use(
+        http.get('http://localhost:3000/api/my-cats/sections', () => {
+          return HttpResponse.json({ data: {
+            owned: [],
+            fostering_active: [],
+            fostering_past: [],
+            transferred_away: [],
+          } })
+        })
+      )
+
+      renderWithRouter(<MyCatsPage />, {
+        initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
+      })
+
+      await waitFor(() => {
+        expect(screen.queryByText('Owned')).not.toBeInTheDocument()
+        expect(screen.queryByText('Fostering (Active)')).not.toBeInTheDocument()
+        expect(screen.queryByText('Fostering (Past)')).not.toBeInTheDocument()
+        expect(screen.queryByText('Transferred Away')).not.toBeInTheDocument()
+      })
+    })
+
+    it('shows section titles only when sections have cats', async () => {
+      server.use(
+        http.get('http://localhost:3000/api/my-cats/sections', () => {
+          return HttpResponse.json({ data: {
+            owned: [mockCat],
+            fostering_active: [anotherMockCat],
+            fostering_past: [],
+            transferred_away: [],
+          } })
+        })
+      )
+
+      renderWithRouter(<MyCatsPage />, {
+        initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
+      })
+
+      await waitFor(() => {
+        expect(screen.getByText('Owned')).toBeInTheDocument()
+        expect(screen.getByText('Fostering (Active)')).toBeInTheDocument()
+        expect(screen.queryByText('Fostering (Past)')).not.toBeInTheDocument()
+        expect(screen.queryByText('Transferred Away')).not.toBeInTheDocument()
+      })
+    })
+
+    it('shows empty state message when no cats at all', async () => {
+      server.use(
+        http.get('http://localhost:3000/api/my-cats/sections', () => {
+          return HttpResponse.json({ data: {
+            owned: [],
+            fostering_active: [],
+            fostering_past: [],
+            transferred_away: [],
+          } })
+        })
+      )
+
+      renderWithRouter(<MyCatsPage />, {
+        initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
+      })
+
+      expect(await screen.findByText("You don't have any cats yet.")).toBeInTheDocument()
+      expect(await screen.findByRole('button', { name: /add your first cat/i })).toBeInTheDocument()
+    })
+
+    it('hides owned section when only deceased cats and show all is off', async () => {
+      server.use(
+        http.get('http://localhost:3000/api/my-cats/sections', () => {
+          return HttpResponse.json({ data: {
+            owned: [deceasedMockCat],
+            fostering_active: [],
+            fostering_past: [],
+            transferred_away: [],
+          } })
+        })
+      )
+
+      renderWithRouter(<MyCatsPage />, {
+        initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
+      })
+
+      await waitFor(() => {
+        expect(screen.queryByText('Owned')).not.toBeInTheDocument()
+        expect(screen.getByText("You don't have any cats yet.")).toBeInTheDocument()
+      })
+    })
+
+    it('shows owned section when deceased cats are included via show all toggle', async () => {
+      server.use(
+        http.get('http://localhost:3000/api/my-cats/sections', () => {
+          return HttpResponse.json({ data: {
+            owned: [deceasedMockCat],
+            fostering_active: [],
+            fostering_past: [],
+            transferred_away: [],
+          } })
+        })
+      )
+
+      renderWithRouter(<MyCatsPage />, {
+        initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
+      })
+
+      // Initially should show empty state
+      await waitFor(() => {
+        expect(screen.queryByText('Owned')).not.toBeInTheDocument()
+        expect(screen.getByText("You don't have any cats yet.")).toBeInTheDocument()
+      })
+
+      // Toggle show all
+      const showAllSwitch = await screen.findByLabelText(/show all/i)
+      await userEvent.click(showAllSwitch)
+
+      // Now should show owned section with deceased cat
+      await waitFor(() => {
+        expect(screen.getByText('Owned')).toBeInTheDocument()
+        expect(screen.getByText(deceasedMockCat.name)).toBeInTheDocument()
+        expect(screen.queryByText("You don't have any cats yet.")).not.toBeInTheDocument()
+      })
+    })
+  })
 })

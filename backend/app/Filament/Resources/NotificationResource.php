@@ -151,7 +151,16 @@ class NotificationResource extends Resource
                         'success' => 'delivered',
                         'danger' => 'failed',
                     ])
-                    ->formatStateUsing(fn (string $state): string => ucfirst($state)),
+                    ->formatStateUsing(fn (string $state): string => ucfirst($state))
+                    ->tooltip(function (Notification $record): ?string {
+                        if ($record->failed_at && $record->failure_reason) {
+                            return 'Failed: ' . $record->failure_reason;
+                        }
+                        if ($record->delivered_at) {
+                            return 'Delivered at: ' . $record->delivered_at->format('M j, Y g:i A');
+                        }
+                        return null;
+                    }),
                 
                 Tables\Columns\BadgeColumn::make('engagement_status')
                     ->label('Engagement')
@@ -191,6 +200,20 @@ class NotificationResource extends Resource
                     ->label('Read')
                     ->dateTime()
                     ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                
+                Tables\Columns\TextColumn::make('failure_reason')
+                    ->label('Failure Reason')
+                    ->limit(30)
+                    ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
+                        $state = $column->getState();
+                        if (!$state || strlen($state) <= 30) {
+                            return null;
+                        }
+                        return $state;
+                    })
+                    ->visible(fn (): bool => request()->has('tableFilters.delivery_status.value') && 
+                        request()->get('tableFilters')['delivery_status']['value'] === 'failed')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([

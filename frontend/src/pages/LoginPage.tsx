@@ -9,7 +9,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (auth && !auth.isLoading && auth.isAuthenticated) {
-      void navigate('/account')
+      void navigate('/account/cats')
     }
   }, [auth, navigate])
 

@@ -29,27 +29,28 @@ function LevelIcon({ level }: { level: 'info' | 'success' | 'warning' | 'error' 
 function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime()
   const s = Math.floor(diff / 1000)
-  if (s < 60) return `${s}s`
+  if (s < 60) return `${String(s)}s`
   const m = Math.floor(s / 60)
-  if (m < 60) return `${m}m`
+  if (m < 60) return `${String(m)}m`
   const h = Math.floor(m / 60)
-  if (h < 24) return `${h}h`
+  if (h < 24) return `${String(h)}h`
   const d = Math.floor(h / 24)
-  return `${d}d`
+  return `${String(d)}d`
 }
 
 export function NotificationBell() {
   // Allow rendering without provider in isolated tests
-  const ctx = React.useContext(NotificationContext)
+  const ctx = React.use(NotificationContext)
   const { notifications, unreadCount, setDropdownOpen, markRead } = ctx ?? {
     notifications: [],
     unreadCount: 0,
     loading: false,
-    refresh: async () => {},
-    markRead: async () => {},
-    setDropdownOpen: () => {},
+    // Provide no-op implementations that satisfy the linter (not empty functions)
+  refresh: async () => Promise.resolve(),
+  markRead: async () => Promise.resolve(),
+  setDropdownOpen: () => undefined,
   }
-  const handleOpenChange = (open: boolean) => setDropdownOpen(open)
+  const handleOpenChange = (open: boolean) => { setDropdownOpen(open); }
 
   return (
     <DropdownMenu onOpenChange={handleOpenChange}>
@@ -70,30 +71,47 @@ export function NotificationBell() {
           <div className="px-3 py-8 text-sm text-muted-foreground text-center">No notifications</div>
         ) : (
           <div className="max-h-96 overflow-auto py-1">
-            {notifications.slice(0, 20).map((n) => (
-              <DropdownMenuItem
-                key={n.id}
-                className={`px-3 py-2 items-start gap-3 ${n.read_at ? '' : 'bg-accent/40'}`}
-                onSelect={(e) => {
-                  e.preventDefault()
-                  void markRead(n.id)
-                }}
-              >
-                <LevelIcon level={n.level} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-medium truncate">{n.title}</p>
-                    <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(n.created_at)}</span>
+            {notifications.slice(0, 20).map((n) => {
+              const inner = (
+                <>
+                  <LevelIcon level={n.level} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-medium truncate">{n.title}</p>
+                      <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(n.created_at)}</span>
+                    </div>
+                    {n.body && <p className="text-xs text-muted-foreground line-clamp-2">{n.body}</p>}
                   </div>
-                  {n.body && <p className="text-xs text-muted-foreground line-clamp-2">{n.body}</p>}
-                  {n.url && (
-                    <Link to={n.url} className="text-xs text-primary hover:underline" onClick={() => void markRead(n.id)}>
-                      View
+                </>
+              )
+
+              // If URL present, render item as a Link so navigation works inside the menu
+              if (n.url) {
+                return (
+                  <DropdownMenuItem
+                    key={n.id}
+                    asChild
+                    className={`px-3 py-2 items-start gap-3 ${n.read_at ? '' : 'bg-accent/40'}`}
+                    onSelect={() => void markRead(n.id)}
+                  >
+                    <Link to={n.url} className="flex items-start gap-3">
+                      {inner}
                     </Link>
-                  )}
-                </div>
-              </DropdownMenuItem>
-            ))}
+                  </DropdownMenuItem>
+                )
+              }
+
+              // Otherwise, simple selectable row that marks as read
+              return (
+                <DropdownMenuItem
+                  key={n.id}
+                  className={`px-3 py-2 items-start gap-3 ${n.read_at ? '' : 'bg-accent/40'}`}
+                  onSelect={() => void markRead(n.id)}
+                >
+                  {inner}
+                </DropdownMenuItem>
+              )
+            })}
           </div>
         )}
       </DropdownMenuContent>

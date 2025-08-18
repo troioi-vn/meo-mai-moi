@@ -4,6 +4,16 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Added
+- Admin: User impersonation support in Filament.
+  - Added packages: `lab404/laravel-impersonate` and `stechstudio/filament-impersonate`.
+  - Enabled impersonation in `config/filament-users.php`.
+  - Implemented `User::canImpersonate()` and `User::canBeImpersonated()` guards.
+
+### Changed
+- Docker startup: stabilized DB readiness by using a simple `pg_isready` host:port probe in entrypoint and healthchecks; avoids requiring a specific database during boot.
+- Compose: simplified DB healthcheck; backend now consistently reaches healthy state.
+
 ### Changed
 - Frontend: Refined Cat Profile responses and handover UI.
   - Streamlined acceptance flow to open the schedule handover modal after accepting a response.

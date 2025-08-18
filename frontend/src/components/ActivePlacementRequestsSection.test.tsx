@@ -1,3 +1,4 @@
+import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
@@ -221,8 +222,8 @@ describe('ActivePlacementRequestsSection', () => {
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-  expect(screen.getByTestId(`cat-card-${String(1)}`)).toBeInTheDocument()
-        expect(screen.getByTestId('cat-card-2')).toBeInTheDocument()
+        expect(screen.getByTestId(`cat-card-${String(1)}`)).toBeInTheDocument()
+        expect(screen.getByTestId(`cat-card-${String(2)}`)).toBeInTheDocument()
       })
 
       expect(screen.getByText('Fluffy')).toBeInTheDocument()
@@ -236,7 +237,7 @@ describe('ActivePlacementRequestsSection', () => {
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByTestId('cat-card-1')).toBeInTheDocument()
+        expect(screen.getByTestId(`cat-card-${String(1)}`)).toBeInTheDocument()
       })
 
       // Check grid container classes
@@ -260,7 +261,7 @@ describe('ActivePlacementRequestsSection', () => {
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByTestId('cat-card-1')).toBeInTheDocument()
+        expect(screen.getByTestId(`cat-card-${String(1)}`)).toBeInTheDocument()
       })
 
       // Should only show first 4 cats
@@ -285,7 +286,7 @@ describe('ActivePlacementRequestsSection', () => {
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByTestId('cat-card-1')).toBeInTheDocument()
+        expect(screen.getByTestId(`cat-card-${String(1)}`)).toBeInTheDocument()
       })
 
       // Should show all 3 cats
@@ -319,7 +320,7 @@ describe('ActivePlacementRequestsSection', () => {
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByTestId('cat-card-1')).toBeInTheDocument()
+        expect(screen.getByTestId(`cat-card-${String(1)}`)).toBeInTheDocument()
       })
 
       expect(screen.queryByRole('button', { name: 'View All Requests' })).not.toBeInTheDocument()

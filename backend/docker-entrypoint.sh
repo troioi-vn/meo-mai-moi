@@ -17,7 +17,9 @@ echo "[Step 1.5] Waiting for database to be ready..."
 DB_HOST_NAME=${DB_HOST:-db}
 DB_PORT_NUMBER=${DB_PORT:-5432}
 DB_CHECK_USER=${DB_USERNAME:-user}
-DB_CHECK_DB=postgres
+DB_CHECK_DB=${DB_DATABASE:-postgres}
+# Ensure libpq sees the password for readiness/auth checks
+export PGPASSWORD="${DB_PASSWORD:-}"
 
 # Only check server reachability here (host:port). Don't depend on user/db existing yet.
 MAX_TRIES=60

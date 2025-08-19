@@ -42,24 +42,9 @@ class NotificationService
         }
 
         // Send email notification if enabled by user preference
+        // Don't gate on global email configuration here; the queued job will verify configuration
         if ($preferences->email_enabled) {
-            try {
-                if ($this->emailConfigurationService->isEmailEnabled()) {
-                    $emailSent = $this->sendEmail($user, $type, $data);
-                } else {
-                    Log::warning('Email notification requested but email system not configured', [
-                        'user_id' => $user->id,
-                        'type' => $type,
-                    ]);
-                }
-            } catch (\Exception $e) {
-                Log::error('Error checking email configuration', [
-                    'user_id' => $user->id,
-                    'type' => $type,
-                    'error' => $e->getMessage(),
-                ]);
-                // Continue with fallback logic
-            }
+            $emailSent = $this->sendEmail($user, $type, $data);
         }
 
         // Fallback: if email was requested but failed, and in-app wasn't sent, send in-app as fallback
@@ -83,15 +68,6 @@ class NotificationService
     public function sendEmail(User $user, string $type, array $data): bool
     {
         try {
-            // Validate email configuration before attempting to send
-            if (!$this->emailConfigurationService->isEmailEnabled()) {
-                Log::warning('Attempted to send email but no valid configuration exists', [
-                    'user_id' => $user->id,
-                    'type' => $type,
-                ]);
-                return false;
-            }
-
             // Create a notification record for tracking email delivery
             $notification = $this->createNotificationRecord($user, $type, $data, 'email');
             

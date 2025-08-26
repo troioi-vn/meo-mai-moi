@@ -229,6 +229,7 @@ const EditCatPage: React.FC = () => {
           </div>
           <form
             role="form"
+            noValidate
             onSubmit={(e) => {
               void handleSubmit(e)
             }}

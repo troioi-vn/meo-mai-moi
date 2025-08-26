@@ -1,5 +1,5 @@
-import { renderWithRouter, screen, waitFor, userEvent, fireEvent } from '@/test-utils'
-import { vi, describe, it, expect, beforeEach } from 'vitest'
+import { renderWithRouter, screen, waitFor, userEvent } from '@/test-utils'
+import { vi, describe, it, expect, beforeEach, beforeAll, afterAll } from 'vitest'
 import { http, HttpResponse } from 'msw'
 import { server } from '@/mocks/server'
 import { toast } from 'sonner'
@@ -24,6 +24,16 @@ vi.mock('react-router-dom', async () => {
 
 describe('EditCatPage', () => {
   const user = userEvent.setup()
+
+  // Silence console noise across tests
+  beforeAll(() => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'log').mockImplementation(() => {})
+  })
+
+  afterAll(() => {
+    vi.restoreAllMocks()
+  })
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -85,6 +95,13 @@ describe('EditCatPage', () => {
     })
   }
 
+  // Wait until the form is ready for interaction
+  const waitForFormToLoad = async () => {
+    const nameInput = await screen.findByLabelText(/name/i)
+    await waitFor(() => expect(nameInput).toHaveValue(mockCat.name))
+    return { nameInput }
+  }
+
   // it('loads and displays cat data in the form', async () => {
   //   mockUseParams.mockReturnValue({ id: '1' })
   //   renderComponent()
@@ -100,12 +117,6 @@ describe('EditCatPage', () => {
   // })
 
   it('submits updated data and navigates on success', async () => {
-    vi.spyOn(console, 'log').mockImplementation(() => {
-      /* empty */
-    })
-    vi.spyOn(console, 'error').mockImplementation(() => {
-      /* empty */
-    })
     const updatedName = 'Fluffy II'
     server.use(
       http.put('http://localhost:3000/api/cats/1', () => {
@@ -116,11 +127,9 @@ describe('EditCatPage', () => {
     mockUseParams.mockReturnValue({ id: '1' })
     renderComponent()
 
-  const nameInput1 = await screen.findByLabelText(/name/i)
-  await waitFor(() => expect(nameInput1).toHaveValue(mockCat.name))
-
-    await user.clear(screen.getByLabelText(/name/i))
-    await user.type(screen.getByLabelText(/name/i), updatedName)
+    const { nameInput } = await waitForFormToLoad()
+    await user.clear(nameInput)
+    await user.type(nameInput, updatedName)
     await user.click(screen.getByRole('button', { name: /update cat/i }))
 
     await waitFor(
@@ -135,31 +144,21 @@ describe('EditCatPage', () => {
       },
       { timeout: 5000 }
     )
-    vi.restoreAllMocks()
   })
 
-    it('displays validation errors for empty required fields', async () => {
-    vi.spyOn(console, 'log').mockImplementation(() => {
-      /* empty */
-    })
-    vi.spyOn(console, 'error').mockImplementation(() => {
-      /* empty */
-    })
+  it('displays validation errors for empty required fields', async () => {
     mockUseParams.mockReturnValue({ id: '1' })
     renderComponent()
 
-    const nameInput = await screen.findByLabelText(/name/i)
-    await waitFor(() => {
-      expect(nameInput).toHaveValue(mockCat.name)
-    })
-
+    await waitForFormToLoad()
     await user.clear(screen.getByLabelText(/name/i))
     await user.clear(screen.getByLabelText(/breed/i))
     await user.clear(screen.getByLabelText(/birthday/i))
     await user.clear(screen.getByLabelText(/location/i))
     await user.clear(screen.getByLabelText(/description/i))
 
-    fireEvent.submit(screen.getByRole('form'))
+    // Submit via the visible button to mirror user behavior
+    await user.click(screen.getByRole('button', { name: /update cat/i }))
 
     await waitFor(() => {
       expect(screen.getByText('Name is required.')).toBeInTheDocument()
@@ -168,16 +167,9 @@ describe('EditCatPage', () => {
       expect(screen.queryByText('Location is required.')).not.toBeInTheDocument()
       expect(screen.queryByText('Description is required.')).not.toBeInTheDocument()
     })
-    vi.restoreAllMocks()
   })
 
   it('handles server errors during submission', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {
-      /* empty */
-    })
-    vi.spyOn(console, 'log').mockImplementation(() => {
-      /* empty */
-    })
     server.use(
       http.put('http://localhost:3000/api/cats/1', () => {
         return new HttpResponse(null, { status: 500 })
@@ -187,22 +179,15 @@ describe('EditCatPage', () => {
     mockUseParams.mockReturnValue({ id: '1' })
     renderComponent()
 
-  // Wait for form to load by asserting on a known field value
-  const nameInput2 = await screen.findByLabelText(/name/i)
-  await waitFor(() => expect(nameInput2).toHaveValue(mockCat.name))
-
+  await waitForFormToLoad()
   await user.click(screen.getByRole('button', { name: /update cat/i }))
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('Failed to update cat profile. Please try again.')
     })
-    vi.restoreAllMocks()
   })
 
   it('redirects if user does not own the cat', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {
-      /* empty */
-    })
     mockUseParams.mockReturnValue({ id: '2' })
     renderComponent()
     await waitFor(() => {
@@ -211,7 +196,8 @@ describe('EditCatPage', () => {
     await waitFor(() => {
       expect(mockUseNavigate).toHaveBeenCalledWith('/')
     })
-    vi.restoreAllMocks()
+  // Ensure edit view is not present after redirect
+  expect(screen.queryByRole('heading', { name: /edit cat profile/i })).not.toBeInTheDocument()
   })
 
   it('navigates to the cat list on cancel', async () => {
@@ -226,12 +212,6 @@ describe('EditCatPage', () => {
   })
 
   it('submits the form successfully when optional fields are empty', async () => {
-    vi.spyOn(console, 'log').mockImplementation(() => {
-      /* empty */
-    })
-    vi.spyOn(console, 'error').mockImplementation(() => {
-      /* empty */
-    })
     server.use(
       http.put('http://localhost:3000/api/cats/1', () => {
         return HttpResponse.json({ data: { ...mockCat, location: '', description: '' } })
@@ -241,9 +221,7 @@ describe('EditCatPage', () => {
     mockUseParams.mockReturnValue({ id: '1' })
     renderComponent()
 
-    // Wait for the form to load
-    const nameInput = await screen.findByLabelText(/name/i)
-    await waitFor(() => expect(nameInput).toHaveValue(mockCat.name))
+  await waitForFormToLoad()
 
     // Clear optional fields
     await user.clear(screen.getByLabelText(/location/i))
@@ -259,16 +237,9 @@ describe('EditCatPage', () => {
     await waitFor(() => {
       expect(mockUseNavigate).toHaveBeenCalledWith('/account/cats')
     })
-    vi.restoreAllMocks()
   })
 
   it('shows a confirmation dialog and updates status to lost on confirm', async () => {
-    vi.spyOn(console, 'log').mockImplementation(() => {
-      /* empty */
-    })
-    vi.spyOn(console, 'error').mockImplementation(() => {
-      /* empty */
-    })
     server.use(
       http.put('http://localhost:3000/api/cats/1', async ({ request }) => {
         const data = (await request.json()) as { status?: string } | null
@@ -280,9 +251,7 @@ describe('EditCatPage', () => {
     mockUseParams.mockReturnValue({ id: '1' })
     renderComponent()
 
-    // Wait for the form to load
-    const nameInput = await screen.findByLabelText(/name/i)
-    await waitFor(() => expect(nameInput).toHaveValue(mockCat.name))
+  await waitForFormToLoad()
 
     // Click the "Mark as Lost" button
     await user.click(screen.getByRole('button', { name: /mark as lost/i }))
@@ -301,6 +270,5 @@ describe('EditCatPage', () => {
     await waitFor(() => {
       expect(mockUseNavigate).toHaveBeenCalledWith('/account/cats')
     })
-    vi.restoreAllMocks()
   })
 })

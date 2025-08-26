@@ -93,6 +93,34 @@ export const CatDetails: React.FC<CatDetailsProps> = ({ cat, onDeletePlacementRe
                 </span>
               </div>
 
+              {/* Foster/Transfer Status Badges */}
+              {cat.foster_assignment && (
+                <div>
+                  <h3 className="font-semibold text-card-foreground">Foster Status</h3>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                      Fostering with {cat.foster_assignment.foster_user?.name}
+                      {cat.foster_assignment.expected_end_date && (
+                        <> until {new Date(cat.foster_assignment.expected_end_date).toLocaleDateString()}</>
+                      )}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {cat.ownership_transfers && cat.ownership_transfers.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-card-foreground">Transfer History</h3>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {cat.ownership_transfers.slice(-1).map((transfer) => (
+                      <span key={transfer.id} className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        Transferred to {transfer.to_user?.name} on {new Date(transfer.occurred_at).toLocaleDateString()}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div>
                 <h3 className="font-semibold text-card-foreground">About {cat.name}</h3>
                 <p className="text-muted-foreground leading-relaxed">{cat.description}</p>

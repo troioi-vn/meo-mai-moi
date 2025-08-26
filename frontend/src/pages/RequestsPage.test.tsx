@@ -43,8 +43,8 @@ describe('RequestsPage', () => {
     server.use(
       http.get('http://localhost:3000/api/cats/placement-requests', () => {
         return HttpResponse.json({ data: [
-          { ...mockCat, placement_requests: [{ request_type: 'adoption', start_date: '2025-08-01', end_date: '2025-09-01' }] },
-          { ...mockCat, id: 2, name: 'Whiskers', placement_requests: [{ request_type: 'foster', start_date: '2025-08-01', end_date: '2025-09-01' }] },
+          { ...mockCat, placement_requests: [{ request_type: 'adoption', start_date: '2025-08-01', end_date: '2025-09-01', is_active: true, status: 'open' }] },
+          { ...mockCat, id: 2, name: 'Whiskers', placement_requests: [{ request_type: 'foster', start_date: '2025-08-01', end_date: '2025-09-01', is_active: true, status: 'open' }] },
         ] })
       })
     )

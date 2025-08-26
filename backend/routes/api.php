@@ -19,6 +19,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PlacementRequestController;
 use App\Http\Controllers\VersionController;
 use App\Http\Controllers\TransferHandoverController;
+use App\Http\Controllers\FosterAssignmentController;
 use App\Http\Controllers\FosterReturnHandoverController;
 use App\Http\Controllers\UnsubscribeController;
 
@@ -91,6 +92,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/transfer-handovers/{handover}/confirm', [TransferHandoverController::class, 'helperConfirm']);
     Route::post('/transfer-handovers/{handover}/complete', [TransferHandoverController::class, 'complete']);
     Route::post('/transfer-handovers/{handover}/cancel', [TransferHandoverController::class, 'cancel']);
+    // Foster assignment lifecycle
+    Route::post('/foster-assignments/{assignment}/complete', [FosterAssignmentController::class, 'complete']);
+    Route::post('/foster-assignments/{assignment}/cancel', [FosterAssignmentController::class, 'cancel']);
+    Route::post('/foster-assignments/{assignment}/extend', [FosterAssignmentController::class, 'extend']);
+    
     // Foster return handover lifecycle
     Route::post('/foster-assignments/{assignment}/return-handover', [FosterReturnHandoverController::class, 'store']);
     Route::post('/foster-return-handovers/{handover}/confirm', [FosterReturnHandoverController::class, 'ownerConfirm']);

@@ -37,6 +37,12 @@ const RequestsPage = () => {
       const prs = cat.placement_requests
       if (!prs || prs.length === 0) return false
 
+      // Hide cats with only fulfilled placement requests
+      const hasActivePlacementRequest = prs.some((pr) => 
+        pr.is_active === true || pr.status === 'open' || pr.status === 'pending_review'
+      )
+      if (!hasActivePlacementRequest) return false
+
       // Type filter
       const matchesType =
         typeFilter === 'all' ||

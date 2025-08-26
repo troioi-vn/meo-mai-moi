@@ -22,7 +22,7 @@ export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
     const s = (status ?? '').toLowerCase()
     return s === 'open' || s === 'pending_review' || s === 'pending'
   }
-  const activePlacementRequest = cat.placement_requests?.find((req) => req.is_active || isStatusOpen(req.status))
+  const activePlacementRequest = cat.placement_requests?.find((req) => req.is_active === true || isStatusOpen(req.status))
   const activePlacementRequestId = activePlacementRequest?.id
   // Show Fulfilled only when there were requests but none are currently active/open
   const hasActivePlacementRequests = Boolean(activePlacementRequest)
@@ -37,7 +37,7 @@ export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
     placeholderImage
   return (
     <Card className="flex flex-col overflow-hidden rounded-lg shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl">
-      <Link to={`/cats/${String(cat.id)}`} className="block">
+  <Link to={`/cats/${String(cat.id)}`} className="block">
         <img src={imageUrl} alt={cat.name} className="h-48 w-full object-cover" />
       </Link>
       <CardHeader>
@@ -52,7 +52,7 @@ export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
             </span>
           )}
           {cat.placement_requests?.map((request) => {
-            const key = `${String(cat.id)}-${String(request.id)}-${String(request.expires_at ?? request.start_date ?? '')}`
+            const key = `${String(cat.id)}-${String(request.id)}-${request.expires_at ?? request.start_date ?? ''}`
             return (
               <span
                 key={key}
@@ -73,12 +73,12 @@ export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
             (cat.placement_request_active ?? hasActivePlacementRequests) &&
             activePlacementRequestId !== undefined && (
               <>
-                <Button className="w-full" onClick={() => { setIsModalOpen(true); }}>
+                <Button className="w-full" onClick={() => { setIsModalOpen(true) }}>
                   Respond
                 </Button>
                 <PlacementResponseModal
                   isOpen={isModalOpen}
-                  onClose={() => { setIsModalOpen(false); }}
+                  onClose={() => { setIsModalOpen(false) }}
                   catName={cat.name}
                   catId={cat.id}
                   placementRequestId={activePlacementRequestId}

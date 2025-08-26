@@ -45,7 +45,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
     for (const n of incoming) {
       if (!n.read_at && !seenIdsRef.current.has(n.id)) {
         seenIdsRef.current.add(n.id)
-        const fn = LEVEL_TO_TOAST[n.level] ?? toast.info
+  const fn = LEVEL_TO_TOAST[n.level]
         fn(n.title, { description: n.body ?? undefined })
       }
     }
@@ -69,16 +69,24 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
   // polling
   useEffect(() => {
     let timer: number | undefined
-    const tick = async () => {
-      if (!visible) return
-      await refresh()
+    const tick = () => {
+      if (!visible) {
+        timer = window.setTimeout(tick, pollMs)
+        return
+      }
+      void refresh()
       timer = window.setTimeout(tick, pollMs)
     }
-  void tick()
+    timer = window.setTimeout(tick, pollMs)
     return () => {
       if (timer) window.clearTimeout(timer)
     }
   }, [pollMs, refresh, visible])
+
+  // initial fetch to populate badge quickly
+  useEffect(() => {
+    void refresh()
+  }, [refresh])
 
   // Mark all read when dropdown opens
   const setDropdownOpen = useCallback((open: boolean) => {

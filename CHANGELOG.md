@@ -83,7 +83,10 @@ All notable changes to this project are documented here, following the [Keep a C
     - Permanent: transfer ownership to helper.
     - Foster: create an active `FosterAssignment`; owner remains.
   - OpenAPI documentation updated and tests added for lifecycle.
-- **Ownership History:** New `ownership_history` table with `OwnershipHistory` model and relations on `Cat` and `User` to support the `transferred_away` section.
+- **Ownership History:** New `ownership_history` table with `OwnershipHistory` model and relations on `Cat` and `User`.
+- **My Cats sections (`/api/my-cats/sections`):** `transferred_away` now derives from `ownership_history` (cats you previously owned with a closed period, and not currently owned by you).
+- **Transfer Finalization:** Ownership changes for permanent transfers occur on handover completion; controller backfills/ closes previous history if missing, then opens a new period for the new owner.
+- **Backfill Command:** `php artisan ownership-history:backfill` to create initial open records for existing cats; supports `--dry-run`.
 - **Placement Response System**: Implemented the core functionality for helpers to respond to placement requests.
   - **Backend**:
     - Cat profiles are now publicly visible if they have an active placement request.

@@ -124,6 +124,23 @@ Coverage focus
 
 ---
 
+## Ownership History Backfill
+
+When deploying the ownership_history feature to existing data, run a backfill to ensure every currently owned cat has an open ownership period for its owner.
+
+Recommended flow
+- Dry run first to see what would change
+	- php artisan ownership-history:backfill --dry-run
+- Execute the backfill
+	- php artisan ownership-history:backfill
+
+Notes
+- Idempotent: safe to re-run; it only creates missing open records.
+- Supports chunking large datasets: use --chunk=500 (default is 200).
+- After backfill, new transfers will automatically close/open history during handover completion.
+
+---
+
 ## Troubleshooting
 
 Storage link permission denied

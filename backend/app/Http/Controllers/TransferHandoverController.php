@@ -173,11 +173,22 @@ class TransferHandoverController extends Controller
             // Finalize transfer effects depending on relationship type
             $type = $tr->requested_relationship_type;
             if ($type === 'permanent_foster') {
-                // Close previous ownership record for current owner
-                OwnershipHistory::where('cat_id', $tr->cat_id)
+                // Close previous ownership record for current owner; backfill if missing
+                $closed = OwnershipHistory::where('cat_id', $tr->cat_id)
                     ->where('user_id', $tr->recipient_user_id)
                     ->whereNull('to_ts')
                     ->update(['to_ts' => now()]);
+
+                if ($closed === 0) {
+                    // No open record to close; create a backfilled one starting from earliest known timestamp
+                    $from = optional($tr->cat)->created_at ?? (optional($tr->placementRequest)->created_at ?? now());
+                    $backfilled = OwnershipHistory::create([
+                        'cat_id' => $tr->cat_id,
+                        'user_id' => $tr->recipient_user_id,
+                        'from_ts' => $from,
+                        'to_ts' => now(),
+                    ]);
+                }
 
                 // Assign new owner
                 $tr->cat->update(['user_id' => $tr->initiator_user_id]);

@@ -109,7 +109,19 @@ class NotificationController extends Controller
         return $this->sendSuccess(null, 204);
     }
 
-    // Backward-compat alias for older route name
+    /**
+     * Mark all unread notifications as read (DEPRECATED - legacy alias).
+     *
+     * @OA\Post(
+     *   path="/api/notifications/mark-as-read",
+     *   deprecated=true,
+     *   tags={"Notifications"},
+     *   summary="Mark all notifications as read (DEPRECATED)",
+     *   description="This endpoint is deprecated. Use POST /api/notifications/mark-all-read instead.",
+     *   security={{"sanctum":{}}},
+     *   @OA\Response(response=204, description="No Content")
+     * )
+     */
     public function markAsRead()
     {
         return $this->markAllRead();

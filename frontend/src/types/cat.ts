@@ -26,6 +26,23 @@ export interface Cat {
   placement_requests?: PlacementRequest[]
   // Convenience flag from backend (optional) used by CatCard
   placement_request_active?: boolean
+  foster_assignment?: {
+    id: number
+    status: string
+    expected_end_date?: string
+    foster_user?: {
+      id: number
+      name: string
+    }
+  }
+  ownership_transfers?: {
+    id: number
+    occurred_at: string
+    to_user?: {
+      id: number
+      name: string
+    }
+  }[]
 }
 
 export interface PlacementRequest {

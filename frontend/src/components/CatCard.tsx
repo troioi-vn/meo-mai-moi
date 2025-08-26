@@ -28,6 +28,20 @@ export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
   const hasActivePlacementRequests = Boolean(activePlacementRequest)
   const hasFulfilledPlacement = hasAnyPlacementRequests && !hasActivePlacementRequests
 
+  // Check if current user has a pending response
+  const myPendingTransfer = React.useMemo(() => {
+    if (!user?.id || !cat.placement_requests) return undefined
+    for (const pr of cat.placement_requests) {
+      const found = pr.transfer_requests?.find((tr) => {
+        if (tr.status !== 'pending') return false
+        if (tr.initiator_user_id && tr.initiator_user_id === user.id) return true
+        return tr.helper_profile?.user?.id === user.id
+      })
+      if (found) return found
+    }
+    return undefined
+  }, [cat.placement_requests, user?.id])
+
   // Prefer photos[0].url, then photo_url, then placeholder
   const imageUrl =
     (Array.isArray((cat as { photos?: { url?: string }[] }).photos)
@@ -73,9 +87,28 @@ export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
             (cat.placement_request_active ?? hasActivePlacementRequests) &&
             activePlacementRequestId !== undefined && (
               <>
-                <Button className="w-full" onClick={() => { setIsModalOpen(true) }}>
-                  Respond
-                </Button>
+                {myPendingTransfer ? (
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground text-center">
+                      You responded... Waiting for approval
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full"
+                      onClick={() => {
+                        // TODO: Add cancel functionality
+                        console.log('Cancel response for transfer:', myPendingTransfer.id)
+                      }}
+                    >
+                      Cancel Response
+                    </Button>
+                  </div>
+                ) : (
+                  <Button className="w-full" onClick={() => { setIsModalOpen(true) }}>
+                    Respond
+                  </Button>
+                )}
                 <PlacementResponseModal
                   isOpen={isModalOpen}
                   onClose={() => { setIsModalOpen(false) }}

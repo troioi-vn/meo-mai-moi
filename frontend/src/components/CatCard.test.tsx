@@ -101,13 +101,13 @@ describe('CatCard', () => {
   });
 
   it('renders "Respond" button if authenticated, not owner, and active placement request', () => {
-  mockAuth = { isAuthenticated: true, user: { id: 2, name: 'Helper', email: 'helper@example.com' } as unknown as AuthContextType['user'] };
+  mockAuth = { isAuthenticated: true, user: { id: 3, name: 'Helper', email: 'helper@example.com' } as unknown as AuthContextType['user'] };
     renderWithRouter(<CatCard cat={{ ...mockCat, placement_request_active: true }} />);
     expect(screen.getByRole('button', { name: /respond/i })).toBeInTheDocument();
   });
 
   it('opens PlacementResponseModal when "Respond" button is clicked', () => {
-  mockAuth = { isAuthenticated: true, user: { id: 2, name: 'Helper', email: 'helper@example.com' } as unknown as AuthContextType['user'] };
+  mockAuth = { isAuthenticated: true, user: { id: 3, name: 'Helper', email: 'helper@example.com' } as unknown as AuthContextType['user'] };
     renderWithRouter(
       <CatCard
         cat={{
@@ -135,5 +135,14 @@ describe('CatCard', () => {
 
   // The mocked modal renders a placeholder when open
   expect(screen.getByText('PlacementResponseModal')).toBeInTheDocument();
+  });
+
+  it('shows pending response state when user has already responded', () => {
+  mockAuth = { isAuthenticated: true, user: { id: 2, name: 'Helper', email: 'helper@example.com' } as unknown as AuthContextType['user'] };
+    renderWithRouter(<CatCard cat={{ ...mockCat, placement_request_active: true }} />);
+    
+    expect(screen.getByText('You responded... Waiting for approval')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /cancel response/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /respond/i })).not.toBeInTheDocument();
   });
 });

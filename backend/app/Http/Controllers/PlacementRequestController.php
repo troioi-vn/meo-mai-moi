@@ -103,6 +103,12 @@ class PlacementRequestController extends Controller
             return $this->sendError('An active placement request of this type already exists for this cat.', 409);
         }
 
+        // Business rule: Block creating new placement requests while foster assignment is active
+        $activeFosterAssignment = $cat->activeFosterAssignment()->exists();
+        if ($activeFosterAssignment) {
+            return $this->sendError('Cannot create placement requests while the cat has an active foster assignment.', 409);
+        }
+
         $placementRequest = PlacementRequest::create($validatedData + ['user_id' => Auth::id(), 'is_active' => true]);
         $placementRequest->refresh();
 

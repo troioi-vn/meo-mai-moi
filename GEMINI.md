@@ -53,6 +53,11 @@ This project has several specific, non-standard workflows that are critical to u
 -   **Runtime Container Setup:**
   - `backend/docker-entrypoint.sh` runs setup on start (notably `storage:link` as `www-data`). Check here first for upload issues.
 
+-   **Database-Driven Email Configuration:**
+    -   Email provider settings can be managed via the **Email Configuration** section in the Filament admin panel (`/admin/email-configurations`).
+    -   These settings are stored in the database. An **active** configuration in the admin panel will **always override** the `MAIL_*` settings in the `.env` file.
+    -   For local development, using the `.env` file is fine, but ensure no configuration is marked as "active" in the admin panel if you want to use the `.env` settings.
+
 ## 5. Development Practices
 
 ### Versioning & Changelog
@@ -153,6 +158,7 @@ This section is for AI coding agents (Copilots) to be effective, safe, and fast 
 
 - Keep OpenAPI annotations updated; regenerate docs with changes.
 - Enforce policies/permissions; controllers assume policy checks.
+- **Notification Triggers:** The `NotificationService` is the central component for sending notifications. Look for its usage in controllers that handle state changes, such as `TransferRequestController`, to understand what events trigger notifications.
 - Do not read or write `users.role` column; use `$user->hasRole()` / `$user->assignRole()` and `$user->can()`.
 
 ### Common Pitfalls & Fixes

@@ -14,6 +14,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use App\Models\HelperProfile;
 use App\Models\Review;
+use App\Notifications\CustomPasswordReset;
 
 class User extends Authenticatable implements FilamentUser
 {
@@ -115,5 +116,19 @@ class User extends Authenticatable implements FilamentUser
     public function canBeImpersonated(): bool
     {
         return !$this->hasRole(['admin', 'super_admin']);
+    }
+
+    /**
+     * Send the password reset notification.
+     * Uses Laravel's native notification system with custom EmailLog integration.
+     *
+     * @param  string  $token
+     * @return void
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        // Use Laravel's proper notification system
+        // This will integrate with your EmailLog system via the CustomPasswordReset notification
+        $this->notify(new CustomPasswordReset($token));
     }
 }

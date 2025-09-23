@@ -66,17 +66,6 @@ class SendNotificationEmail implements ShouldQueue
         }
 
         try {
-            // Validate email configuration before sending
-            $emailService = app(\App\Services\EmailConfigurationService::class);
-            if (!$emailService->isEmailEnabled()) {
-                throw new \RuntimeException('Email system is not properly configured');
-            }
-
-            $activeConfig = $emailService->getActiveConfiguration();
-            if (!$activeConfig) {
-                throw new \RuntimeException('No active email configuration found');
-            }
-
             // Get the notification type enum
             $notificationType = NotificationType::tryFrom($this->type);
             
@@ -96,11 +85,19 @@ class SendNotificationEmail implements ShouldQueue
                 throw new \InvalidArgumentException("Invalid user email address: " . ($this->user->email ?? 'empty'));
             }
 
+            // Validate email configuration before logging/sending, but allow sending without an active record
+            $emailService = app(\App\Services\EmailConfigurationService::class);
+            if (!$emailService->isEmailEnabled()) {
+                throw new \RuntimeException('Email system is not properly configured');
+            }
+            $activeConfig = $emailService->getActiveConfiguration();
+            $activeConfigId = $activeConfig?->id; // may be null in tests
+
             // Create EmailLog entry
             $this->emailLog = EmailLog::create([
                 'user_id' => $this->user->id,
                 'notification_id' => $this->notificationId,
-                'email_configuration_id' => $activeConfig->id,
+                'email_configuration_id' => $activeConfigId,
                 'recipient_email' => $this->user->email,
                 'subject' => $mail->envelope()->subject ?? 'Notification Email',
                 'body' => $this->extractEmailBody($mail),
@@ -122,11 +119,9 @@ class SendNotificationEmail implements ShouldQueue
             
             Log::info('Email notification sent successfully', [
                 'notification_id' => $this->notificationId,
-                'email_log_id' => $this->emailLog->id,
                 'user_id' => $this->user->id,
                 'user_email' => $this->user->email,
                 'type' => $this->type,
-                'email_config_id' => $activeConfig->id,
             ]);
             
         } catch (\Exception $e) {

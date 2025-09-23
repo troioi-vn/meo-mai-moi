@@ -1,14 +1,14 @@
-import React from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import React from 'react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 interface FileInputProps {
-  id: string;
-  label: string;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  error?: string;
-  className?: string;
-  multiple?: boolean;
+  id: string
+  label: string
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
+  error?: string
+  className?: string
+  multiple?: boolean
 }
 
 export const FileInput: React.FC<FileInputProps> = ({
@@ -19,7 +19,7 @@ export const FileInput: React.FC<FileInputProps> = ({
   className = '',
   multiple = false,
 }) => {
-  const labelId = `${id}-label`;
+  const labelId = `${id}-label`
 
   return (
     <div className={`space-y-2 ${className}`}>
@@ -36,5 +36,5 @@ export const FileInput: React.FC<FileInputProps> = ({
       />
       {error && <p className="text-destructive text-sm">{error}</p>}
     </div>
-  );
-};
+  )
+}

@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/use-auth'
 import MainPage from './pages/MainPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ProfilePage from './pages/ProfilePage'
 import MyCatsPage from './pages/account/MyCatsPage'
 import CreateCatPage from './pages/account/CreateCatPage'
@@ -49,6 +50,7 @@ export function AppRoutes() {
       />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route
         path="/account"
         element={
@@ -105,10 +107,7 @@ export function AppRoutes() {
           </PrivateRoute>
         }
       />
-      <Route
-        path="/helper/:id"
-        element={<HelperProfileViewPage />}
-      />
+      <Route path="/helper/:id" element={<HelperProfileViewPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )

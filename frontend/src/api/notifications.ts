@@ -3,11 +3,16 @@ import type { AppNotification } from '@/types/notification'
 
 export type NotificationStatus = 'unread' | 'all'
 
-export async function getNotifications(params: { status?: NotificationStatus; page?: number } = {}) {
+export async function getNotifications(
+  params: { status?: NotificationStatus; page?: number } = {}
+) {
   const { status = 'all', page = 1 } = params
-  const res = await api.get<{ data: AppNotification[]; meta?: { next_page_url?: string } }>(`/notifications`, {
-    params: { status, page },
-  })
+  const res = await api.get<{ data: AppNotification[]; meta?: { next_page_url?: string } }>(
+    `/notifications`,
+    {
+      params: { status, page },
+    }
+  )
   return res.data
 }
 

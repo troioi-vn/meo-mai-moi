@@ -22,12 +22,14 @@ describe('MyCatsPage', () => {
     mockNavigate.mockClear()
     server.use(
       http.get('http://localhost:3000/api/my-cats/sections', () => {
-        return HttpResponse.json({ data: {
-          owned: [mockCat, anotherMockCat, deceasedMockCat],
-          fostering_active: [],
-          fostering_past: [],
-          transferred_away: [],
-        } })
+        return HttpResponse.json({
+          data: {
+            owned: [mockCat, anotherMockCat, deceasedMockCat],
+            fostering_active: [],
+            fostering_past: [],
+            transferred_away: [],
+          },
+        })
       }),
       http.get('http://localhost:3000/api/user', () => {
         return HttpResponse.json({ data: mockUser })
@@ -54,7 +56,12 @@ describe('MyCatsPage', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {
       /* empty */
     })
-  server.use(http.get('http://localhost:3000/api/my-cats/sections', () => new HttpResponse(null, { status: 500 })))
+    server.use(
+      http.get(
+        'http://localhost:3000/api/my-cats/sections',
+        () => new HttpResponse(null, { status: 500 })
+      )
+    )
     renderWithRouter(<MyCatsPage />, {
       initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
     })
@@ -82,7 +89,18 @@ describe('MyCatsPage', () => {
     })
 
     it('filters out dead cats by default', async () => {
-  server.use(http.get('http://localhost:3000/api/my-cats/sections', () => HttpResponse.json({ data: { owned: [mockCat, deceasedMockCat], fostering_active: [], fostering_past: [], transferred_away: [] } })))
+      server.use(
+        http.get('http://localhost:3000/api/my-cats/sections', () =>
+          HttpResponse.json({
+            data: {
+              owned: [mockCat, deceasedMockCat],
+              fostering_active: [],
+              fostering_past: [],
+              transferred_away: [],
+            },
+          })
+        )
+      )
       renderWithRouter(<MyCatsPage />, {
         initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
       })
@@ -94,7 +112,18 @@ describe('MyCatsPage', () => {
     })
 
     it('shows dead cats when switch is toggled on', async () => {
-  server.use(http.get('http://localhost:3000/api/my-cats/sections', () => HttpResponse.json({ data: { owned: [mockCat, deceasedMockCat], fostering_active: [], fostering_past: [], transferred_away: [] } })))
+      server.use(
+        http.get('http://localhost:3000/api/my-cats/sections', () =>
+          HttpResponse.json({
+            data: {
+              owned: [mockCat, deceasedMockCat],
+              fostering_active: [],
+              fostering_past: [],
+              transferred_away: [],
+            },
+          })
+        )
+      )
       renderWithRouter(<MyCatsPage />, {
         initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
       })
@@ -121,12 +150,14 @@ describe('MyCatsPage', () => {
     it('hides section titles when sections are empty', async () => {
       server.use(
         http.get('http://localhost:3000/api/my-cats/sections', () => {
-          return HttpResponse.json({ data: {
-            owned: [],
-            fostering_active: [],
-            fostering_past: [],
-            transferred_away: [],
-          } })
+          return HttpResponse.json({
+            data: {
+              owned: [],
+              fostering_active: [],
+              fostering_past: [],
+              transferred_away: [],
+            },
+          })
         })
       )
 
@@ -145,12 +176,14 @@ describe('MyCatsPage', () => {
     it('shows section titles only when sections have cats', async () => {
       server.use(
         http.get('http://localhost:3000/api/my-cats/sections', () => {
-          return HttpResponse.json({ data: {
-            owned: [mockCat],
-            fostering_active: [anotherMockCat],
-            fostering_past: [],
-            transferred_away: [],
-          } })
+          return HttpResponse.json({
+            data: {
+              owned: [mockCat],
+              fostering_active: [anotherMockCat],
+              fostering_past: [],
+              transferred_away: [],
+            },
+          })
         })
       )
 
@@ -169,12 +202,14 @@ describe('MyCatsPage', () => {
     it('shows empty state message when no cats at all', async () => {
       server.use(
         http.get('http://localhost:3000/api/my-cats/sections', () => {
-          return HttpResponse.json({ data: {
-            owned: [],
-            fostering_active: [],
-            fostering_past: [],
-            transferred_away: [],
-          } })
+          return HttpResponse.json({
+            data: {
+              owned: [],
+              fostering_active: [],
+              fostering_past: [],
+              transferred_away: [],
+            },
+          })
         })
       )
 
@@ -189,12 +224,14 @@ describe('MyCatsPage', () => {
     it('hides owned section when only deceased cats and show all is off', async () => {
       server.use(
         http.get('http://localhost:3000/api/my-cats/sections', () => {
-          return HttpResponse.json({ data: {
-            owned: [deceasedMockCat],
-            fostering_active: [],
-            fostering_past: [],
-            transferred_away: [],
-          } })
+          return HttpResponse.json({
+            data: {
+              owned: [deceasedMockCat],
+              fostering_active: [],
+              fostering_past: [],
+              transferred_away: [],
+            },
+          })
         })
       )
 
@@ -211,12 +248,14 @@ describe('MyCatsPage', () => {
     it('shows owned section when deceased cats are included via show all toggle', async () => {
       server.use(
         http.get('http://localhost:3000/api/my-cats/sections', () => {
-          return HttpResponse.json({ data: {
-            owned: [deceasedMockCat],
-            fostering_active: [],
-            fostering_past: [],
-            transferred_away: [],
-          } })
+          return HttpResponse.json({
+            data: {
+              owned: [deceasedMockCat],
+              fostering_active: [],
+              fostering_past: [],
+              transferred_away: [],
+            },
+          })
         })
       )
 

@@ -46,15 +46,15 @@ describe('NotificationBell behavior', () => {
       })
     )
 
-  renderWithProviders(<NotificationBell />)
+    renderWithProviders(<NotificationBell />)
 
     const btn = await screen.findByRole('button', { name: /open notifications/i })
     expect(within(btn).getByText('2')).toBeInTheDocument()
 
     // Open dropdown → optimistic mark-all → badge removed
-  const user = userEvent.setup()
-  await user.click(btn)
-  await waitFor(() => expect(btn).toHaveAttribute('aria-expanded', 'true'))
+    const user = userEvent.setup()
+    await user.click(btn)
+    await waitFor(() => expect(btn).toHaveAttribute('aria-expanded', 'true'))
 
     await waitFor(() => {
       expect(within(btn).queryByText('2')).not.toBeInTheDocument()

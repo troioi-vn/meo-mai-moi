@@ -48,12 +48,12 @@ describe('ProfilePage', () => {
 
     // Wait for user name to appear (ensures AuthProvider has loaded user)
     expect(await screen.findByText(mockUser.name)).toBeInTheDocument()
-    
+
     // Check for notifications section
     expect(screen.getByRole('heading', { name: /notifications/i })).toBeInTheDocument()
     expect(screen.getByText('Notification Preferences')).toBeInTheDocument()
     expect(screen.getByText('Manage email and in-app notification settings')).toBeInTheDocument()
-    
+
     // Check for link to notifications page
     const notificationLink = screen.getByRole('link', { name: /notification preferences/i })
     expect(notificationLink).toBeInTheDocument()

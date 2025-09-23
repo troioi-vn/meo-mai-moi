@@ -46,11 +46,13 @@ export function NotificationBell() {
     unreadCount: 0,
     loading: false,
     // Provide no-op implementations that satisfy the linter (not empty functions)
-  refresh: async () => Promise.resolve(),
-  markRead: async () => Promise.resolve(),
-  setDropdownOpen: () => undefined,
+    refresh: async () => Promise.resolve(),
+    markRead: async () => Promise.resolve(),
+    setDropdownOpen: () => undefined,
   }
-  const handleOpenChange = (open: boolean) => { setDropdownOpen(open); }
+  const handleOpenChange = (open: boolean) => {
+    setDropdownOpen(open)
+  }
 
   return (
     <DropdownMenu onOpenChange={handleOpenChange}>
@@ -68,7 +70,9 @@ export function NotificationBell() {
         <DropdownMenuLabel className="px-3 py-2">Notifications</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {notifications.length === 0 ? (
-          <div className="px-3 py-8 text-sm text-muted-foreground text-center">No notifications</div>
+          <div className="px-3 py-8 text-sm text-muted-foreground text-center">
+            No notifications
+          </div>
         ) : (
           <div className="max-h-96 overflow-auto py-1">
             {notifications.slice(0, 20).map((n) => {
@@ -78,9 +82,13 @@ export function NotificationBell() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-sm font-medium truncate">{n.title}</p>
-                      <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(n.created_at)}</span>
+                      <span className="text-[10px] text-muted-foreground shrink-0">
+                        {timeAgo(n.created_at)}
+                      </span>
                     </div>
-                    {n.body && <p className="text-xs text-muted-foreground line-clamp-2">{n.body}</p>}
+                    {n.body && (
+                      <p className="text-xs text-muted-foreground line-clamp-2">{n.body}</p>
+                    )}
                   </div>
                 </>
               )

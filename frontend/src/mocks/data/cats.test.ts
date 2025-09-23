@@ -44,11 +44,11 @@ describe('Mock Cat Data Test Scenarios', () => {
 
     it('should have mixedTypes scenario with different request types', () => {
       expect(testScenarios.mixedTypes).toHaveLength(4)
-      
-      const requestTypes = testScenarios.mixedTypes.map(cat => 
-        cat.placement_requests?.[0]?.request_type
+
+      const requestTypes = testScenarios.mixedTypes.map(
+        (cat) => cat.placement_requests?.[0]?.request_type
       )
-      
+
       expect(requestTypes).toContain('fostering')
       expect(requestTypes).toContain('adoption')
     })
@@ -59,9 +59,9 @@ describe('Mock Cat Data Test Scenarios', () => {
       const cat = mockCatWithFosterRequest
       expect(cat.placement_request_active).toBe(true)
       expect(cat.placement_requests).toHaveLength(1)
-      
-  const request = cat.placement_requests?.[0]
-  if (!request) throw new Error('Expected placement request')
+
+      const request = cat.placement_requests?.[0]
+      if (!request) throw new Error('Expected placement request')
       expect(request.request_type).toBe('fostering')
       expect(request.is_active).toBe(true)
       expect(request.status).toBe('open')
@@ -73,9 +73,9 @@ describe('Mock Cat Data Test Scenarios', () => {
       const cat = mockCatWithAdoptionRequest
       expect(cat.placement_request_active).toBe(true)
       expect(cat.placement_requests).toHaveLength(1)
-      
-  const request = cat.placement_requests?.[0]
-  if (!request) throw new Error('Expected placement request')
+
+      const request = cat.placement_requests?.[0]
+      if (!request) throw new Error('Expected placement request')
       expect(request.request_type).toBe('adoption')
       expect(request.is_active).toBe(true)
       expect(request.status).toBe('open')
@@ -83,16 +83,16 @@ describe('Mock Cat Data Test Scenarios', () => {
 
     it('should have urgent status for urgent adoption request', () => {
       const cat = mockCatWithUrgentAdoptionRequest
-  const request = cat.placement_requests?.[0]
-  if (!request) throw new Error('Expected placement request')
+      const request = cat.placement_requests?.[0]
+      if (!request) throw new Error('Expected placement request')
       expect(request.status).toBe('urgent')
       expect(request.request_type).toBe('adoption')
     })
 
     it('should have paid fostering details', () => {
       const cat = mockCatWithPaidFosterRequest
-  const request = cat.placement_requests?.[0]
-  if (!request) throw new Error('Expected placement request')
+      const request = cat.placement_requests?.[0]
+      if (!request) throw new Error('Expected placement request')
       expect(request.request_type).toBe('fostering')
       expect(request.notes).toContain('Paid fostering')
     })
@@ -108,17 +108,17 @@ describe('Mock Cat Data Test Scenarios', () => {
         mockCatWithFosterRequest5,
         mockCatWithAdoptionRequest6,
       ]
-      
-      const ids = allCats.map(cat => cat.id)
+
+      const ids = allCats.map((cat) => cat.id)
       const uniqueIds = new Set(ids)
-      
+
       expect(uniqueIds.size).toBe(allCats.length)
     })
 
     it('should have proper user associations', () => {
       const allCats = catsWithActivePlacementRequests
-      
-      allCats.forEach(cat => {
+
+      allCats.forEach((cat) => {
         expect(cat.user).toBeDefined()
         expect(cat.user.id).toBeDefined()
         expect(cat.user.name).toBeDefined()
@@ -129,12 +129,12 @@ describe('Mock Cat Data Test Scenarios', () => {
 
     it('should have proper placement request relationships', () => {
       const allCats = catsWithActivePlacementRequests
-      
-      allCats.forEach(cat => {
+
+      allCats.forEach((cat) => {
         expect(cat.placement_requests).toBeDefined()
         expect(cat.placement_requests!.length).toBeGreaterThan(0)
-        
-        cat.placement_requests!.forEach(request => {
+
+        cat.placement_requests!.forEach((request) => {
           expect(request.cat_id).toBe(cat.id)
           expect(request.is_active).toBe(true)
         })
@@ -144,23 +144,23 @@ describe('Mock Cat Data Test Scenarios', () => {
 
   describe('Request Type Coverage', () => {
     it('should include both fostering and adoption request types', () => {
-      const allRequests = catsWithActivePlacementRequests.flatMap(cat => 
-        cat.placement_requests || []
+      const allRequests = catsWithActivePlacementRequests.flatMap(
+        (cat) => cat.placement_requests || []
       )
-      
-      const requestTypes = allRequests.map(request => request.request_type)
-      
+
+      const requestTypes = allRequests.map((request) => request.request_type)
+
       expect(requestTypes).toContain('fostering')
       expect(requestTypes).toContain('adoption')
     })
 
     it('should include different status types', () => {
-      const allRequests = catsWithActivePlacementRequests.flatMap(cat => 
-        cat.placement_requests || []
+      const allRequests = catsWithActivePlacementRequests.flatMap(
+        (cat) => cat.placement_requests || []
       )
-      
-      const statuses = allRequests.map(request => request.status)
-      
+
+      const statuses = allRequests.map((request) => request.status)
+
       expect(statuses).toContain('open')
       expect(statuses).toContain('urgent')
     })

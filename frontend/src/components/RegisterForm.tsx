@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AxiosError } from 'axios'
+import { useNavigate } from 'react-router-dom'
 
 interface ApiError {
   message: string
@@ -21,6 +22,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
   const [passwordConfirmation, setPasswordConfirmation] = useState('')
   const [error, setError] = useState<string | null>(null)
   const { register } = useAuth()
+  const navigate = useNavigate()
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -114,6 +116,19 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
       <Button type="submit" className="w-full">
         Register
       </Button>
+      <div className="mt-4 text-center text-sm">
+        Already have an account?{' '}
+        <a
+          href="#"
+          className="underline underline-offset-4"
+          onClick={(e) => {
+            e.preventDefault()
+            void navigate('/login')
+          }}
+        >
+          Sign in
+        </a>
+      </div>
     </form>
   )
 }

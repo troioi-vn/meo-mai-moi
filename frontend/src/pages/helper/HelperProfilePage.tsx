@@ -1,8 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
-import { getHelperProfiles } from '@/api/helper-profiles';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query'
+import { getHelperProfiles } from '@/api/helper-profiles'
+import { Link, useNavigate } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
+import { PlusCircle } from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -10,25 +10,27 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@/components/ui/table'
 
 export default function HelperProfilePage() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   const { data, isLoading, isError } = useQuery({
     queryKey: ['helper-profiles'],
     queryFn: getHelperProfiles,
-  });
+  })
 
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error fetching helper profiles</div>;
+  if (isLoading) return <div>Loading...</div>
+  if (isError) return <div>Error fetching helper profiles</div>
 
   return (
     <div className="container mx-auto px-4 py-8 bg-background min-h-screen">
       <div className="flex justify-between items-center mb-8">
-  <h1 className="text-3xl font-bold text-foreground">My Helper Profiles</h1>
-        <Button onClick={() => {
-          void navigate('/helper/create');
-        }}>
+        <h1 className="text-3xl font-bold text-foreground">My Helper Profiles</h1>
+        <Button
+          onClick={() => {
+            void navigate('/helper/create')
+          }}
+        >
           <PlusCircle className="mr-2 h-4 w-4" />
           New Helper Profile
         </Button>
@@ -43,12 +45,12 @@ export default function HelperProfilePage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-      {(data?.data as { id: number; city?: string; is_public?: boolean }[] | undefined ?? []).map((profile) => (
+          {(
+            (data?.data as { id: number; city?: string; is_public?: boolean }[] | undefined) ?? []
+          ).map((profile) => (
             <TableRow key={profile.id}>
               <TableCell className="text-left">
-                <Link to={'/helper/' + String(profile.id)}>
-                    {profile.city}
-                </Link>
+                <Link to={'/helper/' + String(profile.id)}>{profile.city}</Link>
               </TableCell>
               <TableCell className="text-left">{profile.is_public ? 'Yes' : 'No'}</TableCell>
               <TableCell className="text-left">
@@ -61,5 +63,5 @@ export default function HelperProfilePage() {
         </TableBody>
       </Table>
     </div>
-  );
+  )
 }

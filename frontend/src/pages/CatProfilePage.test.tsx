@@ -20,10 +20,10 @@ vi.mock('react-router-dom', async () => {
 
 vi.mock('@/components/PlacementRequestModal', () => ({
   PlacementRequestModal: () => <div>PlacementRequestModal</div>,
-}));
+}))
 
 // Mock useCatProfile hook
-vi.mock('@/hooks/useCatProfile');
+vi.mock('@/hooks/useCatProfile')
 
 describe('CatProfilePage', () => {
   beforeEach(() => {
@@ -34,7 +34,7 @@ describe('CatProfilePage', () => {
       loading: false,
       error: null,
       refresh: vi.fn(),
-    });
+    })
 
     server.use(
       http.get('http://localhost:3000/api/user', () => {
@@ -108,7 +108,7 @@ describe('CatProfilePage', () => {
       loading: false,
       error: null,
       refresh: vi.fn(),
-    });
+    })
 
     renderWithRouter(
       <Routes>
@@ -133,7 +133,7 @@ describe('CatProfilePage', () => {
       loading: false,
       error: 'Cat not found',
       refresh: vi.fn(),
-    });
+    })
 
     renderWithRouter(
       <Routes>
@@ -158,7 +158,7 @@ describe('CatProfilePage', () => {
       loading: false,
       error: 'Failed to load cat information',
       refresh: vi.fn(),
-    });
+    })
 
     renderWithRouter(
       <Routes>
@@ -174,8 +174,6 @@ describe('CatProfilePage', () => {
   })
 
   describe('Conditional button rendering', () => {
-    
-
     it('shows Edit and My Cats buttons when user has edit permissions', async () => {
       renderWithRouter(
         <Routes>
@@ -184,9 +182,9 @@ describe('CatProfilePage', () => {
         { route: `/cats/${String(mockCat.id)}` }
       )
 
-  // Should show the buttons
-  expect(await screen.findByRole('button', { name: /edit/i })).toBeInTheDocument()
-  expect(await screen.findByRole('button', { name: /my cats/i })).toBeInTheDocument()
+      // Should show the buttons
+      expect(await screen.findByRole('button', { name: /edit/i })).toBeInTheDocument()
+      expect(await screen.findByRole('button', { name: /my cats/i })).toBeInTheDocument()
 
       // Click Edit and assert navigation
       screen.getByRole('button', { name: /edit/i }).click()

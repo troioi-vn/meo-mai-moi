@@ -23,6 +23,8 @@ class EmailConfigurationFactory extends Factory
         
         return [
             'provider' => $provider,
+            'name' => $this->faker->company() . ' Mail',
+            'description' => $this->faker->sentence(),
             'is_active' => false,
             'config' => $this->getConfigForProvider($provider),
         ];

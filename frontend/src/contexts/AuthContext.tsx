@@ -13,6 +13,7 @@ interface RegisterPayload {
 interface LoginPayload {
   email: string
   password: string
+  remember?: boolean
 }
 
 export { AuthContext }

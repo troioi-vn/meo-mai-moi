@@ -1,0 +1,251 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Cat;
+use App\Models\HelperProfile;
+use App\Models\Notification;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
+
+class RestSemanticsTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private User $user;
+    private Cat $cat;
+    private HelperProfile $helperProfile;
+    private Notification $notification;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        
+        $this->user = User::factory()->create();
+        $this->cat = Cat::factory()->create(['user_id' => $this->user->id]);
+        $this->helperProfile = HelperProfile::factory()->create(['user_id' => $this->user->id]);
+        $this->notification = Notification::factory()->create(['user_id' => $this->user->id]);
+        
+        Sanctum::actingAs($this->user);
+    }
+
+    /** @test */
+    public function user_profile_update_requires_put_method()
+    {
+        $userData = [
+            'name' => 'Updated Name',
+            'email' => 'updated@example.com'
+        ];
+
+        // PUT should work
+        $response = $this->putJson('/api/users/me', $userData);
+        $response->assertStatus(200);
+
+        // POST should return 405 Method Not Allowed
+        $response = $this->postJson('/api/users/me', $userData);
+        $response->assertStatus(405);
+
+        // PATCH should return 405 Method Not Allowed
+        $response = $this->patchJson('/api/users/me', $userData);
+        $response->assertStatus(405);
+    }
+
+    /** @test */
+    public function user_password_update_requires_put_method()
+    {
+        $passwordData = [
+            'current_password' => 'password',
+            'new_password' => 'newpassword123',
+            'new_password_confirmation' => 'newpassword123'
+        ];
+
+        // PUT should work
+        $response = $this->putJson('/api/users/me/password', $passwordData);
+        $response->assertStatus(204);
+
+        // POST should return 405 Method Not Allowed
+        $response = $this->postJson('/api/users/me/password', $passwordData);
+        $response->assertStatus(405);
+
+        // PATCH should return 405 Method Not Allowed
+        $response = $this->patchJson('/api/users/me/password', $passwordData);
+        $response->assertStatus(405);
+    }
+
+    /** @test */
+    public function cat_update_requires_put_method()
+    {
+        // PUT should work
+        $response = $this->putJson("/api/cats/{$this->cat->id}", ['name' => 'Updated Cat Name']);
+        $response->assertStatus(200);
+
+        // POST should return 405 Method Not Allowed
+        $response = $this->postJson("/api/cats/{$this->cat->id}", ['name' => 'Updated Cat Name']);
+        $response->assertStatus(405);
+
+        // PATCH should return 405 Method Not Allowed
+        $response = $this->patchJson("/api/cats/{$this->cat->id}", ['name' => 'Updated Cat Name']);
+        $response->assertStatus(405);
+    }
+
+    /** @test */
+    public function cat_status_update_requires_put_method()
+    {
+        $statusData = [
+            'status' => 'lost',
+            'password' => 'password'
+        ];
+
+        // PUT should work
+        $response = $this->putJson("/api/cats/{$this->cat->id}/status", $statusData);
+        $response->assertStatus(200);
+
+        // POST should return 405 Method Not Allowed
+        $response = $this->postJson("/api/cats/{$this->cat->id}/status", $statusData);
+        $response->assertStatus(405);
+
+        // PATCH should return 405 Method Not Allowed
+        $response = $this->patchJson("/api/cats/{$this->cat->id}/status", $statusData);
+        $response->assertStatus(405);
+    }
+
+    /** @test */
+    public function notification_preferences_update_requires_put_method()
+    {
+        $preferencesData = [
+            'preferences' => [
+                [
+                    'type' => 'placement_request_response',
+                    'email_enabled' => true,
+                    'in_app_enabled' => false
+                ]
+            ]
+        ];
+
+        // PUT should work
+        $response = $this->putJson('/api/notification-preferences', $preferencesData);
+        $response->assertStatus(200);
+
+        // POST should return 405 Method Not Allowed
+        $response = $this->postJson('/api/notification-preferences', $preferencesData);
+        $response->assertStatus(405);
+
+        // PATCH should return 405 Method Not Allowed
+        $response = $this->patchJson('/api/notification-preferences', $preferencesData);
+        $response->assertStatus(405);
+    }
+
+    /** @test */
+    public function individual_notification_read_requires_patch_method()
+    {
+        // PATCH should work
+        $response = $this->patchJson("/api/notifications/{$this->notification->id}/read");
+        $response->assertStatus(204);
+
+        // Create another notification for testing other methods
+        $notification2 = Notification::factory()->create(['user_id' => $this->user->id]);
+
+        // POST should return 405 Method Not Allowed
+        $response = $this->postJson("/api/notifications/{$notification2->id}/read");
+        $response->assertStatus(405);
+
+        // PUT should return 405 Method Not Allowed
+        $response = $this->putJson("/api/notifications/{$notification2->id}/read");
+        $response->assertStatus(405);
+    }
+
+    /** @test */
+    public function helper_profile_update_supports_both_put_and_post_for_compatibility()
+    {
+        $updateData = ['city' => 'Updated City'];
+
+        // PUT should work (preferred method)
+        $response = $this->putJson("/api/helper-profiles/{$this->helperProfile->id}", $updateData);
+        $response->assertStatus(200);
+
+        // POST should also work (deprecated but supported for HTML forms)
+        $response = $this->postJson("/api/helper-profiles/{$this->helperProfile->id}", $updateData);
+        $response->assertStatus(200);
+
+        // PATCH should also work (from apiResource)
+        $response = $this->patchJson("/api/helper-profiles/{$this->helperProfile->id}", $updateData);
+        $response->assertStatus(200);
+    }
+
+    /** @test */
+    public function bulk_notification_read_supports_post_methods()
+    {
+        // Both endpoints should work for marking all notifications as read
+        
+        // POST /notifications/mark-all-read (preferred)
+        $response = $this->postJson('/api/notifications/mark-all-read');
+        $response->assertStatus(204);
+
+        // POST /notifications/mark-as-read (deprecated alias)
+        $response = $this->postJson('/api/notifications/mark-as-read');
+        $response->assertStatus(204);
+
+        // Other methods should return 405
+        $response = $this->putJson('/api/notifications/mark-all-read');
+        $response->assertStatus(405);
+
+        $response = $this->patchJson('/api/notifications/mark-all-read');
+        $response->assertStatus(405);
+    }
+
+    /** @test */
+    public function create_operations_require_post_method()
+    {
+        // Cat creation should require POST
+        $catData = [
+            'name' => 'New Cat',
+            'breed' => 'Mixed',
+            'age_years' => 2,
+            'gender' => 'male',
+            'status' => 'available',
+            'birthday' => '2022-01-01',
+            'location' => 'Test City',
+            'description' => 'A lovely test cat'
+        ];
+
+        // POST should work
+        $response = $this->postJson('/api/cats', $catData);
+        $response->assertStatus(201);
+
+        // PUT should return 405 Method Not Allowed
+        $response = $this->putJson('/api/cats', $catData);
+        $response->assertStatus(405);
+
+        // PATCH should return 405 Method Not Allowed
+        $response = $this->patchJson('/api/cats', $catData);
+        $response->assertStatus(405);
+    }
+
+    /** @test */
+    public function delete_operations_require_delete_method()
+    {
+        // DELETE should work (with password confirmation)
+        $response = $this->deleteJson("/api/cats/{$this->cat->id}", ['password' => 'password']);
+        $response->assertStatus(204);
+
+        // Create another cat for testing other methods
+        $cat2 = Cat::factory()->create(['user_id' => $this->user->id]);
+
+        // POST should return 405 Method Not Allowed for delete endpoint
+        $response = $this->postJson("/api/cats/{$cat2->id}/delete");
+        $response->assertStatus(405); // Method not allowed
+
+        // Test avatar deletion specifically (should work even if no avatar exists)
+        $response = $this->deleteJson("/api/users/me/avatar");
+        $response->assertStatus(404); // No avatar to delete
+
+        // Test that wrong HTTP methods return 405 for existing endpoints
+        $response = $this->getJson("/api/cats/{$cat2->id}");
+        $response->assertStatus(200); // GET should work for show
+
+        $response = $this->patchJson("/api/cats/{$cat2->id}", ['name' => 'Test']);
+        $response->assertStatus(405); // PATCH should not work for cat updates
+    }
+}

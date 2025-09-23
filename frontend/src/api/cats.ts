@@ -17,12 +17,14 @@ export const getMyCatsSections = async (): Promise<{
   fostering_past: Cat[]
   transferred_away: Cat[]
 }> => {
-  const response = await api.get<{ data: {
-    owned: Cat[];
-    fostering_active: Cat[];
-    fostering_past: Cat[];
-    transferred_away: Cat[];
-  } }>('/my-cats/sections')
+  const response = await api.get<{
+    data: {
+      owned: Cat[]
+      fostering_active: Cat[]
+      fostering_past: Cat[]
+      transferred_away: Cat[]
+    }
+  }>('/my-cats/sections')
   return response.data.data
 }
 

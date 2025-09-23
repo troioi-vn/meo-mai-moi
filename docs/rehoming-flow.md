@@ -30,7 +30,7 @@ This document outlines the lifecycle after a placement request receives a matche
   - POST /api/transfer-handovers/{handover}/complete
   - Effects:
     - status=completed on the handover
-    - Permanent placement: change Cat.user_id (ownership) to the helper; update OwnershipHistory (close previous owner record and open new one).
+  - Permanent placement: change Cat.user_id (ownership) to the helper; update OwnershipHistory (close previous owner record and open new one). If no open period exists for the previous owner, the system backfills and closes it.
     - Foster placement: create or ensure an active FosterAssignment (owner_user_id = original owner, foster_user_id = helper, expected_end_date = placement.end_date when set).
 
 
@@ -66,6 +66,7 @@ When fostering ends, the fosterer initiates the return to the original owner.
 - FosterAssignment: records an active fostering window, references transfer_request_id.
 - FosterReturnHandover: id, foster_assignment_id, owner_user_id, foster_user_id, scheduled_at?, location?, status, condition flags, timestamps.
 - OwnershipHistory: (cat_id, user_id, from_ts, to_ts?) tracks permanent ownership changes.
+  - Initial open record is created on cat creation; for legacy data use: `php artisan ownership-history:backfill` (add `--dry-run` to preview).
 
 ## Client UX (Frontend) – Suggested
 - After the owner accepts a response, the UI auto-opens a scheduling modal and shows a "Schedule handover" button in the Accepted section. The button is hidden once a handover exists for that transfer.

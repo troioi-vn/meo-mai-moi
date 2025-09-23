@@ -70,7 +70,9 @@ const createMockCat = (id: number, name: string): Cat => ({
 })
 
 describe('ActivePlacementRequestsSection', () => {
-  const mockGetPlacementRequests = getPlacementRequests as unknown as MockedFunction<() => Promise<Cat[]>>
+  const mockGetPlacementRequests = getPlacementRequests as unknown as MockedFunction<
+    () => Promise<Cat[]>
+  >
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -86,7 +88,7 @@ describe('ActivePlacementRequestsSection', () => {
   describe('Loading State', () => {
     it('displays loading skeleton cards while fetching data', async () => {
       // Mock API to never resolve to test loading state
-  mockGetPlacementRequests.mockImplementation(() => neverResolved())
+      mockGetPlacementRequests.mockImplementation(() => neverResolved())
 
       renderWithRouter(<ActivePlacementRequestsSection />)
 
@@ -103,7 +105,7 @@ describe('ActivePlacementRequestsSection', () => {
     })
 
     it('shows proper loading structure with skeleton elements', () => {
-  mockGetPlacementRequests.mockImplementation(() => neverResolved())
+      mockGetPlacementRequests.mockImplementation(() => neverResolved())
 
       renderWithRouter(<ActivePlacementRequestsSection />)
 
@@ -113,7 +115,14 @@ describe('ActivePlacementRequestsSection', () => {
 
       // Verify grid layout is applied
       const grid = screen.getByText('Active Placement Requests').nextElementSibling
-      expect(grid).toHaveClass('grid', 'grid-cols-1', 'sm:grid-cols-2', 'md:grid-cols-3', 'lg:grid-cols-4', 'gap-6')
+      expect(grid).toHaveClass(
+        'grid',
+        'grid-cols-1',
+        'sm:grid-cols-2',
+        'md:grid-cols-3',
+        'lg:grid-cols-4',
+        'gap-6'
+      )
     })
   })
 
@@ -125,11 +134,15 @@ describe('ActivePlacementRequestsSection', () => {
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByText('Failed to load placement requests. Please try again later.')).toBeInTheDocument()
+        expect(
+          screen.getByText('Failed to load placement requests. Please try again later.')
+        ).toBeInTheDocument()
       })
 
       // Check for additional error messaging
-      expect(screen.getByText(/We're having trouble loading the placement requests/)).toBeInTheDocument()
+      expect(
+        screen.getByText(/We're having trouble loading the placement requests/)
+      ).toBeInTheDocument()
       expect(screen.getByRole('button', { name: 'Try Again' })).toBeInTheDocument()
     })
 
@@ -143,7 +156,9 @@ describe('ActivePlacementRequestsSection', () => {
 
       // Wait for error state
       await waitFor(() => {
-        expect(screen.getByText('Failed to load placement requests. Please try again later.')).toBeInTheDocument()
+        expect(
+          screen.getByText('Failed to load placement requests. Please try again later.')
+        ).toBeInTheDocument()
       })
 
       // Click retry button
@@ -213,11 +228,8 @@ describe('ActivePlacementRequestsSection', () => {
 
   describe('Populated State', () => {
     it('renders cat cards when data is available', async () => {
-      const mockCats = [
-        createMockCat(1, 'Fluffy'),
-        createMockCat(2, 'Whiskers'),
-      ]
-  mockGetPlacementRequests.mockResolvedValue(mockCats)
+      const mockCats = [createMockCat(1, 'Fluffy'), createMockCat(2, 'Whiskers')]
+      mockGetPlacementRequests.mockResolvedValue(mockCats)
 
       renderWithRouter(<ActivePlacementRequestsSection />)
 
@@ -242,7 +254,14 @@ describe('ActivePlacementRequestsSection', () => {
 
       // Check grid container classes
       const grid = screen.getByText('Active Placement Requests').nextElementSibling
-      expect(grid).toHaveClass('grid', 'grid-cols-1', 'sm:grid-cols-2', 'md:grid-cols-3', 'lg:grid-cols-4', 'gap-6')
+      expect(grid).toHaveClass(
+        'grid',
+        'grid-cols-1',
+        'sm:grid-cols-2',
+        'md:grid-cols-3',
+        'lg:grid-cols-4',
+        'gap-6'
+      )
     })
   })
 
@@ -265,14 +284,14 @@ describe('ActivePlacementRequestsSection', () => {
       })
 
       // Should only show first 4 cats
-  expect(screen.getByTestId(`cat-card-${String(1)}`)).toBeInTheDocument()
-  expect(screen.getByTestId(`cat-card-${String(2)}`)).toBeInTheDocument()
-  expect(screen.getByTestId(`cat-card-${String(3)}`)).toBeInTheDocument()
-  expect(screen.getByTestId(`cat-card-${String(4)}`)).toBeInTheDocument()
+      expect(screen.getByTestId(`cat-card-${String(1)}`)).toBeInTheDocument()
+      expect(screen.getByTestId(`cat-card-${String(2)}`)).toBeInTheDocument()
+      expect(screen.getByTestId(`cat-card-${String(3)}`)).toBeInTheDocument()
+      expect(screen.getByTestId(`cat-card-${String(4)}`)).toBeInTheDocument()
 
       // Should not show 5th and 6th cats
-  expect(screen.queryByTestId(`cat-card-${String(5)}`)).not.toBeInTheDocument()
-  expect(screen.queryByTestId(`cat-card-${String(6)}`)).not.toBeInTheDocument()
+      expect(screen.queryByTestId(`cat-card-${String(5)}`)).not.toBeInTheDocument()
+      expect(screen.queryByTestId(`cat-card-${String(6)}`)).not.toBeInTheDocument()
     })
 
     it('shows all cats when 4 or fewer are available', async () => {
@@ -380,7 +399,12 @@ describe('ActivePlacementRequestsSection', () => {
       })
 
       const showMoreButton = screen.getByRole('button', { name: 'View All Requests' })
-      expect(showMoreButton).toHaveClass('transition-all', 'duration-200', 'hover:scale-105', 'focus:scale-105')
+      expect(showMoreButton).toHaveClass(
+        'transition-all',
+        'duration-200',
+        'hover:scale-105',
+        'focus:scale-105'
+      )
     })
   })
 
@@ -443,7 +467,9 @@ describe('ActivePlacementRequestsSection', () => {
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByRole('heading', { level: 2, name: 'Active Placement Requests' })).toBeInTheDocument()
+        expect(
+          screen.getByRole('heading', { level: 2, name: 'Active Placement Requests' })
+        ).toBeInTheDocument()
       })
     })
 

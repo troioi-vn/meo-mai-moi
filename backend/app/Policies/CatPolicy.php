@@ -65,6 +65,14 @@ class CatPolicy
             return true;
         }
 
+        // An active fosterer can view the cat.
+        $isActiveFosterer = $cat->activeFosterAssignment()
+            ->where('foster_user_id', $user->id)
+            ->exists();
+        if ($isActiveFosterer) {
+            return true;
+        }
+
         // Finally, check for the explicit 'view_cat' permission.
         return $user->can('view_cat');
     }

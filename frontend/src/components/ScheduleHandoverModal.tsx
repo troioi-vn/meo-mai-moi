@@ -1,5 +1,12 @@
 import React, { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { api } from '@/api/axios'
 import { toast } from 'sonner'
@@ -11,7 +18,12 @@ interface ScheduleHandoverModalProps {
   onSuccess?: () => void
 }
 
-export const ScheduleHandoverModal: React.FC<ScheduleHandoverModalProps> = ({ transferRequestId, isOpen, onClose, onSuccess }) => {
+export const ScheduleHandoverModal: React.FC<ScheduleHandoverModalProps> = ({
+  transferRequestId,
+  isOpen,
+  onClose,
+  onSuccess,
+}) => {
   const [scheduledAt, setScheduledAt] = useState<string>('')
   const [location, setLocation] = useState<string>('')
   const [submitting, setSubmitting] = useState(false)
@@ -57,7 +69,9 @@ export const ScheduleHandoverModal: React.FC<ScheduleHandoverModalProps> = ({ tr
               type="datetime-local"
               className="col-span-3 rounded-md border bg-background px-3 py-2"
               value={scheduledAt}
-              onChange={(e) => { setScheduledAt(e.target.value) }}
+              onChange={(e) => {
+                setScheduledAt(e.target.value)
+              }}
             />
           </label>
           <label className="grid grid-cols-4 items-center gap-3">
@@ -67,13 +81,24 @@ export const ScheduleHandoverModal: React.FC<ScheduleHandoverModalProps> = ({ tr
               placeholder="Cafe address or public spot"
               className="col-span-3 rounded-md border bg-background px-3 py-2"
               value={location}
-              onChange={(e) => { setLocation(e.target.value) }}
+              onChange={(e) => {
+                setLocation(e.target.value)
+              }}
             />
           </label>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={submitting}>Cancel</Button>
-          <Button onClick={() => { void handleSubmit() }} disabled={submitting}>Save</Button>
+          <Button variant="outline" onClick={onClose} disabled={submitting}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              void handleSubmit()
+            }}
+            disabled={submitting}
+          >
+            Save
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -7,6 +7,8 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Event;
 use App\Events\HelperProfileStatusUpdated;
 use App\Listeners\CreateHelperProfileNotification;
+use App\Listeners\UpdateEmailLogOnSent;
+use Illuminate\Mail\Events\MessageSent;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -35,6 +37,12 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(
             HelperProfileStatusUpdated::class,
             CreateHelperProfileNotification::class
+        );
+
+        // Listen for successful email sending to update EmailLog entries
+        Event::listen(
+            MessageSent::class,
+            UpdateEmailLogOnSent::class
         );
 
         // Update mail configuration on application boot if there's an active email configuration

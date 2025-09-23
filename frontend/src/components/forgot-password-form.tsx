@@ -6,6 +6,8 @@ import { Label } from '@/components/ui/label'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
+import { api, csrf } from '@/api/axios'
+import { AxiosError } from 'axios'
 
 export function ForgotPasswordForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
   const [email, setEmail] = useState('')
@@ -18,17 +20,36 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
     setIsLoading(true)
 
     try {
-      // TODO: Implement actual API call to backend
-      // await api.post('/forgot-password', { email })
-
-      // Simulate API call for now
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      // Ensure CSRF token is set
+      await csrf()
+      
+      // Make API call to request password reset
+      await api.post('/forgot-password', { email })
 
       setIsSubmitted(true)
       toast.success('Password reset instructions have been sent to your email.')
     } catch (error) {
       console.error('Forgot password error:', error)
-      toast.error('Failed to send reset instructions. Please try again.')
+      
+      let errorMessage = 'Failed to send reset instructions. Please try again.'
+      
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 422) {
+          // Validation errors
+          const errors = error.response.data.errors
+          if (errors?.email) {
+            errorMessage = errors.email[0]
+          } else {
+            errorMessage = error.response.data.message || errorMessage
+          }
+        } else if (error.response?.status === 429) {
+          errorMessage = 'Too many password reset attempts. Please try again later.'
+        } else if (error.response?.data?.message) {
+          errorMessage = error.response.data.message
+        }
+      }
+      
+      toast.error(errorMessage)
     } finally {
       setIsLoading(false)
     }

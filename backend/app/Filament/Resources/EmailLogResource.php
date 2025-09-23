@@ -44,10 +44,9 @@ class EmailLogResource extends Resource
                             ->label('Subject')
                             ->disabled()
                             ->columnSpanFull(),
-                        Forms\Components\Textarea::make('body')
+                        Forms\Components\ViewField::make('body')
                             ->label('Email Body')
-                            ->disabled()
-                            ->rows(8)
+                            ->view('filament.components.email-body-preview')
                             ->columnSpanFull(),
                     ]),
                     

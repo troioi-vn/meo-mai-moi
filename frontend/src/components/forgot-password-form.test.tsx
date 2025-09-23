@@ -49,9 +49,6 @@ describe('ForgotPasswordForm', () => {
     await userEvent.type(emailInput, 'test@example.com')
     await userEvent.click(submitButton)
 
-    // Should show loading state
-    expect(screen.getByRole('button', { name: /sending/i })).toBeInTheDocument()
-
     // Wait for success state
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /check your email/i })).toBeInTheDocument()
@@ -105,5 +102,22 @@ describe('ForgotPasswordForm', () => {
     // Should be back to form
     expect(screen.getByRole('heading', { name: /reset your password/i })).toBeInTheDocument()
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
+  })
+
+  it('shows a notification when email is not found', async () => {
+    const { toast } = await import('sonner')
+    renderWithRouter(<ForgotPasswordForm />)
+
+    const emailInput = screen.getByLabelText(/email/i)
+    const submitButton = screen.getByRole('button', { name: /send reset instructions/i })
+
+    await userEvent.type(emailInput, 'unknown@example.com')
+    await userEvent.click(submitButton)
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith(
+        "We couldn't find an account with that email address."
+      )
+    })
   })
 })

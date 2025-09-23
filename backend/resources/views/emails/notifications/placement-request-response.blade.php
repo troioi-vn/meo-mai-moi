@@ -6,12 +6,15 @@
     </div>
 
     <div class="message">
-        Great news! You've received a new response to your placement request{{ isset($cat) ? ' for ' . $cat->name : '' }}.
+        Great news! You've received a new response to your placement request
+        @if(isset($cat) && $cat)
+            for {!! htmlspecialchars($cat->name, ENT_COMPAT, 'UTF-8', false) !!}
+        @endif.
     </div>
 
     @if(isset($cat))
         <div class="cat-info">
-            <div class="cat-name">{{ $cat->name }}</div>
+            <div class="cat-name">{!! htmlspecialchars($cat->name, ENT_COMPAT, 'UTF-8', false) !!}</div>
             <div class="cat-details">
                 <strong>Breed:</strong> {{ $cat->breed }}<br>
                 <strong>Location:</strong> {{ $cat->location }}<br>
@@ -25,7 +28,7 @@
     @if(isset($helperProfile) && $helperProfile)
         <div class="message">
             <strong>{{ $helperProfile->user->name }}</strong> has responded to your placement request. 
-            They are interested in helping with {{ isset($cat) ? $cat->name : 'your cat' }}.
+            They are interested in helping with @if(isset($cat) && $cat){!! htmlspecialchars($cat->name, ENT_COMPAT, 'UTF-8', false) !!}@else your cat @endif.
         </div>
 
         <div style="background-color: #e8f4fd; padding: 15px; border-radius: 6px; margin: 20px 0;">

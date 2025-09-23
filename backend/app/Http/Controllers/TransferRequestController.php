@@ -388,6 +388,11 @@ class TransferRequestController extends Controller
     {
         $this->authorize('reject', $transferRequest);
 
+        // Ensure pending before proceeding to avoid duplicate notifications
+        if ($transferRequest->status !== 'pending') {
+            return $this->sendError('Only pending requests can be rejected.', 409);
+        }
+
         $transferRequest->status = 'rejected';
         $transferRequest->rejected_at = now();
         $transferRequest->save();

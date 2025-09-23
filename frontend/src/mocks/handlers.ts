@@ -142,6 +142,25 @@ const userHandlers = [
     return HttpResponse.json({ message: 'Logged out successfully' })
   }),
 
+  // Forgot password endpoint
+  http.post('http://localhost:3000/api/forgot-password', async ({ request }) => {
+    const raw = await request.json()
+    const body = raw && typeof raw === 'object' ? (raw as { email?: string }) : {}
+    if (!body.email) {
+      return HttpResponse.json(
+        { message: 'Validation Error', errors: { email: ['The email field is required.'] } },
+        { status: 422 }
+      )
+    }
+    if (body.email === 'unknown@example.com') {
+      return HttpResponse.json(
+        { message: "We couldn't find an account with that email address." },
+        { status: 404 }
+      )
+    }
+    return HttpResponse.json({ message: 'Password reset link sent to your email address.' })
+  }),
+
   // CSRF cookie endpoint
   http.get('http://localhost:3000/sanctum/csrf-cookie', () => {
     return new HttpResponse(null, { status: 204 })

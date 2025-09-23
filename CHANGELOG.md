@@ -5,6 +5,22 @@ All notable changes to this project are documented here, following the [Keep a C
 ## [Unreleased]
 
 ### Added
+- Env: Added `FRONTEND_URL` environment variable across local and Docker env files to represent the SPA base URL used in emails and redirects.
+- **Password Reset System**: Complete password recovery functionality with professional email notifications.
+  - **Backend**:
+    - Laravel's native password reset system implementation with custom mailable
+    - `ResetPasswordNotification` with secure token handling and formatted emails
+    - Email logging integration for admin visibility of password reset emails
+    - Proper CSRF protection and validation for reset endpoints
+  - **Frontend**:
+    - `ResetPasswordPage` component with form validation and error handling
+    - Token validation and password confirmation matching
+    - Support for authenticated users accessing reset links (no forced redirect)
+    - Clear success/error feedback and navigation
+  - **Admin Panel**:
+    - Email preview component for viewing password reset notifications
+    - Toggle between rendered preview and HTML source for debugging
+    - Integration with existing email logging system for tracking deliveries
 - **Comprehensive SMTP Email System**: Complete SMTP infrastructure with multiple provider support and advanced email tracking.
   - **Backend**:
     - Enhanced `EmailConfiguration` model with `name` and `description` fields for managing multiple SMTP accounts
@@ -65,6 +81,9 @@ All notable changes to this project are documented here, following the [Keep a C
  - Transfer responder visibility: New policy ability `viewResponderProfile` so owners/recipients/initiators can see the responder’s helper profile for a transfer request.
 
 ### Changed
+- Env/Config: Standardized URLs between backend and SPA.
+  - `config('app.frontend_url')` default changed to `http://localhost:5173` (Vite dev server) instead of `http://localhost:8000`.
+  - Ensured `APP_URL=http://localhost:8000` and `FRONTEND_URL=http://localhost:5173` are present in `backend/.env`, `.env.example`, `.env.docker`, and `.env.docker.example`.
 - Backend Docker build: Upgraded Composer from 2.7 to 2.8 to remove PHP 8.4 E_STRICT deprecation notices during composer install.
 - Docker startup: stabilized DB readiness by using a simple `pg_isready` host:port probe in entrypoint and healthchecks; avoids requiring a specific database during boot.
 - Compose: simplified DB healthcheck; backend now consistently reaches healthy state.
@@ -90,6 +109,10 @@ All notable changes to this project are documented here, following the [Keep a C
  - Frontend: My Cats page UX polish; reduced console noise by suppressing successful test output in the test runner.
 
 ### Fixed
+- **Password Reset Configuration**: Fixed password reset link generation to use correct frontend port.
+  - Updated Docker environment configuration to use port 8000 instead of 5173
+  - Rebuilt Docker containers to pick up new FRONTEND_URL configuration
+  - Verified email links now direct to proper frontend URL for password reset flow
 - **Filament Admin Panel**: Fixed TypeError in Select component where null label values caused Internal Server Error.
   - Updated existing EmailConfiguration records with null names to have proper display names
   - Enhanced relationship Select components to handle null values gracefully using `getOptionLabelFromRecordUsing()`

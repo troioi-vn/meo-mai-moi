@@ -54,7 +54,7 @@ describe('PlacementResponseModal', () => {
   })
 
   it('submits the response and closes modal on success', async () => {
-  const onClose = vi.fn()
+    const onClose = vi.fn()
 
     // Ensure POST succeeds
     server.use(
@@ -68,21 +68,21 @@ describe('PlacementResponseModal', () => {
       expect(await screen.findAllByRole('combobox')).toHaveLength(2)
     })
 
-  // Select a helper profile
-  const [profileCombo, typeCombo] = await screen.findAllByRole('combobox')
-  await user.click(profileCombo)
-  await user.click(await screen.findByText(/testville, ts/i))
+    // Select a helper profile
+    const [profileCombo, typeCombo] = await screen.findAllByRole('combobox')
+    await user.click(profileCombo)
+    await user.click(await screen.findByText(/testville, ts/i))
 
-  // Select relationship type
-  await user.click(typeCombo)
-  await user.click(await screen.findByText(/fostering/i))
+    // Select relationship type
+    await user.click(typeCombo)
+    await user.click(await screen.findByText(/fostering/i))
 
     await user.click(screen.getByRole('button', { name: /submit/i }))
 
     // Confirm
     await user.click(await screen.findByRole('button', { name: /confirm submission/i }))
 
-  await waitFor(() => {
+    await waitFor(() => {
       expect(toast.success).toHaveBeenCalled()
       expect(onClose).toHaveBeenCalled()
     })

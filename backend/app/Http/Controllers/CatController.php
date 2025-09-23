@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use App\Models\FosterAssignment;
 use Illuminate\Support\Facades\Schema;
+use App\Models\OwnershipHistory;
 
 /**
  * @OA\Schema(
@@ -113,9 +114,20 @@ class CatController extends Controller
             $pastFostering = collect();
         }
 
-    // Transferred away: cats that the user used to own but no longer does
-    // TODO: Replace with query based on ownership_history once wired in.
-    $transferredAway = collect([]);
+        // Transferred away: cats that the user used to own but no longer does
+        // Uses ownership_history if available
+        if (Schema::hasTable('ownership_history')) {
+            $transferredCatIds = OwnershipHistory::where('user_id', $user->id)
+                ->whereNotNull('to_ts')
+                ->pluck('cat_id')
+                ->unique();
+
+            $transferredAway = Cat::whereIn('id', $transferredCatIds)
+                ->where('user_id', '!=', $user->id)
+                ->get();
+        } else {
+            $transferredAway = collect();
+        }
 
         return $this->sendSuccess([
             'owned' => $owned->values(),
@@ -246,6 +258,22 @@ class CatController extends Controller
         ]);
 
         $cat = Cat::create($validatedData + ['user_id' => $request->user()->id]);
+
+        // Create initial ownership history (open period) for the creator as owner, when table exists
+        if (Schema::hasTable('ownership_history')) {
+            $hasOpen = OwnershipHistory::where('cat_id', $cat->id)
+                ->where('user_id', $request->user()->id)
+                ->whereNull('to_ts')
+                ->exists();
+            if (!$hasOpen) {
+                OwnershipHistory::create([
+                    'cat_id' => $cat->id,
+                    'user_id' => $request->user()->id,
+                    'from_ts' => now(),
+                    'to_ts' => null,
+                ]);
+            }
+        }
 
         return $this->sendSuccess($cat, 201);
     }

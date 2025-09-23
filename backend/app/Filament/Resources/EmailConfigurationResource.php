@@ -36,6 +36,23 @@ class EmailConfigurationResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\Section::make('Basic Information')
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->label('Configuration Name')
+                            ->placeholder('e.g., Primary SMTP Account')
+                            ->helperText('A friendly name to identify this configuration')
+                            ->maxLength(255),
+
+                        Forms\Components\Textarea::make('description')
+                            ->label('Description')
+                            ->placeholder('e.g., Main company email account for notifications')
+                            ->helperText('Optional description of this email configuration')
+                            ->rows(2)
+                            ->maxLength(1000),
+                    ])
+                    ->columns(1),
+
                 Forms\Components\Section::make('Provider Configuration')
                     ->schema([
                         Forms\Components\Select::make('provider')
@@ -177,6 +194,13 @@ class EmailConfigurationResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Name')
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('Unnamed Configuration')
+                    ->weight('medium'),
+
                 Tables\Columns\TextColumn::make('provider')
                     ->label('Provider')
                     ->badge()
@@ -198,6 +222,19 @@ class EmailConfigurationResource extends Resource
                     ->label('From Name')
                     ->searchable()
                     ->placeholder('Not set'),
+
+                Tables\Columns\TextColumn::make('description')
+                    ->label('Description')
+                    ->limit(50)
+                    ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
+                        $state = $column->getState();
+                        if (strlen($state) <= 50) {
+                            return null;
+                        }
+                        return $state;
+                    })
+                    ->placeholder('No description')
+                    ->color('gray'),
 
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('Active')

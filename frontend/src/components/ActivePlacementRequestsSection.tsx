@@ -10,8 +10,8 @@ interface ActivePlacementRequestsSectionProps {
   className?: string
 }
 
-export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSectionProps> = ({ 
-  className = '' 
+export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSectionProps> = ({
+  className = '',
 }) => {
   const [cats, setCats] = useState<Cat[]>([])
   const [loading, setLoading] = useState(true)
@@ -25,11 +25,11 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
         setLoading(true)
         setError(null)
         const response = await getPlacementRequests()
-        
+
         // Client-side limiting to first 4 cats
         const limitedCats = response.slice(0, 4)
         setCats(limitedCats)
-        
+
         // Show "Show more" button if there are more than 4 cats with active placement requests
         setShowMoreVisible(response.length > 4)
       } catch (err) {
@@ -52,11 +52,11 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
       setLoading(true)
       setError(null)
       const response = await getPlacementRequests()
-      
+
       // Client-side limiting to first 4 cats
       const limitedCats = response.slice(0, 4)
       setCats(limitedCats)
-      
+
       // Show "Show more" button if there are more than 4 cats with active placement requests
       setShowMoreVisible(response.length > 4)
     } catch (err) {
@@ -75,7 +75,10 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {/* Loading skeleton cards */}
           {Array.from({ length: 4 }).map((_, index) => (
-            <div key={`skeleton-${String(index)}`} className="rounded-lg border bg-card text-card-foreground shadow-sm">
+            <div
+              key={`skeleton-${String(index)}`}
+              className="rounded-lg border bg-card text-card-foreground shadow-sm"
+            >
               <Skeleton className="h-48 w-full rounded-t-lg" />
               <div className="p-4 space-y-3">
                 <Skeleton className="h-4 w-3/4" />
@@ -101,9 +104,16 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
         <div className="text-center space-y-4">
           <p className="text-destructive text-lg">{error}</p>
           <p className="text-muted-foreground">
-            We're having trouble loading the placement requests. Please check your connection and try again.
+            We're having trouble loading the placement requests. Please check your connection and
+            try again.
           </p>
-          <Button onClick={() => { void handleRetry() }} variant="outline" size="lg">
+          <Button
+            onClick={() => {
+              void handleRetry()
+            }}
+            variant="outline"
+            size="lg"
+          >
             Try Again
           </Button>
         </div>
@@ -121,9 +131,7 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
           <p className="text-lg text-muted-foreground">
             No active placement requests at the moment.
           </p>
-          <p className="text-muted-foreground">
-            Check back soon for cats needing help!
-          </p>
+          <p className="text-muted-foreground">Check back soon for cats needing help!</p>
         </div>
       </section>
     )
@@ -133,7 +141,7 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
   return (
     <section className={`container mx-auto px-4 py-8 ${className}`}>
       <h2 className="mb-8 text-3xl font-bold text-center">Active Placement Requests</h2>
-      
+
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {cats.map((cat) => (
           <CatCard key={cat.id} cat={cat} />
@@ -142,9 +150,9 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
 
       {showMoreVisible && (
         <div className="mt-8 text-center">
-          <Button 
-            onClick={handleShowMore} 
-            variant="default" 
+          <Button
+            onClick={handleShowMore}
+            variant="default"
             size="lg"
             className="transition-all duration-200 hover:scale-105 focus:scale-105"
           >

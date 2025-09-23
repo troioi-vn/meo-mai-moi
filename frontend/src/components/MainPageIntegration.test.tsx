@@ -58,7 +58,7 @@ describe('MainPage Integration with ActivePlacementRequestsSection', () => {
     await waitFor(() => {
       // Check for HeroSection content (assuming it has some identifiable text)
       expect(screen.getByText('Active Placement Requests')).toBeInTheDocument()
-      
+
       // Check for ActivePlacementRequestsSection content
       expect(screen.getByText('Fluffy')).toBeInTheDocument()
       expect(screen.getByText('Persian - 5 years old')).toBeInTheDocument()
@@ -93,7 +93,7 @@ describe('MainPage Integration with ActivePlacementRequestsSection', () => {
     // Check that the grid layout classes are applied correctly
     const catCard = screen.getByText('Fluffy').closest('[data-slot="card"]')
     expect(catCard).toBeInTheDocument()
-    
+
     // Verify the section has proper container classes
     const section = screen.getByText('Active Placement Requests').closest('section')
     expect(section).toHaveClass('container', 'mx-auto', 'px-4', 'py-8')

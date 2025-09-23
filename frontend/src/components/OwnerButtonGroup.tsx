@@ -7,7 +7,11 @@ interface OwnerButtonGroupProps {
   onMyCats: () => void
 }
 
-export const OwnerButtonGroup: React.FC<OwnerButtonGroupProps> = ({ onEdit, onPlacementRequest, onMyCats }) => (
+export const OwnerButtonGroup: React.FC<OwnerButtonGroupProps> = ({
+  onEdit,
+  onPlacementRequest,
+  onMyCats,
+}) => (
   <div className="flex gap-3 mb-4">
     <Button onClick={onEdit} variant="outline">
       Edit

@@ -1,9 +1,9 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import type { Cat } from '@/types/cat'
-import { PlacementResponseModal } from '@/components/PlacementResponseModal';
-import { useAuth } from '@/hooks/use-auth';
-import { Button } from '@/components/ui/button';
+import { PlacementResponseModal } from '@/components/PlacementResponseModal'
+import { useAuth } from '@/hooks/use-auth'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import placeholderImage from '@/assets/images/placeholder--cat.webp'
 import { calculateAge } from '@/utils/date'
@@ -22,11 +22,27 @@ export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
     const s = (status ?? '').toLowerCase()
     return s === 'open' || s === 'pending_review' || s === 'pending'
   }
-  const activePlacementRequest = cat.placement_requests?.find((req) => req.is_active || isStatusOpen(req.status))
+  const activePlacementRequest = cat.placement_requests?.find(
+    (req) => req.is_active === true || isStatusOpen(req.status)
+  )
   const activePlacementRequestId = activePlacementRequest?.id
   // Show Fulfilled only when there were requests but none are currently active/open
   const hasActivePlacementRequests = Boolean(activePlacementRequest)
   const hasFulfilledPlacement = hasAnyPlacementRequests && !hasActivePlacementRequests
+
+  // Check if current user has a pending response
+  const myPendingTransfer = React.useMemo(() => {
+    if (!user?.id || !cat.placement_requests) return undefined
+    for (const pr of cat.placement_requests) {
+      const found = pr.transfer_requests?.find((tr) => {
+        if (tr.status !== 'pending') return false
+        if (tr.initiator_user_id && tr.initiator_user_id === user.id) return true
+        return tr.helper_profile?.user?.id === user.id
+      })
+      if (found) return found
+    }
+    return undefined
+  }, [cat.placement_requests, user?.id])
 
   // Prefer photos[0].url, then photo_url, then placeholder
   const imageUrl =
@@ -52,7 +68,7 @@ export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
             </span>
           )}
           {cat.placement_requests?.map((request) => {
-            const key = `${String(cat.id)}-${String(request.id)}-${String(request.expires_at ?? request.start_date ?? '')}`
+            const key = `${String(cat.id)}-${String(request.id)}-${request.expires_at ?? request.start_date ?? ''}`
             return (
               <span
                 key={key}
@@ -73,12 +89,38 @@ export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
             (cat.placement_request_active ?? hasActivePlacementRequests) &&
             activePlacementRequestId !== undefined && (
               <>
-                <Button className="w-full" onClick={() => { setIsModalOpen(true); }}>
-                  Respond
-                </Button>
+                {myPendingTransfer ? (
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground text-center">
+                      You responded... Waiting for approval
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => {
+                        // TODO: Add cancel functionality
+                        console.log('Cancel response for transfer:', myPendingTransfer.id)
+                      }}
+                    >
+                      Cancel Response
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    className="w-full"
+                    onClick={() => {
+                      setIsModalOpen(true)
+                    }}
+                  >
+                    Respond
+                  </Button>
+                )}
                 <PlacementResponseModal
                   isOpen={isModalOpen}
-                  onClose={() => { setIsModalOpen(false); }}
+                  onClose={() => {
+                    setIsModalOpen(false)
+                  }}
                   catName={cat.name}
                   catId={cat.id}
                   placementRequestId={activePlacementRequestId}

@@ -5,6 +5,53 @@ All notable changes to this project are documented here, following the [Keep a C
 ## [Unreleased]
 
 ### Added
+- Env: Added `FRONTEND_URL` environment variable across local and Docker env files to represent the SPA base URL used in emails and redirects.
+- **Password Reset System**: Complete password recovery functionality with professional email notifications.
+  - **Backend**:
+    - Laravel's native password reset system implementation with custom mailable
+    - `ResetPasswordNotification` with secure token handling and formatted emails
+    - Email logging integration for admin visibility of password reset emails
+    - Proper CSRF protection and validation for reset endpoints
+  - **Frontend**:
+    - `ResetPasswordPage` component with form validation and error handling
+    - Token validation and password confirmation matching
+    - Support for authenticated users accessing reset links (no forced redirect)
+    - Clear success/error feedback and navigation
+  - **Admin Panel**:
+    - Email preview component for viewing password reset notifications
+    - Toggle between rendered preview and HTML source for debugging
+    - Integration with existing email logging system for tracking deliveries
+- **Comprehensive SMTP Email System**: Complete SMTP infrastructure with multiple provider support and advanced email tracking.
+  - **Backend**:
+    - Enhanced `EmailConfiguration` model with `name` and `description` fields for managing multiple SMTP accounts
+    - Support for multiple SMTP providers with clear identification and switching capabilities  
+    - New `EmailLog` model for comprehensive email tracking with delivery status, retry capabilities, and SMTP responses
+    - Enhanced `SendNotificationEmail` job with automatic EmailLog creation and status tracking
+    - Filament admin resources for email configuration and log management with advanced filtering
+    - Manual and bulk retry functionality for failed emails through admin panel
+    - Search capabilities across recipient emails and subjects
+    - Status-based filtering (pending, sent, failed, bounced) and date range filtering
+    - Real-time email delivery monitoring and error tracking
+    - Database migrations for email_configurations enhancements and email_logs table
+    - Robust error handling with detailed SMTP response logging
+  - **Admin Interface**:
+    - `EmailConfigurationResource` for creating and managing multiple SMTP/Mailgun configurations
+    - `EmailLogResource` with comprehensive table view, filters, and retry actions
+    - Advanced search and filtering capabilities for email management
+    - Individual and bulk retry operations for failed emails
+    - Real-time status tracking and delivery monitoring
+- **Enhanced Login UI**: Complete redesign of authentication interface using shadcn/ui components.
+  - **Frontend**:
+    - Refactored `LoginForm` component with modern Card-based design and improved UX
+    - Added "Remember me" functionality for persistent login sessions
+    - Implemented forgot password feature with dedicated page and form component
+    - Created `ForgotPasswordPage` with success states and retry functionality
+    - Added `forgot-password-form` component with email submission and navigation
+    - Updated routing to include `/forgot-password` path
+    - Enhanced form validation and error handling
+    - Comprehensive test coverage for all authentication components (274 tests passing)
+    - Improved accessibility and responsive design
+    - Consistent styling with shadcn/ui Button, Card, Input, and Checkbox components
 - **Email Notifications System**: Comprehensive email notification system for placement requests and helper responses.
   - **Backend**:
     - Database schema with `notification_preferences` and `email_configurations` tables
@@ -34,6 +81,9 @@ All notable changes to this project are documented here, following the [Keep a C
  - Transfer responder visibility: New policy ability `viewResponderProfile` so owners/recipients/initiators can see the responder’s helper profile for a transfer request.
 
 ### Changed
+- Env/Config: Standardized URLs between backend and SPA.
+  - `config('app.frontend_url')` default changed to `http://localhost:5173` (Vite dev server) instead of `http://localhost:8000`.
+  - Ensured `APP_URL=http://localhost:8000` and `FRONTEND_URL=http://localhost:5173` are present in `backend/.env`, `.env.example`, `.env.docker`, and `.env.docker.example`.
 - Backend Docker build: Upgraded Composer from 2.7 to 2.8 to remove PHP 8.4 E_STRICT deprecation notices during composer install.
 - Docker startup: stabilized DB readiness by using a simple `pg_isready` host:port probe in entrypoint and healthchecks; avoids requiring a specific database during boot.
 - Compose: simplified DB healthcheck; backend now consistently reaches healthy state.
@@ -59,6 +109,15 @@ All notable changes to this project are documented here, following the [Keep a C
  - Frontend: My Cats page UX polish; reduced console noise by suppressing successful test output in the test runner.
 
 ### Fixed
+- **Password Reset Configuration**: Fixed password reset link generation to use correct frontend port.
+  - Updated Docker environment configuration to use port 8000 instead of 5173
+  - Rebuilt Docker containers to pick up new FRONTEND_URL configuration
+  - Verified email links now direct to proper frontend URL for password reset flow
+- **Filament Admin Panel**: Fixed TypeError in Select component where null label values caused Internal Server Error.
+  - Updated existing EmailConfiguration records with null names to have proper display names
+  - Enhanced relationship Select components to handle null values gracefully using `getOptionLabelFromRecordUsing()`
+  - Added defensive programming to prevent future null label issues in user and emailConfiguration relationships
+  - Admin panel now loads correctly without errors when accessing email management interfaces
 - Frontend: CatCard "Fulfilled" badge incorrectly showed for new/open placement requests. Now it only appears when there are placement requests but none are active/open (derived from `is_active` or `status` in {`open`, `pending_review`, `pending`}); Respond button visibility also falls back to this derived state when the backend convenience flag is absent.
 - **API/Policy**: Fixed 403 when viewing your own cat. Broadened `CatPolicy@view` to allow owners, admins, and accepted helpers to view a cat, and to permit public read access for non-deleted cats. This aligns with the optional-auth show route and documented visibility rules.
 - Frontend Linting/Type Safety: Large cleanup pass across multiple files (CatProfilePage, HelperProfileDialog, CatDetails, UserMenu, ScheduleHandoverModal, PlacementResponseModal, helper profile pages/hooks).
@@ -83,7 +142,10 @@ All notable changes to this project are documented here, following the [Keep a C
     - Permanent: transfer ownership to helper.
     - Foster: create an active `FosterAssignment`; owner remains.
   - OpenAPI documentation updated and tests added for lifecycle.
-- **Ownership History:** New `ownership_history` table with `OwnershipHistory` model and relations on `Cat` and `User` to support the `transferred_away` section.
+- **Ownership History:** New `ownership_history` table with `OwnershipHistory` model and relations on `Cat` and `User`.
+- **My Cats sections (`/api/my-cats/sections`):** `transferred_away` now derives from `ownership_history` (cats you previously owned with a closed period, and not currently owned by you).
+- **Transfer Finalization:** Ownership changes for permanent transfers occur on handover completion; controller backfills/ closes previous history if missing, then opens a new period for the new owner.
+- **Backfill Command:** `php artisan ownership-history:backfill` to create initial open records for existing cats; supports `--dry-run`.
 - **Placement Response System**: Implemented the core functionality for helpers to respond to placement requests.
   - **Backend**:
     - Cat profiles are now publicly visible if they have an active placement request.

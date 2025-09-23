@@ -5,7 +5,17 @@ import { getStatusDisplay, getStatusClasses } from '@/utils/catStatus'
 import placeholderImage from '@/assets/images/placeholder--cat.webp'
 import { Button } from '@/components/ui/button'
 import { PlacementResponseModal } from '@/components/PlacementResponseModal'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { useAuth } from '@/hooks/use-auth'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -17,7 +27,12 @@ interface CatDetailsProps {
   onTransferResponseSuccess?: () => void
 }
 
-export const CatDetails: React.FC<CatDetailsProps> = ({ cat, onDeletePlacementRequest, onCancelTransferRequest, onTransferResponseSuccess }) => {
+export const CatDetails: React.FC<CatDetailsProps> = ({
+  cat,
+  onDeletePlacementRequest,
+  onCancelTransferRequest,
+  onTransferResponseSuccess,
+}) => {
   const age = calculateAge(cat.birthday)
   const statusDisplay = getStatusDisplay(cat.status)
   const statusClasses = getStatusClasses(cat.status)
@@ -25,13 +40,16 @@ export const CatDetails: React.FC<CatDetailsProps> = ({ cat, onDeletePlacementRe
   const { isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const anyActive = Boolean(cat.placement_requests?.some((r) => r.is_active ?? (r.status === 'open' || r.status === 'pending_review')))
-  const hasActivePlacementRequest = (cat.placement_request_active === true) ? true : anyActive
-  const activePlacementRequest = (
-    cat.placement_requests?.find((r) => r.is_active === true) ??
-    cat.placement_requests?.find((r) => (r.status === 'open' || r.status === 'pending_review')) ??
-    cat.placement_requests?.[0]
+  const anyActive = Boolean(
+    cat.placement_requests?.some(
+      (r) => r.is_active ?? (r.status === 'open' || r.status === 'pending_review')
+    )
   )
+  const hasActivePlacementRequest = cat.placement_request_active === true ? true : anyActive
+  const activePlacementRequest =
+    cat.placement_requests?.find((r) => r.is_active === true) ??
+    cat.placement_requests?.find((r) => r.status === 'open' || r.status === 'pending_review') ??
+    cat.placement_requests?.[0]
   const activePlacementRequestId = activePlacementRequest?.id
   const myPendingTransfer = (() => {
     if (!user?.id || !cat.placement_requests) return undefined
@@ -48,9 +66,9 @@ export const CatDetails: React.FC<CatDetailsProps> = ({ cat, onDeletePlacementRe
 
   const handleRespondClick = () => {
     if (!isAuthenticated) {
-  void toast.info('Please log in to respond to this placement request.')
+      void toast.info('Please log in to respond to this placement request.')
       const redirect = encodeURIComponent(location.pathname)
-  void navigate(`/login?redirect=${redirect}`)
+      void navigate(`/login?redirect=${redirect}`)
       return
     }
     setIsRespondOpen(true)
@@ -93,6 +111,42 @@ export const CatDetails: React.FC<CatDetailsProps> = ({ cat, onDeletePlacementRe
                 </span>
               </div>
 
+              {/* Foster/Transfer Status Badges */}
+              {cat.foster_assignment && (
+                <div>
+                  <h3 className="font-semibold text-card-foreground">Foster Status</h3>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                      Fostering with {cat.foster_assignment.foster_user?.name}
+                      {cat.foster_assignment.expected_end_date && (
+                        <>
+                          {' '}
+                          until{' '}
+                          {new Date(cat.foster_assignment.expected_end_date).toLocaleDateString()}
+                        </>
+                      )}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {cat.ownership_transfers && cat.ownership_transfers.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-card-foreground">Transfer History</h3>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {cat.ownership_transfers.slice(-1).map((transfer) => (
+                      <span
+                        key={transfer.id}
+                        className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800"
+                      >
+                        Transferred to {transfer.to_user?.name} on{' '}
+                        {new Date(transfer.occurred_at).toLocaleDateString()}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div>
                 <h3 className="font-semibold text-card-foreground">About {cat.name}</h3>
                 <p className="text-muted-foreground leading-relaxed">{cat.description}</p>
@@ -103,54 +157,82 @@ export const CatDetails: React.FC<CatDetailsProps> = ({ cat, onDeletePlacementRe
                   <h3 className="font-semibold text-card-foreground">Active Placement Requests</h3>
                   <div className="mt-2 space-y-4">
                     {(cat.placement_requests ?? [])
-                      .filter((r) => (r.is_active === true) || r.status === 'open' || r.status === 'pending_review')
+                      .filter(
+                        (r) =>
+                          r.is_active === true ||
+                          r.status === 'open' ||
+                          r.status === 'pending_review'
+                      )
                       .map((request) => (
-                      <div key={request.id} className="p-4 bg-muted rounded-lg flex justify-between items-center">
-                        <div>
-                          <p className="font-semibold text-sm text-muted-foreground">
-                            {request.request_type.replace('_', ' ').toUpperCase()} - <span className="font-normal">Expires: {request.expires_at ? new Date(request.expires_at).toLocaleDateString() : 'N/A'}</span>
-                          </p>
-                          <p className="text-sm text-muted-foreground mt-1">{request.notes}</p>
+                        <div
+                          key={request.id}
+                          className="p-4 bg-muted rounded-lg flex justify-between items-center"
+                        >
+                          <div>
+                            <p className="font-semibold text-sm text-muted-foreground">
+                              {request.request_type.replace('_', ' ').toUpperCase()} -{' '}
+                              <span className="font-normal">
+                                Expires:{' '}
+                                {request.expires_at
+                                  ? new Date(request.expires_at).toLocaleDateString()
+                                  : 'N/A'}
+                              </span>
+                            </p>
+                            <p className="text-sm text-muted-foreground mt-1">{request.notes}</p>
+                          </div>
+                          {cat.viewer_permissions?.can_edit && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="destructive" size="sm">
+                                  Delete
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete this
+                                    placement request.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => {
+                                      onDeletePlacementRequest(request.id)
+                                    }}
+                                  >
+                                    Continue
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
                         </div>
-                        {cat.viewer_permissions?.can_edit && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="destructive" size="sm">Delete</Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  This action cannot be undone. This will permanently delete this placement request.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => { onDeletePlacementRequest(request.id); }}>Continue</AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        )}
-                      </div>
-                    ))}
+                      ))}
                     {/* Non-owners can respond to active requests (publicly visible) */}
                     {!cat.viewer_permissions?.can_edit && activePlacementRequestId != null && (
                       <div className="pt-2">
                         {myPendingTransfer ? (
                           <div className="flex flex-col gap-2">
                             <p className="text-sm text-muted-foreground">
-                              You responded to this request with this Helper Profile: {myPendingTransfer.helper_profile?.city ?? 'Unknown City'}, waiting for the cat's owner's approval.
+                              You responded to this request with this Helper Profile:{' '}
+                              {myPendingTransfer.helper_profile?.city ?? 'Unknown City'}, waiting
+                              for the cat's owner's approval.
                             </p>
                             <div>
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                  <Button variant="destructive" size="sm">Cancel Response</Button>
+                                  <Button variant="destructive" size="sm">
+                                    Cancel Response
+                                  </Button>
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
                                   <AlertDialogHeader>
                                     <AlertDialogTitle>Cancel your response?</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                      This will withdraw your response to this placement request. You can respond again later while the request remains open.
+                                      This will withdraw your response to this placement request.
+                                      You can respond again later while the request remains open.
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
@@ -176,10 +258,19 @@ export const CatDetails: React.FC<CatDetailsProps> = ({ cat, onDeletePlacementRe
                           </div>
                         ) : (
                           <>
-                            <Button onClick={() => { handleRespondClick() }} disabled={!!myPendingTransfer}>Respond</Button>
+                            <Button
+                              onClick={() => {
+                                handleRespondClick()
+                              }}
+                              disabled={!!myPendingTransfer}
+                            >
+                              Respond
+                            </Button>
                             <PlacementResponseModal
                               isOpen={isRespondOpen}
-                              onClose={() => { setIsRespondOpen(false); }}
+                              onClose={() => {
+                                setIsRespondOpen(false)
+                              }}
                               catName={cat.name}
                               catId={cat.id}
                               placementRequestId={activePlacementRequestId}

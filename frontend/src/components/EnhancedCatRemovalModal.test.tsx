@@ -187,7 +187,7 @@ describe('EnhancedCatRemovalModal', () => {
     vi.restoreAllMocks()
   })
 
-    it('allows navigation back between steps', async () => {
+  it('allows navigation back between steps', async () => {
     renderWithRouter(<EnhancedCatRemovalModal {...mockProps} />)
 
     await user.click(screen.getByRole('button', { name: /remove cat/i }))
@@ -198,15 +198,15 @@ describe('EnhancedCatRemovalModal', () => {
     await user.click(screen.getByRole('button', { name: /delete permanently/i }))
     expect(screen.getByText('Confirm Your Password')).toBeInTheDocument()
 
-  // Go back to step 2 - look for the first back button
-  const backButtons = await screen.findAllByRole('button', { name: /back/i })
+    // Go back to step 2 - look for the first back button
+    const backButtons = await screen.findAllByRole('button', { name: /back/i })
     await user.click(backButtons[0])
     await waitFor(() => {
       expect(screen.getByText('Choose Action')).toBeInTheDocument()
     })
 
-  // Go back to step 1
-  const backButtonsStep2 = await screen.findAllByRole('button', { name: /back/i })
+    // Go back to step 1
+    const backButtonsStep2 = await screen.findAllByRole('button', { name: /back/i })
     await user.click(backButtonsStep2[0])
     await waitFor(() => {
       expect(screen.getByText('Confirm Cat Name')).toBeInTheDocument()

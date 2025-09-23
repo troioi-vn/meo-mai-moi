@@ -88,11 +88,13 @@ export function UserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => {
-            void logout().then(() => {
-              void navigate('/login')
-            }).catch((err: unknown) => {
-              console.error('Logout error:', err)
-            })
+            void logout()
+              .then(() => {
+                void navigate('/login')
+              })
+              .catch((err: unknown) => {
+                console.error('Logout error:', err)
+              })
           }}
         >
           Log Out

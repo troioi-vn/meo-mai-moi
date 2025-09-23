@@ -1,14 +1,14 @@
-import React from 'react';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
+import React from 'react'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 
 interface CheckboxFieldProps {
-  id: string;
-  label: string;
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-  error?: string;
-  className?: string;
+  id: string
+  label: string
+  checked: boolean
+  onChange: (checked: boolean) => void
+  error?: string
+  className?: string
 }
 
 export const CheckboxField: React.FC<CheckboxFieldProps> = ({
@@ -19,7 +19,7 @@ export const CheckboxField: React.FC<CheckboxFieldProps> = ({
   error,
   className = '',
 }) => {
-  const labelId = `${id}-label`;
+  const labelId = `${id}-label`
 
   return (
     <div className={`flex items-center space-x-2 ${className}`}>
@@ -35,5 +35,5 @@ export const CheckboxField: React.FC<CheckboxFieldProps> = ({
       </Label>
       {error && <p className="text-destructive text-sm">{error}</p>}
     </div>
-  );
-};
+  )
+}

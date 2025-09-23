@@ -10,8 +10,8 @@ export const testQueryClient = new QueryClient({
     },
     mutations: {
       retry: false,
-  // Prevent mutation GC timers from keeping the event loop alive
-  gcTime: 0,
+      // Prevent mutation GC timers from keeping the event loop alive
+      gcTime: 0,
     },
   },
 })

@@ -283,10 +283,35 @@ class TransferRequestController extends Controller
                 $placement->save();
 
                 // Auto-reject other pending transfer requests for the same placement
-                \App\Models\TransferRequest::where('placement_request_id', $placement->id)
+                $rejectedRequests = \App\Models\TransferRequest::where('placement_request_id', $placement->id)
                     ->where('id', '!=', $transferRequest->id)
                     ->where('status', 'pending')
-                    ->update(['status' => 'rejected', 'rejected_at' => now()]);
+                    ->get();
+
+                foreach ($rejectedRequests as $rejectedRequest) {
+                    $rejectedRequest->update(['status' => 'rejected', 'rejected_at' => now()]);
+                    
+                    // Notify rejected helper
+                    try {
+                        $rejectedHelper = \App\Models\User::find($rejectedRequest->initiator_user_id);
+                        $cat = $rejectedRequest->cat ?: Cat::find($rejectedRequest->cat_id);
+                        if ($rejectedHelper && $cat) {
+                            $this->notificationService->send(
+                                $rejectedHelper,
+                                NotificationType::HELPER_RESPONSE_REJECTED->value,
+                                [
+                                    'message' => 'Your request for ' . $cat->name . ' was not selected. The owner chose another helper.',
+                                    'link' => '/cats/' . $cat->id,
+                                    'cat_name' => $cat->name,
+                                    'cat_id' => $cat->id,
+                                    'transfer_request_id' => $rejectedRequest->id,
+                                ]
+                            );
+                        }
+                    } catch (\Throwable $e) {
+                        // non-fatal
+                    }
+                }
             }
 
             // Create initial handover record; finalization occurs on handover completion
@@ -362,6 +387,11 @@ class TransferRequestController extends Controller
     public function reject(Request $request, TransferRequest $transferRequest)
     {
         $this->authorize('reject', $transferRequest);
+
+        // Ensure pending before proceeding to avoid duplicate notifications
+        if ($transferRequest->status !== 'pending') {
+            return $this->sendError('Only pending requests can be rejected.', 409);
+        }
 
         $transferRequest->status = 'rejected';
         $transferRequest->rejected_at = now();

@@ -5,6 +5,18 @@ All notable changes to this project are documented here, following the [Keep a C
 ## [Unreleased]
 
 ### Added
+- **Enhanced Login UI**: Complete redesign of authentication interface using shadcn/ui components.
+  - **Frontend**:
+    - Refactored `LoginForm` component with modern Card-based design and improved UX
+    - Added "Remember me" functionality for persistent login sessions
+    - Implemented forgot password feature with dedicated page and form component
+    - Created `ForgotPasswordPage` with success states and retry functionality
+    - Added `forgot-password-form` component with email submission and navigation
+    - Updated routing to include `/forgot-password` path
+    - Enhanced form validation and error handling
+    - Comprehensive test coverage for all authentication components (274 tests passing)
+    - Improved accessibility and responsive design
+    - Consistent styling with shadcn/ui Button, Card, Input, and Checkbox components
 - **Email Notifications System**: Comprehensive email notification system for placement requests and helper responses.
   - **Backend**:
     - Database schema with `notification_preferences` and `email_configurations` tables

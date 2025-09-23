@@ -138,15 +138,15 @@ describe('CatCard Compatibility in ActivePlacementRequestsSection', () => {
         return HttpResponse.json({ data: [mockCatWithActivePlacement] })
       }),
       http.get('http://localhost:3000/api/helper-profiles', () => {
-        return HttpResponse.json({ 
+        return HttpResponse.json({
           data: [
             {
               id: 1,
               city: 'Test City',
               state: 'Test State',
-              user: { id: 1, name: 'Test User', email: 'test@example.com' }
-            }
-          ] 
+              user: { id: 1, name: 'Test User', email: 'test@example.com' },
+            },
+          ],
         })
       })
     )
@@ -403,7 +403,9 @@ describe('CatCard Compatibility in ActivePlacementRequestsSection', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByText('Failed to load placement requests. Please try again later.')).toBeInTheDocument()
+      expect(
+        screen.getByText('Failed to load placement requests. Please try again later.')
+      ).toBeInTheDocument()
       expect(screen.getByRole('button', { name: 'Try Again' })).toBeInTheDocument()
     })
 
@@ -425,7 +427,7 @@ describe('CatCard Compatibility in ActivePlacementRequestsSection', () => {
     // Delay the response to test loading state
     server.use(
       http.get('http://localhost:3000/api/cats/placement-requests', async () => {
-        await new Promise(resolve => setTimeout(resolve, 100))
+        await new Promise((resolve) => setTimeout(resolve, 100))
         return HttpResponse.json({ data: [mockCatWithActivePlacement] })
       })
     )
@@ -440,7 +442,7 @@ describe('CatCard Compatibility in ActivePlacementRequestsSection', () => {
 
     // Should show loading skeletons initially
     expect(screen.getByText('Active Placement Requests')).toBeInTheDocument()
-    
+
     // Wait for content to load
     await waitFor(() => {
       expect(screen.getByText('Fluffy')).toBeInTheDocument()

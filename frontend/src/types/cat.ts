@@ -46,48 +46,48 @@ export interface Cat {
 }
 
 export interface PlacementRequest {
-  id: number;
-  cat_id: number;
-  user_id?: number;
+  id: number
+  cat_id: number
+  user_id?: number
   // Support backend enums and allow arbitrary strings to avoid redundant type constituents rule
-  request_type: string;
-  status: string;
-  notes?: string;
-  expires_at?: string;
+  request_type: string
+  status: string
+  notes?: string
+  expires_at?: string
   // Optional date-range fields used by filters/tests
-  start_date?: string;
-  end_date?: string;
-  is_active?: boolean;
-  transfer_requests?: TransferRequest[];
-  created_at?: string;
-  updated_at?: string;
+  start_date?: string
+  end_date?: string
+  is_active?: boolean
+  transfer_requests?: TransferRequest[]
+  created_at?: string
+  updated_at?: string
 }
 
 export interface TransferRequest {
-  id: number;
-  cat_id?: number;
-  placement_request_id?: number;
-  helper_profile_id?: number;
-  initiator_user_id?: number;
-  requested_relationship_type?: string;
-  fostering_type?: string | null;
-  price?: number | null;
-  status?: string;
-  created_at?: string;
-  updated_at?: string;
+  id: number
+  cat_id?: number
+  placement_request_id?: number
+  helper_profile_id?: number
+  initiator_user_id?: number
+  requested_relationship_type?: string
+  fostering_type?: string | null
+  price?: number | null
+  status?: string
+  created_at?: string
+  updated_at?: string
   helper_profile?: {
-    id?: number;
-  city?: string;
-  state?: string;
-  address?: string;
-  zip_code?: string;
-  phone?: string;
-    user?: { id?: number; name?: string; email?: string };
-  photos?: unknown[];
-  about?: string;
-  created_at?: string;
-  updated_at?: string;
-  };
+    id?: number
+    city?: string
+    state?: string
+    address?: string
+    zip_code?: string
+    phone?: string
+    user?: { id?: number; name?: string; email?: string }
+    photos?: unknown[]
+    about?: string
+    created_at?: string
+    updated_at?: string
+  }
 }
 
 // Helper function to calculate age from birthday

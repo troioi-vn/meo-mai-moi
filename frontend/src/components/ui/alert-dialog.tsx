@@ -99,9 +99,13 @@ const AlertDialogAction = ({
   ...props
 }: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action> & {
   ref?: React.RefObject<React.ComponentRef<typeof AlertDialogPrimitive.Action> | null>
-  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | null
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link' | null
 }) => (
-  <AlertDialogPrimitive.Action ref={ref} className={cn(buttonVariants({ variant }), className)} {...props} />
+  <AlertDialogPrimitive.Action
+    ref={ref}
+    className={cn(buttonVariants({ variant }), className)}
+    {...props}
+  />
 )
 AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName
 

@@ -63,7 +63,12 @@ export default function MyCatsPage() {
         <h1 className="text-3xl font-bold text-foreground">My Cats</h1>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <Switch id="show-all" checked={showAll} onCheckedChange={setShowAll} className="scale-75" />
+            <Switch
+              id="show-all"
+              checked={showAll}
+              onCheckedChange={setShowAll}
+              className="scale-75"
+            />
             <label htmlFor="show-all" className="text-xs font-medium cursor-pointer">
               Show all (including deceased)
             </label>
@@ -82,12 +87,16 @@ export default function MyCatsPage() {
         <div className="space-y-10">
           {/* Owned */}
           {(() => {
-            const ownedCats = showAll ? sections.owned : sections.owned.filter(c => c.status !== 'deceased')
-            return ownedCats.length > 0 && (
-              <section>
-                <h2 className="text-2xl font-semibold mb-3">Owned</h2>
-                <SectionGrid cats={ownedCats} />
-              </section>
+            const ownedCats = showAll
+              ? sections.owned
+              : sections.owned.filter((c) => c.status !== 'deceased')
+            return (
+              ownedCats.length > 0 && (
+                <section>
+                  <h2 className="text-2xl font-semibold mb-3">Owned</h2>
+                  <SectionGrid cats={ownedCats} />
+                </section>
+              )
             )
           })()}
 
@@ -117,20 +126,25 @@ export default function MyCatsPage() {
 
           {/* Show message when no cats at all or no visible cats */}
           {(() => {
-            const ownedCats = showAll ? sections.owned : sections.owned.filter(c => c.status !== 'deceased')
-            const hasVisibleCats = ownedCats.length > 0 || 
-                                   sections.fostering_active.length > 0 || 
-                                   sections.fostering_past.length > 0 || 
-                                   sections.transferred_away.length > 0
-            
-            return !hasVisibleCats && (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground mb-4">You don't have any cats yet.</p>
-                <Button onClick={() => void navigate('/account/cats/create')}>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Add Your First Cat
-                </Button>
-              </div>
+            const ownedCats = showAll
+              ? sections.owned
+              : sections.owned.filter((c) => c.status !== 'deceased')
+            const hasVisibleCats =
+              ownedCats.length > 0 ||
+              sections.fostering_active.length > 0 ||
+              sections.fostering_past.length > 0 ||
+              sections.transferred_away.length > 0
+
+            return (
+              !hasVisibleCats && (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground mb-4">You don't have any cats yet.</p>
+                  <Button onClick={() => void navigate('/account/cats/create')}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add Your First Cat
+                  </Button>
+                </div>
+              )
             )
           })()}
         </div>

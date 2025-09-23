@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CatCard } from '@/components/CatCard'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { DatePicker } from '@/components/ui/date-picker'
 import { getPlacementRequests } from '@/api/cats'
 import type { Cat } from '@/types/cat'
@@ -38,8 +44,8 @@ const RequestsPage = () => {
       if (!prs || prs.length === 0) return false
 
       // Hide cats with only fulfilled placement requests
-      const hasActivePlacementRequest = prs.some((pr) => 
-        pr.is_active === true || pr.status === 'open' || pr.status === 'pending_review'
+      const hasActivePlacementRequest = prs.some(
+        (pr) => pr.is_active === true || pr.status === 'open' || pr.status === 'pending_review'
       )
       if (!hasActivePlacementRequest) return false
 
@@ -77,7 +83,12 @@ const RequestsPage = () => {
       {/* Filters */}
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
-          <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v as 'all' | 'foster' | 'adoption'); }}>
+          <Select
+            value={typeFilter}
+            onValueChange={(v) => {
+              setTypeFilter(v as 'all' | 'foster' | 'adoption')
+            }}
+          >
             <SelectTrigger className="w-[220px]" aria-label="Type Filter">
               <SelectValue placeholder="All Types" />
             </SelectTrigger>
@@ -102,7 +113,9 @@ const RequestsPage = () => {
 
       {/* Derived list */}
       <>
-        {loading && <p className="text-muted-foreground text-center">Loading placement requests...</p>}
+        {loading && (
+          <p className="text-muted-foreground text-center">Loading placement requests...</p>
+        )}
         {error && <p className="text-destructive text-center">{error}</p>}
 
         {!loading && !error && (
@@ -111,12 +124,13 @@ const RequestsPage = () => {
               <CatCard key={cat.id} cat={cat} />
             ))}
             {filteredCats.length === 0 && (
-              <p className="col-span-full text-center text-muted-foreground">No results match your filters.</p>
+              <p className="col-span-full text-center text-muted-foreground">
+                No results match your filters.
+              </p>
             )}
           </div>
         )}
       </>
-
     </div>
   )
 }

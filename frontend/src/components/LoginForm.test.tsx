@@ -1,7 +1,7 @@
 import { screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, beforeEach } from 'vitest'
 import { renderWithRouter, userEvent } from '@/test-utils'
-import LoginForm from './LoginForm'
+import { LoginForm } from './LoginForm'
 import { http, HttpResponse } from 'msw'
 import { server } from '@/mocks/server'
 

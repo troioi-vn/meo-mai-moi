@@ -36,10 +36,15 @@ beforeEach(() => {
     }),
     // Mock for notification preferences
     http.get('http://localhost:3000/api/notification-preferences', () => {
-      return HttpResponse.json({ 
+      return HttpResponse.json({
         data: [
-          { type: 'placement_request_response', label: 'Response to Placement Request', email_enabled: true, in_app_enabled: true }
-        ] 
+          {
+            type: 'placement_request_response',
+            label: 'Response to Placement Request',
+            email_enabled: true,
+            in_app_enabled: true,
+          },
+        ],
       })
     })
   )
@@ -115,7 +120,7 @@ describe('App Routing', () => {
 
       // Verify breadcrumbs are present
       expect(screen.getByText('Notifications')).toBeInTheDocument()
-      
+
       // Verify back button is present
       expect(screen.getByRole('link', { name: /back to account/i })).toBeInTheDocument()
     })

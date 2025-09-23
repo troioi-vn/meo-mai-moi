@@ -42,16 +42,20 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
     }
 
     setIsUploading(true)
-  try {
+    try {
       const formData = new FormData()
       formData.append('photo', file)
 
       // Use the correct backend endpoint for photo upload
-      const response = await api.post<{ data: Cat }>(`/cats/${String(internalCat.id)}/photos`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      })
+      const response = await api.post<{ data: Cat }>(
+        `/cats/${String(internalCat.id)}/photos`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      )
 
       // Merge to preserve local-only fields like viewer_permissions that backend may omit
       const merged: Cat = {
@@ -94,7 +98,9 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
 
     try {
       const photoId =
-        internalCat.photo && 'id' in internalCat.photo ? String((internalCat.photo as { id: unknown }).id) : ''
+        internalCat.photo && 'id' in internalCat.photo
+          ? String((internalCat.photo as { id: unknown }).id)
+          : ''
       await api.delete<Cat>(`/cats/${String(internalCat.id)}/photos/${photoId}`)
 
       // Manually update the cat object to reflect photo deletion
@@ -160,64 +166,63 @@ export function CatPhotoManager({ cat, isOwner, onPhotoUpdated }: CatPhotoManage
             const imageUrl = internalCat.photo_url ?? internalCat.photo?.url ?? null
             const canEdit = isOwner || internalCat.viewer_permissions?.can_edit === true
             return imageUrl ? (
-            <div className="relative group">
-              <img
-                src={imageUrl}
-                alt={`Photo of ${internalCat.name}`}
-                className="w-full max-w-md mx-auto rounded-lg object-cover aspect-[3/2]"
-              />
+              <div className="relative group">
+                <img
+                  src={imageUrl}
+                  alt={`Photo of ${internalCat.name}`}
+                  className="w-full max-w-md mx-auto rounded-lg object-cover aspect-[3/2]"
+                />
 
-        {/* Determine editability from either prop or preserved viewer permissions */}
-              {canEdit && (
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-200 rounded-lg flex items-center justify-center">
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 space-x-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={triggerFileSelect}
-                      disabled={isUploading}
-                    >
-                      {isUploading ? (
-                        <>
+                {/* Determine editability from either prop or preserved viewer permissions */}
+                {canEdit && (
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-200 rounded-lg flex items-center justify-center">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 space-x-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={triggerFileSelect}
+                        disabled={isUploading}
+                      >
+                        {isUploading ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                            Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="h-4 w-4 mr-1" />
+                            Replace
+                          </>
+                        )}
+                      </Button>
+
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={handlePhotoDeleteClick}
+                        disabled={isDeleting}
+                      >
+                        {isDeleting ? (
                           <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                          Uploading...
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="h-4 w-4 mr-1" />
-                          Replace
-                        </>
-                      )}
-                    </Button>
-
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={handlePhotoDeleteClick}
-                      disabled={isDeleting}
-                    >
-                      {isDeleting ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                      ) : (
-                        <>
-                          <X className="h-4 w-4 mr-1" />
-                          Remove
-                        </>
-                      )}
-                    </Button>
+                        ) : (
+                          <>
+                            <X className="h-4 w-4 mr-1" />
+                            Remove
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
             ) : (
-            <div className="w-full max-w-md mx-auto aspect-[3/2] border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-500">
-              <Camera className="h-12 w-12 mb-2" />
-              <p className="text-sm text-center">No photo uploaded</p>
-              {canEdit && (
-                <p className="text-xs text-center mt-1">Click below to add one</p>
-              )}
-            </div>
-          )})()}
+              <div className="w-full max-w-md mx-auto aspect-[3/2] border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-500">
+                <Camera className="h-12 w-12 mb-2" />
+                <p className="text-sm text-center">No photo uploaded</p>
+                {canEdit && <p className="text-xs text-center mt-1">Click below to add one</p>}
+              </div>
+            )
+          })()}
         </div>
 
         {/* Upload Controls (for owners only) */}

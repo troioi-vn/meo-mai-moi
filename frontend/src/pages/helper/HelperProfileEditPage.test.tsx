@@ -1,11 +1,10 @@
-
-import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import HelperProfileEditPage from './HelperProfileEditPage';
-import { mockHelperProfile } from '@/mocks/data/helper-profiles';
-import { server } from '@/mocks/server';
-import { http, HttpResponse } from 'msw';
+import { render, screen, waitFor } from '@testing-library/react'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import HelperProfileEditPage from './HelperProfileEditPage'
+import { mockHelperProfile } from '@/mocks/data/helper-profiles'
+import { server } from '@/mocks/server'
+import { http, HttpResponse } from 'msw'
 // no toast usage in active tests
 
 const queryClient = new QueryClient({
@@ -14,48 +13,48 @@ const queryClient = new QueryClient({
       retry: false,
     },
   },
-});
+})
 
 const renderComponent = () => {
   return render(
     <QueryClientProvider client={queryClient}>
-  <MemoryRouter initialEntries={["/helper-profiles/" + String(mockHelperProfile.id) + '/edit']}>
+      <MemoryRouter initialEntries={['/helper-profiles/' + String(mockHelperProfile.id) + '/edit']}>
         <Routes>
           <Route path="/helper-profiles/:id/edit" element={<HelperProfileEditPage />} />
           <Route path="/helper" element={<div>Helper Profiles Page</div>} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>
-  );
-};
+  )
+}
 
 describe('HelperProfileEditPage', () => {
   beforeEach(() => {
-    queryClient.clear();
+    queryClient.clear()
     server.use(
-  http.get('http://localhost:3000/api/helper-profiles/' + String(mockHelperProfile.id), () => {
-        return HttpResponse.json({ data: mockHelperProfile });
+      http.get('http://localhost:3000/api/helper-profiles/' + String(mockHelperProfile.id), () => {
+        return HttpResponse.json({ data: mockHelperProfile })
       })
-    );
-  });
+    )
+  })
 
   it('renders the form with initial data', async () => {
-    renderComponent();
+    renderComponent()
 
     await waitFor(() => {
-      expect(screen.getByLabelText(/country/i)).toHaveValue(mockHelperProfile.country);
-      expect(screen.getByLabelText(/address/i)).toHaveValue(mockHelperProfile.address);
-      expect(screen.getByLabelText(/city/i)).toHaveValue(mockHelperProfile.city);
-      expect(screen.getByLabelText(/state/i)).toHaveValue(mockHelperProfile.state);
-      expect(screen.getByLabelText(/phone number/i)).toHaveValue(mockHelperProfile.phone_number);
-      expect(screen.getByLabelText(/experience/i)).toHaveValue(mockHelperProfile.experience);
-      expect(screen.getByLabelText(/has pets/i)).toBeChecked();
-      expect(screen.getByLabelText(/has children/i)).not.toBeChecked();
-      expect(screen.getByLabelText(/can foster/i)).toBeChecked();
-      expect(screen.getByLabelText(/can adopt/i)).not.toBeChecked();
-      expect(screen.getByLabelText(/is public/i)).toBeChecked();
-    });
-  });
+      expect(screen.getByLabelText(/country/i)).toHaveValue(mockHelperProfile.country)
+      expect(screen.getByLabelText(/address/i)).toHaveValue(mockHelperProfile.address)
+      expect(screen.getByLabelText(/city/i)).toHaveValue(mockHelperProfile.city)
+      expect(screen.getByLabelText(/state/i)).toHaveValue(mockHelperProfile.state)
+      expect(screen.getByLabelText(/phone number/i)).toHaveValue(mockHelperProfile.phone_number)
+      expect(screen.getByLabelText(/experience/i)).toHaveValue(mockHelperProfile.experience)
+      expect(screen.getByLabelText(/has pets/i)).toBeChecked()
+      expect(screen.getByLabelText(/has children/i)).not.toBeChecked()
+      expect(screen.getByLabelText(/can foster/i)).toBeChecked()
+      expect(screen.getByLabelText(/can adopt/i)).not.toBeChecked()
+      expect(screen.getByLabelText(/is public/i)).toBeChecked()
+    })
+  })
 
   /*  it('shows loading state', () => {
     server.use(
@@ -140,4 +139,4 @@ describe('HelperProfileEditPage', () => {
         expect(toast.success).toHaveBeenCalledWith('Helper profile deleted successfully!');
     });
   });*/
-});
+})

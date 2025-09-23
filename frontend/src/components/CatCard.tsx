@@ -1,9 +1,9 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import type { Cat } from '@/types/cat'
-import { PlacementResponseModal } from '@/components/PlacementResponseModal';
-import { useAuth } from '@/hooks/use-auth';
-import { Button } from '@/components/ui/button';
+import { PlacementResponseModal } from '@/components/PlacementResponseModal'
+import { useAuth } from '@/hooks/use-auth'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import placeholderImage from '@/assets/images/placeholder--cat.webp'
 import { calculateAge } from '@/utils/date'
@@ -22,7 +22,9 @@ export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
     const s = (status ?? '').toLowerCase()
     return s === 'open' || s === 'pending_review' || s === 'pending'
   }
-  const activePlacementRequest = cat.placement_requests?.find((req) => req.is_active === true || isStatusOpen(req.status))
+  const activePlacementRequest = cat.placement_requests?.find(
+    (req) => req.is_active === true || isStatusOpen(req.status)
+  )
   const activePlacementRequestId = activePlacementRequest?.id
   // Show Fulfilled only when there were requests but none are currently active/open
   const hasActivePlacementRequests = Boolean(activePlacementRequest)
@@ -51,7 +53,7 @@ export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
     placeholderImage
   return (
     <Card className="flex flex-col overflow-hidden rounded-lg shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl">
-  <Link to={`/cats/${String(cat.id)}`} className="block">
+      <Link to={`/cats/${String(cat.id)}`} className="block">
         <img src={imageUrl} alt={cat.name} className="h-48 w-full object-cover" />
       </Link>
       <CardHeader>
@@ -92,9 +94,9 @@ export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
                     <p className="text-sm text-muted-foreground text-center">
                       You responded... Waiting for approval
                     </p>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="w-full"
                       onClick={() => {
                         // TODO: Add cancel functionality
@@ -105,13 +107,20 @@ export const CatCard: React.FC<CatCardProps> = ({ cat }) => {
                     </Button>
                   </div>
                 ) : (
-                  <Button className="w-full" onClick={() => { setIsModalOpen(true) }}>
+                  <Button
+                    className="w-full"
+                    onClick={() => {
+                      setIsModalOpen(true)
+                    }}
+                  >
                     Respond
                   </Button>
                 )}
                 <PlacementResponseModal
                   isOpen={isModalOpen}
-                  onClose={() => { setIsModalOpen(false) }}
+                  onClose={() => {
+                    setIsModalOpen(false)
+                  }}
                   catName={cat.name}
                   catId={cat.id}
                   placementRequestId={activePlacementRequestId}

@@ -3,9 +3,9 @@ import { type Cat } from '@/types'
 
 /**
  * Mock cat data for testing ActivePlacementRequestsSection component
- * 
+ *
  * This file provides comprehensive mock data for testing different scenarios:
- * 
+ *
  * Test Scenarios:
  * - empty: 0 cats (tests empty state)
  * - single: 1 cat (tests single item display)
@@ -13,12 +13,12 @@ import { type Cat } from '@/types'
  * - four: 4 cats (tests maximum without show more button)
  * - fivePlus: 6 cats (tests show more button functionality)
  * - mixedTypes: 4 cats with different request types (fostering/adoption)
- * 
+ *
  * Usage in tests:
  * 1. Use query parameter: /api/cats/placement-requests?scenario=empty
  * 2. Use setPlacementRequestScenario() function to change default
  * 3. Import individual mock cats for specific tests
- * 
+ *
  * Requirements covered:
  * - 3.1: Active placement request eligibility
  * - 3.2: Consistent ordering (most recent first)
@@ -145,7 +145,7 @@ export const mockCatWithPaidFosterRequest: Cat = {
   breed: 'Maine Coon',
   birthday: '2021-03-10',
   status: 'active',
-  description: 'A gentle giant who needs temporary care during owner\'s medical treatment.',
+  description: "A gentle giant who needs temporary care during owner's medical treatment.",
   location: 'Chicago, IL',
   photo_url: 'http://localhost:3000/storage/cats/profiles/shadow.jpg',
   user_id: 3,
@@ -185,7 +185,7 @@ export const mockCatWithUrgentAdoptionRequest: Cat = {
   breed: 'Tabby',
   birthday: '2018-11-05',
   status: 'active',
-  description: 'Sweet senior cat needs urgent rehoming due to owner\'s housing situation.',
+  description: "Sweet senior cat needs urgent rehoming due to owner's housing situation.",
   location: 'Austin, TX',
   photo_url: 'http://localhost:3000/storage/cats/profiles/luna.jpg',
   user_id: 4,
@@ -382,9 +382,9 @@ export const testScenarios = {
   fivePlus: catsWithActivePlacementRequests,
   // Mixed request types for testing
   mixedTypes: [
-    mockCatWithFosterRequest,      // fostering
-    mockCatWithAdoptionRequest,    // adoption
-    mockCatWithPaidFosterRequest,  // fostering (paid)
+    mockCatWithFosterRequest, // fostering
+    mockCatWithAdoptionRequest, // adoption
+    mockCatWithPaidFosterRequest, // fostering (paid)
     mockCatWithUrgentAdoptionRequest, // adoption (urgent)
   ],
 }
@@ -405,13 +405,17 @@ export const catHandlers = [
   // Returns cats with active placement requests - supports different test scenarios
   http.get('http://localhost:3000/api/cats/placement-requests', ({ request }) => {
     const url = new URL(request.url)
-  const scenarioParam = url.searchParams.get('scenario')
-  const scenarioKey = (scenarioParam && (scenarioParam in testScenarios ? scenarioParam : undefined)) as keyof typeof testScenarios | undefined
+    const scenarioParam = url.searchParams.get('scenario')
+    const scenarioKey = (scenarioParam &&
+      (scenarioParam in testScenarios ? scenarioParam : undefined)) as
+      | keyof typeof testScenarios
+      | undefined
 
-  // Use scenario from query param if provided and valid, otherwise use current scenario
-  const activeScenario: keyof typeof testScenarios = scenarioKey ?? currentPlacementRequestScenario
-  const cats = testScenarios[activeScenario]
-    
+    // Use scenario from query param if provided and valid, otherwise use current scenario
+    const activeScenario: keyof typeof testScenarios =
+      scenarioKey ?? currentPlacementRequestScenario
+    const cats = testScenarios[activeScenario]
+
     return HttpResponse.json({ data: cats })
   }),
   // Returns a { data: [ ... ] } object for the authenticated user's cats
@@ -432,7 +436,7 @@ export const catHandlers = [
   // Returns a { data: { ... } } object
   http.get('http://localhost:3000/api/cats/:id', ({ params }) => {
     const catId = Number(params.id)
-    const cat = allMockCats.find(c => c.id === catId)
+    const cat = allMockCats.find((c) => c.id === catId)
 
     if (cat) {
       return HttpResponse.json({ data: cat })

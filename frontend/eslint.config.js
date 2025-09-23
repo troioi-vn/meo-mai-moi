@@ -35,7 +35,12 @@ export default tseslint.config([
   },
   // Relax some strict rules in tests and mocks to keep tests readable
   {
-    files: ['src/**/*.test.{ts,tsx}', 'src/**/*.behavior.test.{ts,tsx}', 'src/**/*.integration.test.{ts,tsx}', 'src/mocks/**/*.ts'],
+    files: [
+      'src/**/*.test.{ts,tsx}',
+      'src/**/*.behavior.test.{ts,tsx}',
+      'src/**/*.integration.test.{ts,tsx}',
+      'src/mocks/**/*.ts',
+    ],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',

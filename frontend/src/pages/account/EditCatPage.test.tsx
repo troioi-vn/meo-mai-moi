@@ -179,8 +179,8 @@ describe('EditCatPage', () => {
     mockUseParams.mockReturnValue({ id: '1' })
     renderComponent()
 
-  await waitForFormToLoad()
-  await user.click(screen.getByRole('button', { name: /update cat/i }))
+    await waitForFormToLoad()
+    await user.click(screen.getByRole('button', { name: /update cat/i }))
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('Failed to update cat profile. Please try again.')
@@ -196,15 +196,15 @@ describe('EditCatPage', () => {
     await waitFor(() => {
       expect(mockUseNavigate).toHaveBeenCalledWith('/')
     })
-  // Ensure edit view is not present after redirect
-  expect(screen.queryByRole('heading', { name: /edit cat profile/i })).not.toBeInTheDocument()
+    // Ensure edit view is not present after redirect
+    expect(screen.queryByRole('heading', { name: /edit cat profile/i })).not.toBeInTheDocument()
   })
 
   it('navigates to the cat list on cancel', async () => {
     mockUseParams.mockReturnValue({ id: '1' })
     renderComponent()
-  // Ensure page is rendered before clicking cancel
-  expect(await screen.findByRole('heading', { name: /edit cat profile/i })).toBeInTheDocument()
+    // Ensure page is rendered before clicking cancel
+    expect(await screen.findByRole('heading', { name: /edit cat profile/i })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: /cancel/i }))
     await waitFor(() => {
       expect(mockUseNavigate).toHaveBeenCalledWith('/account/cats')
@@ -221,7 +221,7 @@ describe('EditCatPage', () => {
     mockUseParams.mockReturnValue({ id: '1' })
     renderComponent()
 
-  await waitForFormToLoad()
+    await waitForFormToLoad()
 
     // Clear optional fields
     await user.clear(screen.getByLabelText(/location/i))
@@ -251,7 +251,7 @@ describe('EditCatPage', () => {
     mockUseParams.mockReturnValue({ id: '1' })
     renderComponent()
 
-  await waitForFormToLoad()
+    await waitForFormToLoad()
 
     // Click the "Mark as Lost" button
     await user.click(screen.getByRole('button', { name: /mark as lost/i }))

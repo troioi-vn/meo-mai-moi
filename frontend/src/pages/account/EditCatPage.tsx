@@ -7,7 +7,17 @@ import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { FormField } from '@/components/ui/FormField'
 import { EnhancedCatRemovalModal } from '@/components/EnhancedCatRemovalModal'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { CatPhotoManager } from '@/components/CatPhotoManager'
 import { toast } from 'sonner'
 
@@ -121,8 +131,6 @@ const EditCatPage: React.FC = () => {
       newErrors.birthday = 'Birthday is required.'
     }
 
-    
-
     console.log('validateForm called, errors:', newErrors)
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -144,7 +152,7 @@ const EditCatPage: React.FC = () => {
       setSubmitting(true)
       await updateCat(id, formData)
       toast.success('Cat profile updated successfully!')
-  void navigate('/account/cats')
+      void navigate('/account/cats')
     } catch (error: unknown) {
       console.error('Error updating cat:', error)
       toast.error('Failed to update cat profile. Please try again.')
@@ -154,7 +162,7 @@ const EditCatPage: React.FC = () => {
   }
 
   const handleCancel = () => {
-  void navigate('/account/cats')
+    void navigate('/account/cats')
   }
 
   const handleSetToLost = async () => {
@@ -167,7 +175,7 @@ const EditCatPage: React.FC = () => {
       setSubmitting(true)
       await updateCat(id, { ...formData, status: 'lost' })
       toast.success('Cat status updated to LOST.')
-  void navigate('/account/cats')
+      void navigate('/account/cats')
     } catch (error: unknown) {
       console.error('Error updating cat status:', error)
       toast.error('Failed to update cat status. Please try again.')
@@ -177,7 +185,7 @@ const EditCatPage: React.FC = () => {
   }
 
   const handleRemovalSuccess = () => {
-  void navigate('/account/cats')
+    void navigate('/account/cats')
   }
 
   if (loading) {
@@ -315,7 +323,12 @@ const EditCatPage: React.FC = () => {
             />
 
             <div className="flex gap-4 pt-4">
-              <Button type="submit" variant="outline" disabled={submitting} className="flex-1 bg-blue-500 text-white">
+              <Button
+                type="submit"
+                variant="outline"
+                disabled={submitting}
+                className="flex-1 bg-blue-500 text-white"
+              >
                 {submitting ? 'Updating...' : 'Update Cat'}
               </Button>
               <Button
@@ -333,29 +346,34 @@ const EditCatPage: React.FC = () => {
           {/* Enhanced Cat Removal Section */}
           <div className="border-t border-border pt-6 mt-8">
             <h3 className="text-lg font-semibold text-foreground mb-2">Update Status</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Update the cat status.
-            </p>
+            <p className="text-sm text-muted-foreground mb-4">Update the cat status.</p>
             <div className="flex gap-4 pt-4">
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" className="flex-1">
-                  Mark as Lost
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action will mark the cat as lost. This can be undone by changing the status back to active.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => { void handleSetToLost() }}>Confirm</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="flex-1">
+                    Mark as Lost
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action will mark the cat as lost. This can be undone by changing the
+                      status back to active.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => {
+                        void handleSetToLost()
+                      }}
+                    >
+                      Confirm
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">Remove Cat Profile</h3>
             <p className="text-sm text-muted-foreground mb-4">

@@ -4,6 +4,8 @@ namespace App\Jobs;
 
 use App\Models\User;
 use App\Models\Notification;
+use App\Models\EmailLog;
+use App\Models\EmailConfiguration;
 use App\Mail\PlacementRequestResponseMail;
 use App\Mail\PlacementRequestAcceptedMail;
 use App\Mail\HelperResponseAcceptedMail;
@@ -23,6 +25,8 @@ class SendNotificationEmail implements ShouldQueue
 
     public $tries = 3;
     public $backoff = [60, 300, 900]; // 1 min, 5 min, 15 min
+
+    private ?EmailLog $emailLog = null;
 
     /**
      * Create a new job instance.
@@ -68,6 +72,11 @@ class SendNotificationEmail implements ShouldQueue
                 throw new \RuntimeException('Email system is not properly configured');
             }
 
+            $activeConfig = $emailService->getActiveConfiguration();
+            if (!$activeConfig) {
+                throw new \RuntimeException('No active email configuration found');
+            }
+
             // Get the notification type enum
             $notificationType = NotificationType::tryFrom($this->type);
             
@@ -87,8 +96,22 @@ class SendNotificationEmail implements ShouldQueue
                 throw new \InvalidArgumentException("Invalid user email address: " . ($this->user->email ?? 'empty'));
             }
 
+            // Create EmailLog entry
+            $this->emailLog = EmailLog::create([
+                'user_id' => $this->user->id,
+                'notification_id' => $this->notificationId,
+                'email_configuration_id' => $activeConfig->id,
+                'recipient_email' => $this->user->email,
+                'subject' => $mail->envelope()->subject ?? 'Notification Email',
+                'body' => $this->extractEmailBody($mail),
+                'status' => 'pending',
+            ]);
+
             // Send the email
             Mail::to($this->user->email)->send($mail);
+            
+            // Mark email as sent in log
+            $this->emailLog->markAsSent('Email sent successfully');
             
             // Update notification with delivery timestamp
             $notification->update([
@@ -99,15 +122,23 @@ class SendNotificationEmail implements ShouldQueue
             
             Log::info('Email notification sent successfully', [
                 'notification_id' => $this->notificationId,
+                'email_log_id' => $this->emailLog->id,
                 'user_id' => $this->user->id,
                 'user_email' => $this->user->email,
                 'type' => $this->type,
+                'email_config_id' => $activeConfig->id,
             ]);
             
         } catch (\Exception $e) {
+            // Mark email as failed in log if it was created
+            if ($this->emailLog) {
+                $this->emailLog->markAsFailed($e->getMessage());
+            }
+
             // Log the error with context
             Log::error('Email notification job failed during execution', [
                 'notification_id' => $this->notificationId,
+                'email_log_id' => $this->emailLog?->id,
                 'user_id' => $this->user->id,
                 'user_email' => $this->user->email,
                 'type' => $this->type,
@@ -135,6 +166,25 @@ class SendNotificationEmail implements ShouldQueue
     }
 
     /**
+     * Extract email body content for logging.
+     */
+    private function extractEmailBody($mail): string
+    {
+        try {
+            // Try to get the email content by rendering it
+            $view = $mail->content();
+            if ($view && method_exists($view, 'render')) {
+                return $view->render();
+            }
+            
+            // Fallback to a basic representation
+            return 'Email content (notification type: ' . $this->type . ')';
+        } catch (\Exception $e) {
+            return 'Email body could not be extracted: ' . $e->getMessage();
+        }
+    }
+
+    /**
      * Handle a job failure.
      */
     public function failed(\Throwable $exception): void
@@ -149,8 +199,14 @@ class SendNotificationEmail implements ShouldQueue
             ]);
         }
 
+        // Mark email log as failed if it exists
+        if ($this->emailLog && $this->emailLog->status !== 'failed') {
+            $this->emailLog->markAsFailed('Job failed permanently after ' . $this->tries . ' attempts: ' . $exception->getMessage());
+        }
+
         Log::error('Email notification job failed permanently', [
             'notification_id' => $this->notificationId,
+            'email_log_id' => $this->emailLog?->id,
             'user_id' => $this->user->id,
             'user_email' => $this->user->email,
             'type' => $this->type,

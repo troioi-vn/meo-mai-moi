@@ -10,6 +10,8 @@ class EmailConfiguration extends Model
     use HasFactory;
     protected $fillable = [
         'provider',
+        'name',
+        'description',
         'is_active',
         'config',
     ];
@@ -25,6 +27,14 @@ class EmailConfiguration extends Model
     public static function getActive(): ?self
     {
         return self::where('is_active', true)->first();
+    }
+
+    /**
+     * Get display name for the configuration.
+     */
+    public function getDisplayName(): string
+    {
+        return $this->name ?: ($this->provider . ' Configuration #' . $this->id);
     }
 
     /**

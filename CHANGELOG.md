@@ -5,6 +5,25 @@ All notable changes to this project are documented here, following the [Keep a C
 ## [Unreleased]
 
 ### Added
+- **Comprehensive SMTP Email System**: Complete SMTP infrastructure with multiple provider support and advanced email tracking.
+  - **Backend**:
+    - Enhanced `EmailConfiguration` model with `name` and `description` fields for managing multiple SMTP accounts
+    - Support for multiple SMTP providers with clear identification and switching capabilities  
+    - New `EmailLog` model for comprehensive email tracking with delivery status, retry capabilities, and SMTP responses
+    - Enhanced `SendNotificationEmail` job with automatic EmailLog creation and status tracking
+    - Filament admin resources for email configuration and log management with advanced filtering
+    - Manual and bulk retry functionality for failed emails through admin panel
+    - Search capabilities across recipient emails and subjects
+    - Status-based filtering (pending, sent, failed, bounced) and date range filtering
+    - Real-time email delivery monitoring and error tracking
+    - Database migrations for email_configurations enhancements and email_logs table
+    - Robust error handling with detailed SMTP response logging
+  - **Admin Interface**:
+    - `EmailConfigurationResource` for creating and managing multiple SMTP/Mailgun configurations
+    - `EmailLogResource` with comprehensive table view, filters, and retry actions
+    - Advanced search and filtering capabilities for email management
+    - Individual and bulk retry operations for failed emails
+    - Real-time status tracking and delivery monitoring
 - **Enhanced Login UI**: Complete redesign of authentication interface using shadcn/ui components.
   - **Frontend**:
     - Refactored `LoginForm` component with modern Card-based design and improved UX
@@ -71,6 +90,11 @@ All notable changes to this project are documented here, following the [Keep a C
  - Frontend: My Cats page UX polish; reduced console noise by suppressing successful test output in the test runner.
 
 ### Fixed
+- **Filament Admin Panel**: Fixed TypeError in Select component where null label values caused Internal Server Error.
+  - Updated existing EmailConfiguration records with null names to have proper display names
+  - Enhanced relationship Select components to handle null values gracefully using `getOptionLabelFromRecordUsing()`
+  - Added defensive programming to prevent future null label issues in user and emailConfiguration relationships
+  - Admin panel now loads correctly without errors when accessing email management interfaces
 - Frontend: CatCard "Fulfilled" badge incorrectly showed for new/open placement requests. Now it only appears when there are placement requests but none are active/open (derived from `is_active` or `status` in {`open`, `pending_review`, `pending`}); Respond button visibility also falls back to this derived state when the backend convenience flag is absent.
 - **API/Policy**: Fixed 403 when viewing your own cat. Broadened `CatPolicy@view` to allow owners, admins, and accepted helpers to view a cat, and to permit public read access for non-deleted cats. This aligns with the optional-auth show route and documented visibility rules.
 - Frontend Linting/Type Safety: Large cleanup pass across multiple files (CatProfilePage, HelperProfileDialog, CatDetails, UserMenu, ScheduleHandoverModal, PlacementResponseModal, helper profile pages/hooks).

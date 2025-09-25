@@ -11,6 +11,7 @@ trait CreatesUsers
     {
         $user = User::factory()->create($attributes);
         Sanctum::actingAs($user);
+
         return $user;
     }
 }

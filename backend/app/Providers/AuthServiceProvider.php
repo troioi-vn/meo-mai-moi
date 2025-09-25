@@ -15,8 +15,8 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-    HelperProfile::class => HelperProfilePolicy::class,
-    \App\Models\TransferRequest::class => TransferRequestPolicy::class,
+        HelperProfile::class => HelperProfilePolicy::class,
+        \App\Models\TransferRequest::class => TransferRequestPolicy::class,
         \App\Models\PlacementRequest::class => \App\Policies\PlacementRequestPolicy::class,
     ];
 

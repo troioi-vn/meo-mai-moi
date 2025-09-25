@@ -6,22 +6,20 @@ use App\Filament\Resources\TransferRequestResource\Pages;
 use App\Filament\Resources\TransferRequestResource\RelationManagers;
 use App\Models\TransferRequest;
 use Filament\Forms;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\Action;
-use Filament\Notifications\Notification;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class TransferRequestResource extends Resource
 {
@@ -47,6 +45,7 @@ class TransferRequestResource extends Resource
                         if ($petName) {
                             return "#{$record->id} - {$petName} ({$record->request_type->value})";
                         }
+
                         return "#{$record->id}";
                     })
                     ->searchable()
@@ -56,7 +55,7 @@ class TransferRequestResource extends Resource
                 Select::make('helper_profile_id')
                     ->label('Helper Profile')
                     ->relationship('helperProfile', 'id')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->user->name . " ({$record->country})")
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->user->name." ({$record->country})")
                     ->searchable()
                     ->preload()
                     ->required(),
@@ -231,7 +230,7 @@ class TransferRequestResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                
+
                 Action::make('approve')
                     ->label('Approve')
                     ->icon('heroicon-o-check')
@@ -243,7 +242,7 @@ class TransferRequestResource extends Resource
                             'status' => 'accepted',
                             'accepted_at' => now(),
                         ]);
-                        
+
                         Notification::make()
                             ->title('Transfer request approved')
                             ->success()
@@ -261,7 +260,7 @@ class TransferRequestResource extends Resource
                             'status' => 'rejected',
                             'rejected_at' => now(),
                         ]);
-                        
+
                         Notification::make()
                             ->title('Transfer request rejected')
                             ->success()
@@ -278,7 +277,7 @@ class TransferRequestResource extends Resource
                         $record->update([
                             'status' => 'completed',
                         ]);
-                        
+
                         Notification::make()
                             ->title('Transfer request marked as completed')
                             ->success()
@@ -288,7 +287,7 @@ class TransferRequestResource extends Resource
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                    
+
                     Tables\Actions\BulkAction::make('approve_selected')
                         ->label('Approve Selected')
                         ->icon('heroicon-o-check')
@@ -305,7 +304,7 @@ class TransferRequestResource extends Resource
                                     $count++;
                                 }
                             }
-                            
+
                             Notification::make()
                                 ->title("{$count} transfer requests approved")
                                 ->success()
@@ -328,7 +327,7 @@ class TransferRequestResource extends Resource
                                     $count++;
                                 }
                             }
-                            
+
                             Notification::make()
                                 ->title("{$count} transfer requests rejected")
                                 ->success()

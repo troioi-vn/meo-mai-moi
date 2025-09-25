@@ -2,31 +2,33 @@
 
 namespace Tests\Unit;
 
-use Tests\TestCase;
-use App\Mail\PlacementRequestResponseMail;
-use App\Mail\PlacementRequestAcceptedMail;
+use App\Enums\NotificationType;
 use App\Mail\HelperResponseAcceptedMail;
 use App\Mail\HelperResponseRejectedMail;
-use App\Models\User;
-use App\Models\Pet;
+use App\Mail\PlacementRequestAcceptedMail;
+use App\Mail\PlacementRequestResponseMail;
 use App\Models\HelperProfile;
-use App\Enums\NotificationType;
+use App\Models\Pet;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class NotificationMailTest extends TestCase
 {
     use RefreshDatabase;
 
     protected User $user;
+
     protected Pet $pet;
+
     protected HelperProfile $helperProfile;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->user = User::factory()->create();
-    $this->pet = Pet::factory()->create();
+        $this->pet = Pet::factory()->create();
         $this->helperProfile = HelperProfile::factory()->create();
     }
 
@@ -131,8 +133,8 @@ class NotificationMailTest extends TestCase
         $unsubscribeUrl = $templateData['unsubscribeUrl'];
 
         $this->assertStringContainsString('unsubscribe', $unsubscribeUrl);
-        $this->assertStringContainsString('user=' . $this->user->id, $unsubscribeUrl);
-        $this->assertStringContainsString('type=' . NotificationType::PLACEMENT_REQUEST_RESPONSE->value, $unsubscribeUrl);
+        $this->assertStringContainsString('user='.$this->user->id, $unsubscribeUrl);
+        $this->assertStringContainsString('type='.NotificationType::PLACEMENT_REQUEST_RESPONSE->value, $unsubscribeUrl);
         $this->assertStringContainsString('token=', $unsubscribeUrl);
     }
 

@@ -2,7 +2,6 @@
 
 namespace App\Policies;
 
-use App\Enums\PetStatus;
 use App\Models\Pet;
 use App\Models\TransferRequest;
 use App\Models\User;
@@ -31,7 +30,7 @@ class PetPolicy
         }
 
         // If there's no authenticated user, and no active placement, deny access.
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -86,6 +85,7 @@ class PetPolicy
         if (method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin'])) {
             return true;
         }
+
         return $user->can('update_pet');
     }
 
@@ -100,6 +100,7 @@ class PetPolicy
         if (method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin'])) {
             return true;
         }
+
         return $user->can('delete_pet');
     }
 

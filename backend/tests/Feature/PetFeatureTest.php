@@ -7,8 +7,8 @@ use App\Models\Pet;
 use App\Models\PetType;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class PetFeatureTest extends TestCase
 {
@@ -45,7 +45,7 @@ class PetFeatureTest extends TestCase
         $this->actingAs($user);
         $response = $this->postJson('/api/pets', $this->petPayload());
 
-    $response->assertStatus(201);
+        $response->assertStatus(201);
         $petId = $response->json('data.id');
         $this->assertNotNull($petId);
         $pet = Pet::find($petId);
@@ -61,9 +61,9 @@ class PetFeatureTest extends TestCase
 
         $this->actingAs($user);
         // Create cat (omit pet_type_id) defaults to cat
-    $this->postJson('/api/pets', $this->petPayload(['name' => 'Whiskers']))->assertStatus(201);
+        $this->postJson('/api/pets', $this->petPayload(['name' => 'Whiskers']))->assertStatus(201);
         // Create dog
-    $this->postJson('/api/pets', $this->petPayload(['name' => 'Rover', 'pet_type_id' => $dogType->id]))->assertStatus(201);
+        $this->postJson('/api/pets', $this->petPayload(['name' => 'Rover', 'pet_type_id' => $dogType->id]))->assertStatus(201);
 
         $response = $this->getJson('/api/my-pets?pet_type=dog');
         $response->assertStatus(200);
@@ -80,7 +80,7 @@ class PetFeatureTest extends TestCase
         $this->actingAs($user);
         $response = $this->postJson('/api/pets', $this->petPayload(['name' => 'TempPet']));
         $petId = $response->json('data.id');
-    $this->deleteJson('/api/pets/' . $petId, ['password' => 'password'])->assertStatus(204);
+        $this->deleteJson('/api/pets/'.$petId, ['password' => 'password'])->assertStatus(204);
 
         $this->assertDatabaseHas('pets', [
             'id' => $petId,

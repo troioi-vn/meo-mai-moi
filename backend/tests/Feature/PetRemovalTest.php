@@ -2,19 +2,20 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PetStatus;
 use App\Models\Pet;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
-use App\Enums\PetStatus;
 
 class PetRemovalTest extends TestCase
 {
     use RefreshDatabase;
 
     private User $user;
+
     private Pet $pet;
 
     protected function setUp(): void

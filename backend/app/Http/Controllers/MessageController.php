@@ -6,7 +6,6 @@ use App\Models\Message;
 use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 use OpenApi\Annotations as OA;
 
 /**
@@ -14,6 +13,7 @@ use OpenApi\Annotations as OA;
  *     schema="Message",
  *     title="Message",
  *     description="Message model",
+ *
  *     @OA\Property(
  *         property="id",
  *         type="integer",
@@ -68,27 +68,36 @@ class MessageController extends Controller
      *     summary="Send a new message",
      *     tags={"Messages"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\JsonContent(
      *             required={"recipient_id", "content"},
+     *
      *             @OA\Property(property="recipient_id", type="integer", example=2),
      *             @OA\Property(property="content", type="string", example="Hello, how are you?")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=201,
      *         description="Message sent successfully",
+     *
      *         @OA\JsonContent(ref="#/components/schemas/Message")
      *     ),
+     *
      *     @OA\Response(
      *         response=422,
      *         description="Validation error",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Validation Error"),
      *             @OA\Property(property="errors", type="object", example={"recipient_id": {"The recipient id field is required."}})
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=401,
      *         description="Unauthenticated"
@@ -109,8 +118,8 @@ class MessageController extends Controller
         // Send notification to recipient
         \App\Models\Notification::create([
             'user_id' => $message->recipient_id,
-            'message' => 'You have a new message from ' . $request->user()->name,
-            'link' => '/account/messages/' . $message->id,
+            'message' => 'You have a new message from '.$request->user()->name,
+            'link' => '/account/messages/'.$message->id,
             'is_read' => false,
         ]);
 
@@ -123,14 +132,18 @@ class MessageController extends Controller
      *     summary="Get all messages for the authenticated user",
      *     tags={"Messages"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Successful operation",
+     *
      *         @OA\JsonContent(
      *             type="array",
+     *
      *             @OA\Items(ref="#/components/schemas/Message")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=401,
      *         description="Unauthenticated"
@@ -154,20 +167,26 @@ class MessageController extends Controller
      *     summary="Get a single message by ID",
      *     tags={"Messages"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
      *         description="ID of the message to retrieve",
+     *
      *         @OA\Schema(type="integer")
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Successful operation",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="data", ref="#/components/schemas/Message")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=401,
      *         description="Unauthenticated"
@@ -202,18 +221,23 @@ class MessageController extends Controller
      *     summary="Mark a message as read",
      *     tags={"Messages"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
      *         description="ID of the message to mark as read",
+     *
      *         @OA\Schema(type="integer")
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Message marked as read successfully",
+     *
      *         @OA\JsonContent(ref="#/components/schemas/Message")
      *     ),
+     *
      *     @OA\Response(
      *         response=401,
      *         description="Unauthenticated"
@@ -246,13 +270,16 @@ class MessageController extends Controller
      *     summary="Delete a message",
      *     tags={"Messages"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
      *         description="ID of the message to delete",
+     *
      *         @OA\Schema(type="integer")
      *     ),
+     *
      *     @OA\Response(
      *         response=204,
      *         description="Message deleted successfully"

@@ -28,9 +28,9 @@ class EmailConfigurationException extends Exception
     public function getFormattedMessage(): string
     {
         $message = $this->getMessage();
-        
-        if (!empty($this->validationErrors)) {
-            $message .= "\n\nValidation Errors:\n• " . implode("\n• ", $this->validationErrors);
+
+        if (! empty($this->validationErrors)) {
+            $message .= "\n\nValidation Errors:\n• ".implode("\n• ", $this->validationErrors);
         }
 
         return $message;
@@ -41,7 +41,7 @@ class EmailConfigurationException extends Exception
      */
     public function hasValidationErrors(): bool
     {
-        return !empty($this->validationErrors);
+        return ! empty($this->validationErrors);
     }
 
     /**

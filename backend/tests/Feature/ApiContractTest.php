@@ -3,9 +3,9 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-use PHPUnit\Framework\Attributes\Test;
 use Illuminate\Support\Facades\File;
+use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class ApiContractTest extends TestCase
 {
@@ -39,5 +39,4 @@ class ApiContractTest extends TestCase
     // You can add more tests here to validate specific endpoints against their schemas
     // For example, a test to ensure a specific response structure
 
-    
 }

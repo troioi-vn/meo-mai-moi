@@ -2,10 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\User;
-use App\Models\NotificationPreference;
 use App\Enums\NotificationType;
-use Illuminate\Support\Facades\Hash;
+use App\Models\NotificationPreference;
+use App\Models\User;
 
 class UnsubscribeService
 {
@@ -14,7 +13,7 @@ class UnsubscribeService
      */
     public function generateToken(User $user, NotificationType $notificationType): string
     {
-        return hash_hmac('sha256', $user->id . $notificationType->value, config('app.key'));
+        return hash_hmac('sha256', $user->id.$notificationType->value, config('app.key'));
     }
 
     /**
@@ -23,6 +22,7 @@ class UnsubscribeService
     public function verifyToken(User $user, NotificationType $notificationType, string $token): bool
     {
         $expectedToken = $this->generateToken($user, $notificationType);
+
         return hash_equals($expectedToken, $token);
     }
 
@@ -32,8 +32,8 @@ class UnsubscribeService
     public function generateUnsubscribeUrl(User $user, NotificationType $notificationType): string
     {
         $token = $this->generateToken($user, $notificationType);
-        
-        return config('app.url') . '/unsubscribe?' . http_build_query([
+
+        return config('app.url').'/unsubscribe?'.http_build_query([
             'user' => $user->id,
             'type' => $notificationType->value,
             'token' => $token,
@@ -46,16 +46,16 @@ class UnsubscribeService
     public function unsubscribe(int $userId, string $notificationType, string $token): bool
     {
         $user = User::find($userId);
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
         $type = NotificationType::tryFrom($notificationType);
-        if (!$type) {
+        if (! $type) {
             return false;
         }
 
-        if (!$this->verifyToken($user, $type, $token)) {
+        if (! $this->verifyToken($user, $type, $token)) {
             return false;
         }
 

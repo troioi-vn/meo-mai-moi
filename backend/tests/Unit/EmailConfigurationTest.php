@@ -2,10 +2,9 @@
 
 namespace Tests\Unit;
 
-use Tests\TestCase;
 use App\Models\EmailConfiguration;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Database\QueryException;
+use Tests\TestCase;
 
 class EmailConfigurationTest extends TestCase
 {
@@ -23,8 +22,8 @@ class EmailConfigurationTest extends TestCase
                 'password' => 'password',
                 'encryption' => 'tls',
                 'from_address' => 'noreply@example.com',
-                'from_name' => 'Test App'
-            ]
+                'from_name' => 'Test App',
+            ],
         ]);
 
         $this->assertInstanceOf(EmailConfiguration::class, $config);
@@ -38,13 +37,13 @@ class EmailConfigurationTest extends TestCase
         $configData = [
             'host' => 'smtp.example.com',
             'port' => 587,
-            'username' => 'test@example.com'
+            'username' => 'test@example.com',
         ];
 
         $config = EmailConfiguration::create([
             'provider' => 'smtp',
             'is_active' => false,
-            'config' => $configData
+            'config' => $configData,
         ]);
 
         $this->assertIsArray($config->config);
@@ -61,7 +60,7 @@ class EmailConfigurationTest extends TestCase
         $config = EmailConfiguration::create([
             'provider' => 'smtp',
             'is_active' => '1',
-            'config' => []
+            'config' => [],
         ]);
 
         $this->assertIsBool($config->is_active);
@@ -78,14 +77,14 @@ class EmailConfigurationTest extends TestCase
         EmailConfiguration::create([
             'provider' => 'smtp',
             'is_active' => false,
-            'config' => ['host' => 'inactive.example.com']
+            'config' => ['host' => 'inactive.example.com'],
         ]);
 
         // Create active configuration
         $activeConfig = EmailConfiguration::create([
             'provider' => 'mailgun',
             'is_active' => true,
-            'config' => ['domain' => 'mg.example.com']
+            'config' => ['domain' => 'mg.example.com'],
         ]);
 
         $result = EmailConfiguration::getActive();
@@ -100,7 +99,7 @@ class EmailConfigurationTest extends TestCase
         EmailConfiguration::create([
             'provider' => 'smtp',
             'is_active' => false,
-            'config' => []
+            'config' => [],
         ]);
 
         $result = EmailConfiguration::getActive();
@@ -112,13 +111,13 @@ class EmailConfigurationTest extends TestCase
         $config1 = EmailConfiguration::create([
             'provider' => 'smtp',
             'is_active' => true,
-            'config' => []
+            'config' => [],
         ]);
 
         $config2 = EmailConfiguration::create([
             'provider' => 'mailgun',
             'is_active' => false,
-            'config' => []
+            'config' => [],
         ]);
 
         $config2->activate();
@@ -135,7 +134,7 @@ class EmailConfigurationTest extends TestCase
         $config = EmailConfiguration::create([
             'provider' => 'smtp',
             'is_active' => false,
-            'config' => []
+            'config' => [],
         ]);
 
         $this->assertFalse($config->is_active);
@@ -154,13 +153,13 @@ class EmailConfigurationTest extends TestCase
             'password' => 'password',
             'encryption' => 'tls',
             'from_address' => 'noreply@example.com',
-            'from_name' => 'Test App'
+            'from_name' => 'Test App',
         ];
 
         $config = EmailConfiguration::create([
             'provider' => 'smtp',
             'is_active' => true,
-            'config' => $configData
+            'config' => $configData,
         ]);
 
         $mailConfig = $config->getMailConfig();
@@ -182,13 +181,13 @@ class EmailConfigurationTest extends TestCase
             'api_key' => 'key-test123',
             'endpoint' => 'api.mailgun.net',
             'from_address' => 'noreply@example.com',
-            'from_name' => 'Test App'
+            'from_name' => 'Test App',
         ];
 
         $config = EmailConfiguration::create([
             'provider' => 'mailgun',
             'is_active' => true,
-            'config' => $configData
+            'config' => $configData,
         ]);
 
         $mailConfig = $config->getMailConfig();
@@ -203,7 +202,7 @@ class EmailConfigurationTest extends TestCase
 
     public function test_fillable_attributes()
     {
-        $config = new EmailConfiguration();
+        $config = new EmailConfiguration;
         $fillable = $config->getFillable();
 
         $this->assertContains('provider', $fillable);
@@ -213,7 +212,7 @@ class EmailConfigurationTest extends TestCase
 
     public function test_casts_configuration()
     {
-        $config = new EmailConfiguration();
+        $config = new EmailConfiguration;
         $casts = $config->getCasts();
 
         $this->assertArrayHasKey('config', $casts);
@@ -227,13 +226,13 @@ class EmailConfigurationTest extends TestCase
         EmailConfiguration::create([
             'provider' => 'smtp',
             'is_active' => false,
-            'config' => []
+            'config' => [],
         ]);
 
         $activeConfig = EmailConfiguration::create([
             'provider' => 'mailgun',
             'is_active' => true,
-            'config' => []
+            'config' => [],
         ]);
 
         $activeConfigs = EmailConfiguration::active()->get();
@@ -246,13 +245,13 @@ class EmailConfigurationTest extends TestCase
         $inactiveConfig = EmailConfiguration::create([
             'provider' => 'smtp',
             'is_active' => false,
-            'config' => []
+            'config' => [],
         ]);
 
         EmailConfiguration::create([
             'provider' => 'mailgun',
             'is_active' => true,
-            'config' => []
+            'config' => [],
         ]);
 
         $inactiveConfigs = EmailConfiguration::inactive()->get();
@@ -265,13 +264,13 @@ class EmailConfigurationTest extends TestCase
         $smtpConfig = EmailConfiguration::create([
             'provider' => 'smtp',
             'is_active' => false,
-            'config' => []
+            'config' => [],
         ]);
 
         EmailConfiguration::create([
             'provider' => 'mailgun',
             'is_active' => false,
-            'config' => []
+            'config' => [],
         ]);
 
         $smtpConfigs = EmailConfiguration::forProvider('smtp')->get();
@@ -284,13 +283,13 @@ class EmailConfigurationTest extends TestCase
         $smtpConfig = EmailConfiguration::create([
             'provider' => 'smtp',
             'is_active' => false,
-            'config' => []
+            'config' => [],
         ]);
 
         $mailgunConfig = EmailConfiguration::create([
             'provider' => 'mailgun',
             'is_active' => false,
-            'config' => []
+            'config' => [],
         ]);
 
         $this->assertTrue($smtpConfig->isSmtp());
@@ -302,13 +301,13 @@ class EmailConfigurationTest extends TestCase
         $smtpConfig = EmailConfiguration::create([
             'provider' => 'smtp',
             'is_active' => false,
-            'config' => []
+            'config' => [],
         ]);
 
         $mailgunConfig = EmailConfiguration::create([
             'provider' => 'mailgun',
             'is_active' => false,
-            'config' => []
+            'config' => [],
         ]);
 
         $this->assertFalse($smtpConfig->isMailgun());
@@ -324,9 +323,9 @@ class EmailConfigurationTest extends TestCase
                 'host' => 'smtp.example.com',
                 'port' => 587,
                 'nested' => [
-                    'value' => 'test'
-                ]
-            ]
+                    'value' => 'test',
+                ],
+            ],
         ]);
 
         $this->assertEquals('smtp.example.com', $config->getConfigValue('host'));
@@ -343,8 +342,8 @@ class EmailConfigurationTest extends TestCase
             'config' => [
                 'host' => 'smtp.example.com',
                 'port' => 587,
-                'empty_value' => null
-            ]
+                'empty_value' => null,
+            ],
         ]);
 
         $this->assertTrue($config->hasConfigValue('host'));

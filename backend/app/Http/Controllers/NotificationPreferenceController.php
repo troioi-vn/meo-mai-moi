@@ -19,11 +19,16 @@ class NotificationPreferenceController extends Controller
      *   path="/api/notification-preferences",
      *   tags={"Notification Preferences"},
      *   security={{"sanctum":{}}},
+     *
      *   @OA\Response(response=200, description="OK",
+     *
      *     @OA\JsonContent(
      *       type="object",
+     *
      *       @OA\Property(property="data", type="array",
+     *
      *         @OA\Items(
+     *
      *           @OA\Property(property="type", type="string"),
      *           @OA\Property(property="label", type="string"),
      *           @OA\Property(property="group", type="string"),
@@ -42,7 +47,7 @@ class NotificationPreferenceController extends Controller
 
         foreach (NotificationType::cases() as $type) {
             $preference = NotificationPreference::getPreference($user, $type->value);
-            
+
             $preferences[] = [
                 'type' => $type->value,
                 'label' => $type->getLabel(),
@@ -62,12 +67,17 @@ class NotificationPreferenceController extends Controller
      *   path="/api/notification-preferences",
      *   tags={"Notification Preferences"},
      *   security={{"sanctum":{}}},
+     *
      *   @OA\RequestBody(
      *     required=true,
+     *
      *     @OA\JsonContent(
      *       type="object",
+     *
      *       @OA\Property(property="preferences", type="array",
+     *
      *         @OA\Items(
+     *
      *           @OA\Property(property="type", type="string"),
      *           @OA\Property(property="email_enabled", type="boolean"),
      *           @OA\Property(property="in_app_enabled", type="boolean")
@@ -75,12 +85,16 @@ class NotificationPreferenceController extends Controller
      *       )
      *     )
      *   ),
+     *
      *   @OA\Response(response=200, description="OK",
+     *
      *     @OA\JsonContent(
      *       type="object",
+     *
      *       @OA\Property(property="message", type="string")
      *     )
      *   ),
+     *
      *   @OA\Response(response=422, description="Validation Error")
      * )
      */

@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Resources\UserResource\Actions\ImpersonateAsUser;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -19,8 +21,6 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use TomatoPHP\FilamentUsers\FilamentUsersPlugin;
 use TomatoPHP\FilamentUsers\Resources\UserResource\Table\UserActions as FilamentUserActions;
-use App\Filament\Resources\UserResource\Actions\ImpersonateAsUser;
-use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -45,7 +45,7 @@ class AdminPanelProvider extends PanelProvider
             ->plugin(FilamentUsersPlugin::make());
 
         // Register Filament Shield only outside of the test environment to simplify test access
-        if (!app()->environment('testing')) {
+        if (! app()->environment('testing')) {
             $panel->plugin(FilamentShieldPlugin::make());
         }
 

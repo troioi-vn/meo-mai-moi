@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         // Skip destructive cleanup when running tests or using SQLite, as dropping
@@ -42,7 +43,7 @@ return new class extends Migration {
                     } else {
                         // Fallback: try dropping the foreign key by convention name then the column
                         try {
-                            $table->dropForeign([ 'cat_id' ]);
+                            $table->dropForeign(['cat_id']);
                         } catch (\Throwable $e) {
                             // ignore if FK name differs or not present
                         }

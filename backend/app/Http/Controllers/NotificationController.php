@@ -18,12 +18,18 @@ class NotificationController extends Controller
      *   path="/api/notifications",
      *   tags={"Notifications"},
      *   security={{"sanctum":{}}},
+     *
      *   @OA\Parameter(name="status", in="query", required=false, @OA\Schema(type="string", enum={"all","unread"})),
+     *
      *   @OA\Response(response=200, description="OK",
+     *
      *     @OA\JsonContent(
      *       type="object",
+     *
      *       @OA\Property(property="data", type="array",
+     *
      *         @OA\Items(
+     *
      *           @OA\Property(property="id", type="string"),
      *           @OA\Property(property="level", type="string", enum={"info","success","warning","error"}),
      *           @OA\Property(property="title", type="string"),
@@ -71,6 +77,7 @@ class NotificationController extends Controller
      *   path="/api/notifications/mark-all-read",
      *   tags={"Notifications"},
      *   security={{"sanctum":{}}},
+     *
      *   @OA\Response(response=204, description="No Content")
      * )
      */
@@ -90,7 +97,9 @@ class NotificationController extends Controller
      *   path="/api/notifications/{id}/read",
      *   tags={"Notifications"},
      *   security={{"sanctum":{}}},
+     *
      *   @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="string")),
+     *
      *   @OA\Response(response=204, description="No Content"),
      *   @OA\Response(response=403, description="Forbidden")
      * )
@@ -101,7 +110,7 @@ class NotificationController extends Controller
             return $this->sendError('Forbidden', 403);
         }
 
-        if (!$notification->is_read) {
+        if (! $notification->is_read) {
             $notification->is_read = true;
             $notification->save();
         }
@@ -119,6 +128,7 @@ class NotificationController extends Controller
      *   summary="Mark all notifications as read (DEPRECATED)",
      *   description="This endpoint is deprecated. Use POST /api/notifications/mark-all-read instead.",
      *   security={{"sanctum":{}}},
+     *
      *   @OA\Response(response=204, description="No Content")
      * )
      */

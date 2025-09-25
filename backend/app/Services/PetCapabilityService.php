@@ -27,7 +27,7 @@ class PetCapabilityService
     public static function supports(Pet $pet, string $capability): bool
     {
         // Load pet type if not already loaded
-        if (!$pet->relationLoaded('petType')) {
+        if (! $pet->relationLoaded('petType')) {
             $pet->load('petType');
         }
 
@@ -36,7 +36,7 @@ class PetCapabilityService
         }
 
         $allowedTypes = self::CAPABILITIES[$capability] ?? [];
-        
+
         return in_array($pet->petType->slug, $allowedTypes);
     }
 
@@ -45,9 +45,9 @@ class PetCapabilityService
      */
     public static function ensure(Pet $pet, string $capability): void
     {
-        if (!self::supports($pet, $capability)) {
+        if (! self::supports($pet, $capability)) {
             $messages = [
-                'pet_type' => ['Feature not available for this pet type']
+                'pet_type' => ['Feature not available for this pet type'],
             ];
             $ex = ValidationException::withMessages($messages);
             // Provide custom JSON response including a machine-readable error_code
@@ -66,14 +66,14 @@ class PetCapabilityService
     public static function getCapabilities(string $petTypeSlug): array
     {
         $capabilities = [];
-        
+
         foreach (self::CAPABILITIES as $capability => $allowedTypes) {
             $capabilities[$capability] = in_array($petTypeSlug, $allowedTypes);
         }
 
         $petType = PetType::where('slug', $petTypeSlug)->first();
         $capabilities['placement'] = $petType ? $petType->placement_requests_allowed : false;
-        
+
         return $capabilities;
     }
 
@@ -87,6 +87,7 @@ class PetCapabilityService
         // This is a simplified representation. A more robust solution might involve
         // querying the database for all pet types and their placement capabilities.
         $matrix['placement'] = PetType::where('placement_requests_allowed', true)->pluck('slug')->toArray();
+
         return $matrix;
     }
 }

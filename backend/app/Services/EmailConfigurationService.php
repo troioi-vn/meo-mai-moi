@@ -3,11 +3,11 @@
 namespace App\Services;
 
 use App\Models\EmailConfiguration;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Mail\Message;
 use Exception;
+use Illuminate\Mail\Message;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class EmailConfigurationService
 {
@@ -33,7 +33,7 @@ class EmailConfigurationService
             ]);
 
             $validationErrors = $emailConfig->validateConfig();
-            if (!empty($validationErrors)) {
+            if (! empty($validationErrors)) {
                 throw new \App\Exceptions\EmailConfigurationException(
                     'Configuration validation failed',
                     $validationErrors
@@ -42,7 +42,7 @@ class EmailConfigurationService
 
             // Test the configuration before saving
             $testResult = $this->testConfigurationWithDetails($provider, $config);
-            if (!$testResult['success']) {
+            if (! $testResult['success']) {
                 throw new \App\Exceptions\EmailConfigurationException(
                     'Email configuration test failed',
                     [$testResult['error'] ?? 'Connection test failed. Please verify your settings.']
@@ -65,7 +65,7 @@ class EmailConfigurationService
             Log::info('Email configuration activated successfully', [
                 'config_id' => $emailConfig->id,
                 'provider' => $provider,
-                'from_address' => $config['from_address'] ?? 'not set'
+                'from_address' => $config['from_address'] ?? 'not set',
             ]);
 
             return $emailConfig;
@@ -74,14 +74,14 @@ class EmailConfigurationService
             Log::error('Email configuration setup failed', [
                 'provider' => $provider,
                 'errors' => $e->getValidationErrors(),
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ]);
             throw $e;
         } catch (\Exception $e) {
             Log::error('Unexpected error during email configuration setup', [
                 'provider' => $provider,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
             throw new \App\Exceptions\EmailConfigurationException(
                 'An unexpected error occurred while setting up email configuration',
@@ -96,6 +96,7 @@ class EmailConfigurationService
     public function testConfiguration(?string $provider = null, ?array $config = null): bool
     {
         $result = $this->testConfigurationWithDetails($provider, $config);
+
         return $result['success'];
     }
 
@@ -108,11 +109,11 @@ class EmailConfigurationService
             // If no parameters provided, test the active configuration
             if ($provider === null || $config === null) {
                 $activeConfig = $this->getActiveConfiguration();
-                if (!$activeConfig) {
+                if (! $activeConfig) {
                     return [
                         'success' => false,
                         'error' => 'No active email configuration found',
-                        'error_type' => 'configuration_missing'
+                        'error_type' => 'configuration_missing',
                     ];
                 }
                 $provider = $activeConfig->provider;
@@ -127,12 +128,12 @@ class EmailConfigurationService
 
             // Validate configuration first
             $validationErrors = $testConfig->validateConfig();
-            if (!empty($validationErrors)) {
+            if (! empty($validationErrors)) {
                 return [
                     'success' => false,
-                    'error' => 'Configuration validation failed: ' . implode(', ', $validationErrors),
+                    'error' => 'Configuration validation failed: '.implode(', ', $validationErrors),
                     'error_type' => 'validation_failed',
-                    'validation_errors' => $validationErrors
+                    'validation_errors' => $validationErrors,
                 ];
             }
 
@@ -142,7 +143,7 @@ class EmailConfigurationService
 
             // Temporarily update mail configuration for testing
             $originalConfig = config('mail');
-            
+
             try {
                 // Set up test mail configuration
                 Config::set('mail.default', $provider);
@@ -162,7 +163,7 @@ class EmailConfigurationService
                 // Attempt to send a test email to the from address
                 Mail::raw('This is a test email to verify your email configuration.', function (Message $message) use ($fromConfig) {
                     $message->to($fromConfig['address'])
-                            ->subject('Email Configuration Test - ' . config('app.name'));
+                        ->subject('Email Configuration Test - '.config('app.name'));
                 });
 
                 // Restore original configuration
@@ -171,12 +172,12 @@ class EmailConfigurationService
 
                 Log::info('Email configuration test successful', [
                     'provider' => $provider,
-                    'from_address' => $fromConfig['address']
+                    'from_address' => $fromConfig['address'],
                 ]);
 
                 return [
                     'success' => true,
-                    'message' => 'Test email sent successfully'
+                    'message' => 'Test email sent successfully',
                 ];
 
             } catch (Exception $e) {
@@ -188,19 +189,19 @@ class EmailConfigurationService
 
         } catch (Exception $e) {
             $errorType = $this->categorizeEmailError($e);
-            
+
             Log::error('Email configuration test failed', [
                 'provider' => $provider,
                 'error' => $e->getMessage(),
                 'error_type' => $errorType,
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return [
                 'success' => false,
                 'error' => $this->getUserFriendlyErrorMessage($e, $provider),
                 'error_type' => $errorType,
-                'technical_error' => $e->getMessage()
+                'technical_error' => $e->getMessage(),
             ];
         }
     }
@@ -244,11 +245,11 @@ class EmailConfigurationService
 
         return match ($errorType) {
             'connection_failed' => "Unable to connect to the {$provider} server. Please check your host and port settings.",
-            'authentication_failed' => "Authentication failed. Please verify your username and password are correct.",
-            'ssl_error' => "SSL/TLS connection error. Please check your encryption settings and server certificates.",
-            'mailgun_auth_failed' => "Mailgun authentication failed. Please verify your API key is correct and active.",
-            'mailgun_domain_error' => "Mailgun domain error. Please verify your domain is correctly configured in Mailgun.",
-            default => "Email configuration test failed: " . $e->getMessage()
+            'authentication_failed' => 'Authentication failed. Please verify your username and password are correct.',
+            'ssl_error' => 'SSL/TLS connection error. Please check your encryption settings and server certificates.',
+            'mailgun_auth_failed' => 'Mailgun authentication failed. Please verify your API key is correct and active.',
+            'mailgun_domain_error' => 'Mailgun domain error. Please verify your domain is correctly configured in Mailgun.',
+            default => 'Email configuration test failed: '.$e->getMessage()
         };
     }
 
@@ -258,9 +259,10 @@ class EmailConfigurationService
     public function updateMailConfig(): void
     {
         $activeConfig = $this->getActiveConfiguration();
-        
-        if (!$activeConfig || !$activeConfig->isValid()) {
+
+        if (! $activeConfig || ! $activeConfig->isValid()) {
             Log::warning('No valid active email configuration found. Email sending may not work.');
+
             return;
         }
 
@@ -270,17 +272,17 @@ class EmailConfigurationService
 
             // Update Laravel's mail configuration
             Config::set('mail.default', $mailConfig['default']);
-            
+
             if (isset($mailConfig['mailers'])) {
                 foreach ($mailConfig['mailers'] as $mailerName => $mailerConfig) {
                     Config::set("mail.mailers.{$mailerName}", $mailerConfig);
                 }
             }
-            
+
             if (isset($mailConfig['from'])) {
                 Config::set('mail.from', $mailConfig['from']);
             }
-            
+
             if (isset($mailConfig['services'])) {
                 foreach ($mailConfig['services'] as $serviceName => $serviceConfig) {
                     Config::set("services.{$serviceName}", $serviceConfig);
@@ -292,15 +294,15 @@ class EmailConfigurationService
 
             Log::info('Mail configuration updated successfully', [
                 'provider' => $activeConfig->provider,
-                'from_address' => $mailConfig['from']['address'] ?? 'not set'
+                'from_address' => $mailConfig['from']['address'] ?? 'not set',
             ]);
 
         } catch (Exception $e) {
             Log::error('Failed to update mail configuration', [
                 'error' => $e->getMessage(),
-                'config_id' => $activeConfig->id
+                'config_id' => $activeConfig->id,
             ]);
-            throw new \RuntimeException('Failed to update mail configuration: ' . $e->getMessage());
+            throw new \RuntimeException('Failed to update mail configuration: '.$e->getMessage());
         }
     }
 
@@ -310,16 +312,16 @@ class EmailConfigurationService
     public function deactivateConfiguration(): void
     {
         $activeConfig = $this->getActiveConfiguration();
-        
+
         if ($activeConfig) {
             $activeConfig->update(['is_active' => false]);
-            
+
             // Reset to default mail configuration
             Config::set('mail.default', config('mail.default'));
             app('mail.manager')->purge();
-            
+
             Log::info('Email configuration deactivated', [
-                'config_id' => $activeConfig->id
+                'config_id' => $activeConfig->id,
             ]);
         }
     }
@@ -338,8 +340,8 @@ class EmailConfigurationService
     public function deleteConfiguration(int $configId): bool
     {
         $config = EmailConfiguration::find($configId);
-        
-        if (!$config) {
+
+        if (! $config) {
             return false;
         }
 
@@ -349,9 +351,9 @@ class EmailConfigurationService
         }
 
         $config->delete();
-        
+
         Log::info('Email configuration deleted', [
-            'config_id' => $configId
+            'config_id' => $configId,
         ]);
 
         return true;
@@ -363,6 +365,7 @@ class EmailConfigurationService
     public function isEmailEnabled(): bool
     {
         $activeConfig = $this->getActiveConfiguration();
+
         return $activeConfig && $activeConfig->isValid();
     }
 
@@ -376,14 +379,14 @@ class EmailConfigurationService
                 'name' => 'SMTP',
                 'description' => 'Send emails using SMTP server',
                 'required_fields' => ['host', 'port', 'username', 'password', 'encryption', 'from_address'],
-                'optional_fields' => ['from_name']
+                'optional_fields' => ['from_name'],
             ],
             'mailgun' => [
                 'name' => 'Mailgun',
                 'description' => 'Send emails using Mailgun API',
                 'required_fields' => ['domain', 'api_key', 'from_address'],
-                'optional_fields' => ['endpoint', 'from_name']
-            ]
+                'optional_fields' => ['endpoint', 'from_name'],
+            ],
         ];
     }
 }

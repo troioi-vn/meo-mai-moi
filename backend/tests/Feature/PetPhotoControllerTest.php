@@ -16,28 +16,30 @@ class PetPhotoControllerTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+
     protected PetType $catType;
+
     protected PetType $dogType;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->user = User::factory()->create();
-        
+
         // Create pet types
         $this->catType = PetType::create([
-            'id' => 1, 
-            'name' => 'Cat', 
-            'slug' => 'cat', 
-            'is_system' => true
+            'id' => 1,
+            'name' => 'Cat',
+            'slug' => 'cat',
+            'is_system' => true,
         ]);
-        
+
         $this->dogType = PetType::create([
-            'id' => 2, 
-            'name' => 'Dog', 
-            'slug' => 'dog', 
-            'is_system' => true
+            'id' => 2,
+            'name' => 'Dog',
+            'slug' => 'dog',
+            'is_system' => true,
         ]);
 
         Storage::fake('public');
@@ -55,17 +57,17 @@ class PetPhotoControllerTest extends TestCase
         $file = UploadedFile::fake()->image('cat.jpg', 800, 600);
 
         $response = $this->postJson("/api/pets/{$cat->id}/photos", [
-            'photo' => $file
+            'photo' => $file,
         ]);
 
         $response->assertStatus(200)
-                ->assertJsonStructure([
-                    'data' => [
-                        'id',
-                        'name',
-                        'photos'
-                    ]
-                ]);
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'name',
+                    'photos',
+                ],
+            ]);
 
         $this->assertDatabaseHas('pet_photos', [
             'pet_id' => $cat->id,
@@ -85,7 +87,7 @@ class PetPhotoControllerTest extends TestCase
         $file = UploadedFile::fake()->image('dog.jpg', 800, 600);
 
         $response = $this->postJson("/api/pets/{$dog->id}/photos", [
-            'photo' => $file
+            'photo' => $file,
         ]);
 
         $response->assertStatus(200);
@@ -106,7 +108,7 @@ class PetPhotoControllerTest extends TestCase
         $file = UploadedFile::fake()->image('cat.jpg');
 
         $response = $this->postJson("/api/pets/{$cat->id}/photos", [
-            'photo' => $file
+            'photo' => $file,
         ]);
 
         $response->assertStatus(401);
@@ -125,7 +127,7 @@ class PetPhotoControllerTest extends TestCase
         $file = UploadedFile::fake()->image('cat.jpg');
 
         $response = $this->postJson("/api/pets/{$cat->id}/photos", [
-            'photo' => $file
+            'photo' => $file,
         ]);
 
         $response->assertStatus(403);
@@ -143,15 +145,15 @@ class PetPhotoControllerTest extends TestCase
         // Test without photo
         $response = $this->postJson("/api/pets/{$cat->id}/photos", []);
         $response->assertStatus(422)
-                ->assertJsonValidationErrors(['photo']);
+            ->assertJsonValidationErrors(['photo']);
 
         // Test with non-image file
         $file = UploadedFile::fake()->create('document.pdf', 1000);
         $response = $this->postJson("/api/pets/{$cat->id}/photos", [
-            'photo' => $file
+            'photo' => $file,
         ]);
         $response->assertStatus(422)
-                ->assertJsonValidationErrors(['photo']);
+            ->assertJsonValidationErrors(['photo']);
     }
 
     public function test_validates_file_size()
@@ -167,11 +169,11 @@ class PetPhotoControllerTest extends TestCase
         $file = UploadedFile::fake()->create('large.jpg', 11000); // 11MB
 
         $response = $this->postJson("/api/pets/{$cat->id}/photos", [
-            'photo' => $file
+            'photo' => $file,
         ]);
 
         $response->assertStatus(422)
-                ->assertJsonValidationErrors(['photo']);
+            ->assertJsonValidationErrors(['photo']);
     }
 
     public function test_can_delete_pet_photo()
@@ -194,7 +196,7 @@ class PetPhotoControllerTest extends TestCase
         $response->assertStatus(204);
 
         $this->assertDatabaseMissing('pet_photos', [
-            'id' => $photo->id
+            'id' => $photo->id,
         ]);
     }
 

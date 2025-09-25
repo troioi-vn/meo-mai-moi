@@ -4,18 +4,16 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\NotificationResource\Pages;
 use App\Models\Notification;
-use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\Filter;
 use Filament\Tables\Actions\BulkAction;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Auth;
 
 class NotificationResource extends Resource
 {
@@ -41,7 +39,7 @@ class NotificationResource extends Resource
                             ->searchable()
                             ->preload()
                             ->required(),
-                        
+
                         Forms\Components\Select::make('type')
                             ->label('Notification Type')
                             ->options([
@@ -58,19 +56,19 @@ class NotificationResource extends Resource
                             ])
                             ->searchable()
                             ->nullable(),
-                        
+
                         Forms\Components\Textarea::make('message')
                             ->label('Message')
                             ->required()
                             ->columnSpanFull()
                             ->rows(3),
-                        
+
                         Forms\Components\TextInput::make('link')
                             ->label('Action Link')
                             ->url()
                             ->nullable()
                             ->columnSpanFull(),
-                        
+
                         Forms\Components\KeyValue::make('data')
                             ->label('Additional Data')
                             ->nullable()
@@ -84,19 +82,19 @@ class NotificationResource extends Resource
                         Forms\Components\Toggle::make('is_read')
                             ->label('Mark as Read')
                             ->default(false),
-                        
+
                         Forms\Components\DateTimePicker::make('read_at')
                             ->label('Read At')
                             ->nullable(),
-                        
+
                         Forms\Components\DateTimePicker::make('delivered_at')
                             ->label('Delivered At')
                             ->nullable(),
-                        
+
                         Forms\Components\DateTimePicker::make('failed_at')
                             ->label('Failed At')
                             ->nullable(),
-                        
+
                         Forms\Components\Textarea::make('failure_reason')
                             ->label('Failure Reason')
                             ->nullable()
@@ -115,7 +113,7 @@ class NotificationResource extends Resource
                     ->label('Recipient')
                     ->searchable()
                     ->sortable(),
-                
+
                 Tables\Columns\BadgeColumn::make('type_display')
                     ->label('Type')
                     ->colors([
@@ -131,7 +129,7 @@ class NotificationResource extends Resource
                         'gray' => 'system_announcement',
                     ])
                     ->searchable(),
-                
+
                 Tables\Columns\TextColumn::make('message')
                     ->label('Message')
                     ->limit(50)
@@ -140,10 +138,11 @@ class NotificationResource extends Resource
                         if (strlen($state) <= 50) {
                             return null;
                         }
+
                         return $state;
                     })
                     ->searchable(),
-                
+
                 Tables\Columns\BadgeColumn::make('delivery_status')
                     ->label('Delivery')
                     ->colors([
@@ -154,14 +153,15 @@ class NotificationResource extends Resource
                     ->formatStateUsing(fn (string $state): string => ucfirst($state))
                     ->tooltip(function (Notification $record): ?string {
                         if ($record->failed_at && $record->failure_reason) {
-                            return 'Failed: ' . $record->failure_reason;
+                            return 'Failed: '.$record->failure_reason;
                         }
                         if ($record->delivered_at) {
-                            return 'Delivered at: ' . $record->delivered_at->format('M j, Y g:i A');
+                            return 'Delivered at: '.$record->delivered_at->format('M j, Y g:i A');
                         }
+
                         return null;
                     }),
-                
+
                 Tables\Columns\BadgeColumn::make('engagement_status')
                     ->label('Engagement')
                     ->colors([
@@ -169,13 +169,13 @@ class NotificationResource extends Resource
                         'warning' => 'delivered_unread',
                         'success' => 'read',
                     ])
-                    ->formatStateUsing(fn (string $state): string => match($state) {
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
                         'not_delivered' => 'Not Delivered',
                         'delivered_unread' => 'Unread',
                         'read' => 'Read',
                         default => ucfirst(str_replace('_', ' ', $state)),
                     }),
-                
+
                 Tables\Columns\IconColumn::make('is_read')
                     ->label('Read')
                     ->boolean()
@@ -183,36 +183,37 @@ class NotificationResource extends Resource
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
                     ->falseColor('gray'),
-                
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(),
-                
+
                 Tables\Columns\TextColumn::make('delivered_at')
                     ->label('Delivered')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                
+
                 Tables\Columns\TextColumn::make('read_at')
                     ->label('Read')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                
+
                 Tables\Columns\TextColumn::make('failure_reason')
                     ->label('Failure Reason')
                     ->limit(30)
                     ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
                         $state = $column->getState();
-                        if (!$state || strlen($state) <= 30) {
+                        if (! $state || strlen($state) <= 30) {
                             return null;
                         }
+
                         return $state;
                     })
-                    ->visible(fn (): bool => request()->has('tableFilters.delivery_status.value') && 
+                    ->visible(fn (): bool => request()->has('tableFilters.delivery_status.value') &&
                         request()->get('tableFilters')['delivery_status']['value'] === 'failed')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -231,7 +232,7 @@ class NotificationResource extends Resource
                         'profile_rejected' => 'Profile Rejected',
                         'system_announcement' => 'System Announcement',
                     ]),
-                
+
                 SelectFilter::make('delivery_status')
                     ->label('Delivery Status')
                     ->options([
@@ -240,18 +241,18 @@ class NotificationResource extends Resource
                         'failed' => 'Failed',
                     ])
                     ->query(function (Builder $query, array $data): Builder {
-                        if (!$data['value']) {
+                        if (! $data['value']) {
                             return $query;
                         }
-                        
-                        return match($data['value']) {
+
+                        return match ($data['value']) {
                             'pending' => $query->pending(),
                             'delivered' => $query->delivered(),
                             'failed' => $query->failed(),
                             default => $query,
                         };
                     }),
-                
+
                 SelectFilter::make('engagement_status')
                     ->label('Engagement Status')
                     ->options([
@@ -259,25 +260,25 @@ class NotificationResource extends Resource
                         'unread' => 'Unread',
                     ])
                     ->query(function (Builder $query, array $data): Builder {
-                        if (!$data['value']) {
+                        if (! $data['value']) {
                             return $query;
                         }
-                        
-                        return match($data['value']) {
+
+                        return match ($data['value']) {
                             'read' => $query->read(),
                             'unread' => $query->unread(),
                             default => $query,
                         };
                     }),
-                
+
                 Filter::make('failed_notifications')
                     ->label('Failed Notifications')
                     ->query(fn (Builder $query): Builder => $query->failed()),
-                
+
                 Filter::make('unread_notifications')
                     ->label('Unread Notifications')
                     ->query(fn (Builder $query): Builder => $query->unread()),
-                
+
                 Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('created_from')
@@ -296,20 +297,20 @@ class NotificationResource extends Resource
                                 fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
                             );
                     }),
-            ])   
-         ->actions([
+            ])
+            ->actions([
                 Tables\Actions\Action::make('mark_as_read')
                     ->label('Mark as Read')
                     ->icon('heroicon-o-check')
                     ->color('success')
-                    ->visible(fn (Notification $record): bool => !$record->is_read)
+                    ->visible(fn (Notification $record): bool => ! $record->is_read)
                     ->action(function (Notification $record): void {
                         $record->update([
                             'is_read' => true,
                             'read_at' => now(),
                         ]);
                     }),
-                
+
                 Tables\Actions\Action::make('mark_as_unread')
                     ->label('Mark as Unread')
                     ->icon('heroicon-o-x-mark')
@@ -321,12 +322,12 @@ class NotificationResource extends Resource
                             'read_at' => null,
                         ]);
                     }),
-                
+
                 Tables\Actions\Action::make('mark_as_delivered')
                     ->label('Mark as Delivered')
                     ->icon('heroicon-o-paper-airplane')
                     ->color('success')
-                    ->visible(fn (Notification $record): bool => !$record->delivered_at)
+                    ->visible(fn (Notification $record): bool => ! $record->delivered_at)
                     ->action(function (Notification $record): void {
                         $record->update([
                             'delivered_at' => now(),
@@ -334,12 +335,12 @@ class NotificationResource extends Resource
                             'failure_reason' => null,
                         ]);
                     }),
-                
+
                 Tables\Actions\Action::make('mark_as_failed')
                     ->label('Mark as Failed')
                     ->icon('heroicon-o-exclamation-triangle')
                     ->color('danger')
-                    ->visible(fn (Notification $record): bool => !$record->failed_at)
+                    ->visible(fn (Notification $record): bool => ! $record->failed_at)
                     ->form([
                         Forms\Components\Textarea::make('failure_reason')
                             ->label('Failure Reason')
@@ -353,7 +354,7 @@ class NotificationResource extends Resource
                             'delivered_at' => null,
                         ]);
                     }),
-                
+
                 Tables\Actions\Action::make('retry_delivery')
                     ->label('Retry Delivery')
                     ->icon('heroicon-o-arrow-path')
@@ -366,12 +367,12 @@ class NotificationResource extends Resource
                             'failure_reason' => null,
                             'delivered_at' => null,
                         ]);
-                        
+
                         // Here you would typically trigger the notification delivery system
                         // For now, we'll just mark it as delivered
                         $record->update(['delivered_at' => now()]);
                     }),
-                
+
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
@@ -391,7 +392,7 @@ class NotificationResource extends Resource
                                 ]);
                             });
                         }),
-                    
+
                     BulkAction::make('mark_as_unread')
                         ->label('Mark as Unread')
                         ->icon('heroicon-o-x-mark')
@@ -405,7 +406,7 @@ class NotificationResource extends Resource
                                 ]);
                             });
                         }),
-                    
+
                     BulkAction::make('mark_as_delivered')
                         ->label('Mark as Delivered')
                         ->icon('heroicon-o-paper-airplane')
@@ -420,7 +421,7 @@ class NotificationResource extends Resource
                                 ]);
                             });
                         }),
-                    
+
                     BulkAction::make('cleanup_old')
                         ->label('Cleanup Old Notifications')
                         ->icon('heroicon-o-trash')
@@ -437,7 +438,7 @@ class NotificationResource extends Resource
                                 ])
                                 ->default('90')
                                 ->required(),
-                            
+
                             Forms\Components\Checkbox::make('read_only')
                                 ->label('Only delete read notifications')
                                 ->default(true),
@@ -447,16 +448,16 @@ class NotificationResource extends Resource
                         ->modalDescription('This will permanently delete old notifications. This action cannot be undone.')
                         ->action(function (Collection $records, array $data): void {
                             $cutoffDate = now()->subDays((int) $data['days']);
-                            
+
                             $query = Notification::where('created_at', '<', $cutoffDate);
-                            
+
                             if ($data['read_only']) {
                                 $query->where('is_read', true);
                             }
-                            
+
                             $query->delete();
                         }),
-                    
+
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
@@ -489,15 +490,15 @@ class NotificationResource extends Resource
     public static function getNavigationBadgeColor(): ?string
     {
         $unreadCount = static::getModel()::unread()->count();
-        
+
         if ($unreadCount > 50) {
             return 'danger';
         }
-        
+
         if ($unreadCount > 10) {
             return 'warning';
         }
-        
+
         return 'primary';
     }
 }

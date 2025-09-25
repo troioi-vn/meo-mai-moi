@@ -2,20 +2,16 @@
 
 namespace App\Filament\Resources\PlacementRequestResource\RelationManagers;
 
+use App\Models\User;
 use Filament\Forms;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\DateTimePicker;
-use App\Models\User;
-use App\Models\HelperProfile;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 
 class TransferRequestsRelationManager extends RelationManager
 {

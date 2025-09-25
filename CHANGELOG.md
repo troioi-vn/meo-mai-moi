@@ -4,6 +4,10 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Changed
+- **Docs**: Updated `GEMINI.md` with a new "Linting and Formatting" section.
+- **Backend**: Ran `pint` to fix PHP code style issues.
+
 ### Added
 - **Multi-pet support**: The application now supports multiple pet types, including cats and dogs.
 - **Pet type capabilities**: A new `placement_requests_allowed` feature has been added to control which pet types can have placement requests.

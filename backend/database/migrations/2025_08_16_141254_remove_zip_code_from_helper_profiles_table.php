@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-    // Intentionally left blank: keep zip_code column for compatibility with API/tests
+        // Intentionally left blank: keep zip_code column for compatibility with API/tests
     }
 
     /**

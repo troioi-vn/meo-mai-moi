@@ -14,7 +14,7 @@ class NotificationResourceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Create a test user and authenticate
         $this->user = User::factory()->create();
         $this->actingAs($this->user);
@@ -124,7 +124,7 @@ class NotificationResourceTest extends TestCase
     public function test_notification_resource_can_create_notification()
     {
         $user = User::factory()->create();
-        
+
         $response = $this->post('/admin/notifications', [
             'user_id' => $user->id,
             'type' => 'system_announcement',

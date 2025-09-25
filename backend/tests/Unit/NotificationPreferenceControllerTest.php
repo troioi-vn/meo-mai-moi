@@ -4,7 +4,6 @@ namespace Tests\Unit;
 
 use App\Enums\NotificationType;
 use App\Http\Controllers\NotificationPreferenceController;
-use App\Http\Requests\UpdateNotificationPreferencesRequest;
 use App\Models\NotificationPreference;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -16,12 +15,13 @@ class NotificationPreferenceControllerTest extends TestCase
     use RefreshDatabase;
 
     private NotificationPreferenceController $controller;
+
     private User $user;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->controller = new NotificationPreferenceController();
+        $this->controller = new NotificationPreferenceController;
         $this->user = User::factory()->create();
         Auth::login($this->user);
     }
@@ -29,14 +29,14 @@ class NotificationPreferenceControllerTest extends TestCase
     public function test_index_returns_all_notification_types_with_defaults()
     {
         $response = $this->controller->index();
-        
+
         $this->assertEquals(200, $response->getStatusCode());
-        
+
         $data = json_decode($response->getContent(), true)['data'];
-        
+
         // Should return all notification types
         $this->assertCount(count(NotificationType::cases()), $data);
-        
+
         // Check structure and default values
         foreach ($data as $preference) {
             $this->assertArrayHasKey('type', $preference);
@@ -44,7 +44,7 @@ class NotificationPreferenceControllerTest extends TestCase
             $this->assertArrayHasKey('group', $preference);
             $this->assertArrayHasKey('email_enabled', $preference);
             $this->assertArrayHasKey('in_app_enabled', $preference);
-            
+
             // Defaults should be true
             $this->assertTrue($preference['email_enabled']);
             $this->assertTrue($preference['in_app_enabled']);
@@ -65,7 +65,7 @@ class NotificationPreferenceControllerTest extends TestCase
         $data = json_decode($response->getContent(), true)['data'];
 
         $placementRequestResponse = collect($data)->firstWhere('type', NotificationType::PLACEMENT_REQUEST_RESPONSE->value);
-        
+
         $this->assertFalse($placementRequestResponse['email_enabled']);
         $this->assertTrue($placementRequestResponse['in_app_enabled']);
     }
@@ -86,7 +86,7 @@ class NotificationPreferenceControllerTest extends TestCase
             true,
             false
         );
-        
+
         // Verify preferences were created
         $this->assertDatabaseHas('notification_preferences', [
             'user_id' => $this->user->id,
@@ -120,10 +120,10 @@ class NotificationPreferenceControllerTest extends TestCase
             false,
             false
         );
-        
+
         // Should update existing record, not create new one
         $this->assertDatabaseCount('notification_preferences', 1);
-        
+
         $existing->refresh();
         $this->assertFalse($existing->email_enabled);
         $this->assertFalse($existing->in_app_enabled);
@@ -133,17 +133,17 @@ class NotificationPreferenceControllerTest extends TestCase
     {
         // Test that no preferences are created when none are provided
         // This is implicitly tested by not calling updatePreference
-        
+
         // No preferences should be created
         $this->assertDatabaseCount('notification_preferences', 0);
-        
+
         // Test that the method handles empty arrays gracefully
         $preferences = [];
         foreach ($preferences as $preferenceData) {
             // This loop should not execute
             $this->fail('Should not execute with empty array');
         }
-        
+
         // Should still have no preferences
         $this->assertDatabaseCount('notification_preferences', 0);
     }
@@ -155,7 +155,7 @@ class NotificationPreferenceControllerTest extends TestCase
 
         foreach (NotificationType::cases() as $type) {
             $preference = collect($data)->firstWhere('type', $type->value);
-            
+
             $this->assertNotNull($preference, "Missing preference for type: {$type->value}");
             $this->assertEquals($type->getLabel(), $preference['label']);
             $this->assertEquals($type->getGroup(), $preference['group']);

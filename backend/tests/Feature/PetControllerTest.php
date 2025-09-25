@@ -14,30 +14,32 @@ class PetControllerTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+
     protected PetType $catType;
+
     protected PetType $dogType;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->user = User::factory()->create();
-        
+
         // Create pet types
         $this->catType = PetType::create([
-            'id' => 1, 
-            'name' => 'Cat', 
-            'slug' => 'cat', 
+            'id' => 1,
+            'name' => 'Cat',
+            'slug' => 'cat',
             'is_system' => true,
-            'display_order' => 1
+            'display_order' => 1,
         ]);
-        
+
         $this->dogType = PetType::create([
-            'id' => 2, 
-            'name' => 'Dog', 
-            'slug' => 'dog', 
+            'id' => 2,
+            'name' => 'Dog',
+            'slug' => 'dog',
             'is_system' => true,
-            'display_order' => 2
+            'display_order' => 2,
         ]);
     }
 
@@ -57,19 +59,19 @@ class PetControllerTest extends TestCase
         $response = $this->postJson('/api/pets', $petData);
 
         $response->assertStatus(201)
-                ->assertJsonStructure([
-                    'data' => [
-                        'id',
-                        'name',
-                        'breed',
-                        'birthday',
-                        'location',
-                        'description',
-                        'pet_type_id',
-                        'user_id',
-                        'pet_type'
-                    ]
-                ]);
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'name',
+                    'breed',
+                    'birthday',
+                    'location',
+                    'description',
+                    'pet_type_id',
+                    'user_id',
+                    'pet_type',
+                ],
+            ]);
 
         $this->assertDatabaseHas('pets', [
             'name' => 'Fluffy',
@@ -96,43 +98,43 @@ class PetControllerTest extends TestCase
         $response = $this->getJson('/api/my-pets');
 
         $response->assertStatus(200)
-                ->assertJsonCount(2, 'data')
-                ->assertJsonStructure([
-                    'data' => [
-                        '*' => [
-                            'id',
-                            'name',
-                            'pet_type_id',
-                            'pet_type'
-                        ]
-                    ]
-                ]);
+            ->assertJsonCount(2, 'data')
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => [
+                        'id',
+                        'name',
+                        'pet_type_id',
+                        'pet_type',
+                    ],
+                ],
+            ]);
     }
 
     public function test_can_get_pet_types()
     {
         Sanctum::actingAs($this->user);
-        
+
         $response = $this->getJson('/api/pet-types');
 
         $response->assertStatus(200)
-                ->assertJsonCount(2, 'data')
-                ->assertJsonStructure([
-                    'data' => [
-                        '*' => [
-                            'id',
-                            'name',
-                            'slug',
-                            'description'
-                        ]
-                    ]
-                ]);
+            ->assertJsonCount(2, 'data')
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => [
+                        'id',
+                        'name',
+                        'slug',
+                        'description',
+                    ],
+                ],
+            ]);
     }
 
     public function test_can_show_pet()
     {
         Sanctum::actingAs($this->user);
-        
+
         $pet = Pet::factory()->create([
             'user_id' => $this->user->id,
             'pet_type_id' => $this->catType->id,
@@ -141,15 +143,15 @@ class PetControllerTest extends TestCase
         $response = $this->getJson("/api/pets/{$pet->id}");
 
         $response->assertStatus(200)
-                ->assertJsonStructure([
-                    'data' => [
-                        'id',
-                        'name',
-                        'pet_type_id',
-                        'pet_type',
-                        'viewer_permissions'
-                    ]
-                ]);
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'name',
+                    'pet_type_id',
+                    'pet_type',
+                    'viewer_permissions',
+                ],
+            ]);
     }
 
     public function test_can_update_pet()
@@ -188,7 +190,7 @@ class PetControllerTest extends TestCase
         ]);
 
         $response = $this->deleteJson("/api/pets/{$pet->id}", [
-            'password' => 'password' // Default factory password
+            'password' => 'password', // Default factory password
         ]);
 
         $response->assertStatus(204);
@@ -224,7 +226,7 @@ class PetControllerTest extends TestCase
         ]);
 
         $response = $this->putJson("/api/pets/{$pet->id}", [
-            'name' => 'Hacked Name'
+            'name' => 'Hacked Name',
         ]);
 
         $response->assertStatus(403);
@@ -237,13 +239,13 @@ class PetControllerTest extends TestCase
         $response = $this->postJson('/api/pets', []);
 
         $response->assertStatus(422)
-                ->assertJsonValidationErrors([
-                    'name',
-                    'breed',
-                    'birthday',
-                    'location',
-                    'description',
-                ]);
+            ->assertJsonValidationErrors([
+                'name',
+                'breed',
+                'birthday',
+                'location',
+                'description',
+            ]);
 
         // pet_type_id is optional and defaults; should NOT be a validation error.
         $this->assertArrayNotHasKey('pet_type_id', $response->json('errors'));
@@ -265,6 +267,6 @@ class PetControllerTest extends TestCase
         $response = $this->postJson('/api/pets', $petData);
 
         $response->assertStatus(422)
-                ->assertJsonValidationErrors(['pet_type_id']);
+            ->assertJsonValidationErrors(['pet_type_id']);
     }
 }

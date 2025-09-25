@@ -2,14 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PlacementRequestType;
 use App\Models\Pet;
 use App\Models\PetType;
-use App\Models\User;
-use App\Enums\PlacementRequestType;
 use App\Models\PlacementRequest;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class PlacementRequestTest extends TestCase
 {

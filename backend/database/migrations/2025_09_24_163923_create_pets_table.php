@@ -22,7 +22,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->enum('status', ['active', 'lost', 'deceased', 'deleted'])->default('active');
             $table->timestamps();
-            
+
             // Indexes for efficient querying
             $table->index(['pet_type_id', 'status']);
             $table->index(['user_id', 'status']);

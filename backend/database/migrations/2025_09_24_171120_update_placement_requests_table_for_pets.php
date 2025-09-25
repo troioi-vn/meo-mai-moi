@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('placement_requests', function (Blueprint $table) {
             // Add new pet_id column
             $table->foreignId('pet_id')->nullable()->after('id')->constrained('pets')->onDelete('cascade');
-            
+
             // Make cat_id nullable for transition period
             $table->unsignedBigInteger('cat_id')->nullable()->change();
         });
@@ -28,7 +28,7 @@ return new class extends Migration
         Schema::table('placement_requests', function (Blueprint $table) {
             $table->dropForeign(['pet_id']);
             $table->dropColumn('pet_id');
-            
+
             // Restore cat_id as required
             $table->unsignedBigInteger('cat_id')->nullable(false)->change();
         });

@@ -2,23 +2,19 @@
 
 namespace App\Filament\Resources\PetResource\RelationManagers;
 
-use Filament\Forms;
+use App\Services\PetCapabilityService;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Section;
 use Filament\Tables\Actions\Action;
-use Filament\Notifications\Notification;
-use App\Services\PetCapabilityService;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 
 class PlacementRequestsRelationManager extends RelationManager
 {
@@ -120,6 +116,7 @@ class PlacementRequestsRelationManager extends RelationManager
                         if (strlen($state) <= 50) {
                             return null;
                         }
+
                         return $state;
                     }),
 
@@ -151,13 +148,14 @@ class PlacementRequestsRelationManager extends RelationManager
                         // Check if pet supports placement requests
                         $pet = $livewire->getOwnerRecord();
                         $capabilityService = app(PetCapabilityService::class);
-                        
-                        if (!$capabilityService->supports($pet, 'placement')) {
+
+                        if (! $capabilityService->supports($pet, 'placement')) {
                             Notification::make()
                                 ->title('Feature not available')
                                 ->body('Placement requests are not available for this pet type.')
                                 ->danger()
                                 ->send();
+
                             return false; // Cancel the action
                         }
                     }),
@@ -176,7 +174,7 @@ class PlacementRequestsRelationManager extends RelationManager
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update(['status' => 'fulfilled']);
-                        
+
                         Notification::make()
                             ->title('Placement request fulfilled')
                             ->success()
@@ -191,7 +189,7 @@ class PlacementRequestsRelationManager extends RelationManager
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update(['status' => 'canceled']);
-                        
+
                         Notification::make()
                             ->title('Placement request canceled')
                             ->success()

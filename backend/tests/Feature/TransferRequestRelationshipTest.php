@@ -2,14 +2,14 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-use App\Models\User;
+use App\Models\HelperProfile;
 use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Models\TransferRequest;
-use App\Models\HelperProfile;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class TransferRequestRelationshipTest extends TestCase
 {
@@ -19,8 +19,8 @@ class TransferRequestRelationshipTest extends TestCase
     public function a_transfer_request_belongs_to_a_placement_request()
     {
         $owner = User::factory()->create();
-    $pet = Pet::factory()->create(['user_id' => $owner->id]);
-    $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'user_id' => $owner->id]);
+        $pet = Pet::factory()->create(['user_id' => $owner->id]);
+        $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'user_id' => $owner->id]);
         $helper = User::factory()->create();
         $helperProfile = HelperProfile::factory()->create(['user_id' => $helper->id]);
 
@@ -38,8 +38,8 @@ class TransferRequestRelationshipTest extends TestCase
     public function a_placement_request_can_have_many_transfer_requests()
     {
         $owner = User::factory()->create();
-    $pet = Pet::factory()->create(['user_id' => $owner->id]);
-    $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'user_id' => $owner->id]);
+        $pet = Pet::factory()->create(['user_id' => $owner->id]);
+        $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'user_id' => $owner->id]);
         $helper1 = User::factory()->create();
         $helperProfile1 = HelperProfile::factory()->create(['user_id' => $helper1->id]);
         $helper2 = User::factory()->create();

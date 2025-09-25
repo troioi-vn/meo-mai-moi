@@ -4,26 +4,25 @@ namespace Tests\Feature;
 
 use App\Models\Review;
 use App\Models\User;
-use App\Models\TransferRequest;
-use Spatie\Permission\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 use Tests\Traits\CreatesUsers;
 
 class ReviewResourceTest extends TestCase
 {
-    use RefreshDatabase, CreatesUsers;
+    use CreatesUsers, RefreshDatabase;
 
     protected User $adminUser;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
-    // Create an admin user for testing
-    $this->adminUser = User::factory()->create();
-    Role::firstOrCreate(['name' => 'admin']);
-    $this->adminUser->assignRole('admin');
+
+        // Create an admin user for testing
+        $this->adminUser = User::factory()->create();
+        Role::firstOrCreate(['name' => 'admin']);
+        $this->adminUser->assignRole('admin');
     }
 
     public function test_review_resource_exists(): void
@@ -35,7 +34,7 @@ class ReviewResourceTest extends TestCase
     {
         $reviewer = User::factory()->create(['name' => 'John Reviewer']);
         $reviewed = User::factory()->create(['name' => 'Jane Reviewed']);
-        
+
         $review = Review::factory()->create([
             'reviewer_user_id' => $reviewer->id,
             'reviewed_user_id' => $reviewed->id,
@@ -55,13 +54,13 @@ class ReviewResourceTest extends TestCase
     {
         $reviewer = User::factory()->create();
         $reviewed = User::factory()->create();
-        
+
         $activeReview = Review::factory()->create([
             'reviewer_user_id' => $reviewer->id,
             'reviewed_user_id' => $reviewed->id,
             'status' => 'active',
         ]);
-        
+
         $hiddenReview = Review::factory()->hidden()->create([
             'reviewer_user_id' => $reviewer->id,
             'reviewed_user_id' => $reviewed->id,
@@ -75,12 +74,12 @@ class ReviewResourceTest extends TestCase
     {
         $reviewer = User::factory()->create();
         $reviewed = User::factory()->create();
-        
+
         $flaggedReview = Review::factory()->flagged()->create([
             'reviewer_user_id' => $reviewer->id,
             'reviewed_user_id' => $reviewed->id,
         ]);
-        
+
         $normalReview = Review::factory()->create([
             'reviewer_user_id' => $reviewer->id,
             'reviewed_user_id' => $reviewed->id,
@@ -89,7 +88,7 @@ class ReviewResourceTest extends TestCase
         $this->assertTrue($flaggedReview->is_flagged);
         $this->assertEquals('flagged', $flaggedReview->status);
         $this->assertNotNull($flaggedReview->flagged_at);
-        
+
         $this->assertFalse($normalReview->is_flagged);
         $this->assertEquals('active', $normalReview->status);
     }
@@ -99,7 +98,7 @@ class ReviewResourceTest extends TestCase
         $reviewer = User::factory()->create();
         $reviewed = User::factory()->create();
         $moderator = User::factory()->create();
-        
+
         $review = Review::factory()->create([
             'reviewer_user_id' => $reviewer->id,
             'reviewed_user_id' => $reviewed->id,
@@ -124,7 +123,7 @@ class ReviewResourceTest extends TestCase
     {
         $reviewer = User::factory()->create();
         $reviewed = User::factory()->create();
-        
+
         // Test valid ratings
         foreach ([1, 2, 3, 4, 5] as $rating) {
             $review = Review::factory()->create([
@@ -132,7 +131,7 @@ class ReviewResourceTest extends TestCase
                 'reviewed_user_id' => $reviewed->id,
                 'rating' => $rating,
             ]);
-            
+
             $this->assertEquals($rating, $review->rating);
         }
     }
@@ -141,7 +140,7 @@ class ReviewResourceTest extends TestCase
     {
         $reviewer = User::factory()->create(['name' => 'Test Reviewer']);
         $reviewed = User::factory()->create(['name' => 'Test Reviewed']);
-        
+
         $review = Review::factory()->create([
             'reviewer_user_id' => $reviewer->id,
             'reviewed_user_id' => $reviewed->id,
@@ -155,13 +154,13 @@ class ReviewResourceTest extends TestCase
     {
         $reviewer = User::factory()->create();
         $reviewed = User::factory()->create();
-        
+
         $reviews = Review::factory()->count(3)->create([
             'reviewer_user_id' => $reviewer->id,
             'reviewed_user_id' => $reviewed->id,
             'status' => 'active',
         ]);
-        
+
         // Verify all reviews are initially active
         foreach ($reviews as $review) {
             $this->assertDatabaseHas('reviews', [
@@ -169,12 +168,12 @@ class ReviewResourceTest extends TestCase
                 'status' => 'active',
             ]);
         }
-        
+
         // Test bulk moderation by updating all reviews
         foreach ($reviews as $review) {
             $review->update(['status' => 'hidden']);
         }
-        
+
         // Verify all reviews are now hidden
         foreach ($reviews as $review) {
             $this->assertDatabaseHas('reviews', [

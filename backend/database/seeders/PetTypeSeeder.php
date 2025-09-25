@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class PetTypeSeeder extends Seeder
@@ -14,7 +13,7 @@ class PetTypeSeeder extends Seeder
     {
         // Create system pet types with explicit IDs
         // Use firstOrCreate to avoid duplicates on re-seeding
-        
+
         \App\Models\PetType::firstOrCreate(
             ['slug' => 'cat'],
             [

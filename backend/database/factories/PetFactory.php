@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Enums\PetStatus;
 use App\Models\Pet;
 use App\Models\PetType;
 use App\Models\User;
-use App\Enums\PetStatus;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -26,7 +26,7 @@ class PetFactory extends Factory
             'name' => $this->faker->firstName(),
             'breed' => $this->faker->randomElement([
                 'Persian', 'Siamese', 'Maine Coon', 'British Shorthair', 'Ragdoll',
-                'Golden Retriever', 'Labrador', 'German Shepherd', 'Bulldog', 'Poodle'
+                'Golden Retriever', 'Labrador', 'German Shepherd', 'Bulldog', 'Poodle',
             ]),
             'birthday' => $this->faker->dateTimeBetween('-10 years', '-1 year'),
             'location' => $this->faker->city(),
@@ -39,6 +39,7 @@ class PetFactory extends Factory
                 if ($existing) {
                     return $existing->id;
                 }
+
                 return PetType::create([
                     'name' => 'Cat',
                     'slug' => 'cat',
@@ -59,7 +60,7 @@ class PetFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'pet_type_id' => 1, // Cat
             'breed' => $this->faker->randomElement([
-                'Persian', 'Siamese', 'Maine Coon', 'British Shorthair', 'Ragdoll'
+                'Persian', 'Siamese', 'Maine Coon', 'British Shorthair', 'Ragdoll',
             ]),
         ]);
     }
@@ -72,7 +73,7 @@ class PetFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'pet_type_id' => 2, // Dog
             'breed' => $this->faker->randomElement([
-                'Golden Retriever', 'Labrador', 'German Shepherd', 'Bulldog', 'Poodle'
+                'Golden Retriever', 'Labrador', 'German Shepherd', 'Bulldog', 'Poodle',
             ]),
         ]);
     }

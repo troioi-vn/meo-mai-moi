@@ -2,15 +2,14 @@
 
 namespace App\Jobs;
 
-use App\Models\User;
-use App\Models\Notification;
-use App\Models\EmailLog;
-use App\Models\EmailConfiguration;
-use App\Mail\PlacementRequestResponseMail;
-use App\Mail\PlacementRequestAcceptedMail;
+use App\Enums\NotificationType;
 use App\Mail\HelperResponseAcceptedMail;
 use App\Mail\HelperResponseRejectedMail;
-use App\Enums\NotificationType;
+use App\Mail\PlacementRequestAcceptedMail;
+use App\Mail\PlacementRequestResponseMail;
+use App\Models\EmailLog;
+use App\Models\Notification;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -24,6 +23,7 @@ class SendNotificationEmail implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $tries = 3;
+
     public $backoff = [60, 300, 900]; // 1 min, 5 min, 15 min
 
     private ?EmailLog $emailLog = null;
@@ -46,12 +46,13 @@ class SendNotificationEmail implements ShouldQueue
     public function handle(): void
     {
         $notification = Notification::find($this->notificationId);
-        
-        if (!$notification) {
+
+        if (! $notification) {
             Log::error('Notification not found for email job', [
                 'notification_id' => $this->notificationId,
                 'user_id' => $this->user->id,
             ]);
+
             return;
         }
 
@@ -62,32 +63,33 @@ class SendNotificationEmail implements ShouldQueue
                 'user_id' => $this->user->id,
                 'status' => $notification->delivery_status,
             ]);
+
             return;
         }
 
         try {
             // Get the notification type enum
             $notificationType = NotificationType::tryFrom($this->type);
-            
-            if (!$notificationType) {
+
+            if (! $notificationType) {
                 throw new \InvalidArgumentException("Invalid notification type: {$this->type}");
             }
 
             // Create the appropriate mail class
             $mail = $this->createMailClass($notificationType);
-            
-            if (!$mail) {
+
+            if (! $mail) {
                 throw new \InvalidArgumentException("No mail class found for notification type: {$this->type}");
             }
 
             // Validate user email
-            if (empty($this->user->email) || !filter_var($this->user->email, FILTER_VALIDATE_EMAIL)) {
-                throw new \InvalidArgumentException("Invalid user email address: " . ($this->user->email ?? 'empty'));
+            if (empty($this->user->email) || ! filter_var($this->user->email, FILTER_VALIDATE_EMAIL)) {
+                throw new \InvalidArgumentException('Invalid user email address: '.($this->user->email ?? 'empty'));
             }
 
             // Validate email configuration before logging/sending, but allow sending without an active record
             $emailService = app(\App\Services\EmailConfigurationService::class);
-            if (!$emailService->isEmailEnabled()) {
+            if (! $emailService->isEmailEnabled()) {
                 throw new \RuntimeException('Email system is not properly configured');
             }
             $activeConfig = $emailService->getActiveConfiguration();
@@ -106,24 +108,24 @@ class SendNotificationEmail implements ShouldQueue
 
             // Send the email
             Mail::to($this->user->email)->send($mail);
-            
+
             // Mark email as sent in log
             $this->emailLog->markAsSent('Email sent successfully');
-            
+
             // Update notification with delivery timestamp
             $notification->update([
                 'delivered_at' => now(),
                 'failed_at' => null,
                 'failure_reason' => null,
             ]);
-            
+
             Log::info('Email notification sent successfully', [
                 'notification_id' => $this->notificationId,
                 'user_id' => $this->user->id,
                 'user_email' => $this->user->email,
                 'type' => $this->type,
             ]);
-            
+
         } catch (\Exception $e) {
             // Mark email as failed in log if it was created
             if ($this->emailLog) {
@@ -151,7 +153,7 @@ class SendNotificationEmail implements ShouldQueue
      */
     private function createMailClass(NotificationType $notificationType)
     {
-        return match($notificationType) {
+        return match ($notificationType) {
             NotificationType::PLACEMENT_REQUEST_RESPONSE => new PlacementRequestResponseMail($this->user, $notificationType, $this->data),
             NotificationType::PLACEMENT_REQUEST_ACCEPTED => new PlacementRequestAcceptedMail($this->user, $notificationType, $this->data),
             NotificationType::HELPER_RESPONSE_ACCEPTED => new HelperResponseAcceptedMail($this->user, $notificationType, $this->data),
@@ -171,11 +173,11 @@ class SendNotificationEmail implements ShouldQueue
             if ($view && method_exists($view, 'render')) {
                 return $view->render();
             }
-            
+
             // Fallback to a basic representation
-            return 'Email content (notification type: ' . $this->type . ')';
+            return 'Email content (notification type: '.$this->type.')';
         } catch (\Exception $e) {
-            return 'Email body could not be extracted: ' . $e->getMessage();
+            return 'Email body could not be extracted: '.$e->getMessage();
         }
     }
 
@@ -185,7 +187,7 @@ class SendNotificationEmail implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         $notification = Notification::find($this->notificationId);
-        
+
         if ($notification) {
             $notification->update([
                 'failed_at' => now(),
@@ -196,7 +198,7 @@ class SendNotificationEmail implements ShouldQueue
 
         // Mark email log as failed if it exists
         if ($this->emailLog && $this->emailLog->status !== 'failed') {
-            $this->emailLog->markAsFailed('Job failed permanently after ' . $this->tries . ' attempts: ' . $exception->getMessage());
+            $this->emailLog->markAsFailed('Job failed permanently after '.$this->tries.' attempts: '.$exception->getMessage());
         }
 
         Log::error('Email notification job failed permanently', [
@@ -221,16 +223,16 @@ class SendNotificationEmail implements ShouldQueue
         try {
             // Check if user has in-app notifications enabled for this type
             $preferences = \App\Models\NotificationPreference::getPreference($this->user, $this->type);
-            
+
             // Only create fallback if user doesn't already have in-app enabled
             // (to avoid duplicate notifications)
-            if (!$preferences->in_app_enabled) {
+            if (! $preferences->in_app_enabled) {
                 // Create fallback in-app notification
                 $fallbackData = array_merge($this->data, [
                     'is_fallback' => true,
                     'original_channel' => 'email',
-                    'fallback_reason' => 'Email delivery failed after ' . $this->tries . ' attempts',
-                    'original_error' => $this->truncateFailureReason($exception->getMessage())
+                    'fallback_reason' => 'Email delivery failed after '.$this->tries.' attempts',
+                    'original_error' => $this->truncateFailureReason($exception->getMessage()),
                 ]);
 
                 $fallbackNotification = \App\Models\Notification::create([
@@ -273,6 +275,6 @@ class SendNotificationEmail implements ShouldQueue
     private function truncateFailureReason(string $reason): string
     {
         // Assuming failure_reason field has a reasonable length limit (e.g., 500 chars)
-        return strlen($reason) > 500 ? substr($reason, 0, 497) . '...' : $reason;
+        return strlen($reason) > 500 ? substr($reason, 0, 497).'...' : $reason;
     }
 }

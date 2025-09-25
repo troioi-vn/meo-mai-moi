@@ -2,22 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\DeleteAccountRequest;
+use App\Http\Requests\UpdatePasswordRequest;
+use App\Services\FileUploadService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Hash;
-use OpenApi\Annotations as OA;
-
-use App\Http\Requests\UpdatePasswordRequest;
-use App\Http\Requests\DeleteAccountRequest;
-use App\Services\FileUploadService;
 use Illuminate\Support\Facades\Storage;
+use OpenApi\Annotations as OA;
 
 /**
  * @OA\Schema(
  *     schema="User",
  *     title="User",
  *     description="User model",
+ *
  *     @OA\Property(
  *         property="id",
  *         type="integer",
@@ -65,13 +64,17 @@ class UserProfileController extends Controller
      *     summary="Get authenticated user's profile",
      *     tags={"User Profile"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Successful operation",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="data", ref="#/components/schemas/User")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=401,
      *         description="Unauthenticated"
@@ -89,27 +92,36 @@ class UserProfileController extends Controller
      *     summary="Update authenticated user's profile",
      *     tags={"User Profile"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\JsonContent(
      *             required={"name", "email"},
+     *
      *             @OA\Property(property="name", type="string", example="John Doe"),
      *             @OA\Property(property="email", type="string", format="email", example="john.doe@example.com")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Successful operation",
+     *
      *         @OA\JsonContent(ref="#/components/schemas/User")
      *     ),
+     *
      *     @OA\Response(
      *         response=422,
      *         description="Validation error",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Validation Error"),
      *             @OA\Property(property="errors", type="object", example={"name": {"The name field is required."}})
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=401,
      *         description="Unauthenticated"
@@ -120,7 +132,7 @@ class UserProfileController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $request->user()->id,
+            'email' => 'required|string|email|max:255|unique:users,email,'.$request->user()->id,
         ]);
 
         $user = $request->user();
@@ -136,30 +148,40 @@ class UserProfileController extends Controller
      *     summary="Update authenticated user's password",
      *     tags={"User Profile"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\JsonContent(
      *             required={"current_password", "new_password", "new_password_confirmation"},
+     *
      *             @OA\Property(property="current_password", type="string", format="password", example="old_secret_password"),
      *             @OA\Property(property="new_password", type="string", format="password", example="new_secret_password"),
      *             @OA\Property(property="new_password_confirmation", type="string", format="password", example="new_secret_password")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Password updated successfully",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Password updated successfully.")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=422,
      *         description="Validation error",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Validation Error"),
      *             @OA\Property(property="errors", type="object", example={"current_password": {"The provided password does not match your current password."}})
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=401,
      *         description="Unauthenticated"
@@ -181,28 +203,38 @@ class UserProfileController extends Controller
      *     summary="Delete authenticated user's account",
      *     tags={"User Profile"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\JsonContent(
      *             required={"password"},
+     *
      *             @OA\Property(property="password", type="string", format="password", example="your_current_password")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Account deleted successfully",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Account deleted successfully.")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=422,
      *         description="Validation error",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Validation Error"),
      *             @OA\Property(property="errors", type="object", example={"password": {"The provided password does not match your current password."}})
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=401,
      *         description="Unauthenticated"
@@ -224,11 +256,15 @@ class UserProfileController extends Controller
      *     summary="Upload or update authenticated user's avatar",
      *     tags={"User Profile"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
+     *
      *             @OA\Schema(
+     *
      *                 @OA\Property(
      *                     property="avatar",
      *                     type="string",
@@ -238,22 +274,29 @@ class UserProfileController extends Controller
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Avatar uploaded successfully",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Avatar uploaded successfully."),
      *             @OA\Property(property="avatar_url", type="string", example="http://localhost:8000/storage/users/avatars/user_1_1678886400.png")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=422,
      *         description="Validation error",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Validation Error"),
      *             @OA\Property(property="errors", type="object", example={"avatar": {"The avatar must be an image."}})
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=401,
      *         description="Unauthenticated"
@@ -281,13 +324,17 @@ class UserProfileController extends Controller
      *     summary="Delete authenticated user's avatar",
      *     tags={"User Profile"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Avatar deleted successfully",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Avatar deleted successfully.")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=401,
      *         description="Unauthenticated"
@@ -302,7 +349,7 @@ class UserProfileController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->avatar_url) {
+        if (! $user->avatar_url) {
             return $this->sendError('No avatar to delete.', 404);
         }
 

@@ -2,8 +2,6 @@
 
 namespace App\Mail;
 
-use App\Enums\NotificationType;
-
 class HelperResponseRejectedMail extends NotificationMail
 {
     /**

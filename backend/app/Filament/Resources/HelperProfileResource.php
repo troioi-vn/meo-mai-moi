@@ -5,13 +5,12 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\HelperProfileResource\Pages;
 use App\Filament\Resources\HelperProfileResource\RelationManagers;
 use App\Models\HelperProfile;
-use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -135,6 +134,7 @@ class HelperProfileResource extends Resource
                         if ($record->can_adopt) {
                             $services[] = 'Adopt';
                         }
+
                         return implode(', ', $services) ?: 'None';
                     })
                     ->badge()
@@ -149,8 +149,6 @@ class HelperProfileResource extends Resource
                     ->label('City')
                     ->searchable()
                     ->sortable(),
-
-
 
                 Tables\Columns\TextColumn::make('approval_status')
                     ->label('Status')
@@ -208,13 +206,12 @@ class HelperProfileResource extends Resource
                     ->searchable()
                     ->preload(),
 
-
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
-                
+
                 Tables\Actions\Action::make('approve')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
@@ -225,13 +222,13 @@ class HelperProfileResource extends Resource
                     ->modalDescription('Are you sure you want to approve this helper profile?')
                     ->action(function (HelperProfile $record): void {
                         $record->update(['approval_status' => 'approved']);
-                        
+
                         Notification::make()
                             ->title('Helper profile approved successfully')
                             ->success()
                             ->send();
                     }),
-                
+
                 Tables\Actions\Action::make('reject')
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
@@ -242,13 +239,13 @@ class HelperProfileResource extends Resource
                     ->modalDescription('Are you sure you want to reject this helper profile?')
                     ->action(function (HelperProfile $record): void {
                         $record->update(['approval_status' => 'rejected']);
-                        
+
                         Notification::make()
                             ->title('Helper profile rejected successfully')
                             ->success()
                             ->send();
                     }),
-                
+
                 Tables\Actions\Action::make('suspend')
                     ->label('Suspend')
                     ->icon('heroicon-o-pause-circle')
@@ -259,13 +256,13 @@ class HelperProfileResource extends Resource
                     ->modalDescription('Are you sure you want to suspend this helper profile?')
                     ->action(function (HelperProfile $record): void {
                         $record->update(['approval_status' => 'suspended']);
-                        
+
                         Notification::make()
                             ->title('Helper profile suspended successfully')
                             ->success()
                             ->send();
                     }),
-                
+
                 Tables\Actions\Action::make('reactivate')
                     ->label('Reactivate')
                     ->icon('heroicon-o-play-circle')
@@ -276,7 +273,7 @@ class HelperProfileResource extends Resource
                     ->modalDescription('Are you sure you want to reactivate this helper profile?')
                     ->action(function (HelperProfile $record): void {
                         $record->update(['approval_status' => 'approved']);
-                        
+
                         Notification::make()
                             ->title('Helper profile reactivated successfully')
                             ->success()
@@ -286,7 +283,7 @@ class HelperProfileResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    
+
                     Tables\Actions\BulkAction::make('approve')
                         ->label('Approve Selected')
                         ->icon('heroicon-o-check-circle')
@@ -296,16 +293,16 @@ class HelperProfileResource extends Resource
                         ->modalDescription('Are you sure you want to approve the selected helper profiles?')
                         ->action(function (Collection $records): void {
                             $count = $records->where('approval_status', 'pending')->count();
-                            
+
                             $records->where('approval_status', 'pending')
                                 ->each(fn (HelperProfile $record) => $record->update(['approval_status' => 'approved']));
-                            
+
                             Notification::make()
                                 ->title("{$count} helper profiles approved successfully")
                                 ->success()
                                 ->send();
                         }),
-                    
+
                     Tables\Actions\BulkAction::make('reject')
                         ->label('Reject Selected')
                         ->icon('heroicon-o-x-circle')
@@ -315,16 +312,16 @@ class HelperProfileResource extends Resource
                         ->modalDescription('Are you sure you want to reject the selected helper profiles?')
                         ->action(function (Collection $records): void {
                             $count = $records->where('approval_status', 'pending')->count();
-                            
+
                             $records->where('approval_status', 'pending')
                                 ->each(fn (HelperProfile $record) => $record->update(['approval_status' => 'rejected']));
-                            
+
                             Notification::make()
                                 ->title("{$count} helper profiles rejected successfully")
                                 ->success()
                                 ->send();
                         }),
-                    
+
                     Tables\Actions\BulkAction::make('suspend')
                         ->label('Suspend Selected')
                         ->icon('heroicon-o-pause-circle')
@@ -334,10 +331,10 @@ class HelperProfileResource extends Resource
                         ->modalDescription('Are you sure you want to suspend the selected helper profiles?')
                         ->action(function (Collection $records): void {
                             $count = $records->where('approval_status', 'approved')->count();
-                            
+
                             $records->where('approval_status', 'approved')
                                 ->each(fn (HelperProfile $record) => $record->update(['approval_status' => 'suspended']));
-                            
+
                             Notification::make()
                                 ->title("{$count} helper profiles suspended successfully")
                                 ->success()

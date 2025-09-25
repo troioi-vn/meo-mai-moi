@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Pet;
 use App\Models\OwnershipHistory;
+use App\Models\Pet;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

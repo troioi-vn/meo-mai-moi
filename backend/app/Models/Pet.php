@@ -48,8 +48,10 @@ class Pet extends Model
     {
         if ($this->status !== PetStatus::DELETED) {
             $this->status = PetStatus::DELETED;
+
             return $this->save();
         }
+
         return true;
     }
 
@@ -91,7 +93,7 @@ class Pet extends Model
     public function getPhotoUrlAttribute()
     {
         if ($this->photo) {
-            return url('storage/' . $this->photo->path);
+            return url('storage/'.$this->photo->path);
         }
 
         return null;

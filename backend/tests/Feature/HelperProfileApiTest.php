@@ -5,8 +5,8 @@ namespace Tests\Feature;
 use App\Models\HelperProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class HelperProfileApiTest extends TestCase
 {

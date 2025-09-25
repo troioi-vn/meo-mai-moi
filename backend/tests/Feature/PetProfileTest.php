@@ -5,11 +5,11 @@ namespace Tests\Feature;
 use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Models\User;
-use Spatie\Permission\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Spatie\Permission\Models\Role;
+use Tests\TestCase;
 
 class PetProfileTest extends TestCase
 {
@@ -116,7 +116,7 @@ class PetProfileTest extends TestCase
     {
         $pet = Pet::factory()->create(['name' => 'Test Pet']);
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer invalid-token-12345'
+            'Authorization' => 'Bearer invalid-token-12345',
         ])->getJson("/api/pets/{$pet->id}");
         $response->assertStatus(403);
     }
@@ -126,7 +126,7 @@ class PetProfileTest extends TestCase
     {
         $pet = Pet::factory()->create(['name' => 'Test Pet']);
         $response = $this->withHeaders([
-            'Authorization' => 'InvalidFormat token123'
+            'Authorization' => 'InvalidFormat token123',
         ])->getJson("/api/pets/{$pet->id}");
         $response->assertStatus(403);
     }

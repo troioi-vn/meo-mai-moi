@@ -18,7 +18,7 @@ class EmailConfigurationServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new EmailConfigurationService();
+        $this->service = new EmailConfigurationService;
     }
 
     public function test_get_active_configuration_returns_null_when_no_active_config()
@@ -39,8 +39,8 @@ class EmailConfigurationServiceTest extends TestCase
                 'password' => 'password',
                 'encryption' => 'tls',
                 'from_address' => 'noreply@example.com',
-                'from_name' => 'Test App'
-            ]
+                'from_name' => 'Test App',
+            ],
         ]);
 
         $result = $this->service->getActiveConfiguration();
@@ -55,7 +55,7 @@ class EmailConfigurationServiceTest extends TestCase
 
         // Missing required fields
         $this->service->setActiveConfiguration('smtp', [
-            'host' => 'smtp.example.com'
+            'host' => 'smtp.example.com',
             // Missing other required fields
         ]);
     }
@@ -71,7 +71,7 @@ class EmailConfigurationServiceTest extends TestCase
             'password' => 'password',
             'encryption' => 'tls',
             'from_address' => 'noreply@example.com',
-            'from_name' => 'Test App'
+            'from_name' => 'Test App',
         ];
 
         $result = $this->service->setActiveConfiguration('smtp', $config);
@@ -85,7 +85,7 @@ class EmailConfigurationServiceTest extends TestCase
         $this->assertDatabaseHas('email_configurations', [
             'id' => $result->id,
             'provider' => 'smtp',
-            'is_active' => true
+            'is_active' => true,
         ]);
     }
 
@@ -100,8 +100,8 @@ class EmailConfigurationServiceTest extends TestCase
             'config' => [
                 'domain' => 'mg.example.com',
                 'api_key' => 'key-test',
-                'from_address' => 'old@example.com'
-            ]
+                'from_address' => 'old@example.com',
+            ],
         ]);
 
         $newConfigData = [
@@ -111,7 +111,7 @@ class EmailConfigurationServiceTest extends TestCase
             'password' => 'password',
             'encryption' => 'tls',
             'from_address' => 'new@example.com',
-            'from_name' => 'Test App'
+            'from_name' => 'Test App',
         ];
 
         $newConfig = $this->service->setActiveConfiguration('smtp', $newConfigData);
@@ -127,7 +127,7 @@ class EmailConfigurationServiceTest extends TestCase
     public function test_test_configuration_returns_false_for_invalid_config()
     {
         $result = $this->service->testConfiguration('smtp', [
-            'host' => 'smtp.example.com'
+            'host' => 'smtp.example.com',
             // Missing required fields
         ]);
 
@@ -148,8 +148,8 @@ class EmailConfigurationServiceTest extends TestCase
                 'password' => 'password',
                 'encryption' => 'tls',
                 'from_address' => 'noreply@example.com',
-                'from_name' => 'Test App'
-            ]
+                'from_name' => 'Test App',
+            ],
         ]);
 
         $result = $this->service->testConfiguration();
@@ -171,8 +171,8 @@ class EmailConfigurationServiceTest extends TestCase
                 'password' => 'password',
                 'encryption' => 'tls',
                 'from_address' => 'noreply@example.com',
-                'from_name' => 'Test App'
-            ]
+                'from_name' => 'Test App',
+            ],
         ]);
 
         $this->service->updateMailConfig();
@@ -202,8 +202,8 @@ class EmailConfigurationServiceTest extends TestCase
                 'username' => 'test@example.com',
                 'password' => 'password',
                 'encryption' => 'tls',
-                'from_address' => 'noreply@example.com'
-            ]
+                'from_address' => 'noreply@example.com',
+            ],
         ]);
 
         $this->service->deactivateConfiguration();
@@ -217,13 +217,13 @@ class EmailConfigurationServiceTest extends TestCase
         EmailConfiguration::create([
             'provider' => 'smtp',
             'is_active' => true,
-            'config' => ['host' => 'smtp1.example.com', 'port' => 587, 'username' => 'test1@example.com', 'password' => 'password', 'encryption' => 'tls', 'from_address' => 'noreply1@example.com']
+            'config' => ['host' => 'smtp1.example.com', 'port' => 587, 'username' => 'test1@example.com', 'password' => 'password', 'encryption' => 'tls', 'from_address' => 'noreply1@example.com'],
         ]);
 
         EmailConfiguration::create([
             'provider' => 'mailgun',
             'is_active' => false,
-            'config' => ['domain' => 'mg.example.com', 'api_key' => 'key-test', 'from_address' => 'noreply2@example.com']
+            'config' => ['domain' => 'mg.example.com', 'api_key' => 'key-test', 'from_address' => 'noreply2@example.com'],
         ]);
 
         $configs = $this->service->getAllConfigurations();
@@ -235,14 +235,14 @@ class EmailConfigurationServiceTest extends TestCase
         $config = EmailConfiguration::create([
             'provider' => 'smtp',
             'is_active' => false,
-            'config' => ['host' => 'smtp.example.com', 'port' => 587, 'username' => 'test@example.com', 'password' => 'password', 'encryption' => 'tls', 'from_address' => 'noreply@example.com']
+            'config' => ['host' => 'smtp.example.com', 'port' => 587, 'username' => 'test@example.com', 'password' => 'password', 'encryption' => 'tls', 'from_address' => 'noreply@example.com'],
         ]);
 
         $result = $this->service->deleteConfiguration($config->id);
         $this->assertTrue($result);
 
         $this->assertDatabaseMissing('email_configurations', [
-            'id' => $config->id
+            'id' => $config->id,
         ]);
     }
 
@@ -251,14 +251,14 @@ class EmailConfigurationServiceTest extends TestCase
         $config = EmailConfiguration::create([
             'provider' => 'smtp',
             'is_active' => true,
-            'config' => ['host' => 'smtp.example.com', 'port' => 587, 'username' => 'test@example.com', 'password' => 'password', 'encryption' => 'tls', 'from_address' => 'noreply@example.com']
+            'config' => ['host' => 'smtp.example.com', 'port' => 587, 'username' => 'test@example.com', 'password' => 'password', 'encryption' => 'tls', 'from_address' => 'noreply@example.com'],
         ]);
 
         $result = $this->service->deleteConfiguration($config->id);
         $this->assertTrue($result);
 
         $this->assertDatabaseMissing('email_configurations', [
-            'id' => $config->id
+            'id' => $config->id,
         ]);
     }
 
@@ -279,8 +279,8 @@ class EmailConfigurationServiceTest extends TestCase
                 'username' => 'test@example.com',
                 'password' => 'password',
                 'encryption' => 'tls',
-                'from_address' => 'noreply@example.com'
-            ]
+                'from_address' => 'noreply@example.com',
+            ],
         ]);
 
         $result = $this->service->isEmailEnabled();
@@ -290,13 +290,13 @@ class EmailConfigurationServiceTest extends TestCase
     public function test_get_supported_providers()
     {
         $providers = $this->service->getSupportedProviders();
-        
+
         $this->assertArrayHasKey('smtp', $providers);
         $this->assertArrayHasKey('mailgun', $providers);
-        
+
         $this->assertEquals('SMTP', $providers['smtp']['name']);
         $this->assertEquals('Mailgun', $providers['mailgun']['name']);
-        
+
         $this->assertIsArray($providers['smtp']['required_fields']);
         $this->assertIsArray($providers['mailgun']['required_fields']);
     }

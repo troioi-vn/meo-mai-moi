@@ -2,34 +2,36 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Mail\PlacementRequestResponseMail;
-use App\Mail\PlacementRequestAcceptedMail;
+use App\Enums\NotificationType;
 use App\Mail\HelperResponseAcceptedMail;
 use App\Mail\HelperResponseRejectedMail;
-use App\Models\User;
-use App\Models\Pet;
+use App\Mail\PlacementRequestAcceptedMail;
+use App\Mail\PlacementRequestResponseMail;
 use App\Models\HelperProfile;
+use App\Models\Pet;
 use App\Models\PlacementRequest;
-use App\Enums\NotificationType;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Mail;
+use Tests\TestCase;
 
 class EmailTemplateRenderingTest extends TestCase
 {
     use RefreshDatabase;
 
     protected User $user;
+
     protected Pet $pet;
+
     protected HelperProfile $helperProfile;
+
     protected PlacementRequest $placementRequest;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->user = User::factory()->create();
-    $this->pet = Pet::factory()->create();
+        $this->pet = Pet::factory()->create();
         $this->helperProfile = HelperProfile::factory()->create();
         $this->placementRequest = PlacementRequest::factory()->create([
             'pet_id' => $this->pet->id,
@@ -50,9 +52,9 @@ class EmailTemplateRenderingTest extends TestCase
 
         // This will throw an exception if the template has syntax errors
         $rendered = $mail->render();
-        
+
         $this->assertStringContainsString($this->user->name, $rendered);
-    $this->assertStringContainsString($this->pet->name, $rendered);
+        $this->assertStringContainsString($this->pet->name, $rendered);
         $this->assertStringContainsString('unsubscribe', $rendered);
         $this->assertStringContainsString('View Response', $rendered);
     }
@@ -69,10 +71,10 @@ class EmailTemplateRenderingTest extends TestCase
         );
 
         $rendered = $mail->render();
-        
+
         $this->assertStringContainsString('Congratulations', $rendered);
         $this->assertStringContainsString($this->user->name, $rendered);
-    $this->assertStringContainsString($this->pet->name, $rendered);
+        $this->assertStringContainsString($this->pet->name, $rendered);
         $this->assertStringContainsString('accepted', $rendered);
     }
 
@@ -88,10 +90,10 @@ class EmailTemplateRenderingTest extends TestCase
         );
 
         $rendered = $mail->render();
-        
+
         $this->assertStringContainsString('Wonderful news', $rendered);
         $this->assertStringContainsString($this->user->name, $rendered);
-    $this->assertStringContainsString($this->pet->name, $rendered);
+        $this->assertStringContainsString($this->pet->name, $rendered);
         $this->assertStringContainsString('accepted', $rendered);
     }
 
@@ -106,10 +108,10 @@ class EmailTemplateRenderingTest extends TestCase
         );
 
         $rendered = $mail->render();
-        
+
         $this->assertStringContainsString('Thank you for your interest', $rendered);
         $this->assertStringContainsString($this->user->name, $rendered);
-    $this->assertStringContainsString($this->pet->name, $rendered);
+        $this->assertStringContainsString($this->pet->name, $rendered);
         $this->assertStringContainsString('Browse Other Requests', $rendered);
     }
 
@@ -123,9 +125,9 @@ class EmailTemplateRenderingTest extends TestCase
         );
 
         $rendered = $mail->render();
-        
+
         $this->assertStringContainsString($this->user->name, $rendered);
-    $this->assertStringContainsString('your pet', $rendered); // Fallback text (updated)
+        $this->assertStringContainsString('your pet', $rendered); // Fallback text (updated)
         $this->assertStringContainsString('unsubscribe', $rendered);
     }
 

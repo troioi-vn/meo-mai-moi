@@ -2,26 +2,26 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\Pet;
-use App\Models\HelperProfile;
-use App\Models\PlacementRequest;
-use App\Models\TransferRequest;
-use App\Models\Notification;
-use App\Models\NotificationPreference;
-use App\Models\EmailConfiguration;
-use App\Jobs\SendNotificationEmail;
 use App\Enums\NotificationType;
 use App\Enums\PlacementRequestStatus;
+use App\Jobs\SendNotificationEmail;
+use App\Models\EmailConfiguration;
+use App\Models\HelperProfile;
+use App\Models\Notification;
+use App\Models\NotificationPreference;
+use App\Models\Pet;
+use App\Models\PlacementRequest;
+use App\Models\TransferRequest;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Queue;
+use Tests\TestCase;
 use Tests\Traits\CreatesUsers;
 
 class EmailNotificationDeliveryTest extends TestCase
 {
-    use RefreshDatabase, CreatesUsers;
+    use CreatesUsers, RefreshDatabase;
 
     protected function setUp(): void
     {
@@ -37,8 +37,8 @@ class EmailNotificationDeliveryTest extends TestCase
                 'password' => 'password',
                 'encryption' => 'tls',
                 'from_address' => 'noreply@test.com',
-                'from_name' => 'Test App'
-            ]
+                'from_name' => 'Test App',
+            ],
         ]);
     }
 
@@ -52,7 +52,7 @@ class EmailNotificationDeliveryTest extends TestCase
         $pet = Pet::factory()->create([
             'user_id' => $owner->id,
             'status' => \App\Enums\PetStatus::ACTIVE,
-            'name' => 'Fluffy'
+            'name' => 'Fluffy',
         ]);
 
         $placementRequest = PlacementRequest::factory()->create([
@@ -114,7 +114,7 @@ class EmailNotificationDeliveryTest extends TestCase
         $pet = Pet::factory()->create([
             'user_id' => $owner->id,
             'status' => \App\Enums\PetStatus::ACTIVE,
-            'name' => 'Whiskers'
+            'name' => 'Whiskers',
         ]);
 
         $placementRequest = PlacementRequest::factory()->create([
@@ -168,7 +168,7 @@ class EmailNotificationDeliveryTest extends TestCase
         $pet = Pet::factory()->create([
             'user_id' => $owner->id,
             'status' => \App\Enums\PetStatus::ACTIVE,
-            'name' => 'Mittens'
+            'name' => 'Mittens',
         ]);
 
         $placementRequest = PlacementRequest::factory()->create([
@@ -300,7 +300,10 @@ class EmailNotificationDeliveryTest extends TestCase
             [],
             $notification->id
         );
-        try { $job->handle(); } catch (\Exception $e) {}
+        try {
+            $job->handle();
+        } catch (\Exception $e) {
+        }
         $job->failed(new \Exception('SMTP connection failed'));
 
         $notification->refresh();
@@ -373,5 +376,4 @@ class EmailNotificationDeliveryTest extends TestCase
 
         Queue::assertPushed(SendNotificationEmail::class, 1);
     }
-
 }

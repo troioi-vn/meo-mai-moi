@@ -7,9 +7,7 @@ use Illuminate\Http\JsonResponse;
 trait ApiResponseTrait
 {
     /**
-     * @param mixed $data
-     * @param int $statusCode
-     * @return JsonResponse
+     * @param  mixed  $data
      */
     public function sendSuccess($data, int $statusCode = 200): JsonResponse
     {
@@ -18,11 +16,6 @@ trait ApiResponseTrait
         ], $statusCode);
     }
 
-    /**
-     * @param string $message
-     * @param int $statusCode
-     * @return JsonResponse
-     */
     public function sendError(string $message, int $statusCode = 400): JsonResponse
     {
         return response()->json([
@@ -31,10 +24,7 @@ trait ApiResponseTrait
     }
 
     /**
-     * @param mixed $data
-     * @param string|null $message
-     * @param int $statusCode
-     * @return JsonResponse
+     * @param  mixed  $data
      */
     public function sendSuccessWithMeta($data, ?string $message = null, int $statusCode = 200): JsonResponse
     {

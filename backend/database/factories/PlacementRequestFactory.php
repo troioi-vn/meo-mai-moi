@@ -2,11 +2,11 @@
 
 namespace Database\Factories;
 
-use App\Models\PlacementRequest;
-use App\Models\Pet;
-use App\Models\User;
 use App\Enums\PlacementRequestStatus;
 use App\Enums\PlacementRequestType;
+use App\Models\Pet;
+use App\Models\PlacementRequest;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class PlacementRequestFactory extends Factory

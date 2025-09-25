@@ -4,27 +4,23 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PetTypeResource\Pages;
 use App\Models\PetType;
-use Filament\Forms;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Hidden;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BooleanColumn;
 use Filament\Tables\Columns\BadgeColumn;
-use Filament\Tables\Filters\Filter;
+use Filament\Tables\Columns\BooleanColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
-use Filament\Notifications\Notification;
+use Filament\Tables\Table;
 
 class PetTypeResource extends Resource
 {
@@ -102,6 +98,7 @@ class PetTypeResource extends Resource
                         if (strlen($state) <= 50) {
                             return null;
                         }
+
                         return $state;
                     }),
 
@@ -164,12 +161,13 @@ class PetTypeResource extends Resource
                     ->color(fn ($record) => $record->is_active ? 'danger' : 'success')
                     ->disabled(fn ($record) => $record->slug === 'cat' && $record->is_active) // Cannot deactivate Cat
                     ->requiresConfirmation()
-                    ->modalHeading(fn ($record) => ($record->is_active ? 'Deactivate' : 'Activate') . ' Pet Type')
+                    ->modalHeading(fn ($record) => ($record->is_active ? 'Deactivate' : 'Activate').' Pet Type')
                     ->modalDescription(function ($record) {
                         if ($record->slug === 'cat' && $record->is_active) {
                             return 'Cat pet type cannot be deactivated as it is required by the system.';
                         }
-                        return $record->is_active 
+
+                        return $record->is_active
                             ? 'This will prevent new pets of this type from being created.'
                             : 'This will allow new pets of this type to be created again.';
                     })
@@ -180,13 +178,14 @@ class PetTypeResource extends Resource
                                 ->body('Cat is a system pet type and cannot be deactivated.')
                                 ->danger()
                                 ->send();
+
                             return;
                         }
 
-                        $record->update(['is_active' => !$record->is_active]);
-                        
+                        $record->update(['is_active' => ! $record->is_active]);
+
                         Notification::make()
-                            ->title('Pet type ' . ($record->is_active ? 'activated' : 'deactivated'))
+                            ->title('Pet type '.($record->is_active ? 'activated' : 'deactivated'))
                             ->success()
                             ->send();
                     }),
@@ -203,6 +202,7 @@ class PetTypeResource extends Resource
                                     ->body('System pet types (Cat, Dog) cannot be deleted.')
                                     ->danger()
                                     ->send();
+
                                 return false; // Cancel the action
                             }
 
@@ -214,6 +214,7 @@ class PetTypeResource extends Resource
                                     ->body('Pet types that have pets associated with them cannot be deleted.')
                                     ->danger()
                                     ->send();
+
                                 return false; // Cancel the action
                             }
                         }),
@@ -247,6 +248,6 @@ class PetTypeResource extends Resource
     public static function canDelete($record): bool
     {
         // Cannot delete system types or types with pets
-        return !$record->is_system && $record->pets()->count() === 0;
+        return ! $record->is_system && $record->pets()->count() === 0;
     }
 }

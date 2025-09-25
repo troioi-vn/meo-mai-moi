@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class NotificationPreference extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = [
         'user_id',
         'notification_type',
@@ -53,15 +53,15 @@ class NotificationPreference extends Model
     public static function updatePreference(User $user, string $type, ?bool $email = null, ?bool $inApp = null): void
     {
         $preference = self::getPreference($user, $type);
-        
+
         if ($email !== null) {
             $preference->email_enabled = $email;
         }
-        
+
         if ($inApp !== null) {
             $preference->in_app_enabled = $inApp;
         }
-        
+
         $preference->save();
     }
 

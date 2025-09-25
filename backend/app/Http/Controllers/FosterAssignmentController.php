@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\NotificationType;
 use App\Models\FosterAssignment;
+use App\Services\NotificationService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use OpenApi\Annotations as OA;
-use App\Services\NotificationService;
-use App\Enums\NotificationType;
 
 class FosterAssignmentController extends Controller
 {
@@ -26,13 +26,16 @@ class FosterAssignmentController extends Controller
      *     summary="Complete a foster assignment",
      *     tags={"Foster Assignments"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(
      *         name="assignment",
      *         in="path",
      *         required=true,
      *         description="ID of the foster assignment",
+     *
      *         @OA\Schema(type="integer")
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Foster assignment completed successfully"
@@ -69,8 +72,8 @@ class FosterAssignmentController extends Controller
                     $assignment->ownerUser,
                     NotificationType::FOSTER_ASSIGNMENT_COMPLETED->value,
                     [
-                        'message' => 'Foster assignment for ' . $pet->name . ' has been completed.',
-                        'link' => '/pets/' . $pet->id,
+                        'message' => 'Foster assignment for '.$pet->name.' has been completed.',
+                        'link' => '/pets/'.$pet->id,
                         'pet_name' => $pet->name,
                         'pet_id' => $pet->id,
                     ]
@@ -81,8 +84,8 @@ class FosterAssignmentController extends Controller
                     $assignment->fosterUser,
                     NotificationType::FOSTER_ASSIGNMENT_COMPLETED->value,
                     [
-                        'message' => 'Your foster assignment for ' . $pet->name . ' has been completed.',
-                        'link' => '/pets/' . $pet->id,
+                        'message' => 'Your foster assignment for '.$pet->name.' has been completed.',
+                        'link' => '/pets/'.$pet->id,
                         'pet_name' => $pet->name,
                         'pet_id' => $pet->id,
                     ]
@@ -101,19 +104,25 @@ class FosterAssignmentController extends Controller
      *     summary="Cancel a foster assignment (early return)",
      *     tags={"Foster Assignments"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(
      *         name="assignment",
      *         in="path",
      *         required=true,
      *         description="ID of the foster assignment",
+     *
      *         @OA\Schema(type="integer")
      *     ),
+     *
      *     @OA\RequestBody(
      *         required=false,
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="reason", type="string", example="Emergency situation")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Foster assignment canceled successfully"
@@ -155,8 +164,8 @@ class FosterAssignmentController extends Controller
                     $assignment->ownerUser,
                     NotificationType::FOSTER_ASSIGNMENT_CANCELED->value,
                     [
-                        'message' => 'Foster assignment for ' . $pet->name . ' has been canceled.',
-                        'link' => '/pets/' . $pet->id,
+                        'message' => 'Foster assignment for '.$pet->name.' has been canceled.',
+                        'link' => '/pets/'.$pet->id,
                         'pet_name' => $pet->name,
                         'pet_id' => $pet->id,
                     ]
@@ -167,8 +176,8 @@ class FosterAssignmentController extends Controller
                     $assignment->fosterUser,
                     NotificationType::FOSTER_ASSIGNMENT_CANCELED->value,
                     [
-                        'message' => 'Your foster assignment for ' . $pet->name . ' has been canceled.',
-                        'link' => '/pets/' . $pet->id,
+                        'message' => 'Your foster assignment for '.$pet->name.' has been canceled.',
+                        'link' => '/pets/'.$pet->id,
                         'pet_name' => $pet->name,
                         'pet_id' => $pet->id,
                     ]
@@ -187,20 +196,26 @@ class FosterAssignmentController extends Controller
      *     summary="Extend the end date of a foster assignment",
      *     tags={"Foster Assignments"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(
      *         name="assignment",
      *         in="path",
      *         required=true,
      *         description="ID of the foster assignment",
+     *
      *         @OA\Schema(type="integer")
      *     ),
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\JsonContent(
      *             required={"expected_end_date"},
+     *
      *             @OA\Property(property="expected_end_date", type="string", format="date", example="2024-12-31")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Foster assignment extended successfully"

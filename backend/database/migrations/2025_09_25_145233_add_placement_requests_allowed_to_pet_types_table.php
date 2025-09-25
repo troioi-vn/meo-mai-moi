@@ -9,7 +9,7 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-public function up(): void
+    public function up(): void
     {
         Schema::table('pet_types', function (Blueprint $table) {
             $table->boolean('placement_requests_allowed')->default(false);

@@ -7,16 +7,17 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
-use Tests\TestCase;
+use Intervention\Image\ImageManager;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class PetPhotoManagementTest extends TestCase
 {
     use RefreshDatabase;
 
     private User $owner;
+
     private Pet $pet;
 
     protected function setUp(): void
@@ -24,7 +25,7 @@ class PetPhotoManagementTest extends TestCase
         parent::setUp();
         Storage::fake('public');
 
-        if (!extension_loaded('gd')) {
+        if (! extension_loaded('gd')) {
             $this->markTestSkipped('The GD extension is not available.');
         }
 
@@ -37,7 +38,7 @@ class PetPhotoManagementTest extends TestCase
     {
         $this->actingAs($this->owner);
         $file = UploadedFile::fake()->image('photo1.jpg', 2000, 1500);
-        $response = $this->postJson('/api/pets/' . $this->pet->id . '/photos', ['photo' => $file]);
+        $response = $this->postJson('/api/pets/'.$this->pet->id.'/photos', ['photo' => $file]);
 
         $response->assertStatus(200)
             ->assertJsonStructure(['data' => ['id', 'name', 'photo']]);
@@ -49,7 +50,7 @@ class PetPhotoManagementTest extends TestCase
         $path = $response->json('data.photo.path');
         Storage::disk('public')->assertExists($path);
 
-        $image = (new ImageManager(new Driver()))->read(Storage::disk('public')->get($path));
+        $image = (new ImageManager(new Driver))->read(Storage::disk('public')->get($path));
         $this->assertEquals(1200, $image->width());
         $this->assertEquals(675, $image->height());
     }
@@ -59,14 +60,14 @@ class PetPhotoManagementTest extends TestCase
     {
         $this->actingAs($this->owner);
         $oldFile = UploadedFile::fake()->image('old_photo.jpg');
-        $response = $this->postJson('/api/pets/' . $this->pet->id . '/photos', ['photo' => $oldFile]);
+        $response = $this->postJson('/api/pets/'.$this->pet->id.'/photos', ['photo' => $oldFile]);
         $oldPath = $response->json('data.photo.path');
 
         $this->assertCount(1, $this->pet->photos);
         Storage::disk('public')->assertExists($oldPath);
 
         $newFile = UploadedFile::fake()->image('new_photo.jpg');
-        $response = $this->postJson('/api/pets/' . $this->pet->id . '/photos', ['photo' => $newFile]);
+        $response = $this->postJson('/api/pets/'.$this->pet->id.'/photos', ['photo' => $newFile]);
         $newPath = $response->json('data.photo.path');
 
         $this->pet->refresh();
@@ -83,7 +84,7 @@ class PetPhotoManagementTest extends TestCase
         $nonOwner = User::factory()->create();
         $this->actingAs($nonOwner);
         $file = UploadedFile::fake()->image('photo.jpg');
-        $response = $this->postJson('/api/pets/' . $this->pet->id . '/photos', ['photo' => $file]);
+        $response = $this->postJson('/api/pets/'.$this->pet->id.'/photos', ['photo' => $file]);
         $response->assertStatus(403);
         $this->assertDatabaseMissing('pet_photos', ['pet_id' => $this->pet->id]);
     }
@@ -92,7 +93,7 @@ class PetPhotoManagementTest extends TestCase
     public function unauthenticated_user_cannot_upload_a_photo(): void
     {
         $file = UploadedFile::fake()->image('photo.jpg');
-        $response = $this->postJson('/api/pets/' . $this->pet->id . '/photos', ['photo' => $file]);
+        $response = $this->postJson('/api/pets/'.$this->pet->id.'/photos', ['photo' => $file]);
         $response->assertStatus(401);
     }
 
@@ -101,7 +102,7 @@ class PetPhotoManagementTest extends TestCase
     {
         $this->actingAs($this->owner);
         $file = UploadedFile::fake()->create('document.pdf', 100, 'application/pdf');
-        $response = $this->postJson('/api/pets/' . $this->pet->id . '/photos', ['photo' => $file]);
+        $response = $this->postJson('/api/pets/'.$this->pet->id.'/photos', ['photo' => $file]);
         $response->assertStatus(422)->assertJsonValidationErrors('photo');
     }
 
@@ -110,12 +111,12 @@ class PetPhotoManagementTest extends TestCase
     {
         $this->actingAs($this->owner);
         $file = UploadedFile::fake()->image('photo.jpg');
-        $response = $this->postJson('/api/pets/' . $this->pet->id . '/photos', ['photo' => $file]);
+        $response = $this->postJson('/api/pets/'.$this->pet->id.'/photos', ['photo' => $file]);
         $path = $response->json('data.photo.path');
         $photo = $this->pet->photo;
         Storage::disk('public')->assertExists($path);
 
-        $response = $this->deleteJson('/api/pets/' . $this->pet->id . '/photos/' . $photo->id);
+        $response = $this->deleteJson('/api/pets/'.$this->pet->id.'/photos/'.$photo->id);
         $response->assertStatus(204);
         $this->assertDatabaseMissing('pet_photos', ['id' => $photo->id]);
         Storage::disk('public')->assertMissing($path);
@@ -126,12 +127,12 @@ class PetPhotoManagementTest extends TestCase
     {
         $this->actingAs($this->owner);
         $file = UploadedFile::fake()->image('photo.jpg');
-        $this->postJson('/api/pets/' . $this->pet->id . '/photos', ['photo' => $file]);
+        $this->postJson('/api/pets/'.$this->pet->id.'/photos', ['photo' => $file]);
         $photo = $this->pet->photo;
 
         $nonOwner = User::factory()->create();
         $this->actingAs($nonOwner);
-        $response = $this->deleteJson('/api/pets/' . $this->pet->id . '/photos/' . $photo->id);
+        $response = $this->deleteJson('/api/pets/'.$this->pet->id.'/photos/'.$photo->id);
         $response->assertStatus(403);
         $this->assertDatabaseHas('pet_photos', ['id' => $photo->id]);
     }

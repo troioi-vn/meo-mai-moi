@@ -7,10 +7,10 @@ use App\Models\EmailConfiguration;
 use App\Services\EmailConfigurationService;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -231,6 +231,7 @@ class EmailConfigurationResource extends Resource
                         if (strlen($state) <= 50) {
                             return null;
                         }
+
                         return $state;
                     })
                     ->placeholder('No description')
@@ -277,9 +278,8 @@ class EmailConfigurationResource extends Resource
 
                 Tables\Filters\Filter::make('valid_only')
                     ->label('Valid Configurations Only')
-                    ->query(fn (Builder $query): Builder => 
-                        $query->get()->filter(fn (EmailConfiguration $config) => $config->isValid())
-                            ->pluck('id')->pipe(fn ($ids) => $query->whereIn('id', $ids))
+                    ->query(fn (Builder $query): Builder => $query->get()->filter(fn (EmailConfiguration $config) => $config->isValid())
+                        ->pluck('id')->pipe(fn ($ids) => $query->whereIn('id', $ids))
                     ),
             ])
             ->actions([
@@ -289,24 +289,24 @@ class EmailConfigurationResource extends Resource
                     ->color('info')
                     ->action(function (EmailConfiguration $record): void {
                         $service = app(EmailConfigurationService::class);
-                        
+
                         try {
                             $testResult = $service->testConfigurationWithDetails($record->provider, $record->config);
-                            
+
                             if ($testResult['success']) {
                                 Notification::make()
                                     ->title('Connection Test Successful')
-                                    ->body('Email configuration is working correctly. A test email was sent to ' . ($record->config['from_address'] ?? 'the configured address') . '.')
+                                    ->body('Email configuration is working correctly. A test email was sent to '.($record->config['from_address'] ?? 'the configured address').'.')
                                     ->success()
                                     ->send();
                             } else {
                                 $errorMessage = $testResult['error'] ?? 'Unknown error occurred';
                                 $errorType = $testResult['error_type'] ?? 'unknown';
-                                
+
                                 $body = "Test failed: {$errorMessage}";
-                                
+
                                 // Add helpful hints based on error type
-                                $hints = match($errorType) {
+                                $hints = match ($errorType) {
                                     'connection_failed' => 'Check your host, port, and network connectivity.',
                                     'authentication_failed' => 'Verify your username and password are correct.',
                                     'ssl_error' => 'Check your encryption settings and server certificates.',
@@ -315,9 +315,9 @@ class EmailConfigurationResource extends Resource
                                     'validation_failed' => 'Please review and correct the configuration fields.',
                                     default => 'Please review your configuration settings.'
                                 };
-                                
+
                                 $body .= "\n\nSuggestion: {$hints}";
-                                
+
                                 Notification::make()
                                     ->title('Connection Test Failed')
                                     ->body($body)
@@ -327,9 +327,9 @@ class EmailConfigurationResource extends Resource
                         } catch (\App\Exceptions\EmailConfigurationException $e) {
                             $body = $e->getMessage();
                             if ($e->hasValidationErrors()) {
-                                $body .= "\n\nValidation Errors:\n• " . implode("\n• ", $e->getValidationErrors());
+                                $body .= "\n\nValidation Errors:\n• ".implode("\n• ", $e->getValidationErrors());
                             }
-                            
+
                             Notification::make()
                                 ->title('Configuration Error')
                                 ->body($body)
@@ -338,7 +338,7 @@ class EmailConfigurationResource extends Resource
                         } catch (\Exception $e) {
                             Notification::make()
                                 ->title('Connection Test Error')
-                                ->body('Unexpected error: ' . $e->getMessage())
+                                ->body('Unexpected error: '.$e->getMessage())
                                 ->danger()
                                 ->send();
                         }
@@ -351,38 +351,40 @@ class EmailConfigurationResource extends Resource
                     ->label('Activate')
                     ->icon('heroicon-o-power')
                     ->color('success')
-                    ->visible(fn (EmailConfiguration $record): bool => !$record->is_active && $record->isValid())
+                    ->visible(fn (EmailConfiguration $record): bool => ! $record->is_active && $record->isValid())
                     ->action(function (EmailConfiguration $record): void {
                         try {
                             // Validate configuration before activation
                             $validationErrors = $record->validateConfig();
-                            if (!empty($validationErrors)) {
+                            if (! empty($validationErrors)) {
                                 Notification::make()
                                     ->title('Activation Failed')
-                                    ->body('Configuration has validation errors: ' . implode(', ', $validationErrors))
+                                    ->body('Configuration has validation errors: '.implode(', ', $validationErrors))
                                     ->danger()
                                     ->send();
+
                                 return;
                             }
 
                             // Test configuration before activation
                             $service = app(EmailConfigurationService::class);
                             $testResult = $service->testConfigurationWithDetails($record->provider, $record->config);
-                            
-                            if (!$testResult['success']) {
+
+                            if (! $testResult['success']) {
                                 Notification::make()
                                     ->title('Activation Failed')
-                                    ->body('Configuration test failed: ' . ($testResult['error'] ?? 'Unknown error'))
+                                    ->body('Configuration test failed: '.($testResult['error'] ?? 'Unknown error'))
                                     ->danger()
                                     ->send();
+
                                 return;
                             }
 
                             $record->activate();
-                            
+
                             // Update mail configuration
                             $service->updateMailConfig();
-                            
+
                             Notification::make()
                                 ->title('Configuration Activated')
                                 ->body('Email configuration has been activated and tested successfully. Email notifications are now enabled.')
@@ -392,9 +394,9 @@ class EmailConfigurationResource extends Resource
                         } catch (\App\Exceptions\EmailConfigurationException $e) {
                             $body = $e->getMessage();
                             if ($e->hasValidationErrors()) {
-                                $body .= "\n\nValidation Errors:\n• " . implode("\n• ", $e->getValidationErrors());
+                                $body .= "\n\nValidation Errors:\n• ".implode("\n• ", $e->getValidationErrors());
                             }
-                            
+
                             Notification::make()
                                 ->title('Activation Failed')
                                 ->body($body)
@@ -403,7 +405,7 @@ class EmailConfigurationResource extends Resource
                         } catch (\Exception $e) {
                             Notification::make()
                                 ->title('Activation Failed')
-                                ->body('Unexpected error: ' . $e->getMessage())
+                                ->body('Unexpected error: '.$e->getMessage())
                                 ->danger()
                                 ->send();
                         }
@@ -420,7 +422,7 @@ class EmailConfigurationResource extends Resource
                     ->action(function (EmailConfiguration $record): void {
                         try {
                             $record->update(['is_active' => false]);
-                            
+
                             Notification::make()
                                 ->title('Configuration Deactivated')
                                 ->body('Email configuration has been deactivated.')
@@ -429,7 +431,7 @@ class EmailConfigurationResource extends Resource
                         } catch (\Exception $e) {
                             Notification::make()
                                 ->title('Deactivation Failed')
-                                ->body('Failed to deactivate configuration: ' . $e->getMessage())
+                                ->body('Failed to deactivate configuration: '.$e->getMessage())
                                 ->danger()
                                 ->send();
                         }
@@ -441,7 +443,7 @@ class EmailConfigurationResource extends Resource
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn (EmailConfiguration $record): bool => !$record->is_active),
+                    ->visible(fn (EmailConfiguration $record): bool => ! $record->is_active),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -452,26 +454,26 @@ class EmailConfigurationResource extends Resource
                         ->action(function (Collection $records): void {
                             $service = app(EmailConfigurationService::class);
                             $results = [];
-                            
+
                             foreach ($records as $record) {
                                 try {
                                     $success = $service->testConfiguration($record->provider, $record->config);
                                     $results[] = [
-                                        'config' => $record->provider . ' (' . $record->config['from_address'] . ')',
-                                        'status' => $success ? 'Success' : 'Failed'
+                                        'config' => $record->provider.' ('.$record->config['from_address'].')',
+                                        'status' => $success ? 'Success' : 'Failed',
                                     ];
                                 } catch (\Exception $e) {
                                     $results[] = [
-                                        'config' => $record->provider . ' (' . $record->config['from_address'] . ')',
-                                        'status' => 'Error: ' . $e->getMessage()
+                                        'config' => $record->provider.' ('.$record->config['from_address'].')',
+                                        'status' => 'Error: '.$e->getMessage(),
                                     ];
                                 }
                             }
-                            
-                            $message = "Test Results:\n" . collect($results)
+
+                            $message = "Test Results:\n".collect($results)
                                 ->map(fn ($result) => "• {$result['config']}: {$result['status']}")
                                 ->join("\n");
-                            
+
                             Notification::make()
                                 ->title('Bulk Test Completed')
                                 ->body($message)
@@ -486,18 +488,19 @@ class EmailConfigurationResource extends Resource
                         ->action(function (Collection $records): void {
                             // Prevent deletion of active configurations
                             $activeRecords = $records->filter(fn (EmailConfiguration $record) => $record->is_active);
-                            
+
                             if ($activeRecords->isNotEmpty()) {
                                 Notification::make()
                                     ->title('Cannot Delete Active Configurations')
                                     ->body('Please deactivate configurations before deleting them.')
                                     ->danger()
                                     ->send();
+
                                 return;
                             }
-                            
+
                             $records->each->delete();
-                            
+
                             Notification::make()
                                 ->title('Configurations Deleted')
                                 ->body('Selected email configurations have been deleted.')
@@ -532,17 +535,18 @@ class EmailConfigurationResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         $activeCount = static::getModel()::where('is_active', true)->count();
+
         return $activeCount > 0 ? (string) $activeCount : null;
     }
 
     public static function getNavigationBadgeColor(): ?string
     {
         $activeCount = static::getModel()::where('is_active', true)->count();
-        
+
         if ($activeCount === 0) {
             return 'danger';
         }
-        
+
         return 'success';
     }
 }

@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Enums\NotificationType;
 use App\Models\NotificationPreference;
 use App\Models\User;
-use App\Enums\NotificationType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -23,7 +23,7 @@ class NotificationPreferenceFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'notification_type' => $this->faker->randomElement(array_map(fn($case) => $case->value, NotificationType::cases())),
+            'notification_type' => $this->faker->randomElement(array_map(fn ($case) => $case->value, NotificationType::cases())),
             'email_enabled' => $this->faker->boolean(80), // 80% chance of being enabled
             'in_app_enabled' => $this->faker->boolean(90), // 90% chance of being enabled
         ];
@@ -152,6 +152,7 @@ class NotificationPreferenceFactory extends Factory
         foreach (NotificationType::cases() as $type) {
             $preferences[] = $this->forUser($user)->forType($type)->make();
         }
+
         return $preferences;
     }
 }

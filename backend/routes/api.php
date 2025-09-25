@@ -1,28 +1,28 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\NotificationPreferenceController;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\UserProfileController;
-// use App\Http\Controllers\CatController; // legacy removed
-use App\Http\Controllers\PetController;
-use App\Http\Controllers\MedicalRecordController;
-use App\Http\Controllers\WeightHistoryController;
-use App\Http\Controllers\HelperProfileController;
-use App\Http\Controllers\TransferRequestController;
-use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\AuthController;
-// use App\Http\Controllers\CatPhotoController; // legacy removed
-use App\Http\Controllers\PetPhotoController;
-use App\Http\Controllers\MessageController;
-use App\Http\Controllers\PlacementRequestController;
-use App\Http\Controllers\VersionController;
-use App\Http\Controllers\TransferHandoverController;
 use App\Http\Controllers\FosterAssignmentController;
 use App\Http\Controllers\FosterReturnHandoverController;
+use App\Http\Controllers\HelperProfileController;
+use App\Http\Controllers\MedicalRecordController;
+// use App\Http\Controllers\CatController; // legacy removed
+use App\Http\Controllers\MessageController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\NotificationPreferenceController;
+use App\Http\Controllers\PetController;
+use App\Http\Controllers\PetPhotoController;
+use App\Http\Controllers\PlacementRequestController;
+use App\Http\Controllers\ReviewController;
+// use App\Http\Controllers\CatPhotoController; // legacy removed
+use App\Http\Controllers\TransferHandoverController;
+use App\Http\Controllers\TransferRequestController;
 use App\Http\Controllers\UnsubscribeController;
+use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\VersionController;
+use App\Http\Controllers\WeightHistoryController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/version', [VersionController::class, 'show']);
 
@@ -33,7 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead']); // legacy alias
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead']);
     Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
-    
+
     // Notification preferences
     Route::get('/notification-preferences', [NotificationPreferenceController::class, 'index']);
     Route::put('/notification-preferences', [NotificationPreferenceController::class, 'update']);
@@ -64,7 +64,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/users/me/avatar', [UserProfileController::class, 'uploadAvatar']);
     Route::delete('/users/me/avatar', [UserProfileController::class, 'deleteAvatar']);
     // Legacy cat routes removed
-    
+
     // New pet routes
     Route::get('/my-pets', [PetController::class, 'myPets']);
     Route::get('/my-pets/sections', [PetController::class, 'myPetsSections']);
@@ -74,7 +74,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/pets/{pet}/status', [PetController::class, 'updateStatus'])->name('pets.updateStatus');
     Route::get('/pet-types', [PetController::class, 'petTypes']);
     // Legacy cat photo routes removed
-    
+
     // New pet photo routes
     Route::post('/pets/{pet}/photos', [PetPhotoController::class, 'store']);
     Route::delete('/pets/{pet}/photos/{photo}', [PetPhotoController::class, 'destroy']);
@@ -85,12 +85,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('helper-profiles', HelperProfileController::class);
     Route::post('helper-profiles/{helperProfile}', [HelperProfileController::class, 'update']);
     Route::delete('helper-profiles/{helperProfile}/photos/{photo}', [HelperProfileController::class, 'destroyPhoto']);
-    #Route::post('/cats/{cat}/medical-records', [MedicalRecordController::class, 'store']);
-    #Route::post('/cats/{cat}/weight-history', [WeightHistoryController::class, 'store']);
+    // Route::post('/cats/{cat}/medical-records', [MedicalRecordController::class, 'store']);
+    // Route::post('/cats/{cat}/weight-history', [WeightHistoryController::class, 'store']);
     // Legacy cat comments route removed
-    #Route::post('/helper-profiles', [HelperProfileController::class, 'store']);
-    #Route::get('/helper-profiles', [HelperProfileController::class, 'index']);
-    #Route::get('/helper-profiles/me', [HelperProfileController::class, 'show']);
+    // Route::post('/helper-profiles', [HelperProfileController::class, 'store']);
+    // Route::get('/helper-profiles', [HelperProfileController::class, 'index']);
+    // Route::get('/helper-profiles/me', [HelperProfileController::class, 'show']);
     Route::post('/transfer-requests', [TransferRequestController::class, 'store']);
     Route::post('/transfer-requests/{transferRequest}/accept', [TransferRequestController::class, 'accept']);
     Route::post('/transfer-requests/{transferRequest}/reject', [TransferRequestController::class, 'reject']);
@@ -106,19 +106,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/foster-assignments/{assignment}/complete', [FosterAssignmentController::class, 'complete']);
     Route::post('/foster-assignments/{assignment}/cancel', [FosterAssignmentController::class, 'cancel']);
     Route::post('/foster-assignments/{assignment}/extend', [FosterAssignmentController::class, 'extend']);
-    
+
     // Foster return handover lifecycle
     Route::post('/foster-assignments/{assignment}/return-handover', [FosterReturnHandoverController::class, 'store']);
     Route::post('/foster-return-handovers/{handover}/confirm', [FosterReturnHandoverController::class, 'ownerConfirm']);
     Route::post('/foster-return-handovers/{handover}/complete', [FosterReturnHandoverController::class, 'complete']);
-    #Route::post('/reviews', [ReviewController::class, 'store']);
+    // Route::post('/reviews', [ReviewController::class, 'store']);
 
     // Message Routes
-    #Route::post('/messages', [MessageController::class, 'store']);
-    #Route::get('/messages', [MessageController::class, 'index']);
-    #Route::get('/messages/{message}', [MessageController::class, 'show']);
-    #Route::put('/messages/{message}/read', [MessageController::class, 'markAsRead']);
-    #Route::delete('/messages/{message}', [MessageController::class, 'destroy']);
+    // Route::post('/messages', [MessageController::class, 'store']);
+    // Route::get('/messages', [MessageController::class, 'index']);
+    // Route::get('/messages/{message}', [MessageController::class, 'show']);
+    // Route::put('/messages/{message}/read', [MessageController::class, 'markAsRead']);
+    // Route::delete('/messages/{message}', [MessageController::class, 'destroy']);
 });
 
 // Legacy public cat routes removed

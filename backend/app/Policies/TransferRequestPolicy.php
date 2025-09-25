@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\TransferRequest;
+use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Auth\Access\Response;
 
@@ -24,7 +24,7 @@ class TransferRequestPolicy
      */
     public function view(User $user, TransferRequest $transferRequest): bool
     {
-    return $user->hasRole('admin') || $user->id === $transferRequest->initiator_user_id || ($transferRequest->pet && $user->id === $transferRequest->pet->user_id) || $user->can('view_transfer::request');
+        return $user->hasRole('admin') || $user->id === $transferRequest->initiator_user_id || ($transferRequest->pet && $user->id === $transferRequest->pet->user_id) || $user->can('view_transfer::request');
     }
 
     /**
@@ -37,26 +37,26 @@ class TransferRequestPolicy
 
     public function accept(User $user, TransferRequest $transferRequest): Response
     {
-    // Pet owner (recipient) can accept; also allow via explicit permission
+        // Pet owner (recipient) can accept; also allow via explicit permission
         if (($transferRequest->pet && $user->id === $transferRequest->pet->user_id)
             || ($transferRequest->recipient_user_id && $user->id === $transferRequest->recipient_user_id)
             || $user->can('accept_transfer::request')) {
             return Response::allow();
         }
 
-    return Response::deny('Only the pet owner can accept this transfer request.');
+        return Response::deny('Only the pet owner can accept this transfer request.');
     }
 
     public function reject(User $user, TransferRequest $transferRequest): Response
     {
-    // Recipient (pet owner) can reject; allow permission fallback
+        // Recipient (pet owner) can reject; allow permission fallback
         if (($transferRequest->pet && $user->id === $transferRequest->pet->user_id)
             || ($transferRequest->recipient_user_id && $user->id === $transferRequest->recipient_user_id)
             || $user->can('reject_transfer::request')) {
             return Response::allow();
         }
 
-    return Response::deny('Only the pet owner can reject this transfer request.');
+        return Response::deny('Only the pet owner can reject this transfer request.');
     }
 
     /**
@@ -137,10 +137,10 @@ class TransferRequestPolicy
     public function viewResponderProfile(User $user, TransferRequest $transferRequest): bool
     {
         // Owner (recipient) or the initiator can view the responder's profile
-    return ($transferRequest->pet && $user->id === $transferRequest->pet->user_id)
-            || ($transferRequest->recipient_user_id && $user->id === $transferRequest->recipient_user_id)
-            || ($transferRequest->initiator_user_id && $user->id === $transferRequest->initiator_user_id)
-            || $user->hasRole('admin')
-            || $user->can('view_transfer::request');
+        return ($transferRequest->pet && $user->id === $transferRequest->pet->user_id)
+                || ($transferRequest->recipient_user_id && $user->id === $transferRequest->recipient_user_id)
+                || ($transferRequest->initiator_user_id && $user->id === $transferRequest->initiator_user_id)
+                || $user->hasRole('admin')
+                || $user->can('view_transfer::request');
     }
 }

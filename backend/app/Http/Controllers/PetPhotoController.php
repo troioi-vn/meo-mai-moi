@@ -12,8 +12,9 @@ use Illuminate\Support\Facades\Auth;
 class PetPhotoController extends Controller
 {
     use ApiResponseTrait;
-    
+
     protected FileUploadService $fileUploadService;
+
     protected PetCapabilityService $capabilityService;
 
     public function __construct(FileUploadService $fileUploadService, PetCapabilityService $capabilityService)
@@ -28,18 +29,24 @@ class PetPhotoController extends Controller
      *     summary="Upload a photo for a specific pet",
      *     tags={"Pet Photos"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(
      *         name="pet",
      *         in="path",
      *         required=true,
      *         description="ID of the pet",
+     *
      *         @OA\Schema(type="integer")
      *     ),
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
+     *
      *             @OA\Schema(
+     *
      *                 @OA\Property(
      *                     property="photo",
      *                     type="string",
@@ -49,13 +56,17 @@ class PetPhotoController extends Controller
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Photo uploaded successfully",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="data", ref="#/components/schemas/Pet")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=401,
      *         description="Unauthenticated"
@@ -73,7 +84,7 @@ class PetPhotoController extends Controller
     public function store(Request $request, Pet $pet)
     {
         $this->authorize('update', $pet);
-        
+
         // Ensure this pet type supports photos
         $this->capabilityService->ensure($pet, 'photos');
 
@@ -98,6 +109,7 @@ class PetPhotoController extends Controller
 
         // Refresh pet with new photo relationship
         $pet->load('photo', 'photos', 'petType');
+
         return $this->sendSuccess($pet);
     }
 
@@ -107,20 +119,25 @@ class PetPhotoController extends Controller
      *     summary="Delete a specific photo for a pet",
      *     tags={"Pet Photos"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(
      *         name="pet",
      *         in="path",
      *         required=true,
      *         description="ID of the pet",
+     *
      *         @OA\Schema(type="integer")
      *     ),
+     *
      *     @OA\Parameter(
      *         name="photo",
      *         in="path",
      *         required=true,
      *         description="ID of the photo",
+     *
      *         @OA\Schema(type="integer")
      *     ),
+     *
      *     @OA\Response(
      *         response=204,
      *         description="Photo deleted successfully"
@@ -146,16 +163,16 @@ class PetPhotoController extends Controller
     public function destroy(Pet $pet, $photo)
     {
         $this->authorize('update', $pet);
-        
+
         // Ensure this pet type supports photos
         $this->capabilityService->ensure($pet, 'photos');
 
         // Find the photo that belongs to this pet
         $photoModel = $pet->photos()->findOrFail($photo);
-        
+
         // Delete the file from storage
         $this->fileUploadService->delete($photoModel->path);
-        
+
         // Delete the photo record
         $photoModel->delete();
 

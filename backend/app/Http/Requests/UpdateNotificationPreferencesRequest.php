@@ -23,14 +23,14 @@ class UpdateNotificationPreferencesRequest extends FormRequest
      */
     public function rules(): array
     {
-        $validNotificationTypes = array_map(fn($case) => $case->value, NotificationType::cases());
+        $validNotificationTypes = array_map(fn ($case) => $case->value, NotificationType::cases());
 
         return [
             'preferences' => 'present|array',
             'preferences.*.type' => [
                 'required',
                 'string',
-                Rule::in($validNotificationTypes)
+                Rule::in($validNotificationTypes),
             ],
             'preferences.*.email_enabled' => 'required|boolean',
             'preferences.*.in_app_enabled' => 'required|boolean',

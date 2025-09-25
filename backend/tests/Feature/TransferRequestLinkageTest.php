@@ -5,16 +5,15 @@ namespace Tests\Feature;
 use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Models\TransferRequest;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class TransferRequestLinkageTest extends TestCase
 {
     use RefreshDatabase;
 
-        #[Test]
+    #[Test]
     public function test_transfer_request_can_be_linked_to_placement_request(): void
     {
         $pet = Pet::factory()->create();

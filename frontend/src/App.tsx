@@ -36,11 +36,17 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
 function CatToPetRedirect() {
   const { id } = useParams<{ id: string }>()
+  if (!id) {
+    return <Navigate to="/pets" replace />
+  }
   return <Navigate to={`/pets/${id}`} replace />
 }
 
 function CatToPetEditRedirect() {
   const { id } = useParams<{ id: string }>()
+  if (!id) {
+    return <Navigate to="/pets" replace />
+  }
   return <Navigate to={`/pets/${id}/edit`} replace />
 }
 

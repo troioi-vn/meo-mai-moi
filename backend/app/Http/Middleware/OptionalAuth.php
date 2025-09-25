@@ -11,7 +11,7 @@ class OptionalAuth
 {
     /**
      * Handle an incoming request.
-     * 
+     *
      * This middleware attempts to authenticate the user but doesn't fail if authentication fails.
      * This allows routes to work for both authenticated and non-authenticated users.
      */
@@ -25,7 +25,7 @@ class OptionalAuth
             }
 
             // If there's no bearer token or Sanctum didn't resolve, check existing session (web guard)
-            if (!$user) {
+            if (! $user) {
                 $user = Auth::guard('web')->user();
             }
 

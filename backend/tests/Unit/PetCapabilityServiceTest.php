@@ -8,8 +8,8 @@ use App\Models\User;
 use App\Services\PetCapabilityService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class PetCapabilityServiceTest extends TestCase
 {

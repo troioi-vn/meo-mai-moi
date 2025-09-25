@@ -2,34 +2,31 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\PlacementRequestResource\Pages;
-use App\Filament\Resources\PlacementRequestResource\RelationManagers;
-use App\Models\PlacementRequest;
-use App\Models\Pet;
-use App\Models\User;
 use App\Enums\PlacementRequestStatus;
 use App\Enums\PlacementRequestType;
-use Filament\Forms;
+use App\Filament\Exports\PlacementRequestExporter;
+use App\Filament\Resources\PlacementRequestResource\Pages;
+use App\Filament\Resources\PlacementRequestResource\RelationManagers;
+use App\Models\Pet;
+use App\Models\PlacementRequest;
+use App\Models\User;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Toggle;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
-use Filament\Tables\Columns\ImageColumn;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\Filter;
-use Filament\Tables\Filters\DateFilter;
-use Filament\Forms\Components\DateTimePicker;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ExportBulkAction;
-use App\Filament\Exports\PlacementRequestExporter;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class PlacementRequestResource extends Resource
 {
@@ -155,7 +152,7 @@ class PlacementRequestResource extends Resource
                     ->searchable(['pets.name', 'pets.breed'])
                     ->sortable()
                     ->url(fn (PlacementRequest $record): string => route('filament.admin.resources.pets.edit', $record->pet))
-                    ->description(fn (PlacementRequest $record): string => ($record->pet->breed ?? '') . ' (' . ($record->pet->petType->name ?? '') . ')'),
+                    ->description(fn (PlacementRequest $record): string => ($record->pet->breed ?? '').' ('.($record->pet->petType->name ?? '').')'),
 
                 TextColumn::make('user.name')
                     ->label('Owner')
@@ -201,6 +198,7 @@ class PlacementRequestResource extends Resource
                         if (strlen($state) <= 50) {
                             return null;
                         }
+
                         return $state;
                     })
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -289,11 +287,12 @@ class PlacementRequestResource extends Resource
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
                         if ($data['created_from'] ?? null) {
-                            $indicators[] = 'Created from ' . \Carbon\Carbon::parse($data['created_from'])->toFormattedDateString();
+                            $indicators[] = 'Created from '.\Carbon\Carbon::parse($data['created_from'])->toFormattedDateString();
                         }
                         if ($data['created_until'] ?? null) {
-                            $indicators[] = 'Created until ' . \Carbon\Carbon::parse($data['created_until'])->toFormattedDateString();
+                            $indicators[] = 'Created until '.\Carbon\Carbon::parse($data['created_until'])->toFormattedDateString();
                         }
+
                         return $indicators;
                     }),
 
@@ -318,11 +317,12 @@ class PlacementRequestResource extends Resource
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
                         if ($data['start_from'] ?? null) {
-                            $indicators[] = 'Start from ' . \Carbon\Carbon::parse($data['start_from'])->toFormattedDateString();
+                            $indicators[] = 'Start from '.\Carbon\Carbon::parse($data['start_from'])->toFormattedDateString();
                         }
                         if ($data['start_until'] ?? null) {
-                            $indicators[] = 'Start until ' . \Carbon\Carbon::parse($data['start_until'])->toFormattedDateString();
+                            $indicators[] = 'Start until '.\Carbon\Carbon::parse($data['start_until'])->toFormattedDateString();
                         }
+
                         return $indicators;
                     }),
 
@@ -347,11 +347,12 @@ class PlacementRequestResource extends Resource
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
                         if ($data['expires_from'] ?? null) {
-                            $indicators[] = 'Expires from ' . \Carbon\Carbon::parse($data['expires_from'])->toFormattedDateString();
+                            $indicators[] = 'Expires from '.\Carbon\Carbon::parse($data['expires_from'])->toFormattedDateString();
                         }
                         if ($data['expires_until'] ?? null) {
-                            $indicators[] = 'Expires until ' . \Carbon\Carbon::parse($data['expires_until'])->toFormattedDateString();
+                            $indicators[] = 'Expires until '.\Carbon\Carbon::parse($data['expires_until'])->toFormattedDateString();
                         }
+
                         return $indicators;
                     }),
 

@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use App\Models\Pet;
 use App\Models\PetPhoto;
 use App\Models\PetType;
+use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -40,12 +40,12 @@ class DatabaseSeeder extends Seeder
                     'user_id' => $user->id,
                     'pet_type_id' => $catType->id,
                 ]);
-                
+
                 // Add a random cat photo
                 $catImageNumber = rand(1, 5);
                 $catImagePath = "pets/cat{$catImageNumber}.jpeg";
                 $fullCatPath = storage_path("app/public/{$catImagePath}");
-                
+
                 if (file_exists($fullCatPath)) {
                     try {
                         PetPhoto::create([
@@ -57,24 +57,24 @@ class DatabaseSeeder extends Seeder
                             'created_by' => $user->id,
                         ]);
                     } catch (\Exception $e) {
-                        echo "Failed to create cat photo for pet {$cat->id}: " . $e->getMessage() . PHP_EOL;
+                        echo "Failed to create cat photo for pet {$cat->id}: ".$e->getMessage().PHP_EOL;
                     }
                 } else {
-                    echo "Cat image not found: {$fullCatPath}" . PHP_EOL;
+                    echo "Cat image not found: {$fullCatPath}".PHP_EOL;
                 }
             }
-            
+
             if ($dogType) {
                 $dog = Pet::factory()->create([
                     'user_id' => $user->id,
                     'pet_type_id' => $dogType->id,
                 ]);
-                
+
                 // Add a random dog photo
                 $dogImageNumber = rand(1, 5);
                 $dogImagePath = "pets/dog{$dogImageNumber}.jpeg";
                 $fullDogPath = storage_path("app/public/{$dogImagePath}");
-                
+
                 if (file_exists($fullDogPath)) {
                     try {
                         PetPhoto::create([
@@ -86,10 +86,10 @@ class DatabaseSeeder extends Seeder
                             'created_by' => $user->id,
                         ]);
                     } catch (\Exception $e) {
-                        echo "Failed to create dog photo for pet {$dog->id}: " . $e->getMessage() . PHP_EOL;
+                        echo "Failed to create dog photo for pet {$dog->id}: ".$e->getMessage().PHP_EOL;
                     }
                 } else {
-                    echo "Dog image not found: {$fullDogPath}" . PHP_EOL;
+                    echo "Dog image not found: {$fullDogPath}".PHP_EOL;
                 }
             }
         }

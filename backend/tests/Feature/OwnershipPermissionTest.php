@@ -4,11 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\Pet;
 use App\Models\User;
-use Spatie\Permission\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Spatie\Permission\Models\Role;
+use Tests\TestCase;
 
 class OwnershipPermissionTest extends TestCase
 {
@@ -106,23 +106,23 @@ class OwnershipPermissionTest extends TestCase
         $pet2 = Pet::factory()->create(['user_id' => $user2->id, 'name' => 'User2 Pet']);
 
         // User1 can edit their own cat
-    Sanctum::actingAs($user1);
-    $response1 = $this->getJson("/api/pets/{$pet1->id}");
+        Sanctum::actingAs($user1);
+        $response1 = $this->getJson("/api/pets/{$pet1->id}");
         $response1->assertStatus(200)
             ->assertJsonPath('data.viewer_permissions.can_edit', true);
 
         // User1 cannot edit User2's cat
-    $response2 = $this->getJson("/api/pets/{$pet2->id}");
+        $response2 = $this->getJson("/api/pets/{$pet2->id}");
         $response2->assertStatus(403);
 
         // User2 can edit their own cat
-    Sanctum::actingAs($user2);
-    $response3 = $this->getJson("/api/pets/{$pet2->id}");
+        Sanctum::actingAs($user2);
+        $response3 = $this->getJson("/api/pets/{$pet2->id}");
         $response3->assertStatus(200)
             ->assertJsonPath('data.viewer_permissions.can_edit', true);
 
         // User2 cannot edit User1's cat
-    $response4 = $this->getJson("/api/pets/{$pet1->id}");
+        $response4 = $this->getJson("/api/pets/{$pet1->id}");
         $response4->assertStatus(403);
     }
 
@@ -131,22 +131,22 @@ class OwnershipPermissionTest extends TestCase
     {
         $user = User::factory()->create();
         $pet = Pet::factory()->create(['user_id' => $user->id]);
-        
+
         Sanctum::actingAs($user);
-        
+
         // Even as VIEWER, they should be able to edit their own cat
-    $response = $this->getJson("/api/pets/{$pet->id}");
+        $response = $this->getJson("/api/pets/{$pet->id}");
         $response->assertStatus(200)
             ->assertJsonPath('data.viewer_permissions.can_edit', true);
 
-    // Assign a role (not required for ownership logic but ensures compatibility)
-    Role::firstOrCreate(['name' => 'owner']);
+        // Assign a role (not required for ownership logic but ensures compatibility)
+        Role::firstOrCreate(['name' => 'owner']);
         $user->assignRole('owner');
         $user->refresh();
-        
+
         // Should still be able to edit their cat
         Sanctum::actingAs($user);
-    $response2 = $this->getJson("/api/pets/{$pet->id}");
+        $response2 = $this->getJson("/api/pets/{$pet->id}");
         $response2->assertStatus(200)
             ->assertJsonPath('data.viewer_permissions.can_edit', true);
     }
@@ -160,17 +160,17 @@ class OwnershipPermissionTest extends TestCase
 
         // Owner should be able to update their cat
         Sanctum::actingAs($owner);
-    $updateResponse = $this->putJson("/api/pets/{$pet->id}", ['name' => 'Updated Name']);
+        $updateResponse = $this->putJson("/api/pets/{$pet->id}", ['name' => 'Updated Name']);
         $updateResponse->assertStatus(200)
             ->assertJson(['data' => ['name' => 'Updated Name']]);
 
         // Non-owner should not be able to update
         Sanctum::actingAs($nonOwner);
-    $forbiddenResponse = $this->putJson("/api/pets/{$pet->id}", ['name' => 'Hacker Name']);
+        $forbiddenResponse = $this->putJson("/api/pets/{$pet->id}", ['name' => 'Hacker Name']);
         $forbiddenResponse->assertStatus(403);
 
         // Verify the name wasn't changed by the non-owner
-    $pet->refresh();
-    $this->assertEquals('Updated Name', $pet->name);
+        $pet->refresh();
+        $this->assertEquals('Updated Name', $pet->name);
     }
 }

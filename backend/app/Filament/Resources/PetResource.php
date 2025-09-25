@@ -2,26 +2,24 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\PetStatus;
 use App\Filament\Resources\PetResource\Pages;
 use App\Filament\Resources\PetResource\RelationManagers;
 use App\Models\Pet;
 use App\Models\PetType;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Enums\PetStatus;
-use Filament\Forms\Components\Select;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class PetResource extends Resource
 {
@@ -93,7 +91,7 @@ class PetResource extends Resource
                     ->colors([
                         'primary' => 'Cat',
                         'success' => 'Dog',
-                        'gray' => fn ($state) => !in_array($state, ['Cat', 'Dog']),
+                        'gray' => fn ($state) => ! in_array($state, ['Cat', 'Dog']),
                     ]),
 
                 TextColumn::make('breed')
@@ -104,9 +102,12 @@ class PetResource extends Resource
                     ->date()
                     ->sortable()
                     ->formatStateUsing(function ($state) {
-                        if (!$state) return '-';
+                        if (! $state) {
+                            return '-';
+                        }
                         $age = now()->diffInYears($state);
-                        return $state->format('M j, Y') . " ({$age}y)";
+
+                        return $state->format('M j, Y')." ({$age}y)";
                     }),
 
                 TextColumn::make('location')

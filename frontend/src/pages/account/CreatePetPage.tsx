@@ -50,7 +50,9 @@ const CreatePetPage: React.FC = () => {
             ) : (
               <Select
                 value={formData.pet_type_id ? String(formData.pet_type_id) : ''}
-                onValueChange={(value) => updateField('pet_type_id')(Number(value))}
+                onValueChange={(value) => {
+                  updateField('pet_type_id')(Number(value))
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a pet type..." />

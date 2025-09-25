@@ -134,6 +134,19 @@ When debugging:
 
 - PHP/Laravel: PSR-12 via PHP-CS-Fixer; TypeScript/React: Airbnb via Prettier/ESLint.
 
+### Linting and Formatting
+
+This project uses several tools to enforce code style and quality.
+
+-   **Frontend (TypeScript/React):**
+    -   **ESLint:** For identifying and reporting on patterns in JavaScript. Run with `npm run lint` in the `frontend` directory.
+    -   **Prettier:** An opinionated code formatter. It's recommended to use a Prettier extension in your editor to format on save.
+-   **Backend (PHP/Laravel):**
+    -   **PHP-CS-Fixer:** A tool to automatically fix PHP coding standards issues. Run with `composer format` in the `backend` directory.
+    -   **Laravel Pint:** A new, opinionated PHP code style fixer for Laravel projects. It's built on top of PHP-CS-Fixer and is included as a dev dependency.
+        -   To check for style issues, run `./vendor/bin/pint --test` in the `backend` directory.
+        -   To fix style issues, run `./vendor/bin/pint` in the `backend` directory.
+
 ### Key Frontend Patterns
 
 - Toasts: `sonner` (`toast`), API client: `@/api/axios` (`api`).

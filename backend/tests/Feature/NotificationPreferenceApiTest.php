@@ -44,9 +44,9 @@ class NotificationPreferenceApiTest extends TestCase
                     'label',
                     'group',
                     'email_enabled',
-                    'in_app_enabled'
-                ]
-            ]
+                    'in_app_enabled',
+                ],
+            ],
         ]);
 
         $data = $response->json('data');
@@ -118,12 +118,12 @@ class NotificationPreferenceApiTest extends TestCase
         ];
 
         $response = $this->putJson('/api/notification-preferences', [
-            'preferences' => $preferences
+            'preferences' => $preferences,
         ]);
 
         $response->assertStatus(200);
         $response->assertJson([
-            'message' => 'Notification preferences updated successfully'
+            'message' => 'Notification preferences updated successfully',
         ]);
 
         // Verify preferences were saved to database
@@ -163,7 +163,7 @@ class NotificationPreferenceApiTest extends TestCase
         ];
 
         $response = $this->putJson('/api/notification-preferences', [
-            'preferences' => $preferences
+            'preferences' => $preferences,
         ]);
 
         $response->assertStatus(200);
@@ -191,8 +191,8 @@ class NotificationPreferenceApiTest extends TestCase
                     'type' => 'invalid_type',
                     'email_enabled' => true,
                     'in_app_enabled' => true,
-                ]
-            ]
+                ],
+            ],
         ]);
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['preferences.0.type']);
@@ -203,13 +203,13 @@ class NotificationPreferenceApiTest extends TestCase
                 [
                     'type' => NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
                     // missing email_enabled and in_app_enabled
-                ]
-            ]
+                ],
+            ],
         ]);
         $response->assertStatus(422);
         $response->assertJsonValidationErrors([
             'preferences.0.email_enabled',
-            'preferences.0.in_app_enabled'
+            'preferences.0.in_app_enabled',
         ]);
 
         // Test invalid boolean values
@@ -219,13 +219,13 @@ class NotificationPreferenceApiTest extends TestCase
                     'type' => NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
                     'email_enabled' => 'not_boolean',
                     'in_app_enabled' => 'also_not_boolean',
-                ]
-            ]
+                ],
+            ],
         ]);
         $response->assertStatus(422);
         $response->assertJsonValidationErrors([
             'preferences.0.email_enabled',
-            'preferences.0.in_app_enabled'
+            'preferences.0.in_app_enabled',
         ]);
     }
 
@@ -234,12 +234,12 @@ class NotificationPreferenceApiTest extends TestCase
         Sanctum::actingAs($this->user);
 
         $response = $this->putJson('/api/notification-preferences', [
-            'preferences' => []
+            'preferences' => [],
         ]);
 
         $response->assertStatus(200);
         $response->assertJson([
-            'message' => 'Notification preferences updated successfully'
+            'message' => 'Notification preferences updated successfully',
         ]);
 
         // No preferences should be created
@@ -265,7 +265,7 @@ class NotificationPreferenceApiTest extends TestCase
     public function test_user_can_only_access_their_own_preferences()
     {
         $otherUser = User::factory()->create();
-        
+
         // Create preference for other user
         NotificationPreference::create([
             'user_id' => $otherUser->id,
@@ -280,7 +280,7 @@ class NotificationPreferenceApiTest extends TestCase
         $response->assertStatus(200);
 
         $data = $response->json('data');
-        
+
         // Should get default preferences (true, true) not the other user's preferences
         $placementRequestResponse = collect($data)->firstWhere('type', NotificationType::PLACEMENT_REQUEST_RESPONSE->value);
         $this->assertTrue($placementRequestResponse['email_enabled']);

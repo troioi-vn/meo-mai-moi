@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\PlacementRequest;
-use App\Http\Resources\PlacementRequestResource;
-use Illuminate\Http\Request;
-use App\Traits\ApiResponseTrait;
 use App\Enums\PlacementRequestType;
+use App\Http\Resources\PlacementRequestResource;
 use App\Models\Pet;
+use App\Models\PlacementRequest;
 use App\Services\PetCapabilityService;
+use App\Traits\ApiResponseTrait;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -18,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
  *     type="object",
  *     title="PlacementRequest",
  *     required={"id", "pet_id", "user_id", "request_type", "status"},
+ *
  *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="pet_id", type="integer", example=2),
  *     @OA\Property(property="user_id", type="integer", example=5),
@@ -46,11 +46,14 @@ class PlacementRequestController extends Controller
      *     summary="Create a new placement request",
      *     tags={"Placement Requests"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\JsonContent(
-    *             required={"pet_id", "request_type"},
-    *             @OA\Property(property="pet_id", type="integer", example=1),
+     *             required={"pet_id", "request_type"},
+     *
+     *             @OA\Property(property="pet_id", type="integer", example=1),
      *             @OA\Property(property="request_type", type="string", enum=App\Enums\PlacementRequestType::class, example="permanent"),
      *             @OA\Property(property="notes", type="string", example="Looking for a loving home."),
      *             @OA\Property(property="expires_at", type="string", format="date", example="2025-12-31"),
@@ -58,14 +61,18 @@ class PlacementRequestController extends Controller
      *             @OA\Property(property="end_date", type="string", format="date", example="2025-08-20")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=201,
      *         description="Placement request created successfully",
+     *
      *         @OA\JsonContent(
      *             type="object",
+     *
      *             @OA\Property(property="data", ref="#/components/schemas/PlacementRequest")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=401,
      *         description="Unauthenticated"
@@ -97,7 +104,7 @@ class PlacementRequestController extends Controller
 
         $pet = Pet::findOrFail($validatedData['pet_id']);
 
-        if (!$pet) {
+        if (! $pet) {
             return $this->sendError('Pet not found.', 404);
         }
 
@@ -146,13 +153,16 @@ class PlacementRequestController extends Controller
      *     summary="Delete a placement request",
      *     tags={"Placement Requests"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
      *         description="ID of the placement request to delete",
+     *
      *         @OA\Schema(type="integer")
      *     ),
+     *
      *     @OA\Response(
      *         response=204,
      *         description="Placement request deleted successfully"
@@ -167,6 +177,7 @@ class PlacementRequestController extends Controller
     {
         $this->authorize('delete', $placementRequest);
         $placementRequest->delete();
+
         return $this->sendSuccess(null, 204);
     }
 
@@ -176,18 +187,23 @@ class PlacementRequestController extends Controller
      *     summary="Confirm a placement request",
      *     tags={"Placement Requests"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
      *         description="ID of the placement request to confirm",
+     *
      *         @OA\Schema(type="integer")
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Placement request confirmed successfully",
+     *
      *         @OA\JsonContent(ref="#/components/schemas/PlacementRequest")
      *     ),
+     *
      *     @OA\Response(
      *         response=403,
      *         description="Forbidden"
@@ -197,6 +213,7 @@ class PlacementRequestController extends Controller
     public function confirm(PlacementRequest $placementRequest)
     {
         $this->authorize('confirm', $placementRequest);
+
         // TODO: Add logic to confirm the placement request
         return $this->sendSuccess($placementRequest);
     }
@@ -207,18 +224,23 @@ class PlacementRequestController extends Controller
      *     summary="Reject a placement request",
      *     tags={"Placement Requests"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
      *         description="ID of the placement request to reject",
+     *
      *         @OA\Schema(type="integer")
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Placement request rejected successfully",
+     *
      *         @OA\JsonContent(ref="#/components/schemas/PlacementRequest")
      *     ),
+     *
      *     @OA\Response(
      *         response=403,
      *         description="Forbidden"
@@ -228,6 +250,7 @@ class PlacementRequestController extends Controller
     public function reject(PlacementRequest $placementRequest)
     {
         $this->authorize('reject', $placementRequest);
+
         // TODO: Add logic to reject the placement request
         return $this->sendSuccess($placementRequest);
     }

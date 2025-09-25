@@ -6,11 +6,10 @@ use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Models\TransferRequest;
 use App\Models\User;
-use Spatie\Permission\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class TransferRequestCreationTest extends TestCase
 {
@@ -19,11 +18,11 @@ class TransferRequestCreationTest extends TestCase
     #[Test]
     public function test_helper_can_create_transfer_request_for_placement_request(): void
     {
-    $owner = User::factory()->create();
-    $helper = User::factory()->create();
-    $helperProfile = \App\Models\HelperProfile::factory()->create(['user_id' => $helper->id]);
-    $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
-    $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'is_active' => true, 'status' => \App\Enums\PlacementRequestStatus::OPEN->value]);
+        $owner = User::factory()->create();
+        $helper = User::factory()->create();
+        $helperProfile = \App\Models\HelperProfile::factory()->create(['user_id' => $helper->id]);
+        $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'is_active' => true, 'status' => \App\Enums\PlacementRequestStatus::OPEN->value]);
 
         Sanctum::actingAs($helper);
 
@@ -48,10 +47,10 @@ class TransferRequestCreationTest extends TestCase
     #[Test]
     public function test_user_without_helper_profile_cannot_create_transfer_request(): void
     {
-    $owner = User::factory()->create();
-    $user = User::factory()->create(); // No helper profile
-    $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
-    $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'is_active' => true, 'status' => \App\Enums\PlacementRequestStatus::OPEN->value]);
+        $owner = User::factory()->create();
+        $user = User::factory()->create(); // No helper profile
+        $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'is_active' => true, 'status' => \App\Enums\PlacementRequestStatus::OPEN->value]);
 
         Sanctum::actingAs($user);
 
@@ -71,9 +70,9 @@ class TransferRequestCreationTest extends TestCase
     #[Test]
     public function test_owner_cannot_create_transfer_request_for_own_cat(): void
     {
-    $owner = User::factory()->create();
-    $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
-    $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'is_active' => true, 'status' => \App\Enums\PlacementRequestStatus::OPEN->value]);
+        $owner = User::factory()->create();
+        $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'is_active' => true, 'status' => \App\Enums\PlacementRequestStatus::OPEN->value]);
 
         Sanctum::actingAs($owner);
 
@@ -91,10 +90,10 @@ class TransferRequestCreationTest extends TestCase
     #[Test]
     public function test_accepting_transfer_request_deactivates_placement_request(): void
     {
-    $owner = User::factory()->create();
-    $helper = User::factory()->create();
-    $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
-    $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'is_active' => true, 'status' => \App\Enums\PlacementRequestStatus::OPEN->value]);
+        $owner = User::factory()->create();
+        $helper = User::factory()->create();
+        $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'is_active' => true, 'status' => \App\Enums\PlacementRequestStatus::OPEN->value]);
         $transferRequest = TransferRequest::factory()->create([
             'pet_id' => $pet->id,
             'initiator_user_id' => $helper->id,

@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
+use App\Enums\NotificationType;
+use App\Jobs\SendNotificationEmail;
 use App\Models\Notification;
 use App\Models\NotificationPreference;
+use App\Models\User;
 use App\Services\NotificationService;
-use App\Jobs\SendNotificationEmail;
-use App\Enums\NotificationType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
@@ -17,6 +17,7 @@ class EmailNotificationFallbackTest extends TestCase
     use RefreshDatabase;
 
     private NotificationService $service;
+
     private User $user;
 
     protected function setUp(): void
@@ -31,8 +32,8 @@ class EmailNotificationFallbackTest extends TestCase
     {
         // Set user preferences: email enabled, in-app disabled
         NotificationPreference::updatePreference(
-            $this->user, 
-            NotificationType::PLACEMENT_REQUEST_RESPONSE->value, 
+            $this->user,
+            NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
             true, // email enabled
             false // in-app disabled
         );
@@ -40,16 +41,16 @@ class EmailNotificationFallbackTest extends TestCase
         // Mock email configuration service to return false (email not enabled)
         $mockEmailService = $this->createMock(\App\Services\EmailConfigurationService::class);
         $mockEmailService->method('isEmailEnabled')->willReturn(false);
-        
+
         $this->app->instance(\App\Services\EmailConfigurationService::class, $mockEmailService);
-        
+
         // Create service with mocked dependency
         $service = new NotificationService($mockEmailService);
 
         // Send notification
         $service->send($this->user, NotificationType::PLACEMENT_REQUEST_RESPONSE->value, [
             'message' => 'Test notification',
-            'link' => '/test'
+            'link' => '/test',
         ]);
 
         // Should create a fallback in-app notification
@@ -68,8 +69,8 @@ class EmailNotificationFallbackTest extends TestCase
     {
         // Set user preferences: both email and in-app enabled
         NotificationPreference::updatePreference(
-            $this->user, 
-            NotificationType::PLACEMENT_REQUEST_RESPONSE->value, 
+            $this->user,
+            NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
             true, // email enabled
             true  // in-app enabled
         );
@@ -77,16 +78,16 @@ class EmailNotificationFallbackTest extends TestCase
         // Mock email configuration service to return false (email not enabled)
         $mockEmailService = $this->createMock(\App\Services\EmailConfigurationService::class);
         $mockEmailService->method('isEmailEnabled')->willReturn(false);
-        
+
         $this->app->instance(\App\Services\EmailConfigurationService::class, $mockEmailService);
-        
+
         // Create service with mocked dependency
         $service = new NotificationService($mockEmailService);
 
         // Send notification
         $service->send($this->user, NotificationType::PLACEMENT_REQUEST_RESPONSE->value, [
             'message' => 'Test notification',
-            'link' => '/test'
+            'link' => '/test',
         ]);
 
         // Should create regular in-app notification, not fallback
@@ -109,8 +110,8 @@ class EmailNotificationFallbackTest extends TestCase
 
         // Set user preferences: email enabled, in-app disabled
         NotificationPreference::updatePreference(
-            $this->user, 
-            NotificationType::PLACEMENT_REQUEST_RESPONSE->value, 
+            $this->user,
+            NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
             true, // email enabled
             false // in-app disabled
         );
@@ -155,8 +156,8 @@ class EmailNotificationFallbackTest extends TestCase
 
         // Set user preferences: both enabled
         NotificationPreference::updatePreference(
-            $this->user, 
-            NotificationType::PLACEMENT_REQUEST_RESPONSE->value, 
+            $this->user,
+            NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
             true, // email enabled
             true  // in-app enabled
         );
@@ -197,7 +198,7 @@ class EmailNotificationFallbackTest extends TestCase
         // Mock email configuration service
         $mockEmailService = $this->createMock(\App\Services\EmailConfigurationService::class);
         $mockEmailService->method('getActiveConfiguration')->willReturn(null);
-        
+
         $service = new NotificationService($mockEmailService);
 
         $status = $service->getEmailConfigurationStatus();
@@ -213,26 +214,26 @@ class EmailNotificationFallbackTest extends TestCase
         // Mock email configuration service to throw exception
         $mockEmailService = $this->createMock(\App\Services\EmailConfigurationService::class);
         $mockEmailService->method('isEmailEnabled')->willThrowException(new \Exception('Service error'));
-        
+
         $service = new NotificationService($mockEmailService);
 
         // Should not throw exception, should handle gracefully
         $service->send($this->user, NotificationType::PLACEMENT_REQUEST_RESPONSE->value, [
             'message' => 'Test notification',
-            'link' => '/test'
+            'link' => '/test',
         ]);
 
         // Should still create in-app notification if enabled
         NotificationPreference::updatePreference(
-            $this->user, 
-            NotificationType::PLACEMENT_REQUEST_RESPONSE->value, 
+            $this->user,
+            NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
             true, // email enabled
             true  // in-app enabled
         );
 
         $service->send($this->user, NotificationType::PLACEMENT_REQUEST_RESPONSE->value, [
             'message' => 'Test notification 2',
-            'link' => '/test2'
+            'link' => '/test2',
         ]);
 
         $inAppNotification = Notification::where('user_id', $this->user->id)

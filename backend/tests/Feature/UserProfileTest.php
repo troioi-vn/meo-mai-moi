@@ -3,17 +3,14 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-use App\Models\User;
-use Laravel\Sanctum\Sanctum;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 use Tests\Traits\CreatesUsers;
 
 class UserProfileTest extends TestCase
 {
-    use RefreshDatabase, CreatesUsers;
+    use CreatesUsers, RefreshDatabase;
 
     protected $user;
 
@@ -47,7 +44,7 @@ class UserProfileTest extends TestCase
         ]);
 
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['current_password']);
+            ->assertJsonValidationErrors(['current_password']);
 
         $this->assertTrue(Hash::check('password', $this->user->fresh()->password));
     }
@@ -62,7 +59,7 @@ class UserProfileTest extends TestCase
         ]);
 
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['new_password']);
+            ->assertJsonValidationErrors(['new_password']);
 
         $this->assertTrue(Hash::check('password', $this->user->fresh()->password));
     }
@@ -87,10 +84,8 @@ class UserProfileTest extends TestCase
         ]);
 
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['password']);
+            ->assertJsonValidationErrors(['password']);
 
         $this->assertDatabaseHas('users', ['id' => $this->user->id]);
     }
-
-    
 }

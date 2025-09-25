@@ -147,10 +147,12 @@ const CreateHelperProfilePage: React.FC = () => {
                 {placementAllowedPetTypes.map((petType) => (
                   <CheckboxField
                     key={petType.id}
-                    id={`pet_type_${petType.id}`}
+                    id={`pet_type_${String(petType.id)}`}
                     label={petType.name}
                     checked={formData.pet_type_ids.includes(petType.id)}
-                    onChange={(checked: boolean) => handlePetTypeChange(petType.id, checked)}
+                    onChange={(checked: boolean) => {
+                      handlePetTypeChange(petType.id, checked)
+                    }}
                     error={errors.pet_type_ids}
                   />
                 ))}

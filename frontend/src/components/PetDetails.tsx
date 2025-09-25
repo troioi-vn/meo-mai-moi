@@ -23,8 +23,8 @@ import { useNavigate } from 'react-router-dom'
 
 interface PetDetailsProps {
   pet: Pet
-  onDeletePlacementRequest: (id: number) => void
-  onCancelTransferRequest?: (id: number) => void
+  onDeletePlacementRequest: (id: number) => void | Promise<void>
+  onCancelTransferRequest?: (id: number) => void | Promise<void>
   onTransferResponseSuccess?: () => void
 }
 
@@ -79,7 +79,8 @@ export const PetDetails: React.FC<PetDetailsProps> = ({
 
   const handleEditClick = () => {
     // Use unified pet edit route
-    navigate(`/pets/${pet.id}/edit`)
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    navigate(`/pets/${String(pet.id)}/edit`)
   }
 
   return (
@@ -152,7 +153,14 @@ export const PetDetails: React.FC<PetDetailsProps> = ({
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
                               <AlertDialogAction
-                                onClick={() => onDeletePlacementRequest(request.id)}
+                                onClick={() => {
+                                  const run = async () => {
+                                    await onDeletePlacementRequest(request.id)
+                                  }
+                                  run().catch((error: unknown) => {
+                                    console.error('Failed to delete placement request', error)
+                                  })
+                                }}
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                               >
                                 Delete
@@ -178,39 +186,48 @@ export const PetDetails: React.FC<PetDetailsProps> = ({
             activePlacementRequest && (
               <div className="border-t pt-4">
                 {myPendingTransfer ? (
-                  <div className="space-y-2">
+                    <div className="space-y-2">
                     <p className="text-sm text-muted-foreground">
                       You responded to this placement request. Waiting for approval...
                     </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        if (onCancelTransferRequest) {
-                          onCancelTransferRequest(myPendingTransfer.id!)
-                        }
-                      }}
-                    >
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (onCancelTransferRequest) {
+                            const run = async () => {
+                              await onCancelTransferRequest(myPendingTransfer.id)
+                            }
+                            run().catch((error: unknown) => {
+                              console.error('Failed to cancel transfer request', error)
+                            })
+                          }
+                        }}
+                      >
                       Cancel Response
                     </Button>
                   </div>
                 ) : (
-                  <Button
-                    onClick={() => setIsRespondOpen(true)}
-                    className="w-full"
-                  >
+                    <Button
+                      onClick={() => {
+                        setIsRespondOpen(true)
+                      }}
+                      className="w-full"
+                    >
                     Respond to Placement Request
                   </Button>
                 )}
                 
-                <PlacementResponseModal
-                  isOpen={isRespondOpen}
-                  onClose={() => setIsRespondOpen(false)}
-                  petName={pet.name}
-                  petId={pet.id}
-                  placementRequestId={activePlacementRequest.id}
-                  onSuccess={onTransferResponseSuccess}
-                />
+                  <PlacementResponseModal
+                    isOpen={isRespondOpen}
+                    onClose={() => {
+                      setIsRespondOpen(false)
+                    }}
+                    petName={pet.name}
+                    petId={pet.id}
+                    placementRequestId={activePlacementRequest.id}
+                    onSuccess={onTransferResponseSuccess}
+                  />
               </div>
             )}
 

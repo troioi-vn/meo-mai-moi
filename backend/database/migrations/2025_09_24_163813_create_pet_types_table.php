@@ -20,7 +20,7 @@ return new class extends Migration
             $table->boolean('is_system')->default(false);
             $table->integer('display_order')->default(0);
             $table->timestamps();
-            
+
             // Index for efficient filtering and ordering
             $table->index(['is_active', 'display_order']);
         });

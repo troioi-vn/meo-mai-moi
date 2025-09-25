@@ -6,7 +6,6 @@ use App\Models\Pet;
 use App\Models\WeightHistory;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 use OpenApi\Annotations as OA;
 
 /**
@@ -14,6 +13,7 @@ use OpenApi\Annotations as OA;
  *     schema="WeightHistory",
  *     title="WeightHistory",
  *     description="Weight History model",
+ *
  *     @OA\Property(property="id", type="integer", format="int64", description="Weight History ID"),
  *     @OA\Property(property="pet_id", type="integer", format="int64", description="ID of the associated pet"),
  *     @OA\Property(property="weight_kg", type="number", format="float", description="Recorded weight in kilograms"),
@@ -28,40 +28,52 @@ class WeightHistoryController extends Controller
 
     /**
      * @OA\Post(
-    *     path="/api/pets/{pet_id}/weight-history",
-    *     summary="Add a new weight record for a pet",
-    *     tags={"Pets"},
+     *     path="/api/pets/{pet_id}/weight-history",
+     *     summary="Add a new weight record for a pet",
+     *     tags={"Pets"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(
-    *         name="pet_id",
+     *         name="pet_id",
      *         in="path",
      *         required=true,
-    *         description="ID of the pet to add a weight record for",
+     *         description="ID of the pet to add a weight record for",
+     *
      *         @OA\Schema(type="integer")
      *     ),
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\JsonContent(
      *             required={"weight_kg", "record_date"},
+     *
      *             @OA\Property(property="weight_kg", type="number", format="float", example=5.2),
      *             @OA\Property(property="record_date", type="string", format="date", example="2024-01-15")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=201,
      *         description="Weight record created successfully",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="data", ref="#/components/schemas/WeightHistory")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=422,
      *         description="Validation error",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Validation Error"),
      *             @OA\Property(property="errors", type="object", example={"weight_kg": {"The weight kg field is required."}})
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=401,
      *         description="Unauthenticated"

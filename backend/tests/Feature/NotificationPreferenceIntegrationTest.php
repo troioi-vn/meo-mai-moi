@@ -21,10 +21,10 @@ class NotificationPreferenceIntegrationTest extends TestCase
         // 1. Get initial preferences (should be defaults)
         $response = $this->getJson('/api/notification-preferences');
         $response->assertStatus(200);
-        
+
         $initialPreferences = $response->json('data');
         $this->assertCount(count(NotificationType::cases()), $initialPreferences);
-        
+
         // All should be enabled by default
         foreach ($initialPreferences as $preference) {
             $this->assertTrue($preference['email_enabled']);
@@ -46,26 +46,26 @@ class NotificationPreferenceIntegrationTest extends TestCase
         ];
 
         $response = $this->putJson('/api/notification-preferences', [
-            'preferences' => $updatedPreferences
+            'preferences' => $updatedPreferences,
         ]);
-        
+
         $response->assertStatus(200);
         $response->assertJson([
-            'message' => 'Notification preferences updated successfully'
+            'message' => 'Notification preferences updated successfully',
         ]);
 
         // 3. Verify preferences were saved
         $response = $this->getJson('/api/notification-preferences');
         $response->assertStatus(200);
-        
+
         $preferences = $response->json('data');
-        
+
         $placementRequestResponse = collect($preferences)->firstWhere('type', NotificationType::PLACEMENT_REQUEST_RESPONSE->value);
         $helperResponseAccepted = collect($preferences)->firstWhere('type', NotificationType::HELPER_RESPONSE_ACCEPTED->value);
-        
+
         $this->assertFalse($placementRequestResponse['email_enabled']);
         $this->assertTrue($placementRequestResponse['in_app_enabled']);
-        
+
         $this->assertTrue($helperResponseAccepted['email_enabled']);
         $this->assertFalse($helperResponseAccepted['in_app_enabled']);
 
@@ -94,17 +94,17 @@ class NotificationPreferenceIntegrationTest extends TestCase
         ];
 
         $response = $this->putJson('/api/notification-preferences', [
-            'preferences' => $secondUpdate
+            'preferences' => $secondUpdate,
         ]);
-        
+
         $response->assertStatus(200);
 
         // 6. Verify the update
         $response = $this->getJson('/api/notification-preferences');
         $preferences = $response->json('data');
-        
+
         $placementRequestResponse = collect($preferences)->firstWhere('type', NotificationType::PLACEMENT_REQUEST_RESPONSE->value);
-        
+
         $this->assertTrue($placementRequestResponse['email_enabled']);
         $this->assertFalse($placementRequestResponse['in_app_enabled']);
 
@@ -120,11 +120,11 @@ class NotificationPreferenceIntegrationTest extends TestCase
     public function test_notification_preference_model_methods_work_correctly()
     {
         $user = User::factory()->create();
-        
+
         // Test default behavior (no preferences exist)
         $this->assertTrue(NotificationPreference::isEmailEnabled($user, NotificationType::PLACEMENT_REQUEST_RESPONSE->value));
         $this->assertTrue(NotificationPreference::isInAppEnabled($user, NotificationType::PLACEMENT_REQUEST_RESPONSE->value));
-        
+
         // Create a preference
         NotificationPreference::updatePreference(
             $user,
@@ -132,16 +132,16 @@ class NotificationPreferenceIntegrationTest extends TestCase
             false,
             true
         );
-        
+
         // Test the preference is applied
         $this->assertFalse(NotificationPreference::isEmailEnabled($user, NotificationType::PLACEMENT_REQUEST_RESPONSE->value));
         $this->assertTrue(NotificationPreference::isInAppEnabled($user, NotificationType::PLACEMENT_REQUEST_RESPONSE->value));
-        
+
         // Test getPreference method
         $preference = NotificationPreference::getPreference($user, NotificationType::HELPER_RESPONSE_ACCEPTED->value);
         $this->assertTrue($preference->email_enabled);
         $this->assertTrue($preference->in_app_enabled);
-        
+
         // Test that it creates the preference if it doesn't exist
         $this->assertDatabaseHas('notification_preferences', [
             'user_id' => $user->id,

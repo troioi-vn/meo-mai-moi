@@ -6,15 +6,14 @@ use App\Models\Notification;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
-use Illuminate\Database\Eloquent\Builder;
 
 class EmailFailureAnalysisWidget extends BaseWidget
 {
     protected static ?string $heading = 'Recent Email Failures';
-    
+
     protected static ?int $sort = 4;
-    
-    protected int | string | array $columnSpan = 'full';
+
+    protected int|string|array $columnSpan = 'full';
 
     public function table(Table $table): Table
     {
@@ -30,7 +29,7 @@ class EmailFailureAnalysisWidget extends BaseWidget
                     ->label('Recipient')
                     ->searchable()
                     ->sortable(),
-                
+
                 Tables\Columns\BadgeColumn::make('type_display')
                     ->label('Type')
                     ->colors([
@@ -45,24 +44,25 @@ class EmailFailureAnalysisWidget extends BaseWidget
                         'danger' => 'profile_rejected',
                         'gray' => 'system_announcement',
                     ]),
-                
+
                 Tables\Columns\TextColumn::make('failure_reason')
                     ->label('Failure Reason')
                     ->limit(50)
                     ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
                         $state = $column->getState();
-                        if (!$state || strlen($state) <= 50) {
+                        if (! $state || strlen($state) <= 50) {
                             return null;
                         }
+
                         return $state;
                     })
                     ->searchable(),
-                
+
                 Tables\Columns\TextColumn::make('failed_at')
                     ->label('Failed At')
                     ->dateTime()
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created At')
                     ->dateTime()
@@ -80,17 +80,16 @@ class EmailFailureAnalysisWidget extends BaseWidget
                             'failure_reason' => null,
                             'delivered_at' => null,
                         ]);
-                        
+
                         // Here you would typically trigger the notification delivery system
                         // For now, we'll just mark it as delivered
                         $record->update(['delivered_at' => now()]);
                     }),
-                
+
                 Tables\Actions\Action::make('view_details')
                     ->label('View')
                     ->icon('heroicon-o-eye')
-                    ->url(fn (Notification $record): string => 
-                        route('filament.admin.resources.notifications.view', $record)
+                    ->url(fn (Notification $record): string => route('filament.admin.resources.notifications.view', $record)
                     ),
             ])
             ->defaultPaginationPageOption(10)

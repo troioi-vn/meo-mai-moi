@@ -200,8 +200,8 @@ export const useCreatePetForm = (petId?: string) => {
 
       // Upload photos if any
       const photos = formData.photos
-      if (photos && photos.length > 0) {
-        const photoArray = photos instanceof FileList ? Array.from(photos) : photos
+      const photoArray = photos instanceof FileList ? Array.from(photos) : photos
+      if (photoArray.length > 0) {
         for (const photo of photoArray) {
           if (photo instanceof File) {
             await uploadPetPhoto(pet.id, photo)

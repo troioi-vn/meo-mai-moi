@@ -5,8 +5,8 @@ namespace App\Filament\Resources\EmailConfigurationResource\Pages;
 use App\Filament\Resources\EmailConfigurationResource;
 use App\Services\EmailConfigurationService;
 use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
 use Filament\Notifications\Notification;
+use Filament\Resources\Pages\EditRecord;
 
 class EditEmailConfiguration extends EditRecord
 {
@@ -21,10 +21,10 @@ class EditEmailConfiguration extends EditRecord
                 ->color('info')
                 ->action(function (): void {
                     $service = app(EmailConfigurationService::class);
-                    
+
                     try {
                         $success = $service->testConfiguration($this->record->provider, $this->record->config);
-                        
+
                         if ($success) {
                             Notification::make()
                                 ->title('Connection Test Successful')
@@ -41,7 +41,7 @@ class EditEmailConfiguration extends EditRecord
                     } catch (\Exception $e) {
                         Notification::make()
                             ->title('Connection Test Error')
-                            ->body('Error testing configuration: ' . $e->getMessage())
+                            ->body('Error testing configuration: '.$e->getMessage())
                             ->danger()
                             ->send();
                     }
@@ -54,18 +54,18 @@ class EditEmailConfiguration extends EditRecord
                 ->label('Activate Configuration')
                 ->icon('heroicon-o-power')
                 ->color('success')
-                ->visible(fn (): bool => !$this->record->is_active && $this->record->isValid())
+                ->visible(fn (): bool => ! $this->record->is_active && $this->record->isValid())
                 ->action(function (): void {
                     try {
                         $this->record->activate();
-                        
+
                         // Update mail configuration
                         $service = app(EmailConfigurationService::class);
                         $service->updateMailConfig();
-                        
+
                         // Refresh the record to show updated status
                         $this->refreshFormData(['is_active']);
-                        
+
                         Notification::make()
                             ->title('Configuration Activated')
                             ->body('Email configuration has been activated successfully.')
@@ -74,7 +74,7 @@ class EditEmailConfiguration extends EditRecord
                     } catch (\Exception $e) {
                         Notification::make()
                             ->title('Activation Failed')
-                            ->body('Failed to activate configuration: ' . $e->getMessage())
+                            ->body('Failed to activate configuration: '.$e->getMessage())
                             ->danger()
                             ->send();
                     }
@@ -85,7 +85,7 @@ class EditEmailConfiguration extends EditRecord
 
             Actions\ViewAction::make(),
             Actions\DeleteAction::make()
-                ->visible(fn (): bool => !$this->record->is_active),
+                ->visible(fn (): bool => ! $this->record->is_active),
         ];
     }
 
@@ -97,16 +97,16 @@ class EditEmailConfiguration extends EditRecord
     protected function afterSave(): void
     {
         $record = $this->record;
-        
+
         // If this configuration is set to active, activate it properly
         if ($record->is_active) {
             try {
                 $record->activate();
-                
+
                 // Update mail configuration
                 $service = app(EmailConfigurationService::class);
                 $service->updateMailConfig();
-                
+
                 Notification::make()
                     ->title('Configuration Updated and Activated')
                     ->body('Email configuration has been updated and activated successfully.')
@@ -115,7 +115,7 @@ class EditEmailConfiguration extends EditRecord
             } catch (\Exception $e) {
                 Notification::make()
                     ->title('Configuration Updated but Activation Failed')
-                    ->body('Configuration was updated but could not be activated: ' . $e->getMessage())
+                    ->body('Configuration was updated but could not be activated: '.$e->getMessage())
                     ->warning()
                     ->send();
             }
@@ -131,12 +131,12 @@ class EditEmailConfiguration extends EditRecord
     protected function mutateFormDataBeforeSave(array $data): array
     {
         // Remove empty values from config
-        if (!empty($data['config'])) {
+        if (! empty($data['config'])) {
             $data['config'] = array_filter($data['config'], function ($value) {
                 return $value !== null && $value !== '';
             });
         }
-        
+
         return $data;
     }
 }

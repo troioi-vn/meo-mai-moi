@@ -2,11 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\Pet;
+use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
-use App\Models\Pet;
-use App\Models\User;
+
 class FileUploadService
 {
     protected $imageManager;
@@ -16,7 +17,6 @@ class FileUploadService
         $this->imageManager = $imageManager;
     }
 
-
     public function uploadPetPhoto(UploadedFile $file, Pet $pet): string
     {
         // Delete old photo if it exists
@@ -25,14 +25,14 @@ class FileUploadService
             $pet->photo->delete();
         }
 
-        $filename = $pet->id . '_' . now()->valueOf() . '.' . $file->extension();
+        $filename = $pet->id.'_'.now()->valueOf().'.'.$file->extension();
         $image = $this->imageManager->read($file);
 
         $image->cover(1200, 675);
 
         // Use pet type for folder organization
         $petTypeSlug = $pet->petType->slug ?? 'pets';
-        $path = $petTypeSlug . '/profiles/' . $filename;
+        $path = $petTypeSlug.'/profiles/'.$filename;
         Storage::disk('public')->put($path, (string) $image->encode());
 
         return $path;
@@ -47,13 +47,13 @@ class FileUploadService
             $this->delete($oldPath);
         }
 
-        $filename = 'user_' . $user->id . '_' . now()->valueOf() . '.' . $file->extension();
+        $filename = 'user_'.$user->id.'_'.now()->valueOf().'.'.$file->extension();
         $image = $this->imageManager->read($file);
 
         // Resize avatar to a square format
         $image->resize(400, 400);
 
-        $path = 'users/avatars/' . $filename;
+        $path = 'users/avatars/'.$filename;
         Storage::disk('public')->put($path, (string) $image->encode());
 
         return $path;

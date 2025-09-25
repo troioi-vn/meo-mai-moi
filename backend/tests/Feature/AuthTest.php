@@ -2,16 +2,15 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use App\Models\User;
-use Laravel\Sanctum\Sanctum;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 use Tests\Traits\CreatesUsers;
 
 class AuthTest extends TestCase
 {
-    use RefreshDatabase, CreatesUsers;
+    use CreatesUsers, RefreshDatabase;
 
     #[Test]
     public function a_user_can_register_successfully()
@@ -24,12 +23,12 @@ class AuthTest extends TestCase
         ]);
 
         $response->assertStatus(201)
-                 ->assertJsonStructure([
-                     'data' => [
-                         'access_token',
-                         'token_type',
-                     ]
-                 ]);
+            ->assertJsonStructure([
+                'data' => [
+                    'access_token',
+                    'token_type',
+                ],
+            ]);
 
         $this->assertDatabaseHas('users', [
             'email' => 'test@example.com',
@@ -103,12 +102,12 @@ class AuthTest extends TestCase
         ]);
 
         $response->assertStatus(200)
-                 ->assertJsonStructure([
-                     'data' => [
-                         'access_token',
-                         'token_type',
-                     ]
-                 ]);
+            ->assertJsonStructure([
+                'data' => [
+                    'access_token',
+                    'token_type',
+                ],
+            ]);
     }
 
     #[Test]
@@ -160,6 +159,6 @@ class AuthTest extends TestCase
         $response = $this->getJson('/api/user');
 
         $response->assertStatus(200)
-                 ->assertJson(['data' => ['email' => $user->email]]);
+            ->assertJson(['data' => ['email' => $user->email]]);
     }
 }

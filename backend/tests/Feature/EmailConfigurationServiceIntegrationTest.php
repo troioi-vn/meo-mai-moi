@@ -20,14 +20,14 @@ class EmailConfigurationServiceIntegrationTest extends TestCase
     {
         $service1 = app(EmailConfigurationService::class);
         $service2 = app(EmailConfigurationService::class);
-        
+
         $this->assertSame($service1, $service2);
     }
 
     public function test_service_methods_work_through_container()
     {
         $service = app(EmailConfigurationService::class);
-        
+
         // Test that methods work when resolved from container
         $this->assertNull($service->getActiveConfiguration());
         $this->assertFalse($service->isEmailEnabled());

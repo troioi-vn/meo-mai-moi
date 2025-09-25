@@ -71,7 +71,7 @@ const HelperProfileEditPage: React.FC = () => {
     useHelperProfileForm(numericId, initialFormData)
 
   const handlePetTypeChange = (petTypeId: number) => {
-    const currentPetTypeIds = formData.pet_type_ids || []
+    const currentPetTypeIds = formData.pet_type_ids
     const updatedPetTypeIds = currentPetTypeIds.includes(petTypeId)
       ? currentPetTypeIds.filter((id) => id !== petTypeId)
       : [...currentPetTypeIds, petTypeId]
@@ -234,10 +234,12 @@ const HelperProfileEditPage: React.FC = () => {
                 .map((petType) => (
                   <CheckboxField
                     key={petType.id}
-                    id={`pet_type_${petType.id}`}
+                    id={`pet_type_${String(petType.id)}`}
                     label={petType.name}
-                    checked={formData.pet_type_ids?.includes(petType.id)}
-                    onChange={() => handlePetTypeChange(petType.id)}
+                    checked={formData.pet_type_ids.includes(petType.id)}
+                    onChange={() => {
+                      handlePetTypeChange(petType.id)
+                    }}
                   />
                 ))}
             </div>

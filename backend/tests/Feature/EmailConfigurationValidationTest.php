@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Exceptions\EmailConfigurationException;
 use App\Models\EmailConfiguration;
 use App\Services\EmailConfigurationService;
-use App\Exceptions\EmailConfigurationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -32,7 +32,7 @@ class EmailConfigurationValidationTest extends TestCase
                 'password' => 'password',
                 'encryption' => 'invalid', // Invalid encryption
                 'from_address' => 'invalid-email', // Invalid email
-            ]
+            ],
         ]);
 
         $errors = $config->validateConfig();
@@ -52,7 +52,7 @@ class EmailConfigurationValidationTest extends TestCase
                 'domain' => 'invalid-domain', // Invalid domain format
                 'api_key' => 'invalid-key', // Invalid API key format
                 'from_address' => 'invalid-email', // Invalid email
-            ]
+            ],
         ]);
 
         $errors = $config->validateConfig();
@@ -75,7 +75,7 @@ class EmailConfigurationValidationTest extends TestCase
                 'encryption' => null, // This should generate a warning
                 'from_address' => 'test@example.com',
                 // Missing from_name should generate a warning
-            ]
+            ],
         ]);
 
         $summary = $config->getConfigurationSummary();
@@ -153,11 +153,11 @@ class EmailConfigurationValidationTest extends TestCase
                     'password' => 'password',
                     'encryption' => 'tls',
                     'from_address' => $email,
-                ]
+                ],
             ]);
 
             $errors = $config->validateConfig();
-            $this->assertEmpty(array_filter($errors, fn($error) => str_contains($error, 'email address')), 
+            $this->assertEmpty(array_filter($errors, fn ($error) => str_contains($error, 'email address')),
                 "Valid email {$email} should not produce validation errors");
         }
 
@@ -171,11 +171,11 @@ class EmailConfigurationValidationTest extends TestCase
                     'password' => 'password',
                     'encryption' => 'tls',
                     'from_address' => $email,
-                ]
+                ],
             ]);
 
             $errors = $config->validateConfig();
-            $this->assertNotEmpty(array_filter($errors, fn($error) => str_contains($error, 'email address')), 
+            $this->assertNotEmpty(array_filter($errors, fn ($error) => str_contains($error, 'email address')),
                 "Invalid email {$email} should produce validation errors");
         }
     }
@@ -196,11 +196,11 @@ class EmailConfigurationValidationTest extends TestCase
                     'password' => 'password',
                     'encryption' => 'tls',
                     'from_address' => 'test@example.com',
-                ]
+                ],
             ]);
 
             $errors = $config->validateConfig();
-            $this->assertEmpty(array_filter($errors, fn($error) => str_contains($error, 'port')), 
+            $this->assertEmpty(array_filter($errors, fn ($error) => str_contains($error, 'port')),
                 "Valid port {$port} should not produce validation errors");
         }
 
@@ -214,11 +214,11 @@ class EmailConfigurationValidationTest extends TestCase
                     'password' => 'password',
                     'encryption' => 'tls',
                     'from_address' => 'test@example.com',
-                ]
+                ],
             ]);
 
             $errors = $config->validateConfig();
-            $this->assertNotEmpty(array_filter($errors, fn($error) => str_contains($error, 'port')), 
+            $this->assertNotEmpty(array_filter($errors, fn ($error) => str_contains($error, 'port')),
                 "Invalid port {$port} should produce validation errors");
         }
     }

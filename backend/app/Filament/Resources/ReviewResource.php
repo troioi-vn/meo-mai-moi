@@ -4,15 +4,14 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ReviewResource\Pages;
 use App\Models\Review;
-use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\Filter;
 use Filament\Tables\Actions\BulkAction;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -39,21 +38,21 @@ class ReviewResource extends Resource
                             ->searchable()
                             ->preload()
                             ->required(),
-                        
+
                         Forms\Components\Select::make('reviewed_user_id')
                             ->label('Reviewed User')
                             ->relationship('reviewed', 'name')
                             ->searchable()
                             ->preload()
                             ->required(),
-                        
+
                         Forms\Components\Select::make('transfer_id')
                             ->label('Related Transfer')
                             ->relationship('transfer', 'id')
                             ->searchable()
                             ->preload()
                             ->nullable(),
-                        
+
                         Forms\Components\TextInput::make('rating')
                             ->label('Rating')
                             ->numeric()
@@ -61,7 +60,7 @@ class ReviewResource extends Resource
                             ->maxValue(5)
                             ->required()
                             ->helperText('Rating from 1 to 5 stars'),
-                        
+
                         Forms\Components\RichEditor::make('comment')
                             ->label('Review Content')
                             ->columnSpanFull()
@@ -81,28 +80,28 @@ class ReviewResource extends Resource
                             ])
                             ->default('active')
                             ->required(),
-                        
+
                         Forms\Components\Toggle::make('is_flagged')
                             ->label('Flagged for Review')
                             ->default(false),
-                        
+
                         Forms\Components\DateTimePicker::make('flagged_at')
                             ->label('Flagged At')
                             ->nullable(),
-                        
+
                         Forms\Components\Textarea::make('moderation_notes')
                             ->label('Moderation Notes')
                             ->columnSpanFull()
                             ->nullable()
                             ->helperText('Internal notes for moderation team'),
-                        
+
                         Forms\Components\Select::make('moderated_by')
                             ->label('Moderated By')
                             ->relationship('moderator', 'name')
                             ->searchable()
                             ->preload()
                             ->nullable(),
-                        
+
                         Forms\Components\DateTimePicker::make('moderated_at')
                             ->label('Moderated At')
                             ->nullable(),
@@ -119,17 +118,17 @@ class ReviewResource extends Resource
                     ->label('Reviewer')
                     ->searchable()
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('reviewed.name')
                     ->label('Reviewed User')
                     ->searchable()
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('rating')
                     ->label('Rating')
                     ->formatStateUsing(fn (string $state): string => str_repeat('⭐', (int) $state))
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('comment')
                     ->label('Content Preview')
                     ->limit(50)
@@ -138,9 +137,10 @@ class ReviewResource extends Resource
                         if (strlen($state) <= 50) {
                             return null;
                         }
+
                         return $state;
                     }),
-                
+
                 Tables\Columns\BadgeColumn::make('status')
                     ->label('Status')
                     ->colors([
@@ -149,7 +149,7 @@ class ReviewResource extends Resource
                         'danger' => 'hidden',
                         'secondary' => 'deleted',
                     ]),
-                
+
                 Tables\Columns\IconColumn::make('is_flagged')
                     ->label('Flagged')
                     ->boolean()
@@ -157,13 +157,13 @@ class ReviewResource extends Resource
                     ->falseIcon('heroicon-o-minus')
                     ->trueColor('danger')
                     ->falseColor('gray'),
-                
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(),
-                
+
                 Tables\Columns\TextColumn::make('moderated_at')
                     ->label('Moderated')
                     ->dateTime()
@@ -178,7 +178,7 @@ class ReviewResource extends Resource
                         'flagged' => 'Flagged',
                         'deleted' => 'Deleted',
                     ]),
-                
+
                 SelectFilter::make('rating')
                     ->options([
                         '1' => '1 Star',
@@ -187,11 +187,11 @@ class ReviewResource extends Resource
                         '4' => '4 Stars',
                         '5' => '5 Stars',
                     ]),
-                
+
                 Filter::make('flagged_content')
                     ->label('Flagged Content')
                     ->query(fn (Builder $query): Builder => $query->where('is_flagged', true)),
-                
+
                 Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('created_from')
@@ -225,7 +225,7 @@ class ReviewResource extends Resource
                             'moderated_at' => now(),
                         ]);
                     }),
-                
+
                 Tables\Actions\Action::make('show')
                     ->label('Show')
                     ->icon('heroicon-o-eye')
@@ -239,12 +239,12 @@ class ReviewResource extends Resource
                             'moderated_at' => now(),
                         ]);
                     }),
-                
+
                 Tables\Actions\Action::make('flag')
                     ->label('Flag')
                     ->icon('heroicon-o-flag')
                     ->color('danger')
-                    ->visible(fn (Review $record): bool => !$record->is_flagged)
+                    ->visible(fn (Review $record): bool => ! $record->is_flagged)
                     ->form([
                         Forms\Components\Textarea::make('moderation_notes')
                             ->label('Reason for flagging')
@@ -260,7 +260,7 @@ class ReviewResource extends Resource
                             'moderated_at' => now(),
                         ]);
                     }),
-                
+
                 Tables\Actions\Action::make('unflag')
                     ->label('Unflag')
                     ->icon('heroicon-o-check')
@@ -276,9 +276,9 @@ class ReviewResource extends Resource
                             'moderated_at' => now(),
                         ]);
                     }),
-                
+
                 Tables\Actions\EditAction::make(),
-                
+
                 Tables\Actions\DeleteAction::make()
                     ->requiresConfirmation()
                     ->action(function (Review $record): void {
@@ -305,7 +305,7 @@ class ReviewResource extends Resource
                                 ]);
                             });
                         }),
-                    
+
                     BulkAction::make('show')
                         ->label('Show Selected')
                         ->icon('heroicon-o-eye')
@@ -320,7 +320,7 @@ class ReviewResource extends Resource
                                 ]);
                             });
                         }),
-                    
+
                     BulkAction::make('flag')
                         ->label('Flag Selected')
                         ->icon('heroicon-o-flag')
@@ -342,7 +342,7 @@ class ReviewResource extends Resource
                                 ]);
                             });
                         }),
-                    
+
                     Tables\Actions\DeleteBulkAction::make()
                         ->label('Delete Selected')
                         ->requiresConfirmation()

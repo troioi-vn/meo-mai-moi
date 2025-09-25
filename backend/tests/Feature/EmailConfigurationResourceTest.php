@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\EmailConfigurationResource;
 use App\Models\EmailConfiguration;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use Livewire\Livewire;
-use App\Filament\Resources\EmailConfigurationResource;
+use Tests\TestCase;
 
 class EmailConfigurationResourceTest extends TestCase
 {
@@ -16,18 +16,18 @@ class EmailConfigurationResourceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Seed roles and permissions
         $this->artisan('db:seed', ['--class' => 'RolesAndPermissionsSeeder']);
-        
+
         // Create an admin user for testing
         $user = User::factory()->create([
             'email' => 'admin@test.com',
         ]);
-        
+
         // Assign admin role to the user
         $user->assignRole('admin');
-        
+
         $this->actingAs($user);
     }
 

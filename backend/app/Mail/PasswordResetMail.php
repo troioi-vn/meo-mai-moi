@@ -3,8 +3,6 @@
 namespace App\Mail;
 
 use App\Models\User;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -15,7 +13,9 @@ class PasswordResetMail extends Mailable
     use SerializesModels;
 
     public User $user;
+
     public string $token;
+
     public string $resetUrl;
 
     /**
@@ -25,10 +25,10 @@ class PasswordResetMail extends Mailable
     {
         $this->user = $user;
         $this->token = $token;
-        
+
         // Build the reset URL for the frontend
         $frontendUrl = config('app.frontend_url', 'http://localhost:8000');
-        $this->resetUrl = $frontendUrl . '/reset-password?token=' . $token . '&email=' . urlencode($user->email);
+        $this->resetUrl = $frontendUrl.'/reset-password?token='.$token.'&email='.urlencode($user->email);
     }
 
     /**
@@ -38,7 +38,7 @@ class PasswordResetMail extends Mailable
     {
         return new Envelope(
             to: $this->user->email,
-            subject: 'Reset Your Password - ' . config('app.name'),
+            subject: 'Reset Your Password - '.config('app.name'),
         );
     }
 

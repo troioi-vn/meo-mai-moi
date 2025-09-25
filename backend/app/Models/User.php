@@ -3,23 +3,20 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Laravel\Sanctum\HasApiTokens;
-use Spatie\Permission\Traits\HasRoles;
+use App\Notifications\CustomPasswordReset;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
-use App\Models\HelperProfile;
-use App\Models\Review;
-use App\Notifications\CustomPasswordReset;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasApiTokens, HasRoles;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -70,6 +67,7 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->hasMany(Review::class, 'reviewed_user_id');
     }
+
     // Relationship: User owns many pets
     public function pets(): HasMany
     {
@@ -115,7 +113,7 @@ class User extends Authenticatable implements FilamentUser
      */
     public function canBeImpersonated(): bool
     {
-        return !$this->hasRole(['admin', 'super_admin']);
+        return ! $this->hasRole(['admin', 'super_admin']);
     }
 
     /**

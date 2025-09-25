@@ -4,8 +4,8 @@ namespace App\Filament\Resources\PetTypeResource\Pages;
 
 use App\Filament\Resources\PetTypeResource;
 use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
 use Filament\Notifications\Notification;
+use Filament\Resources\Pages\EditRecord;
 
 class EditPetType extends EditRecord
 {
@@ -24,6 +24,7 @@ class EditPetType extends EditRecord
                             ->body('System pet types (Cat, Dog) cannot be deleted.')
                             ->danger()
                             ->send();
+
                         return false; // Cancel the action
                     }
 
@@ -34,6 +35,7 @@ class EditPetType extends EditRecord
                             ->body('This pet type has pets associated with it and cannot be deleted.')
                             ->danger()
                             ->send();
+
                         return false; // Cancel the action
                     }
                 }),

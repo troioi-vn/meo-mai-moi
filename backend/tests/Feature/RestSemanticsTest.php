@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\Pet;
 use App\Models\HelperProfile;
 use App\Models\Notification;
+use App\Models\Pet;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -15,19 +15,22 @@ class RestSemanticsTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+
     private Pet $pet;
+
     private HelperProfile $helperProfile;
+
     private Notification $notification;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->user = User::factory()->create();
-    $this->pet = Pet::factory()->create(['user_id' => $this->user->id]);
+        $this->pet = Pet::factory()->create(['user_id' => $this->user->id]);
         $this->helperProfile = HelperProfile::factory()->create(['user_id' => $this->user->id]);
         $this->notification = Notification::factory()->create(['user_id' => $this->user->id]);
-        
+
         Sanctum::actingAs($this->user);
     }
 
@@ -36,7 +39,7 @@ class RestSemanticsTest extends TestCase
     {
         $userData = [
             'name' => 'Updated Name',
-            'email' => 'updated@example.com'
+            'email' => 'updated@example.com',
         ];
 
         // PUT should work
@@ -58,7 +61,7 @@ class RestSemanticsTest extends TestCase
         $passwordData = [
             'current_password' => 'password',
             'new_password' => 'newpassword123',
-            'new_password_confirmation' => 'newpassword123'
+            'new_password_confirmation' => 'newpassword123',
         ];
 
         // PUT should work
@@ -95,7 +98,7 @@ class RestSemanticsTest extends TestCase
     {
         $statusData = [
             'status' => 'lost',
-            'password' => 'password'
+            'password' => 'password',
         ];
 
         // PUT should work
@@ -119,9 +122,9 @@ class RestSemanticsTest extends TestCase
                 [
                     'type' => 'placement_request_response',
                     'email_enabled' => true,
-                    'in_app_enabled' => false
-                ]
-            ]
+                    'in_app_enabled' => false,
+                ],
+            ],
         ];
 
         // PUT should work
@@ -178,7 +181,7 @@ class RestSemanticsTest extends TestCase
     public function bulk_notification_read_supports_post_methods()
     {
         // Both endpoints should work for marking all notifications as read
-        
+
         // POST /notifications/mark-all-read (preferred)
         $response = $this->postJson('/api/notifications/mark-all-read');
         $response->assertStatus(204);
@@ -207,7 +210,7 @@ class RestSemanticsTest extends TestCase
             'status' => 'active',
             'birthday' => '2022-01-01',
             'location' => 'Test City',
-            'description' => 'A lovely test pet'
+            'description' => 'A lovely test pet',
         ];
 
         // POST should work
@@ -227,18 +230,18 @@ class RestSemanticsTest extends TestCase
     public function delete_operations_require_delete_method()
     {
         // DELETE should work (with password confirmation)
-    $response = $this->deleteJson("/api/pets/{$this->pet->id}", ['password' => 'password']);
+        $response = $this->deleteJson("/api/pets/{$this->pet->id}", ['password' => 'password']);
         $response->assertStatus(204);
 
-    // Create another pet for testing other methods
-    $pet2 = Pet::factory()->create(['user_id' => $this->user->id]);
+        // Create another pet for testing other methods
+        $pet2 = Pet::factory()->create(['user_id' => $this->user->id]);
 
         // POST should return 405 Method Not Allowed for delete endpoint
-    $response = $this->postJson("/api/pets/{$pet2->id}/delete");
+        $response = $this->postJson("/api/pets/{$pet2->id}/delete");
         $response->assertStatus(405); // Method not allowed
 
         // Test avatar deletion specifically (should work even if no avatar exists)
-        $response = $this->deleteJson("/api/users/me/avatar");
+        $response = $this->deleteJson('/api/users/me/avatar');
         $response->assertStatus(404); // No avatar to delete
 
         // Test that wrong HTTP methods return 405 for existing endpoints

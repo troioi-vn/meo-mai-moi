@@ -2,15 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\EmailConfigurationResource;
 use App\Models\EmailConfiguration;
 use App\Models\User;
 use App\Services\EmailConfigurationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-use Livewire\Livewire;
-use App\Filament\Resources\EmailConfigurationResource;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Mail;
+use Livewire\Livewire;
+use Tests\TestCase;
 
 class EmailConfigurationAdminIntegrationTest extends TestCase
 {
@@ -21,18 +21,18 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Seed roles and permissions
         $this->artisan('db:seed', ['--class' => 'RolesAndPermissionsSeeder']);
-        
+
         // Create an admin user for testing
         $this->adminUser = User::factory()->create([
             'email' => 'admin@test.com',
         ]);
-        
+
         // Assign admin role to the user
         $this->adminUser->assignRole('admin');
-        
+
         $this->actingAs($this->adminUser);
     }
 
@@ -262,7 +262,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
         $component = Livewire::test(EmailConfigurationResource\Pages\CreateEmailConfiguration::class)
             ->fillForm($invalidSmtpData)
             ->call('create');
-            
+
         // Check that the form has validation errors (the specific fields may vary based on validation rules)
         $component->assertHasFormErrors();
 
@@ -284,7 +284,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
         $component = Livewire::test(EmailConfigurationResource\Pages\CreateEmailConfiguration::class)
             ->fillForm($invalidMailgunData)
             ->call('create');
-            
+
         // Check that the form has validation errors (the specific fields may vary based on validation rules)
         $component->assertHasFormErrors();
 
@@ -363,7 +363,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
         $response = $this->get(EmailConfigurationResource::getUrl('index'));
 
         $response->assertSuccessful();
-        
+
         // Should see all configurations in the list
         $this->assertDatabaseCount('email_configurations', 3);
     }

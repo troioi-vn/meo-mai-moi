@@ -170,7 +170,7 @@ const PetProfilePage: React.FC = () => {
 
   const handleEditClick = () => {
     if (pet?.id) {
-      void navigate(`/pets/${pet.id}/edit`)
+      void navigate(`/pets/${String(pet.id)}/edit`)
     }
   }
 

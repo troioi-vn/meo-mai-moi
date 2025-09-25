@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Pet;
 use App\Models\OwnershipHistory;
+use App\Models\Pet;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Schema;
 
@@ -15,8 +15,9 @@ class BackfillOwnershipHistory extends Command
 
     public function handle(): int
     {
-        if (!Schema::hasTable('ownership_history')) {
+        if (! Schema::hasTable('ownership_history')) {
             $this->error('Table ownership_history does not exist. Run migrations first.');
+
             return self::FAILURE;
         }
 
@@ -32,7 +33,7 @@ class BackfillOwnershipHistory extends Command
                     ->where('user_id', $pet->user_id)
                     ->whereNull('to_ts')
                     ->exists();
-                if (!$exists) {
+                if (! $exists) {
                     $from = $pet->created_at ?? now();
                     if ($dryRun) {
                         $this->line("Would create ownership_history for pet {$pet->id} owner {$pet->user_id} from {$from}");
@@ -50,6 +51,7 @@ class BackfillOwnershipHistory extends Command
         });
 
         $this->info($dryRun ? 'Dry run complete.' : "Created {$created} ownership_history records.");
+
         return self::SUCCESS;
     }
 }

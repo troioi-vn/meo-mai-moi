@@ -16,11 +16,14 @@ class HelperProfileController extends Controller
      *     path="/helper-profiles",
      *     summary="List helper profiles",
      *     tags={"Helper Profiles"},
+     *
      *     @OA\Response(
      *         response=200,
      *         description="A list of helper profiles",
+     *
      *         @OA\JsonContent(
      *             type="array",
+     *
      *             @OA\Items(ref="#/components/schemas/HelperProfile")
      *         )
      *     )
@@ -38,15 +41,20 @@ class HelperProfileController extends Controller
      *     path="/helper-profiles",
      *     summary="Create a helper profile",
      *     tags={"Helper Profiles"},
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\JsonContent(ref="#/components/schemas/HelperProfile")
      *     ),
+     *
      *     @OA\Response(
      *         response=201,
      *         description="Helper profile created successfully",
+     *
      *         @OA\JsonContent(ref="#/components/schemas/HelperProfile")
      *     ),
+     *
      *     @OA\Response(
      *         response=422,
      *         description="Validation error"
@@ -95,18 +103,23 @@ class HelperProfileController extends Controller
      *     path="/helper-profiles/{id}",
      *     summary="Get a specific helper profile",
      *     tags={"Helper Profiles"},
+     *
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
      *         description="ID of the helper profile",
+     *
      *         @OA\Schema(type="integer")
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="The helper profile",
+     *
      *         @OA\JsonContent(ref="#/components/schemas/HelperProfile")
      *     ),
+     *
      *     @OA\Response(
      *         response=404,
      *         description="Helper profile not found"
@@ -120,6 +133,7 @@ class HelperProfileController extends Controller
         if ($helperProfile->is_public || ($user && $helperProfile->user_id === $user->id)) {
             return response()->json(['data' => $helperProfile->load('photos', 'user', 'petTypes')]);
         }
+
         return response()->json(['message' => 'Forbidden'], 403);
     }
 
@@ -128,22 +142,29 @@ class HelperProfileController extends Controller
      *     path="/helper-profiles/{id}",
      *     summary="Update a helper profile",
      *     tags={"Helper Profiles"},
+     *
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
      *         description="ID of the helper profile",
+     *
      *         @OA\Schema(type="integer")
      *     ),
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\JsonContent(ref="#/components/schemas/HelperProfile")
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Helper profile updated successfully",
+     *
      *         @OA\JsonContent(ref="#/components/schemas/HelperProfile")
      *     ),
+     *
      *     @OA\Response(
      *         response=403,
      *         description="Unauthorized"
@@ -153,29 +174,36 @@ class HelperProfileController extends Controller
      *         description="Validation error"
      *     )
      * )
-     * 
+     *
      * @OA\Post(
      *     path="/helper-profiles/{id}",
      *     summary="Update a helper profile (DEPRECATED - use PUT instead)",
      *     deprecated=true,
      *     tags={"Helper Profiles"},
      *     description="This endpoint is deprecated. Use PUT /helper-profiles/{id} instead. Kept for HTML form compatibility.",
+     *
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
      *         description="ID of the helper profile",
+     *
      *         @OA\Schema(type="integer")
      *     ),
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\JsonContent(ref="#/components/schemas/HelperProfile")
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Helper profile updated successfully",
+     *
      *         @OA\JsonContent(ref="#/components/schemas/HelperProfile")
      *     ),
+     *
      *     @OA\Response(
      *         response=403,
      *         description="Unauthorized"
@@ -237,13 +265,16 @@ class HelperProfileController extends Controller
      *     path="/helper-profiles/{id}",
      *     summary="Delete a helper profile",
      *     tags={"Helper Profiles"},
+     *
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
      *         description="ID of the helper profile",
+     *
      *         @OA\Schema(type="integer")
      *     ),
+     *
      *     @OA\Response(
      *         response=204,
      *         description="Helper profile deleted successfully"

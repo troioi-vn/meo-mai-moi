@@ -4,13 +4,13 @@ namespace Tests\Feature;
 
 use App\Models\Pet;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 use Tests\Traits\CreatesUsers;
 
 class PetListingTest extends TestCase
 {
-    use RefreshDatabase, CreatesUsers;
+    use CreatesUsers, RefreshDatabase;
 
     #[Test]
     public function can_get_single_pet_profile(): void

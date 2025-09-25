@@ -35,7 +35,6 @@ class TransferRequest extends Model
         return $this->belongsTo(Pet::class);
     }
 
-
     public function initiator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'initiator_user_id');

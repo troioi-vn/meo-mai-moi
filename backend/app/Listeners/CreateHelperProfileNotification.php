@@ -2,12 +2,10 @@
 
 namespace App\Listeners;
 
+use App\Enums\NotificationType;
 use App\Events\HelperProfileStatusUpdated;
 use App\Models\Notification;
 use App\Services\NotificationService;
-use App\Enums\NotificationType;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 
 class CreateHelperProfileNotification
 {

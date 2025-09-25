@@ -2,8 +2,6 @@
 
 namespace App\Listeners;
 
-use App\Models\EmailLog;
-use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Facades\Log;
 
 class UpdateEmailLogOnFailed

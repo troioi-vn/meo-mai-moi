@@ -9,21 +9,23 @@ use Illuminate\Console\Command;
 class TestNotificationResource extends Command
 {
     protected $signature = 'test:notification-resource';
+
     protected $description = 'Test the NotificationResource functionality';
 
     public function handle()
     {
         $this->info('Testing NotificationResource functionality...');
-        
+
         // Test model relationships and attributes
         $this->info('1. Testing model functionality...');
-        
+
         $user = User::first();
-        if (!$user) {
+        if (! $user) {
             $this->error('No users found. Please seed users first.');
+
             return;
         }
-        
+
         // Create a test notification
         $notification = Notification::create([
             'user_id' => $user->id,
@@ -33,32 +35,32 @@ class TestNotificationResource extends Command
             'data' => ['test' => true],
             'delivered_at' => now(),
         ]);
-        
+
         $this->info("✓ Created notification ID: {$notification->id}");
         $this->info("✓ Type display: {$notification->type_display}");
         $this->info("✓ Delivery status: {$notification->delivery_status}");
         $this->info("✓ Engagement status: {$notification->engagement_status}");
-        
+
         // Test scopes
         $this->info('2. Testing model scopes...');
-        $this->info("✓ Total notifications: " . Notification::count());
-        $this->info("✓ Unread notifications: " . Notification::unread()->count());
-        $this->info("✓ Read notifications: " . Notification::read()->count());
-        $this->info("✓ Delivered notifications: " . Notification::delivered()->count());
-        $this->info("✓ Failed notifications: " . Notification::failed()->count());
-        $this->info("✓ Pending notifications: " . Notification::pending()->count());
-        
+        $this->info('✓ Total notifications: '.Notification::count());
+        $this->info('✓ Unread notifications: '.Notification::unread()->count());
+        $this->info('✓ Read notifications: '.Notification::read()->count());
+        $this->info('✓ Delivered notifications: '.Notification::delivered()->count());
+        $this->info('✓ Failed notifications: '.Notification::failed()->count());
+        $this->info('✓ Pending notifications: '.Notification::pending()->count());
+
         // Test notification actions
         $this->info('3. Testing notification actions...');
-        
+
         // Mark as read
         $notification->update([
             'is_read' => true,
             'read_at' => now(),
         ]);
-        $this->info("✓ Marked notification as read");
+        $this->info('✓ Marked notification as read');
         $this->info("✓ New engagement status: {$notification->fresh()->engagement_status}");
-        
+
         // Mark as failed
         $failedNotification = Notification::create([
             'user_id' => $user->id,
@@ -67,11 +69,11 @@ class TestNotificationResource extends Command
             'failed_at' => now(),
             'failure_reason' => 'Test failure reason',
         ]);
-        
-        $this->info("✓ Created failed notification");
+
+        $this->info('✓ Created failed notification');
         $this->info("✓ Failure reason: {$failedNotification->failure_reason}");
         $this->info("✓ Delivery status: {$failedNotification->delivery_status}");
-        
+
         // Test cleanup functionality
         $this->info('4. Testing cleanup functionality...');
         $oldNotification = Notification::create([
@@ -83,22 +85,22 @@ class TestNotificationResource extends Command
             'delivered_at' => now()->subDays(100),
             'created_at' => now()->subDays(100),
         ]);
-        
-        $this->info("✓ Created old notification for cleanup test");
-        
+
+        $this->info('✓ Created old notification for cleanup test');
+
         // Simulate cleanup (notifications older than 90 days that are read)
         $cutoffDate = now()->subDays(90);
         $cleanupCount = Notification::where('created_at', '<', $cutoffDate)
             ->where('is_read', true)
             ->count();
-        
+
         $this->info("✓ Notifications eligible for cleanup (90+ days old, read): {$cleanupCount}");
-        
+
         // Test notification types
         $this->info('5. Testing notification types...');
         $types = [
             'placement_request',
-            'transfer_request', 
+            'transfer_request',
             'transfer_accepted',
             'transfer_rejected',
             'handover_scheduled',
@@ -108,16 +110,16 @@ class TestNotificationResource extends Command
             'profile_rejected',
             'system_announcement',
         ];
-        
+
         foreach ($types as $type) {
             $testNotification = new Notification(['type' => $type]);
             $this->info("✓ {$type} -> {$testNotification->type_display}");
         }
-        
+
         // Clean up test notifications
         Notification::where('message', 'LIKE', 'Test%')->delete();
         $this->info('✓ Cleaned up test notifications');
-        
+
         $this->info('');
         $this->info('🎉 NotificationResource functionality test completed successfully!');
         $this->info('');
@@ -130,7 +132,7 @@ class TestNotificationResource extends Command
         $this->info('• Cleanup actions for old notifications');
         $this->info('• Comprehensive admin panel resource with tabs and filters');
         $this->info('• Statistics widget for dashboard monitoring');
-        
+
         return 0;
     }
 }

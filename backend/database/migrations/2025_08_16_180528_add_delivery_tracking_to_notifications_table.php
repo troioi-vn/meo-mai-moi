@@ -33,7 +33,7 @@ return new class extends Migration
                 'read_at',
                 'delivered_at',
                 'failed_at',
-                'failure_reason'
+                'failure_reason',
             ]);
         });
     }

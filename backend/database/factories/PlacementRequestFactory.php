@@ -2,11 +2,11 @@
 
 namespace Database\Factories;
 
-use App\Models\PlacementRequest;
-use App\Models\Cat;
-use App\Models\User;
 use App\Enums\PlacementRequestStatus;
 use App\Enums\PlacementRequestType;
+use App\Models\Pet;
+use App\Models\PlacementRequest;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class PlacementRequestFactory extends Factory
@@ -16,7 +16,7 @@ class PlacementRequestFactory extends Factory
     public function definition()
     {
         return [
-            'cat_id' => Cat::factory(),
+            'pet_id' => Pet::factory(),
             'user_id' => User::factory(),
             'request_type' => $this->faker->randomElement(PlacementRequestType::cases()),
             'status' => PlacementRequestStatus::OPEN,

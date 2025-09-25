@@ -2,9 +2,9 @@
 
 namespace App\Filament\Exports;
 
-use App\Models\PlacementRequest;
-use App\Enums\PlacementRequestType;
 use App\Enums\PlacementRequestStatus;
+use App\Enums\PlacementRequestType;
+use App\Models\PlacementRequest;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
@@ -18,10 +18,12 @@ class PlacementRequestExporter extends Exporter
         return [
             ExportColumn::make('id')
                 ->label('ID'),
-            ExportColumn::make('cat.name')
-                ->label('Cat Name'),
-            ExportColumn::make('cat.breed')
-                ->label('Cat Breed'),
+            ExportColumn::make('pet.name')
+                ->label('Pet Name'),
+            ExportColumn::make('pet.breed')
+                ->label('Pet Breed'),
+            ExportColumn::make('pet.petType.name')
+                ->label('Pet Type'),
             ExportColumn::make('user.name')
                 ->label('Owner Name'),
             ExportColumn::make('user.email')
@@ -67,10 +69,10 @@ class PlacementRequestExporter extends Exporter
 
     public static function getCompletedNotificationBody(Export $export): string
     {
-        $body = 'Your placement request export has completed and ' . number_format($export->successful_rows) . ' ' . str('row')->plural($export->successful_rows) . ' exported.';
+        $body = 'Your placement request export has completed and '.number_format($export->successful_rows).' '.str('row')->plural($export->successful_rows).' exported.';
 
         if ($failedRowsCount = $export->getFailedRowsCount()) {
-            $body .= ' ' . number_format($failedRowsCount) . ' ' . str('row')->plural($failedRowsCount) . ' failed to export.';
+            $body .= ' '.number_format($failedRowsCount).' '.str('row')->plural($failedRowsCount).' failed to export.';
         }
 
         return $body;

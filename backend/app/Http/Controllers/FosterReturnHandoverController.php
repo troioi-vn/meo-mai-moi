@@ -43,9 +43,10 @@ class FosterReturnHandoverController extends Controller
         Notification::create([
             'user_id' => $handover->owner_user_id,
             'message' => 'Fosterer scheduled a return handover.',
-            'link' => '/account/return-handovers/' . $handover->id,
+            'link' => '/account/return-handovers/'.$handover->id,
             'is_read' => false,
         ]);
+
         return $this->sendSuccess($handover, 201);
     }
 
@@ -73,10 +74,11 @@ class FosterReturnHandoverController extends Controller
         // Notify fosterer about owner confirmation
         Notification::create([
             'user_id' => $handover->foster_user_id,
-            'message' => 'Owner has ' . ($handover->status === 'confirmed' ? 'confirmed' : 'disputed') . ' the return handover.',
-            'link' => '/account/return-handovers/' . $handover->id,
+            'message' => 'Owner has '.($handover->status === 'confirmed' ? 'confirmed' : 'disputed').' the return handover.',
+            'link' => '/account/return-handovers/'.$handover->id,
             'is_read' => false,
         ]);
+
         return $this->sendSuccess($handover);
     }
 
@@ -87,7 +89,7 @@ class FosterReturnHandoverController extends Controller
         if ($user->id !== $handover->owner_user_id && $user->id !== $handover->foster_user_id) {
             return $this->sendError('Forbidden', 403);
         }
-        if (!in_array($handover->status, ['confirmed', 'pending'])) {
+        if (! in_array($handover->status, ['confirmed', 'pending'])) {
             return $this->sendError('Return handover is not in a completable state.', 409);
         }
 
@@ -110,7 +112,7 @@ class FosterReturnHandoverController extends Controller
             [
                 'user_id' => $handover->owner_user_id,
                 'message' => 'Return handover completed. Foster assignment closed.',
-                'link' => '/account/return-handovers/' . $handover->id,
+                'link' => '/account/return-handovers/'.$handover->id,
                 'is_read' => false,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -118,12 +120,13 @@ class FosterReturnHandoverController extends Controller
             [
                 'user_id' => $handover->foster_user_id,
                 'message' => 'Return handover completed. Thank you for fostering!',
-                'link' => '/account/return-handovers/' . $handover->id,
+                'link' => '/account/return-handovers/'.$handover->id,
                 'is_read' => false,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
         ]);
+
         return $this->sendSuccess($handover->fresh());
     }
 }

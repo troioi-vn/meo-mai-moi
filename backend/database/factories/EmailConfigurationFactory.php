@@ -20,10 +20,10 @@ class EmailConfigurationFactory extends Factory
     public function definition(): array
     {
         $provider = $this->faker->randomElement(['smtp', 'mailgun']);
-        
+
         return [
             'provider' => $provider,
-            'name' => $this->faker->company() . ' Mail',
+            'name' => $this->faker->company().' Mail',
             'description' => $this->faker->sentence(),
             'is_active' => false,
             'config' => $this->getConfigForProvider($provider),
@@ -57,8 +57,8 @@ class EmailConfigurationFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'provider' => 'mailgun',
             'config' => [
-                'domain' => 'mg.' . $this->faker->domainName(),
-                'api_key' => 'key-' . $this->faker->regexify('[a-f0-9]{32}'),
+                'domain' => 'mg.'.$this->faker->domainName(),
+                'api_key' => 'key-'.$this->faker->regexify('[a-f0-9]{32}'),
                 'endpoint' => $this->faker->randomElement(['api.mailgun.net', 'api.eu.mailgun.net']),
                 'from_address' => $this->faker->email(),
                 'from_name' => $this->faker->company(),
@@ -122,8 +122,8 @@ class EmailConfigurationFactory extends Factory
                 'from_name' => $this->faker->company(),
             ],
             'mailgun' => [
-                'domain' => 'mg.' . $this->faker->domainName(),
-                'api_key' => 'key-' . $this->faker->regexify('[a-f0-9]{32}'),
+                'domain' => 'mg.'.$this->faker->domainName(),
+                'api_key' => 'key-'.$this->faker->regexify('[a-f0-9]{32}'),
                 'endpoint' => 'api.mailgun.net',
                 'from_address' => $this->faker->email(),
                 'from_name' => $this->faker->company(),
@@ -149,7 +149,7 @@ class EmailConfigurationFactory extends Factory
             ],
             'mailgun' => [
                 'domain' => 'mg.example.com',
-                'api_key' => 'key-' . str_repeat('a', 32),
+                'api_key' => 'key-'.str_repeat('a', 32),
                 'endpoint' => 'api.mailgun.net',
                 'from_address' => 'noreply@example.com',
                 'from_name' => 'Test Application',

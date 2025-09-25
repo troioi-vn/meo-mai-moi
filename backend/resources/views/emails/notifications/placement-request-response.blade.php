@@ -7,19 +7,19 @@
 
     <div class="message">
         Great news! You've received a new response to your placement request
-        @if(isset($cat) && $cat)
-            for {!! htmlspecialchars($cat->name, ENT_COMPAT, 'UTF-8', false) !!}
+        @if(isset($pet) && $pet)
+            for {!! htmlspecialchars($pet->name, ENT_COMPAT, 'UTF-8', false) !!}
         @endif.
     </div>
 
-    @if(isset($cat))
-        <div class="cat-info">
-            <div class="cat-name">{!! htmlspecialchars($cat->name, ENT_COMPAT, 'UTF-8', false) !!}</div>
-            <div class="cat-details">
-                <strong>Breed:</strong> {{ $cat->breed }}<br>
-                <strong>Location:</strong> {{ $cat->location }}<br>
-                @if($cat->birthday)
-                    <strong>Age:</strong> {{ $cat->birthday->diffInYears(now()) }} years old<br>
+    @if(isset($pet))
+        <div class="pet-info">
+            <div class="pet-name">{!! htmlspecialchars($pet->name, ENT_COMPAT, 'UTF-8', false) !!}</div>
+            <div class="pet-details">
+                <strong>Type:</strong> {{ $pet->petType->name ?? 'Pet' }}<br>
+                <strong>Location:</strong> {{ $pet->location ?? 'Unknown' }}<br>
+                @if($pet->birthday)
+                    <strong>Age:</strong> {{ $pet->birthday->diffInYears(now()) }} years old<br>
                 @endif
             </div>
         </div>
@@ -28,7 +28,7 @@
     @if(isset($helperProfile) && $helperProfile)
         <div class="message">
             <strong>{{ $helperProfile->user->name }}</strong> has responded to your placement request. 
-            They are interested in helping with @if(isset($cat) && $cat){!! htmlspecialchars($cat->name, ENT_COMPAT, 'UTF-8', false) !!}@else your cat @endif.
+            They are interested in helping with @if(isset($pet) && $pet){!! htmlspecialchars($pet->name, ENT_COMPAT, 'UTF-8', false) !!}@else your pet @endif.
         </div>
 
         <div style="background-color: #e8f4fd; padding: 15px; border-radius: 6px; margin: 20px 0;">
@@ -47,7 +47,7 @@
         </div>
     @else
         <div class="message">
-            Someone has responded to your placement request and is interested in helping with your cat.
+            Someone has responded to your placement request and is interested in helping with your pet.
         </div>
     @endif
 

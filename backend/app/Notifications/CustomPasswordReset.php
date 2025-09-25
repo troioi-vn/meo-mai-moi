@@ -7,7 +7,6 @@ use App\Models\EmailLog;
 use App\Services\EmailConfigurationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 
@@ -42,7 +41,7 @@ class CustomPasswordReset extends Notification
     {
         // Create EmailLog entry for admin tracking (following your system's pattern)
         $this->createEmailLogEntry($notifiable);
-        
+
         return new PasswordResetMail($notifiable, $this->token);
     }
 
@@ -58,7 +57,7 @@ class CustomPasswordReset extends Notification
             $configId = $activeConfig ? $activeConfig->id : 1;
 
             $frontendUrl = config('app.frontend_url', 'http://localhost:8000');
-            $resetUrl = $frontendUrl . '/reset-password?token=' . $this->token . '&email=' . urlencode($notifiable->email);
+            $resetUrl = $frontendUrl.'/reset-password?token='.$this->token.'&email='.urlencode($notifiable->email);
 
             // Create email body using the template
             $emailBody = view('emails.password-reset', [
@@ -72,7 +71,7 @@ class CustomPasswordReset extends Notification
                 'user_id' => $notifiable->id,
                 'email_configuration_id' => $configId,
                 'recipient_email' => $notifiable->email,
-                'subject' => 'Password Reset - ' . config('app.name'),
+                'subject' => 'Password Reset - '.config('app.name'),
                 'body' => $emailBody,
                 'status' => 'pending', // Will be updated when email is actually sent
             ]);

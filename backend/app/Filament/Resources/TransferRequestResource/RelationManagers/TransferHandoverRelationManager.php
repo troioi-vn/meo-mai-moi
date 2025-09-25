@@ -3,21 +3,19 @@
 namespace App\Filament\Resources\TransferRequestResource\RelationManagers;
 
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
-use Filament\Tables\Columns\IconColumn;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Toggle;
-use Filament\Tables\Actions\Action;
+use Filament\Forms\Form;
 use Filament\Notifications\Notification;
+use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Tables;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 
 class TransferHandoverRelationManager extends RelationManager
 {
@@ -123,6 +121,7 @@ class TransferHandoverRelationManager extends RelationManager
                         if (strlen($state) <= 30) {
                             return null;
                         }
+
                         return $state;
                     }),
 
@@ -175,6 +174,7 @@ class TransferHandoverRelationManager extends RelationManager
                         if ($transferRequest->helperProfile) {
                             $data['helper_user_id'] = $transferRequest->helperProfile->user_id;
                         }
+
                         return $data;
                     }),
             ])
@@ -194,7 +194,7 @@ class TransferHandoverRelationManager extends RelationManager
                             'status' => 'confirmed',
                             'helper_confirmed_at' => now(),
                         ]);
-                        
+
                         Notification::make()
                             ->title('Handover confirmed')
                             ->success()
@@ -212,7 +212,7 @@ class TransferHandoverRelationManager extends RelationManager
                             'status' => 'completed',
                             'completed_at' => now(),
                         ]);
-                        
+
                         Notification::make()
                             ->title('Handover completed')
                             ->success()
@@ -230,7 +230,7 @@ class TransferHandoverRelationManager extends RelationManager
                             'status' => 'canceled',
                             'canceled_at' => now(),
                         ]);
-                        
+
                         Notification::make()
                             ->title('Handover canceled')
                             ->success()
@@ -247,7 +247,7 @@ class TransferHandoverRelationManager extends RelationManager
                         $record->update([
                             'status' => 'disputed',
                         ]);
-                        
+
                         Notification::make()
                             ->title('Handover marked as disputed')
                             ->warning()

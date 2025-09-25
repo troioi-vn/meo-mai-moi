@@ -16,7 +16,7 @@ class PlacementRequestResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'cat_id' => $this->cat_id,
+            'pet_id' => $this->pet_id,
             'user_id' => $this->user_id,
             'request_type' => $this->request_type,
             'status' => $this->status,

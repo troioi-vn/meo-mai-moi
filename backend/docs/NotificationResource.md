@@ -124,7 +124,7 @@ Notification::create([
     'message' => 'Your transfer request has been accepted.',
     'data' => [
         'transfer_id' => $transfer->id,
-        'cat_name' => $transfer->cat->name,
+        'pet_name' => $transfer->pet->name,
         'priority' => 'high',
     ],
     'delivered_at' => now(), // Mark as delivered immediately

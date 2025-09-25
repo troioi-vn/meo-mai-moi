@@ -11,7 +11,7 @@ class TransferRequest extends Model
     use HasFactory;
 
     protected $fillable = [
-        'cat_id',
+        'pet_id', // Updated from cat_id
         'initiator_user_id',
         'recipient_user_id',
         'requester_id',
@@ -30,9 +30,9 @@ class TransferRequest extends Model
         'rejected_at' => 'datetime',
     ];
 
-    public function cat(): BelongsTo
+    public function pet(): BelongsTo
     {
-        return $this->belongsTo(Cat::class);
+        return $this->belongsTo(Pet::class);
     }
 
     public function initiator(): BelongsTo

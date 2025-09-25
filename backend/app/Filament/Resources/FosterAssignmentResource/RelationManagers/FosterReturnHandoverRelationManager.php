@@ -2,24 +2,21 @@
 
 namespace App\Filament\Resources\FosterAssignmentResource\RelationManagers;
 
-use Filament\Forms;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\BooleanColumn;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Section;
-use Filament\Tables\Actions\Action;
-use Filament\Notifications\Notification;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 
 class FosterReturnHandoverRelationManager extends RelationManager
 {
@@ -177,7 +174,7 @@ class FosterReturnHandoverRelationManager extends RelationManager
                             'status' => 'confirmed',
                             'owner_confirmed_at' => now(),
                         ]);
-                        
+
                         Notification::make()
                             ->title('Handover confirmed')
                             ->success()
@@ -204,7 +201,7 @@ class FosterReturnHandoverRelationManager extends RelationManager
                             'condition_confirmed' => $data['condition_confirmed'],
                             'condition_notes' => $data['condition_notes'],
                         ]);
-                        
+
                         Notification::make()
                             ->title('Handover completed')
                             ->success()
@@ -222,7 +219,7 @@ class FosterReturnHandoverRelationManager extends RelationManager
                             'status' => 'canceled',
                             'canceled_at' => now(),
                         ]);
-                        
+
                         Notification::make()
                             ->title('Handover canceled')
                             ->success()
@@ -239,7 +236,7 @@ class FosterReturnHandoverRelationManager extends RelationManager
                         $record->update([
                             'status' => 'disputed',
                         ]);
-                        
+
                         Notification::make()
                             ->title('Handover marked as disputed')
                             ->warning()

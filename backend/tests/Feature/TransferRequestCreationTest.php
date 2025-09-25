@@ -2,15 +2,14 @@
 
 namespace Tests\Feature;
 
-use App\Models\Cat;
+use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Models\TransferRequest;
 use App\Models\User;
-use Spatie\Permission\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class TransferRequestCreationTest extends TestCase
 {
@@ -19,11 +18,11 @@ class TransferRequestCreationTest extends TestCase
     #[Test]
     public function test_helper_can_create_transfer_request_for_placement_request(): void
     {
-    $owner = User::factory()->create();
-    $helper = User::factory()->create();
+        $owner = User::factory()->create();
+        $helper = User::factory()->create();
         $helperProfile = \App\Models\HelperProfile::factory()->create(['user_id' => $helper->id]);
-        $cat = Cat::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\CatStatus::ACTIVE]);
-        $placementRequest = PlacementRequest::factory()->create(['cat_id' => $cat->id, 'is_active' => true, 'status' => \App\Enums\PlacementRequestStatus::OPEN->value]);
+        $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'is_active' => true, 'status' => \App\Enums\PlacementRequestStatus::OPEN->value]);
 
         Sanctum::actingAs($helper);
 
@@ -32,7 +31,7 @@ class TransferRequestCreationTest extends TestCase
         $this->assertTrue($helper->helperProfiles()->exists());
 
         $response = $this->postJson('/api/transfer-requests', [
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $helperProfile->id,
             'requested_relationship_type' => 'fostering',
@@ -48,17 +47,17 @@ class TransferRequestCreationTest extends TestCase
     #[Test]
     public function test_user_without_helper_profile_cannot_create_transfer_request(): void
     {
-    $owner = User::factory()->create();
+        $owner = User::factory()->create();
         $user = User::factory()->create(); // No helper profile
-        $cat = Cat::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\CatStatus::ACTIVE]);
-        $placementRequest = PlacementRequest::factory()->create(['cat_id' => $cat->id, 'is_active' => true, 'status' => \App\Enums\PlacementRequestStatus::OPEN->value]);
+        $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'is_active' => true, 'status' => \App\Enums\PlacementRequestStatus::OPEN->value]);
 
         Sanctum::actingAs($user);
 
         $this->assertFalse($user->helperProfiles()->exists());
 
         $response = $this->postJson('/api/transfer-requests', [
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => 999, // Non-existent helper profile
             'requested_relationship_type' => 'fostering',
@@ -71,14 +70,14 @@ class TransferRequestCreationTest extends TestCase
     #[Test]
     public function test_owner_cannot_create_transfer_request_for_own_cat(): void
     {
-    $owner = User::factory()->create();
-        $cat = Cat::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\CatStatus::ACTIVE]);
-        $placementRequest = PlacementRequest::factory()->create(['cat_id' => $cat->id, 'is_active' => true, 'status' => \App\Enums\PlacementRequestStatus::OPEN->value]);
+        $owner = User::factory()->create();
+        $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'is_active' => true, 'status' => \App\Enums\PlacementRequestStatus::OPEN->value]);
 
         Sanctum::actingAs($owner);
 
         $response = $this->postJson('/api/transfer-requests', [
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => 999, // Non-existent helper profile
             'requested_relationship_type' => 'fostering',
@@ -91,12 +90,12 @@ class TransferRequestCreationTest extends TestCase
     #[Test]
     public function test_accepting_transfer_request_deactivates_placement_request(): void
     {
-    $owner = User::factory()->create();
-    $helper = User::factory()->create();
-        $cat = Cat::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\CatStatus::ACTIVE]);
-        $placementRequest = PlacementRequest::factory()->create(['cat_id' => $cat->id, 'is_active' => true, 'status' => \App\Enums\PlacementRequestStatus::OPEN->value]);
+        $owner = User::factory()->create();
+        $helper = User::factory()->create();
+        $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'is_active' => true, 'status' => \App\Enums\PlacementRequestStatus::OPEN->value]);
         $transferRequest = TransferRequest::factory()->create([
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'initiator_user_id' => $helper->id,
             'recipient_user_id' => $owner->id,
             'placement_request_id' => $placementRequest->id,

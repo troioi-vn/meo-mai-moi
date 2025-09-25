@@ -5,10 +5,10 @@ namespace App\Filament\Resources\EmailConfigurationResource\Pages;
 use App\Filament\Resources\EmailConfigurationResource;
 use App\Services\EmailConfigurationService;
 use Filament\Actions;
-use Filament\Resources\Pages\ViewRecord;
-use Filament\Notifications\Notification;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
+use Filament\Notifications\Notification;
+use Filament\Resources\Pages\ViewRecord;
 
 class ViewEmailConfiguration extends ViewRecord
 {
@@ -23,10 +23,10 @@ class ViewEmailConfiguration extends ViewRecord
                 ->color('info')
                 ->action(function (): void {
                     $service = app(EmailConfigurationService::class);
-                    
+
                     try {
                         $success = $service->testConfiguration($this->record->provider, $this->record->config);
-                        
+
                         if ($success) {
                             Notification::make()
                                 ->title('Connection Test Successful')
@@ -43,7 +43,7 @@ class ViewEmailConfiguration extends ViewRecord
                     } catch (\Exception $e) {
                         Notification::make()
                             ->title('Connection Test Error')
-                            ->body('Error testing configuration: ' . $e->getMessage())
+                            ->body('Error testing configuration: '.$e->getMessage())
                             ->danger()
                             ->send();
                     }
@@ -56,27 +56,27 @@ class ViewEmailConfiguration extends ViewRecord
                 ->label('Activate')
                 ->icon('heroicon-o-power')
                 ->color('success')
-                ->visible(fn (): bool => !$this->record->is_active && $this->record->isValid())
+                ->visible(fn (): bool => ! $this->record->is_active && $this->record->isValid())
                 ->action(function (): void {
                     try {
                         $this->record->activate();
-                        
+
                         // Update mail configuration
                         $service = app(EmailConfigurationService::class);
                         $service->updateMailConfig();
-                        
+
                         Notification::make()
                             ->title('Configuration Activated')
                             ->body('Email configuration has been activated successfully.')
                             ->success()
                             ->send();
-                            
+
                         // Redirect to refresh the page and show updated status
                         $this->redirect($this->getResource()::getUrl('view', ['record' => $this->record]));
                     } catch (\Exception $e) {
                         Notification::make()
                             ->title('Activation Failed')
-                            ->body('Failed to activate configuration: ' . $e->getMessage())
+                            ->body('Failed to activate configuration: '.$e->getMessage())
                             ->danger()
                             ->send();
                     }
@@ -93,19 +93,19 @@ class ViewEmailConfiguration extends ViewRecord
                 ->action(function (): void {
                     try {
                         $this->record->update(['is_active' => false]);
-                        
+
                         Notification::make()
                             ->title('Configuration Deactivated')
                             ->body('Email configuration has been deactivated.')
                             ->success()
                             ->send();
-                            
+
                         // Redirect to refresh the page and show updated status
                         $this->redirect($this->getResource()::getUrl('view', ['record' => $this->record]));
                     } catch (\Exception $e) {
                         Notification::make()
                             ->title('Deactivation Failed')
-                            ->body('Failed to deactivate configuration: ' . $e->getMessage())
+                            ->body('Failed to deactivate configuration: '.$e->getMessage())
                             ->danger()
                             ->send();
                     }
@@ -116,7 +116,7 @@ class ViewEmailConfiguration extends ViewRecord
 
             Actions\EditAction::make(),
             Actions\DeleteAction::make()
-                ->visible(fn (): bool => !$this->record->is_active),
+                ->visible(fn (): bool => ! $this->record->is_active),
         ];
     }
 
@@ -219,12 +219,11 @@ class ViewEmailConfiguration extends ViewRecord
                                     ->label('')
                                     ->color('danger'),
                             ])
-                            ->state(fn (): array => 
-                                collect($this->record->validateConfig())
-                                    ->map(fn (string $error) => ['error' => $error])
-                                    ->toArray()
+                            ->state(fn (): array => collect($this->record->validateConfig())
+                                ->map(fn (string $error) => ['error' => $error])
+                                ->toArray()
                             )
-                            ->visible(fn (): bool => !$this->record->isValid()),
+                            ->visible(fn (): bool => ! $this->record->isValid()),
 
                         Infolists\Components\TextEntry::make('validation_status')
                             ->label('Validation Status')
@@ -233,7 +232,7 @@ class ViewEmailConfiguration extends ViewRecord
                             ->state('All configuration requirements are met')
                             ->visible(fn (): bool => $this->record->isValid()),
                     ])
-                    ->visible(fn (): bool => !empty($this->record->validateConfig()) || $this->record->isValid()),
+                    ->visible(fn (): bool => ! empty($this->record->validateConfig()) || $this->record->isValid()),
             ]);
     }
 }

@@ -1,26 +1,47 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { FileInput } from '@/components/ui/FileInput'
 import { CheckboxField } from '@/components/ui/CheckboxField'
 import { FormField } from '@/components/ui/FormField'
 import useHelperProfileForm from '@/hooks/useHelperProfileForm'
+import { getPetTypes } from '@/api/pets'
+import type { PetType } from '@/types/pet'
+import { toast } from 'sonner'
 
 const CreateHelperProfilePage: React.FC = () => {
   const { formData, errors, isSubmitting, updateField, handleSubmit, handleCancel } =
-    useHelperProfileForm(undefined, {
-      country: '',
-      address: '',
-      city: '',
-      state: '',
-      phone_number: '',
-      experience: '',
-      has_pets: false,
-      has_children: false,
-      can_foster: false,
-      can_adopt: false,
-      is_public: true,
-      photos: [],
-    })
+    useHelperProfileForm(undefined, {})
+  
+  const [petTypes, setPetTypes] = useState<PetType[]>([])
+  const [loadingPetTypes, setLoadingPetTypes] = useState(true)
+
+  // Load pet types on component mount
+  useEffect(() => {
+    const loadPetTypes = async () => {
+      try {
+        const types = await getPetTypes()
+        setPetTypes(types)
+      } catch (err) {
+        console.error('Failed to load pet types:', err)
+        toast.error('Failed to load pet types. Please try again.')
+      } finally {
+        setLoadingPetTypes(false)
+      }
+    }
+    void loadPetTypes()
+  }, [])
+
+  // Handler for pet type checkbox changes
+  const handlePetTypeChange = (petTypeId: number, checked: boolean) => {
+    const currentIds = formData.pet_type_ids
+    const newIds = checked 
+      ? [...currentIds, petTypeId]
+      : currentIds.filter(id => id !== petTypeId)
+    updateField('pet_type_ids')(newIds)
+  }
+
+  // Filter pet types that allow placement requests
+  const placementAllowedPetTypes = petTypes.filter(petType => petType.placement_requests_allowed)
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
@@ -113,6 +134,34 @@ const CreateHelperProfilePage: React.FC = () => {
             onChange={updateField('is_public')}
             error={errors.is_public}
           />
+
+          {/* Pet Types for Placement Requests */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-card-foreground">
+              Pet Types Available for Placement Requests
+            </label>
+            {loadingPetTypes ? (
+              <div className="text-sm text-muted-foreground">Loading pet types...</div>
+            ) : placementAllowedPetTypes.length > 0 ? (
+              <div className="space-y-2">
+                {placementAllowedPetTypes.map((petType) => (
+                  <CheckboxField
+                    key={petType.id}
+                    id={`pet_type_${String(petType.id)}`}
+                    label={petType.name}
+                    checked={formData.pet_type_ids.includes(petType.id)}
+                    onChange={(checked: boolean) => {
+                      handlePetTypeChange(petType.id, checked)
+                    }}
+                    error={errors.pet_type_ids}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-sm text-muted-foreground">No pet types available for placement requests.</div>
+            )}
+          </div>
+
           <FileInput
             id="photos"
             label="Photos"
@@ -122,7 +171,7 @@ const CreateHelperProfilePage: React.FC = () => {
           />
 
           <div className="flex gap-4">
-            <Button type="submit" aria-label="Create Helper Profile" disabled={isSubmitting}>
+            <Button type="submit" aria-label="Create Helper Profile" disabled={isSubmitting || loadingPetTypes}>
               {isSubmitting ? 'Creating...' : 'Create'}
             </Button>
             <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>

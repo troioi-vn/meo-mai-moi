@@ -15,6 +15,7 @@ class TransferHandover extends Model
      * @OA\Schema(
      *   schema="TransferHandover",
      *   title="TransferHandover",
+     *
      *   @OA\Property(property="id", type="integer"),
      *   @OA\Property(property="transfer_request_id", type="integer"),
      *   @OA\Property(property="owner_user_id", type="integer"),
@@ -22,7 +23,7 @@ class TransferHandover extends Model
      *   @OA\Property(property="scheduled_at", type="string", format="date-time", nullable=true),
      *   @OA\Property(property="location", type="string", nullable=true),
      *   @OA\Property(property="status", type="string", enum={"pending","confirmed","completed","canceled","disputed"}),
-    *   @OA\Property(property="owner_initiated_at", type="string", format="date-time", nullable=true),
+     *   @OA\Property(property="owner_initiated_at", type="string", format="date-time", nullable=true),
      *   @OA\Property(property="helper_confirmed_at", type="string", format="date-time", nullable=true),
      *   @OA\Property(property="condition_confirmed", type="boolean"),
      *   @OA\Property(property="condition_notes", type="string", nullable=true),
@@ -32,7 +33,6 @@ class TransferHandover extends Model
      *   @OA\Property(property="updated_at", type="string", format="date-time")
      * )
      */
-
     protected $fillable = [
         'transfer_request_id',
         'owner_user_id',

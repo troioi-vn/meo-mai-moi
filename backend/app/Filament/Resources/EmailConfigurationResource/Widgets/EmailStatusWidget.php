@@ -28,7 +28,7 @@ class EmailStatusWidget extends BaseWidget
                 ->color($activeConfig ? 'info' : 'gray'),
 
             Stat::make('Total Configurations', $totalConfigs)
-                ->description($validConfigs . ' valid, ' . ($totalConfigs - $validConfigs) . ' invalid')
+                ->description($validConfigs.' valid, '.($totalConfigs - $validConfigs).' invalid')
                 ->descriptionIcon('heroicon-m-cog-6-tooth')
                 ->color($validConfigs > 0 ? 'success' : 'warning'),
         ];

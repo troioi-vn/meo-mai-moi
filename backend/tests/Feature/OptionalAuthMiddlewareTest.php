@@ -3,24 +3,23 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use Laravel\Sanctum\Sanctum;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class OptionalAuthMiddlewareTest extends TestCase
 {
     use RefreshDatabase;
-
 
     #[Test]
     public function test_optional_auth_ignores_invalid_token(): void
     {
         // Make request with invalid bearer token
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer invalid-token-xyz'
+            'Authorization' => 'Bearer invalid-token-xyz',
         ])->getJson('/api/version');
-        
+
         // Should succeed and treat as guest
         $response->assertStatus(200);
         $this->assertGuest();
@@ -39,9 +38,9 @@ class OptionalAuthMiddlewareTest extends TestCase
 
         foreach ($malformedHeaders as $authHeader) {
             $response = $this->withHeaders([
-                'Authorization' => $authHeader
+                'Authorization' => $authHeader,
             ])->getJson('/api/version');
-            
+
             $response->assertStatus(200);
             $this->assertGuest();
         }
@@ -52,14 +51,14 @@ class OptionalAuthMiddlewareTest extends TestCase
     {
         $user = User::factory()->create();
         $token = $user->createToken('test-token');
-        
+
         // Delete the token to simulate expiration
         $token->accessToken->delete();
-        
+
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token->plainTextToken
+            'Authorization' => 'Bearer '.$token->plainTextToken,
         ])->getJson('/api/version');
-        
+
         // Should succeed and treat as guest
         $response->assertStatus(200);
         $this->assertGuest();
@@ -70,14 +69,14 @@ class OptionalAuthMiddlewareTest extends TestCase
     {
         $user = User::factory()->create(['name' => 'Test User']);
         Sanctum::actingAs($user);
-        
+
         // Make multiple requests to verify user context is maintained
         $response1 = $this->getJson('/api/version');
         $response2 = $this->getJson('/api/version');
-        
+
         $response1->assertStatus(200);
         $response2->assertStatus(200);
-        
+
         // Both requests should have the same authenticated user
         $this->assertAuthenticatedAs($user);
     }

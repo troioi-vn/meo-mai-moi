@@ -27,7 +27,7 @@ class DeleteAccountRequest extends FormRequest
                 'required',
                 'string',
                 function ($attribute, $value, $fail) {
-                    if (!Hash::check($value, $this->user()->password)) {
+                    if (! Hash::check($value, $this->user()->password)) {
                         $fail('The provided password does not match your current password.');
                     }
                 },

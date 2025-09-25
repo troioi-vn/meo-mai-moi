@@ -2,9 +2,7 @@
 
 namespace App\Providers;
 
-use App\Models\Cat;
 use App\Models\HelperProfile;
-use App\Policies\CatPolicy;
 use App\Policies\HelperProfilePolicy;
 use App\Policies\TransferRequestPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
@@ -17,9 +15,8 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-    Cat::class => CatPolicy::class,
-    HelperProfile::class => HelperProfilePolicy::class,
-    \App\Models\TransferRequest::class => TransferRequestPolicy::class,
+        HelperProfile::class => HelperProfilePolicy::class,
+        \App\Models\TransferRequest::class => TransferRequestPolicy::class,
         \App\Models\PlacementRequest::class => \App\Policies\PlacementRequestPolicy::class,
     ];
 

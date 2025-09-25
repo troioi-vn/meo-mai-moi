@@ -358,499 +358,6 @@
                 }
             }
         },
-        "/api/my-cats": {
-            "get": {
-                "tags": [
-                    "Cats"
-                ],
-                "summary": "Get the cats of the authenticated user",
-                "operationId": "aca1cbfb17aa8e0598a78236684cc112",
-                "responses": {
-                    "200": {
-                        "description": "A list of the user's cats",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Cat"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/my-cats/sections": {
-            "get": {
-                "tags": [
-                    "Cats"
-                ],
-                "summary": "Get the cats of the authenticated user, organized by section",
-                "operationId": "5c3ca0b1147c19bb3bf847f32099fce4",
-                "responses": {
-                    "200": {
-                        "description": "A list of the user's cats, organized by section",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "owned": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Cat"
-                                            }
-                                        },
-                                        "fostering_active": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Cat"
-                                            }
-                                        },
-                                        "fostering_past": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Cat"
-                                            }
-                                        },
-                                        "transferred_away": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Cat"
-                                            }
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/cats/{id}": {
-            "get": {
-                "tags": [
-                    "Cats"
-                ],
-                "summary": "Get a specific cat",
-                "operationId": "eaa20273bdc90d751ce892bd1b1a946c",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID of the cat",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "The cat",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Cat"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Cat not found"
-                    }
-                }
-            },
-            "put": {
-                "tags": [
-                    "Cats"
-                ],
-                "summary": "Update a cat",
-                "operationId": "9f46fb83dc8254f9d21782fe3e55c98b",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID of the cat to update",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Cat"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Cat updated successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Cat"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "422": {
-                        "description": "Validation error"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Cats"
-                ],
-                "summary": "Delete a cat",
-                "operationId": "cf39966608b6cade9fdfac9999b6845d",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID of the cat to delete",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "password"
-                                ],
-                                "properties": {
-                                    "password": {
-                                        "description": "User's current password for confirmation",
-                                        "type": "string",
-                                        "format": "password"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "204": {
-                        "description": "Cat deleted successfully"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "422": {
-                        "description": "Validation error"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/cats/featured": {
-            "get": {
-                "tags": [
-                    "Cats"
-                ],
-                "summary": "Get a list of featured cats",
-                "operationId": "5e3e89e650ae933133f0b5a96611015c",
-                "responses": {
-                    "200": {
-                        "description": "A list of featured cats",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Cat"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/cats/placement-requests": {
-            "get": {
-                "tags": [
-                    "Cats"
-                ],
-                "summary": "Get a list of cats with open placement requests",
-                "operationId": "67ad601aaba9b61dcc775f965df36fc4",
-                "responses": {
-                    "200": {
-                        "description": "A list of cats with open placement requests",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Cat"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/cats": {
-            "post": {
-                "tags": [
-                    "Cats"
-                ],
-                "summary": "Create a new cat",
-                "operationId": "6a153b29cdb539163e80104ea2fb0f47",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Cat"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Cat created successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Cat"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/cats/{id}/status": {
-            "put": {
-                "tags": [
-                    "Cats"
-                ],
-                "summary": "Update a cat's status",
-                "operationId": "6b88666b45ef060ac5e4f1e5d303d3b4",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID of the cat to update",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "status",
-                                    "password"
-                                ],
-                                "properties": {
-                                    "status": {
-                                        "type": "string",
-                                        "enum": [
-                                            "active",
-                                            "lost",
-                                            "deceased",
-                                            "deleted"
-                                        ],
-                                        "example": "lost"
-                                    },
-                                    "password": {
-                                        "description": "User's current password for confirmation",
-                                        "type": "string",
-                                        "format": "password"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Cat status updated successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Cat"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "422": {
-                        "description": "Validation Error"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/cats/{cat}/photos": {
-            "post": {
-                "tags": [
-                    "Cat Photos"
-                ],
-                "summary": "Upload a photo for a specific cat",
-                "operationId": "b4cefd8627306812aa42500a36b8159c",
-                "parameters": [
-                    {
-                        "name": "cat",
-                        "in": "path",
-                        "description": "ID of the cat",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "multipart/form-data": {
-                            "schema": {
-                                "properties": {
-                                    "photo": {
-                                        "description": "The photo file (max 10MB, jpeg, png, jpg, gif, svg)",
-                                        "type": "string",
-                                        "format": "binary"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Photo uploaded successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/Cat"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "403": {
-                        "description": "Unauthorized"
-                    },
-                    "422": {
-                        "description": "Validation error"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Cat Photos"
-                ],
-                "summary": "Delete a photo for a specific cat",
-                "operationId": "ba3b6e914f8eb6252d4e9ea0ff1d5fb8",
-                "parameters": [
-                    {
-                        "name": "cat",
-                        "in": "path",
-                        "description": "ID of the cat",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "Photo deleted successfully"
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "403": {
-                        "description": "Unauthorized"
-                    },
-                    "404": {
-                        "description": "Photo not found"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
         "/api/foster-assignments/{assignment}/complete": {
             "post": {
                 "tags": [
@@ -1713,6 +1220,555 @@
                 ]
             }
         },
+        "/api/my-pets": {
+            "get": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Get the pets of the authenticated user",
+                "operationId": "c8c296148d8d5b9b1f9f0e3b07ea8aac",
+                "responses": {
+                    "200": {
+                        "description": "A list of the user's pets",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Pet"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/my-pets/sections": {
+            "get": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Get the pets of the authenticated user, organized by section",
+                "operationId": "cf79075695ca42e8434083f0b978cd0b",
+                "responses": {
+                    "200": {
+                        "description": "A list of the user's pets, organized by section",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "owned": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Pet"
+                                            }
+                                        },
+                                        "fostering_active": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Pet"
+                                            }
+                                        },
+                                        "fostering_past": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Pet"
+                                            }
+                                        },
+                                        "transferred_away": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Pet"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pets/{id}": {
+            "get": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Get a specific pet",
+                "operationId": "25e25b195a59c4b940a33f9961ad6eed",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the pet",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The pet",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Pet"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Pet not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Update a pet",
+                "operationId": "652be7eab297dff87f093d849bdecb12",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the pet to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Pet"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Pet updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Pet"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Delete a pet",
+                "operationId": "dab25348cae9362e48ade0e7cf34c465",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the pet to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "password"
+                                ],
+                                "properties": {
+                                    "password": {
+                                        "description": "User's current password for confirmation",
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "Pet deleted successfully"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pets/featured": {
+            "get": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Get a list of featured pets",
+                "operationId": "cf1822cacc93a47c15acd8187b32b6bf",
+                "responses": {
+                    "200": {
+                        "description": "A list of featured pets",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Pet"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/pets/placement-requests": {
+            "get": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Get a list of pets with open placement requests",
+                "operationId": "7ebe58677d20d6de2e88c0fc76d4f4cb",
+                "responses": {
+                    "200": {
+                        "description": "A list of pets with open placement requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Pet"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/pets": {
+            "post": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Create a new pet",
+                "operationId": "9523721805529edb47b46332d56f2826",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Pet"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Pet created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Pet"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pets/{id}/status": {
+            "put": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Update a pet's status",
+                "operationId": "211de041a6c02bf55af47da618b045e6",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the pet to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "active",
+                                            "lost",
+                                            "deceased",
+                                            "deleted"
+                                        ],
+                                        "example": "lost"
+                                    },
+                                    "password": {
+                                        "description": "User's current password for confirmation",
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Pet status updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Pet"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pet-types": {
+            "get": {
+                "tags": [
+                    "Pet Types"
+                ],
+                "summary": "Get all available pet types",
+                "operationId": "bc57c6e05db57e95673f1c9f403a4dfd",
+                "responses": {
+                    "200": {
+                        "description": "A list of available pet types",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Cat"
+                                            },
+                                            "slug": {
+                                                "type": "string",
+                                                "example": "cat"
+                                            },
+                                            "description": {
+                                                "type": "string",
+                                                "example": "Feline companions"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/pets/{pet}/photos": {
+            "post": {
+                "tags": [
+                    "Pet Photos"
+                ],
+                "summary": "Upload a photo for a specific pet",
+                "operationId": "f52732431d914cd098e65ce1df005ce4",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "description": "ID of the pet",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "photo": {
+                                        "description": "The photo file (max 10MB, jpeg, png, jpg, gif, svg)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Photo uploaded successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Pet"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "422": {
+                        "description": "Validation error or feature not available for pet type"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pets/{pet}/photos/{photo}": {
+            "delete": {
+                "tags": [
+                    "Pet Photos"
+                ],
+                "summary": "Delete a specific photo for a pet",
+                "operationId": "224f4b97993f2cb368d848293bdd9f6f",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "description": "ID of the pet",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "photo",
+                        "in": "path",
+                        "description": "ID of the photo",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Photo deleted successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Photo not found"
+                    },
+                    "422": {
+                        "description": "Feature not available for pet type"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/placement-requests": {
             "post": {
                 "tags": [
@@ -1726,11 +1782,11 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "cat_id",
+                                    "pet_id",
                                     "request_type"
                                 ],
                                 "properties": {
-                                    "cat_id": {
+                                    "pet_id": {
                                         "type": "integer",
                                         "example": 1
                                     },
@@ -2022,7 +2078,7 @@
                 "tags": [
                     "Transfer Handover"
                 ],
-                "summary": "Helper confirms cat condition at handover",
+                "summary": "Helper confirms pet condition at handover",
                 "operationId": "c2f37a0eea5623c1a48e7d7f568e1944",
                 "parameters": [
                     {
@@ -2166,7 +2222,7 @@
                 "tags": [
                     "Transfer Requests"
                 ],
-                "summary": "Initiate a transfer request for a cat (by a helper)",
+                "summary": "Initiate a transfer request for a pet (by a helper)",
                 "operationId": "e9fa0a38dc6eb14618f6dc40fb9b25c8",
                 "requestBody": {
                     "required": true,
@@ -2174,11 +2230,11 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "cat_id",
+                                    "pet_id",
                                     "requested_relationship_type"
                                 ],
                                 "properties": {
-                                    "cat_id": {
+                                    "pet_id": {
                                         "type": "integer",
                                         "example": 1
                                     },
@@ -2235,8 +2291,8 @@
                                         "errors": {
                                             "type": "object",
                                             "example": {
-                                                "cat_id": [
-                                                    "The cat id field is required."
+                                                "pet_id": [
+                                                    "The pet id field is required."
                                                 ]
                                             }
                                         }
@@ -2250,10 +2306,10 @@
                         "description": "Unauthenticated"
                     },
                     "403": {
-                        "description": "Forbidden: Only helpers can initiate transfer requests or cat is not available."
+                        "description": "Forbidden: Only helpers can initiate transfer requests or pet is not available."
                     },
                     "404": {
-                        "description": "Cat not found"
+                        "description": "Pet not found"
                     }
                 },
                 "security": [
@@ -2268,7 +2324,7 @@
                 "tags": [
                     "Transfer Requests"
                 ],
-                "summary": "Accept a transfer request",
+                "summary": "Accept a transfer request for a pet",
                 "operationId": "81b9877586172990705ab6c8a8bab8b5",
                 "parameters": [
                     {
@@ -2319,7 +2375,7 @@
                 "tags": [
                     "Transfer Requests"
                 ],
-                "summary": "Reject a transfer request",
+                "summary": "Reject a transfer request for a pet",
                 "operationId": "2c3e792b141a73744b9a5682ea82a97f",
                 "parameters": [
                     {
@@ -2365,7 +2421,7 @@
                 "tags": [
                     "Transfer Requests"
                 ],
-                "summary": "Get the responder's helper profile for a given transfer request",
+                "summary": "Get the responder's helper profile for a given pet transfer request",
                 "operationId": "ea3092fa72dccf484d9bad661294d69b",
                 "parameters": [
                     {
@@ -2823,165 +2879,10 @@
                     }
                 }
             }
-        },
-        "/api/cats/{cat_id}/weight-history": {
-            "post": {
-                "tags": [
-                    "Cats"
-                ],
-                "summary": "Add a new weight record for a cat",
-                "operationId": "e9474f93e64caeb048fa22a043d0903d",
-                "parameters": [
-                    {
-                        "name": "cat_id",
-                        "in": "path",
-                        "description": "ID of the cat to add a weight record for",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "weight_kg",
-                                    "record_date"
-                                ],
-                                "properties": {
-                                    "weight_kg": {
-                                        "type": "number",
-                                        "format": "float",
-                                        "example": 5.2
-                                    },
-                                    "record_date": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2024-01-15"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Weight record created successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/WeightHistory"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Validation Error"
-                                        },
-                                        "errors": {
-                                            "type": "object",
-                                            "example": {
-                                                "weight_kg": [
-                                                    "The weight kg field is required."
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "403": {
-                        "description": "Forbidden: You are not authorized to add weight records for this cat."
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
         }
     },
     "components": {
         "schemas": {
-            "Cat": {
-                "title": "Cat",
-                "required": [
-                    "id",
-                    "name",
-                    "breed",
-                    "birthday",
-                    "location",
-                    "description",
-                    "status",
-                    "user_id"
-                ],
-                "type": "object",
-                "allOf": [
-                    {
-                        "$ref": "#/components/schemas/Pagination"
-                    },
-                    {
-                        "properties": {
-                            "id": {
-                                "type": "integer",
-                                "example": 1
-                            },
-                            "name": {
-                                "type": "string",
-                                "example": "Whiskers"
-                            },
-                            "breed": {
-                                "type": "string",
-                                "example": "Siamese"
-                            },
-                            "birthday": {
-                                "type": "string",
-                                "format": "date",
-                                "example": "2020-01-01"
-                            },
-                            "location": {
-                                "type": "string",
-                                "example": "Hanoi"
-                            },
-                            "description": {
-                                "type": "string",
-                                "example": "A friendly cat."
-                            },
-                            "status": {
-                                "type": "string",
-                                "example": "active"
-                            },
-                            "user_id": {
-                                "type": "integer",
-                                "example": 5
-                            }
-                        },
-                        "type": "object"
-                    }
-                ]
-            },
             "Pagination": {
                 "title": "Pagination",
                 "description": "Pagination object",
@@ -3099,11 +3000,73 @@
                     }
                 ]
             },
+            "Pet": {
+                "title": "Pet",
+                "required": [
+                    "id",
+                    "name",
+                    "breed",
+                    "birthday",
+                    "location",
+                    "description",
+                    "status",
+                    "user_id",
+                    "pet_type_id"
+                ],
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Pagination"
+                    },
+                    {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "Whiskers"
+                            },
+                            "breed": {
+                                "type": "string",
+                                "example": "Siamese"
+                            },
+                            "birthday": {
+                                "type": "string",
+                                "format": "date",
+                                "example": "2020-01-01"
+                            },
+                            "location": {
+                                "type": "string",
+                                "example": "Hanoi"
+                            },
+                            "description": {
+                                "type": "string",
+                                "example": "A friendly pet."
+                            },
+                            "status": {
+                                "type": "string",
+                                "example": "active"
+                            },
+                            "user_id": {
+                                "type": "integer",
+                                "example": 5
+                            },
+                            "pet_type_id": {
+                                "type": "integer",
+                                "example": 1
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
             "PlacementRequest": {
                 "title": "PlacementRequest",
                 "required": [
                     "id",
-                    "cat_id",
+                    "pet_id",
                     "user_id",
                     "request_type",
                     "status"
@@ -3119,7 +3082,7 @@
                                 "type": "integer",
                                 "example": 1
                             },
-                            "cat_id": {
+                            "pet_id": {
                                 "type": "integer",
                                 "example": 2
                             },
@@ -3174,8 +3137,8 @@
                                 "type": "integer",
                                 "format": "int64"
                             },
-                            "cat_id": {
-                                "description": "ID of the cat being transferred",
+                            "pet_id": {
+                                "description": "ID of the pet being transferred",
                                 "type": "integer",
                                 "format": "int64"
                             },
@@ -3284,51 +3247,6 @@
                             },
                             "updated_at": {
                                 "description": "Timestamp of last user update",
-                                "type": "string",
-                                "format": "date-time"
-                            }
-                        },
-                        "type": "object"
-                    }
-                ]
-            },
-            "WeightHistory": {
-                "title": "WeightHistory",
-                "description": "Weight History model",
-                "type": "object",
-                "allOf": [
-                    {
-                        "$ref": "#/components/schemas/Pagination"
-                    },
-                    {
-                        "properties": {
-                            "id": {
-                                "description": "Weight History ID",
-                                "type": "integer",
-                                "format": "int64"
-                            },
-                            "cat_id": {
-                                "description": "ID of the associated cat",
-                                "type": "integer",
-                                "format": "int64"
-                            },
-                            "weight_kg": {
-                                "description": "Recorded weight in kilograms",
-                                "type": "number",
-                                "format": "float"
-                            },
-                            "record_date": {
-                                "description": "Date the weight was recorded",
-                                "type": "string",
-                                "format": "date"
-                            },
-                            "created_at": {
-                                "description": "Timestamp of weight record creation",
-                                "type": "string",
-                                "format": "date-time"
-                            },
-                            "updated_at": {
-                                "description": "Timestamp of last weight record update",
                                 "type": "string",
                                 "format": "date-time"
                             }
@@ -3461,14 +3379,6 @@
             "description": "Authentication"
         },
         {
-            "name": "Cats",
-            "description": "Cats"
-        },
-        {
-            "name": "Cat Photos",
-            "description": "Cat Photos"
-        },
-        {
             "name": "Foster Assignments",
             "description": "Foster Assignments"
         },
@@ -3487,6 +3397,18 @@
         {
             "name": "Notification Preferences",
             "description": "Notification Preferences"
+        },
+        {
+            "name": "Pets",
+            "description": "Pets"
+        },
+        {
+            "name": "Pet Types",
+            "description": "Pet Types"
+        },
+        {
+            "name": "Pet Photos",
+            "description": "Pet Photos"
         },
         {
             "name": "Placement Requests",

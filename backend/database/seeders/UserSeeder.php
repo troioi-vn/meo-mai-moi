@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\User;
-use Spatie\Permission\Models\Role;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class UserSeeder extends Seeder
 {
@@ -14,9 +14,9 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-    $superAdminRole = Role::where('name', 'super_admin')->first();
-    $adminRole = Role::where('name', 'admin')->first();
-    $viewerRole = Role::where('name', 'viewer')->first();
+        $superAdminRole = Role::where('name', 'super_admin')->first();
+        $adminRole = Role::where('name', 'admin')->first();
+        $viewerRole = Role::where('name', 'viewer')->first();
 
         $admin = User::firstOrCreate(
             ['email' => 'admin@catarchy.space'],

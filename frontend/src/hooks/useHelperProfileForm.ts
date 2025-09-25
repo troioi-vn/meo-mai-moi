@@ -19,6 +19,7 @@ interface HelperProfileForm {
   is_public: boolean
   status?: string
   photos: FileList | File[] | []
+  pet_type_ids: number[]
 }
 
 interface ApiError {
@@ -41,15 +42,30 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
     can_adopt: false,
     is_public: true,
     photos: [],
+    pet_type_ids: [],
     ...initialData,
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
-    // Only set the form data if we are on the edit page and the initial data has been loaded.
     if (profileId && initialData) {
-      setFormData((prev) => ({ ...prev, ...initialData }))
+      setFormData({
+        country: '',
+        address: '',
+        city: '',
+        state: '',
+        phone_number: '',
+        experience: '',
+        has_pets: false,
+        has_children: false,
+        can_foster: false,
+        can_adopt: false,
+        is_public: true,
+        photos: [],
+        pet_type_ids: [],
+        ...initialData,
+      })
     }
   }, [initialData, profileId])
 
@@ -171,6 +187,11 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
       }
     }
 
+    // Append pet type ids
+    for (const id of formData.pet_type_ids) {
+      dataToSend.append('pet_type_ids[]', String(id))
+    }
+
     if (profileId) {
       updateMutation.mutate({ id: profileId, data: dataToSend })
     } else {
@@ -189,6 +210,7 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
     updateField,
     handleSubmit,
     handleCancel,
+    setFormData,
   }
 }
 

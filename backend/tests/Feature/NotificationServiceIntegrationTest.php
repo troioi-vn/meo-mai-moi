@@ -2,16 +2,16 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Services\NotificationService;
-use App\Models\User;
-use App\Models\Notification;
-use App\Models\EmailConfiguration;
-use App\Models\NotificationPreference;
-use App\Jobs\SendNotificationEmail;
 use App\Enums\NotificationType;
+use App\Jobs\SendNotificationEmail;
+use App\Models\EmailConfiguration;
+use App\Models\Notification;
+use App\Models\NotificationPreference;
+use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
+use Tests\TestCase;
 
 class NotificationServiceIntegrationTest extends TestCase
 {
@@ -20,11 +20,11 @@ class NotificationServiceIntegrationTest extends TestCase
     public function test_notification_service_integrates_with_existing_notification_system()
     {
         Queue::fake();
-        
+
         $user = User::factory()->create();
-    // Ensure email is considered enabled for this integration path
-    EmailConfiguration::factory()->smtp()->valid()->create(['is_active' => true]);
-        $service = new NotificationService();
+        // Ensure email is considered enabled for this integration path
+        EmailConfiguration::factory()->smtp()->valid()->create(['is_active' => true]);
+        $service = new NotificationService;
 
         // Test with a real notification scenario
         $data = [
@@ -68,10 +68,10 @@ class NotificationServiceIntegrationTest extends TestCase
     public function test_notification_service_respects_user_preferences_across_multiple_types()
     {
         Queue::fake();
-        
+
         $user = User::factory()->create();
-    EmailConfiguration::factory()->smtp()->valid()->create(['is_active' => true]);
-        $service = new NotificationService();
+        EmailConfiguration::factory()->smtp()->valid()->create(['is_active' => true]);
+        $service = new NotificationService;
 
         // Set different preferences for different notification types
         NotificationPreference::updatePreference(
@@ -100,7 +100,7 @@ class NotificationServiceIntegrationTest extends TestCase
 
         // Verify correct channels were used
         $notifications = Notification::where('user_id', $user->id)->get();
-        
+
         $emailNotification = $notifications->where('data.channel', 'email')->first();
         $inAppNotification = $notifications->where('data.channel', 'in_app')->first();
 
@@ -114,10 +114,10 @@ class NotificationServiceIntegrationTest extends TestCase
     public function test_notification_service_handles_missing_data_gracefully()
     {
         Queue::fake();
-        
+
         $user = User::factory()->create();
-    EmailConfiguration::factory()->smtp()->valid()->create(['is_active' => true]);
-        $service = new NotificationService();
+        EmailConfiguration::factory()->smtp()->valid()->create(['is_active' => true]);
+        $service = new NotificationService;
 
         // Send notification with minimal data
         $data = []; // Empty data array
@@ -132,7 +132,7 @@ class NotificationServiceIntegrationTest extends TestCase
         $this->assertDatabaseCount('notifications', 2);
 
         $notification = Notification::where('user_id', $user->id)->first();
-        
+
         // Should handle empty message gracefully
         $this->assertEquals('', $notification->message);
         $this->assertNull($notification->link);
@@ -142,8 +142,8 @@ class NotificationServiceIntegrationTest extends TestCase
     public function test_notification_service_works_with_existing_notification_controller()
     {
         $user = User::factory()->create();
-    EmailConfiguration::factory()->smtp()->valid()->create(['is_active' => true]);
-        $service = new NotificationService();
+        EmailConfiguration::factory()->smtp()->valid()->create(['is_active' => true]);
+        $service = new NotificationService;
 
         // Create notifications using the service
         $service->send(
@@ -157,7 +157,7 @@ class NotificationServiceIntegrationTest extends TestCase
             ->getJson('/api/notifications');
 
         $response->assertStatus(200);
-        
+
         $notifications = $response->json('data');
         $this->assertCount(2, $notifications); // Both email and in-app notifications
 

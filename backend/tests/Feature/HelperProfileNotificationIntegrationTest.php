@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
+use App\Enums\NotificationType;
+use App\Events\HelperProfileStatusUpdated;
 use App\Models\HelperProfile;
 use App\Models\NotificationPreference;
-use App\Events\HelperProfileStatusUpdated;
-use App\Enums\NotificationType;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
@@ -27,7 +27,7 @@ class HelperProfileNotificationIntegrationTest extends TestCase
         $user = User::factory()->create();
         $helperProfile = HelperProfile::factory()->create([
             'user_id' => $user->id,
-            'approval_status' => 'pending'
+            'approval_status' => 'pending',
         ]);
 
         // Enable email notifications for the user
@@ -58,7 +58,7 @@ class HelperProfileNotificationIntegrationTest extends TestCase
         $user = User::factory()->create();
         $helperProfile = HelperProfile::factory()->create([
             'user_id' => $user->id,
-            'approval_status' => 'pending'
+            'approval_status' => 'pending',
         ]);
 
         // Enable email notifications for the user
@@ -89,7 +89,7 @@ class HelperProfileNotificationIntegrationTest extends TestCase
         $user = User::factory()->create();
         $helperProfile = HelperProfile::factory()->create([
             'user_id' => $user->id,
-            'approval_status' => 'pending'
+            'approval_status' => 'pending',
         ]);
 
         // Update helper profile to suspended (this should use fallback)

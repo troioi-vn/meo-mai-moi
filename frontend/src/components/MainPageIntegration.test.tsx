@@ -4,10 +4,11 @@ import { renderWithRouter } from '@/test-utils'
 import MainPage from '@/pages/MainPage'
 import { http, HttpResponse } from 'msw'
 import { server } from '@/mocks/server'
-import type { Cat } from '@/types/cat'
+import type { Pet } from '@/types/pet'
+import { mockCatType } from '@/mocks/data/pets'
 
 describe('MainPage Integration with ActivePlacementRequestsSection', () => {
-  const mockCatWithActivePlacement: Cat = {
+  const mockPetWithActivePlacement: Pet = {
     id: 1,
     name: 'Fluffy',
     breed: 'Persian',
@@ -15,25 +16,32 @@ describe('MainPage Integration with ActivePlacementRequestsSection', () => {
     status: 'active',
     description: 'A very friendly and fluffy cat.',
     location: 'New York, NY',
-    photo_url: 'http://localhost:3000/storage/cats/profiles/fluffy.jpg',
+    photo_url: 'http://localhost:3000/storage/pets/profiles/fluffy.jpg',
     user_id: 2, // Different from authenticated user (id: 1)
+    pet_type_id: 1,
+    pet_type: mockCatType,
     user: {
       id: 2,
-      name: 'Cat Owner',
+      name: 'Pet Owner',
       email: 'owner@example.com',
     },
     created_at: '2023-01-01T00:00:00Z',
     updated_at: '2023-01-01T00:00:00Z',
+    viewer_permissions: {
+      can_edit: false,
+      can_view_contact: true,
+    },
     placement_requests: [
       {
         id: 1,
-        cat_id: 1,
+        pet_id: 1,
         request_type: 'fostering',
         status: 'open',
         notes: 'Looking for a loving home.',
         is_active: true,
         created_at: '2025-07-20T00:00:00Z',
         updated_at: '2025-07-20T00:00:00Z',
+        transfer_requests: [],
       },
     ],
     placement_request_active: true,
@@ -41,8 +49,8 @@ describe('MainPage Integration with ActivePlacementRequestsSection', () => {
 
   it('renders ActivePlacementRequestsSection within MainPage with proper layout', async () => {
     server.use(
-      http.get('http://localhost:3000/api/cats/placement-requests', () => {
-        return HttpResponse.json({ data: [mockCatWithActivePlacement] })
+      http.get('http://localhost:3000/api/pets/placement-requests', () => {
+        return HttpResponse.json({ data: [mockPetWithActivePlacement] })
       })
     )
 
@@ -73,8 +81,8 @@ describe('MainPage Integration with ActivePlacementRequestsSection', () => {
 
   it('maintains responsive layout with both sections', async () => {
     server.use(
-      http.get('http://localhost:3000/api/cats/placement-requests', () => {
-        return HttpResponse.json({ data: [mockCatWithActivePlacement] })
+      http.get('http://localhost:3000/api/pets/placement-requests', () => {
+        return HttpResponse.json({ data: [mockPetWithActivePlacement] })
       })
     )
 
@@ -101,7 +109,7 @@ describe('MainPage Integration with ActivePlacementRequestsSection', () => {
 
   it('handles empty state gracefully within MainPage', async () => {
     server.use(
-      http.get('http://localhost:3000/api/cats/placement-requests', () => {
+      http.get('http://localhost:3000/api/pets/placement-requests', () => {
         return HttpResponse.json({ data: [] })
       })
     )
@@ -117,7 +125,7 @@ describe('MainPage Integration with ActivePlacementRequestsSection', () => {
     await waitFor(() => {
       expect(screen.getByText('Active Placement Requests')).toBeInTheDocument()
       expect(screen.getByText('No active placement requests at the moment.')).toBeInTheDocument()
-      expect(screen.getByText('Check back soon for cats needing help!')).toBeInTheDocument()
+      expect(screen.getByText('Check back soon for pets needing help!')).toBeInTheDocument()
     })
   })
 })

@@ -2,11 +2,11 @@
 
 namespace App\Mail;
 
-use App\Models\User;
-use App\Models\Cat;
-use App\Models\HelperProfile;
-use App\Models\PlacementRequest;
 use App\Enums\NotificationType;
+use App\Models\HelperProfile;
+use App\Models\Pet;
+use App\Models\PlacementRequest;
+use App\Models\User;
 use App\Services\UnsubscribeService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -19,7 +19,9 @@ abstract class NotificationMail extends Mailable
     use Queueable, SerializesModels;
 
     protected User $user;
+
     protected NotificationType $notificationType;
+
     protected array $data;
 
     /**
@@ -86,8 +88,8 @@ abstract class NotificationMail extends Mailable
         ];
 
         // Add specific data based on notification type
-        if (isset($this->data['cat_id'])) {
-            $templateData['cat'] = Cat::find($this->data['cat_id']);
+        if (isset($this->data['pet_id'])) {
+            $templateData['pet'] = Pet::find($this->data['pet_id']);
         }
 
         if (isset($this->data['helper_profile_id'])) {
@@ -113,12 +115,12 @@ abstract class NotificationMail extends Mailable
     protected function getActionUrl(): string
     {
         $baseUrl = config('app.url');
-        
-        return match($this->notificationType) {
-            NotificationType::PLACEMENT_REQUEST_RESPONSE => $baseUrl . '/requests',
-            NotificationType::PLACEMENT_REQUEST_ACCEPTED => $baseUrl . '/requests',
-            NotificationType::HELPER_RESPONSE_ACCEPTED => $baseUrl . '/requests',
-            NotificationType::HELPER_RESPONSE_REJECTED => $baseUrl . '/requests',
+
+        return match ($this->notificationType) {
+            NotificationType::PLACEMENT_REQUEST_RESPONSE => $baseUrl.'/requests',
+            NotificationType::PLACEMENT_REQUEST_ACCEPTED => $baseUrl.'/requests',
+            NotificationType::HELPER_RESPONSE_ACCEPTED => $baseUrl.'/requests',
+            NotificationType::HELPER_RESPONSE_REJECTED => $baseUrl.'/requests',
             default => $baseUrl,
         };
     }
@@ -129,6 +131,7 @@ abstract class NotificationMail extends Mailable
     protected function getUnsubscribeUrl(): string
     {
         $unsubscribeService = app(UnsubscribeService::class);
+
         return $unsubscribeService->generateUnsubscribeUrl($this->user, $this->notificationType);
     }
 }

@@ -22,8 +22,8 @@ import { toast } from 'sonner'
 interface PlacementResponseModalProps {
   isOpen: boolean
   onClose: () => void
-  catName: string
-  catId: number
+  petName: string
+  petId: number
   placementRequestId: number
   onSuccess?: () => void
 }
@@ -31,11 +31,13 @@ interface PlacementResponseModalProps {
 export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({
   isOpen,
   onClose,
-  catName,
-  catId,
+  petName,
+  petId,
   placementRequestId,
   onSuccess,
 }) => {
+  const actualPetName = petName || 'Pet'
+  const actualPetId = petId || 0
   const [helperProfiles, setHelperProfiles] = useState<HelperProfile[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedProfile, setSelectedProfile] = useState<string | null>(null)
@@ -65,7 +67,7 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({
     try {
       setSubmitting(true)
       await api.post('transfer-requests', {
-        cat_id: catId,
+        pet_id: actualPetId,
         placement_request_id: placementRequestId,
         helper_profile_id: selectedProfile ? Number(selectedProfile) : undefined,
         requested_relationship_type: requestedRelationshipType ?? undefined,
@@ -138,7 +140,7 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Respond to Placement Request for {catName}</DialogTitle>
+          <DialogTitle>Respond to Placement Request for {actualPetName}</DialogTitle>
           <DialogDescription>
             Select your helper profile and the relationship type to respond. You can confirm before
             submitting.
@@ -245,7 +247,7 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({
         ) : (
           <div className="py-4">
             <p>Are you sure you want to submit this response?</p>
-            <p>Cat: {catName}</p>
+            <p>Pet: {actualPetName}</p>
             <p>
               Helper Profile:{' '}
               {(() => {

@@ -74,7 +74,7 @@ describe('ForgotPasswordPage', () => {
     })
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/account/cats')
+      expect(mockNavigate).toHaveBeenCalledWith('/account/pets')
     })
   })
 

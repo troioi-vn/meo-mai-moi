@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Cat;
+use App\Models\Pet;
 use App\Models\User;
 use App\Models\PlacementRequest;
 use App\Models\TransferRequest;
@@ -31,10 +31,10 @@ class EmailNotificationIntegrationTest extends TestCase
         $owner = User::factory()->create();
         $helper = User::factory()->create();
         
-        // Create cat and placement request
-        $cat = Cat::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\CatStatus::ACTIVE]);
+        // Create pet and placement request
+        $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
         $placementRequest = PlacementRequest::factory()->create([
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'user_id' => $owner->id,
             'is_active' => true,
             'status' => \App\Enums\PlacementRequestStatus::OPEN->value
@@ -51,7 +51,7 @@ class EmailNotificationIntegrationTest extends TestCase
 
         // Create transfer request (this should trigger notification)
         $response = $this->actingAs($helper)->postJson('/api/transfer-requests', [
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $helperProfile->id,
             'requested_relationship_type' => 'fostering',
@@ -73,10 +73,10 @@ class EmailNotificationIntegrationTest extends TestCase
         $owner = User::factory()->create();
         $helper = User::factory()->create();
         
-        // Create cat and placement request
-        $cat = Cat::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\CatStatus::ACTIVE]);
+        // Create pet and placement request
+        $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
         $placementRequest = PlacementRequest::factory()->create([
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'user_id' => $owner->id,
             'is_active' => true,
             'status' => \App\Enums\PlacementRequestStatus::OPEN->value
@@ -85,7 +85,7 @@ class EmailNotificationIntegrationTest extends TestCase
 
         // Create transfer request
         $transferRequest = TransferRequest::factory()->create([
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $helperProfile->id,
             'initiator_user_id' => $helper->id,
@@ -120,10 +120,10 @@ class EmailNotificationIntegrationTest extends TestCase
         $owner = User::factory()->create();
         $helper = User::factory()->create();
         
-        // Create cat and placement request
-        $cat = Cat::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\CatStatus::ACTIVE]);
+        // Create pet and placement request
+        $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
         $placementRequest = PlacementRequest::factory()->create([
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'user_id' => $owner->id,
             'is_active' => true,
             'status' => \App\Enums\PlacementRequestStatus::OPEN->value
@@ -132,7 +132,7 @@ class EmailNotificationIntegrationTest extends TestCase
 
         // Create transfer request
         $transferRequest = TransferRequest::factory()->create([
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $helperProfile->id,
             'initiator_user_id' => $helper->id,

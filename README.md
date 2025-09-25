@@ -1,6 +1,6 @@
-# Meo Mai Moi — Cat Rehoming Platform Engine
+# Meo Mai Moi — Pet Rehoming Platform Engine
 
-Connecting owners, fosters, and adopters to help cats find new homes. Built with Laravel, React, and PostgreSQL.
+Connecting owners, fosters, and adopters to help pets find new homes. Built with Laravel, React, and PostgreSQL.
 
 Dockerized • Laravel 11 • React 19 • Vite 7 • PostgreSQL 14 • Filament 3
 
@@ -30,7 +30,7 @@ Access:
 
 ## Admin Panel Features (highlights)
 
-- Cat management: profiles, photos, medical records, status filters
+- Pet management: profiles, photos, medical records, status filters, pet type support
 - Users & helpers: verification, suspension, moderation tools
 - Placement & transfer: request workflow, foster assignments, handovers
 - Reviews moderation: hide/flag, bulk actions, filters

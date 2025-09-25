@@ -25,7 +25,7 @@ import { CalendarIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface PlacementRequestModalProps {
-  catId: number
+  petId: number
   isOpen: boolean
   onClose: () => void
   onSuccess?: () => void
@@ -38,7 +38,7 @@ interface PlacementRequestModalProps {
 }
 
 export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
-  catId,
+  petId,
   isOpen,
   onClose,
   onSuccess,
@@ -70,7 +70,7 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
     }
     createPlacementRequestMutation.mutate(
       {
-        cat_id: catId,
+        pet_id: petId,
         request_type: requestType,
         notes,
         expires_at: expiresAt ? format(expiresAt, 'yyyy-MM-dd') : undefined,
@@ -93,7 +93,7 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
         <DialogHeader>
           <DialogTitle>Create Placement Request</DialogTitle>
           <DialogDescription>
-            Fill out the form below to create a new placement request for your cat.
+            Fill out the form below to create a new placement request for your pet.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -124,7 +124,7 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
                   setNotes(e.target.value)
                 }}
                 className="col-span-3"
-                placeholder="Describe your cat and any specific needs or requirements."
+                placeholder="Describe your pet and any specific needs or requirements."
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">

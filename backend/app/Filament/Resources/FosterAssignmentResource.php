@@ -30,7 +30,7 @@ class FosterAssignmentResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-heart';
 
-    protected static ?string $navigationGroup = 'Foster Care';
+    protected static ?string $navigationGroup = 'Pet Management';
 
     protected static ?string $navigationLabel = 'Foster Assignments';
 
@@ -42,13 +42,13 @@ class FosterAssignmentResource extends Resource
             ->schema([
                 Section::make('Assignment Details')
                     ->schema([
-                        Select::make('cat_id')
-                            ->label('Cat')
-                            ->relationship('cat', 'name')
+                        Select::make('pet_id')
+                            ->label('Pet')
+                            ->relationship('pet', 'name')
                             ->searchable()
                             ->preload()
                             ->required()
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->name} (ID: {$record->id})"),
+                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->name} ({$record->petType->name}) (ID: {$record->id})"),
 
                         Select::make('owner_user_id')
                             ->label('Owner')
@@ -71,8 +71,8 @@ class FosterAssignmentResource extends Resource
                             ->preload()
                             ->nullable()
                             ->getOptionLabelFromRecordUsing(function ($record) {
-                                $catName = $record->placementRequest?->cat?->name ?? 'Unknown Cat';
-                                return "#{$record->id} - {$catName}";
+                                $petName = $record->placementRequest?->pet?->name ?? 'Unknown Pet';
+                                return "#{$record->id} - {$petName}";
                             }),
                     ])
                     ->columns(2),
@@ -120,11 +120,12 @@ class FosterAssignmentResource extends Resource
                     ->sortable()
                     ->searchable(),
 
-                TextColumn::make('cat.name')
-                    ->label('Cat')
+                TextColumn::make('pet.name')
+                    ->label('Pet')
                     ->sortable()
                     ->searchable()
-                    ->url(fn ($record) => $record->cat ? route('filament.admin.resources.cats.edit', $record->cat) : null),
+                    ->description(fn ($record) => $record->pet?->petType?->name)
+                    ->url(fn ($record) => $record->pet ? route('filament.admin.resources.pets.edit', $record->pet) : null),
 
                 TextColumn::make('fosterer.name')
                     ->label('Foster Parent')

@@ -84,7 +84,7 @@ use App\Enums\NotificationType;
 SendNotificationEmail::dispatch(
     $user,
     NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
-    ['cat_id' => $cat->id],
+   ['pet_id' => $pet->id],
     $notification->id
 );
 ```

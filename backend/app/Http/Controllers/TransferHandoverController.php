@@ -105,7 +105,7 @@ class TransferHandoverController extends Controller
     /**
      * @OA\Post(
      *   path="/api/transfer-handovers/{id}/confirm",
-     *   summary="Helper confirms cat condition at handover",
+    *   summary="Helper confirms pet condition at handover",
      *   tags={"Transfer Handover"},
      *   security={{"sanctum": {}}},
      *   @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
@@ -163,7 +163,7 @@ class TransferHandoverController extends Controller
             return $this->sendError('Handover is not in a completable state.', 409);
         }
 
-        $tr = $handover->transferRequest()->with(['cat', 'placementRequest'])->first();
+    $tr = $handover->transferRequest()->with(['pet', 'placementRequest'])->first();
 
         DB::transaction(function () use ($handover, $tr) {
             $handover->status = 'completed';
@@ -174,16 +174,16 @@ class TransferHandoverController extends Controller
             $type = $tr->requested_relationship_type;
             if ($type === 'permanent_foster') {
                 // Close previous ownership record for current owner; backfill if missing
-                $closed = OwnershipHistory::where('cat_id', $tr->cat_id)
+                $closed = OwnershipHistory::where('pet_id', $tr->pet_id)
                     ->where('user_id', $tr->recipient_user_id)
                     ->whereNull('to_ts')
                     ->update(['to_ts' => now()]);
 
                 if ($closed === 0) {
                     // No open record to close; create a backfilled one starting from earliest known timestamp
-                    $from = optional($tr->cat)->created_at ?? (optional($tr->placementRequest)->created_at ?? now());
+                    $from = optional($tr->pet)->created_at ?? (optional($tr->placementRequest)->created_at ?? now());
                     $backfilled = OwnershipHistory::create([
-                        'cat_id' => $tr->cat_id,
+                        'pet_id' => $tr->pet_id,
                         'user_id' => $tr->recipient_user_id,
                         'from_ts' => $from,
                         'to_ts' => now(),
@@ -191,18 +191,18 @@ class TransferHandoverController extends Controller
                 }
 
                 // Assign new owner
-                $tr->cat->update(['user_id' => $tr->initiator_user_id]);
+                optional($tr->pet)->update(['user_id' => $tr->initiator_user_id]);
 
                 // Create new ownership history for new owner
                 OwnershipHistory::create([
-                    'cat_id' => $tr->cat_id,
+                    'pet_id' => $tr->pet_id,
                     'user_id' => $tr->initiator_user_id,
                     'from_ts' => now(),
                     'to_ts' => null,
                 ]);
             } elseif ($type === 'fostering' && Schema::hasTable('foster_assignments')) {
                 \App\Models\FosterAssignment::firstOrCreate([
-                    'cat_id' => $tr->cat_id,
+                    'pet_id' => $tr->pet_id,
                     'owner_user_id' => $tr->recipient_user_id,
                     'foster_user_id' => $tr->initiator_user_id,
                     'transfer_request_id' => $tr->id,

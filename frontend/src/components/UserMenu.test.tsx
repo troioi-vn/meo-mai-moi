@@ -85,7 +85,7 @@ describe('UserMenu', () => {
 
     // Check that menu items are visible after clicking
     expect(screen.getByRole('menuitem', { name: 'Profile' })).toBeInTheDocument()
-    expect(screen.getByRole('menuitem', { name: 'My Cats' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'My Pets' })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: 'Log Out' })).toBeInTheDocument()
   })
 
@@ -103,10 +103,10 @@ describe('UserMenu', () => {
     await user.click(avatar)
 
     const profileLink = screen.getByRole('menuitem', { name: 'Profile' })
-    const myCatsLink = screen.getByRole('menuitem', { name: 'My Cats' })
+    const myPetsLink = screen.getByRole('menuitem', { name: 'My Pets' })
 
     expect(profileLink).toHaveAttribute('href', '/account')
-    expect(myCatsLink).toHaveAttribute('href', '/account/cats')
+    expect(myPetsLink).toHaveAttribute('href', '/account/pets')
   })
 
   it('calls logout function when logout is clicked', async () => {

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class OwnershipTransfer extends Model
 {
     protected $fillable = [
-        'cat_id',
+        'pet_id',
         'from_user_id',
         'to_user_id',
         'transfer_request_id',
@@ -19,9 +19,9 @@ class OwnershipTransfer extends Model
         'occurred_at' => 'datetime',
     ];
 
-    public function cat(): BelongsTo
+    public function pet(): BelongsTo
     {
-        return $this->belongsTo(Cat::class);
+        return $this->belongsTo(Pet::class);
     }
 
     public function fromUser(): BelongsTo

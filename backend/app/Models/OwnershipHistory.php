@@ -13,7 +13,7 @@ class OwnershipHistory extends Model
     protected $table = 'ownership_history';
 
     protected $fillable = [
-        'cat_id',
+        'pet_id', // Updated from cat_id
         'user_id',
         'from_ts',
         'to_ts',
@@ -24,10 +24,11 @@ class OwnershipHistory extends Model
         'to_ts' => 'datetime',
     ];
 
-    public function cat(): BelongsTo
+    public function pet(): BelongsTo
     {
-        return $this->belongsTo(Cat::class);
+        return $this->belongsTo(Pet::class);
     }
+
 
     public function user(): BelongsTo
     {

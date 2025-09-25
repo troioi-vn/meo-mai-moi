@@ -29,7 +29,7 @@ class TransferRequestResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-path';
 
-    protected static ?string $navigationGroup = 'Placements';
+    protected static ?string $navigationGroup = 'Pet Management';
 
     protected static ?string $navigationLabel = 'Transfer Requests';
 
@@ -42,7 +42,13 @@ class TransferRequestResource extends Resource
                 Select::make('placement_request_id')
                     ->label('Placement Request')
                     ->relationship('placementRequest', 'id')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => "#{$record->id} - {$record->cat->name} ({$record->request_type->value})")
+                    ->getOptionLabelFromRecordUsing(function ($record) {
+                        $petName = optional($record->pet)->name;
+                        if ($petName) {
+                            return "#{$record->id} - {$petName} ({$record->request_type->value})";
+                        }
+                        return "#{$record->id}";
+                    })
                     ->searchable()
                     ->preload()
                     ->required(),
@@ -118,11 +124,13 @@ class TransferRequestResource extends Resource
                     ->sortable()
                     ->searchable(),
 
-                TextColumn::make('placementRequest.cat.name')
-                    ->label('Cat')
+                TextColumn::make('placementRequest.pet.name')
+                    ->label('Pet')
+                    ->formatStateUsing(fn ($state, $record) => $record->placementRequest?->pet?->name)
                     ->sortable()
                     ->searchable()
-                    ->url(fn ($record) => $record->placementRequest?->cat ? route('filament.admin.resources.cats.edit', $record->placementRequest->cat) : null),
+                    ->description(fn ($record) => $record->placementRequest?->pet?->petType?->name)
+                    ->url(fn ($record) => $record->placementRequest?->pet ? route('filament.admin.resources.pets.edit', $record->placementRequest->pet) : null),
 
                 TextColumn::make('helperProfile.user.name')
                     ->label('Helper')

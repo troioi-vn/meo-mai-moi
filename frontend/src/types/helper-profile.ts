@@ -24,6 +24,7 @@ export interface HelperProfile {
   status?: string
   user?: HelperProfileUser
   photos?: unknown[]
+  pet_types?: Array<{ id: number; name: string; placement_requests_allowed: boolean }>
   created_at?: string
   updated_at?: string
 }

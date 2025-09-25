@@ -6,15 +6,16 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NotificationPreferenceController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UserProfileController;
-use App\Http\Controllers\CatController;
+// use App\Http\Controllers\CatController; // legacy removed
+use App\Http\Controllers\PetController;
 use App\Http\Controllers\MedicalRecordController;
 use App\Http\Controllers\WeightHistoryController;
-use App\Http\Controllers\CatCommentController;
 use App\Http\Controllers\HelperProfileController;
 use App\Http\Controllers\TransferRequestController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\CatPhotoController;
+// use App\Http\Controllers\CatPhotoController; // legacy removed
+use App\Http\Controllers\PetPhotoController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PlacementRequestController;
 use App\Http\Controllers\VersionController;
@@ -62,14 +63,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/users/me', [UserProfileController::class, 'destroy']);
     Route::post('/users/me/avatar', [UserProfileController::class, 'uploadAvatar']);
     Route::delete('/users/me/avatar', [UserProfileController::class, 'deleteAvatar']);
-    Route::get('/my-cats', [CatController::class, 'myCats']);
-    Route::get('/my-cats/sections', [CatController::class, 'myCatsSections']);
-    Route::post('/cats', [CatController::class, 'store']);
-    Route::put('/cats/{cat}', [CatController::class, 'update']);
-    Route::delete('/cats/{cat}', [CatController::class, 'destroy'])->name('cats.destroy');
-    Route::put('/cats/{cat}/status', [CatController::class, 'updateStatus'])->name('cats.updateStatus');
-    Route::post('/cats/{cat}/photos', [CatPhotoController::class, 'store']);
-    Route::delete('/cats/{cat}/photos/{photo}', [CatPhotoController::class, 'destroy']);
+    // Legacy cat routes removed
+    
+    // New pet routes
+    Route::get('/my-pets', [PetController::class, 'myPets']);
+    Route::get('/my-pets/sections', [PetController::class, 'myPetsSections']);
+    Route::post('/pets', [PetController::class, 'store']);
+    Route::put('/pets/{pet}', [PetController::class, 'update']);
+    Route::delete('/pets/{pet}', [PetController::class, 'destroy'])->name('pets.destroy');
+    Route::put('/pets/{pet}/status', [PetController::class, 'updateStatus'])->name('pets.updateStatus');
+    Route::get('/pet-types', [PetController::class, 'petTypes']);
+    // Legacy cat photo routes removed
+    
+    // New pet photo routes
+    Route::post('/pets/{pet}/photos', [PetPhotoController::class, 'store']);
+    Route::delete('/pets/{pet}/photos/{photo}', [PetPhotoController::class, 'destroy']);
     Route::post('/placement-requests', [PlacementRequestController::class, 'store']);
     Route::delete('/placement-requests/{placementRequest}', [PlacementRequestController::class, 'destroy']);
     Route::post('/placement-requests/{placementRequest}/confirm', [PlacementRequestController::class, 'confirm']);
@@ -79,7 +87,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('helper-profiles/{helperProfile}/photos/{photo}', [HelperProfileController::class, 'destroyPhoto']);
     #Route::post('/cats/{cat}/medical-records', [MedicalRecordController::class, 'store']);
     #Route::post('/cats/{cat}/weight-history', [WeightHistoryController::class, 'store']);
-    #Route::post('/cats/{cat}/comments', [CatCommentController::class, 'store']);
+    // Legacy cat comments route removed
     #Route::post('/helper-profiles', [HelperProfileController::class, 'store']);
     #Route::get('/helper-profiles', [HelperProfileController::class, 'index']);
     #Route::get('/helper-profiles/me', [HelperProfileController::class, 'show']);
@@ -113,6 +121,9 @@ Route::middleware('auth:sanctum')->group(function () {
     #Route::delete('/messages/{message}', [MessageController::class, 'destroy']);
 });
 
-// Place static routes before parameter routes and constrain {cat} to numbers to avoid conflicts
-Route::get('/cats/placement-requests', [CatController::class, 'placementRequests']);
-Route::get('/cats/{cat}', [CatController::class, 'show'])->middleware('optional.auth')->whereNumber('cat');
+// Legacy public cat routes removed
+
+// New pet routes (public)
+Route::get('/pets/placement-requests', [PetController::class, 'placementRequests']);
+Route::get('/pets/featured', [PetController::class, 'featured']);
+Route::get('/pets/{pet}', [PetController::class, 'show'])->middleware('optional.auth')->whereNumber('pet');

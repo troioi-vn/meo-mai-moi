@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Cat;
+use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Models\TransferRequest;
 use App\Models\User;
@@ -17,10 +17,10 @@ class TransferRequestLinkageTest extends TestCase
         #[Test]
     public function test_transfer_request_can_be_linked_to_placement_request(): void
     {
-        $cat = Cat::factory()->create();
-        $placementRequest = PlacementRequest::factory()->create(['cat_id' => $cat->id]);
+        $pet = Pet::factory()->create();
+        $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id]);
         $transferRequest = TransferRequest::factory()->create([
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'placement_request_id' => $placementRequest->id,
         ]);
 

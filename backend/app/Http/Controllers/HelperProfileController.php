@@ -28,7 +28,7 @@ class HelperProfileController extends Controller
      */
     public function index()
     {
-        $helperProfiles = HelperProfile::with('photos')->where('is_public', true)->get();
+        $helperProfiles = HelperProfile::with('photos', 'petTypes')->where('is_public', true)->get();
 
         return response()->json(['data' => $helperProfiles]);
     }
@@ -70,9 +70,15 @@ class HelperProfileController extends Controller
             'is_public' => 'required|boolean',
             'photos' => 'sometimes|array|max:5',
             'photos.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:10240',
+            'pet_type_ids' => 'sometimes|array',
+            'pet_type_ids.*' => 'exists:pet_types,id',
         ]);
 
         $helperProfile = Auth::user()->helperProfiles()->create($validatedData);
+
+        if (isset($validatedData['pet_type_ids'])) {
+            $helperProfile->petTypes()->sync($validatedData['pet_type_ids']);
+        }
 
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $photo) {
@@ -112,7 +118,7 @@ class HelperProfileController extends Controller
         $user = $request->user();
         // Allow viewing if the profile is public or owned by the requester
         if ($helperProfile->is_public || ($user && $helperProfile->user_id === $user->id)) {
-            return response()->json(['data' => $helperProfile->load('photos', 'user')]);
+            return response()->json(['data' => $helperProfile->load('photos', 'user', 'petTypes')]);
         }
         return response()->json(['message' => 'Forbidden'], 403);
     }
@@ -202,9 +208,15 @@ class HelperProfileController extends Controller
             'status' => 'sometimes|string|in:active,cancelled,deleted',
             'photos' => 'sometimes|array|max:5',
             'photos.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:10240',
+            'pet_type_ids' => 'sometimes|array',
+            'pet_type_ids.*' => 'exists:pet_types,id',
         ]);
 
         $helperProfile->update($validatedData);
+
+        if (isset($validatedData['pet_type_ids'])) {
+            $helperProfile->petTypes()->sync($validatedData['pet_type_ids']);
+        }
 
         if ($request->hasFile('photos')) {
             Log::info('Photos found in request');

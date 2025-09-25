@@ -60,9 +60,10 @@ class ViewFosterAssignment extends ViewRecord
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                TextEntry::make('cat.name')
-                                    ->label('Cat')
-                                    ->url(fn () => $this->record->cat ? route('filament.admin.resources.cats.edit', $this->record->cat) : null),
+                                TextEntry::make('pet.name')
+                                    ->label('Pet')
+                                    ->url(fn () => $this->record->pet ? route('filament.admin.resources.pets.edit', $this->record->pet) : null)
+                                    ->description(fn () => $this->record->pet?->petType?->name),
                                 
                                 TextEntry::make('fosterer.name')
                                     ->label('Foster Parent'),

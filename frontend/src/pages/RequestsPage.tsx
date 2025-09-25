@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { CatCard } from '@/components/CatCard'
+import { PetCard } from '@/components/PetCard'
 import {
   Select,
   SelectContent,
@@ -8,46 +8,57 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { DatePicker } from '@/components/ui/date-picker'
-import { getPlacementRequests } from '@/api/cats'
-import type { Cat } from '@/types/cat'
+import { getPlacementRequests, getPetTypes } from '@/api/pets'
+import type { Pet, PetType } from '@/types/pet'
 
 const RequestsPage = () => {
-  const [cats, setCats] = useState<Cat[]>([])
+  const [pets, setPets] = useState<Pet[]>([])
+  const [petTypes, setPetTypes] = useState<PetType[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [typeFilter, setTypeFilter] = useState<'all' | 'foster' | 'adoption'>('all')
+  const [petTypeFilter, setPetTypeFilter] = useState<string>('all')
   const [startDate, setStartDate] = useState<Date | undefined>(undefined)
   const [endDate, setEndDate] = useState<Date | undefined>(undefined)
 
   useEffect(() => {
-    const fetchRequests = async () => {
+    const fetchInitialData = async () => {
       try {
         setLoading(true)
-        const response = await getPlacementRequests()
-        setCats(response)
+        const [petsResponse, petTypesResponse] = await Promise.all([
+          getPlacementRequests(),
+          getPetTypes(),
+        ])
+        setPets(petsResponse)
+        setPetTypes(petTypesResponse)
         setError(null)
       } catch (err) {
-        setError('Failed to fetch placement requests. Please try again later.')
+        setError('Failed to fetch data. Please try again later.')
         console.error(err)
       } finally {
         setLoading(false)
       }
     }
 
-    void fetchRequests()
+    void fetchInitialData()
   }, [])
 
-  const filteredCats = useMemo(() => {
-    if (cats.length === 0) return [] as Cat[]
-    return cats.filter((cat) => {
-      const prs = cat.placement_requests
+  const filteredPets = useMemo(() => {
+    if (pets.length === 0) return [] as Pet[]
+    return pets.filter((pet) => {
+      const prs = pet.placement_requests
       if (!prs || prs.length === 0) return false
 
-      // Hide cats with only fulfilled placement requests
+      // Hide pets with only fulfilled placement requests
       const hasActivePlacementRequest = prs.some(
         (pr) => pr.is_active === true || pr.status === 'open' || pr.status === 'pending_review'
       )
       if (!hasActivePlacementRequest) return false
+
+      // Pet Type filter
+      if (petTypeFilter !== 'all' && pet.pet_type.slug !== petTypeFilter) {
+        return false
+      }
 
       // Type filter
       const matchesType =
@@ -74,7 +85,7 @@ const RequestsPage = () => {
         return true
       })
     })
-  }, [cats, typeFilter, startDate, endDate])
+  }, [pets, typeFilter, petTypeFilter, startDate, endDate])
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -93,9 +104,25 @@ const RequestsPage = () => {
               <SelectValue placeholder="All Types" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="all">All Request Types</SelectItem>
               <SelectItem value="foster">Foster</SelectItem>
               <SelectItem value="adoption">Adoption</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
+            value={petTypeFilter}
+            onValueChange={setPetTypeFilter}
+          >
+            <SelectTrigger className="w-[220px]" aria-label="Pet Type Filter">
+              <SelectValue placeholder="All Pet Types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Pet Types</SelectItem>
+              {petTypes.map((pt) => (
+                <SelectItem key={pt.id} value={pt.slug}>
+                  {pt.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -120,10 +147,10 @@ const RequestsPage = () => {
 
         {!loading && !error && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filteredCats.map((cat) => (
-              <CatCard key={cat.id} cat={cat} />
+            {filteredPets.map((pet) => (
+              <PetCard key={pet.id} pet={pet} />
             ))}
-            {filteredCats.length === 0 && (
+            {filteredPets.length === 0 && (
               <p className="col-span-full text-center text-muted-foreground">
                 No results match your filters.
               </p>

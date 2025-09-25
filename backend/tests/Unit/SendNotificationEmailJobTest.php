@@ -6,7 +6,7 @@ use Tests\TestCase;
 use App\Jobs\SendNotificationEmail;
 use App\Models\User;
 use App\Models\Notification;
-use App\Models\Cat;
+use App\Models\Pet;
 use App\Models\HelperProfile;
 use App\Models\PlacementRequest;
 use App\Mail\PlacementRequestResponseMail;
@@ -55,7 +55,7 @@ class SendNotificationEmailJobTest extends TestCase
         $job = new SendNotificationEmail(
             $this->user,
             NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
-            ['cat_id' => 1],
+            ['pet_id' => 1],
             $this->notification->id
         );
         
@@ -78,7 +78,7 @@ class SendNotificationEmailJobTest extends TestCase
         $job = new SendNotificationEmail(
             $this->user,
             NotificationType::PLACEMENT_REQUEST_ACCEPTED->value,
-            ['cat_id' => 1],
+            ['pet_id' => 1],
             $this->notification->id
         );
         

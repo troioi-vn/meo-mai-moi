@@ -1,9 +1,11 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { FormField } from '@/components/ui/FormField'
 import { CheckboxField } from '@/components/ui/CheckboxField'
 import { FileInput } from '@/components/ui/FileInput'
 import useHelperProfileForm from '@/hooks/useHelperProfileForm'
+import { getPetTypes } from '@/api/pets'
+import type { PetType } from '@/types/pet'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getHelperProfile,
@@ -11,6 +13,7 @@ import {
   deleteHelperProfilePhoto,
 } from '@/api/helper-profiles'
 import { useParams, useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,37 +30,64 @@ const HelperProfileEditPage: React.FC = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  
   const { data, isLoading, isError } = useQuery({
     queryKey: ['helper-profile', id],
     queryFn: () => (id ? getHelperProfile(id) : Promise.reject(new Error('missing id'))),
     enabled: Boolean(id),
   })
 
+  const { data: petTypes } = useQuery<PetType[]>({
+    queryKey: ['pet-types'],
+    queryFn: getPetTypes,
+  })
+
   const numericId = id ? Number(id) : undefined
-  const initialFormData = data?.data
-    ? {
-        country: data.data.country ?? '',
-        address: data.data.address ?? '',
-        city: data.data.city ?? '',
-        state: data.data.state ?? '',
-        phone_number: data.data.phone_number ?? data.data.phone ?? '',
-        experience: data.data.experience ?? '',
-        has_pets: Boolean(data.data.has_pets),
-        has_children: Boolean(data.data.has_children),
-        can_foster: Boolean(data.data.can_foster),
-        can_adopt: Boolean(data.data.can_adopt),
-        is_public: Boolean(data.data.is_public),
-        status: data.data.status,
-        photos: [],
-      }
-    : undefined
+  
+  // Prepare initial form data from loaded data
+  const initialFormData = useMemo(() => {
+    if (!data?.data) return {}
+    
+    return {
+      country: data.data.country ?? '',
+      address: data.data.address ?? '',
+      city: data.data.city ?? '',
+      state: data.data.state ?? '',
+      phone_number: data.data.phone_number ?? data.data.phone ?? '',
+      experience: data.data.experience ?? '',
+      has_pets: Boolean(data.data.has_pets),
+      has_children: Boolean(data.data.has_children),
+      can_foster: Boolean(data.data.can_foster),
+      can_adopt: Boolean(data.data.can_adopt),
+      is_public: Boolean(data.data.is_public),
+      status: data.data.status,
+      photos: [],
+      pet_type_ids: data.data.pet_types?.map((pt) => pt.id) ?? [],
+    }
+  }, [data?.data])
+  
+  // Initialize the form hook with proper initial data
   const { formData, errors, isSubmitting, updateField, handleSubmit, handleCancel } =
     useHelperProfileForm(numericId, initialFormData)
+
+  const handlePetTypeChange = (petTypeId: number) => {
+    const currentPetTypeIds = formData.pet_type_ids || []
+    const updatedPetTypeIds = currentPetTypeIds.includes(petTypeId)
+      ? currentPetTypeIds.filter((id) => id !== petTypeId)
+      : [...currentPetTypeIds, petTypeId]
+    updateField('pet_type_ids')(updatedPetTypeIds)
+  }
 
   const deleteMutation = useMutation({
     mutationFn: () => (id ? deleteHelperProfile(id) : Promise.reject(new Error('missing id'))),
     onSuccess: () => {
+      toast.success('Helper profile deleted successfully!')
+      void queryClient.invalidateQueries({ queryKey: ['helper-profiles'] })
       void navigate('/helper')
+    },
+    onError: (error) => {
+      console.error('Delete error:', error)
+      toast.error('Failed to delete helper profile. Please try again.')
     },
   })
 
@@ -66,12 +96,17 @@ const HelperProfileEditPage: React.FC = () => {
       id ? deleteHelperProfilePhoto(id, photoId) : Promise.reject(new Error('missing id')),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['helper-profile', id] })
+      toast.success('Photo deleted successfully!')
+    },
+    onError: (error) => {
+      console.error('Delete photo error:', error)
+      toast.error('Failed to delete photo. Please try again.')
     },
   })
 
-  if (isLoading) return <div>Loading...</div>
-  if (isError) return <div>Error fetching helper profile</div>
-  if (!data?.data) return null
+  if (isLoading) return <div className="flex justify-center items-center min-h-screen">Loading...</div>
+  if (isError) return <div className="flex justify-center items-center min-h-screen">Error fetching helper profile</div>
+  if (!data?.data) return <div className="flex justify-center items-center min-h-screen">Helper profile not found</div>
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
@@ -191,6 +226,22 @@ const HelperProfileEditPage: React.FC = () => {
             onChange={updateField('is_public')}
             error={errors.is_public}
           />
+          <div>
+            <label className="block text-sm font-medium text-card-foreground">Pet Types</label>
+            <div className="grid grid-cols-2 gap-4 mt-2">
+              {petTypes
+                ?.filter((pt) => pt.placement_requests_allowed)
+                .map((petType) => (
+                  <CheckboxField
+                    key={petType.id}
+                    id={`pet_type_${petType.id}`}
+                    label={petType.name}
+                    checked={formData.pet_type_ids?.includes(petType.id)}
+                    onChange={() => handlePetTypeChange(petType.id)}
+                  />
+                ))}
+            </div>
+          </div>
           <FileInput
             id="photos"
             label="Photos"
@@ -221,15 +272,13 @@ const HelperProfileEditPage: React.FC = () => {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction asChild>
-                    <Button
-                      type="button"
-                      onClick={() => {
-                        deleteMutation.mutate()
-                      }}
-                    >
-                      Delete
-                    </Button>
+                  <AlertDialogAction 
+                    onClick={() => {
+                      deleteMutation.mutate()
+                    }}
+                    disabled={deleteMutation.isPending}
+                  >
+                    {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

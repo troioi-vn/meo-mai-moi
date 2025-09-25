@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Cat;
+use App\Models\Pet;
 use App\Models\HelperProfile;
 use App\Models\Notification;
 use App\Models\User;
@@ -15,7 +15,7 @@ class RestSemanticsTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
-    private Cat $cat;
+    private Pet $pet;
     private HelperProfile $helperProfile;
     private Notification $notification;
 
@@ -24,7 +24,7 @@ class RestSemanticsTest extends TestCase
         parent::setUp();
         
         $this->user = User::factory()->create();
-        $this->cat = Cat::factory()->create(['user_id' => $this->user->id]);
+    $this->pet = Pet::factory()->create(['user_id' => $this->user->id]);
         $this->helperProfile = HelperProfile::factory()->create(['user_id' => $this->user->id]);
         $this->notification = Notification::factory()->create(['user_id' => $this->user->id]);
         
@@ -75,23 +75,23 @@ class RestSemanticsTest extends TestCase
     }
 
     /** @test */
-    public function cat_update_requires_put_method()
+    public function pet_update_requires_put_method()
     {
         // PUT should work
-        $response = $this->putJson("/api/cats/{$this->cat->id}", ['name' => 'Updated Cat Name']);
+        $response = $this->putJson("/api/pets/{$this->pet->id}", ['name' => 'Updated Pet Name']);
         $response->assertStatus(200);
 
         // POST should return 405 Method Not Allowed
-        $response = $this->postJson("/api/cats/{$this->cat->id}", ['name' => 'Updated Cat Name']);
+        $response = $this->postJson("/api/pets/{$this->pet->id}", ['name' => 'Updated Pet Name']);
         $response->assertStatus(405);
 
         // PATCH should return 405 Method Not Allowed
-        $response = $this->patchJson("/api/cats/{$this->cat->id}", ['name' => 'Updated Cat Name']);
+        $response = $this->patchJson("/api/pets/{$this->pet->id}", ['name' => 'Updated Pet Name']);
         $response->assertStatus(405);
     }
 
     /** @test */
-    public function cat_status_update_requires_put_method()
+    public function pet_status_update_requires_put_method()
     {
         $statusData = [
             'status' => 'lost',
@@ -99,15 +99,15 @@ class RestSemanticsTest extends TestCase
         ];
 
         // PUT should work
-        $response = $this->putJson("/api/cats/{$this->cat->id}/status", $statusData);
+        $response = $this->putJson("/api/pets/{$this->pet->id}/status", $statusData);
         $response->assertStatus(200);
 
         // POST should return 405 Method Not Allowed
-        $response = $this->postJson("/api/cats/{$this->cat->id}/status", $statusData);
+        $response = $this->postJson("/api/pets/{$this->pet->id}/status", $statusData);
         $response->assertStatus(405);
 
         // PATCH should return 405 Method Not Allowed
-        $response = $this->patchJson("/api/cats/{$this->cat->id}/status", $statusData);
+        $response = $this->patchJson("/api/pets/{$this->pet->id}/status", $statusData);
         $response->assertStatus(405);
     }
 
@@ -198,28 +198,28 @@ class RestSemanticsTest extends TestCase
     /** @test */
     public function create_operations_require_post_method()
     {
-        // Cat creation should require POST
-        $catData = [
-            'name' => 'New Cat',
+        // Pet creation should require POST
+        $petData = [
+            'name' => 'New Pet',
             'breed' => 'Mixed',
             'age_years' => 2,
             'gender' => 'male',
-            'status' => 'available',
+            'status' => 'active',
             'birthday' => '2022-01-01',
             'location' => 'Test City',
-            'description' => 'A lovely test cat'
+            'description' => 'A lovely test pet'
         ];
 
         // POST should work
-        $response = $this->postJson('/api/cats', $catData);
+        $response = $this->postJson('/api/pets', $petData);
         $response->assertStatus(201);
 
         // PUT should return 405 Method Not Allowed
-        $response = $this->putJson('/api/cats', $catData);
+        $response = $this->putJson('/api/pets', $petData);
         $response->assertStatus(405);
 
         // PATCH should return 405 Method Not Allowed
-        $response = $this->patchJson('/api/cats', $catData);
+        $response = $this->patchJson('/api/pets', $petData);
         $response->assertStatus(405);
     }
 
@@ -227,14 +227,14 @@ class RestSemanticsTest extends TestCase
     public function delete_operations_require_delete_method()
     {
         // DELETE should work (with password confirmation)
-        $response = $this->deleteJson("/api/cats/{$this->cat->id}", ['password' => 'password']);
+    $response = $this->deleteJson("/api/pets/{$this->pet->id}", ['password' => 'password']);
         $response->assertStatus(204);
 
-        // Create another cat for testing other methods
-        $cat2 = Cat::factory()->create(['user_id' => $this->user->id]);
+    // Create another pet for testing other methods
+    $pet2 = Pet::factory()->create(['user_id' => $this->user->id]);
 
         // POST should return 405 Method Not Allowed for delete endpoint
-        $response = $this->postJson("/api/cats/{$cat2->id}/delete");
+    $response = $this->postJson("/api/pets/{$pet2->id}/delete");
         $response->assertStatus(405); // Method not allowed
 
         // Test avatar deletion specifically (should work even if no avatar exists)
@@ -242,10 +242,10 @@ class RestSemanticsTest extends TestCase
         $response->assertStatus(404); // No avatar to delete
 
         // Test that wrong HTTP methods return 405 for existing endpoints
-        $response = $this->getJson("/api/cats/{$cat2->id}");
+        $response = $this->getJson("/api/pets/{$pet2->id}");
         $response->assertStatus(200); // GET should work for show
 
-        $response = $this->patchJson("/api/cats/{$cat2->id}", ['name' => 'Test']);
-        $response->assertStatus(405); // PATCH should not work for cat updates
+        $response = $this->patchJson("/api/pets/{$pet2->id}", ['name' => 'Test']);
+        $response->assertStatus(405); // PATCH should not work for pet updates
     }
 }

@@ -51,7 +51,7 @@ class WeightHistoryController extends Controller
      *     @OA\Response(response=401, description="Unauthenticated"),
      *     @OA\Response(response=403, description="Forbidden")
      * )
-     */
+    */
     public function index(Request $request, Pet $pet)
     {
         $user = $request->user();
@@ -93,13 +93,13 @@ class WeightHistoryController extends Controller
     }
 
     /**
-     * @OA\Post(
-     *     path="/api/pets/{pet}/weights",
-     *     summary="Add a new weight record for a pet",
-     *     tags={"Pets"},
-     *     security={{"sanctum": {}}},
-     *
-     *     @OA\Parameter(
+    * @OA\Post(
+    *     path="/api/pets/{pet}/weights",
+    *     summary="Add a new weight record for a pet",
+    *     tags={"Pets"},
+    *     security={{"sanctum": {}}},
+    *
+    *     @OA\Parameter(
     *         name="pet",
      *         in="path",
      *         required=true,
@@ -176,7 +176,6 @@ class WeightHistoryController extends Controller
                 'record_date' => ['The record date has already been taken for this pet.'],
             ]);
         }
-
         $weightHistory = $pet->weightHistories()->create($validatedData);
 
         return $this->sendSuccess($weightHistory, 201);

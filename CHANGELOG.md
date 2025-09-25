@@ -4,6 +4,24 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Changed
+- **Docs**: Updated `GEMINI.md` with a new "Linting and Formatting" section.
+- **Backend**: Ran `pint` to fix PHP code style issues.
+
+### Added
+- **Multi-pet support**: The application now supports multiple pet types, including cats and dogs.
+- **Pet type capabilities**: A new `placement_requests_allowed` feature has been added to control which pet types can have placement requests.
+- **Helper pet types**: Helpers can now specify which pet types they are able to help with.
+- **Pet type filter**: A new pet type filter has been added to the `/requests` page.
+
+### Changed
+- **`cat` to `pet` rename**: The term `cat` has been renamed to `pet` throughout the codebase to reflect the new multi-pet support.
+
+### Fixed
+- **Helper profile deletion crash**: Fixed a crash that occurred when deleting a helper profile.
+- **Non-editable inputs on helper profile edit page**: Fixed an issue where the inputs on the helper profile edit page were not editable.
+- **Removed placement request availability message**: Removed the "Placement requests not available for..." message from the `PetCard` component.
+
 ### Added
 - Pet Health (Phase 1): Weight tracking
   - Backend: `pet_types.weight_tracking_allowed` flag; `PetCapabilityService` enforces capability dynamically per type; default enabled for cats.

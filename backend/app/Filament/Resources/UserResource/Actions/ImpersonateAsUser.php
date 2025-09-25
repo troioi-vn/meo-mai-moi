@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\UserResource\Actions;
 
+use Filament\Facades\Filament;
 use Filament\Tables\Actions\Action;
 use STS\FilamentImpersonate\Concerns\Impersonates;
-use Filament\Facades\Filament;
 
 class ImpersonateAsUser extends Action
 {
@@ -22,6 +22,6 @@ class ImpersonateAsUser extends Action
             ->backTo(fn () => Filament::getCurrentPanel()->getUrl())
             ->redirectTo('/account')
             ->action(fn ($record) => $this->impersonate($record))
-            ->hidden(fn ($record) => !$this->canBeImpersonated($record));
+            ->hidden(fn ($record) => ! $this->canBeImpersonated($record));
     }
 }

@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest'
 import { setupServer } from 'msw/node'
-import { catHandlers, testScenarios } from './data/cats'
+import { petHandlers, testScenarios } from './data/pets'
 
-const server = setupServer(...catHandlers)
+const server = setupServer(...petHandlers)
 
-describe('MSW Cat Handlers Integration', () => {
+describe('MSW Pet Handlers Integration', () => {
   beforeAll(() => {
     server.listen({ onUnhandledRequest: 'error' })
   })
@@ -20,7 +20,7 @@ describe('MSW Cat Handlers Integration', () => {
   describe('Placement Requests API', () => {
     it('should return empty array for empty scenario', async () => {
       const response = await fetch(
-        'http://localhost:3000/api/cats/placement-requests?scenario=empty'
+        'http://localhost:3000/api/pets/placement-requests?scenario=empty'
       )
       const data = await response.json()
 
@@ -28,9 +28,9 @@ describe('MSW Cat Handlers Integration', () => {
       expect(data.data).toHaveLength(0)
     })
 
-    it('should return 1 cat for single scenario', async () => {
+    it('should return 1 pet for single scenario', async () => {
       const response = await fetch(
-        'http://localhost:3000/api/cats/placement-requests?scenario=single'
+        'http://localhost:3000/api/pets/placement-requests?scenario=single'
       )
       const data = await response.json()
 
@@ -40,8 +40,8 @@ describe('MSW Cat Handlers Integration', () => {
       expect(data.data[0].placement_requests[0].request_type).toBe('fostering')
     })
 
-    it('should return 2 cats for two scenario', async () => {
-      const response = await fetch('http://localhost:3000/api/cats/placement-requests?scenario=two')
+    it('should return 2 pets for two scenario', async () => {
+      const response = await fetch('http://localhost:3000/api/pets/placement-requests?scenario=two')
       const data = await response.json()
 
       expect(response.ok).toBe(true)
@@ -50,70 +50,70 @@ describe('MSW Cat Handlers Integration', () => {
       expect(data.data[1].name).toBe('Whiskers')
     })
 
-    it('should return 4 cats for four scenario', async () => {
+    it('should return 4 pets for four scenario', async () => {
       const response = await fetch(
-        'http://localhost:3000/api/cats/placement-requests?scenario=four'
+        'http://localhost:3000/api/pets/placement-requests?scenario=four'
       )
       const data = await response.json()
 
       expect(response.ok).toBe(true)
       expect(data.data).toHaveLength(4)
 
-      const names = data.data.map((cat: any) => cat.name)
-      expect(names).toEqual(['Fluffy', 'Whiskers', 'Shadow', 'Luna'])
+      const names = data.data.map((pet: any) => pet.name)
+      expect(names).toEqual(['Fluffy', 'Whiskers', 'Luna', 'Mittens'])
     })
 
-    it('should return 6 cats for fivePlus scenario', async () => {
+    it('should return 6 pets for fivePlus scenario', async () => {
       const response = await fetch(
-        'http://localhost:3000/api/cats/placement-requests?scenario=fivePlus'
+        'http://localhost:3000/api/pets/placement-requests?scenario=fivePlus'
       )
       const data = await response.json()
 
       expect(response.ok).toBe(true)
-      expect(data.data).toHaveLength(6)
+      expect(data.data).toHaveLength(5)
 
-      const names = data.data.map((cat: any) => cat.name)
-      expect(names).toEqual(['Fluffy', 'Whiskers', 'Shadow', 'Luna', 'Mittens', 'Oreo'])
+      const names = data.data.map((pet: any) => pet.name)
+      expect(names).toEqual(['Fluffy', 'Whiskers', 'Luna', 'Mittens', 'Oreo'])
     })
 
     it('should return mixed request types for mixedTypes scenario', async () => {
       const response = await fetch(
-        'http://localhost:3000/api/cats/placement-requests?scenario=mixedTypes'
+        'http://localhost:3000/api/pets/placement-requests?scenario=mixedTypes'
       )
       const data = await response.json()
 
       expect(response.ok).toBe(true)
       expect(data.data).toHaveLength(4)
 
-      const requestTypes = data.data.map((cat: any) => cat.placement_requests[0].request_type)
+      const requestTypes = data.data.map((pet: any) => pet.placement_requests[0].request_type)
       expect(requestTypes).toContain('fostering')
       expect(requestTypes).toContain('adoption')
     })
 
     it('should use default scenario when no scenario parameter is provided', async () => {
-      const response = await fetch('http://localhost:3000/api/cats/placement-requests')
+      const response = await fetch('http://localhost:3000/api/pets/placement-requests')
       const data = await response.json()
 
       expect(response.ok).toBe(true)
-      // Default scenario is 'fivePlus' which has 6 cats
-      expect(data.data).toHaveLength(6)
+      // Default scenario is 'fivePlus' which has 5 pets
+      expect(data.data).toHaveLength(5)
     })
 
     it('should handle invalid scenario gracefully', async () => {
       const response = await fetch(
-        'http://localhost:3000/api/cats/placement-requests?scenario=invalid'
+        'http://localhost:3000/api/pets/placement-requests?scenario=invalid'
       )
       const data = await response.json()
 
       expect(response.ok).toBe(true)
       // Should fall back to default scenario
-      expect(data.data).toHaveLength(6)
+      expect(data.data).toHaveLength(5)
     })
   })
 
-  describe('Individual Cat API', () => {
-    it('should return specific cat by ID', async () => {
-      const response = await fetch('http://localhost:3000/api/cats/1')
+  describe('Individual Pet API', () => {
+    it('should return specific pet by ID', async () => {
+      const response = await fetch('http://localhost:3000/api/pets/1')
       const data = await response.json()
 
       expect(response.ok).toBe(true)
@@ -122,8 +122,8 @@ describe('MSW Cat Handlers Integration', () => {
       expect(data.data.placement_requests).toHaveLength(1)
     })
 
-    it('should return 404 for non-existent cat', async () => {
-      const response = await fetch('http://localhost:3000/api/cats/999')
+    it('should return 404 for non-existent pet', async () => {
+      const response = await fetch('http://localhost:3000/api/pets/999')
 
       expect(response.status).toBe(404)
     })
@@ -133,19 +133,19 @@ describe('MSW Cat Handlers Integration', () => {
     it('should have proper placement request structure in all scenarios', async () => {
       for (const scenarioName of Object.keys(testScenarios)) {
         const response = await fetch(
-          `http://localhost:3000/api/cats/placement-requests?scenario=${scenarioName}`
+          `http://localhost:3000/api/pets/placement-requests?scenario=${scenarioName}`
         )
         const data = await response.json()
 
         expect(response.ok).toBe(true)
 
-        data.data.forEach((cat: any) => {
-          expect(cat.placement_request_active).toBe(true)
-          expect(cat.placement_requests).toBeDefined()
-          expect(cat.placement_requests.length).toBeGreaterThan(0)
+        data.data.forEach((pet: any) => {
+          expect(pet.placement_request_active).toBe(true)
+          expect(pet.placement_requests).toBeDefined()
+          expect(pet.placement_requests.length).toBeGreaterThan(0)
 
-          cat.placement_requests.forEach((request: any) => {
-            expect(request.cat_id).toBe(cat.id)
+          pet.placement_requests.forEach((request: any) => {
+            expect(request.pet_id).toBe(pet.id)
             expect(request.is_active).toBe(true)
             expect(request.request_type).toMatch(/^(fostering|adoption)$/)
             expect(request.status).toBeDefined()

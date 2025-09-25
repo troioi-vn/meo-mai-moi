@@ -9,6 +9,13 @@ import { toast } from 'sonner'
 import { api, csrf } from '@/api/axios'
 import { AxiosError } from 'axios'
 
+interface ForgotPasswordErrorResponse {
+  message?: string
+  errors?: {
+    email?: string[]
+  }
+}
+
 export function ForgotPasswordForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -34,18 +41,20 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
       let errorMessage = 'Failed to send reset instructions. Please try again.'
       
       if (error instanceof AxiosError) {
+        const responseData = error.response?.data as ForgotPasswordErrorResponse | undefined
+
         if (error.response?.status === 422) {
           // Validation errors
-          const errors = error.response.data.errors
-          if (errors?.email) {
-            errorMessage = errors.email[0]
+          const errors = responseData?.errors
+          if (errors?.email?.length) {
+            errorMessage = errors.email[0] ?? errorMessage
           } else {
-            errorMessage = error.response.data.message || errorMessage
+            errorMessage = responseData?.message ?? errorMessage
           }
         } else if (error.response?.status === 429) {
           errorMessage = 'Too many password reset attempts. Please try again later.'
-        } else if (error.response?.data?.message) {
-          errorMessage = error.response.data.message
+        } else if (responseData?.message) {
+          errorMessage = responseData.message
         }
       }
       

@@ -12,7 +12,7 @@ class CreateNotification extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         // Set delivered_at to now if not specified
-        if (!isset($data['delivered_at'])) {
+        if (! isset($data['delivered_at'])) {
             $data['delivered_at'] = now();
         }
 

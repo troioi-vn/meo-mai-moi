@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\Cat;
+use App\Enums\PlacementRequestStatus;
+use App\Enums\PlacementRequestType;
+use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Models\User;
-use App\Enums\PlacementRequestType;
-use App\Enums\PlacementRequestStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -19,20 +19,20 @@ class PlacementRequestActionsTest extends TestCase
     {
         // Create owner explicitly
         $owner = User::factory()->create();
-        
-        // Create cat explicitly
-        $cat = Cat::factory()->create(['user_id' => $owner->id]);
-        
+
+        // Create pet explicitly
+        $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+
         // Create placement request DIRECTLY without factory to ensure explicit control
-        $placementRequest = new PlacementRequest();
-        $placementRequest->cat_id = $cat->id;
+        $placementRequest = new PlacementRequest;
+        $placementRequest->pet_id = $pet->id;
         $placementRequest->user_id = $owner->id;  // Explicitly set user_id
         $placementRequest->request_type = PlacementRequestType::PERMANENT;
         $placementRequest->status = PlacementRequestStatus::OPEN;
         $placementRequest->notes = 'Test placement request';
         $placementRequest->is_active = true;
         $placementRequest->save();
-        
+
         // Verify the user_id was actually saved
         $this->assertEquals($owner->id, $placementRequest->fresh()->user_id, 'PlacementRequest user_id should match owner id');
 
@@ -47,8 +47,8 @@ class PlacementRequestActionsTest extends TestCase
     public function test_non_owner_cannot_delete_a_placement_request()
     {
         $owner = User::factory()->create();
-        $cat = Cat::factory()->create(['user_id' => $owner->id]);
-        $placementRequest = PlacementRequest::factory()->create(['cat_id' => $cat->id, 'user_id' => $owner->id]);
+        $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'user_id' => $owner->id]);
         $nonOwner = User::factory()->create();
 
         Sanctum::actingAs($nonOwner);

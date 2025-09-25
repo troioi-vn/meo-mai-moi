@@ -6,20 +6,20 @@
     </div>
 
     <div class="message">
-        Your response to help with a cat has been accepted! The cat owner has chosen you to provide care.
+        Your response to help with a pet has been accepted! The pet owner has chosen you to provide care.
     </div>
 
-    @if(isset($cat))
-        <div class="cat-info">
-            <div class="cat-name">{{ $cat->name }}</div>
-            <div class="cat-details">
-                <strong>Breed:</strong> {{ $cat->breed }}<br>
-                <strong>Location:</strong> {{ $cat->location }}<br>
-                @if($cat->birthday)
-                    <strong>Age:</strong> {{ $cat->birthday->diffInYears(now()) }} years old<br>
+    @if(isset($pet))
+        <div class="pet-info">
+            <div class="pet-name">{{ $pet->name }}</div>
+            <div class="pet-details">
+                <strong>Type:</strong> {{ $pet->petType->name ?? 'Pet' }}<br>
+                <strong>Location:</strong> {{ $pet->location ?? 'Unknown' }}<br>
+                @if($pet->birthday)
+                    <strong>Age:</strong> {{ $pet->birthday->diffInYears(now()) }} years old<br>
                 @endif
-                @if($cat->description)
-                    <strong>About {{ $cat->name }}:</strong> {{ Str::limit($cat->description, 150) }}<br>
+                @if($pet->description)
+                    <strong>About {{ $pet->name }}:</strong> {{ Str::limit($pet->description, 150) }}<br>
                 @endif
             </div>
         </div>
@@ -42,13 +42,13 @@
     @endif
 
     <div class="message">
-        The cat owner will be in touch with you soon to coordinate the handover details. Please be prepared to:
+        The pet owner will be in touch with you soon to coordinate the handover details. Please be prepared to:
     </div>
 
     <div class="message">
         <strong>Preparation Checklist:</strong>
         <ul style="margin: 15px 0; padding-left: 20px;">
-            <li>Prepare a safe and comfortable space for {{ isset($cat) ? $cat->name : 'the cat' }}</li>
+            <li>Prepare a safe and comfortable space for {{ isset($pet) ? $pet->name : 'the pet' }}</li>
             <li>Stock up on necessary supplies (food, litter, toys)</li>
             <li>Review any medical or care instructions from the owner</li>
             <li>Coordinate pickup/delivery logistics</li>
@@ -61,6 +61,6 @@
     </div>
 
     <div class="message" style="font-size: 14px; color: #666; background-color: #e8f4fd; padding: 15px; border-radius: 6px; border-left: 4px solid #007bff;">
-        <strong>Thank you</strong> for opening your heart and home to help {{ isset($cat) ? $cat->name : 'a cat' }} in need. Your kindness makes a real difference!
+        <strong>Thank you</strong> for opening your heart and home to help {{ isset($pet) ? $pet->name : 'a pet' }} in need. Your kindness makes a real difference!
     </div>
 @endsection

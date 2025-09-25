@@ -2,37 +2,39 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Mail\PlacementRequestResponseMail;
-use App\Mail\PlacementRequestAcceptedMail;
+use App\Enums\NotificationType;
 use App\Mail\HelperResponseAcceptedMail;
 use App\Mail\HelperResponseRejectedMail;
-use App\Models\User;
-use App\Models\Cat;
+use App\Mail\PlacementRequestAcceptedMail;
+use App\Mail\PlacementRequestResponseMail;
 use App\Models\HelperProfile;
+use App\Models\Pet;
 use App\Models\PlacementRequest;
-use App\Enums\NotificationType;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Mail;
+use Tests\TestCase;
 
 class EmailTemplateRenderingTest extends TestCase
 {
     use RefreshDatabase;
 
     protected User $user;
-    protected Cat $cat;
+
+    protected Pet $pet;
+
     protected HelperProfile $helperProfile;
+
     protected PlacementRequest $placementRequest;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->user = User::factory()->create();
-        $this->cat = Cat::factory()->create();
+        $this->pet = Pet::factory()->create();
         $this->helperProfile = HelperProfile::factory()->create();
         $this->placementRequest = PlacementRequest::factory()->create([
-            'cat_id' => $this->cat->id,
+            'pet_id' => $this->pet->id,
             'user_id' => $this->user->id,
         ]);
     }
@@ -43,16 +45,16 @@ class EmailTemplateRenderingTest extends TestCase
             $this->user,
             NotificationType::PLACEMENT_REQUEST_RESPONSE,
             [
-                'cat_id' => $this->cat->id,
+                'pet_id' => $this->pet->id,
                 'helper_profile_id' => $this->helperProfile->id,
             ]
         );
 
         // This will throw an exception if the template has syntax errors
         $rendered = $mail->render();
-        
+
         $this->assertStringContainsString($this->user->name, $rendered);
-        $this->assertStringContainsString($this->cat->name, $rendered);
+        $this->assertStringContainsString($this->pet->name, $rendered);
         $this->assertStringContainsString('unsubscribe', $rendered);
         $this->assertStringContainsString('View Response', $rendered);
     }
@@ -63,16 +65,16 @@ class EmailTemplateRenderingTest extends TestCase
             $this->user,
             NotificationType::PLACEMENT_REQUEST_ACCEPTED,
             [
-                'cat_id' => $this->cat->id,
+                'pet_id' => $this->pet->id,
                 'helper_profile_id' => $this->helperProfile->id,
             ]
         );
 
         $rendered = $mail->render();
-        
+
         $this->assertStringContainsString('Congratulations', $rendered);
         $this->assertStringContainsString($this->user->name, $rendered);
-        $this->assertStringContainsString($this->cat->name, $rendered);
+        $this->assertStringContainsString($this->pet->name, $rendered);
         $this->assertStringContainsString('accepted', $rendered);
     }
 
@@ -82,16 +84,16 @@ class EmailTemplateRenderingTest extends TestCase
             $this->user,
             NotificationType::HELPER_RESPONSE_ACCEPTED,
             [
-                'cat_id' => $this->cat->id,
+                'pet_id' => $this->pet->id,
                 'placement_request_id' => $this->placementRequest->id,
             ]
         );
 
         $rendered = $mail->render();
-        
+
         $this->assertStringContainsString('Wonderful news', $rendered);
         $this->assertStringContainsString($this->user->name, $rendered);
-        $this->assertStringContainsString($this->cat->name, $rendered);
+        $this->assertStringContainsString($this->pet->name, $rendered);
         $this->assertStringContainsString('accepted', $rendered);
     }
 
@@ -101,15 +103,15 @@ class EmailTemplateRenderingTest extends TestCase
             $this->user,
             NotificationType::HELPER_RESPONSE_REJECTED,
             [
-                'cat_id' => $this->cat->id,
+                'pet_id' => $this->pet->id,
             ]
         );
 
         $rendered = $mail->render();
-        
+
         $this->assertStringContainsString('Thank you for your interest', $rendered);
         $this->assertStringContainsString($this->user->name, $rendered);
-        $this->assertStringContainsString($this->cat->name, $rendered);
+        $this->assertStringContainsString($this->pet->name, $rendered);
         $this->assertStringContainsString('Browse Other Requests', $rendered);
     }
 
@@ -123,9 +125,9 @@ class EmailTemplateRenderingTest extends TestCase
         );
 
         $rendered = $mail->render();
-        
+
         $this->assertStringContainsString($this->user->name, $rendered);
-        $this->assertStringContainsString('your cat', $rendered); // Fallback text
+        $this->assertStringContainsString('your pet', $rendered); // Fallback text (updated)
         $this->assertStringContainsString('unsubscribe', $rendered);
     }
 
@@ -146,7 +148,7 @@ class EmailTemplateRenderingTest extends TestCase
         ];
 
         foreach (array_combine($mailClasses, $notificationTypes) as $mailClass => $notificationType) {
-            $mail = new $mailClass($this->user, $notificationType, ['cat_id' => $this->cat->id]);
+            $mail = new $mailClass($this->user, $notificationType, ['pet_id' => $this->pet->id]);
             $rendered = $mail->render();
 
             // Check for required elements in all templates

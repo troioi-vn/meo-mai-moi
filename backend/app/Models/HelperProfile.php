@@ -13,6 +13,7 @@ use OpenApi\Annotations as OA;
  *     schema="HelperProfile",
  *     title="HelperProfile",
  *     description="Helper Profile model",
+ *
  *     @OA\Property(
  *         property="id",
  *         type="integer",
@@ -65,7 +66,7 @@ class HelperProfile extends Model
         'address',
         'city',
         'state',
-    'zip_code',
+        'zip_code',
         'phone_number',
         'experience',
         'has_pets',
@@ -92,5 +93,10 @@ class HelperProfile extends Model
     public function photos(): HasMany
     {
         return $this->hasMany(HelperProfilePhoto::class);
+    }
+
+    public function petTypes(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(PetType::class, 'helper_profile_pet_type');
     }
 }

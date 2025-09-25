@@ -2,21 +2,22 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Cat;
 use App\Models\OwnershipHistory;
+use App\Models\Pet;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Schema;
 
 class BackfillOwnershipHistory extends Command
 {
-    protected $signature = 'ownership-history:backfill {--dry-run : Show what would change without writing} {--chunk=500 : Process cats in chunks}';
+    protected $signature = 'ownership-history:backfill {--dry-run : Show what would change without writing} {--chunk=500 : Process pets in chunks}';
 
-    protected $description = 'Create initial open ownership_history records for existing cats that lack them.';
+    protected $description = 'Create initial open ownership_history records for existing pets that lack them.';
 
     public function handle(): int
     {
-        if (!Schema::hasTable('ownership_history')) {
+        if (! Schema::hasTable('ownership_history')) {
             $this->error('Table ownership_history does not exist. Run migrations first.');
+
             return self::FAILURE;
         }
 
@@ -24,22 +25,22 @@ class BackfillOwnershipHistory extends Command
         $chunk = (int) $this->option('chunk');
 
         $created = 0;
-        $this->info('Scanning cats for missing initial ownership history...');
+        $this->info('Scanning pets for missing initial ownership history...');
 
-        Cat::query()->orderBy('id')->chunk($chunk, function ($cats) use (&$created, $dryRun) {
-            foreach ($cats as $cat) {
-                $exists = OwnershipHistory::where('cat_id', $cat->id)
-                    ->where('user_id', $cat->user_id)
+        Pet::query()->orderBy('id')->chunk($chunk, function ($pets) use (&$created, $dryRun) {
+            foreach ($pets as $pet) {
+                $exists = OwnershipHistory::where('pet_id', $pet->id)
+                    ->where('user_id', $pet->user_id)
                     ->whereNull('to_ts')
                     ->exists();
-                if (!$exists) {
-                    $from = $cat->created_at ?? now();
+                if (! $exists) {
+                    $from = $pet->created_at ?? now();
                     if ($dryRun) {
-                        $this->line("Would create ownership_history for cat {$cat->id} owner {$cat->user_id} from {$from}");
+                        $this->line("Would create ownership_history for pet {$pet->id} owner {$pet->user_id} from {$from}");
                     } else {
                         OwnershipHistory::create([
-                            'cat_id' => $cat->id,
-                            'user_id' => $cat->user_id,
+                            'pet_id' => $pet->id,
+                            'user_id' => $pet->user_id,
                             'from_ts' => $from,
                             'to_ts' => null,
                         ]);
@@ -50,6 +51,7 @@ class BackfillOwnershipHistory extends Command
         });
 
         $this->info($dryRun ? 'Dry run complete.' : "Created {$created} ownership_history records.");
+
         return self::SUCCESS;
     }
 }

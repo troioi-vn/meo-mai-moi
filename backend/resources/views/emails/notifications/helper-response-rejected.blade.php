@@ -6,29 +6,29 @@
     </div>
 
     <div class="message">
-        Thank you for your interest in helping with a cat placement request. While your response wasn't selected this time, we truly appreciate your willingness to help.
+        Thank you for your interest in helping with a pet placement request. While your response wasn't selected this time, we truly appreciate your willingness to help.
     </div>
 
-    @if(isset($cat))
-        <div class="cat-info">
-            <div class="cat-name">{{ $cat->name }}</div>
-            <div class="cat-details">
-                <strong>Breed:</strong> {{ $cat->breed }}<br>
-                <strong>Location:</strong> {{ $cat->location }}<br>
-                @if($cat->birthday)
-                    <strong>Age:</strong> {{ $cat->birthday->diffInYears(now()) }} years old<br>
+    @if(isset($pet))
+        <div class="pet-info">
+            <div class="pet-name">{{ $pet->name }}</div>
+            <div class="pet-details">
+                <strong>Type:</strong> {{ $pet->petType->name ?? 'Pet' }}<br>
+                <strong>Location:</strong> {{ $pet->location ?? 'Unknown' }}<br>
+                @if($pet->birthday)
+                    <strong>Age:</strong> {{ $pet->birthday->diffInYears(now()) }} years old<br>
                 @endif
             </div>
         </div>
     @endif
 
     <div class="message">
-        The cat owner has chosen another helper for {{ isset($cat) ? $cat->name : 'this placement' }}. This decision may have been based on various factors such as location, timing, or specific care requirements.
+        The pet owner has chosen another helper for {{ isset($pet) ? $pet->name : 'this placement' }}. This decision may have been based on various factors such as location, timing, or specific care requirements.
     </div>
 
     <div style="background-color: #e8f4fd; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #007bff;">
         <strong>Don't be discouraged!</strong><br>
-        Your willingness to help is valuable, and there are many cats who need caring people like you. We encourage you to:
+    Your willingness to help is valuable, and there are many pets who need caring people like you. We encourage you to:
         <ul style="margin: 10px 0; padding-left: 20px;">
             <li>Continue browsing available placement requests</li>
             <li>Keep your helper profile updated and active</li>
@@ -37,7 +37,7 @@
     </div>
 
     <div class="message">
-        Every cat deserves a loving home, and your contribution to our community helps make that possible. Thank you for being part of our mission to help cats in need.
+        Every pet deserves a loving home, and your contribution to our community helps make that possible. Thank you for being part of our mission to help animals in need.
     </div>
 
     <div style="text-align: center; margin: 30px 0;">

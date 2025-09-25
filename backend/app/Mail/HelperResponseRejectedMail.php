@@ -2,8 +2,6 @@
 
 namespace App\Mail;
 
-use App\Enums\NotificationType;
-
 class HelperResponseRejectedMail extends NotificationMail
 {
     /**
@@ -19,14 +17,14 @@ class HelperResponseRejectedMail extends NotificationMail
      */
     protected function getSubject(): string
     {
-        $catName = 'a cat';
-        if (isset($this->data['cat_id'])) {
-            $cat = \App\Models\Cat::find($this->data['cat_id']);
-            if ($cat) {
-                $catName = $cat->name;
+        $petName = 'a pet';
+        if (isset($this->data['pet_id'])) {
+            $pet = \App\Models\Pet::find($this->data['pet_id']);
+            if ($pet) {
+                $petName = $pet->name;
             }
         }
-        
-        return "Update on your response for {$catName}";
+
+        return "Update on your response for {$petName}";
     }
 }

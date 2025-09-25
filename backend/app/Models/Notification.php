@@ -20,7 +20,7 @@ class Notification extends Model
         'read_at',
         'delivered_at',
         'failed_at',
-        'failure_reason'
+        'failure_reason',
     ];
 
     protected $casts = [
@@ -44,7 +44,7 @@ class Notification extends Model
      */
     public function getTypeDisplayAttribute(): string
     {
-        return match($this->type) {
+        return match ($this->type) {
             'placement_request' => 'Placement Request',
             'transfer_request' => 'Transfer Request',
             'transfer_accepted' => 'Transfer Accepted',
@@ -67,11 +67,11 @@ class Notification extends Model
         if ($this->failed_at) {
             return 'failed';
         }
-        
+
         if ($this->delivered_at) {
             return 'delivered';
         }
-        
+
         return 'pending';
     }
 
@@ -80,14 +80,14 @@ class Notification extends Model
      */
     public function getEngagementStatusAttribute(): string
     {
-        if (!$this->delivered_at) {
+        if (! $this->delivered_at) {
             return 'not_delivered';
         }
-        
+
         if ($this->read_at) {
             return 'read';
         }
-        
+
         return 'delivered_unread';
     }
 

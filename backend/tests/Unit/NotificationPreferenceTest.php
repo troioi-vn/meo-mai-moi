@@ -2,12 +2,12 @@
 
 namespace Tests\Unit;
 
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\NotificationPreference;
 use App\Enums\NotificationType;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Models\NotificationPreference;
+use App\Models\User;
 use Illuminate\Database\QueryException;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class NotificationPreferenceTest extends TestCase
 {
@@ -149,7 +149,7 @@ class NotificationPreferenceTest extends TestCase
 
     public function test_fillable_attributes()
     {
-        $preference = new NotificationPreference();
+        $preference = new NotificationPreference;
         $fillable = $preference->getFillable();
 
         $this->assertContains('user_id', $fillable);
@@ -188,7 +188,7 @@ class NotificationPreferenceTest extends TestCase
         $preferences = NotificationPreference::getAllForUser($this->user);
 
         $this->assertCount(count(NotificationType::cases()), $preferences);
-        
+
         // Verify each notification type is represented
         $types = $preferences->pluck('notification_type')->toArray();
         foreach (NotificationType::cases() as $type) {

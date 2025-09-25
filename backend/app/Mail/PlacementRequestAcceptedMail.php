@@ -2,8 +2,6 @@
 
 namespace App\Mail;
 
-use App\Enums\NotificationType;
-
 class PlacementRequestAcceptedMail extends NotificationMail
 {
     /**
@@ -19,14 +17,14 @@ class PlacementRequestAcceptedMail extends NotificationMail
      */
     protected function getSubject(): string
     {
-        $catName = 'your cat';
-        if (isset($this->data['cat_id'])) {
-            $cat = \App\Models\Cat::find($this->data['cat_id']);
-            if ($cat) {
-                $catName = $cat->name;
+        $petName = 'your pet';
+        if (isset($this->data['pet_id'])) {
+            $pet = \App\Models\Pet::find($this->data['pet_id']);
+            if ($pet) {
+                $petName = $pet->name;
             }
         }
-        
-        return "Your placement request for {$catName} has been accepted!";
+
+        return "Your placement request for {$petName} has been accepted!";
     }
 }

@@ -4,23 +4,23 @@ import App from '../App'
 import { renderWithRouter } from '@/test-utils'
 import { server } from '@/mocks/server'
 import { http, HttpResponse } from 'msw'
-import { mockCat, anotherMockCat } from '@/mocks/data/cats'
+import { mockPet, anotherMockCat } from '@/mocks/data/pets'
 import { mockUser } from '@/mocks/data/user'
 
 // Set up mock handlers for all the routes tested in this file
 beforeEach(() => {
   vi.clearAllMocks()
   server.use(
-    // Mock for fetching the list of all cats
-    http.get('http://localhost:3000/api/cats', () => {
-      return HttpResponse.json({ data: [mockCat, anotherMockCat] })
+    // Mock for fetching the list of all pets
+    http.get('http://localhost:3000/api/pets', () => {
+      return HttpResponse.json({ data: [mockPet, anotherMockCat] })
     }),
-    // Mock for fetching a single cat by ID
-    http.get('http://localhost:3000/api/cats/:id', ({ params }) => {
+    // Mock for fetching a single pet by ID
+    http.get('http://localhost:3000/api/pets/:id', ({ params }) => {
       const { id } = params
       if (id === '1') {
         return HttpResponse.json(
-          { data: { ...mockCat, viewer_permissions: { can_edit: true } } },
+          { data: { ...mockPet, viewer_permissions: { can_edit: true } } },
           { headers: { 'Content-Type': 'application/json' } }
         )
       }
@@ -67,7 +67,7 @@ describe('App Routing', () => {
       expect(screen.getByText('Fluffy')).toBeInTheDocument()
     })
 
-    it('handles cat profile route with invalid ID', async () => {
+    it('handles cat profile route with invalid ID (redirects to pet route)', async () => {
       // Suppress console.error for this test as we expect a 404 error
       vi.spyOn(console, 'error').mockImplementation(() => {
         /* empty */
@@ -76,7 +76,7 @@ describe('App Routing', () => {
       renderWithRouter(<App />, { route: '/cats/999' })
 
       await waitFor(async () => {
-        expect(await screen.findByText(/cat not found/i)).toBeInTheDocument()
+        expect(await screen.findByText(/pet not found/i)).toBeInTheDocument()
       })
 
       // Restore console.error after the test
@@ -85,7 +85,7 @@ describe('App Routing', () => {
   })
 
   describe('Edit cat routes', () => {
-    it('renders edit cat route correctly', async () => {
+    it('renders edit cat route correctly (redirects to pet route)', async () => {
       renderWithRouter(<App />, {
         route: '/cats/1/edit',
         initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
@@ -94,7 +94,7 @@ describe('App Routing', () => {
       await waitFor(
         async () => {
           expect(
-            await screen.findByRole('heading', { name: /edit cat profile/i })
+            await screen.findByRole('heading', { name: /edit pet/i })
           ).toBeInTheDocument()
         },
         { timeout: 5000 }

@@ -2,27 +2,28 @@
 
 namespace Tests\Unit;
 
-use Tests\TestCase;
-use App\Services\NotificationService;
-use App\Models\User;
+use App\Enums\NotificationType;
+use App\Jobs\SendNotificationEmail;
 use App\Models\Notification;
 use App\Models\NotificationPreference;
-use App\Jobs\SendNotificationEmail;
-use App\Enums\NotificationType;
+use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
+use Tests\TestCase;
 
 class NotificationServiceTest extends TestCase
 {
     use RefreshDatabase;
 
     private NotificationService $service;
+
     private User $user;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new NotificationService();
+        $this->service = new NotificationService;
         $this->user = User::factory()->create();
     }
 
@@ -59,7 +60,7 @@ class NotificationServiceTest extends TestCase
         $inAppNotification = Notification::where('user_id', $this->user->id)
             ->whereJsonContains('data->channel', 'in_app')
             ->first();
-        
+
         $this->assertNotNull($inAppNotification);
         $this->assertNotNull($inAppNotification->delivered_at);
         $this->assertEquals($data['message'], $inAppNotification->message);
@@ -191,7 +192,7 @@ class NotificationServiceTest extends TestCase
         $preference = NotificationPreference::where('user_id', $this->user->id)
             ->where('notification_type', NotificationType::PLACEMENT_REQUEST_RESPONSE->value)
             ->first();
-        
+
         $this->assertNotNull($preference);
         $this->assertTrue($preference->email_enabled);
         $this->assertTrue($preference->in_app_enabled);
@@ -214,7 +215,7 @@ class NotificationServiceTest extends TestCase
         );
 
         $notification = Notification::where('user_id', $this->user->id)->first();
-        
+
         $this->assertNotNull($notification);
         $this->assertEquals(NotificationType::HELPER_RESPONSE_ACCEPTED->value, $notification->type);
         $this->assertEquals($data['message'], $notification->message);
@@ -239,7 +240,7 @@ class NotificationServiceTest extends TestCase
         );
 
         $notification = Notification::where('user_id', $this->user->id)->first();
-        
+
         $this->assertNotNull($notification);
         $this->assertEquals(NotificationType::PLACEMENT_REQUEST_ACCEPTED->value, $notification->type);
         $this->assertEquals($data['message'], $notification->message);

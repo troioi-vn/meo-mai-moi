@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class NotificationSeeder extends Seeder
@@ -13,9 +12,10 @@ class NotificationSeeder extends Seeder
     public function run(): void
     {
         $users = \App\Models\User::all();
-        
+
         if ($users->isEmpty()) {
             $this->command->warn('No users found. Please seed users first.');
+
             return;
         }
 
@@ -48,17 +48,17 @@ class NotificationSeeder extends Seeder
         foreach ($users as $user) {
             // Create 5-15 notifications per user
             $notificationCount = rand(5, 15);
-            
+
             for ($i = 0; $i < $notificationCount; $i++) {
                 $type = $notificationTypes[array_rand($notificationTypes)];
                 $createdAt = now()->subDays(rand(0, 30))->subHours(rand(0, 23));
-                
+
                 // Determine delivery status
                 $deliveryRand = rand(1, 100);
                 $delivered_at = null;
                 $failed_at = null;
                 $failure_reason = null;
-                
+
                 if ($deliveryRand <= 85) {
                     // 85% delivered successfully
                     $delivered_at = $createdAt->copy()->addMinutes(rand(1, 30));
@@ -75,11 +75,11 @@ class NotificationSeeder extends Seeder
                     $failure_reason = $failure_reasons[array_rand($failure_reasons)];
                 }
                 // 5% still pending (no delivered_at or failed_at)
-                
+
                 // Determine read status (only for delivered notifications)
                 $is_read = false;
                 $read_at = null;
-                
+
                 if ($delivered_at && rand(1, 100) <= 70) {
                     // 70% of delivered notifications are read
                     $is_read = true;
@@ -90,7 +90,7 @@ class NotificationSeeder extends Seeder
                     'user_id' => $user->id,
                     'type' => $type,
                     'message' => $messages[$type],
-                    'link' => rand(1, 100) <= 60 ? '/admin/some-resource/' . rand(1, 100) : null,
+                    'link' => rand(1, 100) <= 60 ? '/admin/some-resource/'.rand(1, 100) : null,
                     'data' => rand(1, 100) <= 30 ? [
                         'entity_id' => rand(1, 50),
                         'entity_type' => ['Cat', 'Transfer', 'PlacementRequest'][array_rand(['Cat', 'Transfer', 'PlacementRequest'])],

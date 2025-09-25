@@ -5,8 +5,8 @@ namespace App\Filament\Resources\EmailConfigurationResource\Pages;
 use App\Filament\Resources\EmailConfigurationResource;
 use App\Services\EmailConfigurationService;
 use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
 use Filament\Notifications\Notification;
+use Filament\Resources\Pages\ListRecords;
 
 class ListEmailConfigurations extends ListRecords
 {
@@ -21,7 +21,7 @@ class ListEmailConfigurations extends ListRecords
                 ->color('info')
                 ->action(function (): void {
                     $service = app(EmailConfigurationService::class);
-                    
+
                     if ($service->isEmailEnabled()) {
                         $activeConfig = $service->getActiveConfiguration();
                         Notification::make()
@@ -37,7 +37,7 @@ class ListEmailConfigurations extends ListRecords
                             ->send();
                     }
                 }),
-            
+
             Actions\CreateAction::make()
                 ->label('Add Email Configuration')
                 ->icon('heroicon-o-plus'),

@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\PlacementRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class PlacementRequestFactoryTest extends TestCase
 {

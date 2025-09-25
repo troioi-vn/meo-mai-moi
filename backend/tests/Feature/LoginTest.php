@@ -2,12 +2,11 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Tests\TestCase;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class LoginTest extends TestCase
 {
@@ -27,12 +26,12 @@ class LoginTest extends TestCase
         ]);
 
         $response->assertStatus(200)
-                 ->assertJsonStructure([
-                     'data' => [
-                         'access_token',
-                         'token_type',
-                     ]
-                 ]);
+            ->assertJsonStructure([
+                'data' => [
+                    'access_token',
+                    'token_type',
+                ],
+            ]);
     }
 
     #[Test]
@@ -49,7 +48,7 @@ class LoginTest extends TestCase
         ]);
 
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['email']);
+            ->assertJsonValidationErrors(['email']);
     }
 
     #[Test]
@@ -58,6 +57,6 @@ class LoginTest extends TestCase
         $response = $this->getJson('/api/user');
 
         $response->assertStatus(401)
-                 ->assertJson(['message' => 'Unauthenticated.']);
+            ->assertJson(['message' => 'Unauthenticated.']);
     }
 }

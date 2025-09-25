@@ -4,20 +4,19 @@ namespace App\Filament\Widgets;
 
 use App\Models\Notification;
 use Filament\Widgets\ChartWidget;
-use Illuminate\Support\Facades\DB;
 
 class EmailDeliveryChart extends ChartWidget
 {
     protected static ?string $heading = 'Email Delivery Trends (Last 7 Days)';
-    
+
     protected static ?int $sort = 3;
-    
-    protected int | string | array $columnSpan = 'full';
+
+    protected int|string|array $columnSpan = 'full';
 
     protected function getData(): array
     {
         $data = $this->getEmailDeliveryData();
-        
+
         return [
             'datasets' => [
                 [
@@ -53,7 +52,7 @@ class EmailDeliveryChart extends ChartWidget
     {
         return 'line';
     }
-    
+
     protected function getOptions(): array
     {
         return [
@@ -77,38 +76,38 @@ class EmailDeliveryChart extends ChartWidget
             ],
         ];
     }
-    
+
     protected function getEmailDeliveryData(): array
     {
         $delivered = [];
         $failed = [];
         $pending = [];
         $labels = [];
-        
+
         for ($i = 6; $i >= 0; $i--) {
             $date = now()->subDays($i);
             $startOfDay = $date->copy()->startOfDay();
             $endOfDay = $date->copy()->endOfDay();
-            
+
             $labels[] = $date->format('M j');
-            
+
             // Get counts for each status
             $deliveredCount = Notification::whereBetween('created_at', [$startOfDay, $endOfDay])
                 ->delivered()
                 ->count();
             $delivered[] = $deliveredCount;
-            
+
             $failedCount = Notification::whereBetween('created_at', [$startOfDay, $endOfDay])
                 ->failed()
                 ->count();
             $failed[] = $failedCount;
-            
+
             $pendingCount = Notification::whereBetween('created_at', [$startOfDay, $endOfDay])
                 ->pending()
                 ->count();
             $pending[] = $pendingCount;
         }
-        
+
         return [
             'delivered' => $delivered,
             'failed' => $failed,

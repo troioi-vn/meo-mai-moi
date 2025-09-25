@@ -15,38 +15,38 @@ class EmailConfigurationIntegrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Seed roles and permissions
         $this->artisan('db:seed', ['--class' => 'RolesAndPermissionsSeeder']);
-        
+
         // Create an admin user for testing
         $user = User::factory()->create([
             'email' => 'admin@test.com',
         ]);
-        
+
         // Assign admin role to the user
         $user->assignRole('admin');
-        
+
         $this->actingAs($user);
     }
 
     public function test_email_configuration_service_integration(): void
     {
         $service = app(EmailConfigurationService::class);
-        
+
         // Initially no active configuration
         $this->assertNull($service->getActiveConfiguration());
         $this->assertFalse($service->isEmailEnabled());
-        
+
         // Create a valid SMTP configuration
         $config = EmailConfiguration::factory()->smtp()->valid()->create();
-        
+
         // Still not active until we activate it
         $this->assertFalse($service->isEmailEnabled());
-        
+
         // Activate the configuration
         $config->activate();
-        
+
         // Now it should be active
         $this->assertTrue($service->isEmailEnabled());
         $this->assertEquals($config->id, $service->getActiveConfiguration()->id);
@@ -58,17 +58,17 @@ class EmailConfigurationIntegrationTest extends TestCase
         $validSmtp = EmailConfiguration::factory()->smtp()->valid()->create();
         $this->assertTrue($validSmtp->isValid());
         $this->assertEmpty($validSmtp->validateConfig());
-        
+
         // Invalid SMTP configuration
         $invalidSmtp = EmailConfiguration::factory()->smtp()->invalid()->create();
         $this->assertFalse($invalidSmtp->isValid());
         $this->assertNotEmpty($invalidSmtp->validateConfig());
-        
+
         // Valid Mailgun configuration
         $validMailgun = EmailConfiguration::factory()->mailgun()->valid()->create();
         $this->assertTrue($validMailgun->isValid());
         $this->assertEmpty($validMailgun->validateConfig());
-        
+
         // Invalid Mailgun configuration
         $invalidMailgun = EmailConfiguration::factory()->mailgun()->invalid()->create();
         $this->assertFalse($invalidMailgun->isValid());
@@ -80,23 +80,23 @@ class EmailConfigurationIntegrationTest extends TestCase
         $config1 = EmailConfiguration::factory()->smtp()->create(['is_active' => true]);
         $config2 = EmailConfiguration::factory()->mailgun()->create(['is_active' => false]);
         $config3 = EmailConfiguration::factory()->smtp()->create(['is_active' => false]);
-        
+
         // Only config1 should be active
         $this->assertTrue($config1->fresh()->is_active);
         $this->assertFalse($config2->fresh()->is_active);
         $this->assertFalse($config3->fresh()->is_active);
-        
+
         // Activate config2
         $config2->activate();
-        
+
         // Now only config2 should be active
         $this->assertFalse($config1->fresh()->is_active);
         $this->assertTrue($config2->fresh()->is_active);
         $this->assertFalse($config3->fresh()->is_active);
-        
+
         // Activate config3
         $config3->activate();
-        
+
         // Now only config3 should be active
         $this->assertFalse($config1->fresh()->is_active);
         $this->assertFalse($config2->fresh()->is_active);
@@ -117,17 +117,17 @@ class EmailConfigurationIntegrationTest extends TestCase
                 'from_name' => 'Test App',
             ],
         ]);
-        
+
         $mailConfig = $smtpConfig->getMailConfig();
         $this->assertEquals('smtp', $mailConfig['transport']);
         $this->assertEquals('smtp.gmail.com', $mailConfig['host']);
         $this->assertEquals(587, $mailConfig['port']);
         $this->assertEquals('tls', $mailConfig['encryption']);
-        
+
         $fromConfig = $smtpConfig->getFromAddress();
         $this->assertEquals('noreply@test.com', $fromConfig['address']);
         $this->assertEquals('Test App', $fromConfig['name']);
-        
+
         // Test Mailgun configuration
         $mailgunConfig = EmailConfiguration::factory()->mailgun()->create([
             'config' => [
@@ -138,7 +138,7 @@ class EmailConfigurationIntegrationTest extends TestCase
                 'from_name' => 'Test App',
             ],
         ]);
-        
+
         $mailConfig = $mailgunConfig->getMailConfig();
         $this->assertEquals('mailgun', $mailConfig['transport']);
         $this->assertEquals('mg.test.com', $mailConfig['domain']);
@@ -150,13 +150,13 @@ class EmailConfigurationIntegrationTest extends TestCase
     {
         $service = app(EmailConfigurationService::class);
         $providers = $service->getSupportedProviders();
-        
+
         $this->assertArrayHasKey('smtp', $providers);
         $this->assertArrayHasKey('mailgun', $providers);
-        
+
         $this->assertEquals('SMTP', $providers['smtp']['name']);
         $this->assertEquals('Mailgun', $providers['mailgun']['name']);
-        
+
         $this->assertContains('host', $providers['smtp']['required_fields']);
         $this->assertContains('domain', $providers['mailgun']['required_fields']);
     }

@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\User;
-use App\Models\NotificationPreference;
 use App\Enums\NotificationType;
+use App\Models\NotificationPreference;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 
 class NotificationPreferenceSeeder extends Seeder
 {
@@ -33,6 +33,6 @@ class NotificationPreferenceSeeder extends Seeder
             }
         }
 
-        $this->command->info('Default notification preferences created for ' . $users->count() . ' users.');
+        $this->command->info('Default notification preferences created for '.$users->count().' users.');
     }
 }

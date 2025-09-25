@@ -4,14 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Traits\ApiResponseTrait;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\PasswordReset;
-use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -23,26 +23,33 @@ class AuthController extends Controller
      *     summary="Register a new user",
      *     description="Registers a new user and returns an authentication token.",
      *     tags={"Authentication"},
+     *
      *     @OA\RequestBody(
      *         required=true,
      *         description="User registration details",
+     *
      *         @OA\JsonContent(
      *             required={"name", "email", "password", "password_confirmation"},
+     *
      *             @OA\Property(property="name", type="string", example="John Doe"),
      *             @OA\Property(property="email", type="string", format="email", example="john.doe@example.com"),
      *             @OA\Property(property="password", type="string", format="password", example="password123"),
      *             @OA\Property(property="password_confirmation", type="string", format="password", example="password123")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=201,
      *         description="User registered successfully",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="User registered successfully"),
      *             @OA\Property(property="access_token", type="string", example="2|aBcDeFgHiJkLmNoPqRsTuVwXyZ"),
      *             @OA\Property(property="token_type", type="string", example="Bearer")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=422,
      *         description="Validation error"
@@ -57,16 +64,16 @@ class AuthController extends Controller
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-    /** @var User $user */
-    $user = User::create([
+        /** @var User $user */
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
 
         // Create a personal access token (optional) and also start a session for Sanctum SPA
-    // Personal access token for API clients
-    $token = $user->createToken('auth_token')->plainTextToken;
+        // Personal access token for API clients
+        $token = $user->createToken('auth_token')->plainTextToken;
         // Log the user in to establish a first-party session
         \Illuminate\Support\Facades\Auth::login($user);
         $request->session()->regenerate();
@@ -83,24 +90,31 @@ class AuthController extends Controller
      *     summary="Log in a user",
      *     description="Logs in a user and returns an authentication token.",
      *     tags={"Authentication"},
+     *
      *     @OA\RequestBody(
      *         required=true,
      *         description="User credentials",
+     *
      *         @OA\JsonContent(
      *             required={"email","password"},
+     *
      *             @OA\Property(property="email", type="string", format="email", example="user@example.com"),
      *             @OA\Property(property="password", type="string", format="password", example="password123")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Login successful",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Logged in successfully"),
      *             @OA\Property(property="access_token", type="string", example="1|aBcDeFgHiJkLmNoPqRsTuVwXyZ"),
      *             @OA\Property(property="token_type", type="string", example="Bearer")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=422,
      *         description="Validation error (e.g., invalid credentials)"
@@ -138,13 +152,17 @@ class AuthController extends Controller
      *     description="Logs out the current authenticated user by revoking their token.",
      *     tags={"Authentication"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Logged out successfully",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Logged out successfully")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=401,
      *         description="Unauthenticated"
@@ -175,29 +193,39 @@ class AuthController extends Controller
      *     summary="Request password reset",
      *     description="Send password reset link to user's email address.",
      *     tags={"Authentication"},
+     *
      *     @OA\RequestBody(
      *         required=true,
      *         description="Email address to send reset link to",
+     *
      *         @OA\JsonContent(
      *             required={"email"},
+     *
      *             @OA\Property(property="email", type="string", format="email", example="user@example.com")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Password reset link sent successfully",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Password reset link sent to your email address.")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=422,
      *         description="Validation error",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Validation Error"),
      *             @OA\Property(property="errors", type="object", example={"email": {"The selected email is invalid."}})
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=429,
      *         description="Too many password reset attempts"
@@ -207,7 +235,7 @@ class AuthController extends Controller
     public function forgotPassword(Request $request)
     {
         $request->validate([
-            'email' => 'required|email'
+            'email' => 'required|email',
         ]);
 
         // If the email does not belong to any user, return a 404 so the frontend can notify explicitly
@@ -225,7 +253,7 @@ class AuthController extends Controller
 
         if ($status === Password::RESET_LINK_SENT) {
             return $this->sendSuccess([
-                'message' => __('Password reset link sent to your email address.')
+                'message' => __('Password reset link sent to your email address.'),
             ]);
         }
 
@@ -241,28 +269,37 @@ class AuthController extends Controller
      *     summary="Reset password with token",
      *     description="Reset user's password using the token from reset email.",
      *     tags={"Authentication"},
+     *
      *     @OA\RequestBody(
      *         required=true,
      *         description="Password reset details",
+     *
      *         @OA\JsonContent(
      *             required={"email", "password", "password_confirmation", "token"},
+     *
      *             @OA\Property(property="email", type="string", format="email", example="user@example.com"),
      *             @OA\Property(property="password", type="string", format="password", example="newpassword123"),
      *             @OA\Property(property="password_confirmation", type="string", format="password", example="newpassword123"),
      *             @OA\Property(property="token", type="string", example="abc123def456...")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Password reset successfully",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Password reset successfully.")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=422,
      *         description="Validation error or invalid token",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Validation Error"),
      *             @OA\Property(property="errors", type="object", example={"email": {"This password reset token is invalid."}})
      *         )
@@ -282,7 +319,7 @@ class AuthController extends Controller
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user, $password) {
                 $user->forceFill([
-                    'password' => Hash::make($password)
+                    'password' => Hash::make($password),
                 ])->setRememberToken(Str::random(60));
 
                 $user->save();
@@ -293,7 +330,7 @@ class AuthController extends Controller
 
         if ($status === Password::PASSWORD_RESET) {
             return $this->sendSuccess([
-                'message' => __('Password reset successfully.')
+                'message' => __('Password reset successfully.'),
             ]);
         }
 

@@ -33,7 +33,7 @@ return new class extends Migration
                 'is_flagged',
                 'flagged_at',
                 'moderated_by',
-                'moderated_at'
+                'moderated_at',
             ]);
         });
     }

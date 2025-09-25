@@ -9,6 +9,14 @@ import { api, csrf } from '@/api/axios'
 import { AxiosError } from 'axios'
 import { AuthContext } from '@/contexts/AuthContext'
 
+interface ResetPasswordErrorResponse {
+  message?: string
+  errors?: {
+    token?: string[]
+    password?: string[]
+  }
+}
+
 export default function ResetPasswordPage() {
   const auth = use(AuthContext)
   const navigate = useNavigate()
@@ -81,18 +89,20 @@ export default function ResetPasswordPage() {
       let errorMessage = 'Failed to reset password. Please try again.'
       
       if (error instanceof AxiosError) {
+        const responseData = error.response?.data as ResetPasswordErrorResponse | undefined
+
         if (error.response?.status === 422) {
           // Validation errors or invalid token
-          const errors = error.response.data.errors
-          if (errors?.token) {
+          const errors = responseData?.errors
+          if (errors?.token?.length) {
             errorMessage = 'This password reset link has expired or is invalid. Please request a new one.'
-          } else if (errors?.password) {
-            errorMessage = errors.password[0]
+          } else if (errors?.password?.length) {
+            errorMessage = errors.password[0] ?? errorMessage
           } else {
-            errorMessage = error.response.data.message || errorMessage
+            errorMessage = responseData?.message ?? errorMessage
           }
-        } else if (error.response?.data?.message) {
-          errorMessage = error.response.data.message
+        } else if (responseData?.message) {
+          errorMessage = responseData.message
         }
       }
       

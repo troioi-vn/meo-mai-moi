@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\UnsubscribeService;
 use App\Enums\NotificationType;
-use Illuminate\Http\Request;
+use App\Services\UnsubscribeService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class UnsubscribeController extends Controller
@@ -29,7 +29,7 @@ class UnsubscribeController extends Controller
         // Validate parameters
         $isValid = $userId && $notificationType && $token;
         $notificationTypeEnum = null;
-        
+
         if ($isValid) {
             $notificationTypeEnum = NotificationType::tryFrom($notificationType);
             $isValid = $notificationTypeEnum !== null;

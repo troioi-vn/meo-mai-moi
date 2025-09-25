@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\TransferHandover;
-use App\Models\OwnershipHistory;
 use App\Models\Notification;
+use App\Models\OwnershipHistory;
+use App\Models\TransferHandover;
 use App\Models\TransferRequest;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
@@ -20,6 +20,7 @@ class TransferHandoverController extends Controller
      * @OA\Schema(
      *   schema="TransferHandover",
      *   title="TransferHandover",
+     *
      *   @OA\Property(property="id", type="integer"),
      *   @OA\Property(property="transfer_request_id", type="integer"),
      *   @OA\Property(property="owner_user_id", type="integer"),
@@ -44,13 +45,18 @@ class TransferHandoverController extends Controller
      *   summary="Initiate a handover for an accepted transfer request (owner only)",
      *   tags={"Transfer Handover"},
      *   security={{"sanctum": {}}},
+     *
      *   @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *
      *   @OA\RequestBody(
+     *
      *     @OA\JsonContent(
+     *
      *       @OA\Property(property="scheduled_at", type="string", format="date-time", nullable=true),
      *       @OA\Property(property="location", type="string", nullable=true)
      *     )
      *   ),
+     *
      *   @OA\Response(response=201, description="Created", @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/TransferHandover")))
      * )
      */
@@ -77,7 +83,7 @@ class TransferHandoverController extends Controller
         if ($handover) {
             $handover->scheduled_at = $data['scheduled_at'] ?? $handover->scheduled_at;
             $handover->location = $data['location'] ?? $handover->location;
-            if (!$handover->owner_initiated_at) {
+            if (! $handover->owner_initiated_at) {
                 $handover->owner_initiated_at = now();
             }
             $handover->save();
@@ -96,20 +102,24 @@ class TransferHandoverController extends Controller
         Notification::create([
             'user_id' => $handover->helper_user_id,
             'message' => 'Handover scheduled for your accepted transfer. Please confirm details.',
-            'link' => '/account/handovers/' . $handover->id,
+            'link' => '/account/handovers/'.$handover->id,
             'is_read' => false,
         ]);
+
         return $this->sendSuccess($handover, 201);
     }
 
     /**
      * @OA\Post(
      *   path="/api/transfer-handovers/{id}/confirm",
-     *   summary="Helper confirms cat condition at handover",
+     *   summary="Helper confirms pet condition at handover",
      *   tags={"Transfer Handover"},
      *   security={{"sanctum": {}}},
+     *
      *   @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *
      *   @OA\RequestBody(@OA\JsonContent(required={"condition_confirmed"}, @OA\Property(property="condition_confirmed", type="boolean"), @OA\Property(property="condition_notes", type="string", nullable=true))),
+     *
      *   @OA\Response(response=200, description="OK", @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/TransferHandover")))
      * )
      */
@@ -135,10 +145,11 @@ class TransferHandoverController extends Controller
         // Notify owner about helper confirmation
         Notification::create([
             'user_id' => $handover->owner_user_id,
-            'message' => 'Helper has ' . ($handover->status === 'confirmed' ? 'confirmed' : 'disputed') . ' the handover conditions.',
-            'link' => '/account/handovers/' . $handover->id,
+            'message' => 'Helper has '.($handover->status === 'confirmed' ? 'confirmed' : 'disputed').' the handover conditions.',
+            'link' => '/account/handovers/'.$handover->id,
             'is_read' => false,
         ]);
+
         return $this->sendSuccess($handover);
     }
 
@@ -148,7 +159,9 @@ class TransferHandoverController extends Controller
      *   summary="Complete handover and finalize transfer effects",
      *   tags={"Transfer Handover"},
      *   security={{"sanctum": {}}},
+     *
      *   @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *
      *   @OA\Response(response=200, description="OK", @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/TransferHandover")))
      * )
      */
@@ -159,11 +172,11 @@ class TransferHandoverController extends Controller
         if ($user->id !== $handover->owner_user_id && $user->id !== $handover->helper_user_id) {
             return $this->sendError('Forbidden', 403);
         }
-        if (!in_array($handover->status, ['confirmed', 'pending'])) {
+        if (! in_array($handover->status, ['confirmed', 'pending'])) {
             return $this->sendError('Handover is not in a completable state.', 409);
         }
 
-        $tr = $handover->transferRequest()->with(['cat', 'placementRequest'])->first();
+        $tr = $handover->transferRequest()->with(['pet', 'placementRequest'])->first();
 
         DB::transaction(function () use ($handover, $tr) {
             $handover->status = 'completed';
@@ -174,16 +187,16 @@ class TransferHandoverController extends Controller
             $type = $tr->requested_relationship_type;
             if ($type === 'permanent_foster') {
                 // Close previous ownership record for current owner; backfill if missing
-                $closed = OwnershipHistory::where('cat_id', $tr->cat_id)
+                $closed = OwnershipHistory::where('pet_id', $tr->pet_id)
                     ->where('user_id', $tr->recipient_user_id)
                     ->whereNull('to_ts')
                     ->update(['to_ts' => now()]);
 
                 if ($closed === 0) {
                     // No open record to close; create a backfilled one starting from earliest known timestamp
-                    $from = optional($tr->cat)->created_at ?? (optional($tr->placementRequest)->created_at ?? now());
+                    $from = optional($tr->pet)->created_at ?? (optional($tr->placementRequest)->created_at ?? now());
                     $backfilled = OwnershipHistory::create([
-                        'cat_id' => $tr->cat_id,
+                        'pet_id' => $tr->pet_id,
                         'user_id' => $tr->recipient_user_id,
                         'from_ts' => $from,
                         'to_ts' => now(),
@@ -191,18 +204,18 @@ class TransferHandoverController extends Controller
                 }
 
                 // Assign new owner
-                $tr->cat->update(['user_id' => $tr->initiator_user_id]);
+                optional($tr->pet)->update(['user_id' => $tr->initiator_user_id]);
 
                 // Create new ownership history for new owner
                 OwnershipHistory::create([
-                    'cat_id' => $tr->cat_id,
+                    'pet_id' => $tr->pet_id,
                     'user_id' => $tr->initiator_user_id,
                     'from_ts' => now(),
                     'to_ts' => null,
                 ]);
             } elseif ($type === 'fostering' && Schema::hasTable('foster_assignments')) {
                 \App\Models\FosterAssignment::firstOrCreate([
-                    'cat_id' => $tr->cat_id,
+                    'pet_id' => $tr->pet_id,
                     'owner_user_id' => $tr->recipient_user_id,
                     'foster_user_id' => $tr->initiator_user_id,
                     'transfer_request_id' => $tr->id,
@@ -218,7 +231,7 @@ class TransferHandoverController extends Controller
             [
                 'user_id' => $handover->owner_user_id,
                 'message' => 'Handover completed.',
-                'link' => '/account/handovers/' . $handover->id,
+                'link' => '/account/handovers/'.$handover->id,
                 'is_read' => false,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -226,12 +239,13 @@ class TransferHandoverController extends Controller
             [
                 'user_id' => $handover->helper_user_id,
                 'message' => 'Handover completed.',
-                'link' => '/account/handovers/' . $handover->id,
+                'link' => '/account/handovers/'.$handover->id,
                 'is_read' => false,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
         ]);
+
         return $this->sendSuccess($handover->fresh());
     }
 
@@ -241,7 +255,9 @@ class TransferHandoverController extends Controller
      *   summary="Cancel a handover (owner or helper)",
      *   tags={"Transfer Handover"},
      *   security={{"sanctum": {}}},
+     *
      *   @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *
      *   @OA\Response(response=200, description="OK", @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/TransferHandover")))
      * )
      */
@@ -251,7 +267,7 @@ class TransferHandoverController extends Controller
         if ($user->id !== $handover->owner_user_id && $user->id !== $handover->helper_user_id) {
             return $this->sendError('Forbidden', 403);
         }
-        if (!in_array($handover->status, ['pending', 'confirmed', 'disputed'])) {
+        if (! in_array($handover->status, ['pending', 'confirmed', 'disputed'])) {
             return $this->sendError('Handover cannot be canceled in the current state.', 409);
         }
 
@@ -263,7 +279,7 @@ class TransferHandoverController extends Controller
             [
                 'user_id' => $handover->owner_user_id,
                 'message' => 'Handover was canceled.',
-                'link' => '/account/handovers/' . $handover->id,
+                'link' => '/account/handovers/'.$handover->id,
                 'is_read' => false,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -271,7 +287,7 @@ class TransferHandoverController extends Controller
             [
                 'user_id' => $handover->helper_user_id,
                 'message' => 'Handover was canceled.',
-                'link' => '/account/handovers/' . $handover->id,
+                'link' => '/account/handovers/'.$handover->id,
                 'is_read' => false,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -287,19 +303,22 @@ class TransferHandoverController extends Controller
      *   summary="Get the latest handover for a transfer request (owner or helper)",
      *   tags={"Transfer Handover"},
      *   security={{"sanctum": {}}},
+     *
      *   @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *
      *   @OA\Response(response=200, description="OK", @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/TransferHandover")))
      * )
      */
     public function showForTransfer(Request $request, TransferRequest $transferRequest)
     {
         $user = $request->user();
-        if (!$user || ($user->id !== $transferRequest->recipient_user_id && $user->id !== $transferRequest->initiator_user_id)) {
+        if (! $user || ($user->id !== $transferRequest->recipient_user_id && $user->id !== $transferRequest->initiator_user_id)) {
             return $this->sendError('Forbidden', 403);
         }
         $handover = TransferHandover::where('transfer_request_id', $transferRequest->id)
             ->orderByDesc('id')
             ->first();
+
         return $this->sendSuccess($handover);
     }
 }

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->boolean('email_enabled')->default(true);
             $table->boolean('in_app_enabled')->default(true);
             $table->timestamps();
-            
+
             $table->unique(['user_id', 'notification_type'], 'unique_user_notification_type');
         });
     }

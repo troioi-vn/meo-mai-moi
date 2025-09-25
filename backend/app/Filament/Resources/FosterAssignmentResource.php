@@ -6,23 +6,22 @@ use App\Filament\Resources\FosterAssignmentResource\Pages;
 use App\Filament\Resources\FosterAssignmentResource\RelationManagers;
 use App\Models\FosterAssignment;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Tables\Filters\SelectFilter;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Form;
+use Filament\Notifications\Notification;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\Action;
-use Filament\Notifications\Notification;
-use Filament\Forms\Components\Section;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class FosterAssignmentResource extends Resource
 {
@@ -30,7 +29,7 @@ class FosterAssignmentResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-heart';
 
-    protected static ?string $navigationGroup = 'Foster Care';
+    protected static ?string $navigationGroup = 'Pet Management';
 
     protected static ?string $navigationLabel = 'Foster Assignments';
 
@@ -42,13 +41,13 @@ class FosterAssignmentResource extends Resource
             ->schema([
                 Section::make('Assignment Details')
                     ->schema([
-                        Select::make('cat_id')
-                            ->label('Cat')
-                            ->relationship('cat', 'name')
+                        Select::make('pet_id')
+                            ->label('Pet')
+                            ->relationship('pet', 'name')
                             ->searchable()
                             ->preload()
                             ->required()
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->name} (ID: {$record->id})"),
+                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->name} ({$record->petType->name}) (ID: {$record->id})"),
 
                         Select::make('owner_user_id')
                             ->label('Owner')
@@ -71,8 +70,9 @@ class FosterAssignmentResource extends Resource
                             ->preload()
                             ->nullable()
                             ->getOptionLabelFromRecordUsing(function ($record) {
-                                $catName = $record->placementRequest?->cat?->name ?? 'Unknown Cat';
-                                return "#{$record->id} - {$catName}";
+                                $petName = $record->placementRequest?->pet?->name ?? 'Unknown Pet';
+
+                                return "#{$record->id} - {$petName}";
                             }),
                     ])
                     ->columns(2),
@@ -120,11 +120,12 @@ class FosterAssignmentResource extends Resource
                     ->sortable()
                     ->searchable(),
 
-                TextColumn::make('cat.name')
-                    ->label('Cat')
+                TextColumn::make('pet.name')
+                    ->label('Pet')
                     ->sortable()
                     ->searchable()
-                    ->url(fn ($record) => $record->cat ? route('filament.admin.resources.cats.edit', $record->cat) : null),
+                    ->description(fn ($record) => $record->pet?->petType?->name)
+                    ->url(fn ($record) => $record->pet ? route('filament.admin.resources.pets.edit', $record->pet) : null),
 
                 TextColumn::make('fosterer.name')
                     ->label('Foster Parent')
@@ -214,17 +215,16 @@ class FosterAssignmentResource extends Resource
 
                 Tables\Filters\Filter::make('overdue_assignments')
                     ->label('Overdue Assignments')
-                    ->query(fn (Builder $query): Builder => 
-                        $query->where('status', 'active')
-                              ->whereNotNull('expected_end_date')
-                              ->whereDate('expected_end_date', '<', now())
+                    ->query(fn (Builder $query): Builder => $query->where('status', 'active')
+                        ->whereNotNull('expected_end_date')
+                        ->whereDate('expected_end_date', '<', now())
                     )
                     ->toggle(),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                
+
                 Action::make('complete')
                     ->label('Mark Complete')
                     ->icon('heroicon-o-check-circle')
@@ -236,7 +236,7 @@ class FosterAssignmentResource extends Resource
                             'status' => 'completed',
                             'completed_at' => now(),
                         ]);
-                        
+
                         Notification::make()
                             ->title('Foster assignment marked as completed')
                             ->success()
@@ -254,7 +254,7 @@ class FosterAssignmentResource extends Resource
                             'status' => 'canceled',
                             'canceled_at' => now(),
                         ]);
-                        
+
                         Notification::make()
                             ->title('Foster assignment canceled')
                             ->success()
@@ -273,7 +273,7 @@ class FosterAssignmentResource extends Resource
                             'completed_at' => null,
                             'canceled_at' => null,
                         ]);
-                        
+
                         Notification::make()
                             ->title('Foster assignment reactivated')
                             ->success()
@@ -295,7 +295,7 @@ class FosterAssignmentResource extends Resource
                         $record->update([
                             'expected_end_date' => $data['new_expected_end_date'],
                         ]);
-                        
+
                         Notification::make()
                             ->title('Foster assignment date extended')
                             ->success()
@@ -305,7 +305,7 @@ class FosterAssignmentResource extends Resource
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                    
+
                     Tables\Actions\BulkAction::make('complete_selected')
                         ->label('Complete Selected')
                         ->icon('heroicon-o-check-circle')
@@ -322,7 +322,7 @@ class FosterAssignmentResource extends Resource
                                     $count++;
                                 }
                             }
-                            
+
                             Notification::make()
                                 ->title("{$count} foster assignments completed")
                                 ->success()
@@ -345,7 +345,7 @@ class FosterAssignmentResource extends Resource
                                     $count++;
                                 }
                             }
-                            
+
                             Notification::make()
                                 ->title("{$count} foster assignments canceled")
                                 ->success()

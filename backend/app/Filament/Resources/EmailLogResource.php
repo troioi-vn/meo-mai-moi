@@ -3,14 +3,14 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\EmailLogResource\Pages;
-use App\Models\EmailLog;
 use App\Jobs\SendNotificationEmail;
+use App\Models\EmailLog;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 
 class EmailLogResource extends Resource
@@ -49,7 +49,7 @@ class EmailLogResource extends Resource
                             ->view('filament.components.email-body-preview')
                             ->columnSpanFull(),
                     ]),
-                    
+
                 Forms\Components\Section::make('Delivery Information')
                     ->schema([
                         Forms\Components\Select::make('status')
@@ -75,7 +75,7 @@ class EmailLogResource extends Resource
                             ->disabled()
                             ->rows(3)
                             ->columnSpanFull()
-                            ->visible(fn ($record) => !empty($record?->error_message)),
+                            ->visible(fn ($record) => ! empty($record?->error_message)),
                     ])
                     ->columns(2),
 
@@ -84,7 +84,7 @@ class EmailLogResource extends Resource
                         Forms\Components\Select::make('user_id')
                             ->label('User')
                             ->relationship(
-                                'user', 
+                                'user',
                                 'name',
                                 fn (Builder $query) => $query->whereNotNull('name')
                             )
@@ -93,7 +93,7 @@ class EmailLogResource extends Resource
                         Forms\Components\Select::make('email_configuration_id')
                             ->label('Email Configuration')
                             ->relationship(
-                                'emailConfiguration', 
+                                'emailConfiguration',
                                 'name',
                                 fn (Builder $query) => $query->whereNotNull('name')
                             )
@@ -146,6 +146,7 @@ class EmailLogResource extends Resource
                         if (strlen($state) <= 50) {
                             return null;
                         }
+
                         return $state;
                     }),
 
@@ -203,7 +204,7 @@ class EmailLogResource extends Resource
                 Tables\Filters\SelectFilter::make('email_configuration_id')
                     ->label('Email Configuration')
                     ->relationship(
-                        'emailConfiguration', 
+                        'emailConfiguration',
                         'name',
                         fn (Builder $query) => $query->whereNotNull('name')
                     )
@@ -247,12 +248,13 @@ class EmailLogResource extends Resource
                     ->modalHeading('Retry Email Delivery')
                     ->modalDescription('This will attempt to resend the email. Continue?')
                     ->action(function (EmailLog $record) {
-                        if (!$record->canRetry()) {
+                        if (! $record->canRetry()) {
                             Notification::make()
                                 ->title('Cannot Retry')
                                 ->body('This email cannot be retried.')
                                 ->danger()
                                 ->send();
+
                             return;
                         }
 
@@ -277,7 +279,7 @@ class EmailLogResource extends Resource
                         } catch (\Exception $e) {
                             Notification::make()
                                 ->title('Retry Failed')
-                                ->body('Failed to queue email for retry: ' . $e->getMessage())
+                                ->body('Failed to queue email for retry: '.$e->getMessage())
                                 ->danger()
                                 ->send();
                         }

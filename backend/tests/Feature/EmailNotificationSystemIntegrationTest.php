@@ -2,34 +2,33 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\Cat;
-use App\Models\HelperProfile;
-use App\Models\PlacementRequest;
-use App\Models\TransferRequest;
-use App\Models\Notification;
-use App\Models\NotificationPreference;
-use App\Models\EmailConfiguration;
-use App\Services\NotificationService;
-use App\Services\EmailConfigurationService;
-use App\Jobs\SendNotificationEmail;
 use App\Enums\NotificationType;
 use App\Enums\PlacementRequestStatus;
+use App\Jobs\SendNotificationEmail;
+use App\Models\EmailConfiguration;
+use App\Models\HelperProfile;
+use App\Models\Notification;
+use App\Models\NotificationPreference;
+use App\Models\Pet;
+use App\Models\PlacementRequest;
+use App\Models\TransferRequest;
+use App\Models\User;
+use App\Services\EmailConfigurationService;
+use App\Services\NotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Queue;
+use Tests\TestCase;
 use Tests\Traits\CreatesUsers;
 
 class EmailNotificationSystemIntegrationTest extends TestCase
 {
-    use RefreshDatabase, CreatesUsers;
+    use CreatesUsers, RefreshDatabase;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Set up a complete email configuration for testing
         EmailConfiguration::create([
             'provider' => 'smtp',
@@ -41,8 +40,8 @@ class EmailNotificationSystemIntegrationTest extends TestCase
                 'password' => 'password',
                 'encryption' => 'tls',
                 'from_address' => 'noreply@test.com',
-                'from_name' => 'Test App'
-            ]
+                'from_name' => 'Test App',
+            ],
         ]);
     }
 
@@ -50,25 +49,25 @@ class EmailNotificationSystemIntegrationTest extends TestCase
     {
         Queue::fake();
         Mail::fake();
-        
+
         // Create users
         $owner = User::factory()->create(['email' => 'owner@test.com']);
         $helper = User::factory()->create(['email' => 'helper@test.com']);
-        
-        // Create cat and placement request
-        $cat = Cat::factory()->create([
+
+        // Create pet and placement request
+        $pet = Pet::factory()->create([
             'user_id' => $owner->id,
-            'status' => \App\Enums\CatStatus::ACTIVE,
-            'name' => 'Fluffy'
+            'status' => \App\Enums\PetStatus::ACTIVE,
+            'name' => 'Fluffy',
         ]);
-        
+
         $placementRequest = PlacementRequest::factory()->create([
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'user_id' => $owner->id,
             'is_active' => true,
-            'status' => PlacementRequestStatus::OPEN->value
+            'status' => PlacementRequestStatus::OPEN->value,
         ]);
-        
+
         $helperProfile = HelperProfile::factory()->create(['user_id' => $helper->id]);
 
         // Set up notification preferences
@@ -95,7 +94,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
 
         // Step 1: Helper responds to placement request
         $response = $this->actingAs($helper)->postJson('/api/transfer-requests', [
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $helperProfile->id,
             'requested_relationship_type' => 'fostering',
@@ -111,7 +110,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
             ->get();
 
         $this->assertCount(2, $ownerNotifications);
-        
+
         $emailNotification = $ownerNotifications->where('data.channel', 'email')->first();
         $inAppNotification = $ownerNotifications->where('data.channel', 'in_app')->first();
 
@@ -144,14 +143,14 @@ class EmailNotificationSystemIntegrationTest extends TestCase
 
         // Create another placement request
         $placementRequest2 = PlacementRequest::factory()->create([
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'user_id' => $owner->id,
             'is_active' => true,
-            'status' => PlacementRequestStatus::OPEN->value
+            'status' => PlacementRequestStatus::OPEN->value,
         ]);
 
         $transferRequest2 = TransferRequest::factory()->create([
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'placement_request_id' => $placementRequest2->id,
             'helper_profile_id' => $helperProfile2->id,
             'initiator_user_id' => $helper2->id,
@@ -188,7 +187,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         $emailJob = new SendNotificationEmail(
             $owner,
             NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
-            ['cat_id' => $cat->id, 'helper_profile_id' => $helperProfile->id],
+            ['pet_id' => $pet->id, 'helper_profile_id' => $helperProfile->id],
             $emailNotification->id
         );
 
@@ -208,10 +207,10 @@ class EmailNotificationSystemIntegrationTest extends TestCase
     public function test_email_configuration_service_integration_with_notifications()
     {
         $service = app(EmailConfigurationService::class);
-        
+
         // Verify email is enabled with active configuration
         $this->assertTrue($service->isEmailEnabled());
-        
+
         $activeConfig = $service->getActiveConfiguration();
         $this->assertNotNull($activeConfig);
         $this->assertEquals('smtp', $activeConfig->provider);
@@ -223,7 +222,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
 
         // Deactivate configuration
         $service->deactivateConfiguration();
-        
+
         // Verify email is now disabled
         $this->assertFalse($service->isEmailEnabled());
         $this->assertNull($service->getActiveConfiguration());
@@ -232,16 +231,16 @@ class EmailNotificationSystemIntegrationTest extends TestCase
     public function test_notification_preferences_api_integration()
     {
         $user = User::factory()->create();
-        
+
         // Test getting preferences (should return defaults)
         $response = $this->actingAs($user, 'sanctum')
             ->getJson('/api/notification-preferences');
 
         $response->assertStatus(200);
         $preferences = $response->json('data');
-        
+
         $this->assertCount(count(NotificationType::cases()), $preferences);
-        
+
         // All should default to enabled
         foreach ($preferences as $preference) {
             $this->assertTrue($preference['email_enabled']);
@@ -261,7 +260,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
                     'email_enabled' => true,
                     'in_app_enabled' => false,
                 ],
-            ]
+            ],
         ];
 
         $response = $this->actingAs($user, 'sanctum')
@@ -303,7 +302,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
     public function test_unsubscribe_functionality_integration()
     {
         $user = User::factory()->create(['email' => 'test@example.com']);
-        
+
         // Create notification preference
         NotificationPreference::create([
             'user_id' => $user->id,
@@ -313,10 +312,10 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         ]);
 
         // Generate unsubscribe token
-        $token = hash_hmac('sha256', $user->id . NotificationType::PLACEMENT_REQUEST_RESPONSE->value, config('app.key'));
+        $token = hash_hmac('sha256', $user->id.NotificationType::PLACEMENT_REQUEST_RESPONSE->value, config('app.key'));
 
         // Test unsubscribe endpoint
-        $response = $this->postJson("/api/unsubscribe", [
+        $response = $this->postJson('/api/unsubscribe', [
             'user' => $user->id,
             'type' => NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
             'token' => $token,
@@ -337,9 +336,9 @@ class EmailNotificationSystemIntegrationTest extends TestCase
     public function test_email_template_rendering_integration()
     {
         Mail::fake();
-        
+
         $user = User::factory()->create(['email' => 'test@example.com']);
-        $cat = Cat::factory()->create(['name' => 'Fluffy']);
+        $pet = Pet::factory()->create(['name' => 'Fluffy']);
         $helperProfile = HelperProfile::factory()->create();
 
         $notification = Notification::factory()->create([
@@ -347,7 +346,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
             'type' => NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
             'data' => [
                 'channel' => 'email',
-                'cat_id' => $cat->id,
+                'pet_id' => $pet->id,
                 'helper_profile_id' => $helperProfile->id,
             ],
         ]);
@@ -356,7 +355,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
             $user,
             NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
             [
-                'cat_id' => $cat->id,
+                'pet_id' => $pet->id,
                 'helper_profile_id' => $helperProfile->id,
             ],
             $notification->id
@@ -365,21 +364,21 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         $job->handle();
 
         // Verify email was sent with correct template
-        Mail::assertSent(\App\Mail\PlacementRequestResponseMail::class, function ($mail) use ($user, $cat) {
+        Mail::assertSent(\App\Mail\PlacementRequestResponseMail::class, function ($mail) use ($user, $pet) {
             $this->assertTrue($mail->hasTo($user->email));
-            
+
             // Check that template data includes required fields
             $content = $mail->content();
             $templateData = $content->with;
-            
+
             $this->assertArrayHasKey('user', $templateData);
-            $this->assertArrayHasKey('cat', $templateData);
+            $this->assertArrayHasKey('pet', $templateData);
             $this->assertArrayHasKey('actionUrl', $templateData);
             $this->assertArrayHasKey('unsubscribeUrl', $templateData);
-            
+
             $this->assertEquals($user->id, $templateData['user']->id);
-            $this->assertEquals($cat->id, $templateData['cat']->id);
-            
+            $this->assertEquals($pet->id, $templateData['pet']->id);
+
             return true;
         });
     }
@@ -387,10 +386,10 @@ class EmailNotificationSystemIntegrationTest extends TestCase
     public function test_notification_system_performance_with_multiple_users()
     {
         Queue::fake();
-        
+
         // Create multiple users with different preferences
         $users = User::factory()->count(10)->create();
-        
+
         foreach ($users as $index => $user) {
             NotificationPreference::create([
                 'user_id' => $user->id,
@@ -416,8 +415,8 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         $emailJobs = Queue::pushed(SendNotificationEmail::class)->count();
 
         // Should have created notifications based on preferences
-        $expectedEmailUsers = $users->filter(fn($user, $index) => $index % 2 === 0)->count();
-        $expectedInAppUsers = $users->filter(fn($user, $index) => $index % 3 === 0)->count();
+        $expectedEmailUsers = $users->filter(fn ($user, $index) => $index % 2 === 0)->count();
+        $expectedInAppUsers = $users->filter(fn ($user, $index) => $index % 3 === 0)->count();
 
         $this->assertEquals($expectedEmailUsers, $emailJobs);
         $this->assertEquals($expectedEmailUsers + $expectedInAppUsers, $totalNotifications);
@@ -426,22 +425,22 @@ class EmailNotificationSystemIntegrationTest extends TestCase
     public function test_error_handling_and_recovery()
     {
         Queue::fake();
-        
+
         $user = User::factory()->create(['email' => 'test@example.com']);
-        
+
         // Set user preferences: only in-app enabled (no email)
         NotificationPreference::updatePreference(
-            $user, 
-            NotificationType::PLACEMENT_REQUEST_RESPONSE->value, 
+            $user,
+            NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
             false, // email disabled
             true   // in-app enabled
         );
-        
+
         // Test with invalid email configuration
         EmailConfiguration::query()->update(['is_active' => false]);
-        
+
         $notificationService = app(NotificationService::class);
-        
+
         // Should create in-app notification since it's enabled in preferences
         $notificationService->send(
             $user,
@@ -453,7 +452,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         $notifications = Notification::where('user_id', $user->id)->get();
         $this->assertCount(1, $notifications);
         $this->assertEquals('in_app', $notifications->first()->data['channel']);
-        
+
         // No email job should be queued
         Queue::assertNotPushed(SendNotificationEmail::class);
     }

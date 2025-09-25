@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 
 import MainPage from './pages/MainPage'
@@ -7,11 +7,10 @@ import RegisterPage from './pages/RegisterPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import ProfilePage from './pages/ProfilePage'
-import MyCatsPage from './pages/account/MyCatsPage'
-import CreateCatPage from './pages/account/CreateCatPage'
-import EditCatPage from './pages/account/EditCatPage'
+import MyPetsPage from './pages/account/MyPetsPage'
+import CreatePetPage from './pages/account/CreatePetPage'
 import NotificationsPage from './pages/account/NotificationsPage'
-import CatProfilePage from './pages/CatProfilePage'
+import PetProfilePage from './pages/PetProfilePage'
 import HelperProfilePage from './pages/helper/HelperProfilePage'
 import HelperProfileEditPage from './pages/helper/HelperProfileEditPage'
 import CreateHelperProfilePage from './pages/helper/CreateHelperProfilePage'
@@ -35,20 +34,45 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   return user ? <>{children}</> : <Navigate to="/login" replace />
 }
 
+function CatToPetRedirect() {
+  const { id } = useParams<{ id: string }>()
+  if (!id) {
+    return <Navigate to="/pets" replace />
+  }
+  return <Navigate to={`/pets/${id}`} replace />
+}
+
+function CatToPetEditRedirect() {
+  const { id } = useParams<{ id: string }>()
+  if (!id) {
+    return <Navigate to="/pets" replace />
+  }
+  return <Navigate to={`/pets/${id}/edit`} replace />
+}
+
 export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<MainPage />} />
       <Route path="/requests" element={<RequestsPage />} />
-      <Route path="/cats/:id" element={<CatProfilePage />} />
+      
+      {/* Pet routes */}
+      <Route path="/pets/:id" element={<PetProfilePage />} />
       <Route
-        path="/cats/:id/edit"
+        path="/pets/:id/edit"
         element={
           <PrivateRoute>
-            <EditCatPage />
+            <CreatePetPage />
           </PrivateRoute>
         }
       />
+      
+      {/* Legacy cat route redirects */}
+      <Route path="/cats/:id" element={<CatToPetRedirect />} />
+      <Route path="/cats/:id/edit" element={<CatToPetEditRedirect />} />
+      <Route path="/account/cats" element={<Navigate to="/account/pets" replace />} />
+      <Route path="/account/cats/create" element={<Navigate to="/account/pets/create" replace />} />
+      
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -61,19 +85,21 @@ export function AppRoutes() {
           </PrivateRoute>
         }
       />
+      
+      {/* Pet routes */}
       <Route
-        path="/account/cats"
+        path="/account/pets"
         element={
           <PrivateRoute>
-            <MyCatsPage />
+            <MyPetsPage />
           </PrivateRoute>
         }
       />
       <Route
-        path="/account/cats/create"
+        path="/account/pets/create"
         element={
           <PrivateRoute>
-            <CreateCatPage />
+            <CreatePetPage />
           </PrivateRoute>
         }
       />

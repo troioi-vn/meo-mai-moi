@@ -213,38 +213,6 @@ class HelperProfileController extends Controller
      *         description="Validation error"
      *     )
      * )
-     * 
-     * @OA\Post(
-     *     path="/helper-profiles/{id}",
-     *     summary="Update a helper profile (DEPRECATED - use PUT instead)",
-     *     deprecated=true,
-     *     tags={"Helper Profiles"},
-     *     description="This endpoint is deprecated. Use PUT /helper-profiles/{id} instead. Kept for HTML form compatibility.",
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="ID of the helper profile",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/HelperProfile")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Helper profile updated successfully",
-     *         @OA\JsonContent(ref="#/components/schemas/HelperProfile")
-     *     ),
-     *     @OA\Response(
-     *         response=403,
-     *         description="Unauthorized"
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validation error"
-     *     )
-     * )
      */
     public function update(Request $request, HelperProfile $helperProfile)
     {

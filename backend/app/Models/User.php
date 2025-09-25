@@ -129,18 +129,4 @@ class User extends Authenticatable implements FilamentUser
         // This will integrate with your EmailLog system via the CustomPasswordReset notification
         $this->notify(new CustomPasswordReset($token));
     }
-
-    /**
-     * Send the password reset notification.
-     * Uses Laravel's native notification system with custom EmailLog integration.
-     *
-     * @param  string  $token
-     * @return void
-     */
-    public function sendPasswordResetNotification($token)
-    {
-        // Use Laravel's proper notification system
-        // This will integrate with your EmailLog system via the CustomPasswordReset notification
-        $this->notify(new CustomPasswordReset($token));
-    }
 }

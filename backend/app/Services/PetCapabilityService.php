@@ -68,7 +68,7 @@ class PetCapabilityService
      */
     public static function getCapabilities(string $petTypeSlug): array
     {
-    $capabilities = [];
+        $capabilities = [];
 
         foreach (self::CAPABILITIES as $capability => $allowedTypes) {
             $capabilities[$capability] = in_array($petTypeSlug, $allowedTypes);

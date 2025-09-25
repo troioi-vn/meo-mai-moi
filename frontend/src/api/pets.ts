@@ -9,7 +9,6 @@ export interface WeightHistory {
   created_at: string
   updated_at: string
 }
-
 export const getAllPets = async (): Promise<Pet[]> => {
   const response = await api.get<{ data: Pet[] }>('/pets')
   return response.data.data

@@ -15,7 +15,6 @@ class PetType extends Model
         'placement_requests_allowed' => false,
         'weight_tracking_allowed' => false,
     ];
-
     protected $fillable = [
         'name',
         'slug',

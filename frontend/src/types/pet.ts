@@ -133,7 +133,6 @@ export const petSupportsCapability = (petType: PetType, capability: string): boo
   if (capability === 'weight') {
     return Boolean(petType.weight_tracking_allowed)
   }
-
   // All other capabilities (medical, ownership, weight, comments, status_update, photos) 
   // are allowed for all pet types
   return true

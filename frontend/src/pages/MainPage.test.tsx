@@ -4,7 +4,7 @@ import { renderWithRouter } from '@/test-utils'
 import MainPage from '../pages/MainPage'
 import { http, HttpResponse } from 'msw'
 import { server } from '@/mocks/server'
-import { testScenarios } from '@/mocks/data/cats'
+import { testScenarios } from '@/mocks/data/pets'
 
 // Mock HeroSection and Footer to focus on integration testing
 vi.mock('@/components/HeroSection', () => ({
@@ -33,7 +33,7 @@ describe('MainPage Integration Tests', () => {
     it('renders all main sections in correct order', async () => {
       // Use scenario with some cats to test full layout
       server.use(
-        http.get('http://localhost:3000/api/cats/placement-requests', () => {
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
           return HttpResponse.json({ data: testScenarios.four })
         })
       )
@@ -58,7 +58,7 @@ describe('MainPage Integration Tests', () => {
 
     it('maintains responsive layout structure', async () => {
       server.use(
-        http.get('http://localhost:3000/api/cats/placement-requests', () => {
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
           return HttpResponse.json({ data: testScenarios.four })
         })
       )
@@ -82,7 +82,7 @@ describe('MainPage Integration Tests', () => {
   describe('ActivePlacementRequestsSection Integration', () => {
     it('renders ActivePlacementRequestsSection correctly within MainPage', async () => {
       server.use(
-        http.get('http://localhost:3000/api/cats/placement-requests', () => {
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
           return HttpResponse.json({ data: testScenarios.four })
         })
       )
@@ -96,17 +96,17 @@ describe('MainPage Integration Tests', () => {
       // Verify section title is rendered
       expect(screen.getByRole('heading', { name: 'Active Placement Requests' })).toBeInTheDocument()
 
-      // Verify cat cards are rendered (should be 4 cats)
-      const catCards = screen.getAllByText(/Fluffy|Whiskers|Shadow|Luna/)
-      expect(catCards).toHaveLength(4)
+      // Verify pet cards are rendered (should be 4 pets)
+      const petCards = screen.getAllByText(/Fluffy|Whiskers|Luna|Mittens/)
+      expect(petCards).toHaveLength(4)
 
-      // Verify no "Show more" button for 4 cats
+      // Verify no "Show more" button for 4 pets
       expect(screen.queryByText('View All Requests')).not.toBeInTheDocument()
     })
 
-    it('displays show more button when there are more than 4 cats', async () => {
+    it('displays show more button when there are more than 4 pets', async () => {
       server.use(
-        http.get('http://localhost:3000/api/cats/placement-requests', () => {
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
           return HttpResponse.json({ data: testScenarios.fivePlus })
         })
       )
@@ -117,8 +117,8 @@ describe('MainPage Integration Tests', () => {
         expect(screen.getByText('Active Placement Requests')).toBeInTheDocument()
       })
 
-      // Should only show first 4 cats
-      const catCards = screen.getAllByText(/Fluffy|Whiskers|Shadow|Luna/)
+      // Should only show first 4 pets
+      const catCards = screen.getAllByText(/Fluffy|Whiskers|Luna|Mittens/)
       expect(catCards).toHaveLength(4)
 
       // Should show "Show more" button
@@ -127,7 +127,7 @@ describe('MainPage Integration Tests', () => {
 
     it('handles empty state correctly', async () => {
       server.use(
-        http.get('http://localhost:3000/api/cats/placement-requests', () => {
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
           return HttpResponse.json({ data: testScenarios.empty })
         })
       )
@@ -140,16 +140,16 @@ describe('MainPage Integration Tests', () => {
 
       // Should show empty state message
       expect(screen.getByText('No active placement requests at the moment.')).toBeInTheDocument()
-      expect(screen.getByText('Check back soon for cats needing help!')).toBeInTheDocument()
+      expect(screen.getByText('Check back soon for pets needing help!')).toBeInTheDocument()
 
-      // Should show cat emoji
-      expect(screen.getByText('🐱')).toBeInTheDocument()
+      // Should show paw emoji
+      expect(screen.getByText('🐾')).toBeInTheDocument()
     })
 
     it('handles loading state correctly', async () => {
       // Create a delayed response to test loading state
       server.use(
-        http.get('http://localhost:3000/api/cats/placement-requests', async () => {
+        http.get('http://localhost:3000/api/pets/placement-requests', async () => {
           await new Promise((resolve) => setTimeout(resolve, 100))
           return HttpResponse.json({ data: testScenarios.four })
         })
@@ -171,7 +171,7 @@ describe('MainPage Integration Tests', () => {
 
     it('handles error state correctly', async () => {
       server.use(
-        http.get('http://localhost:3000/api/cats/placement-requests', () => {
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
           return new HttpResponse(null, { status: 500 })
         })
       )
@@ -197,7 +197,7 @@ describe('MainPage Integration Tests', () => {
       let apiCalled = false
 
       server.use(
-        http.get('http://localhost:3000/api/cats/placement-requests', () => {
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
           apiCalled = true
           return HttpResponse.json({ data: testScenarios.four })
         })
@@ -215,7 +215,7 @@ describe('MainPage Integration Tests', () => {
 
     it('processes API response correctly and limits to 4 cats', async () => {
       server.use(
-        http.get('http://localhost:3000/api/cats/placement-requests', () => {
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
           return HttpResponse.json({ data: testScenarios.fivePlus }) // 6 cats
         })
       )
@@ -229,11 +229,10 @@ describe('MainPage Integration Tests', () => {
       // Should only display first 4 cats
       expect(screen.getByText('Fluffy')).toBeInTheDocument()
       expect(screen.getByText('Whiskers')).toBeInTheDocument()
-      expect(screen.getByText('Shadow')).toBeInTheDocument()
       expect(screen.getByText('Luna')).toBeInTheDocument()
+      expect(screen.getByText('Mittens')).toBeInTheDocument()
 
-      // Should not display 5th and 6th cats
-      expect(screen.queryByText('Mittens')).not.toBeInTheDocument()
+      // Should not display 5th cat
       expect(screen.queryByText('Oreo')).not.toBeInTheDocument()
 
       // Should show "Show more" button
@@ -242,7 +241,7 @@ describe('MainPage Integration Tests', () => {
 
     it('navigates to requests page when show more button is clicked', async () => {
       server.use(
-        http.get('http://localhost:3000/api/cats/placement-requests', () => {
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
           return HttpResponse.json({ data: testScenarios.fivePlus })
         })
       )
@@ -270,7 +269,7 @@ describe('MainPage Integration Tests', () => {
   describe('Responsive Design and Cross-browser Compatibility', () => {
     it('maintains proper spacing and layout on different screen sizes', async () => {
       server.use(
-        http.get('http://localhost:3000/api/cats/placement-requests', () => {
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
           return HttpResponse.json({ data: testScenarios.four })
         })
       )
@@ -300,7 +299,7 @@ describe('MainPage Integration Tests', () => {
     it('handles different data scenarios consistently', async () => {
       // Test with single cat scenario
       server.use(
-        http.get('http://localhost:3000/api/cats/placement-requests', () => {
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
           return HttpResponse.json({ data: testScenarios.single })
         })
       )
@@ -318,7 +317,7 @@ describe('MainPage Integration Tests', () => {
     it('handles two cats scenario without show more button', async () => {
       // Test with two cats
       server.use(
-        http.get('http://localhost:3000/api/cats/placement-requests', () => {
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
           return HttpResponse.json({ data: testScenarios.two })
         })
       )

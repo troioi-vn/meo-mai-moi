@@ -47,7 +47,8 @@ class PlacementRequestPolicy
      */
     public function delete(User $user, PlacementRequest $placementRequest): bool
     {
-        if ($user->id === $placementRequest->cat->user_id) {
+        $ownerId = optional($placementRequest->pet)->user_id ?? $placementRequest->user_id;
+        if ($user->id === $ownerId) {
             return true;
         }
 
@@ -115,8 +116,9 @@ class PlacementRequestPolicy
      */
     public function confirm(User $user, PlacementRequest $placementRequest): bool
     {
-        // Cat owner can always confirm their own placement request
-        if ($user->id === $placementRequest->cat->user_id) {
+        // Pet owner can always confirm their own placement request
+        $ownerId = optional($placementRequest->pet)->user_id ?? $placementRequest->user_id;
+        if ($user->id === $ownerId) {
             return true;
         }
 
@@ -128,8 +130,9 @@ class PlacementRequestPolicy
      */
     public function reject(User $user, PlacementRequest $placementRequest): bool
     {
-        // Cat owner can always reject their own placement request
-        if ($user->id === $placementRequest->cat->user_id) {
+        // Pet owner can always reject their own placement request
+        $ownerId = optional($placementRequest->pet)->user_id ?? $placementRequest->user_id;
+        if ($user->id === $ownerId) {
             return true;
         }
 

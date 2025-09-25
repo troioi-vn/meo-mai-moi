@@ -12,14 +12,7 @@ use Illuminate\Mail\Events\MessageSent;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * The policy mappings for the application.
-     *
-     * @var array
-     */
-    protected $policies = [
-        'App\Models\Cat' => 'App\Policies\CatPolicy',
-    ];
+    // (Legacy CatPolicy mapping removed after pet-only migration.)
 
     /**
      * Register any application services.

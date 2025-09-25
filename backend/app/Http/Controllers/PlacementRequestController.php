@@ -8,7 +8,8 @@ use App\Http\Resources\PlacementRequestResource;
 use Illuminate\Http\Request;
 use App\Traits\ApiResponseTrait;
 use App\Enums\PlacementRequestType;
-use App\Models\Cat;
+use App\Models\Pet;
+use App\Services\PetCapabilityService;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -16,9 +17,9 @@ use Illuminate\Support\Facades\Auth;
  *     schema="PlacementRequest",
  *     type="object",
  *     title="PlacementRequest",
- *     required={"id", "cat_id", "user_id", "request_type", "status"},
+ *     required={"id", "pet_id", "user_id", "request_type", "status"},
  *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="cat_id", type="integer", example=2),
+ *     @OA\Property(property="pet_id", type="integer", example=2),
  *     @OA\Property(property="user_id", type="integer", example=5),
  *     @OA\Property(property="request_type", type="string", example="adoption"),
  *     @OA\Property(property="status", type="string", example="pending"),
@@ -32,6 +33,13 @@ class PlacementRequestController extends Controller
 {
     use ApiResponseTrait;
 
+    protected PetCapabilityService $capabilityService;
+
+    public function __construct(PetCapabilityService $capabilityService)
+    {
+        $this->capabilityService = $capabilityService;
+    }
+
     /**
      * @OA\Post(
      *     path="/api/placement-requests",
@@ -41,8 +49,8 @@ class PlacementRequestController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"cat_id", "request_type"},
-     *             @OA\Property(property="cat_id", type="integer", example=1),
+    *             required={"pet_id", "request_type"},
+    *             @OA\Property(property="pet_id", type="integer", example=1),
      *             @OA\Property(property="request_type", type="string", enum=App\Enums\PlacementRequestType::class, example="permanent"),
      *             @OA\Property(property="notes", type="string", example="Looking for a loving home."),
      *             @OA\Property(property="expires_at", type="string", format="date", example="2025-12-31"),
@@ -79,7 +87,7 @@ class PlacementRequestController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'cat_id' => 'required|exists:cats,id',
+            'pet_id' => 'required|exists:pets,id',
             'request_type' => ['required', new \Illuminate\Validation\Rules\Enum(PlacementRequestType::class)],
             'notes' => 'nullable|string',
             'expires_at' => 'nullable|date|after:now',
@@ -87,29 +95,46 @@ class PlacementRequestController extends Controller
             'end_date' => 'nullable|date|after_or_equal:start_date',
         ]);
 
-        $cat = Cat::findOrFail($validatedData['cat_id']);
+        $pet = Pet::findOrFail($validatedData['pet_id']);
 
-        if ($cat->user_id !== Auth::id()) {
-            return $this->sendError('You are not authorized to create a placement request for this cat.', 403);
+        if (!$pet) {
+            return $this->sendError('Pet not found.', 404);
         }
 
-        // Implement the business rule: One active placement request per type per cat.
-        $existingRequest = PlacementRequest::where('cat_id', $cat->id)
+        // Ensure this pet type supports placement requests
+        $this->capabilityService->ensure($pet, 'placement');
+
+        if ($pet->user_id !== Auth::id()) {
+            return $this->sendError('You are not authorized to create a placement request for this pet.', 403);
+        }
+
+        // Implement the business rule: One active placement request per type per pet.
+        $existingRequest = PlacementRequest::where('pet_id', $pet->id)
             ->where('request_type', $validatedData['request_type'])
             ->whereIn('status', ['open', 'pending_review'])
             ->exists();
 
         if ($existingRequest) {
-            return $this->sendError('An active placement request of this type already exists for this cat.', 409);
+            return $this->sendError('An active placement request of this type already exists for this pet.', 409);
         }
 
         // Business rule: Block creating new placement requests while foster assignment is active
-        $activeFosterAssignment = $cat->activeFosterAssignment()->exists();
+        $activeFosterAssignment = $pet->activeFosterAssignment()->exists();
         if ($activeFosterAssignment) {
-            return $this->sendError('Cannot create placement requests while the cat has an active foster assignment.', 409);
+            return $this->sendError('Cannot create placement requests while the pet has an active foster assignment.', 409);
         }
 
-        $placementRequest = PlacementRequest::create($validatedData + ['user_id' => Auth::id(), 'is_active' => true]);
+        $placementRequest = PlacementRequest::create([
+            'pet_id' => $pet->id,
+            'user_id' => Auth::id(),
+            'request_type' => $validatedData['request_type'],
+            'notes' => $validatedData['notes'] ?? null,
+            'expires_at' => $validatedData['expires_at'] ?? null,
+            'start_date' => $validatedData['start_date'] ?? null,
+            'end_date' => $validatedData['end_date'] ?? null,
+            'is_active' => true,
+            'status' => 'open',
+        ]);
         $placementRequest->refresh();
 
         return $this->sendSuccess(new PlacementRequestResource($placementRequest), 201);

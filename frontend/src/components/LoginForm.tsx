@@ -25,7 +25,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     if (redirect.startsWith('/') && !redirect.startsWith('//') && !/^https?:/i.test(redirect)) {
       return redirect
     }
-    return '/account/cats'
+    return '/account/pets'
   }
 
   const handleSubmit = async (event: React.FormEvent) => {

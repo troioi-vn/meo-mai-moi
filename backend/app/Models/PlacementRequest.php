@@ -14,7 +14,7 @@ class PlacementRequest extends Model
     use HasFactory;
 
     protected $fillable = [
-        'cat_id',
+        'pet_id', // Updated from cat_id
         'user_id',
         'request_type',
         'status',
@@ -33,10 +33,12 @@ class PlacementRequest extends Model
         'end_date' => 'date',
     ];
 
-    public function cat(): BelongsTo
+    public function pet(): BelongsTo
     {
-        return $this->belongsTo(Cat::class);
+        return $this->belongsTo(Pet::class);
     }
+
+    // Legacy cat() relation removed after Pet-only migration.
 
     public function user()
     {

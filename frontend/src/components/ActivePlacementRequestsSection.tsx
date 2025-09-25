@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CatCard } from '@/components/CatCard'
+import { PetCard } from '@/components/PetCard'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { getPlacementRequests } from '@/api/cats'
-import type { Cat } from '@/types/cat'
+import { getPlacementRequests } from '@/api/pets'
+import type { Pet } from '@/types/pet'
 
 interface ActivePlacementRequestsSectionProps {
   className?: string
@@ -13,7 +13,7 @@ interface ActivePlacementRequestsSectionProps {
 export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSectionProps> = ({
   className = '',
 }) => {
-  const [cats, setCats] = useState<Cat[]>([])
+  const [pets, setPets] = useState<Pet[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showMoreVisible, setShowMoreVisible] = useState(false)
@@ -26,11 +26,11 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
         setError(null)
         const response = await getPlacementRequests()
 
-        // Client-side limiting to first 4 cats
-        const limitedCats = response.slice(0, 4)
-        setCats(limitedCats)
+        // Client-side limiting to first 4 pets
+        const limitedPets = response.slice(0, 4)
+        setPets(limitedPets)
 
-        // Show "Show more" button if there are more than 4 cats with active placement requests
+        // Show "Show more" button if there are more than 4 pets with active placement requests
         setShowMoreVisible(response.length > 4)
       } catch (err) {
         setError('Failed to load placement requests. Please try again later.')
@@ -53,11 +53,11 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
       setError(null)
       const response = await getPlacementRequests()
 
-      // Client-side limiting to first 4 cats
-      const limitedCats = response.slice(0, 4)
-      setCats(limitedCats)
+      // Client-side limiting to first 4 pets
+      const limitedPets = response.slice(0, 4)
+      setPets(limitedPets)
 
-      // Show "Show more" button if there are more than 4 cats with active placement requests
+      // Show "Show more" button if there are more than 4 pets with active placement requests
       setShowMoreVisible(response.length > 4)
     } catch (err) {
       setError('Failed to load placement requests. Please try again later.')
@@ -122,16 +122,16 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
   }
 
   // Empty state message when no active placement requests exist
-  if (cats.length === 0) {
+  if (pets.length === 0) {
     return (
       <section className={`container mx-auto px-4 py-8 ${className}`}>
         <h2 className="mb-8 text-3xl font-bold text-center">Active Placement Requests</h2>
         <div className="text-center space-y-4">
-          <div className="text-6xl">🐱</div>
+          <div className="text-6xl">🐾</div>
           <p className="text-lg text-muted-foreground">
             No active placement requests at the moment.
           </p>
-          <p className="text-muted-foreground">Check back soon for cats needing help!</p>
+          <p className="text-muted-foreground">Check back soon for pets needing help!</p>
         </div>
       </section>
     )
@@ -143,8 +143,8 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
       <h2 className="mb-8 text-3xl font-bold text-center">Active Placement Requests</h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {cats.map((cat) => (
-          <CatCard key={cat.id} cat={cat} />
+        {pets.map((pet) => (
+          <PetCard key={pet.id} pet={pet} />
         ))}
       </div>
 

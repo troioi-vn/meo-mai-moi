@@ -93,4 +93,9 @@ class HelperProfile extends Model
     {
         return $this->hasMany(HelperProfilePhoto::class);
     }
+
+    public function petTypes(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(PetType::class, 'helper_profile_pet_type');
+    }
 }

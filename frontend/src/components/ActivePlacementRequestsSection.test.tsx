@@ -4,20 +4,21 @@ import { MemoryRouter } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import type { MockedFunction } from 'vitest'
 import { ActivePlacementRequestsSection } from './ActivePlacementRequestsSection'
-import { getPlacementRequests } from '@/api/cats'
-import type { Cat } from '@/types/cat'
+import { getPlacementRequests } from '@/api/pets'
+import type { Pet, PetType } from '@/types/pet'
 
 // Mock the API function with a strongly-typed mocked function
-vi.mock('@/api/cats', () => ({
-  getPlacementRequests: vi.fn() as unknown as MockedFunction<() => Promise<Cat[]>>,
+vi.mock('@/api/pets', () => ({
+  getPlacementRequests: vi.fn() as unknown as MockedFunction<() => Promise<Pet[]>>,
 }))
 
-// Mock the CatCard component
-vi.mock('@/components/CatCard', () => ({
-  CatCard: ({ cat }: { cat: Cat }) => (
-    <div data-testid={`cat-card-${String(cat.id)}`}>
-      <h3>{cat.name}</h3>
-      <p>{cat.breed}</p>
+// Mock the PetCard component
+vi.mock('@/components/PetCard', () => ({
+  PetCard: ({ pet }: { pet: Pet }) => (
+    <div data-testid={`pet-card-${String(pet.id)}`}>
+      <h3>{pet.name}</h3>
+      <p>{pet.breed}</p>
+      <span>{pet.pet_type.name}</span>
     </div>
   ),
 }))
@@ -36,17 +37,31 @@ const renderWithRouter = (ui: React.ReactElement) => {
   return render(<MemoryRouter>{ui}</MemoryRouter>)
 }
 
-// Mock cat data for testing
-const createMockCat = (id: number, name: string): Cat => ({
+const mockCatType: PetType = {
+  id: 1,
+  name: 'Cat',
+  slug: 'cat',
+  description: 'Feline companions',
+  is_active: true,
+  is_system: true,
+  display_order: 1,
+  created_at: '2023-01-01T00:00:00Z',
+  updated_at: '2023-01-01T00:00:00Z',
+}
+
+// Mock pet data for testing
+const createMockPet = (id: number, name: string, petType: PetType = mockCatType): Pet => ({
   id,
   name,
   breed: 'Persian',
   birthday: '2020-01-15',
   status: 'active',
-  description: 'A friendly cat',
+  description: 'A friendly pet',
   location: 'New York, NY',
-  photo_url: 'http://example.com/cat.jpg',
+  photo_url: 'http://example.com/pet.jpg',
   user_id: 1,
+  pet_type_id: petType.id,
+  pet_type: petType,
   user: {
     id: 1,
     name: 'Owner',
@@ -57,7 +72,7 @@ const createMockCat = (id: number, name: string): Cat => ({
   placement_requests: [
     {
       id: id,
-      cat_id: id,
+      pet_id: id,
       request_type: 'fostering',
       status: 'open',
       notes: 'Looking for help',
@@ -71,7 +86,7 @@ const createMockCat = (id: number, name: string): Cat => ({
 
 describe('ActivePlacementRequestsSection', () => {
   const mockGetPlacementRequests = getPlacementRequests as unknown as MockedFunction<
-    () => Promise<Cat[]>
+    () => Promise<Pet[]>
   >
 
   beforeEach(() => {
@@ -150,7 +165,7 @@ describe('ActivePlacementRequestsSection', () => {
       // First call fails, second call succeeds
       mockGetPlacementRequests
         .mockRejectedValueOnce(new Error('Network error'))
-        .mockResolvedValueOnce([createMockCat(1, 'Fluffy')])
+        .mockResolvedValueOnce([createMockPet(1, 'Fluffy')])
 
       renderWithRouter(<ActivePlacementRequestsSection />)
 
@@ -167,7 +182,7 @@ describe('ActivePlacementRequestsSection', () => {
 
       // Wait for successful retry
       await waitFor(() => {
-        expect(screen.getByTestId('cat-card-1')).toBeInTheDocument()
+        expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
         expect(screen.getByText('Fluffy')).toBeInTheDocument()
       })
 
@@ -209,8 +224,8 @@ describe('ActivePlacementRequestsSection', () => {
         expect(screen.getByText('No active placement requests at the moment.')).toBeInTheDocument()
       })
 
-      expect(screen.getByText('Check back soon for cats needing help!')).toBeInTheDocument()
-      expect(screen.getByText('🐱')).toBeInTheDocument()
+      expect(screen.getByText('Check back soon for pets needing help!')).toBeInTheDocument()
+      expect(screen.getByText('🐾')).toBeInTheDocument()
     })
 
     it('does not show "Show more" button in empty state', async () => {
@@ -227,15 +242,15 @@ describe('ActivePlacementRequestsSection', () => {
   })
 
   describe('Populated State', () => {
-    it('renders cat cards when data is available', async () => {
-      const mockCats = [createMockCat(1, 'Fluffy'), createMockCat(2, 'Whiskers')]
-      mockGetPlacementRequests.mockResolvedValue(mockCats)
+    it('renders pet cards when data is available', async () => {
+      const mockPets = [createMockPet(1, 'Fluffy'), createMockPet(2, 'Whiskers')]
+      mockGetPlacementRequests.mockResolvedValue(mockPets)
 
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByTestId(`cat-card-${String(1)}`)).toBeInTheDocument()
-        expect(screen.getByTestId(`cat-card-${String(2)}`)).toBeInTheDocument()
+        expect(screen.getByTestId(`pet-card-${String(1)}`)).toBeInTheDocument()
+        expect(screen.getByTestId(`pet-card-${String(2)}`)).toBeInTheDocument()
       })
 
       expect(screen.getByText('Fluffy')).toBeInTheDocument()
@@ -243,13 +258,13 @@ describe('ActivePlacementRequestsSection', () => {
     })
 
     it('applies proper grid layout classes', async () => {
-      const mockCats = [createMockCat(1, 'Fluffy')]
-      mockGetPlacementRequests.mockResolvedValue(mockCats)
+      const mockPets = [createMockPet(1, 'Fluffy')]
+      mockGetPlacementRequests.mockResolvedValue(mockPets)
 
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByTestId(`cat-card-${String(1)}`)).toBeInTheDocument()
+        expect(screen.getByTestId(`pet-card-${String(1)}`)).toBeInTheDocument()
       })
 
       // Check grid container classes
@@ -266,59 +281,59 @@ describe('ActivePlacementRequestsSection', () => {
   })
 
   describe('Client-side Limiting', () => {
-    it('limits display to maximum 4 cats when more are available', async () => {
-      const mockCats = [
-        createMockCat(1, 'Cat1'),
-        createMockCat(2, 'Cat2'),
-        createMockCat(3, 'Cat3'),
-        createMockCat(4, 'Cat4'),
-        createMockCat(5, 'Cat5'),
-        createMockCat(6, 'Cat6'),
+    it('limits display to maximum 4 pets when more are available', async () => {
+      const mockPets = [
+        createMockPet(1, 'Pet1'),
+        createMockPet(2, 'Pet2'),
+        createMockPet(3, 'Pet3'),
+        createMockPet(4, 'Pet4'),
+        createMockPet(5, 'Pet5'),
+        createMockPet(6, 'Pet6'),
       ]
-      mockGetPlacementRequests.mockResolvedValue(mockCats)
+      mockGetPlacementRequests.mockResolvedValue(mockPets)
 
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByTestId(`cat-card-${String(1)}`)).toBeInTheDocument()
+        expect(screen.getByTestId(`pet-card-${String(1)}`)).toBeInTheDocument()
       })
 
-      // Should only show first 4 cats
-      expect(screen.getByTestId(`cat-card-${String(1)}`)).toBeInTheDocument()
-      expect(screen.getByTestId(`cat-card-${String(2)}`)).toBeInTheDocument()
-      expect(screen.getByTestId(`cat-card-${String(3)}`)).toBeInTheDocument()
-      expect(screen.getByTestId(`cat-card-${String(4)}`)).toBeInTheDocument()
+      // Should only show first 4 pets
+      expect(screen.getByTestId(`pet-card-${String(1)}`)).toBeInTheDocument()
+      expect(screen.getByTestId(`pet-card-${String(2)}`)).toBeInTheDocument()
+      expect(screen.getByTestId(`pet-card-${String(3)}`)).toBeInTheDocument()
+      expect(screen.getByTestId(`pet-card-${String(4)}`)).toBeInTheDocument()
 
-      // Should not show 5th and 6th cats
-      expect(screen.queryByTestId(`cat-card-${String(5)}`)).not.toBeInTheDocument()
-      expect(screen.queryByTestId(`cat-card-${String(6)}`)).not.toBeInTheDocument()
+      // Should not show 5th and 6th pets
+      expect(screen.queryByTestId(`pet-card-${String(5)}`)).not.toBeInTheDocument()
+      expect(screen.queryByTestId(`pet-card-${String(6)}`)).not.toBeInTheDocument()
     })
 
-    it('shows all cats when 4 or fewer are available', async () => {
-      const mockCats = [
-        createMockCat(1, 'Cat1'),
-        createMockCat(2, 'Cat2'),
-        createMockCat(3, 'Cat3'),
+    it('shows all pets when 4 or fewer are available', async () => {
+      const mockPets = [
+        createMockPet(1, 'Pet1'),
+        createMockPet(2, 'Pet2'),
+        createMockPet(3, 'Pet3'),
       ]
-      mockGetPlacementRequests.mockResolvedValue(mockCats)
+      mockGetPlacementRequests.mockResolvedValue(mockPets)
 
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByTestId(`cat-card-${String(1)}`)).toBeInTheDocument()
+        expect(screen.getByTestId(`pet-card-${String(1)}`)).toBeInTheDocument()
       })
 
-      // Should show all 3 cats
-      expect(screen.getByTestId('cat-card-1')).toBeInTheDocument()
-      expect(screen.getByTestId('cat-card-2')).toBeInTheDocument()
-      expect(screen.getByTestId('cat-card-3')).toBeInTheDocument()
+      // Should show all 3 pets
+      expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
+      expect(screen.getByTestId('pet-card-2')).toBeInTheDocument()
+      expect(screen.getByTestId('pet-card-3')).toBeInTheDocument()
     })
   })
 
   describe('Show More Button Logic', () => {
-    it('shows "Show more" button when more than 4 cats are available', async () => {
-      const mockCats = Array.from({ length: 6 }, (_, i) => createMockCat(i + 1, `Cat${i + 1}`))
-      mockGetPlacementRequests.mockResolvedValue(mockCats)
+    it('shows "Show more" button when more than 4 pets are available', async () => {
+      const mockPets = Array.from({ length: 6 }, (_, i) => createMockPet(i + 1, `Pet${i + 1}`))
+      mockGetPlacementRequests.mockResolvedValue(mockPets)
 
       renderWithRouter(<ActivePlacementRequestsSection />)
 
@@ -327,40 +342,40 @@ describe('ActivePlacementRequestsSection', () => {
       })
     })
 
-    it('does not show "Show more" button when 4 or fewer cats are available', async () => {
-      const mockCats = [
-        createMockCat(1, 'Cat1'),
-        createMockCat(2, 'Cat2'),
-        createMockCat(3, 'Cat3'),
-        createMockCat(4, 'Cat4'),
+    it('does not show "Show more" button when 4 or fewer pets are available', async () => {
+      const mockPets = [
+        createMockPet(1, 'Pet1'),
+        createMockPet(2, 'Pet2'),
+        createMockPet(3, 'Pet3'),
+        createMockPet(4, 'Pet4'),
       ]
-      mockGetPlacementRequests.mockResolvedValue(mockCats)
+      mockGetPlacementRequests.mockResolvedValue(mockPets)
 
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByTestId(`cat-card-${String(1)}`)).toBeInTheDocument()
+        expect(screen.getByTestId(`pet-card-${String(1)}`)).toBeInTheDocument()
       })
 
       expect(screen.queryByRole('button', { name: 'View All Requests' })).not.toBeInTheDocument()
     })
 
-    it('does not show "Show more" button when exactly 4 cats are available', async () => {
-      const mockCats = Array.from({ length: 4 }, (_, i) => createMockCat(i + 1, `Cat${i + 1}`))
-      mockGetPlacementRequests.mockResolvedValue(mockCats)
+    it('does not show "Show more" button when exactly 4 pets are available', async () => {
+      const mockPets = Array.from({ length: 4 }, (_, i) => createMockPet(i + 1, `Pet${i + 1}`))
+      mockGetPlacementRequests.mockResolvedValue(mockPets)
 
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByTestId('cat-card-1')).toBeInTheDocument()
+        expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
       })
 
       expect(screen.queryByRole('button', { name: 'View All Requests' })).not.toBeInTheDocument()
     })
 
-    it('shows "Show more" button when exactly 5 cats are available', async () => {
-      const mockCats = Array.from({ length: 5 }, (_, i) => createMockCat(i + 1, `Cat${i + 1}`))
-      mockGetPlacementRequests.mockResolvedValue(mockCats)
+    it('shows "Show more" button when exactly 5 pets are available', async () => {
+      const mockPets = Array.from({ length: 5 }, (_, i) => createMockPet(i + 1, `Pet${i + 1}`))
+      mockGetPlacementRequests.mockResolvedValue(mockPets)
 
       renderWithRouter(<ActivePlacementRequestsSection />)
 
@@ -372,8 +387,8 @@ describe('ActivePlacementRequestsSection', () => {
 
   describe('Navigation', () => {
     it('navigates to /requests page when "Show more" button is clicked', async () => {
-      const mockCats = Array.from({ length: 6 }, (_, i) => createMockCat(i + 1, `Cat${i + 1}`))
-      mockGetPlacementRequests.mockResolvedValue(mockCats)
+      const mockPets = Array.from({ length: 6 }, (_, i) => createMockPet(i + 1, `Pet${i + 1}`))
+      mockGetPlacementRequests.mockResolvedValue(mockPets)
 
       renderWithRouter(<ActivePlacementRequestsSection />)
 
@@ -389,8 +404,8 @@ describe('ActivePlacementRequestsSection', () => {
     })
 
     it('applies proper styling to "Show more" button', async () => {
-      const mockCats = Array.from({ length: 6 }, (_, i) => createMockCat(i + 1, `Cat${i + 1}`))
-      mockGetPlacementRequests.mockResolvedValue(mockCats)
+      const mockPets = Array.from({ length: 6 }, (_, i) => createMockPet(i + 1, `Pet${i + 1}`))
+      mockGetPlacementRequests.mockResolvedValue(mockPets)
 
       renderWithRouter(<ActivePlacementRequestsSection />)
 
@@ -448,14 +463,14 @@ describe('ActivePlacementRequestsSection', () => {
     })
 
     it('handles API response correctly', async () => {
-      const mockCats = [createMockCat(1, 'TestCat')]
-      mockGetPlacementRequests.mockResolvedValue(mockCats)
+      const mockPets = [createMockPet(1, 'TestPet')]
+      mockGetPlacementRequests.mockResolvedValue(mockPets)
 
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByTestId('cat-card-1')).toBeInTheDocument()
-        expect(screen.getByText('TestCat')).toBeInTheDocument()
+        expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
+        expect(screen.getByText('TestPet')).toBeInTheDocument()
       })
     })
   })
@@ -474,7 +489,7 @@ describe('ActivePlacementRequestsSection', () => {
     })
 
     it('maintains semantic structure in all states', async () => {
-      mockGetPlacementRequests.mockResolvedValue([createMockCat(1, 'TestCat')])
+      mockGetPlacementRequests.mockResolvedValue([createMockPet(1, 'TestPet')])
 
       renderWithRouter(<ActivePlacementRequestsSection />)
 

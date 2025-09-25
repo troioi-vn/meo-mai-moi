@@ -12,7 +12,7 @@ class FosterAssignment extends Model
     use HasFactory;
 
     protected $fillable = [
-        'cat_id',
+        'pet_id', // Updated from cat_id
         'owner_user_id',
         'foster_user_id',
         'transfer_request_id',
@@ -30,10 +30,12 @@ class FosterAssignment extends Model
         'canceled_at' => 'datetime',
     ];
 
-    public function cat(): BelongsTo
+    public function pet(): BelongsTo
     {
-        return $this->belongsTo(Cat::class);
+        return $this->belongsTo(Pet::class);
     }
+
+    // Legacy cat() relation removed after Pet-only migration.
 
     public function owner(): BelongsTo
     {

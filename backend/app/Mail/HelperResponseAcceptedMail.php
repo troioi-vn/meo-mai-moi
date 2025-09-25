@@ -19,14 +19,14 @@ class HelperResponseAcceptedMail extends NotificationMail
      */
     protected function getSubject(): string
     {
-        $catName = 'a cat';
-        if (isset($this->data['cat_id'])) {
-            $cat = \App\Models\Cat::find($this->data['cat_id']);
-            if ($cat) {
-                $catName = $cat->name;
+        $petName = 'a pet';
+        if (isset($this->data['pet_id'])) {
+            $pet = \App\Models\Pet::find($this->data['pet_id']);
+            if ($pet) {
+                $petName = $pet->name;
             }
         }
-        
-        return "Great news! Your response for {$catName} has been accepted";
+
+        return "Great news! Your response for {$petName} has been accepted";
     }
 }

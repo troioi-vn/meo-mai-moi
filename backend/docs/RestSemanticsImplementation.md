@@ -10,8 +10,8 @@ All update endpoints now use the correct HTTP verbs:
 
 - **User Profile Updates**: `PUT /api/users/me`
 - **Password Updates**: `PUT /api/users/me/password`
-- **Cat Updates**: `PUT /api/cats/{id}`
-- **Cat Status Updates**: `PUT /api/cats/{id}/status`
+- **Pet Updates**: `PUT /api/pets/{id}`
+- **Pet Status Updates**: `PUT /api/pets/{id}/status`
 - **Notification Preferences**: `PUT /api/notification-preferences`
 - **Individual Notification Read**: `PATCH /api/notifications/{id}/read`
 - **Helper Profile Updates**: `PUT /api/helper-profiles/{id}` (via apiResource)
@@ -25,9 +25,9 @@ All routes properly use `Route::put()` and `Route::patch()`:
 Route::put('/users/me', [UserProfileController::class, 'update']);
 Route::put('/users/me/password', [UserProfileController::class, 'updatePassword']);
 
-// Cat routes
-Route::put('/cats/{cat}', [CatController::class, 'update']);
-Route::put('/cats/{cat}/status', [CatController::class, 'updateStatus']);
+// Pet routes
+Route::put('/pets/{pet}', [PetController::class, 'update']);
+Route::put('/pets/{pet}/status', [PetController::class, 'updateStatus']);
 
 // Notification routes
 Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
@@ -90,8 +90,8 @@ All endpoints properly documented with correct HTTP verbs:
 |-----------|----------|------|--------|
 | User profile update | `/api/users/me` | PUT | ✅ |
 | Password update | `/api/users/me/password` | PUT | ✅ |
-| Cat update | `/api/cats/{id}` | PUT | ✅ |
-| Cat status update | `/api/cats/{id}/status` | PUT | ✅ |
+| Pet update | `/api/pets/{id}` | PUT | ✅ |
+| Pet status update | `/api/pets/{id}/status` | PUT | ✅ |
 | Notification preferences | `/api/notification-preferences` | PUT | ✅ |
 | Mark notification read | `/api/notifications/{id}/read` | PATCH | ✅ |
 | Helper profile update | `/api/helper-profiles/{id}` | PUT/PATCH | ✅ |

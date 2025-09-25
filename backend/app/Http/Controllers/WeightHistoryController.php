@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cat;
+use App\Models\Pet;
 use App\Models\WeightHistory;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
@@ -15,7 +15,7 @@ use OpenApi\Annotations as OA;
  *     title="WeightHistory",
  *     description="Weight History model",
  *     @OA\Property(property="id", type="integer", format="int64", description="Weight History ID"),
- *     @OA\Property(property="cat_id", type="integer", format="int64", description="ID of the associated cat"),
+ *     @OA\Property(property="pet_id", type="integer", format="int64", description="ID of the associated pet"),
  *     @OA\Property(property="weight_kg", type="number", format="float", description="Recorded weight in kilograms"),
  *     @OA\Property(property="record_date", type="string", format="date", description="Date the weight was recorded"),
  *     @OA\Property(property="created_at", type="string", format="date-time", description="Timestamp of weight record creation"),
@@ -28,15 +28,15 @@ class WeightHistoryController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/cats/{cat_id}/weight-history",
-     *     summary="Add a new weight record for a cat",
-     *     tags={"Cats"},
+    *     path="/api/pets/{pet_id}/weight-history",
+    *     summary="Add a new weight record for a pet",
+    *     tags={"Pets"},
      *     security={{"sanctum": {}}},
      *     @OA\Parameter(
-     *         name="cat_id",
+    *         name="pet_id",
      *         in="path",
      *         required=true,
-     *         description="ID of the cat to add a weight record for",
+    *         description="ID of the pet to add a weight record for",
      *         @OA\Schema(type="integer")
      *     ),
      *     @OA\RequestBody(
@@ -68,21 +68,21 @@ class WeightHistoryController extends Controller
      *     ),
      *     @OA\Response(
      *         response=403,
-     *         description="Forbidden: You are not authorized to add weight records for this cat."
+     *         description="Forbidden: You are not authorized to add weight records for this pet."
      *     )
      * )
      */
-    public function store(Request $request, Cat $cat)
+    public function store(Request $request, Pet $pet)
     {
-        // Only the cat's owner or an admin can add weight records
+        // Only the pet's owner or an admin can add weight records
         $user = $request->user();
         if (! $user) {
             return $this->sendError('Unauthenticated.', 401);
         }
-        $isOwner = $user->id === $cat->user_id;
+        $isOwner = $user->id === $pet->user_id;
         $isAdmin = method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
         if (! $isOwner && ! $isAdmin) {
-            return $this->sendError('You are not authorized to add weight records for this cat.', 403);
+            return $this->sendError('You are not authorized to add weight records for this pet.', 403);
         }
 
         $validatedData = $request->validate([
@@ -90,7 +90,7 @@ class WeightHistoryController extends Controller
             'record_date' => 'required|date',
         ]);
 
-        $weightHistory = $cat->weightHistories()->create($validatedData);
+        $weightHistory = $pet->weightHistories()->create($validatedData);
 
         return $this->sendSuccess($weightHistory, 201);
     }

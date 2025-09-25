@@ -6,7 +6,7 @@ use Tests\TestCase;
 use App\Jobs\SendNotificationEmail;
 use App\Models\User;
 use App\Models\Notification;
-use App\Models\Cat;
+use App\Models\Pet;
 use App\Models\HelperProfile;
 use App\Enums\NotificationType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,7 +18,7 @@ class EmailNotificationJobIntegrationTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
-    protected Cat $cat;
+    protected Pet $pet;
     protected HelperProfile $helperProfile;
 
     protected function setUp(): void
@@ -29,8 +29,9 @@ class EmailNotificationJobIntegrationTest extends TestCase
             'email' => 'test@example.com',
         ]);
         
-        $this->cat = Cat::factory()->create([
+        $this->pet = Pet::factory()->create([
             'user_id' => $this->user->id,
+            'status' => \App\Enums\PetStatus::ACTIVE,
         ]);
 
         // Mock EmailConfigurationService to return true for isEmailEnabled
@@ -57,7 +58,7 @@ class EmailNotificationJobIntegrationTest extends TestCase
         SendNotificationEmail::dispatch(
             $this->user,
             NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
-            ['cat_id' => $this->cat->id],
+            ['pet_id' => $this->pet->id],
             $notification->id
         );
         
@@ -84,7 +85,7 @@ class EmailNotificationJobIntegrationTest extends TestCase
         $job = new SendNotificationEmail(
             $this->user,
             NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
-            ['cat_id' => $this->cat->id],
+            ['pet_id' => $this->pet->id],
             $notification->id
         );
         
@@ -110,7 +111,7 @@ class EmailNotificationJobIntegrationTest extends TestCase
         $job = new SendNotificationEmail(
             $this->user,
             NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
-            ['cat_id' => $this->cat->id],
+            ['pet_id' => $this->pet->id],
             $notification->id
         );
         
@@ -163,7 +164,7 @@ class EmailNotificationJobIntegrationTest extends TestCase
                 $this->user,
                 $type->value,
                 [
-                    'cat_id' => $this->cat->id,
+                    'pet_id' => $this->pet->id,
                     'helper_profile_id' => $this->helperProfile->id,
                 ],
                 $notification->id
@@ -193,7 +194,7 @@ class EmailNotificationJobIntegrationTest extends TestCase
         $job1 = new SendNotificationEmail(
             $this->user,
             NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
-            ['cat_id' => $this->cat->id],
+            ['pet_id' => $this->pet->id],
             $notification->id
         );
         
@@ -203,7 +204,7 @@ class EmailNotificationJobIntegrationTest extends TestCase
         $job2 = new SendNotificationEmail(
             $this->user,
             NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
-            ['cat_id' => $this->cat->id],
+            ['pet_id' => $this->pet->id],
             $notification->id
         );
         

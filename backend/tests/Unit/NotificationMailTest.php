@@ -8,7 +8,7 @@ use App\Mail\PlacementRequestAcceptedMail;
 use App\Mail\HelperResponseAcceptedMail;
 use App\Mail\HelperResponseRejectedMail;
 use App\Models\User;
-use App\Models\Cat;
+use App\Models\Pet;
 use App\Models\HelperProfile;
 use App\Enums\NotificationType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,7 +18,7 @@ class NotificationMailTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
-    protected Cat $cat;
+    protected Pet $pet;
     protected HelperProfile $helperProfile;
 
     protected function setUp(): void
@@ -26,7 +26,7 @@ class NotificationMailTest extends TestCase
         parent::setUp();
         
         $this->user = User::factory()->create();
-        $this->cat = Cat::factory()->create();
+    $this->pet = Pet::factory()->create();
         $this->helperProfile = HelperProfile::factory()->create();
     }
 
@@ -35,11 +35,11 @@ class NotificationMailTest extends TestCase
         $mail = new PlacementRequestResponseMail(
             $this->user,
             NotificationType::PLACEMENT_REQUEST_RESPONSE,
-            ['cat_id' => $this->cat->id]
+            ['pet_id' => $this->pet->id]
         );
 
         $this->assertStringContainsString('New response to your placement request', $mail->envelope()->subject);
-        $this->assertStringContainsString($this->cat->name, $mail->envelope()->subject);
+        $this->assertStringContainsString($this->pet->name, $mail->envelope()->subject);
         $this->assertEquals('emails.notifications.placement-request-response', $mail->content()->view);
     }
 
@@ -48,11 +48,11 @@ class NotificationMailTest extends TestCase
         $mail = new PlacementRequestAcceptedMail(
             $this->user,
             NotificationType::PLACEMENT_REQUEST_ACCEPTED,
-            ['cat_id' => $this->cat->id]
+            ['pet_id' => $this->pet->id]
         );
 
         $this->assertStringContainsString('accepted', $mail->envelope()->subject);
-        $this->assertStringContainsString($this->cat->name, $mail->envelope()->subject);
+        $this->assertStringContainsString($this->pet->name, $mail->envelope()->subject);
         $this->assertEquals('emails.notifications.placement-request-accepted', $mail->content()->view);
     }
 
@@ -61,11 +61,11 @@ class NotificationMailTest extends TestCase
         $mail = new HelperResponseAcceptedMail(
             $this->user,
             NotificationType::HELPER_RESPONSE_ACCEPTED,
-            ['cat_id' => $this->cat->id]
+            ['pet_id' => $this->pet->id]
         );
 
         $this->assertStringContainsString('accepted', $mail->envelope()->subject);
-        $this->assertStringContainsString($this->cat->name, $mail->envelope()->subject);
+        $this->assertStringContainsString($this->pet->name, $mail->envelope()->subject);
         $this->assertEquals('emails.notifications.helper-response-accepted', $mail->content()->view);
     }
 
@@ -74,11 +74,11 @@ class NotificationMailTest extends TestCase
         $mail = new HelperResponseRejectedMail(
             $this->user,
             NotificationType::HELPER_RESPONSE_REJECTED,
-            ['cat_id' => $this->cat->id]
+            ['pet_id' => $this->pet->id]
         );
 
         $this->assertStringContainsString('Update on your response', $mail->envelope()->subject);
-        $this->assertStringContainsString($this->cat->name, $mail->envelope()->subject);
+        $this->assertStringContainsString($this->pet->name, $mail->envelope()->subject);
         $this->assertEquals('emails.notifications.helper-response-rejected', $mail->content()->view);
     }
 
@@ -88,7 +88,7 @@ class NotificationMailTest extends TestCase
             $this->user,
             NotificationType::PLACEMENT_REQUEST_RESPONSE,
             [
-                'cat_id' => $this->cat->id,
+                'pet_id' => $this->pet->id,
                 'helper_profile_id' => $this->helperProfile->id,
             ]
         );
@@ -96,7 +96,7 @@ class NotificationMailTest extends TestCase
         $templateData = $mail->content()->with;
 
         $this->assertArrayHasKey('user', $templateData);
-        $this->assertArrayHasKey('cat', $templateData);
+        $this->assertArrayHasKey('pet', $templateData);
         $this->assertArrayHasKey('helperProfile', $templateData);
         $this->assertArrayHasKey('actionUrl', $templateData);
         $this->assertArrayHasKey('unsubscribeUrl', $templateData);
@@ -104,7 +104,7 @@ class NotificationMailTest extends TestCase
         $this->assertArrayHasKey('appUrl', $templateData);
 
         $this->assertEquals($this->user->id, $templateData['user']->id);
-        $this->assertEquals($this->cat->id, $templateData['cat']->id);
+        $this->assertEquals($this->pet->id, $templateData['pet']->id);
         $this->assertEquals($this->helperProfile->id, $templateData['helperProfile']->id);
     }
 
@@ -113,11 +113,11 @@ class NotificationMailTest extends TestCase
         $mail = new PlacementRequestResponseMail(
             $this->user,
             NotificationType::PLACEMENT_REQUEST_RESPONSE,
-            ['cat_id' => 99999] // Non-existent cat ID
+            ['pet_id' => 99999] // Non-existent pet ID
         );
 
         $subject = $mail->envelope()->subject;
-        $this->assertStringContainsString('your cat', $subject);
+        $this->assertStringContainsString('your pet', $subject);
     }
 
     public function test_unsubscribe_url_contains_required_parameters()

@@ -3,7 +3,7 @@
 namespace App\Mail;
 
 use App\Models\User;
-use App\Models\Cat;
+use App\Models\Pet;
 use App\Models\HelperProfile;
 use App\Models\PlacementRequest;
 use App\Enums\NotificationType;
@@ -86,8 +86,8 @@ abstract class NotificationMail extends Mailable
         ];
 
         // Add specific data based on notification type
-        if (isset($this->data['cat_id'])) {
-            $templateData['cat'] = Cat::find($this->data['cat_id']);
+        if (isset($this->data['pet_id'])) {
+            $templateData['pet'] = Pet::find($this->data['pet_id']);
         }
 
         if (isset($this->data['helper_profile_id'])) {

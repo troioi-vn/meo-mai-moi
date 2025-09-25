@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Cat;
+use App\Models\Pet;
 use App\Models\HelperProfile;
 use App\Models\PlacementRequest;
 use App\Models\TransferRequest;
@@ -18,9 +18,9 @@ class TransferAcceptanceLifecycleTest extends TestCase
     public function test_accept_permanent_foster_transfers_ownership_and_fulfills_request(): void
     {
         $owner = User::factory()->create();
-        $cat = Cat::factory()->create(['user_id' => $owner->id]);
+    $pet = Pet::factory()->create(['user_id' => $owner->id]);
         $placement = PlacementRequest::factory()->create([
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'user_id' => $owner->id,
             'is_active' => true,
             'status' => \App\Enums\PlacementRequestStatus::OPEN,
@@ -34,7 +34,7 @@ class TransferAcceptanceLifecycleTest extends TestCase
 
         // Two pending transfer requests for the same placement
         $accepted = TransferRequest::factory()->create([
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'initiator_user_id' => $helper->id,
             'recipient_user_id' => $owner->id,
             'placement_request_id' => $placement->id,
@@ -43,7 +43,7 @@ class TransferAcceptanceLifecycleTest extends TestCase
             'requested_relationship_type' => 'permanent_foster',
         ]);
         $otherPending = TransferRequest::factory()->create([
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'initiator_user_id' => $loserHelper->id,
             'recipient_user_id' => $owner->id,
             'placement_request_id' => $placement->id,
@@ -58,7 +58,7 @@ class TransferAcceptanceLifecycleTest extends TestCase
         $response->assertStatus(200);
 
         // After accept, a handover should be created; ownership not yet transferred
-        $this->assertEquals($owner->id, $cat->fresh()->user_id);
+    $this->assertEquals($owner->id, $pet->fresh()->user_id);
 
         $handover = \App\Models\TransferHandover::where('transfer_request_id', $accepted->id)->first();
         $this->assertNotNull($handover);
@@ -77,7 +77,7 @@ class TransferAcceptanceLifecycleTest extends TestCase
         $complete->assertStatus(200);
 
         // Ownership transferred to helper now
-        $this->assertEquals($helper->id, $cat->fresh()->user_id);
+    $this->assertEquals($helper->id, $pet->fresh()->user_id);
 
     // Placement fulfilled and inactive
     $this->assertFalse((bool) $placement->fresh()->is_active);
@@ -91,9 +91,9 @@ class TransferAcceptanceLifecycleTest extends TestCase
     public function test_accept_fostering_creates_assignment_and_keeps_owner(): void
     {
         $owner = User::factory()->create();
-        $cat = Cat::factory()->create(['user_id' => $owner->id]);
+    $pet = Pet::factory()->create(['user_id' => $owner->id]);
         $placement = PlacementRequest::factory()->create([
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'user_id' => $owner->id,
             'is_active' => true,
             'status' => \App\Enums\PlacementRequestStatus::OPEN,
@@ -103,7 +103,7 @@ class TransferAcceptanceLifecycleTest extends TestCase
         $helperProfile = HelperProfile::factory()->create(['user_id' => $helper->id]);
 
         $accepted = TransferRequest::factory()->create([
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'initiator_user_id' => $helper->id,
             'recipient_user_id' => $owner->id,
             'placement_request_id' => $placement->id,
@@ -117,7 +117,7 @@ class TransferAcceptanceLifecycleTest extends TestCase
         $response->assertStatus(200);
 
         // After accept, handover exists and owner remains
-        $this->assertEquals($owner->id, $cat->fresh()->user_id);
+    $this->assertEquals($owner->id, $pet->fresh()->user_id);
 
         $handover = \App\Models\TransferHandover::where('transfer_request_id', $accepted->id)->first();
         $this->assertNotNull($handover);
@@ -136,7 +136,7 @@ class TransferAcceptanceLifecycleTest extends TestCase
 
     // Foster assignment created on completion
     $this->assertDatabaseHas('foster_assignments', [
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'owner_user_id' => $owner->id,
             'foster_user_id' => $helper->id,
             'status' => 'active',

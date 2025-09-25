@@ -9,7 +9,7 @@ export default function ForgotPasswordPage() {
 
   useEffect(() => {
     if (auth && !auth.isLoading && auth.isAuthenticated) {
-      void navigate('/account/cats')
+      void navigate('/account/pets')
     }
   }, [auth, navigate])
 

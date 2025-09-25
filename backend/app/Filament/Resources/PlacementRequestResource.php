@@ -5,7 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PlacementRequestResource\Pages;
 use App\Filament\Resources\PlacementRequestResource\RelationManagers;
 use App\Models\PlacementRequest;
-use App\Models\Cat;
+use App\Models\Pet;
 use App\Models\User;
 use App\Enums\PlacementRequestStatus;
 use App\Enums\PlacementRequestType;
@@ -37,7 +37,7 @@ class PlacementRequestResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
 
-    protected static ?string $navigationGroup = 'Placements';
+    protected static ?string $navigationGroup = 'Pet Management';
 
     protected static ?int $navigationSort = 1;
 
@@ -51,7 +51,7 @@ class PlacementRequestResource extends Resource
 
     public static function getGlobalSearchResultTitle(\Illuminate\Database\Eloquent\Model $record): string
     {
-        return "Placement Request #{$record->id} - {$record->cat->name}";
+        return "Placement Request #{$record->id} - {$record->pet->name}";
     }
 
     public static function getGlobalSearchResultDetails(\Illuminate\Database\Eloquent\Model $record): array
@@ -77,20 +77,20 @@ class PlacementRequestResource extends Resource
 
     public static function getGloballySearchableAttributes(): array
     {
-        return ['cat.name', 'user.name', 'user.email', 'notes'];
+        return ['pet.name', 'user.name', 'user.email', 'notes'];
     }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Select::make('cat_id')
-                    ->label('Cat')
-                    ->relationship('cat', 'name')
+                Select::make('pet_id')
+                    ->label('Pet')
+                    ->relationship('pet', 'name')
                     ->searchable()
                     ->preload()
                     ->required()
-                    ->getOptionLabelFromRecordUsing(fn (Cat $record): string => "{$record->name} ({$record->breed})"),
+                    ->getOptionLabelFromRecordUsing(fn (Pet $record): string => "{$record->name} ({$record->breed}) - {$record->petType->name}"),
 
                 Select::make('user_id')
                     ->label('Owner')
@@ -144,18 +144,18 @@ class PlacementRequestResource extends Resource
     {
         return $table
             ->columns([
-                ImageColumn::make('cat.photo_url')
+                ImageColumn::make('pet.photo_url')
                     ->label('Photo')
                     ->circular()
                     ->size(50)
                     ->defaultImageUrl(url('/assets/default-avatar.webp')),
 
-                TextColumn::make('cat.name')
-                    ->label('Cat')
-                    ->searchable(['cats.name', 'cats.breed'])
+                TextColumn::make('pet.name')
+                    ->label('Pet')
+                    ->searchable(['pets.name', 'pets.breed'])
                     ->sortable()
-                    ->url(fn (PlacementRequest $record): string => route('filament.admin.resources.cats.edit', $record->cat))
-                    ->description(fn (PlacementRequest $record): string => $record->cat->breed ?? ''),
+                    ->url(fn (PlacementRequest $record): string => route('filament.admin.resources.pets.edit', $record->pet))
+                    ->description(fn (PlacementRequest $record): string => ($record->pet->breed ?? '') . ' (' . ($record->pet->petType->name ?? '') . ')'),
 
                 TextColumn::make('user.name')
                     ->label('Owner')
@@ -372,9 +372,9 @@ class PlacementRequestResource extends Resource
                     ->label('Expiring Soon (7 days)')
                     ->query(fn (Builder $query): Builder => $query->where('expires_at', '<=', now()->addDays(7))->where('expires_at', '>=', now())),
 
-                SelectFilter::make('cat')
-                    ->label('Cat')
-                    ->relationship('cat', 'name')
+                SelectFilter::make('pet')
+                    ->label('Pet')
+                    ->relationship('pet', 'name')
                     ->searchable()
                     ->preload()
                     ->multiple(),

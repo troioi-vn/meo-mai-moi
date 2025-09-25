@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\User;
-use App\Models\Cat;
+use App\Models\Pet;
 use App\Models\HelperProfile;
 use App\Models\PlacementRequest;
 use App\Models\TransferRequest;
@@ -55,15 +55,15 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         $owner = User::factory()->create(['email' => 'owner@test.com']);
         $helper = User::factory()->create(['email' => 'helper@test.com']);
         
-        // Create cat and placement request
-        $cat = Cat::factory()->create([
+        // Create pet and placement request
+        $pet = Pet::factory()->create([
             'user_id' => $owner->id,
-            'status' => \App\Enums\CatStatus::ACTIVE,
+            'status' => \App\Enums\PetStatus::ACTIVE,
             'name' => 'Fluffy'
         ]);
         
         $placementRequest = PlacementRequest::factory()->create([
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'user_id' => $owner->id,
             'is_active' => true,
             'status' => PlacementRequestStatus::OPEN->value
@@ -95,7 +95,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
 
         // Step 1: Helper responds to placement request
         $response = $this->actingAs($helper)->postJson('/api/transfer-requests', [
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $helperProfile->id,
             'requested_relationship_type' => 'fostering',
@@ -144,14 +144,14 @@ class EmailNotificationSystemIntegrationTest extends TestCase
 
         // Create another placement request
         $placementRequest2 = PlacementRequest::factory()->create([
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'user_id' => $owner->id,
             'is_active' => true,
             'status' => PlacementRequestStatus::OPEN->value
         ]);
 
         $transferRequest2 = TransferRequest::factory()->create([
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'placement_request_id' => $placementRequest2->id,
             'helper_profile_id' => $helperProfile2->id,
             'initiator_user_id' => $helper2->id,
@@ -188,7 +188,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         $emailJob = new SendNotificationEmail(
             $owner,
             NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
-            ['cat_id' => $cat->id, 'helper_profile_id' => $helperProfile->id],
+            ['pet_id' => $pet->id, 'helper_profile_id' => $helperProfile->id],
             $emailNotification->id
         );
 
@@ -339,7 +339,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         Mail::fake();
         
         $user = User::factory()->create(['email' => 'test@example.com']);
-        $cat = Cat::factory()->create(['name' => 'Fluffy']);
+    $pet = Pet::factory()->create(['name' => 'Fluffy']);
         $helperProfile = HelperProfile::factory()->create();
 
         $notification = Notification::factory()->create([
@@ -347,7 +347,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
             'type' => NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
             'data' => [
                 'channel' => 'email',
-                'cat_id' => $cat->id,
+                'pet_id' => $pet->id,
                 'helper_profile_id' => $helperProfile->id,
             ],
         ]);
@@ -356,7 +356,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
             $user,
             NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
             [
-                'cat_id' => $cat->id,
+                'pet_id' => $pet->id,
                 'helper_profile_id' => $helperProfile->id,
             ],
             $notification->id
@@ -365,7 +365,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         $job->handle();
 
         // Verify email was sent with correct template
-        Mail::assertSent(\App\Mail\PlacementRequestResponseMail::class, function ($mail) use ($user, $cat) {
+        Mail::assertSent(\App\Mail\PlacementRequestResponseMail::class, function ($mail) use ($user, $pet) {
             $this->assertTrue($mail->hasTo($user->email));
             
             // Check that template data includes required fields
@@ -373,12 +373,12 @@ class EmailNotificationSystemIntegrationTest extends TestCase
             $templateData = $content->with;
             
             $this->assertArrayHasKey('user', $templateData);
-            $this->assertArrayHasKey('cat', $templateData);
+            $this->assertArrayHasKey('pet', $templateData);
             $this->assertArrayHasKey('actionUrl', $templateData);
             $this->assertArrayHasKey('unsubscribeUrl', $templateData);
             
             $this->assertEquals($user->id, $templateData['user']->id);
-            $this->assertEquals($cat->id, $templateData['cat']->id);
+            $this->assertEquals($pet->id, $templateData['pet']->id);
             
             return true;
         });

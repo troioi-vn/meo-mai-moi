@@ -6,7 +6,7 @@ import { vi } from 'vitest'
 import type { Mock } from 'vitest'
 import userEvent from '@testing-library/user-event'
 import type { UseMutationResult } from '@tanstack/react-query'
-import type { PlacementRequest } from '@/types/cat'
+import type { PlacementRequest } from '@/types/pet'
 import { AxiosError } from 'axios'
 import { format } from 'date-fns'
 
@@ -18,7 +18,7 @@ describe('PlacementRequestModal', () => {
   const mockOnClose = vi.fn()
 
   beforeEach(() => {
-    ;(
+    (
       useCreatePlacementRequest as unknown as Mock<
         () => Partial<UseMutationResult<PlacementRequest, AxiosError, PlacementRequestPayload>>
       >
@@ -37,20 +37,20 @@ describe('PlacementRequestModal', () => {
   })
 
   it('renders correctly when open', () => {
-    render(<PlacementRequestModal catId={1} isOpen={true} onClose={mockOnClose} />)
+    render(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
     expect(screen.getByText('Create Placement Request')).toBeInTheDocument()
     const submit = screen.getByRole('button', { name: /create request/i })
     expect(submit).toBeDisabled()
   })
 
   it('does not render when closed', () => {
-    render(<PlacementRequestModal catId={1} isOpen={false} onClose={mockOnClose} />)
+    render(<PlacementRequestModal petId={1} isOpen={false} onClose={mockOnClose} />)
     expect(screen.queryByText('Create Placement Request')).not.toBeInTheDocument()
   })
 
   it('calls onClose when the cancel button is clicked', async () => {
     const user = userEvent.setup()
-    render(<PlacementRequestModal catId={1} isOpen={true} onClose={mockOnClose} />)
+    render(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
     expect(await screen.findByText('Create Placement Request')).toBeInTheDocument()
     const cancelButton = await screen.findByRole('button', { name: /cancel/i })
     await user.click(cancelButton)
@@ -61,7 +61,7 @@ describe('PlacementRequestModal', () => {
 
   it('submits the form with the correct data for a permanent request', async () => {
     const user = userEvent.setup()
-    render(<PlacementRequestModal catId={1} isOpen={true} onClose={mockOnClose} />)
+    render(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
     expect(await screen.findByText('Create Placement Request')).toBeInTheDocument()
 
     // Open and select request type
@@ -96,7 +96,7 @@ describe('PlacementRequestModal', () => {
       expect(mockMutate).toHaveBeenCalled()
       expect(mockMutate.mock.calls.at(-1)?.[0]).toEqual(
         expect.objectContaining({
-          cat_id: 1,
+          pet_id: 1,
           request_type: 'permanent',
           notes: 'Test notes',
           start_date: format(today, 'yyyy-MM-dd'),
@@ -126,7 +126,7 @@ describe('PlacementRequestModal', () => {
 
     render(
       <PlacementRequestModal
-        catId={1}
+        petId={1}
         isOpen={true}
         onClose={mockOnClose}
         initialValues={{
@@ -148,7 +148,7 @@ describe('PlacementRequestModal', () => {
       expect(mockMutate).toHaveBeenCalled()
       expect(mockMutate.mock.calls.at(-1)?.[0]).toEqual(
         expect.objectContaining({
-          cat_id: 1,
+          pet_id: 1,
           request_type: 'foster_free',
           start_date: format(today, 'yyyy-MM-dd'),
           end_date: format(futureDate, 'yyyy-MM-dd'),

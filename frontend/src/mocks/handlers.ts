@@ -1,5 +1,6 @@
 import { http, HttpResponse } from 'msw'
-import { catHandlers, mockCat } from './data/cats'
+
+import { petHandlers, mockPet } from './data/pets'
 import { mockUser } from './data/user'
 import { helperProfileHandlers } from './data/helper-profiles'
 import type { AppNotification } from '@/types/notification'
@@ -168,10 +169,18 @@ const userHandlers = [
 ]
 
 const photoHandlers = [
+  // Legacy cat photo handlers
   http.post('http://localhost:3000/api/cats/:catId/photos', () => {
-    return HttpResponse.json(mockCat, { status: 200 })
+    return HttpResponse.json(mockPet, { status: 200 })
   }),
   http.delete('http://localhost:3000/api/cats/:catId/photos', () => {
+    return new HttpResponse(null, { status: 204 })
+  }),
+  // New pet photo handlers
+  http.post('http://localhost:3000/api/pets/:petId/photos', () => {
+    return HttpResponse.json({ data: mockPet }, { status: 200 })
+  }),
+  http.delete('http://localhost:3000/api/pets/:petId/photos/:photoId', () => {
     return new HttpResponse(null, { status: 204 })
   }),
 ]
@@ -252,7 +261,7 @@ const placementRequestHandlers = [
 ]
 
 export const handlers = [
-  ...catHandlers,
+  ...petHandlers,
   ...userHandlers,
   ...photoHandlers,
   ...messageHandlers,

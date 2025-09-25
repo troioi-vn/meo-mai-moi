@@ -1,6 +1,6 @@
 import React from 'react'
 import type { HelperProfile } from '@/types/helper-profile'
-import type { TransferRequest } from '@/types/cat'
+import type { TransferRequest } from '@/types/pet'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,

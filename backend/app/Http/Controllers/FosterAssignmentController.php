@@ -62,17 +62,17 @@ class FosterAssignmentController extends Controller
 
         // Notify both parties
         try {
-            $cat = $assignment->cat;
-            if ($cat) {
+            $pet = $assignment->pet;
+            if ($pet) {
                 // Notify owner
                 $this->notificationService->send(
                     $assignment->ownerUser,
                     NotificationType::FOSTER_ASSIGNMENT_COMPLETED->value,
                     [
-                        'message' => 'Foster assignment for ' . $cat->name . ' has been completed.',
-                        'link' => '/cats/' . $cat->id,
-                        'cat_name' => $cat->name,
-                        'cat_id' => $cat->id,
+                        'message' => 'Foster assignment for ' . $pet->name . ' has been completed.',
+                        'link' => '/pets/' . $pet->id,
+                        'pet_name' => $pet->name,
+                        'pet_id' => $pet->id,
                     ]
                 );
 
@@ -81,10 +81,10 @@ class FosterAssignmentController extends Controller
                     $assignment->fosterUser,
                     NotificationType::FOSTER_ASSIGNMENT_COMPLETED->value,
                     [
-                        'message' => 'Your foster assignment for ' . $cat->name . ' has been completed.',
-                        'link' => '/cats/' . $cat->id,
-                        'cat_name' => $cat->name,
-                        'cat_id' => $cat->id,
+                        'message' => 'Your foster assignment for ' . $pet->name . ' has been completed.',
+                        'link' => '/pets/' . $pet->id,
+                        'pet_name' => $pet->name,
+                        'pet_id' => $pet->id,
                     ]
                 );
             }
@@ -148,17 +148,17 @@ class FosterAssignmentController extends Controller
 
         // Notify both parties
         try {
-            $cat = $assignment->cat;
-            if ($cat) {
+            $pet = $assignment->pet;
+            if ($pet) {
                 // Notify owner
                 $this->notificationService->send(
                     $assignment->ownerUser,
                     NotificationType::FOSTER_ASSIGNMENT_CANCELED->value,
                     [
-                        'message' => 'Foster assignment for ' . $cat->name . ' has been canceled.',
-                        'link' => '/cats/' . $cat->id,
-                        'cat_name' => $cat->name,
-                        'cat_id' => $cat->id,
+                        'message' => 'Foster assignment for ' . $pet->name . ' has been canceled.',
+                        'link' => '/pets/' . $pet->id,
+                        'pet_name' => $pet->name,
+                        'pet_id' => $pet->id,
                     ]
                 );
 
@@ -167,10 +167,10 @@ class FosterAssignmentController extends Controller
                     $assignment->fosterUser,
                     NotificationType::FOSTER_ASSIGNMENT_CANCELED->value,
                     [
-                        'message' => 'Your foster assignment for ' . $cat->name . ' has been canceled.',
-                        'link' => '/cats/' . $cat->id,
-                        'cat_name' => $cat->name,
-                        'cat_id' => $cat->id,
+                        'message' => 'Your foster assignment for ' . $pet->name . ' has been canceled.',
+                        'link' => '/pets/' . $pet->id,
+                        'pet_name' => $pet->name,
+                        'pet_id' => $pet->id,
                     ]
                 );
             }

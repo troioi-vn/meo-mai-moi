@@ -13,7 +13,7 @@ class WeightHistory extends Model
     use HasFactory;
 
     protected $fillable = [
-        'cat_id',
+        'pet_id',
         'weight_kg',
         'record_date',
     ];
@@ -22,8 +22,8 @@ class WeightHistory extends Model
         'record_date' => 'date',
     ];
 
-    public function cat(): BelongsTo
+    public function pet(): BelongsTo
     {
-        return $this->belongsTo(Cat::class);
+        return $this->belongsTo(Pet::class);
     }
 }

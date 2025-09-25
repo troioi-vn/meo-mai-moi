@@ -84,7 +84,14 @@ class HelperProfileResource extends Resource
                             ->label('Has Pets'),
                         Forms\Components\Checkbox::make('has_children')
                             ->label('Has Children'),
-
+                        Forms\Components\CheckboxList::make('pet_type_ids')
+                            ->label('Pet Types for Placement Requests')
+                            ->relationship('petTypes', 'name')
+                            ->options(function () {
+                                return \App\Models\PetType::where('placement_requests_allowed', true)
+                                    ->pluck('name', 'id');
+                            })
+                            ->columnSpanFull(),
                     ])
                     ->columns(2),
 
@@ -206,6 +213,7 @@ class HelperProfileResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
                 
                 Tables\Actions\Action::make('approve')
                     ->label('Approve')

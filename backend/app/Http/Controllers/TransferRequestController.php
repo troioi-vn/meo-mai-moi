@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cat;
+use App\Models\Pet;
 use App\Models\TransferRequest;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
@@ -27,10 +27,10 @@ use App\Enums\NotificationType;
  *         description="Transfer Request ID"
  *     ),
  *     @OA\Property(
- *         property="cat_id",
+ *         property="pet_id",
  *         type="integer",
  *         format="int64",
- *         description="ID of the cat being transferred"
+ *         description="ID of the pet being transferred"
  *     ),
  *     @OA\Property(
  *         property="initiator_user_id",
@@ -112,14 +112,14 @@ class TransferRequestController extends Controller
     /**
      * @OA\Post(
      *     path="/api/transfer-requests",
-     *     summary="Initiate a transfer request for a cat (by a helper)",
+    *     summary="Initiate a transfer request for a pet (by a helper)",
      *     tags={"Transfer Requests"},
      *     security={{"sanctum": {}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"cat_id", "requested_relationship_type"},
-     *             @OA\Property(property="cat_id", type="integer", example=1),
+    *             required={"pet_id", "requested_relationship_type"},
+    *             @OA\Property(property="pet_id", type="integer", example=1),
      *             @OA\Property(property="requested_relationship_type", type="string", enum={"fostering", "permanent_foster"}, example="fostering"),
      *             @OA\Property(property="fostering_type", type="string", enum={"free", "paid"}, nullable=true, example="free"),
      *             @OA\Property(property="price", type="number", format="float", nullable=true, example=50.00)
@@ -135,7 +135,7 @@ class TransferRequestController extends Controller
      *         description="Validation error",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Validation Error"),
-     *             @OA\Property(property="errors", type="object", example={"cat_id": {"The cat id field is required."}})
+    *             @OA\Property(property="errors", type="object", example={"pet_id": {"The pet id field is required."}})
      *         )
      *     ),
      *     @OA\Response(
@@ -144,11 +144,11 @@ class TransferRequestController extends Controller
      *     ),
      *     @OA\Response(
      *         response=403,
-     *         description="Forbidden: Only helpers can initiate transfer requests or cat is not available."
+    *         description="Forbidden: Only helpers can initiate transfer requests or pet is not available."
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Cat not found"
+    *         description="Pet not found"
      *     )
      * )
      */
@@ -158,26 +158,25 @@ class TransferRequestController extends Controller
         $user = $request->user();
 
         $validatedData = $request->validate([
-            'cat_id' => 'required|exists:cats,id',
+            'pet_id' => 'required|exists:pets,id',
             'placement_request_id' => 'required|exists:placement_requests,id',
             'helper_profile_id' => 'required|exists:helper_profiles,id',
             'requested_relationship_type' => 'required|in:fostering,permanent_foster',
             'fostering_type' => 'nullable|in:free,paid|required_if:requested_relationship_type,fostering',
             'price' => 'nullable|numeric|min:0|required_if:fostering_type,paid',
         ]);
+        $pet = Pet::find($validatedData['pet_id']);
 
-        $cat = Cat::find($validatedData['cat_id']);
-
-        if (!$cat) {
-            return $this->sendError('Cat not found.', 404);
+        if (!$pet) {
+            return $this->sendError('Pet not found.', 404);
         }
 
-        if ($cat->user_id === $user->id) {
-            return $this->sendError('You cannot create a transfer request for your own cat.', 403);
+        if ($pet->user_id === $user->id) {
+            return $this->sendError('You cannot create a transfer request for your own pet.', 403);
         }
 
-        if ($cat->status !== \App\Enums\CatStatus::ACTIVE) {
-            return $this->sendError('Cat is not available for transfer.', 403);
+        if ($pet->status !== \App\Enums\PetStatus::ACTIVE) {
+            return $this->sendError('Pet is not available for transfer.', 403);
         }
 
         // Prevent duplicate pending responses from the same user for the same placement request
@@ -190,25 +189,26 @@ class TransferRequestController extends Controller
             return $this->sendError('You have already responded to this placement request and it is pending.', 409);
         }
 
-                $transferRequest = TransferRequest::create(array_merge($validatedData, [
+        $transferRequest = TransferRequest::create(array_merge($validatedData, [
+            'pet_id' => $pet->id,
             'initiator_user_id' => $user->id,
-            'recipient_user_id' => $cat->user_id, // Cat owner is the recipient
+            'recipient_user_id' => $pet->user_id, // Pet owner is the recipient
             'requester_id' => $user->id, // User making the request
             'status' => 'pending',
         ]));
 
-        // Send notification to cat owner using NotificationService
-        $catOwner = \App\Models\User::find($cat->user_id);
-        if ($catOwner) {
+        // Send notification to pet owner using NotificationService
+        $petOwner = \App\Models\User::find($pet->user_id);
+        if ($petOwner) {
             $this->notificationService->send(
-                $catOwner,
+                $petOwner,
                 NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
                 [
-                    'message' => $user->name . ' responded to your placement request for ' . $cat->name,
-                    'link' => '/cats/' . $cat->id,
+                    'message' => $user->name . ' responded to your placement request for ' . $pet->name,
+                    'link' => '/pets/' . $pet->id,
                     'helper_name' => $user->name,
-                    'cat_name' => $cat->name,
-                    'cat_id' => $cat->id,
+                    'pet_name' => $pet->name,
+                    'pet_id' => $pet->id,
                     'transfer_request_id' => $transferRequest->id,
                 ]
             );
@@ -220,7 +220,7 @@ class TransferRequestController extends Controller
     /**
      * @OA\Post(
      *     path="/api/transfer-requests/{id}/accept",
-     *     summary="Accept a transfer request",
+    *     summary="Accept a transfer request for a pet",
      *     tags={"Transfer Requests"},
      *     security={{"sanctum": {}}},
      *     @OA\Parameter(
@@ -247,7 +247,7 @@ class TransferRequestController extends Controller
      *     ),
      *     @OA\Response(
      *         response=403,
-     *         description="Forbidden: You are not the recipient of this request or the request is not pending."
+    *         description="Forbidden: You are not the recipient of this request or the request is not pending."
      *     )
      * )
      */
@@ -294,16 +294,16 @@ class TransferRequestController extends Controller
                     // Notify rejected helper
                     try {
                         $rejectedHelper = \App\Models\User::find($rejectedRequest->initiator_user_id);
-                        $cat = $rejectedRequest->cat ?: Cat::find($rejectedRequest->cat_id);
-                        if ($rejectedHelper && $cat) {
+                        $pet = $rejectedRequest->pet ?: Pet::find($rejectedRequest->pet_id);
+                        if ($rejectedHelper && $pet) {
                             $this->notificationService->send(
                                 $rejectedHelper,
                                 NotificationType::HELPER_RESPONSE_REJECTED->value,
                                 [
-                                    'message' => 'Your request for ' . $cat->name . ' was not selected. The owner chose another helper.',
-                                    'link' => '/cats/' . $cat->id,
-                                    'cat_name' => $cat->name,
-                                    'cat_id' => $cat->id,
+                                    'message' => 'Your request for ' . $pet->name . ' was not selected. The owner chose another helper.',
+                                    'link' => '/pets/' . $pet->id,
+                                    'pet_name' => $pet->name,
+                                    'pet_id' => $pet->id,
                                     'transfer_request_id' => $rejectedRequest->id,
                                 ]
                             );
@@ -328,18 +328,18 @@ class TransferRequestController extends Controller
 
         // Notify helper (initiator) on acceptance using NotificationService
         try {
-            $cat = $transferRequest->cat ?: Cat::find($transferRequest->cat_id);
-            if ($cat) {
+            $pet = $transferRequest->pet ?: Pet::find($transferRequest->pet_id);
+            if ($pet) {
                 $helper = \App\Models\User::find($transferRequest->initiator_user_id);
                 if ($helper) {
                     $this->notificationService->send(
                         $helper,
                         NotificationType::HELPER_RESPONSE_ACCEPTED->value,
                         [
-                            'message' => 'Your request for ' . $cat->name . ' was accepted. Schedule a handover.',
-                            'link' => '/cats/' . $cat->id,
-                            'cat_name' => $cat->name,
-                            'cat_id' => $cat->id,
+                            'message' => 'Your request for ' . $pet->name . ' was accepted. Schedule a handover.',
+                            'link' => '/pets/' . $pet->id,
+                            'pet_name' => $pet->name,
+                            'pet_id' => $pet->id,
                             'transfer_request_id' => $transferRequest->id,
                         ]
                     );
@@ -355,7 +355,7 @@ class TransferRequestController extends Controller
     /**
      * @OA\Post(
      *     path="/api/transfer-requests/{id}/reject",
-     *     summary="Reject a transfer request",
+    *     summary="Reject a transfer request for a pet",
      *     tags={"Transfer Requests"},
      *     security={{"sanctum": {}}},
      *     @OA\Parameter(
@@ -380,7 +380,7 @@ class TransferRequestController extends Controller
      *     ),
      *     @OA\Response(
      *         response=403,
-     *         description="Forbidden: You are not the recipient of this request or the request is not pending."
+    *         description="Forbidden: You are not the recipient of this request or the request is not pending."
      *     )
      * )
      */
@@ -399,18 +399,18 @@ class TransferRequestController extends Controller
 
         // Notify helper (initiator) on rejection using NotificationService
         try {
-            $cat = $transferRequest->cat ?: Cat::find($transferRequest->cat_id);
-            if ($cat) {
+            $pet = $transferRequest->pet ?: Pet::find($transferRequest->pet_id);
+            if ($pet) {
                 $helper = \App\Models\User::find($transferRequest->initiator_user_id);
                 if ($helper) {
                     $this->notificationService->send(
                         $helper,
                         NotificationType::HELPER_RESPONSE_REJECTED->value,
                         [
-                            'message' => 'Your request for ' . $cat->name . ' was rejected by the owner.',
-                            'link' => '/cats/' . $cat->id,
-                            'cat_name' => $cat->name,
-                            'cat_id' => $cat->id,
+                            'message' => 'Your request for ' . $pet->name . ' was rejected by the owner.',
+                            'link' => '/pets/' . $pet->id,
+                            'pet_name' => $pet->name,
+                            'pet_id' => $pet->id,
                             'transfer_request_id' => $transferRequest->id,
                         ]
                     );
@@ -426,7 +426,7 @@ class TransferRequestController extends Controller
     /**
      * @OA\Get(
      *     path="/api/transfer-requests/{id}/responder-profile",
-     *     summary="Get the responder's helper profile for a given transfer request",
+    *     summary="Get the responder's helper profile for a given pet transfer request",
      *     tags={"Transfer Requests"},
      *     security={{"sanctum": {}}},
      *     @OA\Parameter(

@@ -156,7 +156,12 @@ return [
              * @note This option overwrites `paths.excludes`
              * @see \OpenApi\scan
              */
-            'exclude' => [],
+            'exclude' => [
+                // Exclude legacy Cat controllers from documentation scan
+                base_path('app/Http/Controllers/CatController.php'),
+                base_path('app/Http/Controllers/CatPhotoController.php'),
+                base_path('app/Http/Controllers/WeightHistoryController.php'),
+            ],
 
             /*
              * Allows to generate specs either for OpenAPI 3.0.0 or OpenAPI 3.1.0.

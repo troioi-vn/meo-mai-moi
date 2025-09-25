@@ -4,13 +4,13 @@ This is the AI-agent-oriented guide: architecture, conventions, workflows, and s
 
 ## 1. Project Summary
 
-**Meo Mai Moi** is an open-source web application designed to help communities build cat rehoming networks. It connects cat owners with fosters and adopters, supporting a community-driven approach to cat welfare.
+**Meo Mai Moi** is an open-source web application designed to help communities build pet rehoming networks. It connects pet owners with fosters and adopters, supporting a community-driven approach to pet welfare with support for multiple pet types (cats, dogs, and more).
 
 ## 2. Application Structure (User POV)
 
--   **Public Area:** Homepage, Available Cats, Cat Profiles, Available Helpers, Helper Profiles, Login/Registration.
--   **User Dashboard:** Account management, manage personal cat listings, manage helper profile, notifications.
--   **Admin Dashboard:** Manage all cats, users, applications, and transfers.
+-   **Public Area:** Homepage, Available Pets, Pet Profiles, Available Helpers, Helper Profiles, Login/Registration.
+-   **User Dashboard:** Account management, manage personal pet listings, manage helper profile, notifications.
+-   **Admin Dashboard:** Manage all pets, pet types, users, applications, and transfers.
 
 ## 3. Tech Stack & Core Architecture
 
@@ -28,8 +28,26 @@ This is the AI-agent-oriented guide: architecture, conventions, workflows, and s
 ### Core Data Models
 
 -   **User Roles (RBAC):** Spatie Laravel Permission is the single source of truth. Roles are assigned via Spatie (e.g., `admin`, `super_admin`, `owner`, `helper`, `viewer`). The legacy `users.role` column has been removed via migration and should not be used.
--   **Permissions:** A granular system (`view_cat`, `create_cat`, etc.) is managed by Spatie + Filament Shield. Policies prefer ownership checks and `$user->can(...)`.
--   **Cat Status:** The `Cat` model uses a status enum: `active`, `lost`, `deceased`, `deleted`.
+-   **Permissions:** A granular system (`view_pet`, `create_pet`, etc.) is managed by Spatie + Filament Shield. Policies prefer ownership checks and `$user->can(...)`.
+-   **Pet Status:** The `Pet` model uses a status enum: `active`, `lost`, `deceased`, `deleted`.
+-   **Pet Types:** The `PetType` model defines available pet types (Cat, Dog, etc.) with capability enforcement through `PetCapabilityService`.
+
+### Pet Capability Matrix
+
+The system enforces different feature availability based on pet type:
+
+| Capability      | Cat | Dog | Notes |
+|-----------------|-----|-----|-------|
+| placement       | ✅  | ❌  | Placement requests (fostering/adoption) |
+| fostering       | ✅  | ❌  | Foster assignment workflows |
+| medical         | ✅  | ❌  | Medical records and tracking |
+| ownership       | ✅  | ❌  | Transfer and adoption workflows |
+| weight          | ✅  | ❌  | Weight tracking and history |
+| comments        | ✅  | ❌  | Comments and notes system |
+| status_update   | ✅  | ❌  | Status changes (lost, deceased, etc.) |
+| photos          | ✅  | ✅  | Photo uploads and management |
+
+**Error Handling:** When a capability is not available for a pet type, the API returns a 422 error with `error_code: "FEATURE_NOT_AVAILABLE_FOR_PET_TYPE"`.
 
 ### Authentication
 
@@ -75,8 +93,8 @@ For API mocking, we use **Mock Service Worker (MSW)**. It intercepts network req
 
 **Key Principles:**
 1. Global server in `frontend/src/setupTests.ts`.
-2. Centralized handlers per resource (e.g., `frontend/src/mocks/data/cats.ts`).
-3. Absolute URLs in handlers (e.g., `http://localhost:3000/api/cats`).
+2. Centralized handlers per resource (e.g., `frontend/src/mocks/data/pets.ts`).
+3. Absolute URLs in handlers (e.g., `http://localhost:3000/api/pets`).
 4. Mirror real API shape, including `{ "data": ... }` wrapper.
 
 #### Mocking UI Libraries (`sonner`)
@@ -222,11 +240,22 @@ cd ../backend
 php artisan test
 ```
 
-### When in Doubt
+### Session Notes — 2025-09-25 (Placement Request Feature)
 
-- Don’t guess file paths or API shapes — search and read. If a task seems risky, propose a minimal, reversible change and add tests.
-
--   **Collaboration Style:** Iterative, feedback-driven.
--   **Command Style:** Imperative (e.g., "Refactor this function").
--   **User Language:** Intermediate English (native: Russian). Communication should be clear and direct.
--   **Development Command Execution:** For development, use `php artisan ...` locally in the `backend/` directory, not via Docker.
+- **Backend:**
+  - Added `placement_requests_allowed` boolean to `pet_types` table with a default of `false`.
+  - Updated `PetType` model to include the new field.
+  - Updated `PetTypeSeeder` to set `placement_requests_allowed` to `true` for cats.
+  - Updated `PetCapabilityService` to use the new database field for the `placement` capability.
+  - Created a `helper_profile_pet_type` pivot table to associate helper profiles with pet types.
+  - Updated `HelperProfile` model with a `petTypes` relationship.
+  - Updated `HelperProfileController` to handle the new relationship.
+- **Admin Panel:**
+  - Added a checkbox to the `PetTypeResource` to allow admins to toggle `placement_requests_allowed`.
+- **Frontend:**
+  - Updated the `HelperProfileEditPage` to include a list of checkboxes for pet types that allow placement requests.
+  - Updated the `/requests` page to include a filter for pet types.
+- **Tests:**
+  - Created a `PetTypeFactory`.
+  - Updated `PetCapabilityServiceTest` and `PlacementRequestTest` to reflect the new database-driven `placement` capability.
+  - All tests are passing.

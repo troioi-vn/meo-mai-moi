@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
-use App\Models\Cat;
+use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Enums\PlacementRequestType;
 
@@ -16,11 +16,11 @@ class PlacementRequestSeeder extends Seeder
     public function run(): void
     {
         $user = User::where('email', 'user2@catarchy.space')->first();
-        $cat = Cat::factory()->create(['user_id' => $user->id]);
+        $pet = Pet::factory()->create(['user_id' => $user->id]);
 
         PlacementRequest::factory()->create([
             'user_id' => $user->id,
-            'cat_id' => $cat->id,
+            'pet_id' => $pet->id,
             'request_type' => PlacementRequestType::PERMANENT,
         ]);
     }

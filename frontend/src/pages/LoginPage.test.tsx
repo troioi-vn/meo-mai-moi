@@ -33,7 +33,7 @@ describe('LoginPage', () => {
     })
   })
 
-  it('logs in the user and navigates to /account/cats on success', async () => {
+  it('logs in the user and navigates to /account/pets on success', async () => {
     server.use(
       http.post('http://localhost:8000/api/login', async ({ request }) => {
         const body = (await request.json()) as { email?: string; password?: string }
@@ -63,11 +63,11 @@ describe('LoginPage', () => {
     await userEvent.type(passwordInput, 'password123')
     await userEvent.click(loginButton)
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/account/cats')
+      expect(mockNavigate).toHaveBeenCalledWith('/account/pets')
     })
   })
 
-  it('redirects authenticated users to /account/cats', async () => {
+  it('redirects authenticated users to /account/pets', async () => {
     renderWithRouter(<LoginPage />, {
       initialAuthState: {
         user: { id: 1, name: 'Test User', email: 'test@example.com' },
@@ -78,7 +78,7 @@ describe('LoginPage', () => {
     })
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/account/cats')
+      expect(mockNavigate).toHaveBeenCalledWith('/account/pets')
     })
   })
 

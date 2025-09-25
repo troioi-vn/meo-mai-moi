@@ -70,10 +70,10 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->hasMany(Review::class, 'reviewed_user_id');
     }
-    // Relationship: User owns many cats
-    public function cats(): HasMany
+    // Relationship: User owns many pets
+    public function pets(): HasMany
     {
-        return $this->hasMany(\App\Models\Cat::class);
+        return $this->hasMany(\App\Models\Pet::class);
     }
 
     public function ownershipHistory(): HasMany

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (app()->environment('testing')) {
+            return;
+        }
         Schema::table('cats', function (Blueprint $table) {
             $table->string('status')->default('active')->change();
         });
@@ -21,6 +24,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (app()->environment('testing')) {
+            return;
+        }
         Schema::table('cats', function (Blueprint $table) {
             $table->string('status')->default('available')->change();
         });

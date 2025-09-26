@@ -15,7 +15,7 @@ class PetCapabilityService
         'fostering' => ['cat'],
         'medical' => ['cat'],
         'ownership' => ['cat'],
-        'weight' => ['cat'],
+        // 'weight' is dynamic per pet type; handled specially below
         'comments' => ['cat'],
         'status_update' => ['cat'],
         'photos' => ['cat', 'dog'], // Photos allowed for all pet types
@@ -35,8 +35,11 @@ class PetCapabilityService
             return $pet->petType->placement_requests_allowed;
         }
 
-        $allowedTypes = self::CAPABILITIES[$capability] ?? [];
+        if ($capability === 'weight') {
+            return (bool) ($pet->petType->weight_tracking_allowed ?? false);
+        }
 
+        $allowedTypes = self::CAPABILITIES[$capability] ?? [];
         return in_array($pet->petType->slug, $allowedTypes);
     }
 
@@ -65,7 +68,7 @@ class PetCapabilityService
      */
     public static function getCapabilities(string $petTypeSlug): array
     {
-        $capabilities = [];
+    $capabilities = [];
 
         foreach (self::CAPABILITIES as $capability => $allowedTypes) {
             $capabilities[$capability] = in_array($petTypeSlug, $allowedTypes);
@@ -73,6 +76,7 @@ class PetCapabilityService
 
         $petType = PetType::where('slug', $petTypeSlug)->first();
         $capabilities['placement'] = $petType ? $petType->placement_requests_allowed : false;
+        $capabilities['weight'] = $petType ? (bool) $petType->weight_tracking_allowed : false;
 
         return $capabilities;
     }
@@ -87,6 +91,7 @@ class PetCapabilityService
         // This is a simplified representation. A more robust solution might involve
         // querying the database for all pet types and their placement capabilities.
         $matrix['placement'] = PetType::where('placement_requests_allowed', true)->pluck('slug')->toArray();
+        $matrix['weight'] = PetType::where('weight_tracking_allowed', true)->pluck('slug')->toArray();
 
         return $matrix;
     }

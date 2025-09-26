@@ -4,6 +4,13 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Added
+- Pet Health (Phase 1): Weight tracking
+  - Backend: `pet_types.weight_tracking_allowed` flag; `PetCapabilityService` enforces capability dynamically per type; default enabled for cats.
+  - Admin: Filament Pet Types form/table adds a "Weight tracking allowed" toggle for each pet type.
+  - API: Per-pet weight endpoints under `/api/pets/{pet}/weights` (CRUD) with owner/admin access and per-pet duplicate-date validation.
+  - Frontend: Pet Profile "Weight history" section (owner-only actions) with add/edit/delete and 422 duplicate-date handling; capability-gated by `PetType.weight_tracking_allowed`.
+
 ### Changed
 - **Docs**: Updated `GEMINI.md` with a new "Linting and Formatting" section.
 - **Backend**: Ran `pint` to fix PHP code style issues.

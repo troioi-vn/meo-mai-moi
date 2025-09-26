@@ -7,6 +7,7 @@ export interface PetType {
   is_system: boolean
   display_order: number
   placement_requests_allowed: boolean
+  weight_tracking_allowed?: boolean
   created_at: string
   updated_at: string
 }
@@ -126,6 +127,11 @@ export const petSupportsCapability = (petType: PetType, capability: string): boo
   // For placement capability, use the database-driven field
   if (capability === 'placement') {
     return petType.placement_requests_allowed
+  }
+
+  // Weight capability: DB-driven flag
+  if (capability === 'weight') {
+    return Boolean(petType.weight_tracking_allowed)
   }
 
   // All other capabilities (medical, ownership, weight, comments, status_update, photos) 

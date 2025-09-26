@@ -6,7 +6,6 @@ use App\Http\Controllers\FosterAssignmentController;
 use App\Http\Controllers\FosterReturnHandoverController;
 use App\Http\Controllers\HelperProfileController;
 use App\Http\Controllers\MedicalRecordController;
-// use App\Http\Controllers\CatController; // legacy removed
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NotificationPreferenceController;
@@ -14,7 +13,6 @@ use App\Http\Controllers\PetController;
 use App\Http\Controllers\PetPhotoController;
 use App\Http\Controllers\PlacementRequestController;
 use App\Http\Controllers\ReviewController;
-// use App\Http\Controllers\CatPhotoController; // legacy removed
 use App\Http\Controllers\TransferHandoverController;
 use App\Http\Controllers\TransferRequestController;
 use App\Http\Controllers\UnsubscribeController;
@@ -39,14 +37,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/notification-preferences', [NotificationPreferenceController::class, 'update']);
 });
 
-/*
-TODO: What is a purpose of this route??
-Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
-    Route::post('/helper-profiles/{helperProfile}/approve', [AdminController::class, 'approveHelperProfile']);
-    Route::post('/helper-profiles/{helperProfile}/reject', [AdminController::class, 'rejectHelperProfile']);
-});
-*/
-
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
@@ -63,7 +53,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/users/me', [UserProfileController::class, 'destroy']);
     Route::post('/users/me/avatar', [UserProfileController::class, 'uploadAvatar']);
     Route::delete('/users/me/avatar', [UserProfileController::class, 'deleteAvatar']);
-    // Legacy cat routes removed
 
     // New pet routes
     Route::get('/my-pets', [PetController::class, 'myPets']);
@@ -73,7 +62,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/pets/{pet}', [PetController::class, 'destroy'])->name('pets.destroy');
     Route::put('/pets/{pet}/status', [PetController::class, 'updateStatus'])->name('pets.updateStatus');
     Route::get('/pet-types', [PetController::class, 'petTypes']);
-    // Legacy cat photo routes removed
 
     // New pet photo routes
     Route::post('/pets/{pet}/photos', [PetPhotoController::class, 'store']);
@@ -85,12 +73,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('helper-profiles', HelperProfileController::class);
     Route::post('helper-profiles/{helperProfile}', [HelperProfileController::class, 'update']);
     Route::delete('helper-profiles/{helperProfile}/photos/{photo}', [HelperProfileController::class, 'destroyPhoto']);
-    // Route::post('/cats/{cat}/medical-records', [MedicalRecordController::class, 'store']);
-    // Route::post('/cats/{cat}/weight-history', [WeightHistoryController::class, 'store']);
-    // Legacy cat comments route removed
-    // Route::post('/helper-profiles', [HelperProfileController::class, 'store']);
-    // Route::get('/helper-profiles', [HelperProfileController::class, 'index']);
-    // Route::get('/helper-profiles/me', [HelperProfileController::class, 'show']);
+    Route::get('/pets/{pet}/weights', [WeightHistoryController::class, 'index']);
+    Route::post('/pets/{pet}/weights', [WeightHistoryController::class, 'store']);
+    Route::get('/pets/{pet}/weights/{weight}', [WeightHistoryController::class, 'show'])->whereNumber('weight');
+    Route::put('/pets/{pet}/weights/{weight}', [WeightHistoryController::class, 'update'])->whereNumber('weight');
+    Route::delete('/pets/{pet}/weights/{weight}', [WeightHistoryController::class, 'destroy'])->whereNumber('weight');
     Route::post('/transfer-requests', [TransferRequestController::class, 'store']);
     Route::post('/transfer-requests/{transferRequest}/accept', [TransferRequestController::class, 'accept']);
     Route::post('/transfer-requests/{transferRequest}/reject', [TransferRequestController::class, 'reject']);
@@ -120,8 +107,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::put('/messages/{message}/read', [MessageController::class, 'markAsRead']);
     // Route::delete('/messages/{message}', [MessageController::class, 'destroy']);
 });
-
-// Legacy public cat routes removed
 
 // New pet routes (public)
 Route::get('/pets/placement-requests', [PetController::class, 'placementRequests']);

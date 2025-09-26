@@ -24,6 +24,7 @@ import {
 } from '@/api/handovers'
 import { useAuth } from '@/hooks/use-auth'
 import { Badge } from '@/components/ui/badge'
+import { WeightHistorySection } from '@/components/weights/WeightHistorySection'
 
 const PetProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -240,6 +241,11 @@ const PetProfilePage: React.FC = () => {
           }}
           onTransferResponseSuccess={refresh}
         />
+
+        {/* Weight history (owner) */}
+        {petSupportsCapability(pet.pet_type, 'weight') && (
+          <WeightHistorySection petId={pet.id} canEdit={Boolean(pet.viewer_permissions?.can_edit)} />
+        )}
 
         {/* Responses Section */}
         {pet.viewer_permissions?.can_edit && hasPendingTransfers(pet) && (

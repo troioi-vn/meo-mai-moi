@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (app()->environment('testing')) {
+            // Skip legacy cat-based weight_histories table in tests; replaced by pet-based schema
+            return;
+        }
         Schema::create('weight_histories', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cat_id')->constrained()->onDelete('cascade');

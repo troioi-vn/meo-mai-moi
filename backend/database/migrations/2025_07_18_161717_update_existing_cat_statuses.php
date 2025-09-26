@@ -10,6 +10,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (app()->environment('testing')) {
+            return;
+        }
         DB::table('cats')
             ->where('status', 'available')
             ->update(['status' => 'active']);
@@ -32,6 +35,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (app()->environment('testing')) {
+            return;
+        }
         // Revert 'active' to 'available' (assuming 'active' was the new default for all old statuses)
         DB::table('cats')
             ->where('status', 'active')

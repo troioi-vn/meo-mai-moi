@@ -2,6 +2,44 @@
 
 Everything you need to run, develop, test, and troubleshoot Meo Mai Moi locally.
 
+## If You Don't Know How To Start
+
+Start here if you're new to the repo or want the shortest path to contributing without surprises. This gets you running locally and shows a safe Git flow to avoid conflicts.
+
+1) Run the app
+- Docker (recommended):
+	- Build and start: `docker compose up -d --build`
+	- Initialize (first time):
+		- `docker compose exec backend php artisan migrate:fresh --seed`
+		- `docker compose exec backend php artisan shield:generate --all`
+		- `docker compose exec backend php artisan storage:link`
+- Native (fast if you already have PHP/Node): see "Native Development" below
+
+2) Daily workflow
+- Start: `docker compose up -d`
+- Frontend UI:
+	- Option A — Vite dev server with hot reload (frontend work): `cd frontend && npm run dev` → http://localhost:5173
+	- Option B — Served by Laravel (Docker or after build): visit http://localhost:8000. If you changed frontend assets, run `cd frontend && npm run build` first.
+- Backend tests: `docker compose exec backend php artisan test`
+- Frontend tests: `cd frontend && npm test`
+
+3) Minimal Git flow (conflict-resistant)
+- Always branch from up-to-date main
+	- `git fetch origin && git checkout main && git pull`
+	- `git checkout -b feature/your-change`
+- Small, focused commits; push early, push often
+	- `git add -p && git commit -m "feat: do one thing"`
+- Sync with main regularly (weekly or before finishing)
+	- Merge (simple): `git fetch origin && git merge origin/main`
+	- Or Rebase (clean history): `git fetch origin && git rebase origin/main`
+- Open a PR from your feature branch (or merge into `dev` if that’s your team flow)
+
+Pre-merge checklist
+- [ ] All tests pass: backend and frontend
+- [ ] Format/lint: `./vendor/bin/pint` (backend), `npm run typecheck && npm run lint` (frontend)
+- [ ] Rebased/merged latest `main` (or `dev`) and resolved any small conflicts
+- [ ] Docs updated if behavior or commands changed
+
 ## Quick Paths
 
 - Docker (recommended): complete, reproducible environment
@@ -17,6 +55,11 @@ docker compose up -d --build
 ```
 
 2) Initialize app (first time or when resetting DB)
+If you don't have a Docker env file yet:
+```bash
+cp backend/.env.docker.example backend/.env.docker
+```
+Then initialize the application:
 ```bash
 docker compose exec backend php artisan migrate:fresh --seed
 docker compose exec backend php artisan shield:generate --all
@@ -24,7 +67,8 @@ docker compose exec backend php artisan storage:link
 ```
 
 3) Access
-- Frontend: http://localhost:8000
+- App (served by Laravel): http://localhost:8000
+- Frontend (Vite dev server, optional): http://localhost:5173
 - Admin: http://localhost:8000/admin
   - Email: admin@catarchy.space
   - Password: password
@@ -126,7 +170,7 @@ Coverage focus
 
 ## Ownership History Backfill
 
-When deploying the ownership_history feature to existing data, run a backfill to ensure every currently owned cat has an open ownership period for its owner.
+When deploying the ownership_history feature to existing data, run a backfill to ensure every currently owned pet has an open ownership period for its owner.
 
 Recommended flow
 - Dry run first to see what would change
@@ -202,8 +246,14 @@ docker compose exec backend php artisan test
 # Frontend tests
 cd frontend && npm test
 
+# Frontend lint & typecheck
+cd frontend && npm run lint && npm run typecheck
+
 # Generate API docs (Docker)
 docker compose exec backend php artisan l5-swagger:generate
+
+# Backend code style (Pint)
+cd backend && ./vendor/bin/pint
 ```
 
 ---
@@ -218,6 +268,46 @@ docker compose exec backend php artisan l5-swagger:generate
 
 - Branches: work on separate branches
 - Naming: `feature/task-description` or `fix/bug-description`
+
+Recommended habits
+- Keep `main` clean and deployable; do work in short-lived feature branches
+- Frequently sync with `main` to prevent large, painful conflicts
+- Prefer small PRs; they are easier to review and merge
+
+Merge vs Rebase
+- Merge keeps the exact history and is simpler for beginners
+	- `git checkout feature/x && git fetch origin && git merge origin/main`
+- Rebase rewrites your branch on top of main for a linear history
+	- `git checkout feature/x && git fetch origin && git rebase origin/main`
+	- If conflicts: resolve, `git add .`, then `git rebase --continue`
+
+Before opening a PR
+- Re-sync: `git fetch origin && git merge origin/main` (or rebase)
+- Run tests: backend and frontend must be green
+- Format code: `./vendor/bin/pint` for backend; `npm run lint` for frontend
+- Ensure docs are accurate (e.g., endpoints, commands, environment notes)
+
+Conflict prevention (quick routine)
+```bash
+git checkout dev            # or your feature branch
+git fetch origin
+git merge origin/main       # or: git rebase origin/main
+# resolve tiny conflicts now, not later
+git push
+```
+
+Tip: To see what changed in main that you don’t have yet
+```bash
+git fetch origin
+git log dev..origin/main --oneline
+```
+
+Optional: Open/merge PRs from the CLI with GitHub CLI
+```bash
+gh pr create --base main --head feature/x --title "feat: xyz" --body "…"
+gh pr status
+gh pr view --web
+```
 
 ## RBAC (short)
 

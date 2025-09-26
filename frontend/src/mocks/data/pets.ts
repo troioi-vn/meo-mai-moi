@@ -11,6 +11,7 @@ export const mockCatType: PetType = {
   is_system: true,
   display_order: 1,
   placement_requests_allowed: true,
+  weight_tracking_allowed: true,
   created_at: '2023-01-01T00:00:00Z',
   updated_at: '2023-01-01T00:00:00Z',
 }
@@ -24,6 +25,7 @@ export const mockDogType: PetType = {
   is_system: true,
   display_order: 2,
   placement_requests_allowed: false,
+  weight_tracking_allowed: false,
   created_at: '2023-01-01T00:00:00Z',
   updated_at: '2023-01-01T00:00:00Z',
 }

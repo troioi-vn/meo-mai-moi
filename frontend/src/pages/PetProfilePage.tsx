@@ -27,6 +27,7 @@ import { Badge } from '@/components/ui/badge'
 import { WeightHistorySection } from '@/components/weights/WeightHistorySection'
 import { MedicalNotesSection } from '@/components/medical/MedicalNotesSection'
 import { VaccinationsSection } from '@/components/vaccinations/VaccinationsSection'
+import { MicrochipsSection } from '@/components/microchips/MicrochipsSection'
 
 const PetProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -243,6 +244,11 @@ const PetProfilePage: React.FC = () => {
         {/* Medical notes (owner) */}
         {petSupportsCapability(pet.pet_type, 'medical') && (
           <MedicalNotesSection petId={pet.id} canEdit={Boolean(pet.viewer_permissions?.can_edit)} />
+        )}
+
+        {/* Microchips (owner) */}
+        {petSupportsCapability(pet.pet_type, 'microchips') && (
+          <MicrochipsSection petId={pet.id} canEdit={Boolean(pet.viewer_permissions?.can_edit)} />
         )}
 
         {/* Responses Section */}

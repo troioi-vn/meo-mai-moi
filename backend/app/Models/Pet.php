@@ -132,6 +132,14 @@ class Pet extends Model
     }
 
     /**
+     * Get microchips for this pet
+     */
+    public function microchips(): HasMany
+    {
+        return $this->hasMany(PetMicrochip::class);
+    }
+
+    /**
      * Get comments for this pet
      */
     public function comments(): HasMany

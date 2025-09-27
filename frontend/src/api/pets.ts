@@ -30,6 +30,16 @@ export interface VaccinationRecord {
   created_at: string
   updated_at: string
 }
+
+export interface PetMicrochip {
+  id: number
+  pet_id: number
+  chip_number: string
+  issuer?: string | null
+  implanted_at?: string | null // ISO date
+  created_at: string
+  updated_at: string
+}
 export const getAllPets = async (): Promise<Pet[]> => {
   const response = await api.get<{ data: Pet[] }>('/pets')
   return response.data.data
@@ -215,6 +225,48 @@ export const getVaccinations = async (
   const response = await api.get<{ data: { data: VaccinationRecord[]; links: unknown; meta: unknown } }>(
     `/pets/${String(petId)}/vaccinations`,
     { params: { page } }
+  )
+  return response.data.data
+}
+
+// Microchips API
+export const getMicrochips = async (
+  petId: number,
+  page = 1
+): Promise<{ data: PetMicrochip[]; links: unknown; meta: unknown }> => {
+  const response = await api.get<{ data: { data: PetMicrochip[]; links: unknown; meta: unknown } }>(
+    `/pets/${String(petId)}/microchips`,
+    { params: { page } }
+  )
+  return response.data.data
+}
+
+export const createMicrochip = async (
+  petId: number,
+  payload: { chip_number: string; issuer?: string | null; implanted_at?: string | null }
+): Promise<PetMicrochip> => {
+  const response = await api.post<{ data: PetMicrochip }>(
+    `/pets/${String(petId)}/microchips`,
+    payload
+  )
+  return response.data.data
+}
+
+export const updateMicrochip = async (
+  petId: number,
+  microchipId: number,
+  payload: Partial<{ chip_number: string; issuer?: string | null; implanted_at?: string | null }>
+): Promise<PetMicrochip> => {
+  const response = await api.put<{ data: PetMicrochip }>(
+    `/pets/${String(petId)}/microchips/${String(microchipId)}`,
+    payload
+  )
+  return response.data.data
+}
+
+export const deleteMicrochip = async (petId: number, microchipId: number): Promise<boolean> => {
+  const response = await api.delete<{ data: boolean }>(
+    `/pets/${String(petId)}/microchips/${String(microchipId)}`
   )
   return response.data.data
 }

@@ -21,7 +21,19 @@ class OptionalAuth
         try {
             $user = null;
             if ($request->bearerToken()) {
-                $user = Auth::guard('sanctum')->user();
+                // For personal access tokens, auth:sanctum middleware isn't applied on optional routes,
+                // so resolve the token manually and set the authenticated user.
+                try {
+                    $token = \Laravel\Sanctum\PersonalAccessToken::findToken($request->bearerToken());
+                    if ($token) {
+                        $user = $token->tokenable;
+                    } else {
+                        // Fallback attempt: if Sanctum already authenticated via middleware, use the guard
+                        $user = Auth::guard('sanctum')->user();
+                    }
+                } catch (\Throwable $e) {
+                    // Ignore and continue to session-based auth fallback
+                }
             }
 
             // If there's no bearer token or Sanctum didn't resolve, check existing session (web guard)

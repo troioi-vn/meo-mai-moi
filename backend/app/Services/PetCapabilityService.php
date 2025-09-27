@@ -17,6 +17,7 @@ class PetCapabilityService
         'vaccinations' => ['cat'],
         'ownership' => ['cat'],
         // 'weight' is dynamic per pet type; handled specially below
+        // 'microchips' is dynamic per pet type; handled specially below
         'comments' => ['cat'],
         'status_update' => ['cat'],
         'photos' => ['cat', 'dog'], // Photos allowed for all pet types
@@ -38,6 +39,10 @@ class PetCapabilityService
 
         if ($capability === 'weight') {
             return (bool) ($pet->petType->weight_tracking_allowed ?? false);
+        }
+
+        if ($capability === 'microchips') {
+            return (bool) ($pet->petType->microchips_allowed ?? false);
         }
 
         $allowedTypes = self::CAPABILITIES[$capability] ?? [];
@@ -78,6 +83,7 @@ class PetCapabilityService
         $petType = PetType::where('slug', $petTypeSlug)->first();
         $capabilities['placement'] = $petType ? $petType->placement_requests_allowed : false;
         $capabilities['weight'] = $petType ? (bool) $petType->weight_tracking_allowed : false;
+        $capabilities['microchips'] = $petType ? (bool) $petType->microchips_allowed : false;
 
         return $capabilities;
     }
@@ -93,6 +99,7 @@ class PetCapabilityService
         // querying the database for all pet types and their placement capabilities.
         $matrix['placement'] = PetType::where('placement_requests_allowed', true)->pluck('slug')->toArray();
         $matrix['weight'] = PetType::where('weight_tracking_allowed', true)->pluck('slug')->toArray();
+        $matrix['microchips'] = PetType::where('microchips_allowed', true)->pluck('slug')->toArray();
 
         return $matrix;
     }

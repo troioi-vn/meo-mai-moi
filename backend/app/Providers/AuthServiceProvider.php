@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\HelperProfile;
+use App\Models\Pet;
+use App\Policies\PetPolicy;
 use App\Policies\HelperProfilePolicy;
 use App\Policies\TransferRequestPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
@@ -18,6 +20,7 @@ class AuthServiceProvider extends ServiceProvider
         HelperProfile::class => HelperProfilePolicy::class,
         \App\Models\TransferRequest::class => TransferRequestPolicy::class,
         \App\Models\PlacementRequest::class => \App\Policies\PlacementRequestPolicy::class,
+        Pet::class => PetPolicy::class,
     ];
 
     /**

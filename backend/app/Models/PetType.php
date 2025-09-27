@@ -14,6 +14,7 @@ class PetType extends Model
     protected $attributes = [
         'placement_requests_allowed' => false,
         'weight_tracking_allowed' => false,
+        'microchips_allowed' => false,
     ];
     protected $fillable = [
         'name',
@@ -24,6 +25,7 @@ class PetType extends Model
         'display_order',
         'placement_requests_allowed',
         'weight_tracking_allowed',
+        'microchips_allowed',
     ];
 
     protected $casts = [
@@ -31,6 +33,7 @@ class PetType extends Model
         'is_system' => 'boolean',
         'placement_requests_allowed' => 'boolean',
         'weight_tracking_allowed' => 'boolean',
+        'microchips_allowed' => 'boolean',
     ];
 
     /**
@@ -50,6 +53,7 @@ class PetType extends Model
             if ($petType->slug === 'cat') {
                 $petType->placement_requests_allowed = true;
                 $petType->weight_tracking_allowed = true;
+                $petType->microchips_allowed = true;
             }
         });
     }

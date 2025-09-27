@@ -74,6 +74,7 @@ For architecture context, see `GEMINI.md` (AI Agent Guide).
 
 - Pet management: profiles, photos, medical records, status filters, pet type support
 - Weight tracking: per-pet weight history with owner CRUD; enable per pet type via Pet Types → "Weight tracking allowed"
+- Microchips: per-pet microchip records with owner CRUD; enable per pet type via Pet Types → "Microchips allowed"
 - Users & helpers: verification, suspension, moderation tools
 - Placement & transfer: request workflow, foster assignments, handovers
 - Reviews moderation: hide/flag, bulk actions, filters

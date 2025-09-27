@@ -93,10 +93,22 @@ export const useCreatePetForm = (petId?: string) => {
         try {
           setIsLoadingPet(true)
           const pet = await getPet(petId)
+<<<<<<< HEAD
           setFormData({
             name: pet.name,
             breed: pet.breed,
             birthday: pet.birthday,
+=======
+          // Convert ISO date to YYYY-MM-DD format for HTML date input
+          const formatDate = (dateStr: string): string => {
+            const date = new Date(dateStr)
+            return date.toISOString().split('T')[0]
+          }
+          setFormData({
+            name: pet.name,
+            breed: pet.breed,
+            birthday: formatDate(pet.birthday),
+>>>>>>> dev
             location: pet.location,
             description: pet.description,
             pet_type_id: pet.pet_type.id,

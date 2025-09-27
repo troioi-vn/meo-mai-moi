@@ -23,6 +23,62 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Removed placement request availability message**: Removed the "Placement requests not available for..." message from the `PetCard` component.
 
 ### Added
+- Frontend (Pet Health): Vaccinations section with full owner-only CRUD, capability-gated, validation, and tests.
+- Frontend (Pet Health): Default dates in forms — weight and medical note dates default to today; vaccination administered_at defaults to today and due_at defaults to one year from today.
+
+### Changed
+- Frontend (Pet Health): Human‑readable date display for health records (weights, medical notes, vaccinations) using locale formatting instead of raw ISO strings.
+- Frontend: Restored Remove/status change flow in Pet Details with dialog (lost/deceased), password confirmation, and toasts; refreshes profile on success.
+
+### Fixed
+- Frontend (Pet Profile): Resolved 403 on update by converting ISO dates to `YYYY-MM-DD` for HTML date inputs.
+- Frontend: Removed duplicate Edit button from owner actions.
+- Frontend: Repaired regressions in `WeightForm.tsx` and `PetProfilePage.tsx` introduced during earlier edits.
+
+### Changed
+- **Docs**: Updated `GEMINI.md` with a new "Linting and Formatting" section.
+- **Backend**: Ran `pint` to fix PHP code style issues.
+
+### Added
+- **Multi-pet support**: The application now supports multiple pet types, including cats and dogs.
+- **Pet type capabilities**: A new `placement_requests_allowed` feature has been added to control which pet types can have placement requests.
+- **Helper pet types**: Helpers can now specify which pet types they are able to help with.
+- **Pet type filter**: A new pet type filter has been added to the `/requests` page.
+
+### Changed
+- **`cat` to `pet` rename**: The term `cat` has been renamed to `pet` throughout the codebase to reflect the new multi-pet support.
+
+### Fixed
+- **Helper profile deletion crash**: Fixed a crash that occurred when deleting a helper profile.
+- **Non-editable inputs on helper profile edit page**: Fixed an issue where the inputs on the helper profile edit page were not editable.
+- **Removed placement request availability message**: Removed the "Placement requests not available for..." message from the `PetCard` component.
+
+### Added
+- Pet Health (Phase 1): Weight tracking
+  - Backend: `pet_types.weight_tracking_allowed` flag; `PetCapabilityService` enforces capability dynamically per type; default enabled for cats.
+  - Admin: Filament Pet Types form/table adds a "Weight tracking allowed" toggle for each pet type.
+  - API: Per-pet weight endpoints under `/api/pets/{pet}/weights` (CRUD) with owner/admin access and per-pet duplicate-date validation.
+  - Frontend: Pet Profile "Weight history" section (owner-only actions) with add/edit/delete and 422 duplicate-date handling; capability-gated by `PetType.weight_tracking_allowed`.
+
+### Changed
+- **Docs**: Updated `GEMINI.md` with a new "Linting and Formatting" section.
+- **Backend**: Ran `pint` to fix PHP code style issues.
+
+### Added
+- **Multi-pet support**: The application now supports multiple pet types, including cats and dogs.
+- **Pet type capabilities**: A new `placement_requests_allowed` feature has been added to control which pet types can have placement requests.
+- **Helper pet types**: Helpers can now specify which pet types they are able to help with.
+- **Pet type filter**: A new pet type filter has been added to the `/requests` page.
+
+### Changed
+- **`cat` to `pet` rename**: The term `cat` has been renamed to `pet` throughout the codebase to reflect the new multi-pet support.
+
+### Fixed
+- **Helper profile deletion crash**: Fixed a crash that occurred when deleting a helper profile.
+- **Non-editable inputs on helper profile edit page**: Fixed an issue where the inputs on the helper profile edit page were not editable.
+- **Removed placement request availability message**: Removed the "Placement requests not available for..." message from the `PetCard` component.
+
+### Added
 - Env: Added `FRONTEND_URL` environment variable across local and Docker env files to represent the SPA base URL used in emails and redirects.
 - **Password Reset System**: Complete password recovery functionality with professional email notifications.
   - **Backend**:

@@ -11,6 +11,11 @@ use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+<<<<<<< HEAD
+=======
+use Illuminate\Support\Facades\Gate;
+use Laravel\Sanctum\PersonalAccessToken;
+>>>>>>> dev
 use OpenApi\Annotations as OA;
 
 /**
@@ -197,6 +202,25 @@ class PetController extends Controller
         // Load placement requests and nested relations needed for the view
         $pet->load(['placementRequests.transferRequests.helperProfile.user', 'petType']);
 
+<<<<<<< HEAD
+=======
+        // Resolve user from bearer token for optional-auth route if missing
+        $authUser = $request->user();
+        if (! $authUser && $request->bearerToken()) {
+            if ($token = PersonalAccessToken::findToken($request->bearerToken())) {
+                $authUser = $token->tokenable;
+                $request->setUserResolver(fn () => $authUser);
+            }
+        }
+
+        // Centralize access via policy (explicit user if available)
+        if ($authUser) {
+            Gate::forUser($authUser)->authorize('view', $pet);
+        } else {
+            $this->authorize('view', $pet);
+        }
+
+>>>>>>> dev
         // Centralize access via policy
         $this->authorize('view', $pet);
 
@@ -392,11 +416,26 @@ class PetController extends Controller
      */
     public function update(Request $request, Pet $pet)
     {
+<<<<<<< HEAD
         $user = $request->user();
         if (! $user) {
             return $this->sendError('Unauthenticated.', 401);
         }
         $this->authorize('update', $pet);
+=======
+        // Resolve user from bearer token for optional-auth route if missing
+        $user = $request->user();
+        if (! $user && $request->bearerToken()) {
+            if ($token = PersonalAccessToken::findToken($request->bearerToken())) {
+                $user = $token->tokenable;
+                $request->setUserResolver(fn () => $user);
+            }
+        }
+        if (! $user) {
+            return $this->sendError('Unauthenticated.', 401);
+        }
+        Gate::forUser($user)->authorize('update', $pet);
+>>>>>>> dev
 
         $validatedData = $request->validate([
             'name' => 'sometimes|required|string|max:255',
@@ -457,11 +496,26 @@ class PetController extends Controller
      */
     public function destroy(Request $request, Pet $pet)
     {
+<<<<<<< HEAD
         $user = $request->user();
         if (! $user) {
             return $this->sendError('Unauthenticated.', 401);
         }
         $this->authorize('delete', $pet);
+=======
+        // Resolve user from bearer token for optional-auth route if missing
+        $user = $request->user();
+        if (! $user && $request->bearerToken()) {
+            if ($token = PersonalAccessToken::findToken($request->bearerToken())) {
+                $user = $token->tokenable;
+                $request->setUserResolver(fn () => $user);
+            }
+        }
+        if (! $user) {
+            return $this->sendError('Unauthenticated.', 401);
+        }
+        Gate::forUser($user)->authorize('delete', $pet);
+>>>>>>> dev
 
         if (! Hash::check($request->input('password'), $user->password)) {
             return $this->sendError('The provided password does not match our records.', 422);
@@ -505,11 +559,26 @@ class PetController extends Controller
      */
     public function updateStatus(Request $request, Pet $pet)
     {
+<<<<<<< HEAD
         $user = $request->user();
         if (! $user) {
             return $this->sendError('Unauthenticated.', 401);
         }
         $this->authorize('update', $pet);
+=======
+        // Resolve user from bearer token for optional-auth route if missing
+        $user = $request->user();
+        if (! $user && $request->bearerToken()) {
+            if ($token = PersonalAccessToken::findToken($request->bearerToken())) {
+                $user = $token->tokenable;
+                $request->setUserResolver(fn () => $user);
+            }
+        }
+        if (! $user) {
+            return $this->sendError('Unauthenticated.', 401);
+        }
+        Gate::forUser($user)->authorize('update', $pet);
+>>>>>>> dev
 
         $validated = $request->validate([
             'status' => ['required', 'string', new \Illuminate\Validation\Rules\Enum(PetStatus::class)],

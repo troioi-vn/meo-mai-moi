@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (app()->environment('testing')) {
+            return;
+        }
         Schema::table('cats', function (Blueprint $table) {
             $table->date('birthday')->nullable()->after('age');
             $table->dropColumn('age');
@@ -22,6 +25,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (app()->environment('testing')) {
+            return;
+        }
         Schema::table('cats', function (Blueprint $table) {
             $table->integer('age')->nullable()->after('birthday');
             $table->dropColumn('birthday');

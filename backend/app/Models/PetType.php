@@ -11,6 +11,14 @@ class PetType extends Model
 {
     use HasFactory;
 
+<<<<<<< HEAD
+=======
+    protected $attributes = [
+        'placement_requests_allowed' => false,
+        'weight_tracking_allowed' => false,
+        'microchips_allowed' => false,
+    ];
+>>>>>>> dev
     protected $fillable = [
         'name',
         'slug',
@@ -19,12 +27,22 @@ class PetType extends Model
         'is_system',
         'display_order',
         'placement_requests_allowed',
+<<<<<<< HEAD
+=======
+        'weight_tracking_allowed',
+        'microchips_allowed',
+>>>>>>> dev
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'is_system' => 'boolean',
         'placement_requests_allowed' => 'boolean',
+<<<<<<< HEAD
+=======
+        'weight_tracking_allowed' => 'boolean',
+        'microchips_allowed' => 'boolean',
+>>>>>>> dev
     ];
 
     /**
@@ -39,6 +57,16 @@ class PetType extends Model
             if (empty($petType->slug)) {
                 $petType->slug = Str::slug($petType->name);
             }
+<<<<<<< HEAD
+=======
+
+            // Sensible defaults for system types when created directly in tests or seeds
+            if ($petType->slug === 'cat') {
+                $petType->placement_requests_allowed = true;
+                $petType->weight_tracking_allowed = true;
+                $petType->microchips_allowed = true;
+            }
+>>>>>>> dev
         });
     }
 

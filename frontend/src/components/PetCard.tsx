@@ -59,11 +59,16 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
 
   // Use unified pet route
   const petRoute = `/pets/${String(pet.id)}`
+  const isDeceased = pet.status === 'deceased'
 
   return (
     <Card className="flex flex-col overflow-hidden rounded-lg shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl">
       <Link to={petRoute} className="block">
-        <img src={imageUrl} alt={pet.name} className="h-48 w-full object-cover" />
+        <img
+          src={imageUrl}
+          alt={pet.name}
+          className={`h-48 w-full object-cover ${isDeceased ? 'grayscale' : ''}`}
+        />
       </Link>
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-primary">{pet.name}</CardTitle>

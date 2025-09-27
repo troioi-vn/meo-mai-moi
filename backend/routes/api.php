@@ -6,6 +6,7 @@ use App\Http\Controllers\FosterAssignmentController;
 use App\Http\Controllers\FosterReturnHandoverController;
 use App\Http\Controllers\HelperProfileController;
 use App\Http\Controllers\MedicalRecordController;
+use App\Http\Controllers\MedicalNoteController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NotificationPreferenceController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\UnsubscribeController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\VersionController;
 use App\Http\Controllers\WeightHistoryController;
+use App\Http\Controllers\VaccinationRecordController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -78,6 +80,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/pets/{pet}/weights/{weight}', [WeightHistoryController::class, 'show'])->whereNumber('weight');
     Route::put('/pets/{pet}/weights/{weight}', [WeightHistoryController::class, 'update'])->whereNumber('weight');
     Route::delete('/pets/{pet}/weights/{weight}', [WeightHistoryController::class, 'destroy'])->whereNumber('weight');
+
+    // Medical Notes
+    Route::get('/pets/{pet}/medical-notes', [MedicalNoteController::class, 'index']);
+    Route::post('/pets/{pet}/medical-notes', [MedicalNoteController::class, 'store']);
+    Route::get('/pets/{pet}/medical-notes/{note}', [MedicalNoteController::class, 'show'])->whereNumber('note');
+    Route::put('/pets/{pet}/medical-notes/{note}', [MedicalNoteController::class, 'update'])->whereNumber('note');
+    Route::delete('/pets/{pet}/medical-notes/{note}', [MedicalNoteController::class, 'destroy'])->whereNumber('note');
+
+    // Vaccinations
+    Route::get('/pets/{pet}/vaccinations', [VaccinationRecordController::class, 'index']);
+    Route::post('/pets/{pet}/vaccinations', [VaccinationRecordController::class, 'store']);
+    Route::get('/pets/{pet}/vaccinations/{record}', [VaccinationRecordController::class, 'show'])->whereNumber('record');
+    Route::put('/pets/{pet}/vaccinations/{record}', [VaccinationRecordController::class, 'update'])->whereNumber('record');
+    Route::delete('/pets/{pet}/vaccinations/{record}', [VaccinationRecordController::class, 'destroy'])->whereNumber('record');
     Route::post('/transfer-requests', [TransferRequestController::class, 'store']);
     Route::post('/transfer-requests/{transferRequest}/accept', [TransferRequestController::class, 'accept']);
     Route::post('/transfer-requests/{transferRequest}/reject', [TransferRequestController::class, 'reject']);

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react'
-import type { WeightHistory } from '@/api/pets'
-import { useWeights } from '@/hooks/useWeights'
+import type { MedicalNote } from '@/api/pets'
+import { useMedicalNotes } from '@/hooks/useMedicalNotes'
 import { Button } from '@/components/ui/button'
 import {
   AlertDialog,
@@ -13,16 +13,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { WeightForm } from './WeightForm'
+import { MedicalNoteForm } from './MedicalNoteForm'
 import { toast } from 'sonner'
 
-export const WeightHistorySection: React.FC<{
+export const MedicalNotesSection: React.FC<{
   petId: number
   canEdit: boolean
 }> = ({ petId, canEdit }) => {
-  const { items, loading, error, create, update, remove } = useWeights(petId)
+  const { items, loading, error, create, update, remove } = useMedicalNotes(petId)
   const [adding, setAdding] = useState(false)
-  const [editing, setEditing] = useState<WeightHistory | null>(null)
+  const [editing, setEditing] = useState<MedicalNote | null>(null)
   const [serverError, setServerError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -30,39 +30,39 @@ export const WeightHistorySection: React.FC<{
     return [...items].sort((a, b) => b.record_date.localeCompare(a.record_date))
   }, [items])
 
-  const handleCreate = async (values: { weight_kg: number; record_date: string }) => {
+  const handleCreate = async (values: { note: string; record_date: string }) => {
     setSubmitting(true)
     setServerError(null)
     try {
       await create(values)
       setAdding(false)
-      toast.success('Weight added')
+      toast.success('Medical note added')
     } catch (e: any) {
       const status = e?.response?.status
       if (status === 422) {
         setServerError(e?.response?.data?.message ?? 'Validation error')
       } else {
-        toast.error('Failed to add weight')
+        toast.error('Failed to add note')
       }
     } finally {
       setSubmitting(false)
     }
   }
 
-  const handleUpdate = async (values: { weight_kg: number; record_date: string }) => {
+  const handleUpdate = async (values: { note: string; record_date: string }) => {
     if (!editing) return
     setSubmitting(true)
     setServerError(null)
     try {
       await update(editing.id, values)
       setEditing(null)
-      toast.success('Weight updated')
+      toast.success('Medical note updated')
     } catch (e: any) {
       const status = e?.response?.status
       if (status === 422) {
         setServerError(e?.response?.data?.message ?? 'Validation error')
       } else {
-        toast.error('Failed to update weight')
+        toast.error('Failed to update note')
       }
     } finally {
       setSubmitting(false)
@@ -72,30 +72,29 @@ export const WeightHistorySection: React.FC<{
   const handleDelete = async (id: number) => {
     try {
       await remove(id)
-      toast.info('Weight deleted')
+      toast.info('Note deleted')
     } catch {
-      toast.error('Failed to delete weight')
+      toast.error('Failed to delete note')
     }
   }
 
   return (
     <section className="mt-8">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-2xl font-bold">Weight history</h2>
+        <h2 className="text-2xl font-bold">Medical notes</h2>
         {canEdit && !adding && !editing && (
           <Button size="sm" onClick={() => setAdding(true)}>
             Add
           </Button>
         )}
       </div>
-      {loading && <p className="text-sm text-muted-foreground">Loading weight records…</p>}
+      {loading && <p className="text-sm text-muted-foreground">Loading notes…</p>}
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      {/* Add/Edit forms */}
       {(adding || editing) && canEdit && (
         <div className="mb-4 rounded-md border p-3">
-          <WeightForm
-            initial={editing ? { weight_kg: editing.weight_kg, record_date: editing.record_date } : undefined}
+          <MedicalNoteForm
+            initial={editing ? { note: editing.note, record_date: editing.record_date } : undefined}
             onSubmit={(vals) => (editing ? handleUpdate(vals) : handleCreate(vals))}
             onCancel={() => {
               setAdding(false)
@@ -108,22 +107,21 @@ export const WeightHistorySection: React.FC<{
         </div>
       )}
 
-      {/* List */}
       <ul className="divide-y rounded-md border">
         {sorted.length === 0 && (
-          <li className="p-3 text-sm text-muted-foreground">No weight records yet.</li>
+          <li className="p-3 text-sm text-muted-foreground">No medical notes yet.</li>
         )}
-        {sorted.map((w) => (
-          <li key={String(w.id)} className="flex items-center justify-between p-3">
+        {sorted.map((n) => (
+          <li key={String(n.id)} className="flex items-center justify-between p-3">
             <div className="flex flex-col">
-              <span className="font-medium">{Number(w.weight_kg).toFixed(2)} kg</span>
+              <span className="font-medium">{n.note}</span>
               <span className="text-xs text-muted-foreground">
-                {new Date(w.record_date).toLocaleDateString()}
+                {new Date(n.record_date).toLocaleDateString()}
               </span>
             </div>
             {canEdit && (
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => setEditing(w)}>
+                <Button size="sm" variant="outline" onClick={() => setEditing(n)}>
                   Edit
                 </Button>
                 <AlertDialog>
@@ -132,14 +130,14 @@ export const WeightHistorySection: React.FC<{
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Delete weight record?</AlertDialogTitle>
+                      <AlertDialogTitle>Delete medical note?</AlertDialogTitle>
                       <AlertDialogDescription>
                         This action cannot be undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => void handleDelete(w.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      <AlertDialogAction onClick={() => void handleDelete(n.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                         Delete
                       </AlertDialogAction>
                     </AlertDialogFooter>

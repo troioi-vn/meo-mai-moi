@@ -14,6 +14,7 @@ class PetCapabilityService
     private const CAPABILITIES = [
         'fostering' => ['cat'],
         'medical' => ['cat'],
+        'vaccinations' => ['cat'],
         'ownership' => ['cat'],
         // 'weight' is dynamic per pet type; handled specially below
         'comments' => ['cat'],

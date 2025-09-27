@@ -19,6 +19,9 @@ DB_PORT_NUMBER=${DB_PORT:-5432}
 DB_CHECK_USER=${DB_USERNAME:-user}
 DB_CHECK_DB=${DB_DATABASE:-postgres}
 
+# Set password for pg_isready
+export PGPASSWORD=${DB_PASSWORD}
+
 # Only check server reachability here (host:port). Don't depend on user/db existing yet.
 MAX_TRIES=60
 TRY=1

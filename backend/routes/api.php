@@ -1,20 +1,16 @@
 <?php
 
-use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FosterAssignmentController;
 use App\Http\Controllers\FosterReturnHandoverController;
 use App\Http\Controllers\HelperProfileController;
-use App\Http\Controllers\MedicalRecordController;
 use App\Http\Controllers\MedicalNoteController;
-use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NotificationPreferenceController;
 use App\Http\Controllers\PetController;
 use App\Http\Controllers\PetPhotoController;
 use App\Http\Controllers\PlacementRequestController;
 use App\Http\Controllers\PetMicrochipController;
-use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\TransferHandoverController;
 use App\Http\Controllers\TransferRequestController;
 use App\Http\Controllers\UnsubscribeController;

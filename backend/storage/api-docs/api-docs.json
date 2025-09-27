@@ -713,6 +713,341 @@
                 }
             }
         },
+        "/api/pets/{pet}/medical-notes": {
+            "get": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "List medical notes for a pet",
+                "operationId": "27b7f997f94c313fd5c2e89357cff803",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of medical notes",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/MedicalNote"
+                                                    }
+                                                },
+                                                "links": {
+                                                    "type": "object"
+                                                },
+                                                "meta": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Create a medical note",
+                "operationId": "ea121f48244010b3c76fcb99ae70f11c",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "note",
+                                    "record_date"
+                                ],
+                                "properties": {
+                                    "note": {
+                                        "type": "string",
+                                        "example": "Rabies vaccination"
+                                    },
+                                    "record_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-06-01"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/MedicalNote"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pets/{pet}/medical-notes/{note}": {
+            "get": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Get a single medical note",
+                "operationId": "da54fc88f502bc061e3094508a576ffc",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "note",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/MedicalNote"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Update a medical note",
+                "operationId": "efcfcc1116ef04207cbbb1a771659c20",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "note",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "note": {
+                                        "type": "string"
+                                    },
+                                    "record_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/MedicalNote"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Delete a medical note",
+                "operationId": "281dc16899d2916a1065b1ce3b06485b",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "note",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/messages": {
             "get": {
                 "tags": [
@@ -1648,6 +1983,357 @@
                         }
                     }
                 }
+            }
+        },
+        "/api/pets/{pet}/microchips": {
+            "get": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "List microchips for a pet",
+                "operationId": "78a323f03a0f51bd81566f6fe687e682",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of microchips",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/PetMicrochip"
+                                                    }
+                                                },
+                                                "links": {
+                                                    "type": "object"
+                                                },
+                                                "meta": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    },
+                    "422": {
+                        "description": "Feature not available for this pet type"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Add a new microchip record for a pet",
+                "operationId": "65bc4641ac2390e20e4d43601f425ff0",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "description": "ID of the pet to add a microchip record for",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "chip_number"
+                                ],
+                                "properties": {
+                                    "chip_number": {
+                                        "type": "string",
+                                        "example": "982000123456789"
+                                    },
+                                    "issuer": {
+                                        "type": "string",
+                                        "example": "HomeAgain"
+                                    },
+                                    "implanted_at": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-01-15"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Microchip record created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/PetMicrochip"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pets/{pet}/microchips/{microchip}": {
+            "get": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Get a specific microchip record",
+                "operationId": "b69050f6addedd9adfc2f4df6ff27bd7",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "microchip",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/PetMicrochip"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Update a microchip record",
+                "operationId": "e9995b8618f4248b6c8ac5f1b9d66422",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "microchip",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "chip_number": {
+                                        "type": "string"
+                                    },
+                                    "issuer": {
+                                        "type": "string"
+                                    },
+                                    "implanted_at": {
+                                        "type": "string",
+                                        "format": "date"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/PetMicrochip"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Delete a microchip record",
+                "operationId": "303a7a956f2b6e298f7ffb54b74ad368",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "microchip",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             }
         },
         "/api/pets/{pet}/photos": {
@@ -2853,6 +3539,357 @@
                 ]
             }
         },
+        "/api/pets/{pet}/vaccinations": {
+            "get": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "List vaccination records for a pet",
+                "operationId": "c882ee81ccb8467f98bdfdb34b73a91f",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of vaccination records",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/VaccinationRecord"
+                                                    }
+                                                },
+                                                "links": {
+                                                    "type": "object"
+                                                },
+                                                "meta": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Create a vaccination record",
+                "operationId": "e46907c67459c8d1bb8d3d804d01f63d",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "vaccine_name",
+                                    "administered_at"
+                                ],
+                                "properties": {
+                                    "vaccine_name": {
+                                        "type": "string",
+                                        "example": "Rabies"
+                                    },
+                                    "administered_at": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-06-01"
+                                    },
+                                    "due_at": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-06-01"
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Booster due next year"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/VaccinationRecord"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pets/{pet}/vaccinations/{record}": {
+            "get": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Get a single vaccination record",
+                "operationId": "d829b531922efbd05d8134ddc600f54d",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "record",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/VaccinationRecord"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Update a vaccination record",
+                "operationId": "1a0c4f5886641c12b6dcb48415f36baf",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "record",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "vaccine_name": {
+                                        "type": "string"
+                                    },
+                                    "administered_at": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "due_at": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "notes": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/VaccinationRecord"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Delete a vaccination record",
+                "operationId": "1ae9bcad7bb2cc99608eefa565b24381",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "record",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/version": {
             "get": {
                 "tags": [
@@ -3056,6 +4093,56 @@
                             "pet_type_id": {
                                 "type": "integer",
                                 "example": 1
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "PetMicrochip": {
+                "title": "PetMicrochip",
+                "description": "Pet Microchip model",
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Pagination"
+                    },
+                    {
+                        "properties": {
+                            "id": {
+                                "description": "Microchip ID",
+                                "type": "integer",
+                                "format": "int64"
+                            },
+                            "pet_id": {
+                                "description": "ID of the associated pet",
+                                "type": "integer",
+                                "format": "int64"
+                            },
+                            "chip_number": {
+                                "description": "Unique microchip number",
+                                "type": "string"
+                            },
+                            "issuer": {
+                                "description": "Microchip issuer/manufacturer",
+                                "type": "string",
+                                "nullable": true
+                            },
+                            "implanted_at": {
+                                "description": "Date the microchip was implanted",
+                                "type": "string",
+                                "format": "date",
+                                "nullable": true
+                            },
+                            "created_at": {
+                                "description": "Timestamp of microchip record creation",
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "updated_at": {
+                                "description": "Timestamp of last microchip record update",
+                                "type": "string",
+                                "format": "date-time"
                             }
                         },
                         "type": "object"
@@ -3370,6 +4457,77 @@
                     }
                 },
                 "type": "object"
+            },
+            "MedicalNote": {
+                "title": "MedicalNote",
+                "description": "Medical note model",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "pet_id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "note": {
+                        "type": "string"
+                    },
+                    "record_date": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "VaccinationRecord": {
+                "title": "VaccinationRecord",
+                "description": "Vaccination record model",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "pet_id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "vaccine_name": {
+                        "type": "string"
+                    },
+                    "administered_at": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "due_at": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "notes": {
+                        "type": "string"
+                    },
+                    "reminder_sent_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
             }
         }
     },
@@ -3387,6 +4545,10 @@
             "description": "Helper Profiles"
         },
         {
+            "name": "Pets",
+            "description": "Pets"
+        },
+        {
             "name": "Messages",
             "description": "Messages"
         },
@@ -3397,10 +4559,6 @@
         {
             "name": "Notification Preferences",
             "description": "Notification Preferences"
-        },
-        {
-            "name": "Pets",
-            "description": "Pets"
         },
         {
             "name": "Pet Types",

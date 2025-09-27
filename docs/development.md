@@ -30,10 +30,14 @@ Start here if you're new to the repo or want the shortest path to contributing w
 	- `git checkout -b feature/your-change`
 - Small, focused commits; push early, push often
 	- `git add -p && git commit -m "feat: do one thing"`
-- Sync with `dev` regularly (at least before finishing)
+- Keep your feature in sync with `dev` (at least before finishing)
 	- Merge: `git fetch origin && git merge origin/dev`
-	- Or Rebase: `git fetch origin && git rebase origin/dev`
+	- Or Rebase (preferred for linear history): `git fetch origin && git rebase origin/dev`
 - Open a PR: feature → `dev`. After validation, promote `dev` → `main` via PR.
+- Using GitHub CLI (optional):
+	- Create PR to dev: `gh pr create --base dev --head feature/your-change --title "feat: …" --body "…"`
+	- Change PR base if needed: `gh pr edit <number> --base dev`
+	- View PR: `gh pr view --web`
 
 Pre-merge checklist (feature → dev, then dev → main)
 - [ ] All tests pass: backend and frontend
@@ -41,6 +45,20 @@ Pre-merge checklist (feature → dev, then dev → main)
 - [ ] Rebased/merged latest `dev` (for feature PR) or latest `main` (for dev→main) and resolved any small conflicts
 - [ ] OpenAPI docs current (if backend API changed): `docker compose exec backend php artisan l5-swagger:generate`
 - [ ] Docs updated if behavior or commands changed
+
+Quick conflict-resolution routine
+```bash
+# Make sure you're on your feature branch
+git checkout feature/your-change
+git fetch origin
+# Rebase onto latest dev (preferred) or merge if you must
+git rebase origin/dev
+# Resolve conflicts, then
+git add -A
+git rebase --continue
+# Push updated branch (force-with-lease for rebases)
+git push --force-with-lease
+```
 
 ## Quick Paths
 

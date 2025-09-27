@@ -8,7 +8,7 @@ This document consolidates the Pet Health planning (previously in `tmp/medical_m
 - [x] Weight tracking (time series)
 - [x] General medical events (notes for exams, surgeries, meds, etc.)
 - [x] Vaccinations (records)
-- [ ] Vaccination reminders (daily job)
+- [x] Vaccination reminders (daily job)
 - [ ] Multi-chip support (Pet has many Microchips)
 
 ## Data Model
@@ -48,9 +48,9 @@ Capability gating
 - Owner or admin; 403 for others — implemented for weights, medical notes, vaccinations
 
 ## Reminders (Vaccinations)
-- Daily job scans due_at; sends notifications via existing email system
-- De-duplicate per record/day using reminder_sent_at
-- Status: Pending
+- Daily job scans `due_at`; sends notifications via existing email system
+- De-duplicate per record/day using `reminder_sent_at`
+- Status: DONE (command `reminders:vaccinations`, tests in `VaccinationRemindersCommandTest`)
 
 ## Frontend
 - Health sections (owner-only)
@@ -63,7 +63,7 @@ Capability gating
 1) Backend weight entries — DONE
 2) Backend vaccinations — DONE
 3) Backend medical events (notes) — DONE
-4) Vaccination reminders — PENDING
+4) Vaccination reminders — DONE
 5) Backend microchips — PENDING
 6) Frontend health sections — DONE
 7) Docs + Swagger — IN PROGRESS
@@ -74,6 +74,6 @@ Capability gating
 - OpenAPI annotations present; tests green
 
 ## Next Steps
-- Implement vaccination reminders job and tests
 - Extend OpenAPI where helpful and regenerate Swagger
 - Add Filament admin toggles if we later make medical/vaccinations DB-driven per type
+- Implement Microchips (data model, API, UI) per scope

@@ -1,52 +1,49 @@
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 
-export type WeightFormValues = {
-  weight_kg: number | ''
+export type MedicalNoteFormValues = {
+  note: string
   record_date: string
 }
 
-export const WeightForm: React.FC<{
-  initial?: Partial<WeightFormValues>
-  onSubmit: (values: { weight_kg: number; record_date: string }) => Promise<void>
+export const MedicalNoteForm: React.FC<{
+  initial?: Partial<MedicalNoteFormValues>
+  onSubmit: (values: { note: string; record_date: string }) => Promise<void>
   onCancel: () => void
   submitting?: boolean
   serverError?: string | null
 }> = ({ initial, onSubmit, onCancel, submitting, serverError }) => {
-  const [weight, setWeight] = useState<number | ''>(initial?.weight_kg ?? '')
+  const [note, setNote] = useState<string>(initial?.note ?? '')
   const [date, setDate] = useState<string>(initial?.record_date ?? new Date().toISOString().split('T')[0])
-  const [errors, setErrors] = useState<{ weight_kg?: string; record_date?: string }>({})
+  const [errors, setErrors] = useState<{ note?: string; record_date?: string }>({})
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const newErrors: typeof errors = {}
-    const weightNum = typeof weight === 'string' ? Number(weight) : weight
-    if (!weightNum || Number.isNaN(weightNum) || weightNum <= 0) {
-      newErrors.weight_kg = 'Enter a valid weight (kg)'
+    if (!note || note.trim().length === 0) {
+      newErrors.note = 'Note is required'
     }
     if (!date) {
       newErrors.record_date = 'Date is required'
     }
     setErrors(newErrors)
     if (Object.keys(newErrors).length > 0) return
-    await onSubmit({ weight_kg: weightNum, record_date: date })
+    await onSubmit({ note: note.trim(), record_date: date })
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div>
-          <label className="block text-sm font-medium">Weight (kg)</label>
-          <input
-            type="number"
-            step="0.01"
-            min="0"
-            value={weight}
-            onChange={(e) => setWeight(e.target.value === '' ? '' : Number(e.target.value))}
+        <div className="sm:col-span-2">
+          <label className="block text-sm font-medium">Note</label>
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-            placeholder="e.g., 4.20"
+            placeholder="e.g., Vaccination: Rabies"
+            rows={3}
           />
-          {errors.weight_kg && <p className="text-xs text-red-600 mt-1">{errors.weight_kg}</p>}
+          {errors.note && <p className="text-xs text-red-600 mt-1">{errors.note}</p>}
         </div>
         <div>
           <label className="block text-sm font-medium">Date</label>
@@ -56,7 +53,9 @@ export const WeightForm: React.FC<{
             onChange={(e) => setDate(e.target.value)}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
           />
-          {errors.record_date && <p className="text-xs text-red-600 mt-1">{errors.record_date}</p>}
+          {errors.record_date && (
+            <p className="text-xs text-red-600 mt-1">{errors.record_date}</p>
+          )}
         </div>
       </div>
       {serverError && <p className="text-sm text-red-600">{serverError}</p>}

@@ -7,6 +7,7 @@ use App\Mail\HelperResponseAcceptedMail;
 use App\Mail\HelperResponseRejectedMail;
 use App\Mail\PlacementRequestAcceptedMail;
 use App\Mail\PlacementRequestResponseMail;
+use App\Mail\VaccinationReminderMail;
 use App\Models\EmailLog;
 use App\Models\Notification;
 use App\Models\User;
@@ -158,6 +159,7 @@ class SendNotificationEmail implements ShouldQueue
             NotificationType::PLACEMENT_REQUEST_ACCEPTED => new PlacementRequestAcceptedMail($this->user, $notificationType, $this->data),
             NotificationType::HELPER_RESPONSE_ACCEPTED => new HelperResponseAcceptedMail($this->user, $notificationType, $this->data),
             NotificationType::HELPER_RESPONSE_REJECTED => new HelperResponseRejectedMail($this->user, $notificationType, $this->data),
+            NotificationType::VACCINATION_REMINDER => new VaccinationReminderMail($this->user, $notificationType, $this->data),
             default => null,
         };
     }

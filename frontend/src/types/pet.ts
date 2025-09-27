@@ -8,6 +8,7 @@ export interface PetType {
   display_order: number
   placement_requests_allowed: boolean
   weight_tracking_allowed?: boolean
+  microchips_allowed?: boolean
   created_at: string
   updated_at: string
 }
@@ -132,6 +133,10 @@ export const petSupportsCapability = (petType: PetType, capability: string): boo
   // Weight capability: DB-driven flag
   if (capability === 'weight') {
     return Boolean(petType.weight_tracking_allowed)
+  }
+  // Microchips capability: DB-driven flag
+  if (capability === 'microchips') {
+    return Boolean(petType.microchips_allowed)
   }
   // Medical capability: static for now (cats supported). Backend enforces this too.
   if (capability === 'medical') {

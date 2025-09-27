@@ -13,6 +13,7 @@ use App\Http\Controllers\NotificationPreferenceController;
 use App\Http\Controllers\PetController;
 use App\Http\Controllers\PetPhotoController;
 use App\Http\Controllers\PlacementRequestController;
+use App\Http\Controllers\PetMicrochipController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\TransferHandoverController;
 use App\Http\Controllers\TransferRequestController;
@@ -94,6 +95,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/pets/{pet}/vaccinations/{record}', [VaccinationRecordController::class, 'show'])->whereNumber('record');
     Route::put('/pets/{pet}/vaccinations/{record}', [VaccinationRecordController::class, 'update'])->whereNumber('record');
     Route::delete('/pets/{pet}/vaccinations/{record}', [VaccinationRecordController::class, 'destroy'])->whereNumber('record');
+
+    // Microchips
+    Route::get('/pets/{pet}/microchips', [PetMicrochipController::class, 'index']);
+    Route::post('/pets/{pet}/microchips', [PetMicrochipController::class, 'store']);
+    Route::get('/pets/{pet}/microchips/{microchip}', [PetMicrochipController::class, 'show'])->whereNumber('microchip');
+    Route::put('/pets/{pet}/microchips/{microchip}', [PetMicrochipController::class, 'update'])->whereNumber('microchip');
+    Route::delete('/pets/{pet}/microchips/{microchip}', [PetMicrochipController::class, 'destroy'])->whereNumber('microchip');
     Route::post('/transfer-requests', [TransferRequestController::class, 'store']);
     Route::post('/transfer-requests/{transferRequest}/accept', [TransferRequestController::class, 'accept']);
     Route::post('/transfer-requests/{transferRequest}/reject', [TransferRequestController::class, 'reject']);

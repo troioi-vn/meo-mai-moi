@@ -399,6 +399,55 @@ const vaccinationHandlers = [
   }),
 ]
 
+const microchipHandlers = [
+  http.get('http://localhost:3000/api/pets/:petId/microchips', () => {
+    return HttpResponse.json({
+      data: {
+        data: [],
+        links: { first: null, last: null, prev: null, next: null },
+        meta: { current_page: 1, from: null, last_page: 1, path: '/api/pets/1/microchips', per_page: 25, to: null, total: 0 },
+      },
+    })
+  }),
+  http.post('http://localhost:3000/api/pets/:petId/microchips', async ({ request, params }) => {
+    const body = (await request.json()) as { chip_number?: string; issuer?: string | null; implanted_at?: string | null }
+    if (!body.chip_number) {
+      return HttpResponse.json(
+        { message: 'Validation Error', errors: { chip_number: ['Required'] } },
+        { status: 422 }
+      )
+    }
+    return HttpResponse.json({
+      data: {
+        id: Date.now(),
+        pet_id: Number(params.petId),
+        chip_number: body.chip_number,
+        issuer: body.issuer ?? null,
+        implanted_at: body.implanted_at ?? null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    }, { status: 201 })
+  }),
+  http.put('http://localhost:3000/api/pets/:petId/microchips/:microchipId', async ({ request, params }) => {
+    const body = (await request.json()) as Partial<{ chip_number: string; issuer?: string | null; implanted_at?: string | null }>
+    return HttpResponse.json({
+      data: {
+        id: Number(params.microchipId),
+        pet_id: Number(params.petId),
+        chip_number: body.chip_number ?? '982000000000000',
+        issuer: body.issuer ?? null,
+        implanted_at: body.implanted_at ?? null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    })
+  }),
+  http.delete('http://localhost:3000/api/pets/:petId/microchips/:microchipId', () => {
+    return HttpResponse.json({ data: true })
+  }),
+]
+
 const placementRequestHandlers = [
   http.post('http://localhost:3000/api/placement-requests', async ({ request }) => {
     const raw = await request.json()
@@ -417,6 +466,7 @@ export const handlers = [
   ...weightHistoryHandlers,
   ...medicalNoteHandlers,
   ...vaccinationHandlers,
+  ...microchipHandlers,
   ...placementRequestHandlers,
   ...helperProfileHandlers,
   // notifications (simple in-memory mock)

@@ -66,6 +66,10 @@ class PetTypeResource extends Resource
                     ->label('Weight tracking allowed')
                     ->default(false)
                     ->helperText('Enable weights feature for this pet type'),
+                Toggle::make('microchips_allowed')
+                    ->label('Microchips allowed')
+                    ->default(false)
+                    ->helperText('Enable microchips feature for this pet type'),
                 Toggle::make('is_active')
                     ->default(true)
                     ->helperText('Inactive pet types cannot be selected when creating new pets')
@@ -115,6 +119,9 @@ class PetTypeResource extends Resource
 
                 BooleanColumn::make('weight_tracking_allowed')
                     ->label('Weights Allowed')
+                    ->sortable(),
+                BooleanColumn::make('microchips_allowed')
+                    ->label('Microchips Allowed')
                     ->sortable(),
                 BadgeColumn::make('is_system')
                     ->colors([

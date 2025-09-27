@@ -1,6 +1,6 @@
 # Pet Health MVP
 
-Status updated: 2025-09-27
+Status updated: 2025-09-28
 
 This document consolidates the Pet Health planning (previously in `tmp/medical_md.md` and `tmp/medical_records_feature.md`) into a single source of truth.
 
@@ -9,7 +9,7 @@ This document consolidates the Pet Health planning (previously in `tmp/medical_m
 - [x] General medical events (notes for exams, surgeries, meds, etc.)
 - [x] Vaccinations (records)
 - [x] Vaccination reminders (daily job)
-- [ ] Multi-chip support (Pet has many Microchips)
+- [x] Multi-chip support (Pet has many Microchips)
 
 ## Data Model
 - pets (existing)
@@ -19,7 +19,7 @@ This document consolidates the Pet Health planning (previously in `tmp/medical_m
   - id, pet_id FK, note text, record_date date, created_at/updated_at, unique(pet_id, record_date)
 - weight_entries — DONE (as weight_histories)
   - id, pet_id FK, weight_g int, measured_at/record_date, created_at/updated_at
-- pet_microchips — PENDING
+- pet_microchips — DONE
   - id, pet_id FK, chip_number string unique, issuer nullable, implanted_at date nullable, created_at/updated_at
 
 Indexes
@@ -42,10 +42,10 @@ Capability gating
 - Weights: /api/pets/{pet}/weights (CRUD) — implemented
 - Vaccinations: /api/pets/{pet}/vaccinations (CRUD) — implemented
 - Medical Notes: /api/pets/{pet}/medical-notes (CRUD) — implemented
-- Microchips: /api/pets/{pet}/microchips (CRUD) — planned
+- Microchips: /api/pets/{pet}/microchips (CRUD) — implemented
 
 ## Authorization
-- Owner or admin; 403 for others — implemented for weights, medical notes, vaccinations
+- Owner or admin; 403 for others — implemented for weights, medical notes, vaccinations, microchips
 
 ## Reminders (Vaccinations)
 - Daily job scans `due_at`; sends notifications via existing email system
@@ -64,7 +64,7 @@ Capability gating
 2) Backend vaccinations — DONE
 3) Backend medical events (notes) — DONE
 4) Vaccination reminders — DONE
-5) Backend microchips — PENDING
+5) Backend microchips — DONE
 6) Frontend health sections — DONE
 7) Docs + Swagger — IN PROGRESS
 
@@ -76,4 +76,4 @@ Capability gating
 ## Next Steps
 - Extend OpenAPI where helpful and regenerate Swagger
 - Add Filament admin toggles if we later make medical/vaccinations DB-driven per type
-- Implement Microchips (data model, API, UI) per scope
+- Frontend polish for microchips UI (if needed): pagination, empty-state copy, issuer suggestions

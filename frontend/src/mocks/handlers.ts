@@ -299,6 +299,106 @@ const weightHistoryHandlers = [
   }),
 ]
 
+const medicalNoteHandlers = [
+  http.get('http://localhost:3000/api/pets/:petId/medical-notes', () => {
+    return HttpResponse.json({
+      data: {
+        data: [],
+        links: { first: null, last: null, prev: null, next: null },
+        meta: { current_page: 1, from: null, last_page: 1, path: '/api/pets/1/medical-notes', per_page: 25, to: null, total: 0 },
+      },
+    })
+  }),
+  http.post('http://localhost:3000/api/pets/:petId/medical-notes', async ({ request, params }) => {
+    const body = (await request.json()) as { note?: string; record_date?: string }
+    if (!body.note || !body.record_date) {
+      return HttpResponse.json(
+        { message: 'Validation Error', errors: { note: ['Required'], record_date: ['Required'] } },
+        { status: 422 }
+      )
+    }
+    return HttpResponse.json({
+      data: {
+        id: Date.now(),
+        pet_id: Number(params.petId),
+        note: body.note,
+        record_date: body.record_date,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    }, { status: 201 })
+  }),
+  http.put('http://localhost:3000/api/pets/:petId/medical-notes/:noteId', async ({ request, params }) => {
+    const body = (await request.json()) as Partial<{ note: string; record_date: string }>
+    return HttpResponse.json({
+      data: {
+        id: Number(params.noteId),
+        pet_id: Number(params.petId),
+        note: body.note ?? 'Note',
+        record_date: body.record_date ?? '2024-01-01',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    })
+  }),
+  http.delete('http://localhost:3000/api/pets/:petId/medical-notes/:noteId', () => {
+    return HttpResponse.json({ data: true })
+  }),
+]
+
+const vaccinationHandlers = [
+  http.get('http://localhost:3000/api/pets/:petId/vaccinations', () => {
+    return HttpResponse.json({
+      data: {
+        data: [],
+        links: { first: null, last: null, prev: null, next: null },
+        meta: { current_page: 1, from: null, last_page: 1, path: '/api/pets/1/vaccinations', per_page: 25, to: null, total: 0 },
+      },
+    })
+  }),
+  http.post('http://localhost:3000/api/pets/:petId/vaccinations', async ({ request, params }) => {
+    const body = (await request.json()) as { vaccine_name?: string; administered_at?: string; due_at?: string | null; notes?: string | null }
+    if (!body.vaccine_name || !body.administered_at) {
+      return HttpResponse.json(
+        { message: 'Validation Error', errors: { vaccine_name: ['Required'], administered_at: ['Required'] } },
+        { status: 422 }
+      )
+    }
+    return HttpResponse.json({
+      data: {
+        id: Date.now(),
+        pet_id: Number(params.petId),
+        vaccine_name: body.vaccine_name,
+        administered_at: body.administered_at,
+        due_at: body.due_at ?? null,
+        notes: body.notes ?? null,
+        reminder_sent_at: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    }, { status: 201 })
+  }),
+  http.put('http://localhost:3000/api/pets/:petId/vaccinations/:recordId', async ({ request, params }) => {
+    const body = (await request.json()) as Partial<{ vaccine_name: string; administered_at: string; due_at?: string | null; notes?: string | null }>
+    return HttpResponse.json({
+      data: {
+        id: Number(params.recordId),
+        pet_id: Number(params.petId),
+        vaccine_name: body.vaccine_name ?? 'Rabies',
+        administered_at: body.administered_at ?? '2024-01-01',
+        due_at: body.due_at ?? null,
+        notes: body.notes ?? null,
+        reminder_sent_at: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    })
+  }),
+  http.delete('http://localhost:3000/api/pets/:petId/vaccinations/:recordId', () => {
+    return HttpResponse.json({ data: true })
+  }),
+]
+
 const placementRequestHandlers = [
   http.post('http://localhost:3000/api/placement-requests', async ({ request }) => {
     const raw = await request.json()
@@ -315,6 +415,8 @@ export const handlers = [
   ...transferRequestHandlers,
   ...versionHandlers,
   ...weightHistoryHandlers,
+  ...medicalNoteHandlers,
+  ...vaccinationHandlers,
   ...placementRequestHandlers,
   ...helperProfileHandlers,
   // notifications (simple in-memory mock)

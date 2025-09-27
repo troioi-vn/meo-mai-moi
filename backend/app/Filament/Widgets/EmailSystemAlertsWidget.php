@@ -78,7 +78,9 @@ class EmailSystemAlertsWidget extends Widget
         try {
             $stuckJobs = DB::table('jobs')
                 ->where('payload', 'like', '%SendNotificationEmail%')
-                ->where('created_at', '<', now()->subHours(2))
+                // jobs.created_at is stored as an integer (Unix timestamp)
+                // so compare using a Unix timestamp to avoid type errors on PostgreSQL
+                ->where('created_at', '<', now()->subHours(2)->timestamp)
                 ->count();
 
             if ($stuckJobs > 0) {

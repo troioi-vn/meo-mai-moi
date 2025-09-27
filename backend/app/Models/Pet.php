@@ -116,6 +116,22 @@ class Pet extends Model
     }
 
     /**
+     * Get medical notes for this pet
+     */
+    public function medicalNotes(): HasMany
+    {
+        return $this->hasMany(MedicalNote::class);
+    }
+
+    /**
+     * Get vaccination records for this pet
+     */
+    public function vaccinations(): HasMany
+    {
+        return $this->hasMany(VaccinationRecord::class);
+    }
+
+    /**
      * Get comments for this pet
      */
     public function comments(): HasMany

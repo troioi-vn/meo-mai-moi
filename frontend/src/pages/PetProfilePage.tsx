@@ -11,7 +11,7 @@ import { petSupportsCapability } from '@/types/pet'
 import { getResponderHelperProfile } from '@/api/helper-profiles'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
-import { PetDetails } from '@/components/PetDetails'
+import PetDetails from '@/components/PetDetails'
 import { PlacementRequestModal } from '@/components/PlacementRequestModal'
 import { toast } from 'sonner'
 import { ScheduleHandoverModal } from '@/components/ScheduleHandoverModal'
@@ -25,6 +25,8 @@ import {
 import { useAuth } from '@/hooks/use-auth'
 import { Badge } from '@/components/ui/badge'
 import { WeightHistorySection } from '@/components/weights/WeightHistorySection'
+import { MedicalNotesSection } from '@/components/medical/MedicalNotesSection'
+import { VaccinationsSection } from '@/components/vaccinations/VaccinationsSection'
 
 const PetProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -169,12 +171,6 @@ const PetProfilePage: React.FC = () => {
     }
   }
 
-  const handleEditClick = () => {
-    if (pet?.id) {
-      void navigate(`/pets/${String(pet.id)}/edit`)
-    }
-  }
-
   const handleMyPetsClick = () => {
     void navigate('/account/pets')
   }
@@ -220,31 +216,33 @@ const PetProfilePage: React.FC = () => {
         <div className="mb-6">
           {pet.viewer_permissions?.can_edit && (
             <OwnerButtonGroup
-              onEdit={() => {
-                handleEditClick()
-              }}
               onPlacementRequest={handleOpenModal}
               onMyCats={handleMyPetsClick}
-              showPlacementRequest={petSupportsCapability(pet.pet_type, 'placement')}
+              showPlacementRequest={false}
             />
           )}
         </div>
 
         {/* Pet Profile Content */}
-        <PetDetails
-          pet={pet}
-          onDeletePlacementRequest={(pid) => {
-            void handleDeletePlacementRequest(pid)
-          }}
-          onCancelTransferRequest={(tid) => {
-            void handleCancelMyTransferRequest(tid)
-          }}
-          onTransferResponseSuccess={refresh}
-        />
-
-        {/* Weight history (owner) */}
+          <PetDetails
+            pet={pet}
+            onDeletePlacementRequest={handleDeletePlacementRequest}
+            onCancelTransferRequest={handleCancelMyTransferRequest}
+            onTransferResponseSuccess={refresh}
+            onOpenPlacementRequest={handleOpenModal}
+          />        {/* Weight history (owner) */}
         {petSupportsCapability(pet.pet_type, 'weight') && (
           <WeightHistorySection petId={pet.id} canEdit={Boolean(pet.viewer_permissions?.can_edit)} />
+        )}
+
+        {/* Vaccinations below weight history */}
+        {petSupportsCapability(pet.pet_type, 'vaccinations') && (
+          <VaccinationsSection petId={pet.id} canEdit={Boolean(pet.viewer_permissions?.can_edit)} />
+        )}
+
+        {/* Medical notes (owner) */}
+        {petSupportsCapability(pet.pet_type, 'medical') && (
+          <MedicalNotesSection petId={pet.id} canEdit={Boolean(pet.viewer_permissions?.can_edit)} />
         )}
 
         {/* Responses Section */}

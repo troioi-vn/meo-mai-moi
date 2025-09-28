@@ -24,7 +24,7 @@ FROM php:8.4-fpm
 WORKDIR /var/www
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y     libpng-dev libjpeg62-turbo-dev libfreetype6-dev libonig-dev libzip-dev     libpq-dev libicu-dev locales zip unzip curl nginx supervisor procps net-tools postgresql-client
+RUN apt-get update && apt-get install -y     libpng-dev libjpeg62-turbo-dev libfreetype6-dev libonig-dev libzip-dev     libpq-dev libicu-dev locales zip unzip curl nginx supervisor procps net-tools postgresql-client sqlite3
 
 # Install PHP extensions
 RUN docker-php-ext-install mbstring zip exif pcntl intl pdo_pgsql     && docker-php-ext-configure gd --with-freetype --with-jpeg     && docker-php-ext-install gd

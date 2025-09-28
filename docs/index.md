@@ -42,6 +42,7 @@ The core technical design, data models, and development roadmap for this project
 
 - Local setup, testing, tips: [Development Guide](./development.md)
 - Deployment steps: [Production Deployment](./deploy.md)
+- Release steps: [Release Guide](./release.md)
  - Pet health features are implemented (weights, vaccinations, microchips, medical notes). See Development Guide for details.
 
 This documentation site will be expanded over time to include user guides, API references, and deployment instructions.

@@ -187,7 +187,7 @@ cd ../../backend
 php artisan migrate:fresh --seed
 php artisan shield:generate --all
 php artisan storage:link
-php artisan serve
+php artisan serve  # Requires dev PostgreSQL container to be running
 ```
 
 SQLite note
@@ -207,6 +207,7 @@ cd frontend
 npm run build
 
 # Serve via Laravel (if not already running from the Backend step)
+# Note: Requires dev PostgreSQL container to be running (see Backend setup above)
 cd ../backend
 php artisan serve
 

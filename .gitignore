@@ -18,7 +18,6 @@ backups/
 /public/hot
 /public/storage
 /public/build
-/backend/database/database.sqlite
 node_modules/
 npm-debug.log
 yarn-error.log

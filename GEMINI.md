@@ -1,6 +1,8 @@
 # GEMINI.md — AI Agent Guide for Meo Mai Moi
 
-This is the AI-agent-oriented guide: architecture, conventions, workflows, and safe/practical ways to contribute autonomously.
+This is the AI-agent-oriented guide: architecture, conventions, workf- Backend tests: schema mismatches
+  - Symptom: "no such column" in tests using `RefreshDatabase`.
+  - Fix: remove conflicting migrations; add new columns to initial creates; ensure proper DB config in test env; `php artisan optimize:clear`.
 
 ## 1. Project Summary
 
@@ -16,7 +18,7 @@ This is the AI-agent-oriented guide: architecture, conventions, workflows, and s
 
 -   **Backend:** Laravel (PHP) REST API with a Filament Admin Panel.
 -   **Frontend:** React (TypeScript) SPA with Vite, Tailwind CSS, and shadcn/ui.
--   **Database:** SQLite (local), PostgreSQL (production).
+-   **Database:** PostgreSQL (all environments).
 -   **Deployment:** Docker Compose with an optimized multi-stage build.
 
 ### Core Architectural Principles
@@ -119,7 +121,7 @@ When debugging:
 
 - Local DB driver issues
   - Symptom: `could not find driver` for PostgreSQL.
-  - Fix: install `pdo_pgsql` or switch local to SQLite (`DB_CONNECTION=sqlite`, create `database.sqlite`); `php artisan config:clear`; verify via tinker.
+  - Fix: install `pdo_pgsql`; `php artisan config:clear`; verify via tinker.
 
 - 403 in backend tests (policies)
   - Causes: wrong role/auth, missing policy, bad data state, missing relationships, mass assignment.
@@ -239,9 +241,9 @@ This section is for AI coding agents (Copilots) to be effective, safe, and fast 
 
 ### Session Notes — 2025-08-16 (Admin & DB Setup, condensed)
 
-- Local DB: default to SQLite for dev; update `.env`; remove redundant migrations; docs added.
+- Local DB: default to PostgreSQL for dev; update `.env`; remove redundant migrations; docs added.
 - Admin moderation: HelperProfile actions (approve/reject/suspend/reactivate), bulk actions, suspended status, photo relation manager; badges + confirmations + toasts.
-- Workflow: noted migration conflict resolution; added DB troubleshooting; SQLite recommended for local.
+- Workflow: noted migration conflict resolution; added DB troubleshooting; PostgreSQL recommended for local.
 
 ### Speedrun Commands (optional)
 

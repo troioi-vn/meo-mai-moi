@@ -21,7 +21,6 @@ yarn-error.log
 # Project-specific build artifacts & logs
 backups/
 tmp/
-/backend/database/database.sqlite
 entrypoint-*.log
 docker_error.md
 

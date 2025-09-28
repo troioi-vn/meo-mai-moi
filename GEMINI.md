@@ -2,7 +2,7 @@
 
 This is the AI-agent-oriented guide: architecture, conventions, workf- Backend tests: schema mismatches
   - Symptom: "no such column" in tests using `RefreshDatabase`.
-  - Fix: remove conflicting migrations; add new columns to initial creates; ensure proper DB config in test env; `php artisan optimize:clear`.s, and safe/practical ways to contribute autonomously.
+  - Fix: remove conflicting migrations; add new columns to initial creates; ensure proper DB config in test env; `php artisan optimize:clear`.
 
 ## 1. Project Summary
 

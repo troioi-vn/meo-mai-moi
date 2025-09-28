@@ -5,6 +5,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: meo_mai_moi
+      # Development-only credentials, do not use in production
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       PGDATA: /var/lib/postgresql/data/pgdata

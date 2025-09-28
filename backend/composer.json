@@ -56,7 +56,7 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "@php -r \"echo 'Note: Start dev PostgreSQL container first: cd ../utils/dev-pgsql-docker && docker compose up -d\\n';\"",
+            "@php -r \"echo 'Note: From the backend directory, start dev PostgreSQL container: cd ../utils/dev-pgsql-docker && docker compose up -d\\n';\"",
             "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" --names=server,queue,logs"
         ],
         "test": [

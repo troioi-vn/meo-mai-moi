@@ -51,7 +51,7 @@ After accessing PgAdmin at http://localhost:8888:
 1. Click "Add New Server"
 2. General tab: Name = "Local Dev"
 3. Connection tab:
-   - Host: `postgres` (Docker internal name)
+   - Host: `postgres` (Docker Compose service name for internal container communication)
    - Port: 5432
    - Database: meo_mai_moi
    - Username: user

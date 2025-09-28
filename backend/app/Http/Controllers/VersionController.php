@@ -28,7 +28,7 @@ class VersionController extends Controller
      */
     public function show(): JsonResponse
     {
-        $version = config('version.api', 'v0.0.1');
+        $version = config('version.api');
         return response()->json(['version' => $version]);
     }
 }

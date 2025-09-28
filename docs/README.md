@@ -4,7 +4,7 @@ Welcome to the official documentation for the Meo Mai Moi project.
 
 ## About the Project
 
-Meo Mai Moi is an open-source web application engine designed to help communities build and manage local cat rehoming networks. It connects cat owners, fosters, and adopters in a seamless, community-driven platform.
+Meo Mai Moi is an open-source web application engine designed to help communities build and manage local pet rehoming networks. It connects pet owners, fosters, and adopters in a seamless, community-driven platform.
 
 Our primary goal is a geographically modular system anyone can deploy for their own city or region.
 

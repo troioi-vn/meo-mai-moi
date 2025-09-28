@@ -242,7 +242,7 @@ const transferRequestHandlers = [
 
 const versionHandlers = [
   http.get('http://localhost:3000/api/version', () => {
-    return HttpResponse.json({ version: 'v0.0.1' })
+    return HttpResponse.json({ version: 'v0.4.0' })
   }),
 ]
 

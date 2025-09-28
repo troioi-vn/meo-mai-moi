@@ -2,7 +2,7 @@
 
 Connecting owners, fosters, and adopters to help pets find new homes. Built with Laravel, React, and PostgreSQL.
 
-Dockerized • Laravel 11 • React 19 • Vite 7 • PostgreSQL 14 • Filament 3
+Dockerized • Laravel 12 • React 19 • Vite 7 • PostgreSQL 14 • Filament 3
 
 ## Quick Start (Docker)
 
@@ -19,7 +19,7 @@ docker compose exec backend php artisan storage:link
 
 Access:
 - App: http://localhost:8000
-- Admin: http://localhost:8000/admin (admin@catarchy.space / password)
+- Admin: http://localhost:8000/admin (admin@catarchy.space / password) (local dev)
 
 ## Documentation
 
@@ -65,7 +65,7 @@ cd frontend && npm run lint && npm run typecheck
 ```
 
 5) Open a Pull Request
-- Push your branch and open a PR to `main`. Keep PRs small when possible.
+- Push your branch and open a PR to `dev`. Keep PRs small when possible.
 - Include screenshots for UI changes and mention tests added/updated.
 
 For architecture context, see `GEMINI.md` (AI Agent Guide).

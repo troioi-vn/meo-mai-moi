@@ -14,15 +14,10 @@ class PetCapabilityService
     private const CAPABILITIES = [
         'fostering' => ['cat'],
         'medical' => ['cat'],
-<<<<<<< HEAD
-        'ownership' => ['cat'],
-        'weight' => ['cat'],
-=======
         'vaccinations' => ['cat'],
         'ownership' => ['cat'],
         // 'weight' is dynamic per pet type; handled specially below
         // 'microchips' is dynamic per pet type; handled specially below
->>>>>>> dev
         'comments' => ['cat'],
         'status_update' => ['cat'],
         'photos' => ['cat', 'dog'], // Photos allowed for all pet types
@@ -42,10 +37,6 @@ class PetCapabilityService
             return $pet->petType->placement_requests_allowed;
         }
 
-<<<<<<< HEAD
-        $allowedTypes = self::CAPABILITIES[$capability] ?? [];
-
-=======
         if ($capability === 'weight') {
             return (bool) ($pet->petType->weight_tracking_allowed ?? false);
         }
@@ -55,7 +46,6 @@ class PetCapabilityService
         }
 
         $allowedTypes = self::CAPABILITIES[$capability] ?? [];
->>>>>>> dev
         return in_array($pet->petType->slug, $allowedTypes);
     }
 
@@ -92,11 +82,8 @@ class PetCapabilityService
 
         $petType = PetType::where('slug', $petTypeSlug)->first();
         $capabilities['placement'] = $petType ? $petType->placement_requests_allowed : false;
-<<<<<<< HEAD
-=======
         $capabilities['weight'] = $petType ? (bool) $petType->weight_tracking_allowed : false;
         $capabilities['microchips'] = $petType ? (bool) $petType->microchips_allowed : false;
->>>>>>> dev
 
         return $capabilities;
     }
@@ -108,14 +95,9 @@ class PetCapabilityService
     {
         $matrix = self::CAPABILITIES;
         // Placement is now dynamic, so we add it here for the frontend.
-        // This is a simplified representation. A more robust solution might involve
-        // querying the database for all pet types and their placement capabilities.
         $matrix['placement'] = PetType::where('placement_requests_allowed', true)->pluck('slug')->toArray();
-<<<<<<< HEAD
-=======
         $matrix['weight'] = PetType::where('weight_tracking_allowed', true)->pluck('slug')->toArray();
         $matrix['microchips'] = PetType::where('microchips_allowed', true)->pluck('slug')->toArray();
->>>>>>> dev
 
         return $matrix;
     }

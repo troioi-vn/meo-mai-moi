@@ -49,6 +49,8 @@ The system enforces different feature availability based on pet type:
 
 **Error Handling:** When a capability is not available for a pet type, the API returns a 422 error with `error_code: "FEATURE_NOT_AVAILABLE_FOR_PET_TYPE"`.
 
+Note: Actual capability availability is controlled via `PetType` configuration in the database and enforced by `PetCapabilityService`. The matrix above shows defaults rather than hard-coded behavior.
+
 ### Authentication
 
 React Context (`AuthProvider`) manages session auth; Axios interceptor handles cookies.
@@ -80,7 +82,7 @@ This project has several specific, non-standard workflows that are critical to u
 
 ### Versioning & Changelog
 
-Semantic Versioning (e.g., `0.4.0`). Track changes in `CHANGELOG.md` under `[Unreleased]` → `Added/Changed/Fixed` with short user-facing lines.
+Semantic Versioning (e.g., `0.4.0`). Track changes in `CHANGELOG.md` under `[Unreleased]` → `Added/Changed/Fixed` with short user-facing lines. Older entries are archived in `HISTORY.md`.
 
 ### Testing Strategy
 
@@ -179,7 +181,7 @@ This section is for AI coding agents (Copilots) to be effective, safe, and fast 
 
 ### Frontend Rules of the Road
 
-- Axios baseURL `/api`; use relative endpoints (`api.get('cats/1')`) to avoid `/api/api`.
+- Axios baseURL `/api`; use relative endpoints (`api.get('pets/1')`) to avoid `/api/api`.
 - MSW tests use absolute URLs; mirror `{ data: ... }` shape.
 - Prefer `findBy...` over nested `waitFor`.
 - Radix/shadcn tests: Select trigger role is `combobox`; provide `DialogDescription`.
@@ -214,7 +216,7 @@ This section is for AI coding agents (Copilots) to be effective, safe, and fast 
 - Placement responses flow: modal submit → owner confirm/reject with toasts and `refresh()`; `/requests` filters are client-side.
 - Handover lifecycle UI: create pending handover on accept; schedule/modal; status chips; confirm/dispute/cancel/complete; UI hides fulfilled requests.
 - Visibility rule: show "Active Placement Requests" only when open/active.
-- My Cats sections: API returns sections; UI shows sections + "Show all" toggle; keep MSW handlers aligned.
+- My Pets sections: API returns sections; UI shows sections + "Show all" toggle; keep MSW handlers aligned.
 - Hooks guard: never call hooks conditionally or inline in props; declare `useMemo` at top.
 
 ### Session Notes — 2025-08-11 (condensed)
@@ -230,8 +232,8 @@ This section is for AI coding agents (Copilots) to be effective, safe, and fast 
 ### Session Notes — 2025-08-13 (Rehoming/Handover Flow, condensed)
 
 - Endpoints: GET latest handover, POST cancel/confirm/complete routes wired.
-- UI: CatProfile shows chips + meeting details; helper confirm/dispute panel; meeting banner with Cancel/Complete; CatDetails hides fulfilled requests.
-- Policy: `CatPolicy@view` allows accepted helper to view cat until completion.
+- UI: PetProfile shows chips + meeting details; helper confirm/dispute panel; meeting banner with Cancel/Complete; PetDetails hides fulfilled requests.
+- Policy: `PetPolicy@view` allows accepted helper to view pet until completion.
 - Tests: absolute URLs; `{ data: ... }`; prefer `findBy...`.
 - Follow-ups: post-completion redirects; foster return UI parity.
 

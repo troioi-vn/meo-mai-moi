@@ -1,8 +1,6 @@
 import { api } from './axios'
 import type { Pet, PetType } from '@/types/pet'
 
-<<<<<<< HEAD
-=======
 export interface WeightHistory {
   id: number
   pet_id: number
@@ -42,7 +40,7 @@ export interface PetMicrochip {
   created_at: string
   updated_at: string
 }
->>>>>>> dev
+
 export const getAllPets = async (): Promise<Pet[]> => {
   const response = await api.get<{ data: Pet[] }>('/pets')
   return response.data.data
@@ -141,8 +139,7 @@ export const getPetTypes = async (): Promise<PetType[]> => {
   const response = await api.get<{ data: PetType[] }>('/pet-types')
   return response.data.data
 }
-<<<<<<< HEAD
-=======
+
 
 // Weights API
 export const getPetWeights = async (
@@ -305,4 +302,4 @@ export const deleteVaccination = async (petId: number, recordId: number): Promis
   )
   return response.data.data
 }
->>>>>>> dev
+

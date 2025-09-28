@@ -168,7 +168,7 @@ Requirements
 - PHP 8.4+
 - Composer
 - Node.js 18+
-- SQLite (recommended for local)
+ - Database: Prefer Postgres. SQLite is no longer recommended after schema squashing.
 
 1) Backend
 ```bash
@@ -176,11 +176,22 @@ cd backend
 cp .env.example .env
 composer install
 php artisan key:generate
+
+## Option A: Use Dockerized Postgres with native PHP (recommended)
+## Start the dev PostgreSQL container:
+cd ../utils/dev-pgsql-docker
+docker compose up -d
+
+## Then run migrations/seeds using the pgsql config in .env
+cd ../../backend
 php artisan migrate:fresh --seed
 php artisan shield:generate --all
 php artisan storage:link
-php artisan serve
+php artisan serve  # Requires dev PostgreSQL container to be running
 ```
+
+SQLite note
+- After we squashed migrations into `database/schema/pgsql-schema.sql`, we no longer maintain a separate SQLite schema. Native SQLite will fail (missing tables) unless you provide a compatible `database/schema/sqlite-schema.sql`. Use Postgres for native development instead (see Option A above), or run the backend in Docker.
 
 2) Frontend
 ```bash
@@ -196,6 +207,7 @@ cd frontend
 npm run build
 
 # Serve via Laravel (if not already running from the Backend step)
+# Note: Requires dev PostgreSQL container to be running (see Backend setup above)
 cd ../backend
 php artisan serve
 

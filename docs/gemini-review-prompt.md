@@ -45,7 +45,7 @@ Your review should cover backend (Laravel), frontend (React/TypeScript + Vitest)
    - `pets` table with `pet_type_id`; related tables refactored to `pet_id`.
    - Legacy schema cleanup migration exists: `2025_09_25_120000_drop_legacy_cat_schema.php`.
      - Verify it is safe in production environments.
-     - Verify it no-ops in testing/SQLite to avoid index/column-drop issues (as implemented).
+     - Verify it no-ops in testing/PostgreSQL to avoid index/column-drop issues (as implemented).
    - Confirm no application logic depends on legacy Cat tables/models.
 
 3. Frontend UX and routing
@@ -128,7 +128,7 @@ Produce a concise, high-signal report in Markdown that includes:
 ## Validation Notes
 - Frontend tests: pass/fail counts, anomalies
 - Backend tests: pass/fail counts, anomalies
-- Any environment notes (e.g., SQLite test DB + migration no-op rationale)
+- Any environment notes (e.g., PostgreSQL test DB + migration no-op rationale)
 
 ## Appendix
 - Residual references found: …
@@ -138,7 +138,7 @@ Produce a concise, high-signal report in Markdown that includes:
 ## Constraints to respect during review
 - Do not propose editing admin panel files unless explicitly allowed later.
 - No backward compatibility layer is needed; flag any reintroduction of legacy behaviors.
-- Treat the legacy cleanup migration as production-focused; it intentionally no-ops for testing/SQLite.
+- Treat the legacy cleanup migration as production-focused; it intentionally no-ops for testing/PostgreSQL.
 
 ## Success criteria
 - Clear mapping of implementation vs. plan with zero-ambiguity status per item

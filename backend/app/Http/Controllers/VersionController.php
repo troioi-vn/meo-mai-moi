@@ -21,13 +21,14 @@ class VersionController extends Controller
      *         @OA\JsonContent(
      *             type="object",
      *
-     *             @OA\Property(property="version", type="string", example="v0.0.1")
+     *             @OA\Property(property="version", type="string", example="v0.4.0")
      *         )
      *     )
      * )
      */
     public function show(): JsonResponse
     {
-        return response()->json(['version' => 'v0.0.1']);
+        $version = config('version.api', 'v0.0.1');
+        return response()->json(['version' => $version]);
     }
 }

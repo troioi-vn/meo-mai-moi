@@ -3906,7 +3906,7 @@
                                     "properties": {
                                         "version": {
                                             "type": "string",
-                                            "example": "v0.0.1"
+                                            "example": "v0.4.0"
                                         }
                                     },
                                     "type": "object"

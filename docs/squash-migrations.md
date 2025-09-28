@@ -18,9 +18,8 @@ This guide describes a safe, repeatable process to squash migrations into a sing
 - You have a backup or you’re intentionally discarding data (in dev).
 
 ## One-time hardening (recommended)
-- Ensure the PHP image includes the sqlite3 CLI, so `schema:dump` never fails due to missing binary.
-  - In `backend/Dockerfile` add `sqlite3` to `apt-get install`.
-  - Rebuild: `docker compose build backend`.
+- Ensure PostgreSQL client tools are available in the PHP image (already included via `postgresql-client`).
+  - We no longer use SQLite anywhere; `sqlite3` is not required.
 
 ## Step-by-step
 

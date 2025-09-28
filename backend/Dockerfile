@@ -44,17 +44,19 @@ COPY --from=composer:2.8 /usr/bin/composer /usr/bin/composer
 
 # Copy the entire backend application from the build stage,
 # including the Blade file that was updated by the frontend build.
-COPY --from=app-build /app/backend .
+COPY --from=app-build --chown=www-data:www-data /app/backend .
 
 # Copy the built frontend assets from the build stage
-COPY --from=app-build /app/frontend/dist ./public/build
+COPY --from=app-build --chown=www-data:www-data /app/frontend/dist ./public/build
 
-# Create Laravel's cache and storage directories
-RUN mkdir -p bootstrap/cache storage/framework/sessions storage/framework/views storage/logs
-
-# Correctly set ownership for the entire application directory
-RUN chown -R www-data:www-data /var/www
-RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+# Create Laravel's cache and storage directories with correct ownership
+RUN install -d -o www-data -g www-data \
+	bootstrap/cache \
+	storage/framework/sessions \
+	storage/framework/views \
+	storage/logs \
+ && chmod -R 775 /var/www/storage /var/www/bootstrap/cache \
+ && chown www-data:www-data /var/www
 
 # Switch to the application user to install Composer dependencies
 USER www-data

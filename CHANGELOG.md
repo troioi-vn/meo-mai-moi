@@ -4,6 +4,24 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Fixed
+- Backend: Removed leftover merge conflict markers that caused a syntax error in `PetTypeResource.php` and related classes; reconciled implementations and restored a green test suite.
+- Frontend: Resolved merge conflict markers across key pages, hooks, and API modules that blocked Vite builds; test suite green.
+
+### Changed
+- Admin: `PetTypeResource` now explicitly exposes "Weight tracking allowed" and "Microchips allowed" toggles in both the form and the table.
+- Backend: `PetCapabilityService` handles dynamic capabilities for placement, weights, and microchips based on `PetType` flags.
+- Backend: `PetType` model includes sensible defaults and casts for capability flags.
+- Seeder: Cleaned and de-conflicted `PetTypeSeeder` to ensure Cat/Dog system types exist with expected capability flags.
+- Docker: Optimized runtime image by avoiding global recursive `chown`; used `COPY --chown` and targeted `install -d` ownership only for Laravel-writable directories (`storage/**`, `bootstrap/cache`). This reduces build time and image layer churn.
+
+### Docs
+- OpenAPI: Regenerated API docs to sync with current endpoints, resolving the `ApiContractTest` mismatch.
+
+### QA
+- Frontend: Test suite passing.
+- Backend: Test suite passing (including `ApiContractTest`).
+
 ### Changed
 - **Docs**: Updated `GEMINI.md` with a new "Linting and Formatting" section.
 - **Backend**: Ran `pint` to fix PHP code style issues.
@@ -340,72 +358,3 @@ All notable changes to this project are documented here, following the [Keep a C
 - Resolved 413, 422, and 500 errors related to file uploads by correcting Nginx, PHP, and Docker configurations.
 - Fixed routing issue for direct URL access in the SPA.
 - Corrected file permissions for user-uploaded images, resolving 404 errors.
-
-## [0.3.0] - 2025-07-15
-
-### Added
-- Frontend: Added new `auth-context.tsx` file to separate context definition from provider implementation.
-- Frontend: Added comprehensive error logging in registration form for better debugging.
-
-### Changed
-- Frontend: Refactored authentication architecture for better separation of concerns.
-- Frontend: Improved error handling consistency across forms.
-- Frontend: Enhanced component implementations and UI component architecture.
-- Frontend: Improved test infrastructure and configuration.
-
-### Removed
-- Frontend: Removed the unused `HomeButton` component and all its references.
-
-### Fixed
-- Linting: Resolved majority of ESLint errors and improved type safety.
-- React Best Practices: Improved component implementations and promise handling.
-- Note: Some React 19 warnings remain for `forwardRef` usage and context providers, which are acceptable for current shadcn/ui components.
-
-## [0.2.0] - 2025-07-15
-
-### Added
-- Backend: Added `cats()` relationship to `User` model.
-- Frontend: Added `postcss.config.js` for Tailwind CSS and Autoprefixer.
-- Frontend: Created `badge-variants.ts` and `button-variants.ts` for React Fast Refresh compatibility.
-
-### Changed
-- Backend: Refactored `CatController` authorization to use manual checks instead of `authorizeResource`.
-- Frontend: Standardized import statements and improved error handling and type safety.
-- Frontend: Updated styling and structure in major components and pages.
-
-### Removed
-- Backend: Removed `__construct` with `authorizeResource` from `CatController.php`.
-- Frontend: Removed social media icon buttons from `Footer.tsx` due to deprecation warnings.
-
-### Fixed
-- General: Addressed numerous ESLint errors and improved code stability.
-- Ref Forwarding: Corrected the implementation of `React.forwardRef` in several components.
-- Fast Refresh: Fixed `react-refresh/only-export-components` errors.
-- Error Handling: Standardized and improved error handling in forms and dialogs.
-- Promise Handling: Correctly handled promises in various components.
-- Imports & Modules: Corrected the import path for `useAuth` hook and `buttonVariants`.
-- Configuration: Updated `frontend/tsconfig.json` to correctly include all necessary files.
-- Testing: Repaired broken tests by mocking dependencies correctly and updating providers.
-- UI/UX: Removed the now-redundant `HomeButton` from login and registration pages.
-
-## [Earlier]
-
-### Added
-- Initial project setup for backend (Laravel) and frontend (Vite + React + TypeScript).
-- Static site generator (`VitePress`) for documentation.
-- OpenAPI documentation with `l5-swagger` for backend.
-- ESLint, Prettier, and PHP-CS-Fixer for code style.
-- User authentication, cat listing, profile management, reviews, comments, and transfer request features.
-- Comprehensive backend and frontend test suites, including MSW and Vitest for frontend.
-- Admin panel with Filament, role/permission management, and cat photo management.
-- Docker and deployment scripts for local and production environments.
-- Extensive documentation and changelog tracking.
-
-### Changed
-- Major refactors for API response consistency, test reliability, and UI/UX improvements.
-- Standardized error handling, permission logic, and test architecture.
-- Improved Docker, Vite, and build processes for developer experience.
-
-### Fixed
-- Numerous bug fixes across backend and frontend, including authentication, API response handling, test stability, and UI issues.
-- Improved error handling and test coverage for all major features.

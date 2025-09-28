@@ -218,8 +218,6 @@ php artisan db:seed --class=ShieldSeeder
 
 ## Testing
 
-## Testing
-
 Backend (Pest/PHPUnit)
 ```bash
 # With Docker

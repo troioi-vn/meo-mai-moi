@@ -59,20 +59,21 @@ class PetTypeResource extends Resource
                     ->rows(3),
 
                 Toggle::make('placement_requests_allowed')
+                    ->label('Placement requests allowed')
                     ->default(false)
                     ->helperText('Allow users to create placement requests for this pet type'),
 
-<<<<<<< HEAD
-=======
+                // Additional capability toggles
                 Toggle::make('weight_tracking_allowed')
                     ->label('Weight tracking allowed')
                     ->default(false)
-                    ->helperText('Enable weights feature for this pet type'),
+                    ->helperText('Enable weight tracking feature for this pet type'),
                 Toggle::make('microchips_allowed')
                     ->label('Microchips allowed')
                     ->default(false)
                     ->helperText('Enable microchips feature for this pet type'),
->>>>>>> dev
+
+
                 Toggle::make('is_active')
                     ->default(true)
                     ->helperText('Inactive pet types cannot be selected when creating new pets')
@@ -120,15 +121,14 @@ class PetTypeResource extends Resource
                     ->label('Placements Allowed')
                     ->sortable(),
 
-<<<<<<< HEAD
-=======
+                // Show capability flags
                 BooleanColumn::make('weight_tracking_allowed')
                     ->label('Weights Allowed')
                     ->sortable(),
                 BooleanColumn::make('microchips_allowed')
                     ->label('Microchips Allowed')
                     ->sortable(),
->>>>>>> dev
+
                 BadgeColumn::make('is_system')
                     ->colors([
                         'success' => true,

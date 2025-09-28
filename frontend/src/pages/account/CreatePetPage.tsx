@@ -1,16 +1,10 @@
-<<<<<<< HEAD
-import React from 'react'
-=======
 import React, { useEffect, useState } from 'react'
->>>>>>> dev
 import { useParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { FormField } from '@/components/ui/FormField'
 import { FileInput } from '@/components/ui/FileInput'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useCreatePetForm } from '@/hooks/useCreatePetForm'
-<<<<<<< HEAD
-=======
 import { Input } from '@/components/ui/input'
 import { deletePet, updatePetStatus, getPet } from '@/api/pets'
 import { toast } from 'sonner'
@@ -25,36 +19,30 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
->>>>>>> dev
 
 const CreatePetPage: React.FC = () => {
   const { id: petId } = useParams<{ id: string }>()
   const isEditMode = Boolean(petId)
-<<<<<<< HEAD
-=======
   const [currentStatus, setCurrentStatus] = useState<'active' | 'lost' | 'deceased' | 'deleted' | ''>('')
   const [newStatus, setNewStatus] = useState<'active' | 'lost' | 'deceased' | ''>('')
   const [statusPassword, setStatusPassword] = useState('')
   const [deletePassword, setDeletePassword] = useState('')
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
->>>>>>> dev
-  
-  const { 
-    formData, 
-    petTypes, 
-    loadingPetTypes, 
-    errors, 
-    error, 
-    isSubmitting, 
-    isLoadingPet, 
-    updateField, 
-    handleSubmit, 
-    handleCancel 
+
+  const {
+    formData,
+    petTypes,
+    loadingPetTypes,
+    errors,
+    error,
+    isSubmitting,
+    isLoadingPet,
+    updateField,
+    handleSubmit,
+    handleCancel,
   } = useCreatePetForm(petId)
 
-<<<<<<< HEAD
-=======
   // Load current status in edit mode
   useEffect(() => {
     if (!isEditMode || !petId) return
@@ -117,7 +105,6 @@ const CreatePetPage: React.FC = () => {
     }
   }
 
->>>>>>> dev
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
       <div className="w-full max-w-2xl p-8 space-y-8 bg-card rounded-lg shadow-lg border">
@@ -129,114 +116,69 @@ const CreatePetPage: React.FC = () => {
             <p className="text-muted-foreground">Loading pet data...</p>
           </div>
         ) : (
-        <form
-          onSubmit={(e) => {
-            void handleSubmit(e)
-          }}
-          className="space-y-6"
-          noValidate
-        >
-          <div className="space-y-2">
-            <label htmlFor="pet_type_id" className="text-sm font-medium">
-              Pet Type
-            </label>
-            {loadingPetTypes ? (
-              <div className="text-sm text-muted-foreground">Loading pet types...</div>
-            ) : (
-              <Select
-                value={formData.pet_type_id ? String(formData.pet_type_id) : ''}
-                onValueChange={(value) => {
-                  updateField('pet_type_id')(Number(value))
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a pet type..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {petTypes.map((petType) => (
-                    <SelectItem key={petType.id} value={String(petType.id)}>
-                      {petType.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <form
+            onSubmit={(e) => {
+              void handleSubmit(e)
+            }}
+            className="space-y-6"
+            noValidate
+          >
+            <div className="space-y-2">
+              <label htmlFor="pet_type_id" className="text-sm font-medium">
+                Pet Type
+              </label>
+              {loadingPetTypes ? (
+                <div className="text-sm text-muted-foreground">Loading pet types...</div>
+              ) : (
+                <Select
+                  value={formData.pet_type_id ? String(formData.pet_type_id) : ''}
+                  onValueChange={(value) => {
+                    updateField('pet_type_id')(Number(value))
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a pet type..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {petTypes.map((petType) => (
+                      <SelectItem key={petType.id} value={String(petType.id)}>
+                        {petType.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {errors.pet_type_id && <p className="text-sm text-destructive">{errors.pet_type_id}</p>}
+            </div>
+
+            <FormField id="name" label="Name" value={formData.name} onChange={updateField('name')} error={errors.name} placeholder="Enter pet's name" />
+
+            <FormField id="breed" label="Breed" value={formData.breed} onChange={updateField('breed')} error={errors.breed} placeholder="Enter pet's breed" />
+
+            <FormField id="birthday" label="Birthday" type="date" value={formData.birthday} onChange={updateField('birthday')} error={errors.birthday} />
+
+            <FormField id="location" label="Location" value={formData.location} onChange={updateField('location')} error={errors.location} placeholder="Enter pet's location" />
+
+            <FormField id="description" label="Description" type="textarea" value={formData.description} onChange={updateField('description')} error={errors.description} placeholder="Describe the pet's personality and characteristics" />
+
+            <FileInput id="photos" label="Photos" onChange={updateField('photos')} multiple />
+
+            {error && (
+              <p className="text-destructive" data-testid="form-error">
+                {error}
+              </p>
             )}
-            {errors.pet_type_id && (
-              <p className="text-sm text-destructive">{errors.pet_type_id}</p>
-            )}
-          </div>
 
-          <FormField
-            id="name"
-            label="Name"
-            value={formData.name}
-            onChange={updateField('name')}
-            error={errors.name}
-            placeholder="Enter pet's name"
-          />
-
-          <FormField
-            id="breed"
-            label="Breed"
-            value={formData.breed}
-            onChange={updateField('breed')}
-            error={errors.breed}
-            placeholder="Enter pet's breed"
-          />
-
-          <FormField
-            id="birthday"
-            label="Birthday"
-            type="date"
-            value={formData.birthday}
-            onChange={updateField('birthday')}
-            error={errors.birthday}
-          />
-
-          <FormField
-            id="location"
-            label="Location"
-            value={formData.location}
-            onChange={updateField('location')}
-            error={errors.location}
-            placeholder="Enter pet's location"
-          />
-
-          <FormField
-            id="description"
-            label="Description"
-            type="textarea"
-            value={formData.description}
-            onChange={updateField('description')}
-            error={errors.description}
-            placeholder="Describe the pet's personality and characteristics"
-          />
-
-          <FileInput
-            id="photos"
-            label="Photos"
-            onChange={updateField('photos')}
-            multiple
-          />
-
-          {error && (
-            <p className="text-destructive" data-testid="form-error">
-              {error}
-            </p>
-          )}
-
-          <div className="flex gap-4">
-            <Button type="submit" aria-label={isEditMode ? 'Update Pet' : 'Create Pet'} disabled={isSubmitting || loadingPetTypes}>
-              {isSubmitting ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Pet' : 'Create Pet')}
-            </Button>
-            <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
-              Cancel
-            </Button>
-          </div>
-        </form>
+            <div className="flex gap-4">
+              <Button type="submit" aria-label={isEditMode ? 'Update Pet' : 'Create Pet'} disabled={isSubmitting || loadingPetTypes}>
+                {isSubmitting ? (isEditMode ? 'Updating...' : 'Creating...') : isEditMode ? 'Update Pet' : 'Create Pet'}
+              </Button>
+              <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
+                Cancel
+              </Button>
+            </div>
+          </form>
         )}
-<<<<<<< HEAD
-=======
 
         {isEditMode && (
           <div className="mt-10 space-y-6">
@@ -262,16 +204,11 @@ const CreatePetPage: React.FC = () => {
 
                 <div className="text-sm font-medium">Password</div>
                 <div>
-                  <Input
-                    type="password"
-                    placeholder="Confirm with your password"
-                    value={statusPassword}
-                    onChange={(e) => setStatusPassword(e.target.value)}
-                  />
+                  <Input type="password" placeholder="Confirm with your password" value={statusPassword} onChange={(e) => setStatusPassword(e.target.value)} />
                 </div>
               </div>
               <div className="mt-4">
-                <Button onClick={() => { void handleUpdateStatusClick() }} disabled={isUpdatingStatus}>
+                <Button onClick={() => void handleUpdateStatusClick()} disabled={isUpdatingStatus}>
                   {isUpdatingStatus ? 'Updating...' : 'Update status'}
                 </Button>
               </div>
@@ -285,12 +222,7 @@ const CreatePetPage: React.FC = () => {
               <div className="grid gap-3 sm:grid-cols-[200px_1fr] items-center">
                 <div className="text-sm font-medium">Password</div>
                 <div>
-                  <Input
-                    type="password"
-                    placeholder="Confirm with your password"
-                    value={deletePassword}
-                    onChange={(e) => setDeletePassword(e.target.value)}
-                  />
+                  <Input type="password" placeholder="Confirm with your password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} />
                 </div>
               </div>
               <div className="mt-4">
@@ -309,10 +241,7 @@ const CreatePetPage: React.FC = () => {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        onClick={() => { void handleDeletePetClick() }}
-                      >
+                      <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => void handleDeletePetClick()}>
                         Confirm remove
                       </AlertDialogAction>
                     </AlertDialogFooter>
@@ -322,7 +251,6 @@ const CreatePetPage: React.FC = () => {
             </div>
           </div>
         )}
->>>>>>> dev
       </div>
     </div>
   )

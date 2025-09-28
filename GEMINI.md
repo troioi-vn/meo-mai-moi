@@ -82,7 +82,7 @@ This project has several specific, non-standard workflows that are critical to u
 
 ### Versioning & Changelog
 
-Semantic Versioning (e.g., `0.4.0`). Track changes in `CHANGELOG.md` under `[Unreleased]` → `Added/Changed/Fixed` with short user-facing lines.
+Semantic Versioning (e.g., `0.4.0`). Track changes in `CHANGELOG.md` under `[Unreleased]` → `Added/Changed/Fixed` with short user-facing lines. Older entries are archived in `HISTORY.md`.
 
 ### Testing Strategy
 

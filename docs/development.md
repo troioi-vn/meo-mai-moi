@@ -51,19 +51,72 @@ Quick conflict-resolution routine
 # Make sure you're on your feature branch
 git checkout feature/your-change
 git fetch origin
-# Rebase onto latest dev (preferred) or merge if you must
+
+# For large conflicts or complex merges, consider creating a dedicated merge branch
+# This allows for systematic resolution without affecting your original feature branch
+git checkout -b merge/resolve-conflicts-$(date +%Y%m%d)
+git merge origin/dev
+
+# Resolve conflicts systematically:
+# 1. Use 'git status' to see all conflicted files
+# 2. For add/add conflicts: choose dev version or manually merge
+# 3. For content conflicts: manually resolve keeping both sides where appropriate
+# 4. For generated files: prefer dev version and regenerate if needed
+
+# After resolving all conflicts
+git add -A
+git commit -m "resolve: merge conflicts with dev"
+
+# Option A: Rebase (preferred for clean history)
 git rebase origin/dev
-# Resolve conflicts, then
+# If conflicts during rebase: resolve, then
 git add -A
 git rebase --continue
+
+# Option B: Keep merge commit
+git checkout feature/your-change
+git merge merge/resolve-conflicts-$(date +%Y%m%d)
+
 # Push updated branch (force-with-lease for rebases)
 git push --force-with-lease
+
+# Clean up temporary branch
+git branch -D merge/resolve-conflicts-$(date +%Y%m%d)
 ```
 
 ## Quick Paths
 
 - Docker (recommended): complete, reproducible environment
 - Native (without Docker): fastest iteration if you already have PHP/Node installed
+
+## Current Features & Tech Stack
+
+**Backend (Laravel 11 + PHP 8.4)**
+- **Pet Management**: Complete CRUD for pets with photo management and status tracking
+- **Health Features**: Medical notes, vaccination records with reminders, microchip tracking, weight history
+- **Placement System**: Placement requests, transfer workflows, foster assignments with handover management
+- **Notifications**: Email notifications with templates, delivery tracking, and unsubscribe system
+- **Admin Panel**: Filament-based admin with pet types, user management, and capability toggles
+- **Auth & Permissions**: Sanctum API auth with Spatie permission-based RBAC
+- **API**: Full OpenAPI documentation with Swagger UI
+- **Testing**: Comprehensive PHPUnit/Pest test suite with feature and unit tests
+
+**Frontend (React 18 + TypeScript + Vite)**
+- **Pet Profiles**: Detailed pet profile pages with health sections and photo management
+- **Health Management**: Interactive forms for medical notes, vaccinations, microchips, and weight tracking
+- **Request Management**: Placement request creation and response workflows
+- **User Management**: Registration, login, profile management, and helper profiles
+- **Notifications**: Real-time notification system with preferences
+- **Admin Features**: Capability gating based on pet type permissions
+- **Testing**: Vitest + React Testing Library with MSW for API mocking
+- **UI**: shadcn/ui components with Tailwind CSS for responsive design
+
+**Development Experience**
+- **Docker**: Complete containerized development environment
+- **Hot Reload**: Vite dev server for instant frontend updates
+- **Code Quality**: Pint (PHP), ESLint + TypeScript for linting
+- **Testing**: 238+ frontend tests, comprehensive backend coverage
+- **API Documentation**: Auto-generated OpenAPI specs with examples
 
 ---
 
@@ -89,9 +142,11 @@ docker compose exec backend php artisan storage:link
 3) Access
 - App (served by Laravel): http://localhost:8000
 - Frontend (Vite dev server, optional): http://localhost:5173
-- Admin: http://localhost:8000/admin
+- Admin Panel: http://localhost:8000/admin
   - Email: admin@catarchy.space
   - Password: password
+  - Features: Pet management, pet types with capability toggles, user management, email configurations, notification logs
+- API Documentation: http://localhost:8000/api/documentation (Swagger UI)
 
 Daily workflow
 ```bash
@@ -163,6 +218,8 @@ php artisan db:seed --class=ShieldSeeder
 
 ## Testing
 
+## Testing
+
 Backend (Pest/PHPUnit)
 ```bash
 # With Docker
@@ -171,20 +228,46 @@ docker compose exec backend php artisan test
 # Without Docker
 cd backend && php artisan test
 
-# Run a specific test
-php artisan test tests/Feature/ReviewResourceTest.php
+# Run specific test suites
+php artisan test --testsuite=Feature
+php artisan test --testsuite=Unit
+
+# Run specific test classes
+php artisan test tests/Feature/PetControllerTest.php
+php artisan test tests/Feature/WeightHistoryFeatureTest.php
+php artisan test tests/Feature/PetMicrochipsFeatureTest.php
+
+# Run with coverage (if configured)
+php artisan test --coverage
 ```
 
-Frontend (Vitest)
+Frontend (Vitest + React Testing Library)
 ```bash
 cd frontend
-npm test
+npm test                    # Run all tests
+npm run test:ui            # Open Vitest UI
+npm run test:coverage      # Generate coverage report
+
+# Run specific test patterns
+npm test -- MicrochipsSection
+npm test -- --reporter=verbose
 ```
 
-Coverage focus
-- Feature tests: API endpoints, resource management, permissions
-- Unit tests: model relationships, validation, business logic
-- Integration tests: admin panel functionality, user workflows
+**Current Test Coverage:**
+- **Frontend**: 238+ tests covering components, hooks, pages, and API integration
+- **Backend**: Comprehensive feature and unit tests covering:
+  - Pet management and health features (medical notes, vaccinations, microchips, weights)
+  - User authentication and permissions
+  - Placement and transfer workflows
+  - Email notifications and templates
+  - Admin panel functionality
+
+**Key Test Areas:**
+- **Feature tests**: API endpoints, resource management, RBAC permissions
+- **Unit tests**: Model relationships, validation rules, business logic
+- **Integration tests**: Admin panel workflows, email system, notification delivery
+- **Component tests**: React components with MSW API mocking
+- **E2E workflows**: User registration, pet creation, placement requests
 
 ---
 
@@ -291,8 +374,64 @@ cd backend && ./vendor/bin/pint
 
 Recommended habits
 - Keep `main` clean and deployable; do work in short-lived feature branches
-- Frequently sync with `main` to prevent large, painful conflicts
+- Frequently sync with `dev` (our integration branch) to prevent large, painful conflicts
 - Prefer small PRs; they are easier to review and merge
+
+Branch Strategy
+- `main`: Production-ready code, protected branch
+- `dev`: Integration branch for features, should be merged to main regularly
+- `feature/*`: Short-lived branches for individual features/fixes
+- Work flow: feature → dev → main
+
+**Complex Merge Resolution Strategy**
+
+When dealing with large conflicts (especially during dev→main merges):
+
+1. **Create a dedicated merge resolution branch**
+   ```bash
+   git checkout -b chore/merge-main-into-dev-$(date +%Y-%m-%d)
+   git merge origin/main  # or the branch you're merging
+   ```
+
+2. **Systematic conflict resolution approach:**
+   - Use `git status --porcelain` to get a clean list of conflicted files
+   - **Add/Add conflicts**: Usually take the dev version (has new features)
+   - **Content conflicts**: Manually merge, keeping both sides where appropriate  
+   - **Generated files** (api-docs.json): Take dev version, regenerate later
+   - **Rename/Delete conflicts**: Remove deleted files, keep renamed ones
+
+3. **Common conflict patterns:**
+   - Routes files: Merge both old and new routes
+   - Model files: Combine relationships and methods
+   - Factory files: Take the version with more data/features
+   - Migration files: Usually no conflicts, but check dates
+   - Frontend components: Merge prop changes and new functionality
+
+4. **Post-resolution validation:**
+   ```bash
+   # Test that everything works
+   docker compose exec backend php artisan test
+   cd frontend && npm test
+   
+   # Regenerate docs if needed  
+   docker compose exec backend php artisan l5-swagger:generate
+   ```
+
+5. **Complete the merge:**
+   ```bash
+   git add -A
+   git commit -m "resolve: systematic merge conflict resolution"
+   git push origin chore/merge-main-into-dev-$(date +%Y-%m-%d)
+   
+   # Create PR or merge directly if confident
+   git checkout dev
+   git merge chore/merge-main-into-dev-$(date +%Y-%m-%d)
+   git push origin dev
+   
+   # Clean up
+   git branch -D chore/merge-main-into-dev-$(date +%Y-%m-%d)
+   git push origin --delete chore/merge-main-into-dev-$(date +%Y-%m-%d)
+   ```
 
 Merge vs Rebase
 - Merge keeps the exact history and is simpler for beginners
@@ -304,14 +443,14 @@ Merge vs Rebase
 Before opening a PR
 - Re-sync: `git fetch origin && git merge origin/main` (or rebase)
 - Run tests: backend and frontend must be green
-- Format code: `./vendor/bin/pint` for backend; `npm run lint` for frontend
+- Format code: `./vendor/bin/pint` for backend; `npm run lint && npm run typecheck` for frontend
 - Ensure docs are accurate (e.g., endpoints, commands, environment notes)
 
 Conflict prevention (quick routine)
 ```bash
 git checkout dev            # or your feature branch
 git fetch origin
-git merge origin/main       # or: git rebase origin/main
+git merge origin/dev        # Keep up to date with integration branch
 # resolve tiny conflicts now, not later
 git push
 ```
@@ -319,14 +458,29 @@ git push
 Tip: To see what changed in main that you don’t have yet
 ```bash
 git fetch origin
-git log dev..origin/main --oneline
+git log dev..origin/dev --oneline
 ```
 
-Optional: Open/merge PRs from the CLI with GitHub CLI
+**GitHub CLI Workflow (Recommended)**
+
+Install GitHub CLI for streamlined PR management:
 ```bash
-gh pr create --base main --head feature/x --title "feat: xyz" --body "…"
+# Create PR from feature to dev
+gh pr create --base dev --head feature/your-change --title "feat: add new feature" --body "Description of changes"
+
+# View PR status and details
 gh pr status
 gh pr view --web
+
+# Check for merge conflicts before merging
+gh pr view <number>
+
+# Merge PR (after approval and tests pass)
+gh pr merge <number> --merge  # or --squash or --rebase
+
+# Close/reopen PRs as needed
+gh pr close <number>
+gh pr reopen <number>
 ```
 
 ## RBAC (short)

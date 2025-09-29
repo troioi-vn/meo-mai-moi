@@ -18,7 +18,7 @@ This is the AI-agent-oriented guide: architecture, conventions, workf- Backend t
 
 -   **Backend:** Laravel (PHP) REST API with a Filament Admin Panel.
 -   **Frontend:** React (TypeScript) SPA with Vite, Tailwind CSS, and shadcn/ui.
--   **Database:** PostgreSQL (all environments).
+-   **Database:** PostgreSQL (all environments). SQLite is no longer supported.
 -   **Deployment:** Docker Compose with an optimized multi-stage build.
 
 ### Core Architectural Principles
@@ -116,8 +116,8 @@ When debugging:
 ### Common Debugging Scenarios & Solutions
 
 - Backend tests: schema mismatches
-  - Symptom: “no such column” in tests using `RefreshDatabase`.
-  - Fix: remove conflicting migrations; add new columns to initial creates; ensure `DB_CONNECTION=sqlite`, `DB_DATABASE=:memory:` in test env; `php artisan optimize:clear`.
+  - Symptom: "no such column" or "foreign key constraint" errors in tests using `RefreshDatabase`.
+  - Fix: Ensure tests that create data also seed necessary dependencies (e.g., `PetTypeSeeder`). If `psql` is not found, install `postgresql-client` locally. Clear config/cache with `php artisan optimize:clear`.
 
 - Local DB driver issues
   - Symptom: `could not find driver` for PostgreSQL.

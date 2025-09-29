@@ -48,7 +48,11 @@ docker compose exec postgres createdb -U user meo_mai_moi
 
 # Load schema
 echo "📋 Loading schema..."
-docker compose exec postgres psql -U user -d meo_mai_moi -f /tmp/schema.sql > /dev/null
+if ! OUTPUT=$(docker compose exec postgres psql -U user -d meo_mai_moi -f /tmp/schema.sql 2>&1 > /dev/null); then
+    echo "❌ Error loading schema:"
+    echo "$OUTPUT"
+    exit 1
+fi
 
 echo "✅ Database setup complete!"
 echo ""

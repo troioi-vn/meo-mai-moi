@@ -15,6 +15,9 @@ All notable changes to this project are documented here, following the [Keep a C
 - PgAdmin interface for local database management
 - Enhanced documentation for PostgreSQL-only development workflow
 
+### Fixed
+- Resolved test failures after SQLite removal by installing `postgresql-client` and fixing test setup to use seeders.
+
 ### Removed
 - SQLite database connection configuration and references
 - `sqlite3` package from Docker image (no longer needed)

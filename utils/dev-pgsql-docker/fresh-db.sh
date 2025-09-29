@@ -17,7 +17,19 @@ if ! docker compose ps | grep -q "Up"; then
     echo "🚀 Starting PostgreSQL containers..."
     docker compose up -d
     echo "⏳ Waiting for database to be ready..."
-    sleep 5
+    # Wait for PostgreSQL to be ready using pg_isready
+    for i in {1..30}; do
+        if docker compose exec -T postgres pg_isready -U user > /dev/null 2>&1; then
+            echo "✅ Database is ready!"
+            break
+        else
+            sleep 1
+        fi
+        if [ "$i" -eq 30 ]; then
+            echo "❌ Database did not become ready in time."
+            exit 1
+        fi
+    done
 fi
 
 # Copy schema file into container

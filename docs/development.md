@@ -168,7 +168,8 @@ Requirements
 - PHP 8.4+
 - Composer
 - Node.js 18+
- - Database: Prefer Postgres. SQLite is no longer recommended after schema squashing.
+- PostgreSQL Client Tools (`psql` command)
+- Database: Prefer Postgres. SQLite is no longer recommended after schema squashing.
 
 1) Backend
 ```bash

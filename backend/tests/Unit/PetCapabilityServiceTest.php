@@ -18,9 +18,9 @@ class PetCapabilityServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Ensure pet types exist (with fixed ids for deterministic tests)
-        PetType::create(['id' => 1, 'name' => 'Cat', 'slug' => 'cat', 'is_system' => true, 'is_active' => true, 'display_order' => 0, 'placement_requests_allowed' => true]);
-        PetType::create(['id' => 2, 'name' => 'Dog', 'slug' => 'dog', 'is_system' => true, 'is_active' => true, 'display_order' => 1]);
+        
+        // Run the PetTypeSeeder to ensure pet types exist with correct capabilities
+        $this->seed(\Database\Seeders\PetTypeSeeder::class);
     }
 
     #[Test]

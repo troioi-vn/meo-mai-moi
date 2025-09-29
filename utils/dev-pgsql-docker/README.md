@@ -4,6 +4,16 @@ This directory contains a Docker Compose setup for running PostgreSQL locally fo
 
 ## Quick Start
 
+### Option A: Automated Setup (Recommended)
+```bash
+cd utils/dev-pgsql-docker
+./fresh-db.sh
+cd ../../backend
+php artisan db:seed
+php artisan serve
+```
+
+### Option B: Manual Setup
 1. **Start the database**:
    ```bash
    cd utils/dev-pgsql-docker
@@ -46,16 +56,22 @@ These settings are already configured in `backend/.env`.
 
 ## PgAdmin Setup
 
-After accessing PgAdmin at http://localhost:8888:
+After accessing PgAdmin at http://localhost:8888 (admin@example.com / admin123):
 
-1. Click "Add New Server"
-2. General tab: Name = "Local Dev"
-3. Connection tab:
-   - Host: `postgres` (Docker Compose service name for internal container communication)
-   - Port: 5432
-   - Database: meo_mai_moi
-   - Username: user
-   - Password: password
+1. **First Login**: Use email `admin@example.com` and password `admin123`
+2. **Add Server Connection**:
+   - Click "Add New Server" or go to Object Explorer → Create → Server
+3. **General Tab**: 
+   - Name: `Local Dev` (or any name you prefer)
+4. **Connection Tab**:
+   - Host name/address: `postgres` (Docker Compose service name for internal container communication)
+   - Port: `5432`
+   - Database: `meo_mai_moi`
+   - Username: `user`
+   - Password: `password`
+5. **Save**: Click "Save" to create the connection
+
+**Important**: Use `postgres` as the host name, not `localhost` or `127.0.0.1`. This is because PgAdmin runs inside a Docker container and needs to connect to the PostgreSQL container using the internal Docker network.
 
 ## Troubleshooting
 

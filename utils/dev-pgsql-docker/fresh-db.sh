@@ -1,6 +1,9 @@
 #!/bin/bash
 # Fresh Database Setup Script
 # This script recreates the database and loads the schema for native development
+#
+# Before running, make sure this script is executable:
+#   chmod +x fresh-db.sh
 
 set -e  # Exit on any error
 

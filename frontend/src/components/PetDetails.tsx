@@ -35,15 +35,15 @@ const PetDetails: React.FC<PetDetailsProps> = ({
 
   const imageUrl = useMemo(() => deriveImageUrl(pet), [pet])
 
-  const { supportsPlacement, hasActivePlacementRequest, activePlacementRequest, myPendingTransfer } =
-    usePlacementInfo(pet, user?.id)
+  const placementInfo = usePlacementInfo(pet, user?.id)
+  const { supportsPlacement, hasActivePlacementRequest, activePlacementRequest, myPendingTransfer } = placementInfo
 
   const placementRequests = pet.placement_requests ?? []
   const showPlacementRequests = supportsPlacement && placementRequests.length > 0
   const isDeceased = pet.status === 'deceased'
 
   const handleEditClick = () => {
-    navigate(`/pets/${String(pet.id)}/edit`)
+    void navigate(`/pets/${String(pet.id)}/edit`)
   }
 
   return (
@@ -75,11 +75,11 @@ const PetDetails: React.FC<PetDetailsProps> = ({
           {pet.viewer_permissions?.can_edit && (
             <div className="flex flex-wrap justify-end gap-2">
               {supportsPlacement && onOpenPlacementRequest && (
-                <Button onClick={onOpenPlacementRequest} variant="outline">
+                <Button onClick={() => { onOpenPlacementRequest() }} variant="outline">
                   Placement Requests
                 </Button>
               )}
-              <Button onClick={handleEditClick} variant="outline">
+              <Button onClick={() => { handleEditClick() }} variant="outline">
                 Edit
               </Button>
             </div>

@@ -37,10 +37,11 @@ export const WeightHistorySection: React.FC<{
       await create(values)
       setAdding(false)
       toast.success('Weight added')
-    } catch (e: any) {
-      const status = e?.response?.status
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } }).response?.status
+      const message = (err as { response?: { data?: { message?: string } } }).response?.data?.message
       if (status === 422) {
-        setServerError(e?.response?.data?.message ?? 'Validation error')
+        setServerError(message ?? 'Validation error')
       } else {
         toast.error('Failed to add weight')
       }
@@ -57,10 +58,11 @@ export const WeightHistorySection: React.FC<{
       await update(editing.id, values)
       setEditing(null)
       toast.success('Weight updated')
-    } catch (e: any) {
-      const status = e?.response?.status
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } }).response?.status
+      const message = (err as { response?: { data?: { message?: string } } }).response?.data?.message
       if (status === 422) {
-        setServerError(e?.response?.data?.message ?? 'Validation error')
+        setServerError(message ?? 'Validation error')
       } else {
         toast.error('Failed to update weight')
       }
@@ -83,7 +85,7 @@ export const WeightHistorySection: React.FC<{
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-2xl font-bold">Weight history</h2>
         {canEdit && !adding && !editing && (
-          <Button size="sm" onClick={() => setAdding(true)}>
+          <Button size="sm" onClick={() => { setAdding(true) }}>
             Add
           </Button>
         )}
@@ -96,7 +98,12 @@ export const WeightHistorySection: React.FC<{
         <div className="mb-4 rounded-md border p-3">
           <WeightForm
             initial={editing ? { weight_kg: editing.weight_kg, record_date: editing.record_date } : undefined}
-            onSubmit={(vals) => (editing ? handleUpdate(vals) : handleCreate(vals))}
+            onSubmit={(vals) => {
+              if (editing) {
+                return handleUpdate(vals)
+              }
+              return handleCreate(vals)
+            }}
             onCancel={() => {
               setAdding(false)
               setEditing(null)
@@ -116,14 +123,14 @@ export const WeightHistorySection: React.FC<{
         {sorted.map((w) => (
           <li key={String(w.id)} className="flex items-center justify-between p-3">
             <div className="flex flex-col">
-              <span className="font-medium">{Number(w.weight_kg).toFixed(2)} kg</span>
+              <span className="font-medium">{w.weight_kg.toFixed(2)} kg</span>
               <span className="text-xs text-muted-foreground">
                 {new Date(w.record_date).toLocaleDateString()}
               </span>
             </div>
             {canEdit && (
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => setEditing(w)}>
+                <Button size="sm" variant="outline" onClick={() => { setEditing(w) }}>
                   Edit
                 </Button>
                 <AlertDialog>
@@ -139,7 +146,7 @@ export const WeightHistorySection: React.FC<{
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => void handleDelete(w.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      <AlertDialogAction onClick={() => { void handleDelete(w.id) }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                         Delete
                       </AlertDialogAction>
                     </AlertDialogFooter>

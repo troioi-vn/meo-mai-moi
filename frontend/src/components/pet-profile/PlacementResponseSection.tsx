@@ -6,7 +6,7 @@ import { PlacementResponseModal } from '@/components/PlacementResponseModal'
 type PlacementRequest = NonNullable<Pet['placement_requests']>[number]
 type TransferRequest = NonNullable<PlacementRequest['transfer_requests']>[number]
 
-type Props = {
+interface Props {
   pet: Pet
   activePlacementRequest: PlacementRequest
   myPendingTransfer?: TransferRequest
@@ -39,19 +39,19 @@ export const PlacementResponseSection: React.FC<Props> = ({
           <p className="text-sm text-muted-foreground">
             You responded to this placement request. Waiting for approval...
           </p>
-          <Button variant="outline" size="sm" onClick={() => void handleCancel()}>
+          <Button variant="outline" size="sm" onClick={() => { void handleCancel() }}>
             Cancel Response
           </Button>
         </div>
       ) : (
-        <Button onClick={() => setIsRespondOpen(true)} className="w-full">
+        <Button onClick={() => { setIsRespondOpen(true) }} className="w-full">
           Respond to Placement Request
         </Button>
       )}
 
       <PlacementResponseModal
         isOpen={isRespondOpen}
-        onClose={() => setIsRespondOpen(false)}
+        onClose={() => { setIsRespondOpen(false) }}
         petName={pet.name}
         petId={pet.id}
         placementRequestId={activePlacementRequest.id}

@@ -1,7 +1,7 @@
 import React from 'react'
 import { FormField } from '@/components/ui/FormField'
 
-type Data = {
+interface Data {
   name: string
   breed: string
   birthday: string
@@ -9,7 +9,7 @@ type Data = {
   description: string
 }
 
-type Props = {
+interface Props {
   formData: Data
   errors: Partial<Record<keyof Data, string>>
   updateField: (field: keyof Data) => (value: unknown) => void

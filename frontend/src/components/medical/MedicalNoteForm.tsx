@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 
-export type MedicalNoteFormValues = {
+export interface MedicalNoteFormValues {
   note: string
   record_date: string
 }
@@ -32,13 +32,13 @@ export const MedicalNoteForm: React.FC<{
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+    <form onSubmit={(e) => { void handleSubmit(e) }} className="space-y-4" noValidate>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
           <label className="block text-sm font-medium">Note</label>
           <textarea
             value={note}
-            onChange={(e) => setNote(e.target.value)}
+            onChange={(e) => { setNote(e.target.value) }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
             placeholder="e.g., Vaccination: Rabies"
             rows={3}
@@ -50,7 +50,7 @@ export const MedicalNoteForm: React.FC<{
           <input
             type="date"
             value={date}
-            onChange={(e) => setDate(e.target.value)}
+            onChange={(e) => { setDate(e.target.value) }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
           />
           {errors.record_date && (

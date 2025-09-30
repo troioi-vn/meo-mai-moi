@@ -44,7 +44,7 @@ const CreateHelperProfilePage: React.FC = () => {
           <PetTypesSelector
             petTypes={petTypes}
             selectedPetTypeIds={formData.pet_type_ids}
-            onChangePetTypeIds={(ids) => updateField('pet_type_ids')(ids)}
+            onChangePetTypeIds={(ids) => { updateField('pet_type_ids')(ids); }}
             loading={loadingPetTypes}
             label="Pet Types Available for Placement Requests"
             error={errors.pet_type_ids}
@@ -62,7 +62,7 @@ const CreateHelperProfilePage: React.FC = () => {
             <Button type="submit" aria-label="Create Helper Profile" disabled={isSubmitting || loadingPetTypes}>
               {isSubmitting ? 'Creating...' : 'Create'}
             </Button>
-            <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
+            <Button type="button" variant="outline" onClick={() => { handleCancel() }} disabled={isSubmitting}>
               Cancel
             </Button>
           </div>

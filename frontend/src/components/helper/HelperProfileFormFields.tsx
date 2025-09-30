@@ -2,7 +2,7 @@ import React from 'react'
 import { FormField } from '@/components/ui/FormField'
 import { CheckboxField } from '@/components/ui/CheckboxField'
 
-type Props = {
+interface Props {
   formData: {
     country: string
     address: string

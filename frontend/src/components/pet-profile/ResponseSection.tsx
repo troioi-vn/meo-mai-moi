@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button'
 import type { TransferRequest, PlacementRequest as PlacementRequestType } from '@/types/pet'
 
-type Props = {
+interface Props {
   placementRequest: PlacementRequestType
   onViewProfile: (tr: TransferRequest) => void
   onConfirm: (id: number) => void

@@ -2,7 +2,7 @@ import React from 'react'
 import type { PetType } from '@/types/pet'
 import { CheckboxField } from '@/components/ui/CheckboxField'
 
-type Props = {
+interface Props {
   petTypes: PetType[]
   selectedPetTypeIds: number[]
   onChangePetTypeIds: (ids: number[]) => void
@@ -40,7 +40,9 @@ export const PetTypesSelector: React.FC<Props> = ({
               id={`pet_type_${String(petType.id)}`}
               label={petType.name}
               checked={selectedPetTypeIds.includes(petType.id)}
-              onChange={(checked: boolean) => toggle(petType.id, checked)}
+              onChange={(checked: boolean) => {
+                toggle(petType.id, checked)
+              }}
               error={error}
             />
           ))}

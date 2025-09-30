@@ -41,7 +41,7 @@ export const useMedicalNotes = (petId: number): UseMedicalNotesResult => {
         setLinks(res.links)
         setMeta(res.meta)
         setPage(pg)
-      } catch (e: unknown) {
+      } catch {
         setError('Failed to load medical notes')
       } finally {
         setLoading(false)

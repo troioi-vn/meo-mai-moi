@@ -1,16 +1,16 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 
-export type Photo = { id: number; path: string }
+export interface Photo { id: number; path: string }
 
-type Props = {
+interface Props {
   photos: Photo[]
   onDelete: (photoId: number) => void
   deleting?: boolean
 }
 
 export const PhotosGrid: React.FC<Props> = ({ photos, onDelete, deleting = false }) => {
-  if (!photos || photos.length === 0) return null
+  if (photos.length === 0) return null
   return (
     <div className="grid grid-cols-3 gap-4">
       {photos.map((photo) => (
@@ -25,7 +25,9 @@ export const PhotosGrid: React.FC<Props> = ({ photos, onDelete, deleting = false
             variant="destructive"
             size="sm"
             className="absolute top-2 right-2"
-            onClick={() => onDelete(photo.id)}
+            onClick={() => {
+              onDelete(photo.id)
+            }}
             disabled={deleting}
           >
             Delete

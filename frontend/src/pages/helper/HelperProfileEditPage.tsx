@@ -110,7 +110,7 @@ const HelperProfileEditPage: React.FC = () => {
           Edit Helper Profile
         </h1>
         <PhotosGrid
-          photos={(((data.data.photos as unknown) as { id: number; path: string }[]) ?? [])}
+          photos={(data.data.photos as { id: number; path: string }[])}
           onDelete={(photoId) => {
             deletePhotoMutation.mutate(photoId)
           }}
@@ -121,7 +121,7 @@ const HelperProfileEditPage: React.FC = () => {
           <PetTypesSelector
             petTypes={petTypes ?? []}
             selectedPetTypeIds={formData.pet_type_ids}
-            onChangePetTypeIds={(ids) => updateField('pet_type_ids')(ids)}
+            onChangePetTypeIds={(ids) => { updateField('pet_type_ids')(ids); }}
             label="Pet Types"
           />
           <FileInput
@@ -136,7 +136,7 @@ const HelperProfileEditPage: React.FC = () => {
             <Button type="submit" aria-label="Update Helper Profile" disabled={isSubmitting}>
               {isSubmitting ? 'Updating...' : 'Update'}
             </Button>
-            <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
+            <Button type="button" variant="outline" onClick={() => { handleCancel() }} disabled={isSubmitting}>
               Cancel
             </Button>
             <AlertDialog>

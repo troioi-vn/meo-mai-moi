@@ -1,14 +1,14 @@
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
-type TransferHandoverLite = {
+interface TransferHandoverLite {
   id?: number | string
   status?: string
   scheduled_at?: string | number | Date | null
   location?: string | null
 }
 
-type PlacementRequestLite = {
+interface PlacementRequestLite {
   id: number
   request_type: string
   transfer_requests?: {
@@ -18,7 +18,7 @@ type PlacementRequestLite = {
   }[]
 }
 
-type Props = {
+interface Props {
   placementRequest: PlacementRequestLite
   onSchedule: (id: number) => void
   hasHandover: (id: number) => boolean
@@ -72,7 +72,7 @@ export function AcceptedSection({ placementRequest, onSchedule, hasHandover, get
               </div>
               <div className="flex items-center gap-2">
                 {!hasHandover(tr.id) && (
-                  <Button size="sm" onClick={() => onSchedule(tr.id)}>
+                  <Button size="sm" onClick={() => { onSchedule(tr.id) }}>
                     Schedule handover
                   </Button>
                 )}

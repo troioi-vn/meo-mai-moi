@@ -21,8 +21,8 @@ Key models and auth
 - Pet types (Cat, Dog, …) with capability gating via `PetCapabilityService`.
 - React `AuthProvider` manages session auth; Axios interceptor handles cookies.
 - File uploads live under `storage/app/public` (exposed via `public/storage`).
-
 ## 3) Development basics (quick)
+
 
 Preferred: Docker
 - Start: `docker compose up -d --build`
@@ -54,7 +54,6 @@ Frontend (Vitest + RTL)
 - Email settings are database-driven via Filament at `/admin/email-configurations`. An active DB config overrides `.env` `MAIL_*`.
 
 ## 6) Debugging playbook
-
 General loop
 1) Observe the exact error/behavior
 2) Isolate (backend logs, browser devtools)

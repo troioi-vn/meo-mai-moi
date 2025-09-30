@@ -13,7 +13,7 @@ import { PetDangerZone } from '@/components/pets/PetDangerZone'
 
 const CreatePetPage: React.FC = () => {
   const { id: petId } = useParams<{ id: string }>()
-  const isEditMode = Boolean(petId)
+  const isEditMode = !!petId
   const [currentStatus, setCurrentStatus] = useState<'active' | 'lost' | 'deceased' | 'deleted' | ''>('')
   const [newStatus, setNewStatus] = useState<'active' | 'lost' | 'deceased' | ''>('')
   const [statusPassword, setStatusPassword] = useState('')
@@ -37,22 +37,16 @@ const CreatePetPage: React.FC = () => {
   // Load current status in edit mode
   useEffect(() => {
     if (!isEditMode || !petId) return
-    let cancelled = false
     void (async () => {
       try {
         const pet = await getPet(petId)
-        if (!cancelled) {
-          const st = (pet.status ?? 'active') as 'active' | 'lost' | 'deceased' | 'deleted'
-          setCurrentStatus(st)
-          setNewStatus(st === 'deleted' ? 'active' : (st as 'active' | 'lost' | 'deceased'))
-        }
+        const st: 'active' | 'lost' | 'deceased' | 'deleted' = pet.status
+        setCurrentStatus(st)
+        setNewStatus(st === 'deleted' ? 'active' : st)
       } catch {
         /* ignore */
       }
     })()
-    return () => {
-      cancelled = true
-    }
   }, [isEditMode, petId])
 
   const handleUpdateStatusClick = async () => {
@@ -68,9 +62,9 @@ const CreatePetPage: React.FC = () => {
     try {
       setIsUpdatingStatus(true)
       const updated = await updatePetStatus(petId, newStatus, statusPassword)
-      setCurrentStatus(updated.status as 'active' | 'lost' | 'deceased' | 'deleted')
+      setCurrentStatus(updated.status)
       toast.success('Status updated')
-    } catch (e) {
+    } catch {
       toast.error('Failed to update status')
     } finally {
       setIsUpdatingStatus(false)
@@ -89,7 +83,7 @@ const CreatePetPage: React.FC = () => {
       toast.success('Pet removed')
       // Reuse cancel navigation to go back to My Pets
       handleCancel()
-    } catch (e) {
+    } catch {
       toast.error('Failed to remove pet')
     } finally {
       setIsDeleting(false)
@@ -117,12 +111,12 @@ const CreatePetPage: React.FC = () => {
             <PetTypeSelect
               petTypes={petTypes}
               loading={loadingPetTypes}
-              value={formData.pet_type_id || ''}
-              onChange={(id) => updateField('pet_type_id')(id)}
+              value={formData.pet_type_id ?? ''}
+              onChange={(id) => { updateField('pet_type_id')(id); }}
               error={errors.pet_type_id}
             />
 
-            <PetFormFields formData={formData} errors={errors} updateField={updateField as any} />
+            <PetFormFields formData={formData} errors={errors} updateField={updateField} />
 
             <FileInput id="photos" label="Photos" onChange={updateField('photos')} multiple />
 
@@ -136,7 +130,7 @@ const CreatePetPage: React.FC = () => {
               <Button type="submit" aria-label={isEditMode ? 'Update Pet' : 'Create Pet'} disabled={isSubmitting || loadingPetTypes}>
                 {isSubmitting ? (isEditMode ? 'Updating...' : 'Creating...') : isEditMode ? 'Update Pet' : 'Create Pet'}
               </Button>
-              <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
+              <Button type="button" variant="outline" onClick={() => { handleCancel() }} disabled={isSubmitting}>
                 Cancel
               </Button>
             </div>
@@ -146,12 +140,12 @@ const CreatePetPage: React.FC = () => {
         {isEditMode && (
           <div className="mt-10 space-y-6">
             <PetStatusControls
-              currentStatus={currentStatus || 'active'}
-              newStatus={newStatus || 'active'}
-              setNewStatus={(s) => setNewStatus(s)}
+              currentStatus={(currentStatus || 'active')}
+              newStatus={(newStatus || 'active')}
+              setNewStatus={(s) => { setNewStatus(s); }}
               statusPassword={statusPassword}
               setStatusPassword={setStatusPassword}
-              onUpdateStatus={() => void handleUpdateStatusClick()}
+              onUpdateStatus={() => { void handleUpdateStatusClick() }}
               isUpdating={isUpdatingStatus}
             />
 
@@ -159,7 +153,7 @@ const CreatePetPage: React.FC = () => {
               deletePassword={deletePassword}
               setDeletePassword={setDeletePassword}
               isDeleting={isDeleting}
-              onDelete={() => void handleDeletePetClick()}
+              onDelete={() => { void handleDeletePetClick() }}
             />
           </div>
         )}

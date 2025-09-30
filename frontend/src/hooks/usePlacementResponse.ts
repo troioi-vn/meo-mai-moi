@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { api } from '@/api/axios'
 import type { HelperProfile } from '@/types/helper-profile'
 import { toast } from 'sonner'
@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 export type RelationshipType = 'fostering' | 'permanent_foster' | ''
 export type FosteringType = 'free' | 'paid'
 
-type Params = {
+interface Params {
   isOpen: boolean
   petName: string
   petId: number
@@ -23,8 +23,8 @@ export function usePlacementResponse({
   onSuccess,
   onClose,
 }: Params) {
-  const actualPetName = useMemo(() => petName || 'Pet', [petName])
-  const actualPetId = useMemo(() => petId || 0, [petId])
+  const actualPetName = petName || 'Pet'
+  const actualPetId = petId
 
   const [helperProfiles, setHelperProfiles] = useState<HelperProfile[]>([])
   const [loading, setLoading] = useState(true)
@@ -38,22 +38,20 @@ export function usePlacementResponse({
   // Load helper profiles when opened
   useEffect(() => {
     if (!isOpen) return
-    let mounted = true
     ;(async () => {
       try {
         setLoading(true)
         const response = await api.get<{ data: HelperProfile[] }>('helper-profiles')
-        if (mounted) setHelperProfiles(response.data.data)
+        setHelperProfiles(response.data.data)
       } catch (error) {
         console.error('Failed to fetch helper profiles', error)
         toast.error('Failed to fetch helper profiles.')
       } finally {
-        if (mounted) setLoading(false)
+        setLoading(false)
       }
-    })()
-    return () => {
-      mounted = false
-    }
+    })().catch(() => {
+      /* no-op ensure awaited */
+    })
   }, [isOpen])
 
   // Reset fostering fields when type changes
@@ -94,20 +92,20 @@ export function usePlacementResponse({
             ? parseFloat(price)
             : undefined,
       })
-      toast.success('Placement response submitted successfully!')
-      onSuccess?.()
-      onClose()
-      setShowConfirmation(false)
+    toast.success('Placement response submitted successfully!')
+  if (onSuccess) onSuccess()
+  onClose()
+  setShowConfirmation(false)
     } catch (error) {
       console.error('Failed to submit placement response', error)
       const anyErr = error as {
         response?: { status?: number; data?: { message?: string; errors?: Record<string, string[]> } }
       }
       if (anyErr.response?.status === 409) {
-        toast.info("You've already responded to this request. We'll refresh the page.")
-        onSuccess?.()
-        onClose()
-        setShowConfirmation(false)
+  toast.info("You've already responded to this request. We'll refresh the page.")
+  if (onSuccess) onSuccess()
+  onClose()
+  setShowConfirmation(false)
       } else if (anyErr.response?.status === 422) {
         const errs = anyErr.response.data?.errors ?? {}
         const joined = Object.values(errs).flat().join('\n')

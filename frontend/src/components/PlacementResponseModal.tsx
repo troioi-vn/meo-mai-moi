@@ -97,11 +97,7 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({
           {!showConfirmation ? (
             <Button
               onClick={handleInitialSubmit}
-              disabled={
-                (selectedProfile ?? '') === '' ||
-                (requestedRelationshipType ?? '') === '' ||
-                submitting
-              }
+              disabled={selectedProfile === '' || requestedRelationshipType === '' || submitting}
             >
               Submit
             </Button>

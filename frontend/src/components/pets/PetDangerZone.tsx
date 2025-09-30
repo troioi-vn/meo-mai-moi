@@ -13,7 +13,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 
-type Props = {
+interface Props {
   deletePassword: string
   setDeletePassword: (s: string) => void
   isDeleting: boolean
@@ -39,7 +39,9 @@ export const PetDangerZone: React.FC<Props> = ({
             type="password"
             placeholder="Confirm with your password"
             value={deletePassword}
-            onChange={(e) => setDeletePassword(e.target.value)}
+            onChange={(e) => {
+              setDeletePassword(e.target.value)
+            }}
           />
         </div>
       </div>
@@ -59,7 +61,7 @@ export const PetDangerZone: React.FC<Props> = ({
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={onDelete}>
+              <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => { onDelete() }}>
                 Confirm remove
               </AlertDialogAction>
             </AlertDialogFooter>

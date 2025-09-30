@@ -28,7 +28,7 @@ export const VaccinationsSection: React.FC<{ petId: number; canEdit: boolean }> 
     try {
       await create(values)
       setAdding(false)
-    } catch (e) {
+    } catch {
       setServerError('Failed to save vaccination')
     }
   }
@@ -38,7 +38,7 @@ export const VaccinationsSection: React.FC<{ petId: number; canEdit: boolean }> 
     try {
       await update(id, values)
       setEditingId(null)
-    } catch (e) {
+    } catch {
       setServerError('Failed to update vaccination')
     }
   }
@@ -51,7 +51,7 @@ export const VaccinationsSection: React.FC<{ petId: number; canEdit: boolean }> 
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Vaccinations</h2>
         {canEdit && !adding && (
-          <Button onClick={startAdd}>Add vaccination</Button>
+          <Button onClick={() => { startAdd() }}>Add vaccination</Button>
         )}
       </div>
 
@@ -73,8 +73,8 @@ export const VaccinationsSection: React.FC<{ petId: number; canEdit: boolean }> 
                   due_at: r.due_at ?? undefined,
                   notes: r.notes ?? undefined,
                 }}
-                onSubmit={async (v) => onUpdate(r.id, v)}
-                onCancel={() => setEditingId(null)}
+                onSubmit={async (v) => { await onUpdate(r.id, v) }}
+                onCancel={() => { setEditingId(null) }}
                 serverError={serverError}
               />
             ) : (
@@ -93,7 +93,7 @@ export const VaccinationsSection: React.FC<{ petId: number; canEdit: boolean }> 
                 </div>
                 {canEdit && (
                   <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => setEditingId(r.id)}>Edit</Button>
+                    <Button variant="outline" onClick={() => { setEditingId(r.id) }}>Edit</Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="destructive">Delete</Button>
@@ -107,7 +107,7 @@ export const VaccinationsSection: React.FC<{ petId: number; canEdit: boolean }> 
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => void remove(r.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          <AlertDialogAction onClick={() => { void remove(r.id) }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                             Delete
                           </AlertDialogAction>
                         </AlertDialogFooter>

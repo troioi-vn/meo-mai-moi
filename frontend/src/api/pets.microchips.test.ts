@@ -6,9 +6,9 @@ import { createMicrochip, deleteMicrochip, getMicrochips, updateMicrochip } from
 const server = setupServer(...handlers)
 
 describe('microchips api client', () => {
-  beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
-  afterEach(() => server.resetHandlers())
-  afterAll(() => server.close())
+  beforeAll(() => { server.listen({ onUnhandledRequest: 'error' }) })
+  afterEach(() => { server.resetHandlers() })
+  afterAll(() => { server.close() })
 
   it('lists pet microchips with pagination envelope', async () => {
     const res = await getMicrochips(1)

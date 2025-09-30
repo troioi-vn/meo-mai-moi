@@ -15,7 +15,10 @@ export const mockHelperProfile = {
   can_adopt: false,
   is_public: true,
   status: 'active',
-  photos: [],
+  photos: [
+    { id: 1, path: '/test-photo-1.jpg' },
+    { id: 2, path: '/test-photo-2.jpg' }
+  ],
 }
 
 export const helperProfileHandlers = [

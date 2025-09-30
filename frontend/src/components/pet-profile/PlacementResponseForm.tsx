@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import type { HelperProfile } from '@/types/helper-profile'
 import type { FosteringType, RelationshipType } from '@/hooks/usePlacementResponse'
 
-type Props = {
+interface Props {
   loading: boolean
   helperProfiles: HelperProfile[]
   selectedProfile: string
@@ -45,7 +45,7 @@ export function PlacementResponseForm({
         <label htmlFor="helper-profile" className="text-right">
           Helper Profile
         </label>
-        <Select onValueChange={setSelectedProfile} value={selectedProfile ?? ''}>
+  <Select onValueChange={setSelectedProfile} value={selectedProfile}>
           <SelectTrigger className="col-span-3">
             <SelectValue placeholder="Select a profile..." />
           </SelectTrigger>
@@ -62,7 +62,12 @@ export function PlacementResponseForm({
         <label htmlFor="relationship-type" className="text-right">
           Relationship Type
         </label>
-        <Select onValueChange={(v) => setRequestedRelationshipType(v as RelationshipType)} value={requestedRelationshipType ?? ''}>
+        <Select
+          onValueChange={(v) => {
+            setRequestedRelationshipType(v as RelationshipType)
+          }}
+          value={requestedRelationshipType}
+        >
           <SelectTrigger className="col-span-3">
             <SelectValue placeholder="Select type..." />
           </SelectTrigger>
@@ -78,7 +83,12 @@ export function PlacementResponseForm({
             <label htmlFor="fostering-type" className="text-right">
               Fostering Type
             </label>
-            <Select onValueChange={(v) => setFosteringType(v as FosteringType)} value={fosteringType}>
+            <Select
+              onValueChange={(v) => {
+                setFosteringType(v as FosteringType)
+              }}
+              value={fosteringType}
+            >
               <SelectTrigger className="col-span-3">
                 <SelectValue placeholder="Select fostering type..." />
               </SelectTrigger>
@@ -100,7 +110,9 @@ export function PlacementResponseForm({
                 step="0.01"
                 className="col-span-3 rounded-md border bg-background px-3 py-2"
                 value={price}
-                onChange={(e) => setPrice(e.target.value)}
+                onChange={(e) => {
+                  setPrice(e.target.value)
+                }}
                 placeholder="Enter price"
               />
             </div>

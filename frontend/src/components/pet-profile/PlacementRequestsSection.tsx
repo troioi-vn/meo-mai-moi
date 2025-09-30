@@ -15,7 +15,7 @@ import type { Pet } from '@/types/pet'
 
 type PlacementRequest = NonNullable<Pet['placement_requests']>[number]
 
-type Props = {
+interface Props {
   placementRequests: PlacementRequest[]
   canEdit: boolean
   onDeletePlacementRequest: (id: number) => void | Promise<void>

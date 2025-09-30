@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 
-export type WeightFormValues = {
+export interface WeightFormValues {
   weight_kg: number | ''
   record_date: string
 }
@@ -33,7 +33,7 @@ export const WeightForm: React.FC<{
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+    <form onSubmit={(e) => { void handleSubmit(e) }} className="space-y-4" noValidate>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="block text-sm font-medium">Weight (kg)</label>
@@ -42,7 +42,7 @@ export const WeightForm: React.FC<{
             step="0.01"
             min="0"
             value={weight}
-            onChange={(e) => setWeight(e.target.value === '' ? '' : Number(e.target.value))}
+            onChange={(e) => { setWeight(e.target.value === '' ? '' : Number(e.target.value)) }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
             placeholder="e.g., 4.20"
           />
@@ -53,7 +53,7 @@ export const WeightForm: React.FC<{
           <input
             type="date"
             value={date}
-            onChange={(e) => setDate(e.target.value)}
+            onChange={(e) => { setDate(e.target.value) }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
           />
           {errors.record_date && <p className="text-xs text-red-600 mt-1">{errors.record_date}</p>}

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 
 type Status = 'active' | 'lost' | 'deceased' | 'deleted' | ''
 
-type Props = {
+interface Props {
   currentStatus: Exclude<Status, ''>
   newStatus: Exclude<Status, 'deleted' | ''>
   setNewStatus: (s: Exclude<Status, 'deleted' | ''>) => void
@@ -28,12 +28,14 @@ export const PetStatusControls: React.FC<Props> = ({
     <div className="border-t pt-6">
       <h2 className="text-xl font-semibold text-card-foreground">Status</h2>
       <p className="text-sm text-muted-foreground mb-4">
-        Current status: <span className="font-medium">{currentStatus || '...'}</span>
+        Current status: <span className="font-medium">{currentStatus}</span>
       </p>
       <div className="grid gap-3 sm:grid-cols-[200px_1fr] items-center">
         <div className="text-sm font-medium">New status</div>
         <div>
-          <Select value={newStatus} onValueChange={(v) => setNewStatus(v as typeof newStatus)}>
+          <Select value={newStatus} onValueChange={(v) => {
+            setNewStatus(v as typeof newStatus)
+          }}>
             <SelectTrigger>
               <SelectValue placeholder="Select status" />
             </SelectTrigger>
@@ -51,12 +53,12 @@ export const PetStatusControls: React.FC<Props> = ({
             type="password"
             placeholder="Confirm with your password"
             value={statusPassword}
-            onChange={(e) => setStatusPassword(e.target.value)}
+            onChange={(e) => { setStatusPassword(e.target.value) }}
           />
         </div>
       </div>
       <div className="mt-4">
-        <Button onClick={onUpdateStatus} disabled={isUpdating}>
+        <Button onClick={() => { onUpdateStatus() }} disabled={isUpdating}>
           {isUpdating ? 'Updating...' : 'Update status'}
         </Button>
       </div>

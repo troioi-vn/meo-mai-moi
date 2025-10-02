@@ -102,7 +102,7 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
     return [...items].sort((a, b) => {
       const aDate = a.implanted_at ?? a.created_at
       const bDate = b.implanted_at ?? b.created_at
-      return bDate.localeCompare(aDate)
+      return (bDate ?? '').localeCompare(aDate ?? '')
     })
   }, [items])
 

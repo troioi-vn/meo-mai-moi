@@ -1,7 +1,5 @@
 import React, { useMemo } from 'react'
 import { Button } from '@/components/ui/button'
-import { FormField } from '@/components/ui/FormField'
-import { CheckboxField } from '@/components/ui/CheckboxField'
 import { FileInput } from '@/components/ui/FileInput'
 import useHelperProfileForm from '@/hooks/useHelperProfileForm'
 import { getPetTypes } from '@/api/pets'
@@ -25,6 +23,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
+import { HelperProfileFormFields } from '@/components/helper/HelperProfileFormFields'
+import { PetTypesSelector } from '@/components/helper/PetTypesSelector'
+import { PhotosGrid } from '@/components/helper/PhotosGrid'
 
 const HelperProfileEditPage: React.FC = () => {
   const { id } = useParams()
@@ -70,13 +71,7 @@ const HelperProfileEditPage: React.FC = () => {
   const { formData, errors, isSubmitting, updateField, handleSubmit, handleCancel } =
     useHelperProfileForm(numericId, initialFormData)
 
-  const handlePetTypeChange = (petTypeId: number) => {
-    const currentPetTypeIds = formData.pet_type_ids
-    const updatedPetTypeIds = currentPetTypeIds.includes(petTypeId)
-      ? currentPetTypeIds.filter((id) => id !== petTypeId)
-      : [...currentPetTypeIds, petTypeId]
-    updateField('pet_type_ids')(updatedPetTypeIds)
-  }
+  // Pet types managed by PetTypesSelector
 
   const deleteMutation = useMutation({
     mutationFn: () => (id ? deleteHelperProfile(id) : Promise.reject(new Error('missing id'))),
@@ -114,136 +109,21 @@ const HelperProfileEditPage: React.FC = () => {
         <h1 className="text-3xl font-bold text-center text-card-foreground mb-6">
           Edit Helper Profile
         </h1>
-        <div className="grid grid-cols-3 gap-4">
-          {(() => {
-            const photos: { id: number; path: string }[] =
-              (data.data.photos as { id: number; path: string }[] | undefined) ?? []
-            return photos.map((photo) => (
-              <div key={photo.id} className="relative">
-                <img
-                  src={'http://localhost:8000/storage/' + photo.path}
-                  alt="Helper profile photo"
-                  className="w-full h-full object-cover"
-                />
-                <Button
-                  aria-label={'Delete photo ' + String(photo.id)}
-                  variant="destructive"
-                  size="sm"
-                  className="absolute top-2 right-2"
-                  onClick={() => {
-                    deletePhotoMutation.mutate(photo.id)
-                  }}
-                  disabled={deletePhotoMutation.isPending}
-                >
-                  Delete
-                </Button>
-              </div>
-            ))
-          })()}
-        </div>
+        <PhotosGrid
+          photos={(data.data.photos as { id: number; path: string }[])}
+          onDelete={(photoId) => {
+            deletePhotoMutation.mutate(photoId)
+          }}
+          deleting={deletePhotoMutation.isPending}
+        />
         <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-          <FormField
-            id="country"
-            label="Country"
-            value={formData.country}
-            onChange={updateField('country')}
-            error={errors.country}
-            placeholder="Enter your country"
+          <HelperProfileFormFields formData={formData} errors={errors} updateField={updateField} />
+          <PetTypesSelector
+            petTypes={petTypes ?? []}
+            selectedPetTypeIds={formData.pet_type_ids}
+            onChangePetTypeIds={(ids) => { updateField('pet_type_ids')(ids); }}
+            label="Pet Types"
           />
-          <FormField
-            id="address"
-            label="Address"
-            value={formData.address}
-            onChange={updateField('address')}
-            error={errors.address}
-            placeholder="Enter your address"
-          />
-          <FormField
-            id="city"
-            label="City"
-            value={formData.city}
-            onChange={updateField('city')}
-            error={errors.city}
-            placeholder="Enter your city"
-          />
-          <FormField
-            id="state"
-            label="State"
-            value={formData.state}
-            onChange={updateField('state')}
-            error={errors.state}
-            placeholder="Enter your state"
-          />
-          <FormField
-            id="phone_number"
-            label="Phone Number"
-            value={formData.phone_number}
-            onChange={updateField('phone_number')}
-            error={errors.phone_number}
-            placeholder="Enter your phone number"
-          />
-          <FormField
-            id="experience"
-            label="Experience"
-            type="textarea"
-            value={formData.experience}
-            onChange={updateField('experience')}
-            error={errors.experience}
-            placeholder="Describe your experience"
-          />
-          <CheckboxField
-            id="has_pets"
-            label="Has Pets"
-            checked={formData.has_pets}
-            onChange={updateField('has_pets')}
-            error={errors.has_pets}
-          />
-          <CheckboxField
-            id="has_children"
-            label="Has Children"
-            checked={formData.has_children}
-            onChange={updateField('has_children')}
-            error={errors.has_children}
-          />
-          <CheckboxField
-            id="can_foster"
-            label="Can Foster"
-            checked={formData.can_foster}
-            onChange={updateField('can_foster')}
-            error={errors.can_foster}
-          />
-          <CheckboxField
-            id="can_adopt"
-            label="Can Adopt"
-            checked={formData.can_adopt}
-            onChange={updateField('can_adopt')}
-            error={errors.can_adopt}
-          />
-          <CheckboxField
-            id="is_public"
-            label="Is Public"
-            checked={formData.is_public}
-            onChange={updateField('is_public')}
-            error={errors.is_public}
-          />
-          <div>
-            <label className="block text-sm font-medium text-card-foreground">Pet Types</label>
-            <div className="grid grid-cols-2 gap-4 mt-2">
-              {petTypes
-                ?.filter((pt) => pt.placement_requests_allowed)
-                .map((petType) => (
-                  <CheckboxField
-                    key={petType.id}
-                    id={`pet_type_${String(petType.id)}`}
-                    label={petType.name}
-                    checked={formData.pet_type_ids.includes(petType.id)}
-                    onChange={() => {
-                      handlePetTypeChange(petType.id)
-                    }}
-                  />
-                ))}
-            </div>
-          </div>
           <FileInput
             id="photos"
             label="Photos"
@@ -256,7 +136,7 @@ const HelperProfileEditPage: React.FC = () => {
             <Button type="submit" aria-label="Update Helper Profile" disabled={isSubmitting}>
               {isSubmitting ? 'Updating...' : 'Update'}
             </Button>
-            <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
+            <Button type="button" variant="outline" onClick={() => { handleCancel() }} disabled={isSubmitting}>
               Cancel
             </Button>
             <AlertDialog>

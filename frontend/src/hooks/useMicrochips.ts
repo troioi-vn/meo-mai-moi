@@ -35,7 +35,7 @@ export const useMicrochips = (petId: number): UseMicrochipsResult => {
         setLinks(res.links)
         setMeta(res.meta)
         setPage(pg)
-      } catch (e: unknown) {
+      } catch {
         setError('Failed to load microchips')
       } finally {
         setLoading(false)

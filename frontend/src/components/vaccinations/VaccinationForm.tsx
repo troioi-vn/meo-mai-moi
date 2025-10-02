@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 
-export type VaccinationFormValues = {
+export interface VaccinationFormValues {
   vaccine_name: string
   administered_at: string
   due_at?: string | null
@@ -41,19 +41,19 @@ export const VaccinationForm: React.FC<{
       vaccine_name: vaccineName.trim(),
       administered_at: administeredAt,
       due_at: dueAt || null,
-      notes: notes?.trim() || null,
+  notes: notes.trim() || null,
     })
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+    <form onSubmit={(e) => { void handleSubmit(e) }} className="space-y-4" noValidate>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="block text-sm font-medium">Vaccine</label>
           <input
             type="text"
             value={vaccineName}
-            onChange={(e) => setVaccineName(e.target.value)}
+            onChange={(e) => { setVaccineName(e.target.value) }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
             placeholder="e.g., Rabies"
           />
@@ -64,7 +64,7 @@ export const VaccinationForm: React.FC<{
           <input
             type="date"
             value={administeredAt}
-            onChange={(e) => setAdministeredAt(e.target.value)}
+            onChange={(e) => { setAdministeredAt(e.target.value) }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
           />
           {errors.administered_at && (
@@ -76,7 +76,7 @@ export const VaccinationForm: React.FC<{
           <input
             type="date"
             value={dueAt}
-            onChange={(e) => setDueAt(e.target.value)}
+            onChange={(e) => { setDueAt(e.target.value) }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
           />
           {errors.due_at && <p className="text-xs text-red-600 mt-1">{errors.due_at}</p>}
@@ -85,7 +85,7 @@ export const VaccinationForm: React.FC<{
           <label className="block text-sm font-medium">Notes (optional)</label>
           <textarea
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            onChange={(e) => { setNotes(e.target.value) }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
             rows={3}
           />

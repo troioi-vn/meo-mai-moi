@@ -140,11 +140,11 @@ export const petSupportsCapability = (petType: PetType, capability: string): boo
   }
   // Medical capability: static for now (cats supported). Backend enforces this too.
   if (capability === 'medical') {
-    return petType.slug?.toLowerCase() === 'cat'
+    return petType.slug.toLowerCase() === 'cat'
   }
   // Vaccinations capability: static for now (cats supported). Backend enforces this too.
   if (capability === 'vaccinations') {
-    return petType.slug?.toLowerCase() === 'cat'
+    return petType.slug.toLowerCase() === 'cat'
   }
   // All other capabilities (ownership, comments, status_update, photos) are allowed for all pet types
   return true

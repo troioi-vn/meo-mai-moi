@@ -37,10 +37,11 @@ export const MedicalNotesSection: React.FC<{
       await create(values)
       setAdding(false)
       toast.success('Medical note added')
-    } catch (e: any) {
-      const status = e?.response?.status
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } }).response?.status
+      const message = (err as { response?: { data?: { message?: string } } }).response?.data?.message
       if (status === 422) {
-        setServerError(e?.response?.data?.message ?? 'Validation error')
+        setServerError(message ?? 'Validation error')
       } else {
         toast.error('Failed to add note')
       }
@@ -57,10 +58,11 @@ export const MedicalNotesSection: React.FC<{
       await update(editing.id, values)
       setEditing(null)
       toast.success('Medical note updated')
-    } catch (e: any) {
-      const status = e?.response?.status
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } }).response?.status
+      const message = (err as { response?: { data?: { message?: string } } }).response?.data?.message
       if (status === 422) {
-        setServerError(e?.response?.data?.message ?? 'Validation error')
+        setServerError(message ?? 'Validation error')
       } else {
         toast.error('Failed to update note')
       }
@@ -83,7 +85,7 @@ export const MedicalNotesSection: React.FC<{
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-2xl font-bold">Medical notes</h2>
         {canEdit && !adding && !editing && (
-          <Button size="sm" onClick={() => setAdding(true)}>
+          <Button size="sm" onClick={() => { setAdding(true) }}>
             Add
           </Button>
         )}
@@ -95,7 +97,12 @@ export const MedicalNotesSection: React.FC<{
         <div className="mb-4 rounded-md border p-3">
           <MedicalNoteForm
             initial={editing ? { note: editing.note, record_date: editing.record_date } : undefined}
-            onSubmit={(vals) => (editing ? handleUpdate(vals) : handleCreate(vals))}
+            onSubmit={(vals) => {
+              if (editing) {
+                return handleUpdate(vals)
+              }
+              return handleCreate(vals)
+            }}
             onCancel={() => {
               setAdding(false)
               setEditing(null)
@@ -121,7 +128,7 @@ export const MedicalNotesSection: React.FC<{
             </div>
             {canEdit && (
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => setEditing(n)}>
+                <Button size="sm" variant="outline" onClick={() => { setEditing(n) }}>
                   Edit
                 </Button>
                 <AlertDialog>
@@ -137,7 +144,7 @@ export const MedicalNotesSection: React.FC<{
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => void handleDelete(n.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      <AlertDialogAction onClick={() => { void handleDelete(n.id) }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                         Delete
                       </AlertDialogAction>
                     </AlertDialogFooter>

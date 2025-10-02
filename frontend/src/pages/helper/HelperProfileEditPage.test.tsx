@@ -1,11 +1,11 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import HelperProfileEditPage from './HelperProfileEditPage'
 import { mockHelperProfile } from '@/mocks/data/helper-profiles'
 import { server } from '@/mocks/server'
 import { http, HttpResponse } from 'msw'
-// no toast usage in active tests
+import { toast } from 'sonner'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,6 +22,7 @@ const renderComponent = () => {
         <Routes>
           <Route path="/helper-profiles/:id/edit" element={<HelperProfileEditPage />} />
           <Route path="/helper" element={<div>Helper Profiles Page</div>} />
+          <Route path="/helper/:id" element={<div>Helper Profile Page</div>} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>
@@ -56,7 +57,7 @@ describe('HelperProfileEditPage', () => {
     })
   })
 
-  /*  it('shows loading state', () => {
+  it('shows loading state', () => {
     server.use(
       http.get(`http://localhost:3000/api/helper-profiles/${mockHelperProfile.id}`, () => {
         return new Promise(() => {}); // Never resolve to keep it in loading state
@@ -64,9 +65,9 @@ describe('HelperProfileEditPage', () => {
     );
     renderComponent();
     expect(screen.getByText(/loading.../i)).toBeInTheDocument();
-  });*/
+  });
 
-  /*  it('shows error state', async () => {
+  it('shows error state', async () => {
     server.use(
       http.get(`http://localhost:3000/api/helper-profiles/${mockHelperProfile.id}`, () => {
         return new HttpResponse(null, { status: 500 });
@@ -76,12 +77,12 @@ describe('HelperProfileEditPage', () => {
     await waitFor(() => {
       expect(screen.getByText(/error fetching helper profile/i)).toBeInTheDocument();
     });
-  });*/
+  });
 
-  /*  it('updates a field and submits the form', async () => {
+  it('updates a field and submits the form', async () => {
     server.use(
-      http.put(`http://localhost:3000/api/helper-profiles/${mockHelperProfile.id}`, async ({ request }) => {
-        return HttpResponse.json({ data: {} });
+      http.post(`http://localhost:3000/api/helper-profiles/${mockHelperProfile.id}`, async ({ request }) => {
+        return HttpResponse.json({ data: { id: mockHelperProfile.id } });
       })
     );
     renderComponent();
@@ -97,9 +98,9 @@ describe('HelperProfileEditPage', () => {
     await waitFor(() => {
         expect(toast.success).toHaveBeenCalledWith('Helper profile updated successfully!');
     });
-  });*/
+  });
 
-  /*  it('deletes a photo', async () => {
+  it('deletes a photo', async () => {
     server.use(
       http.delete(`http://localhost:3000/api/helper-profiles/${mockHelperProfile.id}/photos/${mockHelperProfile.photos[0].id}`, () => {
         return new HttpResponse(null, { status: 204 });
@@ -107,17 +108,19 @@ describe('HelperProfileEditPage', () => {
     );
     renderComponent();
 
-    await screen.findByAltText(/helper profile photo/i);
+    await waitFor(() => {
+      expect(screen.getAllByAltText(/helper profile photo/i)).toHaveLength(2);
+    });
 
     const deleteButton = screen.getByLabelText(`Delete photo ${mockHelperProfile.photos[0].id}`);
     fireEvent.click(deleteButton);
 
     await waitFor(() => {
-        expect(queryClient.isFetching({ queryKey: ['helper-profile', String(mockHelperProfile.id)] })).toBe(1);
+        expect(toast.success).toHaveBeenCalledWith('Photo deleted successfully!');
     });
-  });*/
+  });
 
-  /*  it('deletes the profile', async () => {
+  it('deletes the profile', async () => {
     server.use(
       http.delete(`http://localhost:3000/api/helper-profiles/${mockHelperProfile.id}`, () => {
         return new HttpResponse(null, { status: 204 });
@@ -125,10 +128,17 @@ describe('HelperProfileEditPage', () => {
     );
     renderComponent();
 
-    await screen.findByRole('button', { name: /delete/i });
+    await waitFor(() => {
+      expect(screen.getByText(/edit helper profile/i)).toBeInTheDocument();
+    });
 
-    const deleteButton = screen.getByRole('button', { name: /delete/i });
-    fireEvent.click(deleteButton);
+    // Find the main delete button (not photo delete buttons)
+    const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
+    const profileDeleteButton = deleteButtons.find(btn => 
+      !btn.getAttribute('aria-label')?.includes('Delete photo')
+    );
+    expect(profileDeleteButton).toBeDefined();
+    fireEvent.click(profileDeleteButton!);
 
     await screen.findByText(/are you sure?/i);
     
@@ -138,5 +148,5 @@ describe('HelperProfileEditPage', () => {
     await waitFor(() => {
         expect(toast.success).toHaveBeenCalledWith('Helper profile deleted successfully!');
     });
-  });*/
+  });
 })

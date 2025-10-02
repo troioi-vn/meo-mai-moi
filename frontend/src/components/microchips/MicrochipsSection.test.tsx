@@ -5,7 +5,7 @@ import { server } from '@/mocks/server'
 import { MicrochipsSection } from './MicrochipsSection'
 
 // A tiny in-memory store we can mutate per test; MSW handlers will use it
-let mem: Array<{
+let mem: {
   id: number
   pet_id: number
   chip_number: string
@@ -13,7 +13,7 @@ let mem: Array<{
   implanted_at: string | null
   created_at: string
   updated_at: string
-}>
+}[]
 
 const now = () => new Date().toISOString()
 
@@ -71,7 +71,7 @@ const installMemHandlers = () => {
 describe('MicrochipsSection', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-  resetMem()
+    resetMem()
     installMemHandlers()
   })
 
@@ -86,9 +86,9 @@ describe('MicrochipsSection', () => {
 
     // Start adding
     fireEvent.click(screen.getByRole('button', { name: 'Add' }))
-  const chipInput = screen.getByPlaceholderText('e.g., 982000123456789') as HTMLInputElement
-  fireEvent.change(chipInput, { target: { value: '982000123456789' } })
-  const issuerInput = screen.getByPlaceholderText('HomeAgain, AVID, ...') as HTMLInputElement
+  const chipInput = screen.getByPlaceholderText('e.g., 982000123456789')
+    fireEvent.change(chipInput, { target: { value: '982000123456789' } })
+  const issuerInput = screen.getByPlaceholderText('HomeAgain, AVID, ...')
     fireEvent.change(issuerInput, { target: { value: 'HomeAgain' } })
 
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
@@ -108,7 +108,7 @@ describe('MicrochipsSection', () => {
     })
 
     fireEvent.click(screen.getByRole('button', { name: 'Add' }))
-  const chipInput = screen.getByPlaceholderText('e.g., 982000123456789') as HTMLInputElement
+  const chipInput = screen.getByPlaceholderText('e.g., 982000123456789')
     fireEvent.change(chipInput, { target: { value: 'short' } })
 
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
@@ -126,14 +126,14 @@ describe('MicrochipsSection', () => {
 
     // Add one
     fireEvent.click(screen.getByRole('button', { name: 'Add' }))
-  fireEvent.change(screen.getByPlaceholderText('e.g., 982000123456789'), { target: { value: '982000123456789' } })
+    fireEvent.change(screen.getByPlaceholderText('e.g., 982000123456789'), { target: { value: '982000123456789' } })
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
 
     await screen.findByText('982000123456789')
 
     // Edit
     fireEvent.click(screen.getByRole('button', { name: 'Edit' }))
-  const issuerInput = screen.getByPlaceholderText('HomeAgain, AVID, ...') as HTMLInputElement
+  const issuerInput = screen.getByPlaceholderText('HomeAgain, AVID, ...')
     fireEvent.change(issuerInput, { target: { value: 'AVID' } })
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
 

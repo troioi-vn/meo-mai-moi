@@ -27,7 +27,7 @@ export const useVaccinations = (petId: number): UseVaccinationsResult => {
       setError(null)
       const resp = await getVaccinations(petId, 1)
       setItems(resp.data)
-    } catch (e) {
+    } catch {
       setError('Failed to load vaccinations')
     } finally {
       setLoading(false)

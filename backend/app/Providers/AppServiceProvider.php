@@ -45,5 +45,11 @@ class AppServiceProvider extends ServiceProvider
             // Silently fail during boot to prevent application startup issues
             // The error will be logged by the service
         }
+
+        // If APP_URL is configured with https, force URL generation to use https as well.
+        // This helps prevent mixed-content links when behind an SSL-terminating reverse proxy.
+        if (str_starts_with(config('app.url', ''), 'https://')) {
+            \URL::forceScheme('https');
+        }
     }
 }

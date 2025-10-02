@@ -13,7 +13,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 
-type FormValues = {
+interface FormValues {
   chip_number: string
   issuer?: string | null
   implanted_at?: string | null
@@ -37,18 +37,22 @@ const MicrochipForm: React.FC<{
     if (!chipNumber || chipNumber.trim().length < 10) errs.chip_number = 'Microchip number is required (min 10)'
     setErrors(errs)
     if (Object.keys(errs).length) return
-    await onSubmit({ chip_number: chipNumber.trim(), issuer: issuer?.trim() || null, implanted_at: implantedAt || null })
+    await onSubmit({
+      chip_number: chipNumber.trim(),
+      issuer: issuer.trim() ? issuer.trim() : null,
+      implanted_at: implantedAt || null,
+    })
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4" noValidate>
+  <form onSubmit={(e) => { void submit(e) }} className="space-y-4" noValidate>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="block text-sm font-medium">Chip number</label>
           <input
             type="text"
             value={chipNumber}
-            onChange={(e) => setChipNumber(e.target.value)}
+            onChange={(e) => { setChipNumber(e.target.value) }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
             placeholder="e.g., 982000123456789"
           />
@@ -59,7 +63,7 @@ const MicrochipForm: React.FC<{
           <input
             type="text"
             value={issuer}
-            onChange={(e) => setIssuer(e.target.value)}
+            onChange={(e) => { setIssuer(e.target.value) }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
             placeholder="HomeAgain, AVID, ..."
           />
@@ -69,7 +73,7 @@ const MicrochipForm: React.FC<{
           <input
             type="date"
             value={implantedAt}
-            onChange={(e) => setImplantedAt(e.target.value)}
+            onChange={(e) => { setImplantedAt(e.target.value) }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
           />
         </div>
@@ -111,9 +115,11 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
     try {
       await create(values)
       setAdding(false)
-    } catch (e: any) {
-      const status = e?.response?.status
-      if (status === 422) setServerError(e?.response?.data?.message ?? 'Validation error')
+    } catch (err: unknown) {
+      // Prefer AxiosError typing to avoid any/unsafe accesses
+      const status = (err as { response?: { status?: number } }).response?.status
+      const message = (err as { response?: { data?: { message?: string } } }).response?.data?.message
+      if (status === 422) setServerError(message ?? 'Validation error')
       else setServerError('Failed to add microchip')
     } finally {
       setSubmitting(false)
@@ -126,9 +132,10 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
     try {
       await update(id, values)
       setEditingId(null)
-    } catch (e: any) {
-      const status = e?.response?.status
-      if (status === 422) setServerError(e?.response?.data?.message ?? 'Validation error')
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } }).response?.status
+      const message = (err as { response?: { data?: { message?: string } } }).response?.data?.message
+      if (status === 422) setServerError(message ?? 'Validation error')
       else setServerError('Failed to update microchip')
     } finally {
       setSubmitting(false)
@@ -143,7 +150,7 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-2xl font-bold">Microchips</h2>
         {canEdit && !adding && editingId == null && (
-          <Button size="sm" onClick={startAdd}>Add</Button>
+          <Button size="sm" onClick={() => { startAdd() }}>Add</Button>
         )}
       </div>
 
@@ -162,8 +169,8 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
             {editingId === m.id ? (
               <MicrochipForm
                 initial={{ chip_number: m.chip_number, issuer: m.issuer ?? undefined, implanted_at: m.implanted_at ?? undefined }}
-                onSubmit={async (v) => handleUpdate(m.id, v)}
-                onCancel={() => setEditingId(null)}
+                onSubmit={async (v) => { await handleUpdate(m.id, v) }}
+                onCancel={() => { setEditingId(null) }}
                 submitting={submitting}
                 serverError={serverError}
               />
@@ -180,7 +187,7 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
                 </div>
                 {canEdit && (
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => setEditingId(m.id)}>Edit</Button>
+                    <Button size="sm" variant="outline" onClick={() => { setEditingId(m.id) }}>Edit</Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button size="sm" variant="destructive">Delete</Button>
@@ -194,7 +201,7 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => void remove(m.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          <AlertDialogAction onClick={() => { void remove(m.id) }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                             Delete
                           </AlertDialogAction>
                         </AlertDialogFooter>

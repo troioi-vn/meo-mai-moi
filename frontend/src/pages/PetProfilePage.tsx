@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { OwnerButtonGroup } from '@/components/OwnerButtonGroup'
 import { HelperProfileDialog } from '@/components/HelperProfileDialog'
 import type { HelperProfile } from '@/types/helper-profile'
-import type { TransferRequest, PlacementRequest as PlacementRequestType } from '@/types/pet'
+import type { TransferRequest } from '@/types/pet'
 import { petSupportsCapability } from '@/types/pet'
 import { getResponderHelperProfile } from '@/api/helper-profiles'
 import { LoadingState } from '@/components/ui/LoadingState'
@@ -23,11 +23,13 @@ import {
   type TransferHandoverDto,
 } from '@/api/handovers'
 import { useAuth } from '@/hooks/use-auth'
-import { Badge } from '@/components/ui/badge'
+// Badge is used inside extracted components
 import { WeightHistorySection } from '@/components/weights/WeightHistorySection'
 import { MedicalNotesSection } from '@/components/medical/MedicalNotesSection'
 import { VaccinationsSection } from '@/components/vaccinations/VaccinationsSection'
 import { MicrochipsSection } from '@/components/microchips/MicrochipsSection'
+import { ResponseSection } from '@/components/pet-profile/ResponseSection'
+import { AcceptedSection } from '@/components/pet-profile/AcceptedSection'
 
 const PetProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -462,160 +464,4 @@ function hasAcceptedTransfers(pet: {
   )
 }
 
-// Helper: Response section for a placement request
-function ResponseSection({
-  placementRequest,
-  onViewProfile,
-  onConfirm,
-  onReject,
-}: {
-  placementRequest: PlacementRequestType
-  onViewProfile: (tr: TransferRequest) => void
-  onConfirm: (id: number) => void
-  onReject: (id: number) => void
-}) {
-  const pendingTransfers =
-    placementRequest.transfer_requests?.filter((tr) => tr.status === 'pending') ?? []
-  if (pendingTransfers.length === 0) return null
-  return (
-    <div className="mb-4 p-4 border rounded-lg">
-      <div className="flex justify-between items-center">
-        <h3 className="font-bold">
-          Responses for <span>{placementRequest.request_type.replace('_', ' ').toUpperCase()}</span>
-        </h3>
-      </div>
-      <ul>
-        {pendingTransfers.map((transferRequest) => (
-          <li key={String(transferRequest.id)} className="flex justify-between items-center">
-            <span>{transferRequest.helper_profile?.user?.name}</span>
-            <div>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="mr-2"
-                onClick={() => {
-                  onViewProfile(transferRequest)
-                }}
-              >
-                View helper profile
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="mr-2"
-                onClick={() => {
-                  onConfirm(transferRequest.id)
-                }}
-              >
-                Confirm
-              </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => {
-                  onReject(transferRequest.id)
-                }}
-              >
-                Reject
-              </Button>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-
-// Accepted transfers section
-function AcceptedSection({
-  placementRequest,
-  onSchedule,
-  hasHandover,
-  getHandover,
-}: {
-  placementRequest: {
-    id: number
-    request_type: string
-    transfer_requests?: {
-      id: number
-      status?: string
-      helper_profile?: { user?: { name?: string } }
-    }[]
-  }
-  onSchedule: (id: number) => void
-  hasHandover: (id: number) => boolean
-  getHandover: (
-    id: number
-  ) =>
-    | {
-        id?: number | string
-        status?: string
-        scheduled_at?: string | number | Date | null
-        location?: string | null
-      }
-    | undefined
-}) {
-  const accepted =
-    placementRequest.transfer_requests?.filter((tr) => tr.status === 'accepted') ?? []
-  if (accepted.length === 0) return null
-  return (
-    <div className="mb-4 p-4 border rounded-lg">
-      <div className="flex justify-between items-center">
-        <h3 className="font-bold">
-          Accepted for <span>{placementRequest.request_type.replace('_', ' ').toUpperCase()}</span>
-        </h3>
-      </div>
-      <ul>
-        {accepted.map((tr) => {
-          const ho = getHandover(tr.id)
-          const status = ho?.status
-          const chip = status ? (
-            <Badge
-              variant={
-                status === 'confirmed'
-                  ? 'default'
-                  : status === 'disputed'
-                    ? 'destructive'
-                    : status === 'canceled'
-                      ? 'outline'
-                      : 'secondary'
-              }
-            >
-              {status.toUpperCase()}
-            </Badge>
-          ) : hasHandover(tr.id) ? (
-            <Badge variant="secondary">PENDING</Badge>
-          ) : null
-          return (
-            <li key={'acc-' + String(tr.id)} className="flex justify-between items-center">
-              <div className="flex flex-col">
-                <span className="flex items-center gap-2">
-                  {tr.helper_profile?.user?.name}
-                  {chip}
-                </span>
-                {ho && (
-                  <span className="text-xs text-muted-foreground mt-1">
-                    Meeting: {ho.scheduled_at ? new Date(ho.scheduled_at).toLocaleString() : 'TBD'}
-                    {ho.location ? `, ${ho.location}` : ''}
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                {!hasHandover(tr.id) && (
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      onSchedule(tr.id)
-                    }}
-                  >
-                    Schedule handover
-                  </Button>
-                )}
-              </div>
-            </li>
-          )
-        })}
-      </ul>
-    </div>
-  )
-}
+// extracted components moved to '@/components/pet-profile/*'

@@ -6,9 +6,9 @@ import { createWeight, deleteWeight, getPetWeights, updateWeight } from './pets'
 const server = setupServer(...handlers)
 
 describe('weights api client', () => {
-  beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
-  afterEach(() => server.resetHandlers())
-  afterAll(() => server.close())
+  beforeAll(() => { server.listen({ onUnhandledRequest: 'error' }) })
+  afterEach(() => { server.resetHandlers() })
+  afterAll(() => { server.close() })
 
   it('lists pet weights with pagination envelope', async () => {
     const res = await getPetWeights(1)

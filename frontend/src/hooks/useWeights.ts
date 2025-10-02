@@ -32,7 +32,7 @@ export const useWeights = (petId: number): UseWeightsResult => {
         setLinks(res.links)
         setMeta(res.meta)
         setPage(pg)
-      } catch (e: unknown) {
+      } catch {
         setError('Failed to load weights')
       } finally {
         setLoading(false)

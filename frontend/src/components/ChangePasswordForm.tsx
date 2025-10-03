@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -36,7 +37,8 @@ const passwordChangeSchema = z
 type PasswordChangeFormValues = z.infer<typeof passwordChangeSchema>
 
 const ChangePasswordForm: React.FC = () => {
-  const { changePassword } = useAuth()
+  const { changePassword, logout } = useAuth()
+  const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
 
   const form = useForm<PasswordChangeFormValues>({
@@ -58,9 +60,16 @@ const ChangePasswordForm: React.FC = () => {
       )
       toast({
         title: 'Password Changed',
-        description: 'Your password has been updated successfully.',
+        description: 'Your password has been updated successfully. Please log in again.',
       })
       form.reset()
+      // Security: force logout and redirect to login after password change
+      try {
+        await logout()
+      } catch {
+        /* ignore logout error */
+      }
+      navigate('/login')
     } catch (error: unknown) {
       let errorMessage = 'An unexpected error occurred.'
       if (error instanceof AxiosError) {

@@ -84,6 +84,11 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
               Fulfilled
             </span>
           )}
+          {pet.status === 'lost' && (
+            <span className="inline-block bg-red-600 text-white px-2 py-1 rounded-full text-xs font-semibold">
+              Lost
+            </span>
+          )}
           {pet.placement_requests?.map((request) => {
             const key = `${String(pet.id)}-${String(request.id)}-${request.expires_at ?? request.start_date ?? ''}`
             return (

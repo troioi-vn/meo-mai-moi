@@ -10,15 +10,24 @@ import { toast } from '@/components/ui/use-toast'
 
 import { mockUser } from '@/mocks/data/user'
 const changePasswordMock = vi.fn(async () => Promise.resolve())
+const logoutMock = vi.fn(async () => Promise.resolve())
+const navigateMock = vi.fn()
 
-vi.mock('@/hooks/use-auth', () => {
+vi.mock('@/hooks/use-auth', () => ({
+  useAuth: () => ({
+    user: mockUser,
+    isAuthenticated: true,
+    isLoading: false,
+    changePassword: changePasswordMock,
+    logout: logoutMock,
+  }),
+}))
+
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
   return {
-    useAuth: () => ({
-      user: mockUser,
-      isAuthenticated: true,
-      isLoading: false,
-      changePassword: changePasswordMock,
-    }),
+    ...actual,
+    useNavigate: () => navigateMock,
   }
 })
 
@@ -31,7 +40,9 @@ describe('ChangePasswordForm', () => {
 
   beforeEach(() => {
     user = userEvent.setup()
-    changePasswordMock.mockClear()
+  changePasswordMock.mockClear()
+  logoutMock.mockClear()
+  navigateMock.mockClear()
     changePasswordMock.mockImplementation(async () => Promise.resolve())
     vi.mocked(toast).mockClear()
   })
@@ -93,7 +104,7 @@ describe('ChangePasswordForm', () => {
     vi.restoreAllMocks()
   })
 
-  it('calls changePassword with correct values on valid form submission', async () => {
+  it('changes password then logs out and redirects to login', async () => {
     renderWithRouter(<ChangePasswordForm />)
 
     const currentPasswordInput = document.querySelector('input[name="current_password"]')
@@ -116,10 +127,13 @@ describe('ChangePasswordForm', () => {
     await user.click(submitButton)
 
     await waitFor(() => {
+      expect(changePasswordMock).toHaveBeenCalledWith('currentpass', 'newpassword123', 'newpassword123')
+      expect(logoutMock).toHaveBeenCalled()
+      expect(navigateMock).toHaveBeenCalledWith('/login')
       expect(vi.mocked(toast)).toHaveBeenCalledWith(
         expect.objectContaining({
           title: 'Password Changed',
-          description: 'Your password has been updated successfully.',
+          description: 'Your password has been updated successfully. Please log in again.',
         })
       )
     })

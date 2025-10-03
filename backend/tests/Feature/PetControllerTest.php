@@ -242,7 +242,6 @@ class PetControllerTest extends TestCase
             ->assertJsonValidationErrors([
                 'name',
                 'breed',
-                'birthday',
                 'location',
                 'description',
             ]);

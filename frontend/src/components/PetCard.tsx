@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 // Using default avatar as placeholder for pets
 import placeholderCatImage from '@/assets/images/default-avatar.webp'
-import { calculateAge } from '@/utils/date'
+import { formatPetAge } from '@/types/pet'
 import { petSupportsCapability } from '@/types/pet'
 
 interface PetCardProps {
@@ -73,7 +73,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-primary">{pet.name}</CardTitle>
         <CardDescription className="text-muted-foreground">
-          {pet.breed} - {calculateAge(pet.birthday)} years old
+          {pet.breed} - {formatPetAge(pet)}
           <span className="ml-2 inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
             {pet.pet_type.name}
           </span>

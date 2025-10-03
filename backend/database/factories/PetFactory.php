@@ -22,24 +22,50 @@ class PetFactory extends Factory
      */
     public function definition(): array
     {
+        $precision = $this->faker->randomElement([
+            'day','day','day','day', // weight day ~40%
+            'month','month','month', // month ~30%
+            'year','year',           // year ~20%
+            'unknown'                // unknown ~10%
+        ]);
+
+        $year = $this->faker->numberBetween(now()->year - 15, now()->year - 1);
+        $month = $this->faker->numberBetween(1, 12);
+        $day = $this->faker->numberBetween(1, 28); // keep simple for validity
+
+        $birthday = null;
+        $birthday_year = null;
+        $birthday_month = null;
+        $birthday_day = null;
+        if ($precision === 'day') {
+            $birthday_year = $year; $birthday_month = $month; $birthday_day = $day;
+            $birthday = sprintf('%04d-%02d-%02d', $year, $month, $day);
+        } elseif ($precision === 'month') {
+            $birthday_year = $year; $birthday_month = $month;
+        } elseif ($precision === 'year') {
+            $birthday_year = $year;
+        }
+
         return [
             'name' => $this->faker->firstName(),
             'breed' => $this->faker->randomElement([
                 'Persian', 'Siamese', 'Maine Coon', 'British Shorthair', 'Ragdoll',
                 'Golden Retriever', 'Labrador', 'German Shepherd', 'Bulldog', 'Poodle',
             ]),
-            'birthday' => $this->faker->dateTimeBetween('-10 years', '-1 year'),
+            'birthday' => $birthday,
+            'birthday_year' => $birthday_year,
+            'birthday_month' => $birthday_month,
+            'birthday_day' => $birthday_day,
+            'birthday_precision' => $precision,
             'location' => $this->faker->city(),
             'description' => $this->faker->paragraph(),
             'status' => PetStatus::ACTIVE,
             'user_id' => User::factory(),
             'pet_type_id' => function () {
-                // Default to an existing 'cat' pet type or create one if none exists
                 $existing = PetType::first();
                 if ($existing) {
                     return $existing->id;
                 }
-
                 return PetType::create([
                     'name' => 'Cat',
                     'slug' => 'cat',

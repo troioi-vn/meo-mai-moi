@@ -1,5 +1,5 @@
 import { api } from './axios'
-import type { Pet, PetType } from '@/types/pet'
+import type { Pet, PetType, BirthdayPrecision } from '@/types/pet'
 
 export interface WeightHistory {
   id: number
@@ -68,12 +68,21 @@ export const getMyPetsSections = async (): Promise<{
   return response.data.data
 }
 
-export const createPet = async (
-  petData: Omit<
-    Pet,
-    'id' | 'user_id' | 'status' | 'created_at' | 'updated_at' | 'user' | 'viewer_permissions' | 'pet_type'
-  >
-): Promise<Pet> => {
+export interface CreatePetPayload {
+  name: string
+  breed: string
+  location: string
+  description: string
+  pet_type_id: number | null
+  // Approximate birthday support
+  birthday_precision?: BirthdayPrecision
+  birthday?: string
+  birthday_year?: number | null
+  birthday_month?: number | null
+  birthday_day?: number | null
+}
+
+export const createPet = async (petData: CreatePetPayload): Promise<Pet> => {
   const response = await api.post<{ data: Pet }>('/pets', petData)
   return response.data.data
 }
@@ -83,10 +92,9 @@ export const getPet = async (id: string): Promise<Pet> => {
   return response.data.data
 }
 
-export const updatePet = async (
-  id: string,
-  petData: Partial<Omit<Pet, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'user' | 'viewer_permissions' | 'pet_type'>>
-): Promise<Pet> => {
+export interface UpdatePetPayload extends Partial<CreatePetPayload> {}
+
+export const updatePet = async (id: string, petData: UpdatePetPayload): Promise<Pet> => {
   const response = await api.put<{ data: Pet }>(`/pets/${id}`, petData)
   return response.data.data
 }

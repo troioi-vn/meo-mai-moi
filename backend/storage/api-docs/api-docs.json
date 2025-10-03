@@ -4043,7 +4043,6 @@
                     "id",
                     "name",
                     "breed",
-                    "birthday",
                     "location",
                     "description",
                     "status",
@@ -4070,9 +4069,41 @@
                                 "example": "Siamese"
                             },
                             "birthday": {
+                                "description": "Exact birthday (present only when birthday_precision=day). Deprecated: prefer component fields.",
                                 "type": "string",
                                 "format": "date",
-                                "example": "2020-01-01"
+                                "example": "2020-01-01",
+                                "nullable": true,
+                                "deprecated": true
+                            },
+                            "birthday_year": {
+                                "description": "Birth year when known (year/month/day precision).",
+                                "type": "integer",
+                                "example": 2020,
+                                "nullable": true
+                            },
+                            "birthday_month": {
+                                "description": "Birth month when known (month/day precision).",
+                                "type": "integer",
+                                "example": 5,
+                                "nullable": true
+                            },
+                            "birthday_day": {
+                                "description": "Birth day when known (day precision).",
+                                "type": "integer",
+                                "example": 12,
+                                "nullable": true
+                            },
+                            "birthday_precision": {
+                                "description": "Precision level for birthday components.",
+                                "type": "string",
+                                "enum": [
+                                    "day",
+                                    "month",
+                                    "year",
+                                    "unknown"
+                                ],
+                                "example": "month"
                             },
                             "location": {
                                 "type": "string",

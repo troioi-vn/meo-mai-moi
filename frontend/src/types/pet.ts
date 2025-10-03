@@ -13,11 +13,17 @@ export interface PetType {
   updated_at: string
 }
 
+export type BirthdayPrecision = 'day' | 'month' | 'year' | 'unknown'
+
 export interface Pet {
   id: number
   name: string
   breed: string
-  birthday: string // ISO date string
+  birthday: string | null // Exact ISO date when precision=day; nullable otherwise
+  birthday_year?: number | null
+  birthday_month?: number | null
+  birthday_day?: number | null
+  birthday_precision?: BirthdayPrecision
   location: string
   description: string
   user_id: number
@@ -111,16 +117,48 @@ export interface TransferRequest {
 
 // Helper function to calculate age from birthday
 export const calculateAge = (birthday: string): number => {
+  if (!birthday) return 0
   const today = new Date()
   const birthDate = new Date(birthday)
+  if (Number.isNaN(birthDate.getTime())) return 0
   let age = today.getFullYear() - birthDate.getFullYear()
   const monthDiff = today.getMonth() - birthDate.getMonth()
-
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
     age--
   }
+  return age < 0 ? 0 : age
+}
 
-  return age
+// Returns a human friendly age/approximation string based on precision fields
+export const formatPetAge = (pet: Pick<Pet, 'birthday' | 'birthday_precision' | 'birthday_year' | 'birthday_month' | 'birthday_day'>): string => {
+  const precision = pet.birthday_precision || (pet.birthday ? 'day' : 'unknown')
+  const today = new Date()
+  switch (precision) {
+    case 'day':
+      if (pet.birthday) {
+        const years = calculateAge(pet.birthday)
+        return years === 1 ? '1 year old' : `${years} years old`
+      }
+      return 'Age unknown'
+    case 'month': {
+      if (!pet.birthday_year || !pet.birthday_month) return 'Age unknown'
+      const years = today.getFullYear() - pet.birthday_year - (today.getMonth() + 1 < pet.birthday_month ? 1 : 0)
+      if (years <= 0) {
+        // Show months old if less than a year
+        const monthsDiff = (today.getFullYear() - pet.birthday_year) * 12 + (today.getMonth() + 1 - pet.birthday_month)
+        return monthsDiff <= 1 ? '1 month old (approx)' : `${monthsDiff} months old (approx)`
+      }
+      return years === 1 ? '≈1 year old' : `≈${years} years old`
+    }
+    case 'year': {
+      if (!pet.birthday_year) return 'Age unknown'
+      const years = today.getFullYear() - pet.birthday_year
+      return years <= 0 ? 'Less than 1 year (approx)' : (years === 1 ? '≈1 year old' : `≈${years} years old`)
+    }
+    case 'unknown':
+    default:
+      return 'Age unknown'
+  }
 }
 
 // Helper function to check if a pet type supports a capability

@@ -20,12 +20,16 @@ use OpenApi\Annotations as OA;
  *     schema="Pet",
  *     type="object",
  *     title="Pet",
- *     required={"id", "name", "breed", "birthday", "location", "description", "status", "user_id", "pet_type_id"},
+ *     required={"id", "name", "breed", "location", "description", "status", "user_id", "pet_type_id"},
  *
  *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="name", type="string", example="Whiskers"),
  *     @OA\Property(property="breed", type="string", example="Siamese"),
- *     @OA\Property(property="birthday", type="string", format="date", example="2020-01-01"),
+ *     @OA\Property(property="birthday", type="string", format="date", example="2020-01-01", nullable=true, description="Exact birthday (present only when birthday_precision=day). Deprecated: prefer component fields.", deprecated=true),
+ *     @OA\Property(property="birthday_year", type="integer", example=2020, nullable=true, description="Birth year when known (year/month/day precision)."),
+ *     @OA\Property(property="birthday_month", type="integer", example=5, nullable=true, description="Birth month when known (month/day precision)."),
+ *     @OA\Property(property="birthday_day", type="integer", example=12, nullable=true, description="Birth day when known (day precision)."),
+ *     @OA\Property(property="birthday_precision", type="string", enum={"day","month","year","unknown"}, example="month", description="Precision level for birthday components."),
  *     @OA\Property(property="location", type="string", example="Hanoi"),
  *     @OA\Property(property="description", type="string", example="A friendly pet."),
  *     @OA\Property(property="status", type="string", example="active"),
@@ -313,18 +317,127 @@ class PetController extends Controller
      */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
+        $rules = [
             'name' => 'required|string|max:255',
             'breed' => 'required|string|max:255',
-            'birthday' => 'required|date',
             'location' => 'required|string|max:255',
             'description' => 'required|string',
             'pet_type_id' => 'nullable|exists:pet_types,id',
-        ]);
+            // Legacy exact date (optional now)
+            'birthday' => 'nullable|date|before_or_equal:today',
+            // New precision inputs
+            'birthday_precision' => 'nullable|in:day,month,year,unknown',
+            'birthday_year' => 'nullable|integer|min:1900|max:'.now()->year,
+            'birthday_month' => 'nullable|integer|min:1|max:12',
+            'birthday_day' => 'nullable|integer|min:1|max:31',
+        ];
 
-        $petTypeId = $validatedData['pet_type_id'] ?? PetType::where('slug', 'cat')->value('id');
+        $validator = \Validator::make($request->all(), $rules);
+        $validator->after(function ($v) use ($request) {
+            $precision = $request->input('birthday_precision');
+            $legacyBirthday = $request->input('birthday');
+
+            // Normalize: if legacy birthday provided and no precision -> treat as day
+            if ($legacyBirthday && ! $precision) {
+                $precision = 'day';
+                $request->merge(['birthday_precision' => 'day']);
+            }
+
+            $year = $request->input('birthday_year');
+            $month = $request->input('birthday_month');
+            $day = $request->input('birthday_day');
+
+            if (! $precision) {
+                // If none of birthday / components provided, that's fine (unknown)
+                if ($legacyBirthday || $year || $month || $day) {
+                    // Components without precision not allowed
+                    $v->errors()->add('birthday_precision', 'birthday_precision is required when providing birthday components.');
+                }
+                return;
+            }
+
+            switch ($precision) {
+                case 'unknown':
+                    if ($legacyBirthday || $year || $month || $day) {
+                        $v->errors()->add('birthday_precision', 'No date components allowed when precision is unknown.');
+                    }
+                    break;
+                case 'year':
+                    if (! $year) {
+                        $v->errors()->add('birthday_year', 'birthday_year is required for year precision.');
+                    }
+                    if ($month || $day) {
+                        $v->errors()->add('birthday_month', 'Remove month/day for year precision.');
+                    }
+                    if ($year && $year > (int) now()->year) {
+                        $v->errors()->add('birthday_year', 'Year cannot be in the future.');
+                    }
+                    break;
+                case 'month':
+                    if (! $year || ! $month) {
+                        $v->errors()->add('birthday_month', 'birthday_year and birthday_month are required for month precision.');
+                    }
+                    if ($day) {
+                        $v->errors()->add('birthday_day', 'Remove day for month precision.');
+                    }
+                    if ($year && $month) {
+                        $date = \Carbon\Carbon::create($year, $month, 1, 0, 0, 0);
+                        if ($date->isFuture()) {
+                            $v->errors()->add('birthday_month', 'Month cannot be in the future.');
+                        }
+                    }
+                    break;
+                case 'day':
+                    // Allow either legacy birthday OR components
+                    if ($legacyBirthday) {
+                        try {
+                            $parsed = \Carbon\Carbon::parse($legacyBirthday);
+                            if ($parsed->isFuture()) {
+                                $v->errors()->add('birthday', 'Birthday cannot be in the future.');
+                            }
+                        } catch (Exception $e) {
+                            $v->errors()->add('birthday', 'Invalid birthday date.');
+                        }
+                    } else {
+                        if (! ($year && $month && $day)) {
+                            $v->errors()->add('birthday_day', 'birthday_year, birthday_month and birthday_day are required for day precision.');
+                        } else {
+                            try {
+                                $date = \Carbon\Carbon::create($year, $month, $day, 0, 0, 0);
+                                if ($date->isFuture()) {
+                                    $v->errors()->add('birthday_day', 'Birthday cannot be in the future.');
+                                }
+                            } catch (Exception $e) {
+                                $v->errors()->add('birthday_day', 'Invalid date combination.');
+                            }
+                        }
+                    }
+                    break;
+            }
+        });
+
+        $validator->validate();
+        $data = $validator->validated();
+
+        $precision = $data['birthday_precision'] ?? 'unknown';
+        $birthdayDate = null;
+        if ($precision === 'day') {
+            if (! empty($data['birthday'])) {
+                $birthdayDate = $data['birthday'];
+                $dt = \Carbon\Carbon::parse($birthdayDate);
+                $data['birthday_year'] = (int) $dt->year;
+                $data['birthday_month'] = (int) $dt->month;
+                $data['birthday_day'] = (int) $dt->day;
+            } else {
+                $birthdayDate = sprintf('%04d-%02d-%02d', $data['birthday_year'], $data['birthday_month'], $data['birthday_day']);
+            }
+        } else {
+            // Remove legacy birthday if provided for other precisions
+            $data['birthday'] = null;
+        }
+
+        $petTypeId = $data['pet_type_id'] ?? PetType::where('slug', 'cat')->value('id');
         if (! $petTypeId) {
-            // Fallback: create Cat type if missing (should not happen in seeded env)
             $petTypeId = PetType::create([
                 'name' => 'Cat',
                 'slug' => 'cat',
@@ -335,15 +448,21 @@ class PetController extends Controller
         }
 
         $pet = Pet::create([
-            'name' => $validatedData['name'],
-            'breed' => $validatedData['breed'],
-            'birthday' => $validatedData['birthday'],
-            'location' => $validatedData['location'],
-            'description' => $validatedData['description'],
+            'name' => $data['name'],
+            'breed' => $data['breed'],
+            'birthday' => $birthdayDate,
+            'birthday_year' => $data['birthday_year'] ?? null,
+            'birthday_month' => $data['birthday_month'] ?? null,
+            'birthday_day' => $data['birthday_day'] ?? null,
+            'birthday_precision' => $precision,
+            'location' => $data['location'],
+            'description' => $data['description'],
             'pet_type_id' => $petTypeId,
             'user_id' => $request->user()->id,
             'status' => PetStatus::ACTIVE,
         ]);
+
+        // (Removed legacy second create block that referenced $validatedData)
 
         // Create initial ownership history (open period) for the creator as owner, when table exists
         if (Schema::hasTable('ownership_history')) {
@@ -420,16 +539,133 @@ class PetController extends Controller
         }
         Gate::forUser($user)->authorize('update', $pet);
 
-        $validatedData = $request->validate([
+        $rules = [
             'name' => 'sometimes|required|string|max:255',
             'breed' => 'sometimes|required|string|max:255',
-            'birthday' => 'sometimes|required|date',
             'location' => 'sometimes|required|string|max:255',
             'description' => 'sometimes|required|string',
             'pet_type_id' => 'sometimes|required|exists:pet_types,id',
-        ]);
+            'birthday' => 'nullable|date|before_or_equal:today',
+            'birthday_precision' => 'nullable|in:day,month,year,unknown',
+            'birthday_year' => 'nullable|integer|min:1900|max:'.now()->year,
+            'birthday_month' => 'nullable|integer|min:1|max:12',
+            'birthday_day' => 'nullable|integer|min:1|max:31',
+        ];
 
-        $pet->fill($validatedData);
+        $validator = \Validator::make($request->all(), $rules);
+        $validator->after(function ($v) use ($request, $pet) {
+            $precision = $request->input('birthday_precision');
+            $legacyBirthday = $request->input('birthday');
+            if ($legacyBirthday && ! $precision) {
+                $precision = 'day';
+                $request->merge(['birthday_precision' => 'day']);
+            }
+            $year = $request->input('birthday_year');
+            $month = $request->input('birthday_month');
+            $day = $request->input('birthday_day');
+
+            if (! $precision) {
+                if ($legacyBirthday || $year || $month || $day) {
+                    $v->errors()->add('birthday_precision', 'birthday_precision is required when providing birthday components.');
+                }
+                return;
+            }
+            switch ($precision) {
+                case 'unknown':
+                    if ($legacyBirthday || $year || $month || $day) {
+                        $v->errors()->add('birthday_precision', 'No date components allowed when precision is unknown.');
+                    }
+                    break;
+                case 'year':
+                    if (! $year) {
+                        $v->errors()->add('birthday_year', 'birthday_year is required for year precision.');
+                    }
+                    if ($month || $day) {
+                        $v->errors()->add('birthday_month', 'Remove month/day for year precision.');
+                    }
+                    if ($year && $year > (int) now()->year) {
+                        $v->errors()->add('birthday_year', 'Year cannot be in the future.');
+                    }
+                    break;
+                case 'month':
+                    if (! $year || ! $month) {
+                        $v->errors()->add('birthday_month', 'birthday_year and birthday_month are required for month precision.');
+                    }
+                    if ($day) {
+                        $v->errors()->add('birthday_day', 'Remove day for month precision.');
+                    }
+                    if ($year && $month) {
+                        $date = \Carbon\Carbon::create($year, $month, 1, 0, 0, 0);
+                        if ($date->isFuture()) {
+                            $v->errors()->add('birthday_month', 'Month cannot be in the future.');
+                        }
+                    }
+                    break;
+                case 'day':
+                    if ($legacyBirthday) {
+                        try {
+                            $parsed = \Carbon\Carbon::parse($legacyBirthday);
+                            if ($parsed->isFuture()) {
+                                $v->errors()->add('birthday', 'Birthday cannot be in the future.');
+                            }
+                        } catch (Exception $e) {
+                            $v->errors()->add('birthday', 'Invalid birthday date.');
+                        }
+                    } else {
+                        if (! ($year && $month && $day)) {
+                            $v->errors()->add('birthday_day', 'birthday_year, birthday_month and birthday_day are required for day precision.');
+                        } else {
+                            try {
+                                $date = \Carbon\Carbon::create($year, $month, $day, 0, 0, 0);
+                                if ($date->isFuture()) {
+                                    $v->errors()->add('birthday_day', 'Birthday cannot be in the future.');
+                                }
+                            } catch (Exception $e) {
+                                $v->errors()->add('birthday_day', 'Invalid date combination.');
+                            }
+                        }
+                    }
+                    break;
+            }
+        });
+        $validator->validate();
+        $data = $validator->validated();
+        $precision = $data['birthday_precision'] ?? $pet->birthday_precision ?? 'unknown';
+        $birthdayDate = $pet->birthday; // default retain
+        if ($precision === 'day') {
+            if (! empty($data['birthday'])) {
+                $birthdayDate = $data['birthday'];
+                $dt = \Carbon\Carbon::parse($birthdayDate);
+                $data['birthday_year'] = (int) $dt->year;
+                $data['birthday_month'] = (int) $dt->month;
+                $data['birthday_day'] = (int) $dt->day;
+            } elseif (! empty($data['birthday_year']) && ! empty($data['birthday_month']) && ! empty($data['birthday_day'])) {
+                $birthdayDate = sprintf('%04d-%02d-%02d', $data['birthday_year'], $data['birthday_month'], $data['birthday_day']);
+            }
+        } else {
+            $birthdayDate = null;
+            $data['birthday'] = null;
+            if ($precision === 'unknown') {
+                $data['birthday_year'] = $data['birthday_month'] = $data['birthday_day'] = null;
+            } elseif ($precision === 'year') {
+                $data['birthday_month'] = $data['birthday_day'] = null;
+            } elseif ($precision === 'month') {
+                $data['birthday_day'] = null;
+            }
+        }
+
+        $pet->fill(array_filter([
+            'name' => $data['name'] ?? null,
+            'breed' => $data['breed'] ?? null,
+            'birthday' => $birthdayDate,
+            'birthday_year' => $data['birthday_year'] ?? null,
+            'birthday_month' => $data['birthday_month'] ?? null,
+            'birthday_day' => $data['birthday_day'] ?? null,
+            'birthday_precision' => $precision,
+            'location' => $data['location'] ?? null,
+            'description' => $data['description'] ?? null,
+            'pet_type_id' => $data['pet_type_id'] ?? null,
+        ], fn($v) => $v !== null));
         $pet->save();
 
         $pet->load('petType');

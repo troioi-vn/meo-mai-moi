@@ -8,6 +8,10 @@ interface FormErrors {
   name?: string
   breed?: string
   birthday?: string
+  birthday_year?: string
+  birthday_month?: string
+  birthday_day?: string
+  birthday_precision?: string
   location?: string
   description?: string
   pet_type_id?: string
@@ -16,7 +20,11 @@ interface FormErrors {
 interface CreatePetFormData {
   name: string
   breed: string
-  birthday: string
+  birthday: string // exact date only when precision=day
+  birthday_year: string
+  birthday_month: string
+  birthday_day: string
+  birthday_precision: 'day' | 'month' | 'year' | 'unknown'
   location: string
   description: string
   pet_type_id: number | null
@@ -26,7 +34,9 @@ interface CreatePetFormData {
 const VALIDATION_MESSAGES = {
   REQUIRED_NAME: 'Name is required',
   REQUIRED_BREED: 'Breed is required',
-  REQUIRED_BIRTHDAY: 'Birthday is required',
+  REQUIRED_BIRTHDAY_COMPONENTS: 'Complete date required for day precision',
+  REQUIRED_YEAR: 'Year required',
+  REQUIRED_MONTH: 'Month required',
   REQUIRED_LOCATION: 'Location is required',
   REQUIRED_DESCRIPTION: 'Description is required',
   REQUIRED_PET_TYPE: 'Pet type is required',
@@ -53,7 +63,11 @@ export const useCreatePetForm = (petId?: string) => {
   const [formData, setFormData] = useState<CreatePetFormData>({
     name: '',
     breed: '',
-    birthday: '',
+  birthday: '',
+  birthday_year: '',
+  birthday_month: '',
+  birthday_day: '',
+  birthday_precision: 'unknown',
     location: '',
     description: '',
     pet_type_id: null,
@@ -101,11 +115,15 @@ export const useCreatePetForm = (petId?: string) => {
           setFormData({
             name: pet.name,
             breed: pet.breed,
-            birthday: formatDate(pet.birthday),
+            birthday: pet.birthday ? formatDate(pet.birthday) : '',
+            birthday_year: pet.birthday_year ? String(pet.birthday_year) : '',
+            birthday_month: pet.birthday_month ? String(pet.birthday_month) : '',
+            birthday_day: pet.birthday_day ? String(pet.birthday_day) : '',
+            birthday_precision: pet.birthday_precision || (pet.birthday ? 'day' : 'unknown'),
             location: pet.location,
             description: pet.description,
             pet_type_id: pet.pet_type.id,
-            photos: [], // Photos can't be pre-loaded from file inputs
+            photos: [],
           })
         } catch (err) {
           console.error('Failed to load pet data:', err)
@@ -149,8 +167,16 @@ export const useCreatePetForm = (petId?: string) => {
     if (!formData.breed.trim()) {
       newErrors.breed = VALIDATION_MESSAGES.REQUIRED_BREED
     }
-    if (!formData.birthday.trim()) {
-      newErrors.birthday = VALIDATION_MESSAGES.REQUIRED_BIRTHDAY
+    // Precision-specific validation
+    if (formData.birthday_precision === 'day') {
+      if (!formData.birthday.trim() && (!formData.birthday_year || !formData.birthday_month || !formData.birthday_day)) {
+        newErrors.birthday = VALIDATION_MESSAGES.REQUIRED_BIRTHDAY_COMPONENTS
+      }
+    } else if (formData.birthday_precision === 'month') {
+      if (!formData.birthday_year) newErrors.birthday_year = VALIDATION_MESSAGES.REQUIRED_YEAR
+      if (!formData.birthday_month) newErrors.birthday_month = VALIDATION_MESSAGES.REQUIRED_MONTH
+    } else if (formData.birthday_precision === 'year') {
+      if (!formData.birthday_year) newErrors.birthday_year = VALIDATION_MESSAGES.REQUIRED_YEAR
     }
     if (!formData.location.trim()) {
       newErrors.location = VALIDATION_MESSAGES.REQUIRED_LOCATION
@@ -183,24 +209,34 @@ export const useCreatePetForm = (petId?: string) => {
     try {
       let pet: Pet
       
+      // Build payload with precision rules
+      const payload: import('@/api/pets').CreatePetPayload = {
+        name: formData.name,
+        breed: formData.breed,
+        location: formData.location,
+        description: formData.description,
+        pet_type_id: formData.pet_type_id,
+        birthday_precision: formData.birthday_precision,
+      }
+      if (formData.birthday_precision === 'day') {
+        if (formData.birthday) {
+          payload.birthday = formData.birthday
+        } else if (formData.birthday_year && formData.birthday_month && formData.birthday_day) {
+          payload.birthday_year = Number(formData.birthday_year)
+          payload.birthday_month = Number(formData.birthday_month)
+          payload.birthday_day = Number(formData.birthday_day)
+        }
+      } else if (formData.birthday_precision === 'month') {
+  payload.birthday_year = formData.birthday_year ? Number(formData.birthday_year) : null
+  payload.birthday_month = formData.birthday_month ? Number(formData.birthday_month) : null
+      } else if (formData.birthday_precision === 'year') {
+  payload.birthday_year = formData.birthday_year ? Number(formData.birthday_year) : null
+      }
+
       if (isEditMode && petId) {
-        pet = await updatePet(petId, {
-          name: formData.name,
-          breed: formData.breed,
-          birthday: formData.birthday,
-          location: formData.location,
-          description: formData.description,
-          pet_type_id: formData.pet_type_id,
-        })
+        pet = await updatePet(petId, payload)
       } else {
-        pet = await createPet({
-          name: formData.name,
-          breed: formData.breed,
-          birthday: formData.birthday,
-          location: formData.location,
-          description: formData.description,
-          pet_type_id: formData.pet_type_id,
-        })
+        pet = await createPet(payload)
       }
 
       // Upload photos if any

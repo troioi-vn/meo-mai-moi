@@ -22,11 +22,18 @@ class Pet extends Model
         'user_id',
         'status',
         'birthday',
+        'birthday_year',
+        'birthday_month',
+        'birthday_day',
+        'birthday_precision',
     ];
 
     protected $casts = [
         'status' => PetStatus::class,
         'birthday' => 'date',
+        'birthday_year' => 'integer',
+        'birthday_month' => 'integer',
+        'birthday_day' => 'integer',
     ];
 
     protected $appends = ['photo_url'];

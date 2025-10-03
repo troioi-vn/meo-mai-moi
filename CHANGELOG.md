@@ -9,12 +9,14 @@ All notable changes to this project are documented here, following the [Keep a C
 - Default database connection changed from SQLite to PostgreSQL in all environments
 - Tests now run against PostgreSQL instead of SQLite in-memory database
 - Queue and batching configuration updated to use PostgreSQL instead of SQLite fallbacks
+- Pet API: Deprecated strict required exact `birthday`; now optional and superseded by precision + component fields. Supplying legacy `birthday` alone auto-coerces precision=day.
 
 ### Added
 - Dedicated PostgreSQL development container setup in `utils/dev-pgsql-docker/`
 - PgAdmin interface for local database management
 - Enhanced documentation for PostgreSQL-only development workflow
 - Comprehensive frontend code quality improvements with 140+ ESLint fixes
+- Support for approximate / unknown pet birthdays via `birthday_precision` enum (`day|month|year|unknown`) and component fields `birthday_year`, `birthday_month`, `birthday_day`; frontend form precision selector & age display helper.
 
 ### Fixed
 - Resolved test failures after SQLite removal by installing `postgresql-client` and fixing test setup to use seeders

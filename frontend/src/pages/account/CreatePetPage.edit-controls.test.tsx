@@ -67,11 +67,13 @@ describe('CreatePetPage edit controls', () => {
       expect(screen.getByText(/Current status:/i)).toBeInTheDocument()
     })
 
-    // Open select and choose Lost
-  const statusCombo = screen.getAllByRole('combobox')[1]
-  fireEvent.click(statusCombo)
-    const lost = await screen.findByText('Lost')
-    fireEvent.click(lost)
+    // Open status select and choose Lost (find the button combobox after Pet Type)
+    const comboButtons = screen.getAllByRole('combobox').filter(el => el.tagName.toLowerCase() === 'button')
+    // First button combobox is pet type. Assume second is status.
+    const statusCombo = comboButtons[1]
+    fireEvent.click(statusCombo)
+    const lost = await screen.findByRole('option', { name: 'Lost' }).catch(() => screen.findByText('Lost'))
+    fireEvent.click(await lost)
 
     // Type password
     const pw = screen.getAllByPlaceholderText('Confirm with your password')[0] as HTMLInputElement
@@ -94,9 +96,11 @@ describe('CreatePetPage edit controls', () => {
     })
 
     // Select Deceased but do not enter password
-  const statusCombo = screen.getAllByRole('combobox')[1]
-  fireEvent.click(statusCombo)
-    fireEvent.click(await screen.findByText('Deceased'))
+    const comboButtons = screen.getAllByRole('combobox').filter(el => el.tagName.toLowerCase() === 'button')
+    const statusCombo = comboButtons[1]
+    fireEvent.click(statusCombo)
+    const deceased = await screen.findByRole('option', { name: 'Deceased' }).catch(() => screen.findByText('Deceased'))
+    fireEvent.click(await deceased)
 
     const btn = screen.getByRole('button', { name: /Update status/i })
     fireEvent.click(btn)

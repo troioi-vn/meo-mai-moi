@@ -43,9 +43,6 @@ const mockPetTypes: PetType[] = [
     display_order: 1,
     created_at: '2023-01-01T00:00:00Z',
     updated_at: '2023-01-01T00:00:00Z',
-    placement_requests_allowed: true,
-    weight_tracking_allowed: true,
-    microchips_allowed: true,
   },
   {
     id: 2,
@@ -57,9 +54,6 @@ const mockPetTypes: PetType[] = [
     display_order: 2,
     created_at: '2023-01-01T00:00:00Z',
     updated_at: '2023-01-01T00:00:00Z',
-    placement_requests_allowed: true,
-    weight_tracking_allowed: false,
-    microchips_allowed: false,
   },
 ]
 
@@ -97,7 +91,7 @@ describe('CreatePetPage', () => {
     mockGetPetTypes.mockResolvedValue(mockPetTypes)
   })
 
-  it('renders form with base fields and precision selector (no date input until Full Date selected)', async () => {
+  it('renders form with all required fields', async () => {
     renderWithProviders(<CreatePetPage />)
 
     expect(screen.getByText('Add a New Pet')).toBeInTheDocument()
@@ -108,14 +102,7 @@ describe('CreatePetPage', () => {
 
     expect(screen.getByLabelText('Name')).toBeInTheDocument()
     expect(screen.getByLabelText('Breed')).toBeInTheDocument()
-    expect(screen.getByLabelText('Birthday Precision')).toBeInTheDocument()
-    // Date input not shown by default (unknown precision)
-    expect(screen.queryByLabelText('Birthday')).not.toBeInTheDocument()
-    // Switch to Full Date
-    fireEvent.change(screen.getByLabelText('Birthday Precision'), { target: { value: 'day' } })
-    await waitFor(() => {
-      expect(screen.getByLabelText('Birthday')).toBeInTheDocument()
-    })
+    expect(screen.getByLabelText('Birthday')).toBeInTheDocument()
     expect(screen.getByLabelText('Location')).toBeInTheDocument()
     expect(screen.getByLabelText('Description')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Create Pet' })).toBeInTheDocument()
@@ -131,8 +118,7 @@ describe('CreatePetPage', () => {
     })
 
     // Click to open dropdown
-    // There are now two combobox roles (pet type + birthday precision); pick the pet type one (the button)
-    const petTypeSelect = screen.getAllByRole('combobox').find(el => el.tagName.toLowerCase() === 'button')!
+    const petTypeSelect = screen.getByRole('combobox')
     fireEvent.click(petTypeSelect)
 
     await waitFor(() => {
@@ -159,7 +145,7 @@ describe('CreatePetPage', () => {
     })
   })
 
-  it('validates required fields (excluding optional birthday)', async () => {
+  it('validates required fields', async () => {
     renderWithProviders(<CreatePetPage />)
 
     await waitFor(() => {
@@ -173,14 +159,13 @@ describe('CreatePetPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Name is required')).toBeInTheDocument()
       expect(screen.getByText('Breed is required')).toBeInTheDocument()
-  // Birthday no longer universally required
-  expect(screen.queryByText('Birthday is required')).not.toBeInTheDocument()
+      expect(screen.getByText('Birthday is required')).toBeInTheDocument()
       expect(screen.getByText('Location is required')).toBeInTheDocument()
       expect(screen.getByText('Description is required')).toBeInTheDocument()
     })
   })
 
-  it('submits form with valid data - full date precision', async () => {
+  it('submits form with valid data', async () => {
     const mockPetData = {
       id: 1,
       name: 'Fluffy',
@@ -208,10 +193,7 @@ describe('CreatePetPage', () => {
     // Fill out the form
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Fluffy' } })
     fireEvent.change(screen.getByLabelText('Breed'), { target: { value: 'Persian' } })
-  // Enable full date precision
-  fireEvent.change(screen.getByLabelText('Birthday Precision'), { target: { value: 'day' } })
-  await waitFor(() => expect(screen.getByLabelText('Birthday')).toBeInTheDocument())
-  fireEvent.change(screen.getByLabelText('Birthday'), { target: { value: '2020-01-01' } })
+    fireEvent.change(screen.getByLabelText('Birthday'), { target: { value: '2020-01-01' } })
     fireEvent.change(screen.getByLabelText('Location'), { target: { value: 'Hanoi' } })
     fireEvent.change(screen.getByLabelText('Description'), { target: { value: 'A lovely cat' } })
 
@@ -223,19 +205,18 @@ describe('CreatePetPage', () => {
     fireEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(mockCreatePet).toHaveBeenCalledWith(expect.objectContaining({
+      expect(mockCreatePet).toHaveBeenCalledWith({
         name: 'Fluffy',
         breed: 'Persian',
         birthday: '2020-01-01',
-        birthday_precision: 'day',
         location: 'Hanoi',
         description: 'A lovely cat',
         pet_type_id: 1,
-      }))
+      })
     })
   })
 
-  it('shows loading state during submission (month precision)', async () => {
+  it('shows loading state during submission', async () => {
     mockCreatePet.mockImplementation(() => new Promise(() => {})) // Never resolves
 
     renderWithProviders(<CreatePetPage />)
@@ -247,10 +228,7 @@ describe('CreatePetPage', () => {
     // Fill required fields
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Test Pet' } })
     fireEvent.change(screen.getByLabelText('Breed'), { target: { value: 'Test Breed' } })
-  fireEvent.change(screen.getByLabelText('Birthday Precision'), { target: { value: 'month' } })
-  // Provide year+month components
-  fireEvent.change(screen.getByLabelText('Birth Year'), { target: { value: '2022' } })
-  fireEvent.change(screen.getByLabelText('Birth Month'), { target: { value: '05' } })
+    fireEvent.change(screen.getByLabelText('Birthday'), { target: { value: '2020-01-01' } })
     fireEvent.change(screen.getByLabelText('Location'), { target: { value: 'Test Location' } })
     fireEvent.change(screen.getByLabelText('Description'), { target: { value: 'Test Description' } })
 
@@ -268,7 +246,7 @@ describe('CreatePetPage', () => {
     expect(submitButtonAfter).toBeDisabled()
   })
 
-  it('handles submission error (year precision)', async () => {
+  it('handles submission error', async () => {
     mockCreatePet.mockRejectedValue(new Error('API Error'))
 
     renderWithProviders(<CreatePetPage />)
@@ -280,51 +258,16 @@ describe('CreatePetPage', () => {
     // Fill required fields
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Test Pet' } })
     fireEvent.change(screen.getByLabelText('Breed'), { target: { value: 'Test Breed' } })
-    fireEvent.change(screen.getByLabelText('Birthday Precision'), { target: { value: 'year' } })
-    fireEvent.change(screen.getByLabelText('Birth Year'), { target: { value: '2023' } })
+    fireEvent.change(screen.getByLabelText('Birthday'), { target: { value: '2020-01-01' } })
     fireEvent.change(screen.getByLabelText('Location'), { target: { value: 'Test Location' } })
     fireEvent.change(screen.getByLabelText('Description'), { target: { value: 'Test Description' } })
 
+    // Submit form
     const submitButton = screen.getByRole('button', { name: 'Create Pet' })
     fireEvent.click(submitButton)
 
     await waitFor(() => {
       expect(screen.getByText('Failed to create pet.')).toBeInTheDocument()
-    })
-  })
-
-  it('validates missing components for day precision without full date', async () => {
-    renderWithProviders(<CreatePetPage />)
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Create Pet' })).toBeInTheDocument())
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Patchy' } })
-    fireEvent.change(screen.getByLabelText('Breed'), { target: { value: 'Mixed' } })
-    fireEvent.change(screen.getByLabelText('Location'), { target: { value: 'Someplace' } })
-    fireEvent.change(screen.getByLabelText('Description'), { target: { value: 'Colorful' } })
-    fireEvent.change(screen.getByLabelText('Birthday Precision'), { target: { value: 'day' } })
-    // Do not supply date -> should produce error on submit
-    fireEvent.click(screen.getByRole('button', { name: 'Create Pet' }))
-    await waitFor(() => {
-      expect(screen.getByText('Complete date required for day precision')).toBeInTheDocument()
-    })
-  })
-
-  it('allows unknown precision without birthday fields', async () => {
-    renderWithProviders(<CreatePetPage />)
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Create Pet' })).toBeInTheDocument())
-
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ghost' } })
-    fireEvent.change(screen.getByLabelText('Breed'), { target: { value: 'Unknown' } })
-    fireEvent.change(screen.getByLabelText('Location'), { target: { value: 'Nowhere' } })
-    fireEvent.change(screen.getByLabelText('Description'), { target: { value: 'Mystery pet' } })
-
-    const submitButton = screen.getByRole('button', { name: 'Create Pet' })
-    fireEvent.click(submitButton)
-
-    await waitFor(() => {
-      expect(mockCreatePet).toHaveBeenCalledWith(expect.objectContaining({
-        name: 'Ghost',
-        birthday_precision: 'unknown',
-      }))
     })
   })
 

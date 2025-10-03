@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import type { Pet } from '@/types/pet'
-import { calculateAge } from '@/types/pet'
+import { formatPetAge } from '@/types/pet'
 import { getStatusDisplay, getStatusClasses } from '@/utils/petStatus'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
@@ -27,7 +27,7 @@ const PetDetails: React.FC<PetDetailsProps> = ({
   onTransferResponseSuccess,
   onOpenPlacementRequest,
 }) => {
-  const age = calculateAge(pet.birthday)
+  const ageDisplay = formatPetAge(pet)
   const statusDisplay = getStatusDisplay(pet.status)
   const statusClasses = getStatusClasses(pet.status)
   const { isAuthenticated, user } = useAuth()
@@ -63,7 +63,7 @@ const PetDetails: React.FC<PetDetailsProps> = ({
           <div>
             <h1 className="text-3xl font-bold text-card-foreground">{pet.name}</h1>
             <p className="text-lg text-muted-foreground">
-              {pet.breed} • {age} years old
+              {pet.breed} • {ageDisplay}
             </p>
             <div className="flex items-center gap-2 mt-2">
               <span className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm font-medium">

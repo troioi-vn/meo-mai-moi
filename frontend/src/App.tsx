@@ -10,6 +10,7 @@ import ProfilePage from './pages/ProfilePage'
 import MyPetsPage from './pages/account/MyPetsPage'
 import CreatePetPage from './pages/account/CreatePetPage'
 import NotificationsPage from './pages/account/NotificationsPage'
+import PasswordPage from './pages/account/PasswordPage'
 import PetProfilePage from './pages/PetProfilePage'
 import HelperProfilePage from './pages/helper/HelperProfilePage'
 import HelperProfileEditPage from './pages/helper/HelperProfileEditPage'
@@ -108,6 +109,14 @@ export function AppRoutes() {
         element={
           <PrivateRoute>
             <NotificationsPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/account/password"
+        element={
+          <PrivateRoute>
+            <PasswordPage />
           </PrivateRoute>
         }
       />

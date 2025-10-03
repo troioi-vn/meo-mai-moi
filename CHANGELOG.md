@@ -37,3 +37,13 @@ All notable changes to this project are documented here, following the [Keep a C
 - SQLite database file creation from Composer post-install scripts
 - SQLite references from documentation and development guides
 
+### Unreleased (delta)
+- Frontend: Added a prominent "Lost" status badge to `PetCard` and corresponding unit test to ensure the badge renders when `pet.status === 'lost'`.
+- Frontend tests: Fixed typing for test helpers (added `MockUser` type) so tests accept a mock user object; all `PetCard` tests pass.
+- Password flow: Moved password change UI to a dedicated `/account/password` page (`PasswordPage`), updated `ChangePasswordForm` to force logout and redirect to `/login` after a successful password change, and updated tests to assert logout/redirect behavior and adjusted copy.
+- Profile page: Replaced inline password form with a link to the new password page and small UI polish for the password card.
+- Create/Edit Pet page: Added edit-mode improvements: navigation back button, photo preview for current pet photo in edit mode, and redirect to the pet profile after status updates.
+- Frontend package: changed test script to run `vitest run` (removed `--silent` flag) to surface test output during runs.
+- Documentation: Removed several backend docs files (notification-related docs, OpenAPI dump, unsubscribe, send-email job, and other legacy docs) as part of documentation cleanup.
+- Repo config: Tweaked `.gitignore` and updated `backend/.env.docker` handling (dev docker env changes).
+

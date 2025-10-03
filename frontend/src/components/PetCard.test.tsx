@@ -104,7 +104,12 @@ const mockUser = {
   email: 'jane@example.com',
 }
 
-const renderWithProviders = (component: React.ReactElement, user = null) => {
+type MockUser = { id: number; name: string; email: string }
+
+const renderWithProviders = (
+  component: React.ReactElement,
+  user: MockUser | null = null
+) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
@@ -196,33 +201,14 @@ describe('PetCard', () => {
     expect(screen.getByText('Fulfilled')).toBeInTheDocument()
   })
 
-  it('shows pending response status when user has pending transfer', () => {
-    const catWithPendingTransfer = {
+  it('shows lost status badge when pet status is lost', () => {
+    const lostCat = {
       ...mockCat,
-      placement_requests: [
-        {
-          id: 1,
-          pet_id: 1,
-          user_id: 1,
-          request_type: 'adoption',
-          status: 'open',
-          is_active: true,
-          transfer_requests: [
-            {
-              id: 1,
-              pet_id: 1,
-              placement_request_id: 1,
-              initiator_user_id: 2,
-              status: 'pending',
-            },
-          ],
-        },
-      ],
+      status: 'lost' as const,
     }
 
-    renderWithProviders(<PetCard pet={catWithPendingTransfer} />, mockUser)
+    renderWithProviders(<PetCard pet={lostCat} />)
 
-    expect(screen.getByText('You responded... Waiting for approval')).toBeInTheDocument()
-    expect(screen.getByText('Cancel Response')).toBeInTheDocument()
+    expect(screen.getByText('Lost')).toBeInTheDocument()
   })
 })

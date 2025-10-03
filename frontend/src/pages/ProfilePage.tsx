@@ -1,12 +1,11 @@
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
-import { ChangePasswordForm } from '@/components/ChangePasswordForm'
 import { DeleteAccountDialog } from '@/components/DeleteAccountDialog'
 import { UserAvatar } from '@/components/UserAvatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useEffect, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Bell, ChevronRight } from 'lucide-react'
+import { Bell, ChevronRight, KeyRound } from 'lucide-react'
 
 export default function ProfilePage() {
   const { user, logout, isLoading, loadUser } = useAuth()
@@ -93,7 +92,23 @@ export default function ProfilePage() {
           </div>
         </div>
         <div className="space-y-4 pt-4">
-          <ChangePasswordForm />
+          {/* Password Section */}
+          <div className="space-y-2">
+            <h3 className="text-lg font-medium text-card-foreground">Password</h3>
+            <Link
+              to="/account/password"
+              className="flex items-center justify-between p-3 rounded-lg border bg-background hover:bg-accent transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <KeyRound className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="font-medium">Change Password</p>
+                  <p className="text-sm text-muted-foreground">Update your account password</p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </Link>
+          </div>
 
           {/* Notifications Section */}
           <div className="space-y-2">

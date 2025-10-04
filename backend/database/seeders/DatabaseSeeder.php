@@ -28,6 +28,28 @@ class DatabaseSeeder extends Seeder
             EmailConfigurationSeeder::class,
         ]);
 
+        // Ensure sample pet images are available (Option A: committed seed images)
+        $seedImageDir = base_path('backend/database/seed_images/pets');
+        $publicPetsDir = storage_path('app/public/pets');
+        if (! is_dir($publicPetsDir)) {
+            @mkdir($publicPetsDir, 0775, true);
+        }
+        if (is_dir($seedImageDir)) {
+            $expected = [];
+            foreach (range(1,5) as $n) { $expected[] = "cat{$n}.jpeg"; $expected[] = "dog{$n}.jpeg"; }
+            foreach ($expected as $file) {
+                $src = $seedImageDir.DIRECTORY_SEPARATOR.$file;
+                $dest = $publicPetsDir.DIRECTORY_SEPARATOR.$file;
+                if (file_exists($src) && ! file_exists($dest)) {
+                    try {
+                        copy($src, $dest);
+                    } catch (\Throwable $e) {
+                        echo "Failed to copy seed image {$file}: {$e->getMessage()}".PHP_EOL;
+                    }
+                }
+            }
+        }
+
         // Get pet types
         $catType = PetType::where('slug', 'cat')->first();
         $dogType = PetType::where('slug', 'dog')->first();

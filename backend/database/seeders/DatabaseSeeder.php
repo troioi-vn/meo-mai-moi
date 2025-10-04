@@ -28,24 +28,53 @@ class DatabaseSeeder extends Seeder
             EmailConfigurationSeeder::class,
         ]);
 
-        // Ensure sample pet images are available (Option A: committed seed images)
-        $seedImageDir = base_path('backend/database/seed_images/pets');
+        // Ensure sample pet images are available.
+        // In local source the images live at backend/database/seed_images/pets
+        // but inside the built container backend/ contents are flattened into base_path().
+        $possibleSeedDirs = [
+            base_path('database/seed_images/pets'), // flattened (container build)
+            base_path('backend/database/seed_images/pets'), // local dev run via artisan serve
+        ];
+        $seedImageDir = null;
+        foreach ($possibleSeedDirs as $dir) {
+            if (is_dir($dir)) { $seedImageDir = $dir; break; }
+        }
+
         $publicPetsDir = storage_path('app/public/pets');
         if (! is_dir($publicPetsDir)) {
             @mkdir($publicPetsDir, 0775, true);
         }
-        if (is_dir($seedImageDir)) {
-            $expected = [];
-            foreach (range(1,5) as $n) { $expected[] = "cat{$n}.jpeg"; $expected[] = "dog{$n}.jpeg"; }
-            foreach ($expected as $file) {
+
+        $expectedPairs = [];
+        foreach (range(1,5) as $n) { $expectedPairs[] = ["cat{$n}.jpeg", 'Cat']; $expectedPairs[] = ["dog{$n}.jpeg", 'Dog']; }
+
+        if ($seedImageDir) {
+            foreach ($expectedPairs as [$file]) {
                 $src = $seedImageDir.DIRECTORY_SEPARATOR.$file;
                 $dest = $publicPetsDir.DIRECTORY_SEPARATOR.$file;
                 if (file_exists($src) && ! file_exists($dest)) {
-                    try {
-                        copy($src, $dest);
-                    } catch (\Throwable $e) {
-                        echo "Failed to copy seed image {$file}: {$e->getMessage()}".PHP_EOL;
-                    }
+                    try { copy($src, $dest); } catch (\Throwable $e) { echo "Failed to copy seed image {$file}: {$e->getMessage()}".PHP_EOL; }
+                }
+            }
+        }
+
+        // Generate placeholders for any missing expected images (GD must be installed; included in Dockerfile)
+        foreach ($expectedPairs as [$file, $label]) {
+            $dest = $publicPetsDir.DIRECTORY_SEPARATOR.$file;
+            if (! file_exists($dest) && function_exists('imagecreate')) {
+                try {
+                    $im = imagecreatetruecolor(600, 600);
+                    $bg = imagecolorallocate($im, 240, 240, 240);
+                    $accent = imagecolorallocate($im, 80, 80, 80);
+                    imagefilledrectangle($im, 0, 0, 600, 600, $bg);
+                    $text = strtoupper(pathinfo($file, PATHINFO_FILENAME)); // e.g. CAT1
+                    // simple text placement
+                    imagestring($im, 5, 20, 20, $label.' Placeholder', $accent);
+                    imagestring($im, 5, 20, 50, $text, $accent);
+                    imagejpeg($im, $dest, 85);
+                    imagedestroy($im);
+                } catch (\Throwable $e) {
+                    echo "Failed to generate placeholder {$file}: {$e->getMessage()}".PHP_EOL;
                 }
             }
         }
@@ -81,8 +110,6 @@ class DatabaseSeeder extends Seeder
                     } catch (\Exception $e) {
                         echo "Failed to create cat photo for pet {$cat->id}: ".$e->getMessage().PHP_EOL;
                     }
-                } else {
-                    echo "Cat image not found: {$fullCatPath}".PHP_EOL;
                 }
             }
 
@@ -110,8 +137,6 @@ class DatabaseSeeder extends Seeder
                     } catch (\Exception $e) {
                         echo "Failed to create dog photo for pet {$dog->id}: ".$e->getMessage().PHP_EOL;
                     }
-                } else {
-                    echo "Dog image not found: {$fullDogPath}".PHP_EOL;
                 }
             }
         }

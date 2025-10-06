@@ -12,6 +12,7 @@ Start here if you're new to the repo or want the shortest path to contributing w
 	- Initialize (first time):
 		- `docker compose exec backend php artisan migrate:fresh --seed`
 		- `docker compose exec backend php artisan shield:generate --all`
+      - `docker compose exec backend php artisan cache:clear` - sometimes needed
 		- `docker compose exec backend php artisan storage:link`
 - Native (fast if you already have PHP/Node): see "Native Development" below
 

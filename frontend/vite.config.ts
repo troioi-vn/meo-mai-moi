@@ -38,8 +38,15 @@ export default defineConfig(({ mode }) => ({
     environment: 'jsdom',
     setupFiles: './src/setupTests.ts',
     css: false,
-
     testTimeout: 30000,
+    // Make test output much more concise
+    reporter: 'basic',
+    outputFile: false,
+    silent: false,
+    // Reduce DOM output in test failures
+    onConsoleLog: () => false,
+    // Limit error output
+    printConsoleTrace: false,
   },
   build: {
     outDir: 'dist',

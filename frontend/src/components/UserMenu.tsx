@@ -57,6 +57,9 @@ export function UserMenu() {
           <Link to="/account/pets">My Pets</Link>
         </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer" asChild>
+          <Link to="/invitations">Invitations</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem className="cursor-pointer" asChild>
           <Link to="/helper">Helper Profiles</Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

@@ -456,6 +456,152 @@ const placementRequestHandlers = [
   }),
 ]
 
+const inviteSystemHandlers = [
+  // Public settings endpoint
+  http.get('http://localhost:3000/api/settings/public', () => {
+    return HttpResponse.json({
+      data: {
+        invite_only_enabled: false
+      }
+    })
+  }),
+
+  // Auth endpoints for invite system
+  http.get('http://localhost:3000/api/user', () => {
+    return HttpResponse.json({
+      data: {
+        id: 1,
+        name: 'Test User',
+        email: 'test@example.com',
+        email_verified_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    })
+  }),
+
+  // Waitlist endpoints
+  http.post('http://localhost:3000/api/waitlist', async ({ request }) => {
+    const raw = await request.json()
+    const body = raw && typeof raw === 'object' ? (raw as { email?: string }) : {}
+    
+    if (!body.email) {
+      return HttpResponse.json({
+        error: 'Invalid email format'
+      }, { status: 409 })
+    }
+
+    if (body.email === 'existing@example.com') {
+      return HttpResponse.json({
+        error: 'Email is already on waitlist'
+      }, { status: 409 })
+    }
+
+    if (body.email === 'registered@example.com') {
+      return HttpResponse.json({
+        error: 'Email is already registered'
+      }, { status: 409 })
+    }
+
+    return HttpResponse.json({
+      data: {
+        email: body.email,
+        status: 'pending',
+        created_at: new Date().toISOString()
+      }
+    }, { status: 201 })
+  }),
+
+  // Invitation endpoints
+  http.get('http://localhost:3000/api/invitations', ({ request }) => {
+    // In test environment, be more lenient with auth
+    // Return mock invitations for testing
+    return HttpResponse.json({
+      data: [
+        {
+          id: 1,
+          code: 'abc123',
+          status: 'pending',
+          expires_at: null,
+          created_at: new Date().toISOString(),
+          invitation_url: 'http://localhost:3000/register?invitation_code=abc123'
+        },
+        {
+          id: 2,
+          code: 'def456',
+          status: 'accepted',
+          expires_at: null,
+          created_at: new Date().toISOString(),
+          invitation_url: 'http://localhost:3000/register?invitation_code=def456'
+        },
+        {
+          id: 3,
+          code: 'ghi789',
+          status: 'expired',
+          expires_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+          created_at: new Date().toISOString(),
+          invitation_url: 'http://localhost:3000/register?invitation_code=ghi789'
+        }
+      ]
+    })
+  }),
+
+  http.get('http://localhost:3000/api/invitations/stats', ({ request }) => {
+    // In test environment, be more lenient with auth
+    return HttpResponse.json({
+      data: {
+        total: 3,
+        pending: 1,
+        accepted: 1,
+        expired: 1,
+        revoked: 0
+      }
+    })
+  }),
+
+  http.post('http://localhost:3000/api/invitations', ({ request }) => {
+    // In test environment, be more lenient with auth
+    return HttpResponse.json({
+      data: {
+        id: Date.now(),
+        code: 'mock-code-' + Date.now(),
+        status: 'pending',
+        expires_at: null,
+        created_at: new Date().toISOString(),
+        invitation_url: `http://localhost:3000/register?invitation_code=mock-code-${Date.now()}`
+      }
+    }, { status: 201 })
+  }),
+
+  http.delete('http://localhost:3000/api/invitations/:id', ({ request }) => {
+    // In test environment, be more lenient with auth
+    return HttpResponse.json({
+      data: []
+    })
+  }),
+
+  http.post('http://localhost:3000/api/invitations/validate', async ({ request }) => {
+    const raw = await request.json()
+    const body = raw && typeof raw === 'object' ? (raw as { code?: string }) : {}
+    
+    if (body.code === 'valid-code-123') {
+      return HttpResponse.json({
+        data: {
+          valid: true,
+          inviter: {
+            name: 'John Doe'
+          },
+          expires_at: null
+        }
+      })
+    }
+
+    return HttpResponse.json({
+      error: 'Invalid or expired invitation code'
+    }, { status: 404 })
+  }),
+]
+
 export const handlers = [
   ...petHandlers,
   ...userHandlers,
@@ -469,6 +615,7 @@ export const handlers = [
   ...microchipHandlers,
   ...placementRequestHandlers,
   ...helperProfileHandlers,
+  ...inviteSystemHandlers,
   // notifications (simple in-memory mock)
   ...(() => {
     const mem: AppNotification[] = [

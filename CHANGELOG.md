@@ -49,3 +49,40 @@ All notable changes to this project are documented here, following the [Keep a C
 - Documentation: Removed several backend docs files (notification-related docs, OpenAPI dump, unsubscribe, send-email job, and other legacy docs) as part of documentation cleanup.
 - Repo config: Tweaked `.gitignore` and updated `backend/.env.docker` handling (dev docker env changes).
 
+#### Invitation System Implementation
+- **Feature Complete**: Implemented a comprehensive invitation and waitlist system with both open and invite-only registration modes
+- **Backend Implementation**:
+  - Added `Invitation`, `WaitlistEntry`, and `Settings` models with full relationship support
+  - Created `InvitationService`, `WaitlistService`, and `SettingsService` with caching layer
+  - Implemented `InvitationController`, `WaitlistController`, and `SettingsController` with rate limiting
+  - Added email notifications: `InvitationToEmail` and `WaitlistConfirmation`
+  - Created database migrations for invitations, waitlist entries, and settings tables
+  - Integrated invitation validation into registration flow via `ValidInvitationCode` rule
+  - Published and customized Laravel email templates (HTML and text versions)
+- **Frontend Implementation**:
+  - Created TypeScript API client (`invite-system.ts`) with full type definitions
+  - Implemented `WaitlistForm` component for joining waitlist with validation
+  - Built `InvitationShare` component for sharing via email, SMS, link, and message
+  - Developed `InvitationQRCode` component for QR code generation and download
+  - Created `InvitationsPage` for managing invitations with statistics dashboard
+  - Implemented `useInviteSystem` hook for automatic registration mode detection
+  - Added responsive UI with status badges, date formatting, and action buttons
+- **Testing**:
+  - Backend: 8 feature test suites with 40+ test cases covering all endpoints and integration flows
+  - Backend: 6 unit test suites with 50+ test cases for models and services
+  - Frontend: 5 component/page test suites with 30+ test cases
+  - Frontend: Hook tests for registration mode detection
+  - All tests passing with comprehensive coverage of happy paths and edge cases
+- **Documentation**: Created detailed `docs/invites.md` covering architecture, API endpoints, user workflows, configuration, security, and troubleshooting
+- **Features**:
+  - Toggle between open and invite-only registration modes
+  - Generate unique 32-character invitation codes with optional expiration
+  - Share invitations via QR code, email, SMS, or direct links
+  - Manage sent invitations: view status, revoke pending invitations
+  - Waitlist system for restricted registration mode
+  - Rate limiting: 10 invitations per user per day
+  - Email notifications for invitations and waitlist confirmations
+  - Real-time invitation statistics and status tracking
+  - Automatic invitation validation during registration
+  - Settings caching for optimal performance
+

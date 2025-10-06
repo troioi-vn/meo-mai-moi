@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => AdminMiddleware::class,
             'optional.auth' => OptionalAuth::class,
+            'validate.invitation' => \App\Http\Middleware\ValidateInvitationRequest::class,
         ]);
 
     // Note: Avoid trusting all proxies by default, which can trigger null IP edge cases

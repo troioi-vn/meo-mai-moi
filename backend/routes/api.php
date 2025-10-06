@@ -3,6 +3,9 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FosterAssignmentController;
+use App\Http\Controllers\InvitationController;
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\WaitlistController;
 use App\Http\Controllers\FosterReturnHandoverController;
 use App\Http\Controllers\HelperProfileController;
 use App\Http\Controllers\MedicalRecordController;
@@ -27,6 +30,17 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/version', [VersionController::class, 'show']);
 
+// Public settings endpoints
+Route::get('/settings/public', [SettingsController::class, 'public']);
+Route::get('/settings/invite-only-status', [SettingsController::class, 'inviteOnlyStatus']);
+
+// Public waitlist endpoint (rate limited + validated)
+Route::post('/waitlist', [WaitlistController::class, 'store'])->middleware(['throttle:5,1', 'validate.invitation']); // 5 requests per minute
+Route::post('/waitlist/check', [WaitlistController::class, 'check'])->middleware(['throttle:10,1', 'validate.invitation']); // 10 requests per minute
+
+// Public invitation validation endpoint (rate limited + validated)
+Route::post('/invitations/validate', [InvitationController::class, 'validateCode'])->middleware(['throttle:20,1', 'validate.invitation']); // 20 requests per minute
+
 // Unsubscribe endpoint (no auth required)
 Route::post('/unsubscribe', [UnsubscribeController::class, 'unsubscribe']);
 Route::middleware('auth:sanctum')->group(function () {
@@ -50,6 +64,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return response()->json(['data' => $request->user()]);
     });
+
+    // Invitation management routes (authenticated with rate limiting + validation)
+    Route::get('/invitations', [InvitationController::class, 'index']);
+    Route::post('/invitations', [InvitationController::class, 'store'])->middleware(['throttle:10,60', 'validate.invitation']); // 10 invitations per hour
+    Route::delete('/invitations/{id}', [InvitationController::class, 'destroy'])->middleware(['throttle:20,60', 'validate.invitation']); // 20 revocations per hour
+    Route::get('/invitations/stats', [InvitationController::class, 'stats']);
+
     Route::get('/users/me', [UserProfileController::class, 'show']);
     Route::put('/users/me', [UserProfileController::class, 'update']);
     Route::put('/users/me/password', [UserProfileController::class, 'updatePassword']);

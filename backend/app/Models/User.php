@@ -90,6 +90,22 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /**
+     * Invitations sent by this user
+     */
+    public function sentInvitations(): HasMany
+    {
+        return $this->hasMany(Invitation::class, 'inviter_user_id');
+    }
+
+    /**
+     * Invitations received by this user
+     */
+    public function receivedInvitations(): HasMany
+    {
+        return $this->hasMany(Invitation::class, 'recipient_user_id');
+    }
+
+    /**
      * Determine if the user can access the Filament admin panel.
      */
     public function canAccessPanel(Panel $panel): bool

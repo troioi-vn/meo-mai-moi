@@ -19,7 +19,7 @@
                     "Authentication"
                 ],
                 "summary": "Register a new user",
-                "description": "Registers a new user and returns an authentication token.",
+                "description": "Registers a new user and returns an authentication token. May require invitation code when invite-only mode is active.",
                 "operationId": "8a56853624e025573120a09a4c75d468",
                 "requestBody": {
                     "description": "User registration details",
@@ -52,6 +52,12 @@
                                         "type": "string",
                                         "format": "password",
                                         "example": "password123"
+                                    },
+                                    "invitation_code": {
+                                        "description": "Required when invite-only mode is active",
+                                        "type": "string",
+                                        "example": "abc123def456",
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -86,6 +92,9 @@
                     },
                     "422": {
                         "description": "Validation error"
+                    },
+                    "403": {
+                        "description": "Registration not allowed (invite-only mode active without valid invitation)"
                     }
                 }
             }
@@ -711,6 +720,230 @@
                         "description": "Unauthorized"
                     }
                 }
+            }
+        },
+        "/api/invitations": {
+            "get": {
+                "tags": [
+                    "Invitations"
+                ],
+                "summary": "Get user's sent invitations",
+                "description": "Retrieve all invitations sent by the authenticated user.",
+                "operationId": "a94cc0df468131403d2bcfdad701de8c",
+                "responses": {
+                    "200": {
+                        "description": "List of sent invitations",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "code": {
+                                                        "type": "string"
+                                                    },
+                                                    "status": {
+                                                        "type": "string"
+                                                    },
+                                                    "expires_at": {
+                                                        "type": "string",
+                                                        "format": "datetime",
+                                                        "nullable": true
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "datetime"
+                                                    },
+                                                    "invitation_url": {
+                                                        "type": "string"
+                                                    },
+                                                    "recipient": {
+                                                        "type": "object",
+                                                        "nullable": true
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Invitations"
+                ],
+                "summary": "Generate a new invitation",
+                "description": "Create a new invitation code for the authenticated user.",
+                "operationId": "076fa6ff111fccd8fe52389923ca58d3",
+                "requestBody": {
+                    "description": "Optional invitation parameters",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "expires_at": {
+                                        "type": "string",
+                                        "format": "datetime",
+                                        "example": "2024-12-31T23:59:59Z",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Invitation created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invitation created successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "code": {
+                                                    "type": "string"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "pending"
+                                                },
+                                                "expires_at": {
+                                                    "type": "string",
+                                                    "format": "datetime",
+                                                    "nullable": true
+                                                },
+                                                "invitation_url": {
+                                                    "type": "string"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "datetime"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Rate limit exceeded",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Daily invitation limit exceeded"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/invitations/{id}": {
+            "delete": {
+                "tags": [
+                    "Invitations"
+                ],
+                "summary": "Revoke an invitation",
+                "description": "Revoke a pending invitation sent by the authenticated user.",
+                "operationId": "4315edc2c3ca27c7c3f4312cd0d0c1c0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Invitation ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invitation revoked successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invitation revoked successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Invitation not found or cannot be revoked",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invitation not found or cannot be revoked"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             }
         },
         "/api/pets/{pet}/medical-notes": {
@@ -2659,6 +2892,55 @@
                 ]
             }
         },
+        "/api/settings/public": {
+            "get": {
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Get public settings",
+                "description": "Retrieve public settings that can be exposed to frontend, such as invite-only mode status.",
+                "operationId": "34f46cc281a95cb55c20b680c650371f",
+                "responses": {
+                    "200": {
+                        "description": "Public settings retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "invite_only_enabled": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unable to retrieve settings"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/transfer-requests/{id}/handover": {
             "get": {
                 "tags": [
@@ -3916,6 +4198,107 @@
                     }
                 }
             }
+        },
+        "/api/waitlist": {
+            "post": {
+                "tags": [
+                    "Waitlist"
+                ],
+                "summary": "Join the waitlist",
+                "description": "Add an email address to the waitlist when invite-only mode is active.",
+                "operationId": "590d26f53e3cc3fa3aab06e7e10b5eec",
+                "requestBody": {
+                    "description": "Email address to add to waitlist",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successfully added to waitlist",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Successfully added to waitlist"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "user@example.com"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "pending"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "datetime"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The email has already been taken."
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Email already exists",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Email is already registered or on waitlist"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -4576,6 +4959,10 @@
             "description": "Helper Profiles"
         },
         {
+            "name": "Invitations",
+            "description": "Invitations"
+        },
+        {
             "name": "Pets",
             "description": "Pets"
         },
@@ -4604,6 +4991,10 @@
             "description": "Placement Requests"
         },
         {
+            "name": "Settings",
+            "description": "Settings"
+        },
+        {
             "name": "Transfer Handover",
             "description": "Transfer Handover"
         },
@@ -4618,6 +5009,10 @@
         {
             "name": "System",
             "description": "System"
+        },
+        {
+            "name": "Waitlist",
+            "description": "Waitlist"
         }
     ]
 }

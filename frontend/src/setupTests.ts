@@ -1,7 +1,17 @@
 import { afterEach, beforeAll, afterAll, vi } from 'vitest'
-import { cleanup } from '@testing-library/react'
+import { cleanup, configure } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 import { server } from './mocks/server'
+
+// Configure testing library to be less verbose
+configure({
+  getElementError: (message, container) => {
+    // Return a much shorter error message without the full DOM dump
+    const error = new Error(message || 'Element not found')
+    error.name = 'TestingLibraryElementError'
+    return error
+  },
+})
 
 // Polyfill for PointerEvents (minimal, typed)
 class TestPointerEvent extends MouseEvent {
@@ -67,6 +77,26 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: vi.fn(),
   })),
 })
+
+// Mock Navigator APIs - but allow tests to override
+if (!navigator.clipboard) {
+  Object.defineProperty(navigator, 'clipboard', {
+    writable: true,
+    configurable: true,
+    value: {
+      writeText: vi.fn().mockResolvedValue(undefined),
+      readText: vi.fn().mockResolvedValue(''),
+    },
+  })
+}
+
+if (!navigator.share) {
+  Object.defineProperty(navigator, 'share', {
+    writable: true,
+    configurable: true,
+    value: vi.fn().mockResolvedValue(undefined),
+  })
+}
 
 // No need to mock buttonVariants export from button anymore
 

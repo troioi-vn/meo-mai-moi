@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AxiosError } from 'axios'
 import { useNavigate } from 'react-router-dom'
+import { CheckCircle, UserCheck } from 'lucide-react'
 
 interface ApiError {
   message: string
@@ -13,9 +14,11 @@ interface ApiError {
 
 interface RegisterFormProps {
   onSuccess?: () => void
+  invitationCode?: string | null
+  inviterName?: string | null
 }
 
-const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
+const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, invitationCode, inviterName }) => {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -34,7 +37,14 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
     }
 
     try {
-      await register({ name, email, password, password_confirmation: passwordConfirmation })
+      const payload = { 
+        name, 
+        email, 
+        password, 
+        password_confirmation: passwordConfirmation,
+        ...(invitationCode && { invitation_code: invitationCode })
+      }
+      await register(payload)
       if (onSuccess) {
         onSuccess()
       }
@@ -55,16 +65,31 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
   }
 
   return (
-    <form
-      onSubmit={(e) => {
-        void handleSubmit(e)
-      }}
-    >
-      {error && (
-        <p data-testid="register-error-message" className="text-destructive text-sm mb-4">
-          {error}
-        </p>
+    <div className="space-y-6">
+      {invitationCode && inviterName && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="flex items-center space-x-2">
+            <UserCheck className="h-5 w-5 text-green-600" />
+            <div>
+              <p className="text-sm font-medium text-green-800">
+                You've been invited by <strong>{inviterName}</strong>
+              </p>
+              <p className="text-xs text-green-600">Complete the form below to create your account</p>
+            </div>
+          </div>
+        </div>
       )}
+
+      <form
+        onSubmit={(e) => {
+          void handleSubmit(e)
+        }}
+      >
+        {error && (
+          <p data-testid="register-error-message" className="text-destructive text-sm mb-4">
+            {error}
+          </p>
+        )}
       <div className="mb-4">
         <Label htmlFor="name">Name</Label>
         <Input
@@ -129,7 +154,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
           Sign in
         </a>
       </div>
-    </form>
+      </form>
+    </div>
   )
 }
 

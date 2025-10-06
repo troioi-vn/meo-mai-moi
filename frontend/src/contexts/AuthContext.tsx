@@ -8,6 +8,7 @@ interface RegisterPayload {
   email: string
   password: string
   password_confirmation: string
+  invitation_code?: string
 }
 
 interface LoginPayload {

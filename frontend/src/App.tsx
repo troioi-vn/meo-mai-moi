@@ -11,6 +11,7 @@ import MyPetsPage from './pages/account/MyPetsPage'
 import CreatePetPage from './pages/account/CreatePetPage'
 import NotificationsPage from './pages/account/NotificationsPage'
 import PasswordPage from './pages/account/PasswordPage'
+import InvitationsPage from './pages/InvitationsPage'
 import PetProfilePage from './pages/PetProfilePage'
 import HelperProfilePage from './pages/helper/HelperProfilePage'
 import HelperProfileEditPage from './pages/helper/HelperProfileEditPage'
@@ -117,6 +118,14 @@ export function AppRoutes() {
         element={
           <PrivateRoute>
             <PasswordPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/invitations"
+        element={
+          <PrivateRoute>
+            <InvitationsPage />
           </PrivateRoute>
         }
       />

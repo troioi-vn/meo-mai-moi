@@ -8,6 +8,7 @@ use App\Models\Pet;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class RestSemanticsTest extends TestCase
@@ -34,7 +35,7 @@ class RestSemanticsTest extends TestCase
         Sanctum::actingAs($this->user);
     }
 
-    /** @test */
+    #[Test]
     public function user_profile_update_requires_put_method()
     {
         $userData = [
@@ -55,7 +56,7 @@ class RestSemanticsTest extends TestCase
         $response->assertStatus(405);
     }
 
-    /** @test */
+    #[Test]
     public function user_password_update_requires_put_method()
     {
         $passwordData = [
@@ -77,7 +78,7 @@ class RestSemanticsTest extends TestCase
         $response->assertStatus(405);
     }
 
-    /** @test */
+    #[Test]
     public function pet_update_requires_put_method()
     {
         // PUT should work
@@ -93,7 +94,7 @@ class RestSemanticsTest extends TestCase
         $response->assertStatus(405);
     }
 
-    /** @test */
+    #[Test]
     public function pet_status_update_requires_put_method()
     {
         $statusData = [
@@ -114,7 +115,7 @@ class RestSemanticsTest extends TestCase
         $response->assertStatus(405);
     }
 
-    /** @test */
+    #[Test]
     public function notification_preferences_update_requires_put_method()
     {
         $preferencesData = [
@@ -140,7 +141,7 @@ class RestSemanticsTest extends TestCase
         $response->assertStatus(405);
     }
 
-    /** @test */
+    #[Test]
     public function individual_notification_read_requires_patch_method()
     {
         // PATCH should work
@@ -159,7 +160,7 @@ class RestSemanticsTest extends TestCase
         $response->assertStatus(405);
     }
 
-    /** @test */
+    #[Test]
     public function helper_profile_update_supports_both_put_and_post_for_compatibility()
     {
         $updateData = ['city' => 'Updated City'];
@@ -177,7 +178,7 @@ class RestSemanticsTest extends TestCase
         $response->assertStatus(200);
     }
 
-    /** @test */
+    #[Test]
     public function bulk_notification_read_supports_post_methods()
     {
         // Both endpoints should work for marking all notifications as read
@@ -198,7 +199,7 @@ class RestSemanticsTest extends TestCase
         $response->assertStatus(405);
     }
 
-    /** @test */
+    #[Test]
     public function create_operations_require_post_method()
     {
         // Pet creation should require POST
@@ -226,7 +227,7 @@ class RestSemanticsTest extends TestCase
         $response->assertStatus(405);
     }
 
-    /** @test */
+    #[Test]
     public function delete_operations_require_delete_method()
     {
         // DELETE should work (with password confirmation)

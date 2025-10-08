@@ -6,6 +6,7 @@ use App\Models\Pet;
 use App\Models\PetMicrochip;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -40,7 +41,7 @@ class PetMicrochipsFeatureTest extends TestCase
         $this->otherUser->assignRole('pet_owner');
     }
 
-    /** @test */
+    #[Test]
     public function owner_can_list_pet_microchips()
     {
         PetMicrochip::factory()->count(3)->create(['pet_id' => $this->pet->id]);
@@ -61,7 +62,7 @@ class PetMicrochipsFeatureTest extends TestCase
             ->assertJsonCount(3, 'data.data');
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_list_pet_microchips()
     {
         PetMicrochip::factory()->count(2)->create(['pet_id' => $this->pet->id]);
@@ -73,7 +74,7 @@ class PetMicrochipsFeatureTest extends TestCase
             ->assertJsonCount(2, 'data.data');
     }
 
-    /** @test */
+    #[Test]
     public function other_users_cannot_list_pet_microchips()
     {
         PetMicrochip::factory()->create(['pet_id' => $this->pet->id]);
@@ -84,7 +85,7 @@ class PetMicrochipsFeatureTest extends TestCase
         $response->assertForbidden();
     }
 
-    /** @test */
+    #[Test]
     public function guests_cannot_list_pet_microchips()
     {
         $response = $this->getJson("/api/pets/{$this->pet->id}/microchips");
@@ -92,7 +93,7 @@ class PetMicrochipsFeatureTest extends TestCase
         $response->assertUnauthorized();
     }
 
-    /** @test */
+    #[Test]
     public function owner_can_create_microchip_record()
     {
         $data = [
@@ -121,7 +122,7 @@ class PetMicrochipsFeatureTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_create_microchip_record()
     {
         $data = [
@@ -136,7 +137,7 @@ class PetMicrochipsFeatureTest extends TestCase
         $this->assertDatabaseHas('pet_microchips', array_merge($data, ['pet_id' => $this->pet->id]));
     }
 
-    /** @test */
+    #[Test]
     public function other_users_cannot_create_microchip_record()
     {
         $data = ['chip_number' => '982000111111111'];
@@ -148,7 +149,7 @@ class PetMicrochipsFeatureTest extends TestCase
         $this->assertDatabaseMissing('pet_microchips', $data);
     }
 
-    /** @test */
+    #[Test]
     public function chip_number_is_required()
     {
         $response = $this->actingAs($this->owner)
@@ -158,7 +159,7 @@ class PetMicrochipsFeatureTest extends TestCase
             ->assertJsonValidationErrors('chip_number');
     }
 
-    /** @test */
+    #[Test]
     public function chip_number_must_be_unique()
     {
         $existingChip = PetMicrochip::factory()->create(['chip_number' => '982000123456789']);
@@ -172,7 +173,7 @@ class PetMicrochipsFeatureTest extends TestCase
             ->assertJsonValidationErrors('chip_number');
     }
 
-    /** @test */
+    #[Test]
     public function chip_number_must_be_valid_length()
     {
         $response = $this->actingAs($this->owner)
@@ -192,7 +193,7 @@ class PetMicrochipsFeatureTest extends TestCase
             ->assertJsonValidationErrors('chip_number');
     }
 
-    /** @test */
+    #[Test]
     public function implanted_at_must_be_valid_date()
     {
         $response = $this->actingAs($this->owner)
@@ -205,7 +206,7 @@ class PetMicrochipsFeatureTest extends TestCase
             ->assertJsonValidationErrors('implanted_at');
     }
 
-    /** @test */
+    #[Test]
     public function owner_can_view_specific_microchip()
     {
         $microchip = PetMicrochip::factory()->create(['pet_id' => $this->pet->id]);
@@ -218,7 +219,7 @@ class PetMicrochipsFeatureTest extends TestCase
             ->assertJsonPath('data.chip_number', $microchip->chip_number);
     }
 
-    /** @test */
+    #[Test]
     public function cannot_view_microchip_from_different_pet()
     {
         $otherPet = Pet::factory()->create();
@@ -230,7 +231,7 @@ class PetMicrochipsFeatureTest extends TestCase
         $response->assertNotFound();
     }
 
-    /** @test */
+    #[Test]
     public function owner_can_update_microchip()
     {
         $microchip = PetMicrochip::factory()->create(['pet_id' => $this->pet->id]);
@@ -260,7 +261,7 @@ class PetMicrochipsFeatureTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function cannot_update_chip_number_to_existing_number()
     {
         $existingChip = PetMicrochip::factory()->create(['chip_number' => '982000111111111']);
@@ -275,7 +276,7 @@ class PetMicrochipsFeatureTest extends TestCase
             ->assertJsonValidationErrors('chip_number');
     }
 
-    /** @test */
+    #[Test]
     public function owner_can_delete_microchip()
     {
         $microchip = PetMicrochip::factory()->create(['pet_id' => $this->pet->id]);
@@ -289,7 +290,7 @@ class PetMicrochipsFeatureTest extends TestCase
         $this->assertDatabaseMissing('pet_microchips', ['id' => $microchip->id]);
     }
 
-    /** @test */
+    #[Test]
     public function other_users_cannot_delete_microchip()
     {
         $microchip = PetMicrochip::factory()->create(['pet_id' => $this->pet->id]);
@@ -301,7 +302,7 @@ class PetMicrochipsFeatureTest extends TestCase
         $this->assertDatabaseHas('pet_microchips', ['id' => $microchip->id]);
     }
 
-    /** @test */
+    #[Test]
     public function microchips_are_ordered_by_implanted_date_desc_then_created_date()
     {
         $newest = PetMicrochip::factory()->create([
@@ -333,7 +334,7 @@ class PetMicrochipsFeatureTest extends TestCase
         $this->assertEquals($oldest->id, $microchips[2]['id']);
     }
 
-    /** @test */
+    #[Test]
     public function capability_gating_prevents_microchips_for_unsupported_pet_types()
     {
         // Note: This test assumes microchips are only supported for cats

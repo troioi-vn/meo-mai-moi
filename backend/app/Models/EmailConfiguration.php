@@ -35,7 +35,7 @@ class EmailConfiguration extends Model
      */
     public function getDisplayName(): string
     {
-        return $this->name ?: ($this->provider.' Configuration #'.$this->id);
+        return $this->name ? $this->name : ($this->provider.' Configuration #'.$this->id);
     }
 
     /**

@@ -17,7 +17,7 @@ class Invitation extends Model
         'inviter_user_id',
         'recipient_user_id',
         'status',
-        'expires_at'
+        'expires_at',
     ];
 
     protected $casts = [
@@ -64,7 +64,7 @@ class Invitation extends Model
     {
         $this->update([
             'status' => 'accepted',
-            'recipient_user_id' => $user->id
+            'recipient_user_id' => $user->id,
         ]);
     }
 

@@ -69,7 +69,7 @@ class EmailConfiguration extends Model
                         'username' => $config['username'],
                         'password' => $config['password'],
                         'timeout' => null,
-                        'local_domain' => env('MAIL_EHLO_DOMAIN'),
+                        'local_domain' => config('mail.mailers.smtp.local_domain'),
                     ],
                 ],
                 'from' => [

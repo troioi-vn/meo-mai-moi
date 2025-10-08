@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <title>Dashboard for /var/www/app/Filament</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="../_css/bootstrap.min.css?v=11.0.10" rel="stylesheet" type="text/css">
+  <link href="../_css/nv.d3.min.css?v=11.0.10" rel="stylesheet" type="text/css">
+  <link href="../_css/style.css?v=11.0.10" rel="stylesheet" type="text/css">
+  <link href="../_css/custom.css" rel="stylesheet" type="text/css">
+ </head>
+ <body>
+  <header>
+   <div class="container-fluid">
+    <div class="row">
+     <div class="col-md-12">
+      <nav aria-label="breadcrumb">
+       <ol class="breadcrumb">
+         <li class="breadcrumb-item"><a href="../index.html">/var/www/app</a></li>
+         <li class="breadcrumb-item"><a href="index.html">Filament</a></li>
+         <li class="breadcrumb-item active">(Dashboard)</li>
+
+       </ol>
+      </nav>
+     </div>
+    </div>
+   </div>
+  </header>
+  <div class="container-fluid">
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Classes</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="classCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="classComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="Exports/PlacementRequestExporter.php.html#12">App\Filament\Exports\PlacementRequestExporter</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Pages/CreateEmailConfiguration.php.html#10">App\Filament\Resources\EmailConfigurationResource\Pages\CreateEmailConfiguration</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Widgets/EmailStatusWidget.php.html#10">App\Filament\Resources\EmailConfigurationResource\Widgets\EmailStatusWidget</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/EmailLogResource/Pages/EditEmailLog.php.html#9">App\Filament\Resources\EmailLogResource\Pages\EditEmailLog</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/EmailLogResource/Pages/ListEmailLogs.php.html#9">App\Filament\Resources\EmailLogResource\Pages\ListEmailLogs</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/EmailLogResource/Pages/ViewEmailLog.php.html#8">App\Filament\Resources\EmailLogResource\Pages\ViewEmailLog</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/FosterAssignmentResource/Pages/EditFosterAssignment.php.html#9">App\Filament\Resources\FosterAssignmentResource\Pages\EditFosterAssignment</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/FosterAssignmentResource/Pages/ListFosterAssignments.php.html#9">App\Filament\Resources\FosterAssignmentResource\Pages\ListFosterAssignments</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/FosterAssignmentResource/Pages/ViewFosterAssignment.php.html#13">App\Filament\Resources\FosterAssignmentResource\Pages\ViewFosterAssignment</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/FosterAssignmentResource/RelationManagers/FosterReturnHandoverRelationManager.php.html#21">App\Filament\Resources\FosterAssignmentResource\RelationManagers\FosterReturnHandoverRelationManager</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/HelperProfileResource/Pages/EditHelperProfile.php.html#9">App\Filament\Resources\HelperProfileResource\Pages\EditHelperProfile</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/HelperProfileResource/Pages/ListHelperProfiles.php.html#9">App\Filament\Resources\HelperProfileResource\Pages\ListHelperProfiles</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/HelperProfileResource/Pages/ViewHelperProfile.php.html#9">App\Filament\Resources\HelperProfileResource\Pages\ViewHelperProfile</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/HelperProfileResource/RelationManagers/PhotosRelationManager.php.html#11">App\Filament\Resources\HelperProfileResource\RelationManagers\PhotosRelationManager</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/InvitationResource/Pages/EditInvitation.php.html#9">App\Filament\Resources\InvitationResource\Pages\EditInvitation</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/InvitationResource/Pages/ListInvitations.php.html#9">App\Filament\Resources\InvitationResource\Pages\ListInvitations</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/InvitationResource/Pages/ViewInvitation.php.html#9">App\Filament\Resources\InvitationResource\Pages\ViewInvitation</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/NotificationResource/Pages/CreateNotification.php.html#8">App\Filament\Resources\NotificationResource\Pages\CreateNotification</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/NotificationResource/Pages/EditNotification.php.html#9">App\Filament\Resources\NotificationResource\Pages\EditNotification</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/NotificationResource/Pages/ListNotifications.php.html#11">App\Filament\Resources\NotificationResource\Pages\ListNotifications</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/NotificationResource/Pages/ViewNotification.php.html#11">App\Filament\Resources\NotificationResource\Pages\ViewNotification</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetResource/Pages/CreatePet.php.html#8">App\Filament\Resources\PetResource\Pages\CreatePet</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetResource/Pages/EditPet.php.html#9">App\Filament\Resources\PetResource\Pages\EditPet</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetResource/Pages/ListPets.php.html#9">App\Filament\Resources\PetResource\Pages\ListPets</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetResource/Pages/ViewPet.php.html#9">App\Filament\Resources\PetResource\Pages\ViewPet</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetResource/RelationManagers/FosterAssignmentsRelationManager.php.html#16">App\Filament\Resources\PetResource\RelationManagers\FosterAssignmentsRelationManager</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetResource/RelationManagers/PlacementRequestsRelationManager.php.html#19">App\Filament\Resources\PetResource\RelationManagers\PlacementRequestsRelationManager</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetTypeResource/Pages/CreatePetType.php.html#8">App\Filament\Resources\PetTypeResource\Pages\CreatePetType</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetTypeResource/Pages/EditPetType.php.html#10">App\Filament\Resources\PetTypeResource\Pages\EditPetType</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetTypeResource/Pages/ListPetTypes.php.html#9">App\Filament\Resources\PetTypeResource\Pages\ListPetTypes</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetTypeResource/Pages/ViewPetType.php.html#9">App\Filament\Resources\PetTypeResource\Pages\ViewPetType</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PlacementRequestResource/Pages/EditPlacementRequest.php.html#9">App\Filament\Resources\PlacementRequestResource\Pages\EditPlacementRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PlacementRequestResource/Pages/ListPlacementRequests.php.html#9">App\Filament\Resources\PlacementRequestResource\Pages\ListPlacementRequests</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PlacementRequestResource/Pages/ViewPlacementRequest.php.html#9">App\Filament\Resources\PlacementRequestResource\Pages\ViewPlacementRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PlacementRequestResource/RelationManagers/TransferRequestsRelationManager.php.html#16">App\Filament\Resources\PlacementRequestResource\RelationManagers\TransferRequestsRelationManager</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/ReviewResource/Pages/EditReview.php.html#9">App\Filament\Resources\ReviewResource\Pages\EditReview</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/ReviewResource/Pages/ListReviews.php.html#9">App\Filament\Resources\ReviewResource\Pages\ListReviews</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/TransferRequestResource/Pages/EditTransferRequest.php.html#9">App\Filament\Resources\TransferRequestResource\Pages\EditTransferRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/TransferRequestResource/RelationManagers/TransferHandoverRelationManager.php.html#20">App\Filament\Resources\TransferRequestResource\RelationManagers\TransferHandoverRelationManager</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/WaitlistEntryResource/Pages/EditWaitlistEntry.php.html#9">App\Filament\Resources\WaitlistEntryResource\Pages\EditWaitlistEntry</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/WaitlistEntryResource/Pages/ListWaitlistEntries.php.html#9">App\Filament\Resources\WaitlistEntryResource\Pages\ListWaitlistEntries</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/WaitlistEntryResource/Pages/ViewWaitlistEntry.php.html#9">App\Filament\Resources\WaitlistEntryResource\Pages\ViewWaitlistEntry</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Widgets/EmailFailureAnalysisWidget.php.html#10">App\Filament\Widgets\EmailFailureAnalysisWidget</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Pages/SystemSettings.php.html#14">App\Filament\Pages\SystemSettings</a></td><td class="text-right">2%</td></tr>
+       <tr><td><a href="Resources/ReviewResource.php.html#19">App\Filament\Resources\ReviewResource</a></td><td class="text-right">2%</td></tr>
+       <tr><td><a href="Resources/EmailLogResource.php.html#16">App\Filament\Resources\EmailLogResource</a></td><td class="text-right">2%</td></tr>
+       <tr><td><a href="Resources/PlacementRequestResource.php.html#31">App\Filament\Resources\PlacementRequestResource</a></td><td class="text-right">2%</td></tr>
+       <tr><td><a href="Resources/FosterAssignmentResource.php.html#26">App\Filament\Resources\FosterAssignmentResource</a></td><td class="text-right">3%</td></tr>
+       <tr><td><a href="Resources/HelperProfileResource.php.html#17">App\Filament\Resources\HelperProfileResource</a></td><td class="text-right">3%</td></tr>
+       <tr><td><a href="Resources/NotificationResource.php.html#18">App\Filament\Resources\NotificationResource</a></td><td class="text-right">3%</td></tr>
+       <tr><td><a href="Resources/PetTypeResource.php.html#25">App\Filament\Resources\PetTypeResource</a></td><td class="text-right">5%</td></tr>
+       <tr><td><a href="Resources/InvitationResource.php.html#18">App\Filament\Resources\InvitationResource</a></td><td class="text-right">6%</td></tr>
+       <tr><td><a href="Resources/WaitlistEntryResource.php.html#18">App\Filament\Resources\WaitlistEntryResource</a></td><td class="text-right">8%</td></tr>
+       <tr><td><a href="Resources/PetResource.php.html#24">App\Filament\Resources\PetResource</a></td><td class="text-right">8%</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Pages/EditEmailConfiguration.php.html#11">App\Filament\Resources\EmailConfigurationResource\Pages\EditEmailConfiguration</a></td><td class="text-right">43%</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Pages/ListEmailConfigurations.php.html#11">App\Filament\Resources\EmailConfigurationResource\Pages\ListEmailConfigurations</a></td><td class="text-right">51%</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource.php.html#17">App\Filament\Resources\EmailConfigurationResource</a></td><td class="text-right">68%</td></tr>
+       <tr><td><a href="Widgets/EmailDeliveryChart.php.html#8">App\Filament\Widgets\EmailDeliveryChart</a></td><td class="text-right">73%</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Pages/ViewEmailConfiguration.php.html#13">App\Filament\Resources\EmailConfigurationResource\Pages\ViewEmailConfiguration</a></td><td class="text-right">80%</td></tr>
+       <tr><td><a href="Resources/TransferRequestResource.php.html#24">App\Filament\Resources\TransferRequestResource</a></td><td class="text-right">82%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="Resources/PlacementRequestResource.php.html#31">App\Filament\Resources\PlacementRequestResource</a></td><td class="text-right">1289</td></tr>
+       <tr><td><a href="Resources/NotificationResource.php.html#18">App\Filament\Resources\NotificationResource</a></td><td class="text-right">783</td></tr>
+       <tr><td><a href="Resources/NotificationResource/Pages/ViewNotification.php.html#11">App\Filament\Resources\NotificationResource\Pages\ViewNotification</a></td><td class="text-right">650</td></tr>
+       <tr><td><a href="Resources/PetTypeResource.php.html#25">App\Filament\Resources\PetTypeResource</a></td><td class="text-right">507</td></tr>
+       <tr><td><a href="Resources/WaitlistEntryResource.php.html#18">App\Filament\Resources\WaitlistEntryResource</a></td><td class="text-right">363</td></tr>
+       <tr><td><a href="Resources/FosterAssignmentResource/Pages/ViewFosterAssignment.php.html#13">App\Filament\Resources\FosterAssignmentResource\Pages\ViewFosterAssignment</a></td><td class="text-right">342</td></tr>
+       <tr><td><a href="Resources/EmailLogResource.php.html#16">App\Filament\Resources\EmailLogResource</a></td><td class="text-right">316</td></tr>
+       <tr><td><a href="Resources/InvitationResource.php.html#18">App\Filament\Resources\InvitationResource</a></td><td class="text-right">311</td></tr>
+       <tr><td><a href="Exports/PlacementRequestExporter.php.html#12">App\Filament\Exports\PlacementRequestExporter</a></td><td class="text-right">210</td></tr>
+       <tr><td><a href="Pages/SystemSettings.php.html#14">App\Filament\Pages\SystemSettings</a></td><td class="text-right">172</td></tr>
+       <tr><td><a href="Resources/HelperProfileResource.php.html#17">App\Filament\Resources\HelperProfileResource</a></td><td class="text-right">142</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Widgets/EmailStatusWidget.php.html#10">App\Filament\Resources\EmailConfigurationResource\Widgets\EmailStatusWidget</a></td><td class="text-right">110</td></tr>
+       <tr><td><a href="Resources/FosterAssignmentResource.php.html#26">App\Filament\Resources\FosterAssignmentResource</a></td><td class="text-right">82</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource.php.html#17">App\Filament\Resources\EmailConfigurationResource</a></td><td class="text-right">76</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Pages/CreateEmailConfiguration.php.html#10">App\Filament\Resources\EmailConfigurationResource\Pages\CreateEmailConfiguration</a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="Resources/PetResource.php.html#24">App\Filament\Resources\PetResource</a></td><td class="text-right">44</td></tr>
+       <tr><td><a href="Resources/PetTypeResource/Pages/EditPetType.php.html#10">App\Filament\Resources\PetTypeResource\Pages\EditPetType</a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="Resources/PlacementRequestResource/RelationManagers/TransferRequestsRelationManager.php.html#16">App\Filament\Resources\PlacementRequestResource\RelationManagers\TransferRequestsRelationManager</a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Pages/EditEmailConfiguration.php.html#11">App\Filament\Resources\EmailConfigurationResource\Pages\EditEmailConfiguration</a></td><td class="text-right">37</td></tr>
+       <tr><td><a href="Resources/TransferRequestResource/RelationManagers/TransferHandoverRelationManager.php.html#20">App\Filament\Resources\TransferRequestResource\RelationManagers\TransferHandoverRelationManager</a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="Resources/ReviewResource.php.html#19">App\Filament\Resources\ReviewResource</a></td><td class="text-right">28</td></tr>
+       <tr><td><a href="Resources/PetResource/RelationManagers/PlacementRequestsRelationManager.php.html#19">App\Filament\Resources\PetResource\RelationManagers\PlacementRequestsRelationManager</a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Pages/ViewEmailConfiguration.php.html#13">App\Filament\Resources\EmailConfigurationResource\Pages\ViewEmailConfiguration</a></td><td class="text-right">15</td></tr>
+       <tr><td><a href="Resources/NotificationResource/Pages/CreateNotification.php.html#8">App\Filament\Resources\NotificationResource\Pages\CreateNotification</a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="Resources/PetResource/Pages/CreatePet.php.html#8">App\Filament\Resources\PetResource\Pages\CreatePet</a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="Widgets/EmailFailureAnalysisWidget.php.html#10">App\Filament\Widgets\EmailFailureAnalysisWidget</a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="Resources/TransferRequestResource.php.html#24">App\Filament\Resources\TransferRequestResource</a></td><td class="text-right">11</td></tr>
+       <tr><td><a href="Widgets/EmailDeliveryChart.php.html#8">App\Filament\Widgets\EmailDeliveryChart</a></td><td class="text-right">5</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Pages/ListEmailConfigurations.php.html#11">App\Filament\Resources\EmailConfigurationResource\Pages\ListEmailConfigurations</a></td><td class="text-right">4</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Methods</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="methodCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="methodComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="Exports/PlacementRequestExporter.php.html#16"><abbr title="App\Filament\Exports\PlacementRequestExporter::getColumns">getColumns</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exports/PlacementRequestExporter.php.html#70"><abbr title="App\Filament\Exports\PlacementRequestExporter::getCompletedNotificationBody">getCompletedNotificationBody</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Pages/SystemSettings.php.html#32"><abbr title="App\Filament\Pages\SystemSettings::boot">boot</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Pages/SystemSettings.php.html#37"><abbr title="App\Filament\Pages\SystemSettings::mount">mount</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Pages/SystemSettings.php.html#50"><abbr title="App\Filament\Pages\SystemSettings::form">form</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Pages/SystemSettings.php.html#80"><abbr title="App\Filament\Pages\SystemSettings::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Pages/SystemSettings.php.html#110"><abbr title="App\Filament\Pages\SystemSettings::getNavigationBadge">getNavigationBadge</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Pages/SystemSettings.php.html#119"><abbr title="App\Filament\Pages\SystemSettings::getNavigationBadgeColor">getNavigationBadgeColor</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Pages/SystemSettings.php.html#129"><abbr title="App\Filament\Pages\SystemSettings::getInviteOnlyEnabledProperty">getInviteOnlyEnabledProperty</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Pages/CreateEmailConfiguration.php.html#14"><abbr title="App\Filament\Resources\EmailConfigurationResource\Pages\CreateEmailConfiguration::getRedirectUrl">getRedirectUrl</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Pages/CreateEmailConfiguration.php.html#19"><abbr title="App\Filament\Resources\EmailConfigurationResource\Pages\CreateEmailConfiguration::afterCreate">afterCreate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Pages/CreateEmailConfiguration.php.html#53"><abbr title="App\Filament\Resources\EmailConfigurationResource\Pages\CreateEmailConfiguration::mutateFormDataBeforeCreate">mutateFormDataBeforeCreate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Widgets/EmailStatusWidget.php.html#12"><abbr title="App\Filament\Resources\EmailConfigurationResource\Widgets\EmailStatusWidget::getStats">getStats</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Widgets/EmailStatusWidget.php.html#37"><abbr title="App\Filament\Resources\EmailConfigurationResource\Widgets\EmailStatusWidget::getColumns">getColumns</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/EmailLogResource.php.html#34"><abbr title="App\Filament\Resources\EmailLogResource::form">form</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/EmailLogResource.php.html#127"><abbr title="App\Filament\Resources\EmailLogResource::table">table</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/EmailLogResource.php.html#338"><abbr title="App\Filament\Resources\EmailLogResource::canCreate">canCreate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/EmailLogResource.php.html#343"><abbr title="App\Filament\Resources\EmailLogResource::canEdit">canEdit</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/EmailLogResource.php.html#348"><abbr title="App\Filament\Resources\EmailLogResource::canDelete">canDelete</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/EmailLogResource/Pages/EditEmailLog.php.html#13"><abbr title="App\Filament\Resources\EmailLogResource\Pages\EditEmailLog::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/EmailLogResource/Pages/ListEmailLogs.php.html#13"><abbr title="App\Filament\Resources\EmailLogResource\Pages\ListEmailLogs::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/EmailLogResource/Pages/ViewEmailLog.php.html#12"><abbr title="App\Filament\Resources\EmailLogResource\Pages\ViewEmailLog::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/FosterAssignmentResource.php.html#38"><abbr title="App\Filament\Resources\FosterAssignmentResource::form">form</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/FosterAssignmentResource.php.html#114"><abbr title="App\Filament\Resources\FosterAssignmentResource::table">table</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/FosterAssignmentResource/Pages/EditFosterAssignment.php.html#13"><abbr title="App\Filament\Resources\FosterAssignmentResource\Pages\EditFosterAssignment::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/FosterAssignmentResource/Pages/ListFosterAssignments.php.html#13"><abbr title="App\Filament\Resources\FosterAssignmentResource\Pages\ListFosterAssignments::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/FosterAssignmentResource/Pages/ViewFosterAssignment.php.html#17"><abbr title="App\Filament\Resources\FosterAssignmentResource\Pages\ViewFosterAssignment::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/FosterAssignmentResource/Pages/ViewFosterAssignment.php.html#54"><abbr title="App\Filament\Resources\FosterAssignmentResource\Pages\ViewFosterAssignment::infolist">infolist</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/FosterAssignmentResource/RelationManagers/FosterReturnHandoverRelationManager.php.html#27"><abbr title="App\Filament\Resources\FosterAssignmentResource\RelationManagers\FosterReturnHandoverRelationManager::form">form</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/FosterAssignmentResource/RelationManagers/FosterReturnHandoverRelationManager.php.html#104"><abbr title="App\Filament\Resources\FosterAssignmentResource\RelationManagers\FosterReturnHandoverRelationManager::table">table</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/HelperProfileResource.php.html#31"><abbr title="App\Filament\Resources\HelperProfileResource::form">form</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/HelperProfileResource.php.html#113"><abbr title="App\Filament\Resources\HelperProfileResource::table">table</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/HelperProfileResource/Pages/EditHelperProfile.php.html#13"><abbr title="App\Filament\Resources\HelperProfileResource\Pages\EditHelperProfile::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/HelperProfileResource/Pages/ListHelperProfiles.php.html#13"><abbr title="App\Filament\Resources\HelperProfileResource\Pages\ListHelperProfiles::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/HelperProfileResource/Pages/ViewHelperProfile.php.html#13"><abbr title="App\Filament\Resources\HelperProfileResource\Pages\ViewHelperProfile::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/HelperProfileResource/RelationManagers/PhotosRelationManager.php.html#19"><abbr title="App\Filament\Resources\HelperProfileResource\RelationManagers\PhotosRelationManager::form">form</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/HelperProfileResource/RelationManagers/PhotosRelationManager.php.html#39"><abbr title="App\Filament\Resources\HelperProfileResource\RelationManagers\PhotosRelationManager::table">table</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/InvitationResource.php.html#34"><abbr title="App\Filament\Resources\InvitationResource::form">form</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/InvitationResource.php.html#79"><abbr title="App\Filament\Resources\InvitationResource::table">table</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/InvitationResource/Pages/EditInvitation.php.html#13"><abbr title="App\Filament\Resources\InvitationResource\Pages\EditInvitation::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/InvitationResource/Pages/ListInvitations.php.html#13"><abbr title="App\Filament\Resources\InvitationResource\Pages\ListInvitations::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/InvitationResource/Pages/ViewInvitation.php.html#13"><abbr title="App\Filament\Resources\InvitationResource\Pages\ViewInvitation::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/NotificationResource.php.html#30"><abbr title="App\Filament\Resources\NotificationResource::form">form</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/NotificationResource.php.html#108"><abbr title="App\Filament\Resources\NotificationResource::table">table</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/NotificationResource/Pages/CreateNotification.php.html#12"><abbr title="App\Filament\Resources\NotificationResource\Pages\CreateNotification::mutateFormDataBeforeCreate">mutateFormDataBeforeCreate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/NotificationResource/Pages/CreateNotification.php.html#22"><abbr title="App\Filament\Resources\NotificationResource\Pages\CreateNotification::getRedirectUrl">getRedirectUrl</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/NotificationResource/Pages/EditNotification.php.html#13"><abbr title="App\Filament\Resources\NotificationResource\Pages\EditNotification::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/NotificationResource/Pages/EditNotification.php.html#21"><abbr title="App\Filament\Resources\NotificationResource\Pages\EditNotification::getRedirectUrl">getRedirectUrl</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/NotificationResource/Pages/ListNotifications.php.html#15"><abbr title="App\Filament\Resources\NotificationResource\Pages\ListNotifications::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/NotificationResource/Pages/ListNotifications.php.html#22"><abbr title="App\Filament\Resources\NotificationResource\Pages\ListNotifications::getTabs">getTabs</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/NotificationResource/Pages/ViewNotification.php.html#15"><abbr title="App\Filament\Resources\NotificationResource\Pages\ViewNotification::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/NotificationResource/Pages/ViewNotification.php.html#86"><abbr title="App\Filament\Resources\NotificationResource\Pages\ViewNotification::infolist">infolist</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetResource.php.html#34"><abbr title="App\Filament\Resources\PetResource::form">form</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetResource.php.html#81"><abbr title="App\Filament\Resources\PetResource::table">table</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetResource.php.html#187"><abbr title="App\Filament\Resources\PetResource::getNavigationBadge">getNavigationBadge</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetResource.php.html#192"><abbr title="App\Filament\Resources\PetResource::getEloquentQuery">getEloquentQuery</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetResource/Pages/CreatePet.php.html#12"><abbr title="App\Filament\Resources\PetResource\Pages\CreatePet::getRedirectUrl">getRedirectUrl</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetResource/Pages/CreatePet.php.html#17"><abbr title="App\Filament\Resources\PetResource\Pages\CreatePet::mutateFormDataBeforeCreate">mutateFormDataBeforeCreate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetResource/Pages/EditPet.php.html#13"><abbr title="App\Filament\Resources\PetResource\Pages\EditPet::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetResource/Pages/EditPet.php.html#21"><abbr title="App\Filament\Resources\PetResource\Pages\EditPet::getRedirectUrl">getRedirectUrl</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetResource/Pages/ListPets.php.html#13"><abbr title="App\Filament\Resources\PetResource\Pages\ListPets::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetResource/Pages/ViewPet.php.html#13"><abbr title="App\Filament\Resources\PetResource\Pages\ViewPet::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetResource/RelationManagers/FosterAssignmentsRelationManager.php.html#24"><abbr title="App\Filament\Resources\PetResource\RelationManagers\FosterAssignmentsRelationManager::form">form</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetResource/RelationManagers/FosterAssignmentsRelationManager.php.html#85"><abbr title="App\Filament\Resources\PetResource\RelationManagers\FosterAssignmentsRelationManager::table">table</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetResource/RelationManagers/PlacementRequestsRelationManager.php.html#27"><abbr title="App\Filament\Resources\PetResource\RelationManagers\PlacementRequestsRelationManager::form">form</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetResource/RelationManagers/PlacementRequestsRelationManager.php.html#70"><abbr title="App\Filament\Resources\PetResource\RelationManagers\PlacementRequestsRelationManager::table">table</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetTypeResource.php.html#35"><abbr title="App\Filament\Resources\PetTypeResource::form">form</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetTypeResource.php.html#92"><abbr title="App\Filament\Resources\PetTypeResource::table">table</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetTypeResource.php.html#268"><abbr title="App\Filament\Resources\PetTypeResource::canDelete">canDelete</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetTypeResource/Pages/CreatePetType.php.html#12"><abbr title="App\Filament\Resources\PetTypeResource\Pages\CreatePetType::getRedirectUrl">getRedirectUrl</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetTypeResource/Pages/EditPetType.php.html#14"><abbr title="App\Filament\Resources\PetTypeResource\Pages\EditPetType::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetTypeResource/Pages/EditPetType.php.html#45"><abbr title="App\Filament\Resources\PetTypeResource\Pages\EditPetType::getRedirectUrl">getRedirectUrl</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetTypeResource/Pages/EditPetType.php.html#50"><abbr title="App\Filament\Resources\PetTypeResource\Pages\EditPetType::mutateFormDataBeforeSave">mutateFormDataBeforeSave</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetTypeResource/Pages/ListPetTypes.php.html#13"><abbr title="App\Filament\Resources\PetTypeResource\Pages\ListPetTypes::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PetTypeResource/Pages/ViewPetType.php.html#13"><abbr title="App\Filament\Resources\PetTypeResource\Pages\ViewPetType::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PlacementRequestResource.php.html#49"><abbr title="App\Filament\Resources\PlacementRequestResource::getGlobalSearchResultTitle">getGlobalSearchResultTitle</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PlacementRequestResource.php.html#54"><abbr title="App\Filament\Resources\PlacementRequestResource::getGlobalSearchResultDetails">getGlobalSearchResultDetails</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PlacementRequestResource.php.html#75"><abbr title="App\Filament\Resources\PlacementRequestResource::getGloballySearchableAttributes">getGloballySearchableAttributes</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PlacementRequestResource.php.html#80"><abbr title="App\Filament\Resources\PlacementRequestResource::form">form</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PlacementRequestResource.php.html#140"><abbr title="App\Filament\Resources\PlacementRequestResource::table">table</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PlacementRequestResource/Pages/EditPlacementRequest.php.html#13"><abbr title="App\Filament\Resources\PlacementRequestResource\Pages\EditPlacementRequest::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PlacementRequestResource/Pages/ListPlacementRequests.php.html#13"><abbr title="App\Filament\Resources\PlacementRequestResource\Pages\ListPlacementRequests::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PlacementRequestResource/Pages/ViewPlacementRequest.php.html#13"><abbr title="App\Filament\Resources\PlacementRequestResource\Pages\ViewPlacementRequest::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PlacementRequestResource/RelationManagers/TransferRequestsRelationManager.php.html#24"><abbr title="App\Filament\Resources\PlacementRequestResource\RelationManagers\TransferRequestsRelationManager::form">form</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/PlacementRequestResource/RelationManagers/TransferRequestsRelationManager.php.html#82"><abbr title="App\Filament\Resources\PlacementRequestResource\RelationManagers\TransferRequestsRelationManager::table">table</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/ReviewResource.php.html#29"><abbr title="App\Filament\Resources\ReviewResource::form">form</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/ReviewResource.php.html#113"><abbr title="App\Filament\Resources\ReviewResource::table">table</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/ReviewResource/Pages/EditReview.php.html#13"><abbr title="App\Filament\Resources\ReviewResource\Pages\EditReview::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/ReviewResource/Pages/ListReviews.php.html#13"><abbr title="App\Filament\Resources\ReviewResource\Pages\ListReviews::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/TransferRequestResource/Pages/EditTransferRequest.php.html#13"><abbr title="App\Filament\Resources\TransferRequestResource\Pages\EditTransferRequest::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/TransferRequestResource/RelationManagers/TransferHandoverRelationManager.php.html#26"><abbr title="App\Filament\Resources\TransferRequestResource\RelationManagers\TransferHandoverRelationManager::form">form</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/TransferRequestResource/RelationManagers/TransferHandoverRelationManager.php.html#92"><abbr title="App\Filament\Resources\TransferRequestResource\RelationManagers\TransferHandoverRelationManager::table">table</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/WaitlistEntryResource.php.html#34"><abbr title="App\Filament\Resources\WaitlistEntryResource::form">form</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/WaitlistEntryResource.php.html#65"><abbr title="App\Filament\Resources\WaitlistEntryResource::table">table</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/WaitlistEntryResource/Pages/EditWaitlistEntry.php.html#13"><abbr title="App\Filament\Resources\WaitlistEntryResource\Pages\EditWaitlistEntry::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/WaitlistEntryResource/Pages/ListWaitlistEntries.php.html#13"><abbr title="App\Filament\Resources\WaitlistEntryResource\Pages\ListWaitlistEntries::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/WaitlistEntryResource/Pages/ViewWaitlistEntry.php.html#13"><abbr title="App\Filament\Resources\WaitlistEntryResource\Pages\ViewWaitlistEntry::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Widgets/EmailDeliveryChart.php.html#51"><abbr title="App\Filament\Widgets\EmailDeliveryChart::getType">getType</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Widgets/EmailDeliveryChart.php.html#56"><abbr title="App\Filament\Widgets\EmailDeliveryChart::getOptions">getOptions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Widgets/EmailFailureAnalysisWidget.php.html#18"><abbr title="App\Filament\Widgets\EmailFailureAnalysisWidget::table">table</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Pages/EditEmailConfiguration.php.html#97"><abbr title="App\Filament\Resources\EmailConfigurationResource\Pages\EditEmailConfiguration::afterSave">afterSave</abbr></a></td><td class="text-right">33%</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Pages/EditEmailConfiguration.php.html#15"><abbr title="App\Filament\Resources\EmailConfigurationResource\Pages\EditEmailConfiguration::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">41%</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Pages/ListEmailConfigurations.php.html#15"><abbr title="App\Filament\Resources\EmailConfigurationResource\Pages\ListEmailConfigurations::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">45%</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource.php.html#193"><abbr title="App\Filament\Resources\EmailConfigurationResource::table">table</abbr></a></td><td class="text-right">50%</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Pages/ViewEmailConfiguration.php.html#17"><abbr title="App\Filament\Resources\EmailConfigurationResource\Pages\ViewEmailConfiguration::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">58%</td></tr>
+       <tr><td><a href="Widgets/NotificationStatsWidget.php.html#123"><abbr title="App\Filament\Widgets\NotificationStatsWidget::getQueuedEmailJobsCount">getQueuedEmailJobsCount</abbr></a></td><td class="text-right">60%</td></tr>
+       <tr><td><a href="Resources/NotificationResource.php.html#490"><abbr title="App\Filament\Resources\NotificationResource::getNavigationBadgeColor">getNavigationBadgeColor</abbr></a></td><td class="text-right">66%</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource.php.html#542"><abbr title="App\Filament\Resources\EmailConfigurationResource::getNavigationBadgeColor">getNavigationBadgeColor</abbr></a></td><td class="text-right">75%</td></tr>
+       <tr><td><a href="Resources/InvitationResource.php.html#282"><abbr title="App\Filament\Resources\InvitationResource::getNavigationBadgeColor">getNavigationBadgeColor</abbr></a></td><td class="text-right">75%</td></tr>
+       <tr><td><a href="Resources/WaitlistEntryResource.php.html#248"><abbr title="App\Filament\Resources\WaitlistEntryResource::getNavigationBadgeColor">getNavigationBadgeColor</abbr></a></td><td class="text-right">75%</td></tr>
+       <tr><td><a href="Resources/TransferRequestResource.php.html#117"><abbr title="App\Filament\Resources\TransferRequestResource::table">table</abbr></a></td><td class="text-right">75%</td></tr>
+       <tr><td><a href="Widgets/EmailSystemAlertsWidget.php.html#28"><abbr title="App\Filament\Widgets\EmailSystemAlertsWidget::getSystemAlerts">getSystemAlerts</abbr></a></td><td class="text-right">89%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="Resources/NotificationResource/Pages/ViewNotification.php.html#86"><abbr title="App\Filament\Resources\NotificationResource\Pages\ViewNotification::infolist">infolist</abbr></a></td><td class="text-right">600</td></tr>
+       <tr><td><a href="Resources/NotificationResource.php.html#108"><abbr title="App\Filament\Resources\NotificationResource::table">table</abbr></a></td><td class="text-right">506</td></tr>
+       <tr><td><a href="Resources/PlacementRequestResource.php.html#140"><abbr title="App\Filament\Resources\PlacementRequestResource::table">table</abbr></a></td><td class="text-right">462</td></tr>
+       <tr><td><a href="Resources/FosterAssignmentResource/Pages/ViewFosterAssignment.php.html#54"><abbr title="App\Filament\Resources\FosterAssignmentResource\Pages\ViewFosterAssignment::infolist">infolist</abbr></a></td><td class="text-right">306</td></tr>
+       <tr><td><a href="Resources/PetTypeResource.php.html#92"><abbr title="App\Filament\Resources\PetTypeResource::table">table</abbr></a></td><td class="text-right">306</td></tr>
+       <tr><td><a href="Exports/PlacementRequestExporter.php.html#16"><abbr title="App\Filament\Exports\PlacementRequestExporter::getColumns">getColumns</abbr></a></td><td class="text-right">156</td></tr>
+       <tr><td><a href="Resources/EmailLogResource.php.html#127"><abbr title="App\Filament\Resources\EmailLogResource::table">table</abbr></a></td><td class="text-right">132</td></tr>
+       <tr><td><a href="Resources/PlacementRequestResource.php.html#54"><abbr title="App\Filament\Resources\PlacementRequestResource::getGlobalSearchResultDetails">getGlobalSearchResultDetails</abbr></a></td><td class="text-right">132</td></tr>
+       <tr><td><a href="Resources/WaitlistEntryResource.php.html#65"><abbr title="App\Filament\Resources\WaitlistEntryResource::table">table</abbr></a></td><td class="text-right">132</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource.php.html#193"><abbr title="App\Filament\Resources\EmailConfigurationResource::table">table</abbr></a></td><td class="text-right">129</td></tr>
+       <tr><td><a href="Resources/InvitationResource.php.html#79"><abbr title="App\Filament\Resources\InvitationResource::table">table</abbr></a></td><td class="text-right">110</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Widgets/EmailStatusWidget.php.html#12"><abbr title="App\Filament\Resources\EmailConfigurationResource\Widgets\EmailStatusWidget::getStats">getStats</abbr></a></td><td class="text-right">90</td></tr>
+       <tr><td><a href="Resources/HelperProfileResource.php.html#113"><abbr title="App\Filament\Resources\HelperProfileResource::table">table</abbr></a></td><td class="text-right">90</td></tr>
+       <tr><td><a href="Resources/FosterAssignmentResource.php.html#114"><abbr title="App\Filament\Resources\FosterAssignmentResource::table">table</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="Resources/PlacementRequestResource/RelationManagers/TransferRequestsRelationManager.php.html#82"><abbr title="App\Filament\Resources\PlacementRequestResource\RelationManagers\TransferRequestsRelationManager::table">table</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="Resources/TransferRequestResource/RelationManagers/TransferHandoverRelationManager.php.html#92"><abbr title="App\Filament\Resources\TransferRequestResource\RelationManagers\TransferHandoverRelationManager::table">table</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Pages/CreateEmailConfiguration.php.html#19"><abbr title="App\Filament\Resources\EmailConfigurationResource\Pages\CreateEmailConfiguration::afterCreate">afterCreate</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Pages/CreateEmailConfiguration.php.html#53"><abbr title="App\Filament\Resources\EmailConfigurationResource\Pages\CreateEmailConfiguration::mutateFormDataBeforeCreate">mutateFormDataBeforeCreate</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="Resources/PetResource/RelationManagers/PlacementRequestsRelationManager.php.html#70"><abbr title="App\Filament\Resources\PetResource\RelationManagers\PlacementRequestsRelationManager::table">table</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="Resources/PetTypeResource/Pages/EditPetType.php.html#14"><abbr title="App\Filament\Resources\PetTypeResource\Pages\EditPetType::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="Widgets/EmailFailureAnalysisWidget.php.html#18"><abbr title="App\Filament\Widgets\EmailFailureAnalysisWidget::table">table</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Pages/EditEmailConfiguration.php.html#15"><abbr title="App\Filament\Resources\EmailConfigurationResource\Pages\EditEmailConfiguration::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">10</td></tr>
+       <tr><td><a href="Widgets/EmailSystemAlertsWidget.php.html#28"><abbr title="App\Filament\Widgets\EmailSystemAlertsWidget::getSystemAlerts">getSystemAlerts</abbr></a></td><td class="text-right">9</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Pages/ViewEmailConfiguration.php.html#17"><abbr title="App\Filament\Resources\EmailConfigurationResource\Pages\ViewEmailConfiguration::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">8</td></tr>
+       <tr><td><a href="Resources/TransferRequestResource.php.html#117"><abbr title="App\Filament\Resources\TransferRequestResource::table">table</abbr></a></td><td class="text-right">7</td></tr>
+       <tr><td><a href="Exports/PlacementRequestExporter.php.html#70"><abbr title="App\Filament\Exports\PlacementRequestExporter::getCompletedNotificationBody">getCompletedNotificationBody</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Pages/SystemSettings.php.html#37"><abbr title="App\Filament\Pages\SystemSettings::mount">mount</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Pages/SystemSettings.php.html#50"><abbr title="App\Filament\Pages\SystemSettings::form">form</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Pages/SystemSettings.php.html#110"><abbr title="App\Filament\Pages\SystemSettings::getNavigationBadge">getNavigationBadge</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Pages/SystemSettings.php.html#119"><abbr title="App\Filament\Pages\SystemSettings::getNavigationBadgeColor">getNavigationBadgeColor</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Resources/EmailLogResource.php.html#34"><abbr title="App\Filament\Resources\EmailLogResource::form">form</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Resources/NotificationResource/Pages/CreateNotification.php.html#12"><abbr title="App\Filament\Resources\NotificationResource\Pages\CreateNotification::mutateFormDataBeforeCreate">mutateFormDataBeforeCreate</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Resources/PetResource.php.html#81"><abbr title="App\Filament\Resources\PetResource::table">table</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Resources/PetResource/Pages/CreatePet.php.html#17"><abbr title="App\Filament\Resources\PetResource\Pages\CreatePet::mutateFormDataBeforeCreate">mutateFormDataBeforeCreate</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Resources/PetTypeResource.php.html#35"><abbr title="App\Filament\Resources\PetTypeResource::form">form</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Resources/PetTypeResource.php.html#268"><abbr title="App\Filament\Resources\PetTypeResource::canDelete">canDelete</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Resources/PetTypeResource/Pages/EditPetType.php.html#50"><abbr title="App\Filament\Resources\PetTypeResource\Pages\EditPetType::mutateFormDataBeforeSave">mutateFormDataBeforeSave</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Resources/ReviewResource.php.html#113"><abbr title="App\Filament\Resources\ReviewResource::table">table</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Pages/EditEmailConfiguration.php.html#97"><abbr title="App\Filament\Resources\EmailConfigurationResource\Pages\EditEmailConfiguration::afterSave">afterSave</abbr></a></td><td class="text-right">5</td></tr>
+       <tr><td><a href="Resources/NotificationResource.php.html#490"><abbr title="App\Filament\Resources\NotificationResource::getNavigationBadgeColor">getNavigationBadgeColor</abbr></a></td><td class="text-right">3</td></tr>
+       <tr><td><a href="Resources/WaitlistEntryResource.php.html#248"><abbr title="App\Filament\Resources\WaitlistEntryResource::getNavigationBadgeColor">getNavigationBadgeColor</abbr></a></td><td class="text-right">3</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource/Pages/ListEmailConfigurations.php.html#15"><abbr title="App\Filament\Resources\EmailConfigurationResource\Pages\ListEmailConfigurations::getHeaderActions">getHeaderActions</abbr></a></td><td class="text-right">2</td></tr>
+       <tr><td><a href="Widgets/NotificationStatsWidget.php.html#123"><abbr title="App\Filament\Widgets\NotificationStatsWidget::getQueuedEmailJobsCount">getQueuedEmailJobsCount</abbr></a></td><td class="text-right">2</td></tr>
+       <tr><td><a href="Resources/EmailConfigurationResource.php.html#542"><abbr title="App\Filament\Resources\EmailConfigurationResource::getNavigationBadgeColor">getNavigationBadgeColor</abbr></a></td><td class="text-right">2</td></tr>
+       <tr><td><a href="Resources/InvitationResource.php.html#282"><abbr title="App\Filament\Resources\InvitationResource::getNavigationBadgeColor">getNavigationBadgeColor</abbr></a></td><td class="text-right">2</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <footer>
+    <hr/>
+    <p>
+     <small>Generated by <a href="https://github.com/sebastianbergmann/php-code-coverage" target="_top">php-code-coverage 11.0.10</a> using <a href="https://www.php.net/" target="_top">PHP 8.4.13</a> and <a href="https://phpunit.de/">PHPUnit 11.5.28</a> at Mon Oct 6 20:04:34 UTC 2025.</small>
+    </p>
+   </footer>
+  </div>
+  <script src="../_js/jquery.min.js?v=11.0.10" type="text/javascript"></script>
+  <script src="../_js/d3.min.js?v=11.0.10" type="text/javascript"></script>
+  <script src="../_js/nv.d3.min.js?v=11.0.10" type="text/javascript"></script>
+  <script type="text/javascript">
+$(document).ready(function() {
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#classCoverageDistribution svg')
+      .datum(getCoverageDistributionData([43,11,0,0,0,1,1,1,1,2,2,11], "Class Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#methodCoverageDistribution svg')
+      .datum(getCoverageDistributionData([100,0,0,0,1,2,2,2,4,1,4,42], "Method Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getCoverageDistributionData(data, label) {
+    var labels = [
+      '0%',
+      '0-10%',
+      '10-20%',
+      '20-30%',
+      '30-40%',
+      '40-50%',
+      '50-60%',
+      '60-70%',
+      '70-80%',
+      '80-90%',
+      '90-100%',
+      '100%'
+    ];
+    var values = [];
+    $.each(labels, function(key) {
+      values.push({x: labels[key], y: data[key]});
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Cyclomatic Complexity');
+
+    d3.select('#classComplexity svg')
+      .datum(getComplexityData([[0,14,"<a href=\"Exports\/PlacementRequestExporter.php.html#12\">App\\Filament\\Exports\\PlacementRequestExporter<\/a>"],[2,13,"<a href=\"Pages\/SystemSettings.php.html#14\">App\\Filament\\Pages\\SystemSettings<\/a>"],[68.44660194174757,36,"<a href=\"Resources\/EmailConfigurationResource.php.html#17\">App\\Filament\\Resources\\EmailConfigurationResource<\/a>"],[0,7,"<a href=\"Resources\/EmailConfigurationResource\/Pages\/CreateEmailConfiguration.php.html#10\">App\\Filament\\Resources\\EmailConfigurationResource\\Pages\\CreateEmailConfiguration<\/a>"],[43.529411764705884,12,"<a href=\"Resources\/EmailConfigurationResource\/Pages\/EditEmailConfiguration.php.html#11\">App\\Filament\\Resources\\EmailConfigurationResource\\Pages\\EditEmailConfiguration<\/a>"],[51.85185185185185,3,"<a href=\"Resources\/EmailConfigurationResource\/Pages\/ListEmailConfigurations.php.html#11\">App\\Filament\\Resources\\EmailConfigurationResource\\Pages\\ListEmailConfigurations<\/a>"],[80.22598870056498,14,"<a href=\"Resources\/EmailConfigurationResource\/Pages\/ViewEmailConfiguration.php.html#13\">App\\Filament\\Resources\\EmailConfigurationResource\\Pages\\ViewEmailConfiguration<\/a>"],[0,10,"<a href=\"Resources\/EmailConfigurationResource\/Widgets\/EmailStatusWidget.php.html#10\">App\\Filament\\Resources\\EmailConfigurationResource\\Widgets\\EmailStatusWidget<\/a>"],[2.681992337164751,18,"<a href=\"Resources\/EmailLogResource.php.html#16\">App\\Filament\\Resources\\EmailLogResource<\/a>"],[100,0,"<a href=\"Resources\/EmailLogResource\/Pages\/CreateEmailLog.php.html#8\">App\\Filament\\Resources\\EmailLogResource\\Pages\\CreateEmailLog<\/a>"],[0,1,"<a href=\"Resources\/EmailLogResource\/Pages\/EditEmailLog.php.html#9\">App\\Filament\\Resources\\EmailLogResource\\Pages\\EditEmailLog<\/a>"],[0,1,"<a href=\"Resources\/EmailLogResource\/Pages\/ListEmailLogs.php.html#9\">App\\Filament\\Resources\\EmailLogResource\\Pages\\ListEmailLogs<\/a>"],[0,1,"<a href=\"Resources\/EmailLogResource\/Pages\/ViewEmailLog.php.html#8\">App\\Filament\\Resources\\EmailLogResource\\Pages\\ViewEmailLog<\/a>"],[3.169014084507042,9,"<a href=\"Resources\/FosterAssignmentResource.php.html#26\">App\\Filament\\Resources\\FosterAssignmentResource<\/a>"],[100,0,"<a href=\"Resources\/FosterAssignmentResource\/Pages\/CreateFosterAssignment.php.html#8\">App\\Filament\\Resources\\FosterAssignmentResource\\Pages\\CreateFosterAssignment<\/a>"],[0,1,"<a href=\"Resources\/FosterAssignmentResource\/Pages\/EditFosterAssignment.php.html#9\">App\\Filament\\Resources\\FosterAssignmentResource\\Pages\\EditFosterAssignment<\/a>"],[0,1,"<a href=\"Resources\/FosterAssignmentResource\/Pages\/ListFosterAssignments.php.html#9\">App\\Filament\\Resources\\FosterAssignmentResource\\Pages\\ListFosterAssignments<\/a>"],[0,18,"<a href=\"Resources\/FosterAssignmentResource\/Pages\/ViewFosterAssignment.php.html#13\">App\\Filament\\Resources\\FosterAssignmentResource\\Pages\\ViewFosterAssignment<\/a>"],[0,2,"<a href=\"Resources\/FosterAssignmentResource\/RelationManagers\/FosterReturnHandoverRelationManager.php.html#21\">App\\Filament\\Resources\\FosterAssignmentResource\\RelationManagers\\FosterReturnHandoverRelationManager<\/a>"],[3.169014084507042,12,"<a href=\"Resources\/HelperProfileResource.php.html#17\">App\\Filament\\Resources\\HelperProfileResource<\/a>"],[100,0,"<a href=\"Resources\/HelperProfileResource\/Pages\/CreateHelperProfile.php.html#8\">App\\Filament\\Resources\\HelperProfileResource\\Pages\\CreateHelperProfile<\/a>"],[0,1,"<a href=\"Resources\/HelperProfileResource\/Pages\/EditHelperProfile.php.html#9\">App\\Filament\\Resources\\HelperProfileResource\\Pages\\EditHelperProfile<\/a>"],[0,1,"<a href=\"Resources\/HelperProfileResource\/Pages\/ListHelperProfiles.php.html#9\">App\\Filament\\Resources\\HelperProfileResource\\Pages\\ListHelperProfiles<\/a>"],[0,1,"<a href=\"Resources\/HelperProfileResource\/Pages\/ViewHelperProfile.php.html#9\">App\\Filament\\Resources\\HelperProfileResource\\Pages\\ViewHelperProfile<\/a>"],[0,2,"<a href=\"Resources\/HelperProfileResource\/RelationManagers\/PhotosRelationManager.php.html#11\">App\\Filament\\Resources\\HelperProfileResource\\RelationManagers\\PhotosRelationManager<\/a>"],[6.730769230769231,19,"<a href=\"Resources\/InvitationResource.php.html#18\">App\\Filament\\Resources\\InvitationResource<\/a>"],[100,0,"<a href=\"Resources\/InvitationResource\/Pages\/CreateInvitation.php.html#9\">App\\Filament\\Resources\\InvitationResource\\Pages\\CreateInvitation<\/a>"],[0,1,"<a href=\"Resources\/InvitationResource\/Pages\/EditInvitation.php.html#9\">App\\Filament\\Resources\\InvitationResource\\Pages\\EditInvitation<\/a>"],[0,1,"<a href=\"Resources\/InvitationResource\/Pages\/ListInvitations.php.html#9\">App\\Filament\\Resources\\InvitationResource\\Pages\\ListInvitations<\/a>"],[0,1,"<a href=\"Resources\/InvitationResource\/Pages\/ViewInvitation.php.html#9\">App\\Filament\\Resources\\InvitationResource\\Pages\\ViewInvitation<\/a>"],[3.5443037974683547,29,"<a href=\"Resources\/NotificationResource.php.html#18\">App\\Filament\\Resources\\NotificationResource<\/a>"],[0,3,"<a href=\"Resources\/NotificationResource\/Pages\/CreateNotification.php.html#8\">App\\Filament\\Resources\\NotificationResource\\Pages\\CreateNotification<\/a>"],[0,2,"<a href=\"Resources\/NotificationResource\/Pages\/EditNotification.php.html#9\">App\\Filament\\Resources\\NotificationResource\\Pages\\EditNotification<\/a>"],[0,2,"<a href=\"Resources\/NotificationResource\/Pages\/ListNotifications.php.html#11\">App\\Filament\\Resources\\NotificationResource\\Pages\\ListNotifications<\/a>"],[0,25,"<a href=\"Resources\/NotificationResource\/Pages\/ViewNotification.php.html#11\">App\\Filament\\Resources\\NotificationResource\\Pages\\ViewNotification<\/a>"],[8.264462809917356,7,"<a href=\"Resources\/PetResource.php.html#24\">App\\Filament\\Resources\\PetResource<\/a>"],[0,3,"<a href=\"Resources\/PetResource\/Pages\/CreatePet.php.html#8\">App\\Filament\\Resources\\PetResource\\Pages\\CreatePet<\/a>"],[0,2,"<a href=\"Resources\/PetResource\/Pages\/EditPet.php.html#9\">App\\Filament\\Resources\\PetResource\\Pages\\EditPet<\/a>"],[0,1,"<a href=\"Resources\/PetResource\/Pages\/ListPets.php.html#9\">App\\Filament\\Resources\\PetResource\\Pages\\ListPets<\/a>"],[0,1,"<a href=\"Resources\/PetResource\/Pages\/ViewPet.php.html#9\">App\\Filament\\Resources\\PetResource\\Pages\\ViewPet<\/a>"],[0,2,"<a href=\"Resources\/PetResource\/RelationManagers\/FosterAssignmentsRelationManager.php.html#16\">App\\Filament\\Resources\\PetResource\\RelationManagers\\FosterAssignmentsRelationManager<\/a>"],[0,4,"<a href=\"Resources\/PetResource\/RelationManagers\/PlacementRequestsRelationManager.php.html#19\">App\\Filament\\Resources\\PetResource\\RelationManagers\\PlacementRequestsRelationManager<\/a>"],[5.649717514124294,24,"<a href=\"Resources\/PetTypeResource.php.html#25\">App\\Filament\\Resources\\PetTypeResource<\/a>"],[0,1,"<a href=\"Resources\/PetTypeResource\/Pages\/CreatePetType.php.html#8\">App\\Filament\\Resources\\PetTypeResource\\Pages\\CreatePetType<\/a>"],[0,6,"<a href=\"Resources\/PetTypeResource\/Pages\/EditPetType.php.html#10\">App\\Filament\\Resources\\PetTypeResource\\Pages\\EditPetType<\/a>"],[0,1,"<a href=\"Resources\/PetTypeResource\/Pages\/ListPetTypes.php.html#9\">App\\Filament\\Resources\\PetTypeResource\\Pages\\ListPetTypes<\/a>"],[0,1,"<a href=\"Resources\/PetTypeResource\/Pages\/ViewPetType.php.html#9\">App\\Filament\\Resources\\PetTypeResource\\Pages\\ViewPetType<\/a>"],[2.912621359223301,37,"<a href=\"Resources\/PlacementRequestResource.php.html#31\">App\\Filament\\Resources\\PlacementRequestResource<\/a>"],[100,0,"<a href=\"Resources\/PlacementRequestResource\/Pages\/CreatePlacementRequest.php.html#8\">App\\Filament\\Resources\\PlacementRequestResource\\Pages\\CreatePlacementRequest<\/a>"],[0,1,"<a href=\"Resources\/PlacementRequestResource\/Pages\/EditPlacementRequest.php.html#9\">App\\Filament\\Resources\\PlacementRequestResource\\Pages\\EditPlacementRequest<\/a>"],[0,1,"<a href=\"Resources\/PlacementRequestResource\/Pages\/ListPlacementRequests.php.html#9\">App\\Filament\\Resources\\PlacementRequestResource\\Pages\\ListPlacementRequests<\/a>"],[0,1,"<a href=\"Resources\/PlacementRequestResource\/Pages\/ViewPlacementRequest.php.html#9\">App\\Filament\\Resources\\PlacementRequestResource\\Pages\\ViewPlacementRequest<\/a>"],[0,6,"<a href=\"Resources\/PlacementRequestResource\/RelationManagers\/TransferRequestsRelationManager.php.html#16\">App\\Filament\\Resources\\PlacementRequestResource\\RelationManagers\\TransferRequestsRelationManager<\/a>"],[2.631578947368421,5,"<a href=\"Resources\/ReviewResource.php.html#19\">App\\Filament\\Resources\\ReviewResource<\/a>"],[100,0,"<a href=\"Resources\/ReviewResource\/Pages\/CreateReview.php.html#8\">App\\Filament\\Resources\\ReviewResource\\Pages\\CreateReview<\/a>"],[0,1,"<a href=\"Resources\/ReviewResource\/Pages\/EditReview.php.html#9\">App\\Filament\\Resources\\ReviewResource\\Pages\\EditReview<\/a>"],[0,1,"<a href=\"Resources\/ReviewResource\/Pages\/ListReviews.php.html#9\">App\\Filament\\Resources\\ReviewResource\\Pages\\ListReviews<\/a>"],[82.22222222222221,11,"<a href=\"Resources\/TransferRequestResource.php.html#24\">App\\Filament\\Resources\\TransferRequestResource<\/a>"],[100,0,"<a href=\"Resources\/TransferRequestResource\/Pages\/CreateTransferRequest.php.html#8\">App\\Filament\\Resources\\TransferRequestResource\\Pages\\CreateTransferRequest<\/a>"],[0,1,"<a href=\"Resources\/TransferRequestResource\/Pages\/EditTransferRequest.php.html#9\">App\\Filament\\Resources\\TransferRequestResource\\Pages\\EditTransferRequest<\/a>"],[100,1,"<a href=\"Resources\/TransferRequestResource\/Pages\/ListTransferRequests.php.html#9\">App\\Filament\\Resources\\TransferRequestResource\\Pages\\ListTransferRequests<\/a>"],[100,1,"<a href=\"Resources\/TransferRequestResource\/Pages\/ViewTransferRequest.php.html#9\">App\\Filament\\Resources\\TransferRequestResource\\Pages\\ViewTransferRequest<\/a>"],[0,5,"<a href=\"Resources\/TransferRequestResource\/RelationManagers\/TransferHandoverRelationManager.php.html#20\">App\\Filament\\Resources\\TransferRequestResource\\RelationManagers\\TransferHandoverRelationManager<\/a>"],[100,1,"<a href=\"Resources\/UserResource\/Actions\/ImpersonateAsUser.php.html#9\">App\\Filament\\Resources\\UserResource\\Actions\\ImpersonateAsUser<\/a>"],[8.092485549132949,21,"<a href=\"Resources\/WaitlistEntryResource.php.html#18\">App\\Filament\\Resources\\WaitlistEntryResource<\/a>"],[100,0,"<a href=\"Resources\/WaitlistEntryResource\/Pages\/CreateWaitlistEntry.php.html#9\">App\\Filament\\Resources\\WaitlistEntryResource\\Pages\\CreateWaitlistEntry<\/a>"],[0,1,"<a href=\"Resources\/WaitlistEntryResource\/Pages\/EditWaitlistEntry.php.html#9\">App\\Filament\\Resources\\WaitlistEntryResource\\Pages\\EditWaitlistEntry<\/a>"],[0,1,"<a href=\"Resources\/WaitlistEntryResource\/Pages\/ListWaitlistEntries.php.html#9\">App\\Filament\\Resources\\WaitlistEntryResource\\Pages\\ListWaitlistEntries<\/a>"],[0,1,"<a href=\"Resources\/WaitlistEntryResource\/Pages\/ViewWaitlistEntry.php.html#9\">App\\Filament\\Resources\\WaitlistEntryResource\\Pages\\ViewWaitlistEntry<\/a>"],[73.07692307692307,5,"<a href=\"Widgets\/EmailDeliveryChart.php.html#8\">App\\Filament\\Widgets\\EmailDeliveryChart<\/a>"],[0,3,"<a href=\"Widgets\/EmailFailureAnalysisWidget.php.html#10\">App\\Filament\\Widgets\\EmailFailureAnalysisWidget<\/a>"],[90.36144578313254,10,"<a href=\"Widgets\/EmailSystemAlertsWidget.php.html#10\">App\\Filament\\Widgets\\EmailSystemAlertsWidget<\/a>"],[93.5064935064935,19,"<a href=\"Widgets\/NotificationStatsWidget.php.html#12\">App\\Filament\\Widgets\\NotificationStatsWidget<\/a>"]], 'Class Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Method Complexity');
+
+    d3.select('#methodComplexity svg')
+      .datum(getComplexityData([[0,12,"<a href=\"Exports\/PlacementRequestExporter.php.html#16\">App\\Filament\\Exports\\PlacementRequestExporter::getColumns<\/a>"],[0,2,"<a href=\"Exports\/PlacementRequestExporter.php.html#70\">App\\Filament\\Exports\\PlacementRequestExporter::getCompletedNotificationBody<\/a>"],[0,1,"<a href=\"Pages\/SystemSettings.php.html#32\">App\\Filament\\Pages\\SystemSettings::boot<\/a>"],[0,2,"<a href=\"Pages\/SystemSettings.php.html#37\">App\\Filament\\Pages\\SystemSettings::mount<\/a>"],[0,2,"<a href=\"Pages\/SystemSettings.php.html#50\">App\\Filament\\Pages\\SystemSettings::form<\/a>"],[0,1,"<a href=\"Pages\/SystemSettings.php.html#80\">App\\Filament\\Pages\\SystemSettings::getHeaderActions<\/a>"],[100,2,"<a href=\"Pages\/SystemSettings.php.html#102\">App\\Filament\\Pages\\SystemSettings::canAccess<\/a>"],[0,2,"<a href=\"Pages\/SystemSettings.php.html#110\">App\\Filament\\Pages\\SystemSettings::getNavigationBadge<\/a>"],[0,2,"<a href=\"Pages\/SystemSettings.php.html#119\">App\\Filament\\Pages\\SystemSettings::getNavigationBadgeColor<\/a>"],[0,1,"<a href=\"Pages\/SystemSettings.php.html#129\">App\\Filament\\Pages\\SystemSettings::getInviteOnlyEnabledProperty<\/a>"],[99.27007299270073,1,"<a href=\"Resources\/EmailConfigurationResource.php.html#35\">App\\Filament\\Resources\\EmailConfigurationResource::form<\/a>"],[50.76923076923077,29,"<a href=\"Resources\/EmailConfigurationResource.php.html#193\">App\\Filament\\Resources\\EmailConfigurationResource::table<\/a>"],[100,1,"<a href=\"Resources\/EmailConfigurationResource.php.html#518\">App\\Filament\\Resources\\EmailConfigurationResource::getRelations<\/a>"],[100,1,"<a href=\"Resources\/EmailConfigurationResource.php.html#525\">App\\Filament\\Resources\\EmailConfigurationResource::getPages<\/a>"],[100,2,"<a href=\"Resources\/EmailConfigurationResource.php.html#535\">App\\Filament\\Resources\\EmailConfigurationResource::getNavigationBadge<\/a>"],[75,2,"<a href=\"Resources\/EmailConfigurationResource.php.html#542\">App\\Filament\\Resources\\EmailConfigurationResource::getNavigationBadgeColor<\/a>"],[0,1,"<a href=\"Resources\/EmailConfigurationResource\/Pages\/CreateEmailConfiguration.php.html#14\">App\\Filament\\Resources\\EmailConfigurationResource\\Pages\\CreateEmailConfiguration::getRedirectUrl<\/a>"],[0,3,"<a href=\"Resources\/EmailConfigurationResource\/Pages\/CreateEmailConfiguration.php.html#19\">App\\Filament\\Resources\\EmailConfigurationResource\\Pages\\CreateEmailConfiguration::afterCreate<\/a>"],[0,3,"<a href=\"Resources\/EmailConfigurationResource\/Pages\/CreateEmailConfiguration.php.html#53\">App\\Filament\\Resources\\EmailConfigurationResource\\Pages\\CreateEmailConfiguration::mutateFormDataBeforeCreate<\/a>"],[41.37931034482759,5,"<a href=\"Resources\/EmailConfigurationResource\/Pages\/EditEmailConfiguration.php.html#15\">App\\Filament\\Resources\\EmailConfigurationResource\\Pages\\EditEmailConfiguration::getHeaderActions<\/a>"],[100,1,"<a href=\"Resources\/EmailConfigurationResource\/Pages\/EditEmailConfiguration.php.html#92\">App\\Filament\\Resources\\EmailConfigurationResource\\Pages\\EditEmailConfiguration::getRedirectUrl<\/a>"],[33.33333333333333,3,"<a href=\"Resources\/EmailConfigurationResource\/Pages\/EditEmailConfiguration.php.html#97\">App\\Filament\\Resources\\EmailConfigurationResource\\Pages\\EditEmailConfiguration::afterSave<\/a>"],[100,3,"<a href=\"Resources\/EmailConfigurationResource\/Pages\/EditEmailConfiguration.php.html#131\">App\\Filament\\Resources\\EmailConfigurationResource\\Pages\\EditEmailConfiguration::mutateFormDataBeforeSave<\/a>"],[45.83333333333333,2,"<a href=\"Resources\/EmailConfigurationResource\/Pages\/ListEmailConfigurations.php.html#15\">App\\Filament\\Resources\\EmailConfigurationResource\\Pages\\ListEmailConfigurations::getHeaderActions<\/a>"],[100,1,"<a href=\"Resources\/EmailConfigurationResource\/Pages\/ListEmailConfigurations.php.html#47\">App\\Filament\\Resources\\EmailConfigurationResource\\Pages\\ListEmailConfigurations::getHeaderWidgets<\/a>"],[58.0246913580247,6,"<a href=\"Resources\/EmailConfigurationResource\/Pages\/ViewEmailConfiguration.php.html#17\">App\\Filament\\Resources\\EmailConfigurationResource\\Pages\\ViewEmailConfiguration::getHeaderActions<\/a>"],[98.95833333333334,8,"<a href=\"Resources\/EmailConfigurationResource\/Pages\/ViewEmailConfiguration.php.html#123\">App\\Filament\\Resources\\EmailConfigurationResource\\Pages\\ViewEmailConfiguration::infolist<\/a>"],[0,9,"<a href=\"Resources\/EmailConfigurationResource\/Widgets\/EmailStatusWidget.php.html#12\">App\\Filament\\Resources\\EmailConfigurationResource\\Widgets\\EmailStatusWidget::getStats<\/a>"],[0,1,"<a href=\"Resources\/EmailConfigurationResource\/Widgets\/EmailStatusWidget.php.html#37\">App\\Filament\\Resources\\EmailConfigurationResource\\Widgets\\EmailStatusWidget::getColumns<\/a>"],[0,2,"<a href=\"Resources\/EmailLogResource.php.html#34\">App\\Filament\\Resources\\EmailLogResource::form<\/a>"],[0,11,"<a href=\"Resources\/EmailLogResource.php.html#127\">App\\Filament\\Resources\\EmailLogResource::table<\/a>"],[100,1,"<a href=\"Resources\/EmailLogResource.php.html#323\">App\\Filament\\Resources\\EmailLogResource::getRelations<\/a>"],[100,1,"<a href=\"Resources\/EmailLogResource.php.html#330\">App\\Filament\\Resources\\EmailLogResource::getPages<\/a>"],[0,1,"<a href=\"Resources\/EmailLogResource.php.html#338\">App\\Filament\\Resources\\EmailLogResource::canCreate<\/a>"],[0,1,"<a href=\"Resources\/EmailLogResource.php.html#343\">App\\Filament\\Resources\\EmailLogResource::canEdit<\/a>"],[0,1,"<a href=\"Resources\/EmailLogResource.php.html#348\">App\\Filament\\Resources\\EmailLogResource::canDelete<\/a>"],[0,1,"<a href=\"Resources\/EmailLogResource\/Pages\/EditEmailLog.php.html#13\">App\\Filament\\Resources\\EmailLogResource\\Pages\\EditEmailLog::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/EmailLogResource\/Pages\/ListEmailLogs.php.html#13\">App\\Filament\\Resources\\EmailLogResource\\Pages\\ListEmailLogs::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/EmailLogResource\/Pages\/ViewEmailLog.php.html#12\">App\\Filament\\Resources\\EmailLogResource\\Pages\\ViewEmailLog::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/FosterAssignmentResource.php.html#38\">App\\Filament\\Resources\\FosterAssignmentResource::form<\/a>"],[0,6,"<a href=\"Resources\/FosterAssignmentResource.php.html#114\">App\\Filament\\Resources\\FosterAssignmentResource::table<\/a>"],[100,1,"<a href=\"Resources\/FosterAssignmentResource.php.html#359\">App\\Filament\\Resources\\FosterAssignmentResource::getRelations<\/a>"],[100,1,"<a href=\"Resources\/FosterAssignmentResource.php.html#366\">App\\Filament\\Resources\\FosterAssignmentResource::getPages<\/a>"],[0,1,"<a href=\"Resources\/FosterAssignmentResource\/Pages\/EditFosterAssignment.php.html#13\">App\\Filament\\Resources\\FosterAssignmentResource\\Pages\\EditFosterAssignment::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/FosterAssignmentResource\/Pages\/ListFosterAssignments.php.html#13\">App\\Filament\\Resources\\FosterAssignmentResource\\Pages\\ListFosterAssignments::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/FosterAssignmentResource\/Pages\/ViewFosterAssignment.php.html#17\">App\\Filament\\Resources\\FosterAssignmentResource\\Pages\\ViewFosterAssignment::getHeaderActions<\/a>"],[0,17,"<a href=\"Resources\/FosterAssignmentResource\/Pages\/ViewFosterAssignment.php.html#54\">App\\Filament\\Resources\\FosterAssignmentResource\\Pages\\ViewFosterAssignment::infolist<\/a>"],[0,1,"<a href=\"Resources\/FosterAssignmentResource\/RelationManagers\/FosterReturnHandoverRelationManager.php.html#27\">App\\Filament\\Resources\\FosterAssignmentResource\\RelationManagers\\FosterReturnHandoverRelationManager::form<\/a>"],[0,1,"<a href=\"Resources\/FosterAssignmentResource\/RelationManagers\/FosterReturnHandoverRelationManager.php.html#104\">App\\Filament\\Resources\\FosterAssignmentResource\\RelationManagers\\FosterReturnHandoverRelationManager::table<\/a>"],[0,1,"<a href=\"Resources\/HelperProfileResource.php.html#31\">App\\Filament\\Resources\\HelperProfileResource::form<\/a>"],[0,9,"<a href=\"Resources\/HelperProfileResource.php.html#113\">App\\Filament\\Resources\\HelperProfileResource::table<\/a>"],[100,1,"<a href=\"Resources\/HelperProfileResource.php.html#348\">App\\Filament\\Resources\\HelperProfileResource::getRelations<\/a>"],[100,1,"<a href=\"Resources\/HelperProfileResource.php.html#355\">App\\Filament\\Resources\\HelperProfileResource::getPages<\/a>"],[0,1,"<a href=\"Resources\/HelperProfileResource\/Pages\/EditHelperProfile.php.html#13\">App\\Filament\\Resources\\HelperProfileResource\\Pages\\EditHelperProfile::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/HelperProfileResource\/Pages\/ListHelperProfiles.php.html#13\">App\\Filament\\Resources\\HelperProfileResource\\Pages\\ListHelperProfiles::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/HelperProfileResource\/Pages\/ViewHelperProfile.php.html#13\">App\\Filament\\Resources\\HelperProfileResource\\Pages\\ViewHelperProfile::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/HelperProfileResource\/RelationManagers\/PhotosRelationManager.php.html#19\">App\\Filament\\Resources\\HelperProfileResource\\RelationManagers\\PhotosRelationManager::form<\/a>"],[0,1,"<a href=\"Resources\/HelperProfileResource\/RelationManagers\/PhotosRelationManager.php.html#39\">App\\Filament\\Resources\\HelperProfileResource\\RelationManagers\\PhotosRelationManager::table<\/a>"],[0,1,"<a href=\"Resources\/InvitationResource.php.html#34\">App\\Filament\\Resources\\InvitationResource::form<\/a>"],[0,10,"<a href=\"Resources\/InvitationResource.php.html#79\">App\\Filament\\Resources\\InvitationResource::table<\/a>"],[100,1,"<a href=\"Resources\/InvitationResource.php.html#260\">App\\Filament\\Resources\\InvitationResource::getRelations<\/a>"],[100,1,"<a href=\"Resources\/InvitationResource.php.html#267\">App\\Filament\\Resources\\InvitationResource::getPages<\/a>"],[100,2,"<a href=\"Resources\/InvitationResource.php.html#277\">App\\Filament\\Resources\\InvitationResource::getNavigationBadge<\/a>"],[75,2,"<a href=\"Resources\/InvitationResource.php.html#282\">App\\Filament\\Resources\\InvitationResource::getNavigationBadgeColor<\/a>"],[100,2,"<a href=\"Resources\/InvitationResource.php.html#296\">App\\Filament\\Resources\\InvitationResource::canAccess<\/a>"],[0,1,"<a href=\"Resources\/InvitationResource\/Pages\/EditInvitation.php.html#13\">App\\Filament\\Resources\\InvitationResource\\Pages\\EditInvitation::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/InvitationResource\/Pages\/ListInvitations.php.html#13\">App\\Filament\\Resources\\InvitationResource\\Pages\\ListInvitations::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/InvitationResource\/Pages\/ViewInvitation.php.html#13\">App\\Filament\\Resources\\InvitationResource\\Pages\\ViewInvitation::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/NotificationResource.php.html#30\">App\\Filament\\Resources\\NotificationResource::form<\/a>"],[0,22,"<a href=\"Resources\/NotificationResource.php.html#108\">App\\Filament\\Resources\\NotificationResource::table<\/a>"],[100,1,"<a href=\"Resources\/NotificationResource.php.html#468\">App\\Filament\\Resources\\NotificationResource::getRelations<\/a>"],[100,1,"<a href=\"Resources\/NotificationResource.php.html#475\">App\\Filament\\Resources\\NotificationResource::getPages<\/a>"],[100,1,"<a href=\"Resources\/NotificationResource.php.html#485\">App\\Filament\\Resources\\NotificationResource::getNavigationBadge<\/a>"],[66.66666666666666,3,"<a href=\"Resources\/NotificationResource.php.html#490\">App\\Filament\\Resources\\NotificationResource::getNavigationBadgeColor<\/a>"],[0,2,"<a href=\"Resources\/NotificationResource\/Pages\/CreateNotification.php.html#12\">App\\Filament\\Resources\\NotificationResource\\Pages\\CreateNotification::mutateFormDataBeforeCreate<\/a>"],[0,1,"<a href=\"Resources\/NotificationResource\/Pages\/CreateNotification.php.html#22\">App\\Filament\\Resources\\NotificationResource\\Pages\\CreateNotification::getRedirectUrl<\/a>"],[0,1,"<a href=\"Resources\/NotificationResource\/Pages\/EditNotification.php.html#13\">App\\Filament\\Resources\\NotificationResource\\Pages\\EditNotification::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/NotificationResource\/Pages\/EditNotification.php.html#21\">App\\Filament\\Resources\\NotificationResource\\Pages\\EditNotification::getRedirectUrl<\/a>"],[0,1,"<a href=\"Resources\/NotificationResource\/Pages\/ListNotifications.php.html#15\">App\\Filament\\Resources\\NotificationResource\\Pages\\ListNotifications::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/NotificationResource\/Pages\/ListNotifications.php.html#22\">App\\Filament\\Resources\\NotificationResource\\Pages\\ListNotifications::getTabs<\/a>"],[0,1,"<a href=\"Resources\/NotificationResource\/Pages\/ViewNotification.php.html#15\">App\\Filament\\Resources\\NotificationResource\\Pages\\ViewNotification::getHeaderActions<\/a>"],[0,24,"<a href=\"Resources\/NotificationResource\/Pages\/ViewNotification.php.html#86\">App\\Filament\\Resources\\NotificationResource\\Pages\\ViewNotification::infolist<\/a>"],[0,1,"<a href=\"Resources\/PetResource.php.html#34\">App\\Filament\\Resources\\PetResource::form<\/a>"],[0,2,"<a href=\"Resources\/PetResource.php.html#81\">App\\Filament\\Resources\\PetResource::table<\/a>"],[100,1,"<a href=\"Resources\/PetResource.php.html#169\">App\\Filament\\Resources\\PetResource::getRelations<\/a>"],[100,1,"<a href=\"Resources\/PetResource.php.html#177\">App\\Filament\\Resources\\PetResource::getPages<\/a>"],[0,1,"<a href=\"Resources\/PetResource.php.html#187\">App\\Filament\\Resources\\PetResource::getNavigationBadge<\/a>"],[0,1,"<a href=\"Resources\/PetResource.php.html#192\">App\\Filament\\Resources\\PetResource::getEloquentQuery<\/a>"],[0,1,"<a href=\"Resources\/PetResource\/Pages\/CreatePet.php.html#12\">App\\Filament\\Resources\\PetResource\\Pages\\CreatePet::getRedirectUrl<\/a>"],[0,2,"<a href=\"Resources\/PetResource\/Pages\/CreatePet.php.html#17\">App\\Filament\\Resources\\PetResource\\Pages\\CreatePet::mutateFormDataBeforeCreate<\/a>"],[0,1,"<a href=\"Resources\/PetResource\/Pages\/EditPet.php.html#13\">App\\Filament\\Resources\\PetResource\\Pages\\EditPet::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/PetResource\/Pages\/EditPet.php.html#21\">App\\Filament\\Resources\\PetResource\\Pages\\EditPet::getRedirectUrl<\/a>"],[0,1,"<a href=\"Resources\/PetResource\/Pages\/ListPets.php.html#13\">App\\Filament\\Resources\\PetResource\\Pages\\ListPets::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/PetResource\/Pages\/ViewPet.php.html#13\">App\\Filament\\Resources\\PetResource\\Pages\\ViewPet::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/PetResource\/RelationManagers\/FosterAssignmentsRelationManager.php.html#24\">App\\Filament\\Resources\\PetResource\\RelationManagers\\FosterAssignmentsRelationManager::form<\/a>"],[0,1,"<a href=\"Resources\/PetResource\/RelationManagers\/FosterAssignmentsRelationManager.php.html#85\">App\\Filament\\Resources\\PetResource\\RelationManagers\\FosterAssignmentsRelationManager::table<\/a>"],[0,1,"<a href=\"Resources\/PetResource\/RelationManagers\/PlacementRequestsRelationManager.php.html#27\">App\\Filament\\Resources\\PetResource\\RelationManagers\\PlacementRequestsRelationManager::form<\/a>"],[0,3,"<a href=\"Resources\/PetResource\/RelationManagers\/PlacementRequestsRelationManager.php.html#70\">App\\Filament\\Resources\\PetResource\\RelationManagers\\PlacementRequestsRelationManager::table<\/a>"],[0,2,"<a href=\"Resources\/PetTypeResource.php.html#35\">App\\Filament\\Resources\\PetTypeResource::form<\/a>"],[0,17,"<a href=\"Resources\/PetTypeResource.php.html#92\">App\\Filament\\Resources\\PetTypeResource::table<\/a>"],[100,1,"<a href=\"Resources\/PetTypeResource.php.html#246\">App\\Filament\\Resources\\PetTypeResource::getRelations<\/a>"],[100,1,"<a href=\"Resources\/PetTypeResource.php.html#253\">App\\Filament\\Resources\\PetTypeResource::getPages<\/a>"],[100,1,"<a href=\"Resources\/PetTypeResource.php.html#263\">App\\Filament\\Resources\\PetTypeResource::getNavigationBadge<\/a>"],[0,2,"<a href=\"Resources\/PetTypeResource.php.html#268\">App\\Filament\\Resources\\PetTypeResource::canDelete<\/a>"],[0,1,"<a href=\"Resources\/PetTypeResource\/Pages\/CreatePetType.php.html#12\">App\\Filament\\Resources\\PetTypeResource\\Pages\\CreatePetType::getRedirectUrl<\/a>"],[0,3,"<a href=\"Resources\/PetTypeResource\/Pages\/EditPetType.php.html#14\">App\\Filament\\Resources\\PetTypeResource\\Pages\\EditPetType::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/PetTypeResource\/Pages\/EditPetType.php.html#45\">App\\Filament\\Resources\\PetTypeResource\\Pages\\EditPetType::getRedirectUrl<\/a>"],[0,2,"<a href=\"Resources\/PetTypeResource\/Pages\/EditPetType.php.html#50\">App\\Filament\\Resources\\PetTypeResource\\Pages\\EditPetType::mutateFormDataBeforeSave<\/a>"],[0,1,"<a href=\"Resources\/PetTypeResource\/Pages\/ListPetTypes.php.html#13\">App\\Filament\\Resources\\PetTypeResource\\Pages\\ListPetTypes::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/PetTypeResource\/Pages\/ViewPetType.php.html#13\">App\\Filament\\Resources\\PetTypeResource\\Pages\\ViewPetType::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/PlacementRequestResource.php.html#49\">App\\Filament\\Resources\\PlacementRequestResource::getGlobalSearchResultTitle<\/a>"],[0,11,"<a href=\"Resources\/PlacementRequestResource.php.html#54\">App\\Filament\\Resources\\PlacementRequestResource::getGlobalSearchResultDetails<\/a>"],[0,1,"<a href=\"Resources\/PlacementRequestResource.php.html#75\">App\\Filament\\Resources\\PlacementRequestResource::getGloballySearchableAttributes<\/a>"],[0,1,"<a href=\"Resources\/PlacementRequestResource.php.html#80\">App\\Filament\\Resources\\PlacementRequestResource::form<\/a>"],[0,21,"<a href=\"Resources\/PlacementRequestResource.php.html#140\">App\\Filament\\Resources\\PlacementRequestResource::table<\/a>"],[100,1,"<a href=\"Resources\/PlacementRequestResource.php.html#409\">App\\Filament\\Resources\\PlacementRequestResource::getRelations<\/a>"],[100,1,"<a href=\"Resources\/PlacementRequestResource.php.html#416\">App\\Filament\\Resources\\PlacementRequestResource::getPages<\/a>"],[0,1,"<a href=\"Resources\/PlacementRequestResource\/Pages\/EditPlacementRequest.php.html#13\">App\\Filament\\Resources\\PlacementRequestResource\\Pages\\EditPlacementRequest::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/PlacementRequestResource\/Pages\/ListPlacementRequests.php.html#13\">App\\Filament\\Resources\\PlacementRequestResource\\Pages\\ListPlacementRequests::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/PlacementRequestResource\/Pages\/ViewPlacementRequest.php.html#13\">App\\Filament\\Resources\\PlacementRequestResource\\Pages\\ViewPlacementRequest::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/PlacementRequestResource\/RelationManagers\/TransferRequestsRelationManager.php.html#24\">App\\Filament\\Resources\\PlacementRequestResource\\RelationManagers\\TransferRequestsRelationManager::form<\/a>"],[0,5,"<a href=\"Resources\/PlacementRequestResource\/RelationManagers\/TransferRequestsRelationManager.php.html#82\">App\\Filament\\Resources\\PlacementRequestResource\\RelationManagers\\TransferRequestsRelationManager::table<\/a>"],[0,1,"<a href=\"Resources\/ReviewResource.php.html#29\">App\\Filament\\Resources\\ReviewResource::form<\/a>"],[0,2,"<a href=\"Resources\/ReviewResource.php.html#113\">App\\Filament\\Resources\\ReviewResource::table<\/a>"],[100,1,"<a href=\"Resources\/ReviewResource.php.html#363\">App\\Filament\\Resources\\ReviewResource::getRelations<\/a>"],[100,1,"<a href=\"Resources\/ReviewResource.php.html#370\">App\\Filament\\Resources\\ReviewResource::getPages<\/a>"],[0,1,"<a href=\"Resources\/ReviewResource\/Pages\/EditReview.php.html#13\">App\\Filament\\Resources\\ReviewResource\\Pages\\EditReview::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/ReviewResource\/Pages\/ListReviews.php.html#13\">App\\Filament\\Resources\\ReviewResource\\Pages\\ListReviews::getHeaderActions<\/a>"],[98.50746268656717,2,"<a href=\"Resources\/TransferRequestResource.php.html#36\">App\\Filament\\Resources\\TransferRequestResource::form<\/a>"],[75.77319587628865,7,"<a href=\"Resources\/TransferRequestResource.php.html#117\">App\\Filament\\Resources\\TransferRequestResource::table<\/a>"],[100,1,"<a href=\"Resources\/TransferRequestResource.php.html#341\">App\\Filament\\Resources\\TransferRequestResource::getRelations<\/a>"],[100,1,"<a href=\"Resources\/TransferRequestResource.php.html#348\">App\\Filament\\Resources\\TransferRequestResource::getPages<\/a>"],[0,1,"<a href=\"Resources\/TransferRequestResource\/Pages\/EditTransferRequest.php.html#13\">App\\Filament\\Resources\\TransferRequestResource\\Pages\\EditTransferRequest::getHeaderActions<\/a>"],[100,1,"<a href=\"Resources\/TransferRequestResource\/Pages\/ListTransferRequests.php.html#13\">App\\Filament\\Resources\\TransferRequestResource\\Pages\\ListTransferRequests::getHeaderActions<\/a>"],[100,1,"<a href=\"Resources\/TransferRequestResource\/Pages\/ViewTransferRequest.php.html#13\">App\\Filament\\Resources\\TransferRequestResource\\Pages\\ViewTransferRequest::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/TransferRequestResource\/RelationManagers\/TransferHandoverRelationManager.php.html#26\">App\\Filament\\Resources\\TransferRequestResource\\RelationManagers\\TransferHandoverRelationManager::form<\/a>"],[0,4,"<a href=\"Resources\/TransferRequestResource\/RelationManagers\/TransferHandoverRelationManager.php.html#92\">App\\Filament\\Resources\\TransferRequestResource\\RelationManagers\\TransferHandoverRelationManager::table<\/a>"],[100,1,"<a href=\"Resources\/UserResource\/Actions\/ImpersonateAsUser.php.html#13\">App\\Filament\\Resources\\UserResource\\Actions\\ImpersonateAsUser::setUp<\/a>"],[0,1,"<a href=\"Resources\/WaitlistEntryResource.php.html#34\">App\\Filament\\Resources\\WaitlistEntryResource::form<\/a>"],[0,11,"<a href=\"Resources\/WaitlistEntryResource.php.html#65\">App\\Filament\\Resources\\WaitlistEntryResource::table<\/a>"],[100,1,"<a href=\"Resources\/WaitlistEntryResource.php.html#226\">App\\Filament\\Resources\\WaitlistEntryResource::getRelations<\/a>"],[100,1,"<a href=\"Resources\/WaitlistEntryResource.php.html#233\">App\\Filament\\Resources\\WaitlistEntryResource::getPages<\/a>"],[100,2,"<a href=\"Resources\/WaitlistEntryResource.php.html#243\">App\\Filament\\Resources\\WaitlistEntryResource::getNavigationBadge<\/a>"],[75,3,"<a href=\"Resources\/WaitlistEntryResource.php.html#248\">App\\Filament\\Resources\\WaitlistEntryResource::getNavigationBadgeColor<\/a>"],[100,2,"<a href=\"Resources\/WaitlistEntryResource.php.html#262\">App\\Filament\\Resources\\WaitlistEntryResource::canAccess<\/a>"],[0,1,"<a href=\"Resources\/WaitlistEntryResource\/Pages\/EditWaitlistEntry.php.html#13\">App\\Filament\\Resources\\WaitlistEntryResource\\Pages\\EditWaitlistEntry::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/WaitlistEntryResource\/Pages\/ListWaitlistEntries.php.html#13\">App\\Filament\\Resources\\WaitlistEntryResource\\Pages\\ListWaitlistEntries::getHeaderActions<\/a>"],[0,1,"<a href=\"Resources\/WaitlistEntryResource\/Pages\/ViewWaitlistEntry.php.html#13\">App\\Filament\\Resources\\WaitlistEntryResource\\Pages\\ViewWaitlistEntry::getHeaderActions<\/a>"],[100,1,"<a href=\"Widgets\/EmailDeliveryChart.php.html#16\">App\\Filament\\Widgets\\EmailDeliveryChart::getData<\/a>"],[0,1,"<a href=\"Widgets\/EmailDeliveryChart.php.html#51\">App\\Filament\\Widgets\\EmailDeliveryChart::getType<\/a>"],[0,1,"<a href=\"Widgets\/EmailDeliveryChart.php.html#56\">App\\Filament\\Widgets\\EmailDeliveryChart::getOptions<\/a>"],[100,2,"<a href=\"Widgets\/EmailDeliveryChart.php.html#80\">App\\Filament\\Widgets\\EmailDeliveryChart::getEmailDeliveryData<\/a>"],[0,3,"<a href=\"Widgets\/EmailFailureAnalysisWidget.php.html#18\">App\\Filament\\Widgets\\EmailFailureAnalysisWidget::table<\/a>"],[100,1,"<a href=\"Widgets\/EmailSystemAlertsWidget.php.html#18\">App\\Filament\\Widgets\\EmailSystemAlertsWidget::getViewData<\/a>"],[89.74358974358975,9,"<a href=\"Widgets\/EmailSystemAlertsWidget.php.html#28\">App\\Filament\\Widgets\\EmailSystemAlertsWidget::getSystemAlerts<\/a>"],[95,14,"<a href=\"Widgets\/NotificationStatsWidget.php.html#18\">App\\Filament\\Widgets\\NotificationStatsWidget::getStats<\/a>"],[100,3,"<a href=\"Widgets\/NotificationStatsWidget.php.html#102\">App\\Filament\\Widgets\\NotificationStatsWidget::getDeliveryRateChart<\/a>"],[60,2,"<a href=\"Widgets\/NotificationStatsWidget.php.html#123\">App\\Filament\\Widgets\\NotificationStatsWidget::getQueuedEmailJobsCount<\/a>"]], 'Method Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getComplexityData(data, label) {
+    var values = [];
+    $.each(data, function(key) {
+      var value = Math.round(data[key][0]*100) / 100;
+      values.push({
+        x: value,
+        y: data[key][1],
+        class: data[key][2],
+        size: 0.05,
+        shape: 'diamond'
+      });
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+});
+  </script>
+ </body>
+</html>

@@ -138,36 +138,55 @@ class NotificationService
     public function sendInAppFallback(User $user, string $type, array $data): bool
     {
         try {
-            // Add fallback indicator to the data
-            $fallbackData = array_merge($data, [
-                'is_fallback' => true,
-                'original_channel' => 'email',
-                'fallback_reason' => 'Email delivery failed or not configured',
-            ]);
-
+            $fallbackData = $this->prepareFallbackData($data);
             $notification = $this->createNotificationRecord($user, $type, $fallbackData, 'in_app_fallback');
-
-            // Mark as delivered immediately for in-app notifications
             $notification->update(['delivered_at' => now()]);
 
-            Log::info('Fallback in-app notification created', [
-                'user_id' => $user->id,
-                'notification_id' => $notification->id,
-                'type' => $type,
-                'reason' => 'Email notification failed',
-            ]);
+            $this->logFallbackSuccess($user, $notification, $type);
 
             return true;
         } catch (\Exception $e) {
-            Log::error('Failed to create fallback in-app notification', [
-                'user_id' => $user->id,
-                'type' => $type,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
+            $this->logFallbackError($user, $type, $e);
             return false;
         }
+    }
+
+    /**
+     * Prepare fallback notification data.
+     */
+    private function prepareFallbackData(array $data): array
+    {
+        return array_merge($data, [
+            'is_fallback' => true,
+            'original_channel' => 'email',
+            'fallback_reason' => 'Email delivery failed or not configured',
+        ]);
+    }
+
+    /**
+     * Log successful fallback notification creation.
+     */
+    private function logFallbackSuccess(User $user, $notification, string $type): void
+    {
+        Log::info('Fallback in-app notification created', [
+            'user_id' => $user->id,
+            'notification_id' => $notification->id,
+            'type' => $type,
+            'reason' => 'Email notification failed',
+        ]);
+    }
+
+    /**
+     * Log fallback notification creation error.
+     */
+    private function logFallbackError(User $user, string $type, \Exception $e): void
+    {
+        Log::error('Failed to create fallback in-app notification', [
+            'user_id' => $user->id,
+            'type' => $type,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ]);
     }
 
     /**
@@ -181,43 +200,76 @@ class NotificationService
             $activeConfig = $this->emailConfigurationService->getActiveConfiguration();
 
             if (! $activeConfig) {
-                return [
-                    'enabled' => false,
-                    'status' => 'no_configuration',
-                    'message' => 'No email configuration found',
-                ];
+                return $this->buildConfigurationStatus(false, 'no_configuration', 'No email configuration found');
             }
 
             if (! $activeConfig->isValid()) {
-                return [
-                    'enabled' => false,
-                    'status' => 'invalid_configuration',
-                    'message' => 'Email configuration is invalid',
-                    'errors' => $activeConfig->validateConfig(),
-                ];
+                return $this->buildInvalidConfigurationStatus($activeConfig);
             }
 
-            // Test connection
-            $testResult = $this->emailConfigurationService->testConfigurationWithDetails();
+            return $this->buildActiveConfigurationStatus($activeConfig);
+        } catch (\Exception $e) {
+            return $this->buildErrorConfigurationStatus($e);
+        }
+    }
 
-            return [
-                'enabled' => $testResult['success'],
-                'status' => $testResult['success'] ? 'ready' : 'connection_failed',
-                'message' => $testResult['success'] ? 'Email system is ready' : $testResult['error'],
+    /**
+     * Build configuration status response.
+     */
+    private function buildConfigurationStatus(bool $enabled, string $status, string $message, array $extra = []): array
+    {
+        return array_merge([
+            'enabled' => $enabled,
+            'status' => $status,
+            'message' => $message,
+        ], $extra);
+    }
+
+    /**
+     * Build invalid configuration status response.
+     */
+    private function buildInvalidConfigurationStatus($activeConfig): array
+    {
+        return $this->buildConfigurationStatus(
+            false,
+            'invalid_configuration',
+            'Email configuration is invalid',
+            ['errors' => $activeConfig->validateConfig()]
+        );
+    }
+
+    /**
+     * Build active configuration status response.
+     */
+    private function buildActiveConfigurationStatus($activeConfig): array
+    {
+        $testResult = $this->emailConfigurationService->testConfigurationWithDetails();
+
+        return $this->buildConfigurationStatus(
+            $testResult['success'],
+            $testResult['success'] ? 'ready' : 'connection_failed',
+            $testResult['success'] ? 'Email system is ready' : $testResult['error'],
+            [
                 'provider' => $activeConfig->provider,
                 'from_address' => $activeConfig->config['from_address'] ?? 'Not set',
-            ];
-        } catch (\Exception $e) {
-            Log::error('Error checking email configuration status', [
-                'error' => $e->getMessage(),
-            ]);
+            ]
+        );
+    }
 
-            return [
-                'enabled' => false,
-                'status' => 'error',
-                'message' => 'Error checking email configuration: '.$e->getMessage(),
-            ];
-        }
+    /**
+     * Build error configuration status response.
+     */
+    private function buildErrorConfigurationStatus(\Exception $e): array
+    {
+        Log::error('Error checking email configuration status', [
+            'error' => $e->getMessage(),
+        ]);
+
+        return $this->buildConfigurationStatus(
+            false,
+            'error',
+            'Error checking email configuration: '.$e->getMessage()
+        );
     }
 
     private function getUserPreferences(User $user, string $type): NotificationPreference

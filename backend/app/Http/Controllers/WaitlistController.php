@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Services\WaitlistService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesErrors;
 use App\Traits\HandlesValidation;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class WaitlistController extends Controller
 {
-    use ApiResponseTrait, HandlesValidation;
+    use ApiResponseTrait, HandlesErrors, HandlesValidation;
 
     private WaitlistService $waitlistService;
 
@@ -76,7 +77,7 @@ class WaitlistController extends Controller
      */
     public function store(Request $request)
     {
-        try {
+        return $this->handleAction(function () use ($request) {
             $this->validateWithErrorHandling($request, [
                 'email' => $this->emailValidationRules(),
             ]);
@@ -87,7 +88,7 @@ class WaitlistController extends Controller
             $validationErrors = $this->waitlistService->validateEmailForWaitlist($email);
 
             if (!empty($validationErrors)) {
-                return $this->sendError(
+                return $this->handleBusinessError(
                     implode(', ', $validationErrors),
                     409
                 );
@@ -101,18 +102,7 @@ class WaitlistController extends Controller
                 'status' => $waitlistEntry->status,
                 'created_at' => $waitlistEntry->created_at,
             ], 201);
-
-        } catch (ValidationException $e) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $e->errors(),
-            ], 422);
-        } catch (\Exception $e) {
-            return $this->sendError(
-                'Failed to add to waitlist: ' . $e->getMessage(),
-                500
-            );
-        }
+        });
     }
 
     /**

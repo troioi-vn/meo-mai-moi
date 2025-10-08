@@ -5,13 +5,14 @@ namespace App\Http\Controllers;
 use App\Services\InvitationService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesErrors;
 use App\Traits\HandlesValidation;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class InvitationController extends Controller
 {
-    use ApiResponseTrait, HandlesAuthentication, HandlesValidation;
+    use ApiResponseTrait, HandlesAuthentication, HandlesErrors, HandlesValidation;
 
     private InvitationService $invitationService;
 
@@ -139,9 +140,8 @@ class InvitationController extends Controller
 
         // Check rate limiting
         if (!$this->invitationService->canUserGenerateInvitation($user)) {
-            return $this->sendError(
-                'Failed to generate invitation. You may have reached your daily limit.',
-                429
+            return $this->handleRateLimit(
+                'Failed to generate invitation. You may have reached your daily limit.'
             );
         }
 
@@ -179,10 +179,7 @@ class InvitationController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
-            return $this->sendError(
-                'Failed to create invitation: ' . $e->getMessage(),
-                500
-            );
+            return $this->handleException($e, 'Failed to create invitation');
         }
     }
 
@@ -236,7 +233,7 @@ class InvitationController extends Controller
         $success = $this->invitationService->revokeInvitation($id, $user);
 
         if (!$success) {
-            return $this->sendError(
+            return $this->handleBusinessError(
                 'Invitation not found or cannot be revoked',
                 404
             );
@@ -268,7 +265,7 @@ class InvitationController extends Controller
         $invitation = $this->invitationService->validateInvitationCode($request->code);
 
         if (!$invitation) {
-            return $this->sendError(
+            return $this->handleBusinessError(
                 'Invalid or expired invitation code',
                 404
             );

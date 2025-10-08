@@ -1,0 +1,64 @@
+includes:
+    - ./vendor/larastan/larastan/extension.neon
+
+parameters:
+    # Analysis paths
+    paths:
+        - app
+        - config
+        - database
+        - routes
+
+    # Start at level 5 (recommended Laravel starting point)
+    # Gradually increase to level 7 as baseline is cleaned
+    level: 5
+
+    # Exclude patterns (use glob patterns for directories)
+    excludePaths:
+        - bootstrap/cache/*
+        - storage/*
+        - vendor/*
+        - */node_modules/*
+
+    # Bootstrap file for constants and global helpers
+    bootstrapFiles:
+        - bootstrap/app.php
+
+    # Ignore common Laravel patterns that are safe
+    ignoreErrors:
+        # Eloquent dynamic properties
+        - '#Access to an undefined property [a-zA-Z0-9\\_]+::\$[a-zA-Z0-9_]+#'
+        # Facade static methods
+        - '#Call to an undefined static method Illuminate\\Support\\Facades\\[a-zA-Z]+::[a-zA-Z]+\(\)#'
+        # Eloquent scope methods (dynamic)
+        - '#Call to an undefined method .*::(pending|delivered|failed|read|unread)\(\)#'
+        - '#Call to an undefined static method .*::(pending|delivered|failed|read|unread)\(\)#'
+        # Match arm comparisons (enum false positives)
+        - '#Match arm comparison between .* is always true#'
+        # Method exists checks (defensive programming)
+        - '#Call to function method_exists\(\) .* will always evaluate to true#'
+        # Instanceof checks (defensive programming)
+        - '#Instanceof between .* will always evaluate to true#'
+        # Boolean expressions from PHPDoc inference
+        - '#Negated boolean expression is always false#'
+        - '#Ternary operator condition is always true#'
+        - '#If condition is always true#'
+        - '#Left side of && is always true#'
+        - '#Right side of \|\| is always true#'
+        # Strict comparisons from PHPDoc inference
+        - '#Strict comparison using !== .* will always evaluate to true#'
+        - '#Strict comparison using === .* will always evaluate to false#'
+
+    # Performance settings
+    parallel:
+        maximumNumberOfProcesses: 4
+        processTimeout: 300.0
+
+    # Error format (table is most readable for initial setup)
+    errorFormat: table
+
+    # Report unmatched ignored errors (helps clean up as you fix issues)
+    reportUnmatchedIgnoredErrors: false
+
+    # Treat PHP doc types as source of truth (set to false to reduce false positives)
+    treatPhpDocTypesAsCertain: false

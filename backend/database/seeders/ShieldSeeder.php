@@ -24,12 +24,13 @@ class ShieldSeeder extends Seeder
     protected static function makeRolesWithPermissions(string $rolesWithPermissions): void
     {
         if (! blank($rolePlusPermissions = json_decode($rolesWithPermissions, true))) {
-            /** @var \Illuminate\Database\Eloquent\Model $roleModel */
+            /** @var class-string<\Illuminate\Database\Eloquent\Model> $roleModel */
             $roleModel = Utils::getRoleModel();
-            /** @var \Illuminate\Database\Eloquent\Model $permissionModel */
+            /** @var class-string<\Illuminate\Database\Eloquent\Model> $permissionModel */
             $permissionModel = Utils::getPermissionModel();
 
             foreach ($rolePlusPermissions as $rolePlusPermission) {
+                /** @var \Spatie\Permission\Models\Role $role */
                 $role = $roleModel::firstOrCreate([
                     'name' => $rolePlusPermission['name'],
                     'guard_name' => $rolePlusPermission['guard_name'],
@@ -52,7 +53,7 @@ class ShieldSeeder extends Seeder
     public static function makeDirectPermissions(string $directPermissions): void
     {
         if (! blank($permissions = json_decode($directPermissions, true))) {
-            /** @var \Illuminate\Database\Eloquent\Model $permissionModel */
+            /** @var class-string<\Illuminate\Database\Eloquent\Model> $permissionModel */
             $permissionModel = Utils::getPermissionModel();
 
             foreach ($permissions as $permission) {

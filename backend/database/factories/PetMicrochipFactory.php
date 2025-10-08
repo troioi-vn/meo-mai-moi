@@ -24,7 +24,7 @@ class PetMicrochipFactory extends Factory
             'pet_id' => Pet::factory(),
             'chip_number' => $this->faker->unique()->numerify('############'),
             'issuer' => $this->faker->randomElement(['HomeAgain', 'AKC Reunite', 'Found Animals', null]),
-            'implanted_at' => $this->faker->optional(0.8)->dateTimeBetween('-5 years', 'now')?->format('Y-m-d'),
+            'implanted_at' => $this->faker->boolean(80) ? $this->faker->dateTimeBetween('-5 years', 'now')->format('Y-m-d') : null,
         ];
     }
 

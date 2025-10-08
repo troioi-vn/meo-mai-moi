@@ -6,13 +6,16 @@ use App\Models\MedicalNote;
 use App\Models\Pet;
 use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesPetResources;
+use App\Traits\HandlesValidation;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Annotations as OA;
 
 class MedicalNoteController extends Controller
 {
-    use ApiResponseTrait;
+    use ApiResponseTrait, HandlesAuthentication, HandlesPetResources, HandlesValidation;
 
     /**
      * @OA\Schema(
@@ -53,14 +56,8 @@ class MedicalNoteController extends Controller
      */
     public function index(Request $request, Pet $pet)
     {
-        $user = $request->user();
-        if (! $user) return $this->sendError('Unauthenticated.', 401);
-        $isOwner = $user->id === $pet->user_id;
-        $isAdmin = method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
-        if (! $isOwner && ! $isAdmin) return $this->sendError('Forbidden.', 403);
-
         // For now, reuse 'medical' capability as the gate for notes
-        PetCapabilityService::ensure($pet, 'medical');
+        $this->validatePetResource($request, $pet, 'medical');
 
         $items = $pet->medicalNotes()->orderByDesc('record_date')->paginate(25);
         $payload = [
@@ -105,13 +102,7 @@ class MedicalNoteController extends Controller
      */
     public function store(Request $request, Pet $pet)
     {
-        $user = $request->user();
-        if (! $user) return $this->sendError('Unauthenticated.', 401);
-        $isOwner = $user->id === $pet->user_id;
-        $isAdmin = method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
-        if (! $isOwner && ! $isAdmin) return $this->sendError('Forbidden.', 403);
-
-        PetCapabilityService::ensure($pet, 'medical');
+        $this->validatePetResource($request, $pet, 'medical');
 
         $validated = $request->validate([
             'note' => 'required|string',

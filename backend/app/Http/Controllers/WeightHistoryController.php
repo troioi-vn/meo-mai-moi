@@ -7,6 +7,8 @@ use App\Models\WeightHistory;
 use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesPetResources;
+use App\Traits\HandlesValidation;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -28,7 +30,7 @@ use OpenApi\Annotations as OA;
  */
 class WeightHistoryController extends Controller
 {
-    use ApiResponseTrait, HandlesAuthentication;
+    use ApiResponseTrait, HandlesAuthentication, HandlesPetResources, HandlesValidation;
 
     /**
      * @OA\Get(
@@ -55,31 +57,14 @@ class WeightHistoryController extends Controller
     */
     public function index(Request $request, Pet $pet)
     {
-        $user = $this->requireOwnerOrAdmin($request, $pet);
-
-        // Capability check
-        PetCapabilityService::ensure($pet, 'weight');
+        $this->validatePetResource($request, $pet, 'weight');
 
         $items = $pet->weightHistories()->orderByDesc('record_date')->paginate(25);
-
-        $payload = [
-            'data' => $items->items(),
-            'links' => [
-                'first' => $items->url(1),
-                'last' => $items->url($items->lastPage()),
-                'prev' => $items->previousPageUrl(),
-                'next' => $items->nextPageUrl(),
-            ],
-            'meta' => [
-                'current_page' => $items->currentPage(),
-                'from' => $items->firstItem(),
-                'last_page' => $items->lastPage(),
+        $payload = $this->paginatedResponse($items, [
+            'meta' => array_merge($this->paginatedResponse($items)['meta'], [
                 'path' => $items->path(),
-                'per_page' => $items->perPage(),
-                'to' => $items->lastItem(),
-                'total' => $items->total(),
-            ],
-        ];
+            ]),
+        ]);
 
         return response()->json(['data' => $payload]);
     }
@@ -141,17 +126,11 @@ class WeightHistoryController extends Controller
     public function store(Request $request, Pet $pet)
     {
         // Only the pet's owner or an admin can add weight records
-        $user = $this->requireOwnerOrAdmin($request, $pet);
+        $this->validatePetResource($request, $pet, 'weight');
 
-        // Capability check
-        PetCapabilityService::ensure($pet, 'weight');
-
-        $validatedData = $request->validate([
-            'weight_kg' => 'required|numeric|min:0',
-            'record_date' => [
-                'required',
-                'date',
-            ],
+        $validatedData = $this->validateWithErrorHandling($request, [
+            'weight_kg' => $this->numericValidationRules(true, 0),
+            'record_date' => $this->dateValidationRules(),
         ]);
 
         // Enforce per-pet uniqueness for record_date using date-only comparison

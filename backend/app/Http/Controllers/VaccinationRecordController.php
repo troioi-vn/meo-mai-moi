@@ -7,13 +7,15 @@ use App\Models\VaccinationRecord;
 use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesPetResources;
+use App\Traits\HandlesValidation;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Annotations as OA;
 
 class VaccinationRecordController extends Controller
 {
-    use ApiResponseTrait, HandlesAuthentication;
+    use ApiResponseTrait, HandlesAuthentication, HandlesPetResources, HandlesValidation;
 
     /**
      * @OA\Schema(
@@ -57,29 +59,14 @@ class VaccinationRecordController extends Controller
      */
     public function index(Request $request, Pet $pet)
     {
-        $user = $this->requireOwnerOrAdmin($request, $pet);
-
-        PetCapabilityService::ensure($pet, 'vaccinations');
+        $this->validatePetResource($request, $pet, 'vaccinations');
 
         $items = $pet->vaccinations()->orderByDesc('administered_at')->paginate(25);
-        $payload = [
-            'data' => $items->items(),
-            'links' => [
-                'first' => $items->url(1),
-                'last' => $items->url($items->lastPage()),
-                'prev' => $items->previousPageUrl(),
-                'next' => $items->nextPageUrl(),
-            ],
-            'meta' => [
-                'current_page' => $items->currentPage(),
-                'from' => $items->firstItem(),
-                'last_page' => $items->lastPage(),
+        $payload = $this->paginatedResponse($items, [
+            'meta' => array_merge($this->paginatedResponse($items)['meta'], [
                 'path' => $items->path(),
-                'per_page' => $items->perPage(),
-                'to' => $items->lastItem(),
-                'total' => $items->total(),
-            ],
-        ];
+            ]),
+        ]);
 
         return response()->json(['data' => $payload]);
     }
@@ -106,15 +93,13 @@ class VaccinationRecordController extends Controller
      */
     public function store(Request $request, Pet $pet)
     {
-        $user = $this->requireOwnerOrAdmin($request, $pet);
+        $this->validatePetResource($request, $pet, 'vaccinations');
 
-        PetCapabilityService::ensure($pet, 'vaccinations');
-
-        $validated = $request->validate([
-            'vaccine_name' => 'required|string',
-            'administered_at' => 'required|date',
-            'due_at' => 'nullable|date|after_or_equal:administered_at',
-            'notes' => 'nullable|string',
+        $validated = $this->validateWithErrorHandling($request, [
+            'vaccine_name' => $this->textValidationRules(),
+            'administered_at' => $this->dateValidationRules(true, false),
+            'due_at' => ['nullable', 'date', 'after_or_equal:administered_at'],
+            'notes' => $this->textValidationRules(false, 1000),
         ]);
 
         // Uniqueness per pet: vaccine_name + administered_at
@@ -148,12 +133,7 @@ class VaccinationRecordController extends Controller
      */
     public function show(Request $request, Pet $pet, VaccinationRecord $record)
     {
-        $user = $this->requireOwnerOrAdmin($request, $pet);
-        PetCapabilityService::ensure($pet, 'vaccinations');
-
-        if ($record->pet_id !== $pet->id) {
-            return $this->sendError('Not found.', 404);
-        }
+        $this->validatePetResource($request, $pet, 'vaccinations', $record);
         return $this->sendSuccess($record);
     }
 
@@ -180,17 +160,13 @@ class VaccinationRecordController extends Controller
      */
     public function update(Request $request, Pet $pet, VaccinationRecord $record)
     {
-        $user = $this->requireOwnerOrAdmin($request, $pet);
-        PetCapabilityService::ensure($pet, 'vaccinations');
-        if ($record->pet_id !== $pet->id) {
-            return $this->sendError('Not found.', 404);
-        }
+        $this->validatePetResource($request, $pet, 'vaccinations', $record);
 
-        $validated = $request->validate([
-            'vaccine_name' => 'sometimes|string',
-            'administered_at' => 'sometimes|date',
-            'due_at' => 'nullable|date|after_or_equal:administered_at',
-            'notes' => 'nullable|string',
+        $validated = $this->validateWithErrorHandling($request, [
+            'vaccine_name' => $this->textValidationRules(false),
+            'administered_at' => $this->dateValidationRules(false, false),
+            'due_at' => ['nullable', 'date', 'after_or_equal:administered_at'],
+            'notes' => $this->textValidationRules(false, 1000),
         ]);
 
         // If administered_at or vaccine_name changes, enforce uniqueness
@@ -227,11 +203,7 @@ class VaccinationRecordController extends Controller
      */
     public function destroy(Request $request, Pet $pet, VaccinationRecord $record)
     {
-        $user = $this->requireOwnerOrAdmin($request, $pet);
-        PetCapabilityService::ensure($pet, 'vaccinations');
-        if ($record->pet_id !== $pet->id) {
-            return $this->sendError('Not found.', 404);
-        }
+        $this->validatePetResource($request, $pet, 'vaccinations', $record);
         $record->delete();
         return response()->json(['data' => true]);
     }

@@ -71,10 +71,8 @@ class PetMicrochipController extends Controller
         $payload = $this->paginatedResponse($microchips, [
             'meta' => array_merge($this->paginatedResponse($microchips)['meta'], [
                 'path' => $microchips->path(),
-                'to' => $microchips->lastItem(),
-                'total' => $microchips->total(),
-            ],
-        ];
+            ]),
+        ]);
 
         return response()->json(['data' => $payload]);
     }

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <title>Dashboard for /var/www/app/Models</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="../_css/bootstrap.min.css?v=11.0.10" rel="stylesheet" type="text/css">
+  <link href="../_css/nv.d3.min.css?v=11.0.10" rel="stylesheet" type="text/css">
+  <link href="../_css/style.css?v=11.0.10" rel="stylesheet" type="text/css">
+  <link href="../_css/custom.css" rel="stylesheet" type="text/css">
+ </head>
+ <body>
+  <header>
+   <div class="container-fluid">
+    <div class="row">
+     <div class="col-md-12">
+      <nav aria-label="breadcrumb">
+       <ol class="breadcrumb">
+         <li class="breadcrumb-item"><a href="../index.html">/var/www/app</a></li>
+         <li class="breadcrumb-item"><a href="index.html">Models</a></li>
+         <li class="breadcrumb-item active">(Dashboard)</li>
+
+       </ol>
+      </nav>
+     </div>
+    </div>
+   </div>
+  </header>
+  <div class="container-fluid">
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Classes</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="classCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="classComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="FosterAssignment.php.html#10">App\Models\FosterAssignment</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FosterReturnHandover.php.html#9">App\Models\FosterReturnHandover</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="MedicalNote.php.html#9">App\Models\MedicalNote</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="MedicalRecord.php.html#10">App\Models\MedicalRecord</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Message.php.html#8">App\Models\Message</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OwnershipHistory.php.html#9">App\Models\OwnershipHistory</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OwnershipTransfer.php.html#8">App\Models\OwnershipTransfer</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PetComment.php.html#9">App\Models\PetComment</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PetMicrochip.php.html#9">App\Models\PetMicrochip</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PetPhoto.php.html#8">App\Models\PetPhoto</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="WeightHistory.php.html#10">App\Models\WeightHistory</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TransferHandover.php.html#10">App\Models\TransferHandover</a></td><td class="text-right">33%</td></tr>
+       <tr><td><a href="EmailLog.php.html#9">App\Models\EmailLog</a></td><td class="text-right">35%</td></tr>
+       <tr><td><a href="PlacementRequest.php.html#11">App\Models\PlacementRequest</a></td><td class="text-right">50%</td></tr>
+       <tr><td><a href="Review.php.html#10">App\Models\Review</a></td><td class="text-right">50%</td></tr>
+       <tr><td><a href="User.php.html#16">App\Models\User</a></td><td class="text-right">52%</td></tr>
+       <tr><td><a href="TransferRequest.php.html#9">App\Models\TransferRequest</a></td><td class="text-right">71%</td></tr>
+       <tr><td><a href="Notification.php.html#9">App\Models\Notification</a></td><td class="text-right">72%</td></tr>
+       <tr><td><a href="Pet.php.html#12">App\Models\Pet</a></td><td class="text-right">79%</td></tr>
+       <tr><td><a href="PetType.php.html#10">App\Models\PetType</a></td><td class="text-right">83%</td></tr>
+       <tr><td><a href="EmailConfiguration.php.html#8">App\Models\EmailConfiguration</a></td><td class="text-right">85%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="FosterAssignment.php.html#10">App\Models\FosterAssignment</a></td><td class="text-right">272</td></tr>
+       <tr><td><a href="EmailLog.php.html#9">App\Models\EmailLog</a></td><td class="text-right">128</td></tr>
+       <tr><td><a href="EmailConfiguration.php.html#8">App\Models\EmailConfiguration</a></td><td class="text-right">73</td></tr>
+       <tr><td><a href="Notification.php.html#9">App\Models\Notification</a></td><td class="text-right">36</td></tr>
+       <tr><td><a href="Pet.php.html#12">App\Models\Pet</a></td><td class="text-right">22</td></tr>
+       <tr><td><a href="PetType.php.html#10">App\Models\PetType</a></td><td class="text-right">6</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Methods</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="methodCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="methodComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="EmailConfiguration.php.html#36"><abbr title="App\Models\EmailConfiguration::getDisplayName">getDisplayName</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EmailConfiguration.php.html#326"><abbr title="App\Models\EmailConfiguration::getValidationErrors">getValidationErrors</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EmailConfiguration.php.html#372"><abbr title="App\Models\EmailConfiguration::canConnect">canConnect</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EmailLog.php.html#42"><abbr title="App\Models\EmailLog::user">user</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EmailLog.php.html#50"><abbr title="App\Models\EmailLog::notification">notification</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EmailLog.php.html#58"><abbr title="App\Models\EmailLog::emailConfiguration">emailConfiguration</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EmailLog.php.html#66"><abbr title="App\Models\EmailLog::getStatusColor">getStatusColor</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EmailLog.php.html#79"><abbr title="App\Models\EmailLog::getStatusDisplayName">getStatusDisplayName</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EmailLog.php.html#94"><abbr title="App\Models\EmailLog::canRetry">canRetry</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EmailLog.php.html#128"><abbr title="App\Models\EmailLog::markAsDelivered">markAsDelivered</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FosterAssignment.php.html#33"><abbr title="App\Models\FosterAssignment::pet">pet</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FosterAssignment.php.html#40"><abbr title="App\Models\FosterAssignment::owner">owner</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FosterAssignment.php.html#45"><abbr title="App\Models\FosterAssignment::fosterer">fosterer</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FosterAssignment.php.html#50"><abbr title="App\Models\FosterAssignment::transferRequest">transferRequest</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FosterAssignment.php.html#55"><abbr title="App\Models\FosterAssignment::fosterReturnHandover">fosterReturnHandover</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FosterAssignment.php.html#61"><abbr title="App\Models\FosterAssignment::getDurationInDaysAttribute">getDurationInDaysAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FosterAssignment.php.html#72"><abbr title="App\Models\FosterAssignment::getDaysRemainingAttribute">getDaysRemainingAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FosterAssignment.php.html#81"><abbr title="App\Models\FosterAssignment::getIsOverdueAttribute">getIsOverdueAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FosterAssignment.php.html#89"><abbr title="App\Models\FosterAssignment::scopeActive">scopeActive</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FosterAssignment.php.html#94"><abbr title="App\Models\FosterAssignment::scopeOverdue">scopeOverdue</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FosterAssignment.php.html#101"><abbr title="App\Models\FosterAssignment::scopeEndingSoon">scopeEndingSoon</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FosterReturnHandover.php.html#37"><abbr title="App\Models\FosterReturnHandover::assignment">assignment</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FosterReturnHandover.php.html#42"><abbr title="App\Models\FosterReturnHandover::owner">owner</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FosterReturnHandover.php.html#47"><abbr title="App\Models\FosterReturnHandover::fosterer">fosterer</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="MedicalNote.php.html#23"><abbr title="App\Models\MedicalNote::pet">pet</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="MedicalRecord.php.html#27"><abbr title="App\Models\MedicalRecord::pet">pet</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Message.php.html#21"><abbr title="App\Models\Message::sender">sender</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Message.php.html#26"><abbr title="App\Models\Message::recipient">recipient</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OwnershipHistory.php.html#27"><abbr title="App\Models\OwnershipHistory::pet">pet</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OwnershipHistory.php.html#32"><abbr title="App\Models\OwnershipHistory::user">user</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OwnershipTransfer.php.html#22"><abbr title="App\Models\OwnershipTransfer::pet">pet</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OwnershipTransfer.php.html#27"><abbr title="App\Models\OwnershipTransfer::fromUser">fromUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OwnershipTransfer.php.html#32"><abbr title="App\Models\OwnershipTransfer::toUser">toUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OwnershipTransfer.php.html#37"><abbr title="App\Models\OwnershipTransfer::transferRequest">transferRequest</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Pet.php.html#112"><abbr title="App\Models\Pet::medicalRecords">medicalRecords</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Pet.php.html#152"><abbr title="App\Models\Pet::comments">comments</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Pet.php.html#168"><abbr title="App\Models\Pet::ownershipHistory">ownershipHistory</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Pet.php.html#176"><abbr title="App\Models\Pet::fosterAssignments">fosterAssignments</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PetComment.php.html#19"><abbr title="App\Models\PetComment::user">user</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PetComment.php.html#24"><abbr title="App\Models\PetComment::pet">pet</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PetMicrochip.php.html#24"><abbr title="App\Models\PetMicrochip::pet">pet</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PetPhoto.php.html#19"><abbr title="App\Models\PetPhoto::pet">pet</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PetType.php.html#65"><abbr title="App\Models\PetType::pets">pets</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PlacementRequest.php.html#43"><abbr title="App\Models\PlacementRequest::user">user</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PlacementRequest.php.html#56"><abbr title="App\Models\PlacementRequest::getResponseCountAttribute">getResponseCountAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Review.php.html#44"><abbr title="App\Models\Review::moderator">moderator</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Review.php.html#49"><abbr title="App\Models\Review::transfer">transfer</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TransferHandover.php.html#65"><abbr title="App\Models\TransferHandover::owner">owner</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TransferHandover.php.html#70"><abbr title="App\Models\TransferHandover::helper">helper</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TransferRequest.php.html#38"><abbr title="App\Models\TransferRequest::initiator">initiator</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TransferRequest.php.html#43"><abbr title="App\Models\TransferRequest::recipient">recipient</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#61"><abbr title="App\Models\User::reviewsGiven">reviewsGiven</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#66"><abbr title="App\Models\User::reviewsBeingReviewed">reviewsBeingReviewed</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#72"><abbr title="App\Models\User::pets">pets</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#77"><abbr title="App\Models\User::ownershipHistory">ownershipHistory</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#103"><abbr title="App\Models\User::receivedInvitations">receivedInvitations</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#121"><abbr title="App\Models\User::canImpersonate">canImpersonate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#130"><abbr title="App\Models\User::canBeImpersonated">canBeImpersonated</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#142"><abbr title="App\Models\User::sendPasswordResetNotification">sendPasswordResetNotification</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="WeightHistory.php.html#24"><abbr title="App\Models\WeightHistory::pet">pet</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Notification.php.html#45"><abbr title="App\Models\Notification::getTypeDisplayAttribute">getTypeDisplayAttribute</abbr></a></td><td class="text-right">38%</td></tr>
+       <tr><td><a href="Pet.php.html#54"><abbr title="App\Models\Pet::delete">delete</abbr></a></td><td class="text-right">75%</td></tr>
+       <tr><td><a href="EmailConfiguration.php.html#134"><abbr title="App\Models\EmailConfiguration::validateConfig">validateConfig</abbr></a></td><td class="text-right">78%</td></tr>
+       <tr><td><a href="EmailConfiguration.php.html#334"><abbr title="App\Models\EmailConfiguration::getConfigurationSummary">getConfigurationSummary</abbr></a></td><td class="text-right">78%</td></tr>
+       <tr><td><a href="PetType.php.html#43"><abbr title="App\Models\PetType::boot">boot</abbr></a></td><td class="text-right">88%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="EmailLog.php.html#79"><abbr title="App\Models\EmailLog::getStatusDisplayName">getStatusDisplayName</abbr></a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="Notification.php.html#45"><abbr title="App\Models\Notification::getTypeDisplayAttribute">getTypeDisplayAttribute</abbr></a></td><td class="text-right">45</td></tr>
+       <tr><td><a href="EmailLog.php.html#66"><abbr title="App\Models\EmailLog::getStatusColor">getStatusColor</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="EmailConfiguration.php.html#372"><abbr title="App\Models\EmailConfiguration::canConnect">canConnect</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="FosterAssignment.php.html#72"><abbr title="App\Models\FosterAssignment::getDaysRemainingAttribute">getDaysRemainingAttribute</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="FosterAssignment.php.html#81"><abbr title="App\Models\FosterAssignment::getIsOverdueAttribute">getIsOverdueAttribute</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="EmailConfiguration.php.html#334"><abbr title="App\Models\EmailConfiguration::getConfigurationSummary">getConfigurationSummary</abbr></a></td><td class="text-right">8</td></tr>
+       <tr><td><a href="EmailConfiguration.php.html#36"><abbr title="App\Models\EmailConfiguration::getDisplayName">getDisplayName</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EmailLog.php.html#94"><abbr title="App\Models\EmailLog::canRetry">canRetry</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="FosterAssignment.php.html#61"><abbr title="App\Models\FosterAssignment::getDurationInDaysAttribute">getDurationInDaysAttribute</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EmailConfiguration.php.html#134"><abbr title="App\Models\EmailConfiguration::validateConfig">validateConfig</abbr></a></td><td class="text-right">5</td></tr>
+       <tr><td><a href="PetType.php.html#43"><abbr title="App\Models\PetType::boot">boot</abbr></a></td><td class="text-right">3</td></tr>
+       <tr><td><a href="Pet.php.html#54"><abbr title="App\Models\Pet::delete">delete</abbr></a></td><td class="text-right">2</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <footer>
+    <hr/>
+    <p>
+     <small>Generated by <a href="https://github.com/sebastianbergmann/php-code-coverage" target="_top">php-code-coverage 11.0.10</a> using <a href="https://www.php.net/" target="_top">PHP 8.4.13</a> and <a href="https://phpunit.de/">PHPUnit 11.5.28</a> at Mon Oct 6 20:04:34 UTC 2025.</small>
+    </p>
+   </footer>
+  </div>
+  <script src="../_js/jquery.min.js?v=11.0.10" type="text/javascript"></script>
+  <script src="../_js/d3.min.js?v=11.0.10" type="text/javascript"></script>
+  <script src="../_js/nv.d3.min.js?v=11.0.10" type="text/javascript"></script>
+  <script type="text/javascript">
+$(document).ready(function() {
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#classCoverageDistribution svg')
+      .datum(getCoverageDistributionData([11,0,0,0,2,0,3,0,3,2,0,7], "Class Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#methodCoverageDistribution svg')
+      .datum(getCoverageDistributionData([60,0,0,0,1,0,0,0,3,1,3,86], "Method Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getCoverageDistributionData(data, label) {
+    var labels = [
+      '0%',
+      '0-10%',
+      '10-20%',
+      '20-30%',
+      '30-40%',
+      '40-50%',
+      '50-60%',
+      '60-70%',
+      '70-80%',
+      '80-90%',
+      '90-100%',
+      '100%'
+    ];
+    var values = [];
+    $.each(labels, function(key) {
+      values.push({x: labels[key], y: data[key]});
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Cyclomatic Complexity');
+
+    d3.select('#classComplexity svg')
+      .datum(getComplexityData([[85.625,62,"<a href=\"EmailConfiguration.php.html#8\">App\\Models\\EmailConfiguration<\/a>"],[35.294117647058826,20,"<a href=\"EmailLog.php.html#9\">App\\Models\\EmailLog<\/a>"],[0,16,"<a href=\"FosterAssignment.php.html#10\">App\\Models\\FosterAssignment<\/a>"],[0,3,"<a href=\"FosterReturnHandover.php.html#9\">App\\Models\\FosterReturnHandover<\/a>"],[100,3,"<a href=\"HelperProfile.php.html#59\">App\\Models\\HelperProfile<\/a>"],[100,0,"<a href=\"HelperProfilePhoto.php.html#7\">App\\Models\\HelperProfilePhoto<\/a>"],[100,13,"<a href=\"Invitation.php.html#11\">App\\Models\\Invitation<\/a>"],[0,1,"<a href=\"MedicalNote.php.html#9\">App\\Models\\MedicalNote<\/a>"],[0,1,"<a href=\"MedicalRecord.php.html#10\">App\\Models\\MedicalRecord<\/a>"],[0,2,"<a href=\"Message.php.html#8\">App\\Models\\Message<\/a>"],[72.41379310344827,24,"<a href=\"Notification.php.html#9\">App\\Models\\Notification<\/a>"],[100,16,"<a href=\"NotificationPreference.php.html#9\">App\\Models\\NotificationPreference<\/a>"],[0,2,"<a href=\"OwnershipHistory.php.html#9\">App\\Models\\OwnershipHistory<\/a>"],[0,4,"<a href=\"OwnershipTransfer.php.html#8\">App\\Models\\OwnershipTransfer<\/a>"],[79.16666666666666,19,"<a href=\"Pet.php.html#12\">App\\Models\\Pet<\/a>"],[0,2,"<a href=\"PetComment.php.html#9\">App\\Models\\PetComment<\/a>"],[0,1,"<a href=\"PetMicrochip.php.html#9\">App\\Models\\PetMicrochip<\/a>"],[0,1,"<a href=\"PetPhoto.php.html#8\">App\\Models\\PetPhoto<\/a>"],[83.33333333333334,6,"<a href=\"PetType.php.html#10\">App\\Models\\PetType<\/a>"],[50,4,"<a href=\"PlacementRequest.php.html#11\">App\\Models\\PlacementRequest<\/a>"],[50,4,"<a href=\"Review.php.html#10\">App\\Models\\Review<\/a>"],[100,8,"<a href=\"Settings.php.html#8\">App\\Models\\Settings<\/a>"],[33.33333333333333,3,"<a href=\"TransferHandover.php.html#10\">App\\Models\\TransferHandover<\/a>"],[71.42857142857143,7,"<a href=\"TransferRequest.php.html#9\">App\\Models\\TransferRequest<\/a>"],[52.94117647058824,14,"<a href=\"User.php.html#16\">App\\Models\\User<\/a>"],[100,1,"<a href=\"VaccinationRecord.php.html#9\">App\\Models\\VaccinationRecord<\/a>"],[100,6,"<a href=\"WaitlistEntry.php.html#9\">App\\Models\\WaitlistEntry<\/a>"],[0,1,"<a href=\"WeightHistory.php.html#10\">App\\Models\\WeightHistory<\/a>"]], 'Class Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Method Complexity');
+
+    d3.select('#methodComplexity svg')
+      .datum(getComplexityData([[100,1,"<a href=\"EmailConfiguration.php.html#28\">App\\Models\\EmailConfiguration::getActive<\/a>"],[0,2,"<a href=\"EmailConfiguration.php.html#36\">App\\Models\\EmailConfiguration::getDisplayName<\/a>"],[100,1,"<a href=\"EmailConfiguration.php.html#44\">App\\Models\\EmailConfiguration::activate<\/a>"],[98.11320754716981,6,"<a href=\"EmailConfiguration.php.html#56\">App\\Models\\EmailConfiguration::getMailConfig<\/a>"],[100,1,"<a href=\"EmailConfiguration.php.html#121\">App\\Models\\EmailConfiguration::getFromAddress<\/a>"],[78.57142857142857,5,"<a href=\"EmailConfiguration.php.html#134\">App\\Models\\EmailConfiguration::validateConfig<\/a>"],[95.83333333333334,15,"<a href=\"EmailConfiguration.php.html#164\">App\\Models\\EmailConfiguration::validateSmtpConfig<\/a>"],[95.23809523809523,11,"<a href=\"EmailConfiguration.php.html#213\">App\\Models\\EmailConfiguration::validateMailgunConfig<\/a>"],[100,1,"<a href=\"EmailConfiguration.php.html#262\">App\\Models\\EmailConfiguration::isValid<\/a>"],[100,1,"<a href=\"EmailConfiguration.php.html#270\">App\\Models\\EmailConfiguration::scopeActive<\/a>"],[100,1,"<a href=\"EmailConfiguration.php.html#278\">App\\Models\\EmailConfiguration::scopeInactive<\/a>"],[100,1,"<a href=\"EmailConfiguration.php.html#286\">App\\Models\\EmailConfiguration::scopeForProvider<\/a>"],[100,1,"<a href=\"EmailConfiguration.php.html#294\">App\\Models\\EmailConfiguration::isSmtp<\/a>"],[100,1,"<a href=\"EmailConfiguration.php.html#302\">App\\Models\\EmailConfiguration::isMailgun<\/a>"],[100,1,"<a href=\"EmailConfiguration.php.html#310\">App\\Models\\EmailConfiguration::getConfigValue<\/a>"],[100,1,"<a href=\"EmailConfiguration.php.html#318\">App\\Models\\EmailConfiguration::hasConfigValue<\/a>"],[0,1,"<a href=\"EmailConfiguration.php.html#326\">App\\Models\\EmailConfiguration::getValidationErrors<\/a>"],[78.94736842105263,8,"<a href=\"EmailConfiguration.php.html#334\">App\\Models\\EmailConfiguration::getConfigurationSummary<\/a>"],[0,3,"<a href=\"EmailConfiguration.php.html#372\">App\\Models\\EmailConfiguration::canConnect<\/a>"],[0,1,"<a href=\"EmailLog.php.html#42\">App\\Models\\EmailLog::user<\/a>"],[0,1,"<a href=\"EmailLog.php.html#50\">App\\Models\\EmailLog::notification<\/a>"],[0,1,"<a href=\"EmailLog.php.html#58\">App\\Models\\EmailLog::emailConfiguration<\/a>"],[0,5,"<a href=\"EmailLog.php.html#66\">App\\Models\\EmailLog::getStatusColor<\/a>"],[0,7,"<a href=\"EmailLog.php.html#79\">App\\Models\\EmailLog::getStatusDisplayName<\/a>"],[0,2,"<a href=\"EmailLog.php.html#94\">App\\Models\\EmailLog::canRetry<\/a>"],[100,1,"<a href=\"EmailLog.php.html#102\">App\\Models\\EmailLog::markAsSent<\/a>"],[100,1,"<a href=\"EmailLog.php.html#115\">App\\Models\\EmailLog::markAsFailed<\/a>"],[0,1,"<a href=\"EmailLog.php.html#128\">App\\Models\\EmailLog::markAsDelivered<\/a>"],[0,1,"<a href=\"FosterAssignment.php.html#33\">App\\Models\\FosterAssignment::pet<\/a>"],[0,1,"<a href=\"FosterAssignment.php.html#40\">App\\Models\\FosterAssignment::owner<\/a>"],[0,1,"<a href=\"FosterAssignment.php.html#45\">App\\Models\\FosterAssignment::fosterer<\/a>"],[0,1,"<a href=\"FosterAssignment.php.html#50\">App\\Models\\FosterAssignment::transferRequest<\/a>"],[0,1,"<a href=\"FosterAssignment.php.html#55\">App\\Models\\FosterAssignment::fosterReturnHandover<\/a>"],[0,2,"<a href=\"FosterAssignment.php.html#61\">App\\Models\\FosterAssignment::getDurationInDaysAttribute<\/a>"],[0,3,"<a href=\"FosterAssignment.php.html#72\">App\\Models\\FosterAssignment::getDaysRemainingAttribute<\/a>"],[0,3,"<a href=\"FosterAssignment.php.html#81\">App\\Models\\FosterAssignment::getIsOverdueAttribute<\/a>"],[0,1,"<a href=\"FosterAssignment.php.html#89\">App\\Models\\FosterAssignment::scopeActive<\/a>"],[0,1,"<a href=\"FosterAssignment.php.html#94\">App\\Models\\FosterAssignment::scopeOverdue<\/a>"],[0,1,"<a href=\"FosterAssignment.php.html#101\">App\\Models\\FosterAssignment::scopeEndingSoon<\/a>"],[0,1,"<a href=\"FosterReturnHandover.php.html#37\">App\\Models\\FosterReturnHandover::assignment<\/a>"],[0,1,"<a href=\"FosterReturnHandover.php.html#42\">App\\Models\\FosterReturnHandover::owner<\/a>"],[0,1,"<a href=\"FosterReturnHandover.php.html#47\">App\\Models\\FosterReturnHandover::fosterer<\/a>"],[100,1,"<a href=\"HelperProfile.php.html#88\">App\\Models\\HelperProfile::user<\/a>"],[100,1,"<a href=\"HelperProfile.php.html#93\">App\\Models\\HelperProfile::photos<\/a>"],[100,1,"<a href=\"HelperProfile.php.html#98\">App\\Models\\HelperProfile::petTypes<\/a>"],[100,1,"<a href=\"Invitation.php.html#30\">App\\Models\\Invitation::inviter<\/a>"],[100,1,"<a href=\"Invitation.php.html#38\">App\\Models\\Invitation::recipient<\/a>"],[100,4,"<a href=\"Invitation.php.html#46\">App\\Models\\Invitation::isValid<\/a>"],[100,1,"<a href=\"Invitation.php.html#63\">App\\Models\\Invitation::markAsAccepted<\/a>"],[100,1,"<a href=\"Invitation.php.html#74\">App\\Models\\Invitation::markAsRevoked<\/a>"],[100,1,"<a href=\"Invitation.php.html#82\">App\\Models\\Invitation::generateUniqueCode<\/a>"],[100,1,"<a href=\"Invitation.php.html#94\">App\\Models\\Invitation::scopePending<\/a>"],[100,1,"<a href=\"Invitation.php.html#102\">App\\Models\\Invitation::scopeAccepted<\/a>"],[100,1,"<a href=\"Invitation.php.html#110\">App\\Models\\Invitation::scopeExpired<\/a>"],[100,1,"<a href=\"Invitation.php.html#122\">App\\Models\\Invitation::getInvitationUrl<\/a>"],[0,1,"<a href=\"MedicalNote.php.html#23\">App\\Models\\MedicalNote::pet<\/a>"],[0,1,"<a href=\"MedicalRecord.php.html#27\">App\\Models\\MedicalRecord::pet<\/a>"],[0,1,"<a href=\"Message.php.html#21\">App\\Models\\Message::sender<\/a>"],[0,1,"<a href=\"Message.php.html#26\">App\\Models\\Message::recipient<\/a>"],[100,1,"<a href=\"Notification.php.html#37\">App\\Models\\Notification::user<\/a>"],[38.46153846153847,12,"<a href=\"Notification.php.html#45\">App\\Models\\Notification::getTypeDisplayAttribute<\/a>"],[100,3,"<a href=\"Notification.php.html#65\">App\\Models\\Notification::getDeliveryStatusAttribute<\/a>"],[100,3,"<a href=\"Notification.php.html#81\">App\\Models\\Notification::getEngagementStatusAttribute<\/a>"],[100,1,"<a href=\"Notification.php.html#97\">App\\Models\\Notification::scopeUnread<\/a>"],[100,1,"<a href=\"Notification.php.html#105\">App\\Models\\Notification::scopeRead<\/a>"],[100,1,"<a href=\"Notification.php.html#113\">App\\Models\\Notification::scopeDelivered<\/a>"],[100,1,"<a href=\"Notification.php.html#121\">App\\Models\\Notification::scopeFailed<\/a>"],[100,1,"<a href=\"Notification.php.html#129\">App\\Models\\Notification::scopePending<\/a>"],[100,1,"<a href=\"NotificationPreference.php.html#28\">App\\Models\\NotificationPreference::user<\/a>"],[100,1,"<a href=\"NotificationPreference.php.html#36\">App\\Models\\NotificationPreference::getPreference<\/a>"],[100,3,"<a href=\"NotificationPreference.php.html#53\">App\\Models\\NotificationPreference::updatePreference<\/a>"],[100,2,"<a href=\"NotificationPreference.php.html#71\">App\\Models\\NotificationPreference::isEmailEnabled<\/a>"],[100,2,"<a href=\"NotificationPreference.php.html#83\">App\\Models\\NotificationPreference::isInAppEnabled<\/a>"],[100,3,"<a href=\"NotificationPreference.php.html#95\">App\\Models\\NotificationPreference::getAllForUser<\/a>"],[100,1,"<a href=\"NotificationPreference.php.html#114\">App\\Models\\NotificationPreference::scopeForUser<\/a>"],[100,1,"<a href=\"NotificationPreference.php.html#122\">App\\Models\\NotificationPreference::scopeForType<\/a>"],[100,1,"<a href=\"NotificationPreference.php.html#130\">App\\Models\\NotificationPreference::hasEmailEnabled<\/a>"],[100,1,"<a href=\"NotificationPreference.php.html#138\">App\\Models\\NotificationPreference::hasInAppEnabled<\/a>"],[0,1,"<a href=\"OwnershipHistory.php.html#27\">App\\Models\\OwnershipHistory::pet<\/a>"],[0,1,"<a href=\"OwnershipHistory.php.html#32\">App\\Models\\OwnershipHistory::user<\/a>"],[0,1,"<a href=\"OwnershipTransfer.php.html#22\">App\\Models\\OwnershipTransfer::pet<\/a>"],[0,1,"<a href=\"OwnershipTransfer.php.html#27\">App\\Models\\OwnershipTransfer::fromUser<\/a>"],[0,1,"<a href=\"OwnershipTransfer.php.html#32\">App\\Models\\OwnershipTransfer::toUser<\/a>"],[0,1,"<a href=\"OwnershipTransfer.php.html#37\">App\\Models\\OwnershipTransfer::transferRequest<\/a>"],[100,1,"<a href=\"Pet.php.html#44\">App\\Models\\Pet::booted<\/a>"],[75,2,"<a href=\"Pet.php.html#54\">App\\Models\\Pet::delete<\/a>"],[100,1,"<a href=\"Pet.php.html#68\">App\\Models\\Pet::petType<\/a>"],[100,1,"<a href=\"Pet.php.html#76\">App\\Models\\Pet::user<\/a>"],[100,1,"<a href=\"Pet.php.html#84\">App\\Models\\Pet::photo<\/a>"],[100,1,"<a href=\"Pet.php.html#92\">App\\Models\\Pet::photos<\/a>"],[100,2,"<a href=\"Pet.php.html#100\">App\\Models\\Pet::getPhotoUrlAttribute<\/a>"],[0,1,"<a href=\"Pet.php.html#112\">App\\Models\\Pet::medicalRecords<\/a>"],[100,1,"<a href=\"Pet.php.html#120\">App\\Models\\Pet::weightHistories<\/a>"],[100,1,"<a href=\"Pet.php.html#128\">App\\Models\\Pet::medicalNotes<\/a>"],[100,1,"<a href=\"Pet.php.html#136\">App\\Models\\Pet::vaccinations<\/a>"],[100,1,"<a href=\"Pet.php.html#144\">App\\Models\\Pet::microchips<\/a>"],[0,1,"<a href=\"Pet.php.html#152\">App\\Models\\Pet::comments<\/a>"],[100,1,"<a href=\"Pet.php.html#160\">App\\Models\\Pet::placementRequests<\/a>"],[0,1,"<a href=\"Pet.php.html#168\">App\\Models\\Pet::ownershipHistory<\/a>"],[0,1,"<a href=\"Pet.php.html#176\">App\\Models\\Pet::fosterAssignments<\/a>"],[100,1,"<a href=\"Pet.php.html#184\">App\\Models\\Pet::activeFosterAssignment<\/a>"],[0,1,"<a href=\"PetComment.php.html#19\">App\\Models\\PetComment::user<\/a>"],[0,1,"<a href=\"PetComment.php.html#24\">App\\Models\\PetComment::pet<\/a>"],[0,1,"<a href=\"PetMicrochip.php.html#24\">App\\Models\\PetMicrochip::pet<\/a>"],[0,1,"<a href=\"PetPhoto.php.html#19\">App\\Models\\PetPhoto::pet<\/a>"],[88.88888888888889,3,"<a href=\"PetType.php.html#43\">App\\Models\\PetType::boot<\/a>"],[0,1,"<a href=\"PetType.php.html#65\">App\\Models\\PetType::pets<\/a>"],[100,1,"<a href=\"PetType.php.html#73\">App\\Models\\PetType::scopeActive<\/a>"],[100,1,"<a href=\"PetType.php.html#81\">App\\Models\\PetType::scopeOrdered<\/a>"],[100,1,"<a href=\"PlacementRequest.php.html#36\">App\\Models\\PlacementRequest::pet<\/a>"],[0,1,"<a href=\"PlacementRequest.php.html#43\">App\\Models\\PlacementRequest::user<\/a>"],[100,1,"<a href=\"PlacementRequest.php.html#48\">App\\Models\\PlacementRequest::transferRequests<\/a>"],[0,1,"<a href=\"PlacementRequest.php.html#56\">App\\Models\\PlacementRequest::getResponseCountAttribute<\/a>"],[100,1,"<a href=\"Review.php.html#34\">App\\Models\\Review::reviewer<\/a>"],[100,1,"<a href=\"Review.php.html#39\">App\\Models\\Review::reviewed<\/a>"],[0,1,"<a href=\"Review.php.html#44\">App\\Models\\Review::moderator<\/a>"],[0,1,"<a href=\"Review.php.html#49\">App\\Models\\Review::transfer<\/a>"],[100,2,"<a href=\"Settings.php.html#15\">App\\Models\\Settings::get<\/a>"],[100,1,"<a href=\"Settings.php.html#28\">App\\Models\\Settings::set<\/a>"],[100,2,"<a href=\"Settings.php.html#42\">App\\Models\\Settings::toggle<\/a>"],[100,1,"<a href=\"Settings.php.html#55\">App\\Models\\Settings::isInviteOnlyEnabled<\/a>"],[100,2,"<a href=\"Settings.php.html#63\">App\\Models\\Settings::setInviteOnlyEnabled<\/a>"],[100,1,"<a href=\"TransferHandover.php.html#60\">App\\Models\\TransferHandover::transferRequest<\/a>"],[0,1,"<a href=\"TransferHandover.php.html#65\">App\\Models\\TransferHandover::owner<\/a>"],[0,1,"<a href=\"TransferHandover.php.html#70\">App\\Models\\TransferHandover::helper<\/a>"],[100,1,"<a href=\"TransferRequest.php.html#33\">App\\Models\\TransferRequest::pet<\/a>"],[0,1,"<a href=\"TransferRequest.php.html#38\">App\\Models\\TransferRequest::initiator<\/a>"],[0,1,"<a href=\"TransferRequest.php.html#43\">App\\Models\\TransferRequest::recipient<\/a>"],[100,1,"<a href=\"TransferRequest.php.html#48\">App\\Models\\TransferRequest::requester<\/a>"],[100,1,"<a href=\"TransferRequest.php.html#53\">App\\Models\\TransferRequest::helperProfile<\/a>"],[100,1,"<a href=\"TransferRequest.php.html#58\">App\\Models\\TransferRequest::placementRequest<\/a>"],[100,1,"<a href=\"TransferRequest.php.html#63\">App\\Models\\TransferRequest::transferHandover<\/a>"],[100,1,"<a href=\"User.php.html#48\">App\\Models\\User::casts<\/a>"],[100,1,"<a href=\"User.php.html#56\">App\\Models\\User::helperProfiles<\/a>"],[0,1,"<a href=\"User.php.html#61\">App\\Models\\User::reviewsGiven<\/a>"],[0,1,"<a href=\"User.php.html#66\">App\\Models\\User::reviewsBeingReviewed<\/a>"],[0,1,"<a href=\"User.php.html#72\">App\\Models\\User::pets<\/a>"],[0,1,"<a href=\"User.php.html#77\">App\\Models\\User::ownershipHistory<\/a>"],[100,1,"<a href=\"User.php.html#82\">App\\Models\\User::notifications<\/a>"],[100,1,"<a href=\"User.php.html#87\">App\\Models\\User::notificationPreferences<\/a>"],[100,1,"<a href=\"User.php.html#95\">App\\Models\\User::sentInvitations<\/a>"],[0,1,"<a href=\"User.php.html#103\">App\\Models\\User::receivedInvitations<\/a>"],[100,1,"<a href=\"User.php.html#111\">App\\Models\\User::canAccessPanel<\/a>"],[0,1,"<a href=\"User.php.html#121\">App\\Models\\User::canImpersonate<\/a>"],[0,1,"<a href=\"User.php.html#130\">App\\Models\\User::canBeImpersonated<\/a>"],[0,1,"<a href=\"User.php.html#142\">App\\Models\\User::sendPasswordResetNotification<\/a>"],[100,1,"<a href=\"VaccinationRecord.php.html#28\">App\\Models\\VaccinationRecord::pet<\/a>"],[100,1,"<a href=\"WaitlistEntry.php.html#26\">App\\Models\\WaitlistEntry::markAsInvited<\/a>"],[100,1,"<a href=\"WaitlistEntry.php.html#37\">App\\Models\\WaitlistEntry::scopePending<\/a>"],[100,1,"<a href=\"WaitlistEntry.php.html#45\">App\\Models\\WaitlistEntry::scopeInvited<\/a>"],[100,1,"<a href=\"WaitlistEntry.php.html#53\">App\\Models\\WaitlistEntry::isEmailOnWaitlist<\/a>"],[100,1,"<a href=\"WaitlistEntry.php.html#61\">App\\Models\\WaitlistEntry::getPendingEntries<\/a>"],[100,1,"<a href=\"WaitlistEntry.php.html#69\">App\\Models\\WaitlistEntry::validationRules<\/a>"],[0,1,"<a href=\"WeightHistory.php.html#24\">App\\Models\\WeightHistory::pet<\/a>"]], 'Method Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getComplexityData(data, label) {
+    var values = [];
+    $.each(data, function(key) {
+      var value = Math.round(data[key][0]*100) / 100;
+      values.push({
+        x: value,
+        y: data[key][1],
+        class: data[key][2],
+        size: 0.05,
+        shape: 'diamond'
+      });
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+});
+  </script>
+ </body>
+</html>

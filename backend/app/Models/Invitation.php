@@ -110,10 +110,10 @@ class Invitation extends Model
     public function scopeExpired($query)
     {
         return $query->where('status', 'expired')
-                    ->orWhere(function ($query) {
-                        $query->where('expires_at', '<', now())
-                              ->where('status', 'pending');
-                    });
+            ->orWhere(function ($query) {
+                $query->where('expires_at', '<', now())
+                    ->where('status', 'pending');
+            });
     }
 
     /**

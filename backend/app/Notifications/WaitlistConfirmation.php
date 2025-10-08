@@ -39,7 +39,7 @@ class WaitlistConfirmation extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $appName = config('app.name', 'Our Platform');
-        
+
         return (new MailMessage())
             ->subject("You're on the waitlist for {$appName}!")
             ->markdown('emails.waitlist-confirmation', [
@@ -58,7 +58,7 @@ class WaitlistConfirmation extends Notification implements ShouldQueue
             'waitlistEntry' => $waitlistEntry,
         ], function ($message) use ($email, $appName) {
             $message->to($email)
-                    ->subject("You're on the waitlist for {$appName}!");
+                ->subject("You're on the waitlist for {$appName}!");
         });
     }
 

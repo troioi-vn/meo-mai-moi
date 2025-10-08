@@ -69,7 +69,6 @@ class EmailConfigurationService
             ]);
 
             return $emailConfig;
-
         } catch (\App\Exceptions\EmailConfigurationException $e) {
             Log::error('Email configuration setup failed', [
                 'provider' => $provider,
@@ -179,14 +178,12 @@ class EmailConfigurationService
                     'success' => true,
                     'message' => 'Test email sent successfully',
                 ];
-
             } catch (Exception $e) {
                 // Restore original configuration in case of error
                 Config::set('mail', $originalConfig);
                 app('mail.manager')->purge();
                 throw $e;
             }
-
         } catch (Exception $e) {
             $errorType = $this->categorizeEmailError($e);
 
@@ -296,7 +293,6 @@ class EmailConfigurationService
                 'provider' => $activeConfig->provider,
                 'from_address' => $mailConfig['from']['address'] ?? 'not set',
             ]);
-
         } catch (Exception $e) {
             Log::error('Failed to update mail configuration', [
                 'error' => $e->getMessage(),

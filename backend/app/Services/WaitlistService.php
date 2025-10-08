@@ -175,7 +175,7 @@ class WaitlistService
             return 0.0;
         }
 
-        return round(($invited / $total) * 100, 2);
+        return round($invited / $total * 100, 2);
     }
 
     /**

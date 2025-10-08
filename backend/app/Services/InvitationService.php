@@ -186,6 +186,6 @@ class InvitationService
             return 0.0;
         }
 
-        return round(($accepted / $total) * 100, 2);
+        return round($accepted / $total * 100, 2);
     }
 }

@@ -103,7 +103,7 @@ class DemoInviteSystem extends Command
             $settingsService->isInviteOnlyEnabled();
         }
         $end = microtime(true);
-        $avgTime = round((($end - $start) * 1000) / 100, 3);
+        $avgTime = round(($end - $start) * 1000 / 100, 3);
         $this->line("   ✅ Settings cache: {$avgTime}ms per request (100 requests)");
 
         // Email System Test

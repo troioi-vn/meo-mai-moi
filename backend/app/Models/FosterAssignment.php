@@ -66,7 +66,7 @@ class FosterAssignment extends Model
 
         $endDate = $this->completed_at ?? $this->canceled_at ?? now();
 
-        return $this->start_date->diffInDays($endDate);
+        return (int) $this->start_date->diffInDays($endDate);
     }
 
     public function getDaysRemainingAttribute(): ?int
@@ -75,7 +75,7 @@ class FosterAssignment extends Model
             return null;
         }
 
-        return now()->diffInDays($this->expected_end_date, false);
+        return (int) now()->diffInDays($this->expected_end_date, false);
     }
 
     public function getIsOverdueAttribute(): bool

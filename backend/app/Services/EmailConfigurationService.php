@@ -3,14 +3,19 @@
 namespace App\Services;
 
 use App\Models\EmailConfiguration;
+use App\Services\EmailConfiguration\ConfigurationTester;
 use Exception;
-use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class EmailConfigurationService
 {
+    private ConfigurationTester $tester;
+
+    public function __construct(?ConfigurationTester $tester = null)
+    {
+        $this->tester = $tester ?? new ConfigurationTester();
+    }
     /**
      * Get the currently active email configuration.
      */
@@ -104,151 +109,10 @@ class EmailConfigurationService
      */
     public function testConfigurationWithDetails(?string $provider = null, ?array $config = null): array
     {
-        try {
-            // If no parameters provided, test the active configuration
-            if ($provider === null || $config === null) {
-                $activeConfig = $this->getActiveConfiguration();
-                if (! $activeConfig) {
-                    return [
-                        'success' => false,
-                        'error' => 'No active email configuration found',
-                        'error_type' => 'configuration_missing',
-                    ];
-                }
-                $provider = $activeConfig->provider;
-                $config = $activeConfig->config;
-            }
-
-            // Create a temporary EmailConfiguration instance for testing
-            $testConfig = new EmailConfiguration([
-                'provider' => $provider,
-                'config' => $config,
-            ]);
-
-            // Validate configuration first
-            $validationErrors = $testConfig->validateConfig();
-            if ($validationErrors) {
-                return [
-                    'success' => false,
-                    'error' => 'Configuration validation failed: '.implode(', ', $validationErrors),
-                    'error_type' => 'validation_failed',
-                    'validation_errors' => $validationErrors,
-                ];
-            }
-
-            // Get mail configuration
-            $mailConfig = $testConfig->getMailConfig();
-            $fromConfig = $testConfig->getFromAddress();
-
-            // Temporarily update mail configuration for testing
-            $originalConfig = config('mail');
-
-            try {
-                // Set up test mail configuration
-                Config::set('mail.default', $provider);
-                Config::set("mail.mailers.{$provider}", $mailConfig['mailers'][$provider] ?? $mailConfig['mailers'][array_key_first($mailConfig['mailers'])]);
-                Config::set('mail.from', $fromConfig);
-
-                // Set services config for Mailgun
-                if (isset($mailConfig['services'])) {
-                    foreach ($mailConfig['services'] as $serviceName => $serviceConfig) {
-                        Config::set("services.{$serviceName}", $serviceConfig);
-                    }
-                }
-
-                // Purge the mail manager to force reconfiguration
-                app('mail.manager')->purge();
-
-                // Attempt to send a test email to the from address
-                Mail::raw('This is a test email to verify your email configuration.', function (Message $message) use ($fromConfig) {
-                    $message->to($fromConfig['address'])
-                        ->subject('Email Configuration Test - '.config('app.name'));
-                });
-
-                // Restore original configuration
-                Config::set('mail', $originalConfig);
-                app('mail.manager')->purge();
-
-                Log::info('Email configuration test successful', [
-                    'provider' => $provider,
-                    'from_address' => $fromConfig['address'],
-                ]);
-
-                return [
-                    'success' => true,
-                    'message' => 'Test email sent successfully',
-                ];
-            } catch (Exception $e) {
-                // Restore original configuration in case of error
-                Config::set('mail', $originalConfig);
-                app('mail.manager')->purge();
-                throw $e;
-            }
-        } catch (Exception $e) {
-            $errorType = $this->categorizeEmailError($e);
-
-            Log::error('Email configuration test failed', [
-                'provider' => $provider,
-                'error' => $e->getMessage(),
-                'error_type' => $errorType,
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return [
-                'success' => false,
-                'error' => $this->getUserFriendlyErrorMessage($e, $provider),
-                'error_type' => $errorType,
-                'technical_error' => $e->getMessage(),
-            ];
-        }
+        return $this->tester->testConfiguration($provider, $config);
     }
 
-    /**
-     * Categorize email errors for better handling.
-     */
-    private function categorizeEmailError(Exception $e): string
-    {
-        $message = strtolower($e->getMessage());
 
-        if (str_contains($message, 'connection') || str_contains($message, 'timeout')) {
-            return 'connection_failed';
-        }
-
-        if (str_contains($message, 'authentication') || str_contains($message, 'login') || str_contains($message, 'password')) {
-            return 'authentication_failed';
-        }
-
-        if (str_contains($message, 'ssl') || str_contains($message, 'tls') || str_contains($message, 'certificate')) {
-            return 'ssl_error';
-        }
-
-        if (str_contains($message, 'mailgun') && str_contains($message, 'unauthorized')) {
-            return 'mailgun_auth_failed';
-        }
-
-        if (str_contains($message, 'mailgun') && str_contains($message, 'domain')) {
-            return 'mailgun_domain_error';
-        }
-
-        return 'unknown_error';
-    }
-
-    /**
-     * Get user-friendly error messages based on error type.
-     */
-    private function getUserFriendlyErrorMessage(Exception $e, ?string $provider): string
-    {
-        $errorType = $this->categorizeEmailError($e);
-
-        return match ($errorType) {
-            'connection_failed' => "Unable to connect to the {$provider} server. Please check your host and port settings.",
-            'authentication_failed' => 'Authentication failed. Please verify your username and password are correct.',
-            'ssl_error' => 'SSL/TLS connection error. Please check your encryption settings and server certificates.',
-            'mailgun_auth_failed' => 'Mailgun authentication failed. Please verify your API key is correct and active.',
-            'mailgun_domain_error' => 'Mailgun domain error. Please verify your domain is correctly configured in Mailgun.',
-            default => 'Email configuration test failed: '.$e->getMessage()
-        };
-    }
 
     /**
      * Update Laravel's mail configuration with the active email configuration.

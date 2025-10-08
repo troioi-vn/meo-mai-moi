@@ -222,3 +222,80 @@ Current baseline is solid (all categories 75+). Focus on:
 4. Use as pre-commit gate once stable
 
 ---
+
+## Frontend Quality Gates
+
+### ESLint & TypeScript Strict Mode
+
+**Current Configuration:**
+- ESLint: `strictTypeChecked` + `stylisticTypeChecked` (0 violations)
+- TypeScript: `strict: true` + `noUncheckedIndexedAccess: true`
+
+**Run checks:**
+```bash
+cd frontend
+npm run lint          # ESLint with caching
+npm run typecheck     # TypeScript compilation check
+```
+
+**What's enforced:**
+- Type safety (no implicit any, strict null checks)
+- Array access returns `T | undefined` (prevents index out-of-bounds bugs)
+- React hooks rules (exhaustive deps, no conditional hooks)
+- Modern React patterns (no deprecated APIs)
+
+**Test file relaxation:**
+Test and mock files have relaxed rules for readability:
+- Allow `any` types
+- Allow unsafe assignments
+- Skip exhaustive awaits
+- Relax template expression restrictions
+
+### dependency-cruiser (Architecture Rules)
+
+**Current Rules:**
+- **no-pages-to-pages** (warn): Pages shouldn't import other pages directly (except tests)
+- **no-api-dep-on-ui** (error): API layer must stay isolated from UI components
+
+**Baseline:** 0 violations (199 modules, 455 dependencies analyzed)
+
+**Run analysis:**
+```bash
+cd frontend
+npm run lint:deps
+```
+
+**Configuration:** `frontend/.dependency-cruiser.cjs`
+
+**Why these rules:**
+- Pages are route entry points, not reusable components
+- API layer independence enables future backend swaps
+- Prevents circular dependencies
+- Enforces unidirectional data flow
+
+### ts-prune (Dead Code Detection)
+
+**Baseline:** 89 findings (mix of intentionally exposed exports + potential dead code)
+
+**Run scan:**
+```bash
+cd frontend
+npm run lint:dead
+```
+
+**Interpreting output:**
+- `(used in module)` - Exported but only used internally (often fine)
+- No marker - Potentially unused export (review candidates)
+
+**Strategy:**
+1. Review unmarked exports quarterly
+2. Don't auto-remove `(used in module)` items (may be intentional API surface)
+3. Prioritize removing unused utility functions before components
+4. Use as informational tool, not CI blocker initially
+
+**Note:** Some "unused" exports are intentional:
+- Public API surface for future features
+- Type exports for consumers
+- Utility functions in shared modules
+
+---

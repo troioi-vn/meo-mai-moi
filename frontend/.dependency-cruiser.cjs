@@ -4,7 +4,10 @@ module.exports = {
       name: 'no-pages-to-pages',
       comment: 'Pages should not import other pages directly.',
       severity: 'warn',
-      from: { path: 'src/pages' },
+      from: { 
+        path: 'src/pages',
+        pathNot: '\\.test\\.(ts|tsx)$'
+      },
       to: { path: 'src/pages', pathNot: 'src/pages/[^/]*/index' }
     },
     {

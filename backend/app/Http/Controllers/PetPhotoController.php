@@ -98,7 +98,7 @@ class PetPhotoController extends Controller
         $path = $this->fileUploadService->uploadPetPhoto($file, $pet);
         $filename = basename($path);
 
-        $photo = $pet->photos()->create([
+        $pet->photos()->create([
             'path' => $path,
             'pet_id' => $pet->id,
             'filename' => $filename,

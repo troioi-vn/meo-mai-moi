@@ -46,7 +46,7 @@ class PetType extends Model
 
         // Auto-generate slug from name if not provided
         static::creating(function ($petType) {
-            if (empty($petType->slug)) {
+            if (! $petType->slug) {
                 $petType->slug = Str::slug($petType->name);
             }
 

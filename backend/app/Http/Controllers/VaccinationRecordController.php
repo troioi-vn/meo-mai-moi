@@ -57,10 +57,14 @@ class VaccinationRecordController extends Controller
     public function index(Request $request, Pet $pet)
     {
         $user = $request->user();
-        if (! $user) return $this->sendError('Unauthenticated.', 401);
+        if (! $user) {
+            return $this->sendError('Unauthenticated.', 401);
+        }
         $isOwner = $user->id === $pet->user_id;
         $isAdmin = method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
-        if (! $isOwner && ! $isAdmin) return $this->sendError('Forbidden.', 403);
+        if (! $isOwner && ! $isAdmin) {
+            return $this->sendError('Forbidden.', 403);
+        }
 
         PetCapabilityService::ensure($pet, 'vaccinations');
 
@@ -110,10 +114,14 @@ class VaccinationRecordController extends Controller
     public function store(Request $request, Pet $pet)
     {
         $user = $request->user();
-        if (! $user) return $this->sendError('Unauthenticated.', 401);
+        if (! $user) {
+            return $this->sendError('Unauthenticated.', 401);
+        }
         $isOwner = $user->id === $pet->user_id;
         $isAdmin = method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
-        if (! $isOwner && ! $isAdmin) return $this->sendError('Forbidden.', 403);
+        if (! $isOwner && ! $isAdmin) {
+            return $this->sendError('Forbidden.', 403);
+        }
 
         PetCapabilityService::ensure($pet, 'vaccinations');
 
@@ -156,13 +164,19 @@ class VaccinationRecordController extends Controller
     public function show(Request $request, Pet $pet, VaccinationRecord $record)
     {
         $user = $request->user();
-        if (! $user) return $this->sendError('Unauthenticated.', 401);
+        if (! $user) {
+            return $this->sendError('Unauthenticated.', 401);
+        }
         $isOwner = $user->id === $pet->user_id;
         $isAdmin = method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
-        if (! $isOwner && ! $isAdmin) return $this->sendError('Forbidden.', 403);
+        if (! $isOwner && ! $isAdmin) {
+            return $this->sendError('Forbidden.', 403);
+        }
         PetCapabilityService::ensure($pet, 'vaccinations');
 
-        if ($record->pet_id !== $pet->id) return $this->sendError('Not found.', 404);
+        if ($record->pet_id !== $pet->id) {
+            return $this->sendError('Not found.', 404);
+        }
         return $this->sendSuccess($record);
     }
 
@@ -190,12 +204,18 @@ class VaccinationRecordController extends Controller
     public function update(Request $request, Pet $pet, VaccinationRecord $record)
     {
         $user = $request->user();
-        if (! $user) return $this->sendError('Unauthenticated.', 401);
+        if (! $user) {
+            return $this->sendError('Unauthenticated.', 401);
+        }
         $isOwner = $user->id === $pet->user_id;
         $isAdmin = method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
-        if (! $isOwner && ! $isAdmin) return $this->sendError('Forbidden.', 403);
+        if (! $isOwner && ! $isAdmin) {
+            return $this->sendError('Forbidden.', 403);
+        }
         PetCapabilityService::ensure($pet, 'vaccinations');
-        if ($record->pet_id !== $pet->id) return $this->sendError('Not found.', 404);
+        if ($record->pet_id !== $pet->id) {
+            return $this->sendError('Not found.', 404);
+        }
 
         $validated = $request->validate([
             'vaccine_name' => 'sometimes|string',
@@ -239,12 +259,18 @@ class VaccinationRecordController extends Controller
     public function destroy(Request $request, Pet $pet, VaccinationRecord $record)
     {
         $user = $request->user();
-        if (! $user) return $this->sendError('Unauthenticated.', 401);
+        if (! $user) {
+            return $this->sendError('Unauthenticated.', 401);
+        }
         $isOwner = $user->id === $pet->user_id;
         $isAdmin = method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
-        if (! $isOwner && ! $isAdmin) return $this->sendError('Forbidden.', 403);
+        if (! $isOwner && ! $isAdmin) {
+            return $this->sendError('Forbidden.', 403);
+        }
         PetCapabilityService::ensure($pet, 'vaccinations');
-        if ($record->pet_id !== $pet->id) return $this->sendError('Not found.', 404);
+        if ($record->pet_id !== $pet->id) {
+            return $this->sendError('Not found.', 404);
+        }
         $record->delete();
         return response()->json(['data' => true]);
     }

@@ -6,7 +6,7 @@ use App\Mail\PasswordResetMail;
 use App\Models\EmailLog;
 use App\Services\EmailConfigurationService;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
+
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 

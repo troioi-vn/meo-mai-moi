@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\Invitation;
 use App\Models\User;
-use App\Notifications\InvitationSent;
+
 use App\Notifications\InvitationToEmail;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
@@ -62,11 +62,11 @@ class InvitationService
     {
         $invitation = Invitation::where('code', $code)->first();
 
-        if (!$invitation) {
+        if (! $invitation) {
             return null;
         }
 
-        if (!$invitation->isValid()) {
+        if (! $invitation->isValid()) {
             return null;
         }
 
@@ -81,7 +81,7 @@ class InvitationService
         return DB::transaction(function () use ($code, $user) {
             $invitation = $this->validateInvitationCode($code);
 
-            if (!$invitation) {
+            if (! $invitation) {
                 return false;
             }
 
@@ -112,7 +112,7 @@ class InvitationService
             ->where('status', 'pending')
             ->first();
 
-        if (!$invitation) {
+        if (! $invitation) {
             return false;
         }
 

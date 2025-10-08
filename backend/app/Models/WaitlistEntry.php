@@ -13,7 +13,7 @@ class WaitlistEntry extends Model
     protected $fillable = [
         'email',
         'status',
-        'invited_at'
+        'invited_at',
     ];
 
     protected $casts = [

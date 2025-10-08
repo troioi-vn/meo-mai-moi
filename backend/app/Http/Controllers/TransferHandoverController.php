@@ -62,7 +62,6 @@ class TransferHandoverController extends Controller
      */
     public function store(Request $request, TransferRequest $transferRequest)
     {
-        $user = $request->user();
         $this->authorize('accept', $transferRequest); // owner initiates handover for an accepted request
 
         if ($transferRequest->status !== 'accepted') {
@@ -195,7 +194,7 @@ class TransferHandoverController extends Controller
                 if ($closed === 0) {
                     // No open record to close; create a backfilled one starting from earliest known timestamp
                     $from = optional($tr->pet)->created_at ?? (optional($tr->placementRequest)->created_at ?? now());
-                    $backfilled = OwnershipHistory::create([
+                    OwnershipHistory::create([
                         'pet_id' => $tr->pet_id,
                         'user_id' => $tr->recipient_user_id,
                         'from_ts' => $from,

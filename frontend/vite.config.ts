@@ -40,8 +40,14 @@ export default defineConfig(({ mode }) => ({
     css: false,
     testTimeout: 30000,
     // Make test output much more concise
-    reporter: 'basic',
-    outputFile: false,
+    reporters: [
+      [
+        'default',
+        {
+          summary: false,
+        },
+      ],
+    ],
     silent: false,
     // Reduce DOM output in test failures
     onConsoleLog: () => false,

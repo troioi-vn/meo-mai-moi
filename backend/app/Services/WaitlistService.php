@@ -111,27 +111,53 @@ class WaitlistService
 
         DB::transaction(function () use ($emails, $inviter, &$results) {
             foreach ($emails as $email) {
-                try {
-                    $invitation = $this->inviteFromWaitlist($email, $inviter);
-                    $result = [
-                        'email' => $email,
-                        'success' => $invitation !== null,
-                    ];
-                    if ($invitation) {
-                        $result['invitation'] = $invitation;
-                    }
-                    $results[] = $result;
-                } catch (\Exception $e) {
-                    $results[] = [
-                        'email' => $email,
-                        'success' => false,
-                        'error' => $e->getMessage(),
-                    ];
-                }
+                $results[] = $this->processWaitlistInvitation($email, $inviter);
             }
         });
 
         return $results;
+    }
+
+    /**
+     * Process a single waitlist invitation.
+     */
+    private function processWaitlistInvitation(string $email, User $inviter): array
+    {
+        try {
+            $invitation = $this->inviteFromWaitlist($email, $inviter);
+            return $this->buildInvitationResult($email, $invitation);
+        } catch (\Exception $e) {
+            return $this->buildInvitationError($email, $e);
+        }
+    }
+
+    /**
+     * Build successful invitation result.
+     */
+    private function buildInvitationResult(string $email, $invitation): array
+    {
+        $result = [
+            'email' => $email,
+            'success' => $invitation !== null,
+        ];
+
+        if ($invitation) {
+            $result['invitation'] = $invitation;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Build invitation error result.
+     */
+    private function buildInvitationError(string $email, \Exception $e): array
+    {
+        return [
+            'email' => $email,
+            'success' => false,
+            'error' => $e->getMessage(),
+        ];
     }
 
     /**

@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Services\InvitationService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesValidation;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class InvitationController extends Controller
 {
-    use ApiResponseTrait;
+    use ApiResponseTrait, HandlesAuthentication, HandlesValidation;
 
     private InvitationService $invitationService;
 
@@ -143,9 +145,9 @@ class InvitationController extends Controller
             );
         }
 
-        $request->validate([
-            'email' => 'nullable|email|max:255',
-            'expires_at' => 'nullable|date|after:now'
+        $this->validateWithErrorHandling($request, [
+            'email' => $this->emailValidationRules(false),
+            'expires_at' => ['nullable', 'date', 'after:now'],
         ]);
 
         try {
@@ -259,8 +261,8 @@ class InvitationController extends Controller
      */
     public function validateCode(Request $request)
     {
-        $request->validate([
-            'code' => 'required|string'
+        $this->validateWithErrorHandling($request, [
+            'code' => $this->textValidationRules(),
         ]);
 
         $invitation = $this->invitationService->validateInvitationCode($request->code);

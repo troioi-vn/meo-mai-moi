@@ -6,12 +6,15 @@ use App\Models\Pet;
 use App\Services\FileUploadService;
 use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesPetResources;
+use App\Traits\HandlesValidation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class PetPhotoController extends Controller
 {
-    use ApiResponseTrait;
+    use ApiResponseTrait, HandlesAuthentication, HandlesPetResources, HandlesValidation;
 
     protected FileUploadService $fileUploadService;
 
@@ -83,13 +86,11 @@ class PetPhotoController extends Controller
      */
     public function store(Request $request, Pet $pet)
     {
-        $this->authorize('update', $pet);
+        $this->authorizeUser($request, 'update', $pet);
+        $this->ensurePetCapability($pet, 'photos');
 
-        // Ensure this pet type supports photos
-        $this->capabilityService->ensure($pet, 'photos');
-
-        $request->validate([
-            'photo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10240', // 10MB
+        $this->validateWithErrorHandling($request, [
+            'photo' => $this->imageValidationRules(),
         ]);
 
         $file = $request->file('photo');

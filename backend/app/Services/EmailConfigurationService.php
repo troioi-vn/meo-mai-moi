@@ -33,7 +33,7 @@ class EmailConfigurationService
             ]);
 
             $validationErrors = $emailConfig->validateConfig();
-            if (! empty($validationErrors)) {
+            if ($validationErrors) {
                 throw new \App\Exceptions\EmailConfigurationException(
                     'Configuration validation failed',
                     $validationErrors
@@ -127,7 +127,7 @@ class EmailConfigurationService
 
             // Validate configuration first
             $validationErrors = $testConfig->validateConfig();
-            if (! empty($validationErrors)) {
+            if ($validationErrors) {
                 return [
                     'success' => false,
                     'error' => 'Configuration validation failed: '.implode(', ', $validationErrors),

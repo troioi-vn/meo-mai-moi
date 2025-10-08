@@ -1,6 +1,6 @@
 # GEMINI.md — AI Agent Guide
 
-Concise, AI-facing guide for architecture, workflows, testing, and troubleshooting. For full developer instructions, see `docs/development.md`. For native Postgres setup, see `utils/dev-pgsql-docker/README.md`.
+Concise, AI-facing guide for architecture, workflows, testing, and troubleshooting. For full developer instructions, see `docs/development.md`.
 
 ## 1) What this app is
 
@@ -29,16 +29,10 @@ Preferred: Docker
 - First-time init: `docker compose exec backend php artisan migrate:fresh --seed && docker compose exec backend php artisan shield:generate --all && docker compose exec backend php artisan storage:link`
 - App: http://localhost:8000, Admin: http://localhost:8000/admin, Vite (optional): http://localhost:5173
 
-Native (fast loop) with Dockerized Postgres
-- Requirements: PHP 8.4+, Composer, Node 18+, PostgreSQL client tools (`psql`).
-- Start DB: `cd utils/dev-pgsql-docker && docker compose up -d`
-- Backend: `cd backend && php artisan migrate:fresh --seed && php artisan shield:generate --all && php artisan storage:link && php artisan serve`
-- Note: `php artisan serve` requires the dev Postgres container running.
-
 ## 4) Testing
 
 Backend (Pest/PHPUnit)
-- Run: `docker compose exec backend php artisan test` (or `cd backend && php artisan test` natively)
+- Run: `docker compose exec backend php artisan test`
 - With schema dumps: tests call `psql` for `RefreshDatabase`; install `postgresql-client` locally if missing.
 - Seed dependencies in tests (e.g., `PetTypeSeeder`) to avoid FK and enum gaps.
 

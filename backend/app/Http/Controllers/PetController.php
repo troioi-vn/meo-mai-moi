@@ -207,7 +207,8 @@ class PetController extends Controller
         // Resolve user from bearer token for optional-auth route if missing
         $authUser = $request->user();
         if (! $authUser && $request->bearerToken()) {
-            if ($token = PersonalAccessToken::findToken($request->bearerToken())) {
+            $token = PersonalAccessToken::findToken($request->bearerToken());
+            if ($token) {
                 $authUser = $token->tokenable;
                 $request->setUserResolver(fn () => $authUser);
             }
@@ -530,7 +531,8 @@ class PetController extends Controller
         // Resolve user from bearer token for optional-auth route if missing
         $user = $request->user();
         if (! $user && $request->bearerToken()) {
-            if ($token = PersonalAccessToken::findToken($request->bearerToken())) {
+            $token = PersonalAccessToken::findToken($request->bearerToken());
+            if ($token) {
                 $user = $token->tokenable;
                 $request->setUserResolver(fn () => $user);
             }
@@ -719,7 +721,8 @@ class PetController extends Controller
         // Resolve user from bearer token for optional-auth route if missing
         $user = $request->user();
         if (! $user && $request->bearerToken()) {
-            if ($token = PersonalAccessToken::findToken($request->bearerToken())) {
+            $token = PersonalAccessToken::findToken($request->bearerToken());
+            if ($token) {
                 $user = $token->tokenable;
                 $request->setUserResolver(fn () => $user);
             }
@@ -774,7 +777,8 @@ class PetController extends Controller
         // Resolve user from bearer token for optional-auth route if missing
         $user = $request->user();
         if (! $user && $request->bearerToken()) {
-            if ($token = PersonalAccessToken::findToken($request->bearerToken())) {
+            $token = PersonalAccessToken::findToken($request->bearerToken());
+            if ($token) {
                 $user = $token->tokenable;
                 $request->setUserResolver(fn () => $user);
             }

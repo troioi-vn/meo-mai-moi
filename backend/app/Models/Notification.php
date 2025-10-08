@@ -6,6 +6,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @method static \Illuminate\Database\Eloquent\Builder pending()
+ * @method static \Illuminate\Database\Eloquent\Builder delivered()
+ * @method static \Illuminate\Database\Eloquent\Builder failed()
+ * @method static \Illuminate\Database\Eloquent\Builder read()
+ * @method static \Illuminate\Database\Eloquent\Builder unread()
+ * @method \Illuminate\Database\Eloquent\Builder pending()
+ * @method \Illuminate\Database\Eloquent\Builder delivered()
+ * @method \Illuminate\Database\Eloquent\Builder failed()
+ * @method \Illuminate\Database\Eloquent\Builder read()
+ * @method \Illuminate\Database\Eloquent\Builder unread()
+ */
 class Notification extends Model
 {
     use HasFactory;

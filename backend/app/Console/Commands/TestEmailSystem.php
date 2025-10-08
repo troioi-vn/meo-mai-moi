@@ -67,7 +67,7 @@ class TestEmailSystem extends Command
                     'inviter' => $inviter,
                     'invitation' => $invitation,
                     'invitationUrl' => $invitation->getInvitationUrl(),
-                ], function ($message) use ($inviter) {
+                ], function ($message) {
                     $message->to('test-invite@example.com')
                             ->subject("You're invited to join " . config('app.name') . "!");
                 });

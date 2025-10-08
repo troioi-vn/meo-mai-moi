@@ -41,7 +41,7 @@ class OptionalAuth
                 $user = Auth::guard('web')->user();
             }
 
-            if ($user) {
+            if ($user && $user instanceof \Illuminate\Contracts\Auth\Authenticatable) {
                 Auth::setUser($user);
                 $request->setUserResolver(function () use ($user) {
                     return $user;

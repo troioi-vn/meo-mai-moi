@@ -35,13 +35,10 @@ class EmailFailureAnalysisWidget extends BaseWidget
                     ->colors([
                         'primary' => 'placement_request',
                         'warning' => 'transfer_request',
-                        'success' => 'transfer_accepted',
-                        'danger' => 'transfer_rejected',
+                        'success' => ['transfer_accepted', 'handover_completed', 'profile_approved'],
+                        'danger' => ['transfer_rejected', 'profile_rejected'],
                         'info' => 'handover_scheduled',
-                        'success' => 'handover_completed',
                         'secondary' => 'review_received',
-                        'success' => 'profile_approved',
-                        'danger' => 'profile_rejected',
                         'gray' => 'system_announcement',
                     ]),
 

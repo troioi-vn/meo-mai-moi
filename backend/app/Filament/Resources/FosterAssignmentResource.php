@@ -70,7 +70,7 @@ class FosterAssignmentResource extends Resource
                             ->preload()
                             ->nullable()
                             ->getOptionLabelFromRecordUsing(function ($record) {
-                                $petName = $record->placementRequest?->pet?->name ?? 'Unknown Pet';
+                                $petName = $record->placementRequest->pet->name ?? 'Unknown Pet';
 
                                 return "#{$record->id} - {$petName}";
                             }),

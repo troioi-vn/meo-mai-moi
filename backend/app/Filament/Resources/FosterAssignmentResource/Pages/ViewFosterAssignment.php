@@ -14,6 +14,11 @@ class ViewFosterAssignment extends ViewRecord
 {
     protected static string $resource = FosterAssignmentResource::class;
 
+    private function getFosterAssignment(): ?\App\Models\FosterAssignment
+    {
+        return $this->record instanceof \App\Models\FosterAssignment ? $this->record : null;
+    }
+
     protected function getHeaderActions(): array
     {
         return [
@@ -23,9 +28,13 @@ class ViewFosterAssignment extends ViewRecord
                 ->label('Mark Complete')
                 ->icon('heroicon-o-check-circle')
                 ->color('success')
-                ->visible(fn () => $this->record->status === 'active')
+                ->visible(fn () => $this->record instanceof \App\Models\FosterAssignment && $this->record->status === 'active')
                 ->requiresConfirmation()
                 ->action(function () {
+                    if (!$this->record instanceof \App\Models\FosterAssignment) {
+                        return;
+                    }
+                    
                     $this->record->update([
                         'status' => 'completed',
                         'completed_at' => now(),
@@ -38,9 +47,13 @@ class ViewFosterAssignment extends ViewRecord
                 ->label('Cancel Assignment')
                 ->icon('heroicon-o-x-circle')
                 ->color('danger')
-                ->visible(fn () => $this->record->status === 'active')
+                ->visible(fn () => $this->record instanceof \App\Models\FosterAssignment && $this->record->status === 'active')
                 ->requiresConfirmation()
                 ->action(function () {
+                    if (!$this->record instanceof \App\Models\FosterAssignment) {
+                        return;
+                    }
+                    
                     $this->record->update([
                         'status' => 'canceled',
                         'canceled_at' => now(),
@@ -61,8 +74,8 @@ class ViewFosterAssignment extends ViewRecord
                             ->schema([
                                 TextEntry::make('pet.name')
                                     ->label('Pet')
-                                    ->url(fn () => $this->record->pet ? route('filament.admin.resources.pets.edit', $this->record->pet) : null)
-                                    ->description(fn () => $this->record->pet?->petType?->name),
+                                    ->url(fn () => ($assignment = $this->getFosterAssignment()) && $assignment->pet ? route('filament.admin.resources.pets.edit', $assignment->pet) : null)
+                                    ->hint(fn () => ($assignment = $this->getFosterAssignment()) ? $assignment->pet?->petType?->name : null),
 
                                 TextEntry::make('fosterer.name')
                                     ->label('Foster Parent'),
@@ -97,12 +110,12 @@ class ViewFosterAssignment extends ViewRecord
                                 TextEntry::make('completed_at')
                                     ->label('Completed At')
                                     ->dateTime()
-                                    ->visible(fn () => $this->record->completed_at),
+                                    ->visible(fn () => ($assignment = $this->getFosterAssignment()) && $assignment->completed_at),
 
                                 TextEntry::make('canceled_at')
                                     ->label('Canceled At')
                                     ->dateTime()
-                                    ->visible(fn () => $this->record->canceled_at),
+                                    ->visible(fn () => ($assignment = $this->getFosterAssignment()) && $assignment->canceled_at),
                             ]),
                     ]),
 
@@ -113,17 +126,18 @@ class ViewFosterAssignment extends ViewRecord
                                 TextEntry::make('duration')
                                     ->label('Duration')
                                     ->getStateUsing(function () {
-                                        if (! $this->record->start_date) {
+                                        $assignment = $this->getFosterAssignment();
+                                        if (!$assignment || !$assignment->start_date) {
                                             return 'Not started';
                                         }
 
-                                        $endDate = $this->record->completed_at
-                                            ? $this->record->completed_at->toDateString()
-                                            : ($this->record->canceled_at
-                                                ? $this->record->canceled_at->toDateString()
+                                        $endDate = $assignment->completed_at
+                                            ? $assignment->completed_at->toDateString()
+                                            : ($assignment->canceled_at
+                                                ? $assignment->canceled_at->toDateString()
                                                 : now()->toDateString());
 
-                                        $start = \Carbon\Carbon::parse($this->record->start_date);
+                                        $start = \Carbon\Carbon::parse($assignment->start_date);
                                         $end = \Carbon\Carbon::parse($endDate);
 
                                         return $start->diffInDays($end).' days';
@@ -132,11 +146,12 @@ class ViewFosterAssignment extends ViewRecord
                                 TextEntry::make('days_remaining')
                                     ->label('Days Remaining')
                                     ->getStateUsing(function () {
-                                        if ($this->record->status !== 'active' || ! $this->record->expected_end_date) {
+                                        $assignment = $this->getFosterAssignment();
+                                        if (!$assignment || $assignment->status !== 'active' || !$assignment->expected_end_date) {
                                             return 'N/A';
                                         }
 
-                                        $remaining = now()->diffInDays($this->record->expected_end_date, false);
+                                        $remaining = now()->diffInDays($assignment->expected_end_date, false);
 
                                         if ($remaining < 0) {
                                             return abs($remaining).' days overdue';
@@ -145,11 +160,12 @@ class ViewFosterAssignment extends ViewRecord
                                         return $remaining.' days';
                                     })
                                     ->color(function () {
-                                        if ($this->record->status !== 'active' || ! $this->record->expected_end_date) {
+                                        $assignment = $this->getFosterAssignment();
+                                        if (!$assignment || $assignment->status !== 'active' || !$assignment->expected_end_date) {
                                             return 'secondary';
                                         }
 
-                                        $remaining = now()->diffInDays($this->record->expected_end_date, false);
+                                        $remaining = now()->diffInDays($assignment->expected_end_date, false);
 
                                         if ($remaining < 0) {
                                             return 'danger';
@@ -162,8 +178,8 @@ class ViewFosterAssignment extends ViewRecord
 
                                 TextEntry::make('transfer_request.id')
                                     ->label('Related Transfer Request')
-                                    ->url(fn () => $this->record->transferRequest ? route('filament.admin.resources.transfer-requests.view', $this->record->transferRequest) : null)
-                                    ->visible(fn () => $this->record->transfer_request_id),
+                                    ->url(fn () => ($assignment = $this->getFosterAssignment()) && $assignment->transferRequest ? route('filament.admin.resources.transfer-requests.view', $assignment->transferRequest) : null)
+                                    ->visible(fn () => ($assignment = $this->getFosterAssignment()) && $assignment->transfer_request_id),
                             ]),
                     ]),
 

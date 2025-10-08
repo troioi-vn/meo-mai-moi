@@ -292,6 +292,7 @@ class HelperProfileResource extends Resource
                         ->modalHeading('Approve Helper Profiles')
                         ->modalDescription('Are you sure you want to approve the selected helper profiles?')
                         ->action(function (Collection $records): void {
+                            /** @var Collection<int, HelperProfile> $records */
                             $count = $records->where('approval_status', 'pending')->count();
 
                             $records->where('approval_status', 'pending')
@@ -311,6 +312,7 @@ class HelperProfileResource extends Resource
                         ->modalHeading('Reject Helper Profiles')
                         ->modalDescription('Are you sure you want to reject the selected helper profiles?')
                         ->action(function (Collection $records): void {
+                            /** @var Collection<int, HelperProfile> $records */
                             $count = $records->where('approval_status', 'pending')->count();
 
                             $records->where('approval_status', 'pending')
@@ -330,6 +332,7 @@ class HelperProfileResource extends Resource
                         ->modalHeading('Suspend Helper Profiles')
                         ->modalDescription('Are you sure you want to suspend the selected helper profiles?')
                         ->action(function (Collection $records): void {
+                            /** @var Collection<int, HelperProfile> $records */
                             $count = $records->where('approval_status', 'approved')->count();
 
                             $records->where('approval_status', 'approved')

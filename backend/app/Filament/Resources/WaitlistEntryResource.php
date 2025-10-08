@@ -171,10 +171,11 @@ class WaitlistEntryResource extends Resource
                         ->icon('heroicon-o-paper-airplane')
                         ->color('success')
                         ->action(function (Collection $records): void {
+                            /** @var Collection<int, \App\Models\WaitlistEntry> $records */
                             $waitlistService = app(WaitlistService::class);
                             $user = auth()->user();
 
-                            $pendingRecords = $records->filter(fn (WaitlistEntry $record) => $record->status === 'pending');
+                            $pendingRecords = $records->filter(fn (\App\Models\WaitlistEntry $record) => $record->status === 'pending');
                             $emails = $pendingRecords->pluck('email')->toArray();
 
                             if (empty($emails)) {

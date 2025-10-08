@@ -297,7 +297,8 @@ class ReviewResource extends Resource
                         ->color('warning')
                         ->requiresConfirmation()
                         ->action(function (Collection $records): void {
-                            $records->each(function (Review $record): void {
+                            /** @var Collection<int, \App\Models\Review> $records */
+                            $records->each(function (\App\Models\Review $record): void {
                                 $record->update([
                                     'status' => 'hidden',
                                     'moderated_by' => Auth::id(),
@@ -312,7 +313,8 @@ class ReviewResource extends Resource
                         ->color('success')
                         ->requiresConfirmation()
                         ->action(function (Collection $records): void {
-                            $records->each(function (Review $record): void {
+                            /** @var Collection<int, \App\Models\Review> $records */
+                            $records->each(function (\App\Models\Review $record): void {
                                 $record->update([
                                     'status' => 'active',
                                     'moderated_by' => Auth::id(),
@@ -331,7 +333,8 @@ class ReviewResource extends Resource
                                 ->required(),
                         ])
                         ->action(function (Collection $records, array $data): void {
-                            $records->each(function (Review $record) use ($data): void {
+                            /** @var Collection<int, \App\Models\Review> $records */
+                            $records->each(function (\App\Models\Review $record) use ($data): void {
                                 $record->update([
                                     'is_flagged' => true,
                                     'flagged_at' => now(),
@@ -347,7 +350,8 @@ class ReviewResource extends Resource
                         ->label('Delete Selected')
                         ->requiresConfirmation()
                         ->action(function (Collection $records): void {
-                            $records->each(function (Review $record): void {
+                            /** @var Collection<int, \App\Models\Review> $records */
+                            $records->each(function (\App\Models\Review $record): void {
                                 $record->update([
                                     'status' => 'deleted',
                                     'moderated_by' => Auth::id(),

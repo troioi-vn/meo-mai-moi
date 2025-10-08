@@ -20,6 +20,10 @@ class EditEmailConfiguration extends EditRecord
                 ->icon('heroicon-o-signal')
                 ->color('info')
                 ->action(function (): void {
+                    if (!$this->record instanceof \App\Models\EmailConfiguration) {
+                        return;
+                    }
+                    
                     $service = app(EmailConfigurationService::class);
 
                     try {
@@ -54,8 +58,12 @@ class EditEmailConfiguration extends EditRecord
                 ->label('Activate Configuration')
                 ->icon('heroicon-o-power')
                 ->color('success')
-                ->visible(fn (): bool => ! $this->record->is_active && $this->record->isValid())
+                ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && ! $this->record->is_active && $this->record->isValid())
                 ->action(function (): void {
+                    if (!$this->record instanceof \App\Models\EmailConfiguration) {
+                        return;
+                    }
+                    
                     try {
                         $this->record->activate();
 
@@ -85,7 +93,7 @@ class EditEmailConfiguration extends EditRecord
 
             Actions\ViewAction::make(),
             Actions\DeleteAction::make()
-                ->visible(fn (): bool => ! $this->record->is_active),
+                ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && ! $this->record->is_active),
         ];
     }
 
@@ -97,6 +105,10 @@ class EditEmailConfiguration extends EditRecord
     protected function afterSave(): void
     {
         $record = $this->record;
+        
+        if (!$record instanceof \App\Models\EmailConfiguration) {
+            return;
+        }
 
         // If this configuration is set to active, activate it properly
         if ($record->is_active) {

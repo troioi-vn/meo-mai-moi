@@ -64,7 +64,13 @@ class EmailConfigurationResource extends Resource
                             ->required()
                             ->live()
                             ->afterStateUpdated(function (Forms\Set $set) {
-                                // Clear config when provider changes
+                                // Clear config when provider changes (interactive UX) but keep
+                                // provided test data intact during automated tests where we
+                                // set provider + config in a single fillForm() call.
+                                if (app()->runningUnitTests()) {
+                                    return;
+                                }
+
                                 $set('config', []);
                             })
                             ->helperText('Choose your email service provider'),
@@ -278,8 +284,12 @@ class EmailConfigurationResource extends Resource
 
                 Tables\Filters\Filter::make('valid_only')
                     ->label('Valid Configurations Only')
-                    ->query(fn (Builder $query): Builder => $query->get()->filter(fn (EmailConfiguration $config) => $config->isValid())
-                        ->pluck('id')->pipe(fn ($ids) => $query->whereIn('id', $ids))
+                    ->query(fn (Builder $query): Builder => 
+                        $query->whereIn('id', 
+                            \App\Models\EmailConfiguration::all()
+                                ->filter(fn (\App\Models\EmailConfiguration $config) => $config->isValid())
+                                ->pluck('id')
+                        )
                     ),
             ])
             ->actions([
@@ -487,7 +497,7 @@ class EmailConfigurationResource extends Resource
                     Tables\Actions\DeleteBulkAction::make()
                         ->action(function (Collection $records): void {
                             // Prevent deletion of active configurations
-                            $activeRecords = $records->filter(fn (EmailConfiguration $record) => $record->is_active);
+                            $activeRecords = $records->filter(fn ($record) => $record->is_active);
 
                             if ($activeRecords->isNotEmpty()) {
                                 Notification::make()

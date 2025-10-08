@@ -50,7 +50,7 @@ class EditPetType extends EditRecord
     protected function mutateFormDataBeforeSave(array $data): array
     {
         // Prevent changing system status or deactivating Cat
-        if ($this->record->slug === 'cat') {
+        if ($this->record instanceof \App\Models\PetType && $this->record->slug === 'cat') {
             $data['is_active'] = true; // Force Cat to remain active
             $data['is_system'] = true; // Force Cat to remain system
         }

@@ -202,7 +202,8 @@ class InvitationResource extends Resource
                         ->icon('heroicon-o-x-mark')
                         ->color('danger')
                         ->action(function (Collection $records): void {
-                            $pendingRecords = $records->filter(fn (Invitation $record) => $record->status === 'pending');
+                            /** @var Collection<int, \App\Models\Invitation> $records */
+                            $pendingRecords = $records->filter(fn (\App\Models\Invitation $record) => $record->status === 'pending');
                             
                             if ($pendingRecords->isEmpty()) {
                                 Notification::make()

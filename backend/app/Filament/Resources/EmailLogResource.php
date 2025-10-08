@@ -75,7 +75,7 @@ class EmailLogResource extends Resource
                             ->disabled()
                             ->rows(3)
                             ->columnSpanFull()
-                            ->visible(fn ($record) => ! empty($record?->error_message)),
+                            ->visible(fn ($record) => ! empty($record->error_message)),
                     ])
                     ->columns(2),
 
@@ -260,7 +260,7 @@ class EmailLogResource extends Resource
 
                         try {
                             // Dispatch a new job to retry the email
-                            if ($record->notification && $record->user) {
+                            if ($record->notification && $record->user && $record->user instanceof \App\Models\User) {
                                 SendNotificationEmail::dispatch(
                                     $record->user,
                                     $record->notification->type,

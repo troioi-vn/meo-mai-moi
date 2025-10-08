@@ -119,13 +119,10 @@ class NotificationResource extends Resource
                     ->colors([
                         'primary' => 'placement_request',
                         'warning' => 'transfer_request',
-                        'success' => 'transfer_accepted',
-                        'danger' => 'transfer_rejected',
+                        'success' => ['transfer_accepted', 'handover_completed', 'profile_approved'],
+                        'danger' => ['transfer_rejected', 'profile_rejected'],
                         'info' => 'handover_scheduled',
-                        'success' => 'handover_completed',
                         'secondary' => 'review_received',
-                        'success' => 'profile_approved',
-                        'danger' => 'profile_rejected',
                         'gray' => 'system_announcement',
                     ])
                     ->searchable(),
@@ -385,7 +382,8 @@ class NotificationResource extends Resource
                         ->color('success')
                         ->requiresConfirmation()
                         ->action(function (Collection $records): void {
-                            $records->each(function (Notification $record): void {
+                            /** @var Collection<int, \App\Models\Notification> $records */
+                            $records->each(function (\App\Models\Notification $record): void {
                                 $record->update([
                                     'is_read' => true,
                                     'read_at' => now(),
@@ -399,7 +397,8 @@ class NotificationResource extends Resource
                         ->color('warning')
                         ->requiresConfirmation()
                         ->action(function (Collection $records): void {
-                            $records->each(function (Notification $record): void {
+                            /** @var Collection<int, \App\Models\Notification> $records */
+                            $records->each(function (\App\Models\Notification $record): void {
                                 $record->update([
                                     'is_read' => false,
                                     'read_at' => null,
@@ -413,7 +412,8 @@ class NotificationResource extends Resource
                         ->color('success')
                         ->requiresConfirmation()
                         ->action(function (Collection $records): void {
-                            $records->each(function (Notification $record): void {
+                            /** @var Collection<int, \App\Models\Notification> $records */
+                            $records->each(function (\App\Models\Notification $record): void {
                                 $record->update([
                                     'delivered_at' => now(),
                                     'failed_at' => null,

@@ -14,6 +14,8 @@ class ViewEmailConfiguration extends ViewRecord
 {
     protected static string $resource = EmailConfigurationResource::class;
 
+
+
     protected function getHeaderActions(): array
     {
         return [
@@ -22,6 +24,10 @@ class ViewEmailConfiguration extends ViewRecord
                 ->icon('heroicon-o-signal')
                 ->color('info')
                 ->action(function (): void {
+                    if (!$this->record instanceof \App\Models\EmailConfiguration) {
+                        return;
+                    }
+                    
                     $service = app(EmailConfigurationService::class);
 
                     try {
@@ -56,8 +62,12 @@ class ViewEmailConfiguration extends ViewRecord
                 ->label('Activate')
                 ->icon('heroicon-o-power')
                 ->color('success')
-                ->visible(fn (): bool => ! $this->record->is_active && $this->record->isValid())
+                ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && ! $this->record->is_active && $this->record->isValid())
                 ->action(function (): void {
+                    if (!$this->record instanceof \App\Models\EmailConfiguration) {
+                        return;
+                    }
+                    
                     try {
                         $this->record->activate();
 
@@ -89,8 +99,12 @@ class ViewEmailConfiguration extends ViewRecord
                 ->label('Deactivate')
                 ->icon('heroicon-o-power')
                 ->color('warning')
-                ->visible(fn (): bool => $this->record->is_active)
+                ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && $this->record->is_active)
                 ->action(function (): void {
+                    if (!$this->record instanceof \App\Models\EmailConfiguration) {
+                        return;
+                    }
+                    
                     try {
                         $this->record->update(['is_active' => false]);
 
@@ -116,7 +130,7 @@ class ViewEmailConfiguration extends ViewRecord
 
             Actions\EditAction::make(),
             Actions\DeleteAction::make()
-                ->visible(fn (): bool => ! $this->record->is_active),
+                ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && ! $this->record->is_active),
         ];
     }
 
@@ -147,8 +161,8 @@ class ViewEmailConfiguration extends ViewRecord
                         Infolists\Components\TextEntry::make('status')
                             ->label('Configuration Status')
                             ->badge()
-                            ->color(fn (): string => $this->record->isValid() ? 'success' : 'danger')
-                            ->formatStateUsing(fn (): string => $this->record->isValid() ? 'Valid' : 'Invalid'),
+                            ->color(fn (): string => ($this->record instanceof \App\Models\EmailConfiguration && $this->record->isValid()) ? 'success' : 'danger')
+                            ->formatStateUsing(fn (): string => ($this->record instanceof \App\Models\EmailConfiguration && $this->record->isValid()) ? 'Valid' : 'Invalid'),
 
                         Infolists\Components\TextEntry::make('created_at')
                             ->label('Created')
@@ -179,22 +193,22 @@ class ViewEmailConfiguration extends ViewRecord
                         // SMTP Configuration
                         Infolists\Components\TextEntry::make('config.host')
                             ->label('SMTP Host')
-                            ->visible(fn (): bool => $this->record->provider === 'smtp'),
+                            ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'),
 
                         Infolists\Components\TextEntry::make('config.port')
                             ->label('SMTP Port')
-                            ->visible(fn (): bool => $this->record->provider === 'smtp'),
+                            ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'),
 
                         Infolists\Components\TextEntry::make('config.username')
                             ->label('Username')
-                            ->visible(fn (): bool => $this->record->provider === 'smtp'),
+                            ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'),
 
                         Infolists\Components\TextEntry::make('config.encryption')
                             ->label('Encryption')
                             ->badge()
                             ->color('info')
                             ->formatStateUsing(fn (?string $state): string => $state ? strtoupper($state) : 'None')
-                            ->visible(fn (): bool => $this->record->provider === 'smtp'),
+                            ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'),
 
                         // Mailgun Configuration
                         Infolists\Components\TextEntry::make('config.domain')
@@ -202,11 +216,11 @@ class ViewEmailConfiguration extends ViewRecord
                             ->copyable()
                             ->copyMessage('Domain copied')
                             ->copyMessageDuration(1500)
-                            ->visible(fn (): bool => $this->record->provider === 'mailgun'),
+                            ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'mailgun'),
 
                         Infolists\Components\TextEntry::make('config.endpoint')
                             ->label('API Endpoint')
-                            ->visible(fn (): bool => $this->record->provider === 'mailgun'),
+                            ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'mailgun'),
                     ])
                     ->columns(2),
 
@@ -219,20 +233,20 @@ class ViewEmailConfiguration extends ViewRecord
                                     ->label('')
                                     ->color('danger'),
                             ])
-                            ->state(fn (): array => collect($this->record->validateConfig())
+                            ->state(fn (): array => ($this->record instanceof \App\Models\EmailConfiguration) ? collect($this->record->validateConfig())
                                 ->map(fn (string $error) => ['error' => $error])
-                                ->toArray()
+                                ->toArray() : []
                             )
-                            ->visible(fn (): bool => ! $this->record->isValid()),
+                            ->visible(fn (): bool => ($this->record instanceof \App\Models\EmailConfiguration) && !$this->record->isValid()),
 
                         Infolists\Components\TextEntry::make('validation_status')
                             ->label('Validation Status')
                             ->badge()
                             ->color('success')
                             ->state('All configuration requirements are met')
-                            ->visible(fn (): bool => $this->record->isValid()),
+                            ->visible(fn (): bool => ($this->record instanceof \App\Models\EmailConfiguration) && $this->record->isValid()),
                     ])
-                    ->visible(fn (): bool => ! empty($this->record->validateConfig()) || $this->record->isValid()),
+                    ->visible(fn (): bool => ($this->record instanceof \App\Models\EmailConfiguration) && (!empty($this->record->validateConfig()) || $this->record->isValid())),
             ]);
     }
 }

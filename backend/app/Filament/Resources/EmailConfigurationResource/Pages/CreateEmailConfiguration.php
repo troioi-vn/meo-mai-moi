@@ -19,6 +19,10 @@ class CreateEmailConfiguration extends CreateRecord
     protected function afterCreate(): void
     {
         $record = $this->record;
+        
+        if (!$record instanceof \App\Models\EmailConfiguration) {
+            return;
+        }
 
         // If this configuration is set to active, activate it properly
         if ($record->is_active) {

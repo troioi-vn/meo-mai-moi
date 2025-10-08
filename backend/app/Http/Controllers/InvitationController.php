@@ -57,9 +57,11 @@ class InvitationController extends Controller
     {
         $user = $request->user();
         $invitations = $this->invitationService->getUserInvitations($user);
-
-        $data = $invitations->map(function (\App\Models\Invitation $invitation) {
-            return [
+        
+        $data = [];
+        foreach ($invitations as $invitation) {
+            /** @var \App\Models\Invitation $invitation */
+            $data[] = [
                 'id' => $invitation->id,
                 'code' => $invitation->code,
                 'status' => $invitation->status,
@@ -72,7 +74,7 @@ class InvitationController extends Controller
                     'email' => $invitation->recipient->email,
                 ] : null,
             ];
-        });
+        }
 
         return $this->sendSuccess($data);
     }

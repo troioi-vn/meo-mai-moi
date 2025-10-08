@@ -554,7 +554,7 @@ class PetController extends Controller
         ];
 
         $validator = \Validator::make($request->all(), $rules);
-        $validator->after(function ($v) use ($request, $pet) {
+        $validator->after(function ($v) use ($request) {
             $precision = $request->input('birthday_precision');
             $legacyBirthday = $request->input('birthday');
             if ($legacyBirthday && ! $precision) {

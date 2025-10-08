@@ -206,7 +206,7 @@ class VaccinationRecordController extends Controller
 
         // If administered_at or vaccine_name changes, enforce uniqueness
         $name = $validated['vaccine_name'] ?? $record->vaccine_name;
-        $date = $validated['administered_at'] ?? $record->administered_at?->format('Y-m-d');
+        $date = $validated['administered_at'] ?? $record->administered_at->format('Y-m-d');
         $exists = $pet->vaccinations()
             ->where('id', '!=', $record->id)
             ->where('vaccine_name', $name)

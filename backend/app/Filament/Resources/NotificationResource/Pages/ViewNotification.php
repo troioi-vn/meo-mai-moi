@@ -12,6 +12,11 @@ class ViewNotification extends ViewRecord
 {
     protected static string $resource = NotificationResource::class;
 
+    private function getNotification(): ?\App\Models\Notification
+    {
+        return $this->record instanceof \App\Models\Notification ? $this->record : null;
+    }
+
     protected function getHeaderActions(): array
     {
         return [
@@ -21,9 +26,14 @@ class ViewNotification extends ViewRecord
                 ->label('Mark as Read')
                 ->icon('heroicon-o-check')
                 ->color('success')
-                ->visible(fn (): bool => ! $this->record->is_read)
+                ->visible(fn (): bool => ($notification = $this->getNotification()) && !$notification->is_read)
                 ->action(function (): void {
-                    $this->record->update([
+                    $notification = $this->getNotification();
+                    if (!$notification) {
+                        return;
+                    }
+                    
+                    $notification->update([
                         'is_read' => true,
                         'read_at' => now(),
                     ]);
@@ -35,9 +45,14 @@ class ViewNotification extends ViewRecord
                 ->label('Mark as Delivered')
                 ->icon('heroicon-o-paper-airplane')
                 ->color('success')
-                ->visible(fn (): bool => ! $this->record->delivered_at)
+                ->visible(fn (): bool => ($notification = $this->getNotification()) && !$notification->delivered_at)
                 ->action(function (): void {
-                    $this->record->update([
+                    $notification = $this->getNotification();
+                    if (!$notification) {
+                        return;
+                    }
+                    
+                    $notification->update([
                         'delivered_at' => now(),
                         'failed_at' => null,
                         'failure_reason' => null,
@@ -50,10 +65,15 @@ class ViewNotification extends ViewRecord
                 ->label('Retry Delivery')
                 ->icon('heroicon-o-arrow-path')
                 ->color('info')
-                ->visible(fn (): bool => $this->record->failed_at !== null)
+                ->visible(fn (): bool => ($notification = $this->getNotification()) && $notification->failed_at !== null)
                 ->requiresConfirmation()
                 ->action(function (): void {
-                    $this->record->update([
+                    $notification = $this->getNotification();
+                    if (!$notification) {
+                        return;
+                    }
+                    
+                    $notification->update([
                         'failed_at' => null,
                         'failure_reason' => null,
                         'delivered_at' => null,
@@ -61,7 +81,7 @@ class ViewNotification extends ViewRecord
 
                     // Here you would typically trigger the notification delivery system
                     // For now, we'll just mark it as delivered
-                    $this->record->update(['delivered_at' => now()]);
+                    $notification->update(['delivered_at' => now()]);
 
                     $this->refreshFormData(['delivered_at', 'failed_at', 'failure_reason']);
                 }),
@@ -70,7 +90,7 @@ class ViewNotification extends ViewRecord
                 ->label('Test Email Configuration')
                 ->icon('heroicon-o-wrench-screwdriver')
                 ->color('warning')
-                ->visible(fn (): bool => $this->record->failed_at !== null)
+                ->visible(fn (): bool => ($notification = $this->getNotification()) && $notification->failed_at !== null)
                 ->action(function (): void {
                     // This would test the email configuration
                     // For now, we'll just show a success message
@@ -95,17 +115,19 @@ class ViewNotification extends ViewRecord
                         Infolists\Components\TextEntry::make('type_display')
                             ->label('Type')
                             ->badge()
-                            ->color(fn (string $state): string => match ($this->record->type) {
+                            ->color(fn (string $state): string => ($notification = $this->getNotification()) ? match ($notification->type) {
                                 'placement_request' => 'primary',
                                 'transfer_request' => 'warning',
-                                'transfer_accepted', 'handover_completed', 'profile_approved' => 'success',
-                                'transfer_rejected', 'profile_rejected' => 'danger',
+                                'transfer_accepted' => 'success',
+                                'handover_completed' => 'success',
+                                'profile_approved' => 'success',
+                                'transfer_rejected' => 'danger',
+                                'profile_rejected' => 'danger',
                                 'handover_scheduled' => 'info',
                                 'review_received' => 'secondary',
                                 'system_announcement' => 'gray',
                                 default => 'primary',
-                            }),
-
+                            } : 'gray'),
                         Infolists\Components\TextEntry::make('message')
                             ->label('Message')
                             ->columnSpanFull(),
@@ -197,7 +219,7 @@ class ViewNotification extends ViewRecord
                             ->view('filament.infolists.notification-delivery-timeline')
                             ->columnSpanFull(),
                     ])
-                    ->visible(fn (): bool => $this->record->created_at || $this->record->delivered_at || $this->record->failed_at || $this->record->read_at),
+                    ->visible(fn (): bool => ($notification = $this->getNotification()) && ($notification->created_at || $notification->delivered_at || $notification->failed_at || $notification->read_at)),
             ]);
     }
 }

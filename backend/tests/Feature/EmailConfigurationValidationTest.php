@@ -6,6 +6,9 @@ use App\Exceptions\EmailConfigurationException;
 use App\Models\EmailConfiguration;
 use App\Services\EmailConfigurationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Mail;
+use Symfony\Component\Mailer\Exception\TransportException;
 use Tests\TestCase;
 
 class EmailConfigurationValidationTest extends TestCase
@@ -111,20 +114,39 @@ class EmailConfigurationValidationTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function it_provides_detailed_test_results()
     {
-        // This test will fail because we don't have a real SMTP server
-        $result = $this->service->testConfigurationWithDetails('smtp', [
-            'host' => 'nonexistent.smtp.server',
+        /*
+         Accelerated test strategy:
+         Instead of relying on a real SMTP connection timeout (30–60s), we mock the Mailer
+         so that the send attempt throws a TransportException immediately. This preserves
+         verification of error-handling logic while keeping the test fast (<100ms).
+         If this test starts passing without exercising the send path, re-check the mocking seam.
+        */
+
+        // 1. Define a valid-looking configuration
+        $config = [
+            'host' => 'smtp.example.com',
             'port' => 587,
             'username' => 'test@example.com',
             'password' => 'password',
             'encryption' => 'tls',
             'from_address' => 'test@example.com',
-        ]);
+        ];
 
+        // 2. Mock the transport layer to throw an error immediately
+        Mail::shouldReceive('raw')->andThrow(
+            new TransportException('Connection could not be established')
+        );
+        Mail::shouldReceive('purge');
+
+        // 3. Run the service method
+        $result = $this->service->testConfigurationWithDetails('smtp', $config);
+
+        // 4. Assert the failure was handled correctly
         $this->assertFalse($result['success']);
         $this->assertArrayHasKey('error', $result);
         $this->assertArrayHasKey('error_type', $result);
         $this->assertArrayHasKey('technical_error', $result);
+        $this->assertStringContainsString('Connection could not be established', $result['technical_error']);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]

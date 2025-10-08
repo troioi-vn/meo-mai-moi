@@ -60,7 +60,15 @@ class EmailConfigurationResourceTest extends TestCase
         ];
 
         Livewire::test(EmailConfigurationResource\Pages\CreateEmailConfiguration::class)
-            ->fillForm($newData)
+            ->set('data.provider', 'smtp')
+            ->set('data.is_active', false)
+            ->set('data.config.host', 'smtp.gmail.com')
+            ->set('data.config.port', 587)
+            ->set('data.config.username', 'test@example.com')
+            ->set('data.config.password', 'password123')
+            ->set('data.config.encryption', 'tls')
+            ->set('data.config.from_address', 'noreply@test.com')
+            ->set('data.config.from_name', 'Test App')
             ->call('create')
             ->assertHasNoFormErrors();
 
@@ -90,7 +98,13 @@ class EmailConfigurationResourceTest extends TestCase
         ];
 
         Livewire::test(EmailConfigurationResource\Pages\CreateEmailConfiguration::class)
-            ->fillForm($newData)
+            ->set('data.provider', 'mailgun')
+            ->set('data.is_active', false)
+            ->set('data.config.domain', 'mg.test.com')
+            ->set('data.config.api_key', 'key-test123')
+            ->set('data.config.endpoint', 'api.mailgun.net')
+            ->set('data.config.from_address', 'noreply@test.com')
+            ->set('data.config.from_name', 'Test App')
             ->call('create')
             ->assertHasNoFormErrors();
 
@@ -135,7 +149,15 @@ class EmailConfigurationResourceTest extends TestCase
         Livewire::test(EmailConfigurationResource\Pages\EditEmailConfiguration::class, [
             'record' => $config->getRouteKey(),
         ])
-            ->fillForm($newData)
+            ->set('data.provider', 'smtp')
+            ->set('data.is_active', false)
+            ->set('data.config.host', 'smtp.gmail.com')
+            ->set('data.config.port', 587)
+            ->set('data.config.username', 'new@example.com')
+            ->set('data.config.password', 'newpassword')
+            ->set('data.config.encryption', 'tls')
+            ->set('data.config.from_address', 'new@test.com')
+            ->set('data.config.from_name', 'Updated App')
             ->call('save')
             ->assertHasNoFormErrors();
 

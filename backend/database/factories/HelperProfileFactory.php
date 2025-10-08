@@ -17,7 +17,7 @@ class HelperProfileFactory extends Factory
             'country' => $this->faker->country(),
             'address' => $this->faker->address(),
             'city' => $this->faker->city(),
-            'state' => $this->faker->state(),
+            'state' => $this->faker->stateAbbr(),
             'zip_code' => $this->faker->postcode(),
             'phone_number' => $this->faker->phoneNumber(),
             'experience' => $this->faker->paragraph(),

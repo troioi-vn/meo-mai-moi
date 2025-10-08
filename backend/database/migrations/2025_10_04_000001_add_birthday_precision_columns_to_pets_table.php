@@ -29,7 +29,6 @@ return new class extends Migration {
                 $table->enum('birthday_precision', ['day','month','year','unknown'])
                     ->default('unknown')
                     ->nullable(false)
-                    ->using("birthday_precision::pet_birthday_precision")
                     ->after('birthday_day');
             } else {
                 $table->enum('birthday_precision', ['day','month','year','unknown'])

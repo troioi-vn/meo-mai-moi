@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\NotificationResource;
 use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class NotificationResourceTest extends TestCase
@@ -15,8 +17,12 @@ class NotificationResourceTest extends TestCase
     {
         parent::setUp();
 
-        // Create a test user and authenticate
+        // Seed roles and permissions
+        $this->artisan('db:seed', ['--class' => 'RolesAndPermissionsSeeder']);
+
+        // Create a test user with admin role and authenticate
         $this->user = User::factory()->create();
+        $this->user->assignRole('admin');
         $this->actingAs($this->user);
     }
 
@@ -117,7 +123,7 @@ class NotificationResourceTest extends TestCase
     {
         Notification::factory()->count(5)->create();
 
-        $response = $this->get('/admin/notifications');
+        $response = $this->get(NotificationResource::getUrl('index'));
         $response->assertStatus(200);
     }
 
@@ -125,12 +131,13 @@ class NotificationResourceTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->post('/admin/notifications', [
-            'user_id' => $user->id,
-            'type' => 'system_announcement',
-            'message' => 'Test notification message',
-            'link' => 'https://example.com',
-        ]);
+        Livewire::test(NotificationResource\Pages\CreateNotification::class)
+            ->set('data.user_id', $user->id)
+            ->set('data.type', 'system_announcement')
+            ->set('data.message', 'Test notification message')
+            ->set('data.link', 'https://example.com')
+            ->call('create')
+            ->assertHasNoFormErrors();
 
         $this->assertDatabaseHas('notifications', [
             'user_id' => $user->id,
@@ -144,7 +151,9 @@ class NotificationResourceTest extends TestCase
     {
         $notification = Notification::factory()->create();
 
-        $response = $this->get("/admin/notifications/{$notification->id}");
+        $response = $this->get(NotificationResource::getUrl('view', [
+            'record' => $notification,
+        ]));
         $response->assertStatus(200);
     }
 
@@ -152,7 +161,9 @@ class NotificationResourceTest extends TestCase
     {
         $notification = Notification::factory()->create();
 
-        $response = $this->get("/admin/notifications/{$notification->id}/edit");
+        $response = $this->get(NotificationResource::getUrl('edit', [
+            'record' => $notification,
+        ]));
         $response->assertStatus(200);
     }
 }

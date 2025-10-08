@@ -38,7 +38,7 @@ class SendNotificationEmail implements ShouldQueue
         public array $data,
         public int $notificationId
     ) {
-        //
+
     }
 
     /**

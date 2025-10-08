@@ -4,12 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Services\WaitlistService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesValidation;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class WaitlistController extends Controller
 {
-    use ApiResponseTrait;
+    use ApiResponseTrait, HandlesValidation;
 
     private WaitlistService $waitlistService;
 
@@ -76,8 +77,8 @@ class WaitlistController extends Controller
     public function store(Request $request)
     {
         try {
-            $request->validate([
-                'email' => 'required|email',
+            $this->validateWithErrorHandling($request, [
+                'email' => $this->emailValidationRules(),
             ]);
 
             $email = strtolower($request->input('email'));
@@ -119,8 +120,8 @@ class WaitlistController extends Controller
      */
     public function check(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email'
+        $this->validateWithErrorHandling($request, [
+            'email' => $this->emailValidationRules(),
         ]);
 
         $email = $request->input('email');

@@ -6,6 +6,9 @@ use App\Models\Pet;
 use App\Models\PetMicrochip;
 use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesPetResources;
+use App\Traits\HandlesValidation;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -28,7 +31,7 @@ use OpenApi\Annotations as OA;
  */
 class PetMicrochipController extends Controller
 {
-    use ApiResponseTrait;
+    use ApiResponseTrait, HandlesAuthentication, HandlesPetResources, HandlesValidation;
 
     /**
      * @OA\Get(
@@ -55,31 +58,19 @@ class PetMicrochipController extends Controller
      *     @OA\Response(response=422, description="Feature not available for this pet type")
      * )
      */
-    public function index(Pet $pet)
+    public function index(Request $request, Pet $pet)
     {
-        $this->authorize('view', $pet);
-
-        PetCapabilityService::ensure($pet, 'microchips');
+        $this->authorizeUser($request, 'view', $pet);
+        $this->ensurePetCapability($pet, 'microchips');
 
         $microchips = $pet->microchips()
             ->orderBy('implanted_at', 'desc')
             ->orderBy('created_at', 'desc')
             ->paginate(25);
 
-        $payload = [
-            'data' => $microchips->items(),
-            'links' => [
-                'first' => $microchips->url(1),
-                'last' => $microchips->url($microchips->lastPage()),
-                'prev' => $microchips->previousPageUrl(),
-                'next' => $microchips->nextPageUrl(),
-            ],
-            'meta' => [
-                'current_page' => $microchips->currentPage(),
-                'from' => $microchips->firstItem(),
-                'last_page' => $microchips->lastPage(),
+        $payload = $this->paginatedResponse($microchips, [
+            'meta' => array_merge($this->paginatedResponse($microchips)['meta'], [
                 'path' => $microchips->path(),
-                'per_page' => $microchips->perPage(),
                 'to' => $microchips->lastItem(),
                 'total' => $microchips->total(),
             ],
@@ -133,20 +124,19 @@ class PetMicrochipController extends Controller
      */
     public function store(Request $request, Pet $pet)
     {
-        $this->authorize('update', $pet);
+        $this->authorizeUser($request, 'update', $pet);
+        $this->ensurePetCapability($pet, 'microchips');
 
-        PetCapabilityService::ensure($pet, 'microchips');
-
-        $validated = $request->validate([
+        $validated = $this->validateWithErrorHandling($request, [
             'chip_number' => [
                 'required',
                 'string',
                 'min:10',
                 'max:20',
-                Rule::unique('pet_microchips', 'chip_number'),
+                $this->uniqueValidationRule('pet_microchips', 'chip_number'),
             ],
-            'issuer' => 'nullable|string|max:255',
-            'implanted_at' => 'nullable|date',
+            'issuer' => $this->textValidationRules(false),
+            'implanted_at' => $this->dateValidationRules(false, false),
         ]);
 
         $microchip = $pet->microchips()->create($validated);
@@ -172,16 +162,10 @@ class PetMicrochipController extends Controller
      *     @OA\Response(response=404, description="Not found")
      * )
      */
-    public function show(Pet $pet, PetMicrochip $microchip)
+    public function show(Request $request, Pet $pet, PetMicrochip $microchip)
     {
-        $this->authorize('view', $pet);
-
-        // Capability check to ensure feature is enabled for this pet type
-        PetCapabilityService::ensure($pet, 'microchips');
-
-        if ($microchip->pet_id !== $pet->id) {
-            return $this->sendError('Microchip not found for this pet.', 404);
-        }
+        $this->authorizeUser($request, 'view', $pet);
+        $this->validatePetResource($request, $pet, 'microchips', $microchip);
 
         return $this->sendSuccess($microchip);
     }
@@ -215,26 +199,20 @@ class PetMicrochipController extends Controller
      */
     public function update(Request $request, Pet $pet, PetMicrochip $microchip)
     {
-        $this->authorize('update', $pet);
+        $this->authorizeUser($request, 'update', $pet);
+        $this->validatePetResource($request, $pet, 'microchips', $microchip);
 
-        // Capability check to ensure feature is enabled for this pet type
-        PetCapabilityService::ensure($pet, 'microchips');
-
-        if ($microchip->pet_id !== $pet->id) {
-            return $this->sendError('Microchip not found for this pet.', 404);
-        }
-
-        $validated = $request->validate([
+        $validated = $this->validateWithErrorHandling($request, [
             'chip_number' => [
                 'sometimes',
                 'required',
                 'string',
                 'min:10',
                 'max:20',
-                Rule::unique('pet_microchips', 'chip_number')->ignore($microchip->id),
+                $this->uniqueValidationRule('pet_microchips', 'chip_number', [], $microchip->id),
             ],
-            'issuer' => 'nullable|string|max:255',
-            'implanted_at' => 'nullable|date',
+            'issuer' => $this->textValidationRules(false),
+            'implanted_at' => $this->dateValidationRules(false, false),
         ]);
 
         $microchip->update($validated);
@@ -260,16 +238,10 @@ class PetMicrochipController extends Controller
      *     @OA\Response(response=404, description="Not found")
      * )
      */
-    public function destroy(Pet $pet, PetMicrochip $microchip)
+    public function destroy(Request $request, Pet $pet, PetMicrochip $microchip)
     {
-        $this->authorize('update', $pet);
-
-        // Capability check to ensure feature is enabled for this pet type
-        PetCapabilityService::ensure($pet, 'microchips');
-
-        if ($microchip->pet_id !== $pet->id) {
-            return $this->sendError('Microchip not found for this pet.', 404);
-        }
+        $this->authorizeUser($request, 'update', $pet);
+        $this->validatePetResource($request, $pet, 'microchips', $microchip);
 
         $microchip->delete();
 

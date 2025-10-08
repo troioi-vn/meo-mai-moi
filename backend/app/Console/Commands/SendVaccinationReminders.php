@@ -30,9 +30,11 @@ class SendVaccinationReminders extends Command
             ->whereNotNull('due_at')
             ->whereDate('due_at', '<=', $cutoff)
             ->whereNull('reminder_sent_at')
-            ->with(['pet' => function ($q) {
-                $q->with('user', 'petType');
-            }]);
+            ->with([
+                'pet' => function ($q) {
+                    $q->with('user', 'petType');
+                }
+            ]);
 
         $count = 0;
         $service = app(NotificationService::class);

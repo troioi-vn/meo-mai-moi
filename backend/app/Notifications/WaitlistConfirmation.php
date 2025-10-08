@@ -40,7 +40,7 @@ class WaitlistConfirmation extends Notification implements ShouldQueue
     {
         $appName = config('app.name', 'Our Platform');
         
-        return (new MailMessage)
+        return (new MailMessage())
             ->subject("You're on the waitlist for {$appName}!")
             ->markdown('emails.waitlist-confirmation', [
                 'waitlistEntry' => $this->waitlistEntry,

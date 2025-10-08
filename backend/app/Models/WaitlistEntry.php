@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
 
 class WaitlistEntry extends Model
 {
@@ -27,7 +27,7 @@ class WaitlistEntry extends Model
     {
         $this->update([
             'status' => 'invited',
-            'invited_at' => now()
+            'invited_at' => now(),
         ]);
     }
 
@@ -74,8 +74,8 @@ class WaitlistEntry extends Model
                 'email',
                 'max:255',
                 'unique:waitlist_entries,email',
-                'unique:users,email' // Prevent existing users from joining waitlist
-            ]
+                'unique:users,email', // Prevent existing users from joining waitlist
+            ],
         ];
     }
 }

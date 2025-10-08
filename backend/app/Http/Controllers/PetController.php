@@ -8,13 +8,13 @@ use App\Models\Pet;
 use App\Models\PetType;
 use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Gate;
 use Laravel\Sanctum\PersonalAccessToken;
 use OpenApi\Annotations as OA;
-use Exception;
 
 /**
  * @OA\Schema(
@@ -666,7 +666,7 @@ class PetController extends Controller
             'location' => $data['location'] ?? null,
             'description' => $data['description'] ?? null,
             'pet_type_id' => $data['pet_type_id'] ?? null,
-        ], fn($v) => $v !== null));
+        ], fn ($v) => $v !== null));
         $pet->save();
 
         $pet->load('petType');

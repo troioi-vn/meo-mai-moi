@@ -4,8 +4,8 @@ namespace App\Providers;
 
 use App\Models\HelperProfile;
 use App\Models\Pet;
-use App\Policies\PetPolicy;
 use App\Policies\HelperProfilePolicy;
+use App\Policies\PetPolicy;
 use App\Policies\TransferRequestPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
@@ -29,7 +29,5 @@ class AuthServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerPolicies();
-
-        
     }
 }

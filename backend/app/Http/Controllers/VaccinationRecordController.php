@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\VaccinationRecord;
 use App\Models\Pet;
-use App\Traits\ApiResponseTrait;
+use App\Models\VaccinationRecord;
 use App\Services\PetCapabilityService;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Annotations as OA;

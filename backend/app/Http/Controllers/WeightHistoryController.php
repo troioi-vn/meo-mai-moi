@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Pet;
 use App\Models\WeightHistory;
+use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
-use App\Services\PetCapabilityService;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Annotations as OA;

@@ -141,7 +141,7 @@ class WaitlistService
     {
         $entry = WaitlistEntry::where('email', $email)->first();
 
-        if (!$entry) {
+        if (! $entry) {
             return false;
         }
 
@@ -228,7 +228,7 @@ class WaitlistService
         $errors = [];
 
         // Basic email validation
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'Invalid email format';
         }
 
@@ -252,7 +252,7 @@ class WaitlistService
     {
         $waitlistEntry = WaitlistEntry::where('email', $email)->first();
 
-        if (!$waitlistEntry) {
+        if (! $waitlistEntry) {
             return false;
         }
 

@@ -80,7 +80,6 @@ class NotificationService
             ]);
 
             return true;
-
         } catch (\Exception $e) {
             Log::error('Failed to queue email notification', [
                 'user_id' => $user->id,
@@ -116,7 +115,6 @@ class NotificationService
             ]);
 
             return true;
-
         } catch (\Exception $e) {
             Log::error('Failed to create in-app notification', [
                 'user_id' => $user->id,
@@ -160,7 +158,6 @@ class NotificationService
             ]);
 
             return true;
-
         } catch (\Exception $e) {
             Log::error('Failed to create fallback in-app notification', [
                 'user_id' => $user->id,
@@ -210,7 +207,6 @@ class NotificationService
                 'provider' => $activeConfig->provider,
                 'from_address' => $activeConfig->config['from_address'] ?? 'Not set',
             ];
-
         } catch (\Exception $e) {
             Log::error('Error checking email configuration status', [
                 'error' => $e->getMessage(),

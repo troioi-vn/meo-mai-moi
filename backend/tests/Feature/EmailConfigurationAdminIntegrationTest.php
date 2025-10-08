@@ -55,7 +55,15 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
         ];
 
         $component = Livewire::test(EmailConfigurationResource\Pages\CreateEmailConfiguration::class)
-            ->fillForm($smtpData)
+            ->set('data.provider', 'smtp')
+            ->set('data.is_active', false)
+            ->set('data.config.host', 'smtp.gmail.com')
+            ->set('data.config.port', 587)
+            ->set('data.config.username', 'test@example.com')
+            ->set('data.config.password', 'password123')
+            ->set('data.config.encryption', 'tls')
+            ->set('data.config.from_address', 'noreply@test.com')
+            ->set('data.config.from_name', 'Test App')
             ->call('create')
             ->assertHasNoFormErrors();
 
@@ -89,7 +97,13 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
         ];
 
         Livewire::test(EmailConfigurationResource\Pages\CreateEmailConfiguration::class)
-            ->fillForm($mailgunData)
+            ->set('data.provider', 'mailgun')
+            ->set('data.is_active', false)
+            ->set('data.config.domain', 'mg.test.com')
+            ->set('data.config.api_key', 'key-test123')
+            ->set('data.config.endpoint', 'api.mailgun.net')
+            ->set('data.config.from_address', 'noreply@test.com')
+            ->set('data.config.from_name', 'Test App')
             ->call('create')
             ->assertHasNoFormErrors();
 
@@ -110,7 +124,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
         Livewire::test(EmailConfigurationResource\Pages\EditEmailConfiguration::class, [
             'record' => $config2->getRouteKey(),
         ])
-            ->fillForm(['is_active' => true])
+            ->set('data.is_active', true)
             ->call('save')
             ->assertHasNoFormErrors();
 
@@ -206,7 +220,15 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
         Livewire::test(EmailConfigurationResource\Pages\EditEmailConfiguration::class, [
             'record' => $config->getRouteKey(),
         ])
-            ->fillForm($newData)
+            ->set('data.provider', 'smtp')
+            ->set('data.is_active', false)
+            ->set('data.config.host', 'new.smtp.com')
+            ->set('data.config.port', 465)
+            ->set('data.config.username', 'new@example.com')
+            ->set('data.config.password', 'newpassword')
+            ->set('data.config.encryption', 'ssl')
+            ->set('data.config.from_address', 'new@test.com')
+            ->set('data.config.from_name', 'New App')
             ->call('save')
             ->assertHasNoFormErrors();
 
@@ -315,7 +337,15 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
         ];
 
         Livewire::test(EmailConfigurationResource\Pages\CreateEmailConfiguration::class)
-            ->fillForm($configData)
+            ->set('data.provider', 'smtp')
+            ->set('data.is_active', true)
+            ->set('data.config.host', 'smtp.gmail.com')
+            ->set('data.config.port', 587)
+            ->set('data.config.username', 'test@example.com')
+            ->set('data.config.password', 'password123')
+            ->set('data.config.encryption', 'tls')
+            ->set('data.config.from_address', 'noreply@test.com')
+            ->set('data.config.from_name', 'Test App')
             ->call('create');
 
         // Service should now return the active configuration
@@ -345,7 +375,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
         Livewire::test(EmailConfigurationResource\Pages\EditEmailConfiguration::class, [
             'record' => $config->getRouteKey(),
         ])
-            ->fillForm(['is_active' => true])
+            ->set('data.is_active', true)
             ->call('save');
 
         // Verify Laravel mail configuration was updated

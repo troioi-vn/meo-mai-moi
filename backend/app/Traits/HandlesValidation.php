@@ -128,7 +128,7 @@ trait HandlesValidation
     /**
      * Validate uniqueness with custom conditions.
      */
-    protected function uniqueValidationRule(string $table, string $column, array $conditions = [], int $ignoreId = null): string
+    protected function uniqueValidationRule(string $table, string $column, array $conditions = [], ?int $ignoreId = null): string
     {
         $rule = "unique:{$table},{$column}";
 

@@ -111,17 +111,15 @@ class WaitlistControllerTest extends TestCase
         $this->assertContains($response->getStatusCode(), [201, 429]);
     }
 
-    public function test_waitlist_endpoint_returns_proper_error_for_server_issues()
+    public function test_waitlist_endpoint_returns_validation_error_for_invalid_email()
     {
         // Mock a database error by using an invalid email that would cause issues
         $response = $this->postJson('/api/waitlist', [
             'email' => str_repeat('a', 300) . '@example.com' // Too long email
         ]);
 
-        $response->assertStatus(409)
-            ->assertJson([
-                'error' => 'Invalid email format'
-            ]);
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['email']);
     }
 
     public function test_waitlist_response_structure_is_consistent()

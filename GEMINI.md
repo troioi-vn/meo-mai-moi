@@ -8,7 +8,7 @@ Meo Mai Moi helps communities rehome pets. Users can list pets, manage helper pr
 
 ## 2) Tech and architecture
 
-- Backend: Laravel (PHP) + Filament admin
+- Backend: Laravel 12 + PHP 8.4
 - Frontend: React + TypeScript + Vite + Tailwind + shadcn/ui
 - Database: PostgreSQL only (all envs). SQLite is not supported.
 - Build/Run: Docker Compose; frontend assets copied into backend image in multi-stage builds
@@ -27,7 +27,10 @@ Key models and auth
 Preferred: Docker
 - Start: `docker compose up -d --build`
 - First-time init: `docker compose exec backend php artisan migrate:fresh --seed && docker compose exec backend php artisan shield:generate --all && docker compose exec backend php artisan storage:link`
-- App: http://localhost:8000, Admin: http://localhost:8000/admin, Vite (optional): http://localhost:5173
+- App: http://localhost:8000
+- Admin: http://localhost:8000/admin (admin@catarchy.space / password)
+- API docs: http://localhost:8000/api/documentation
+- Vite (optional): http://localhost:5173
 
 ## 4) Testing
 
@@ -38,16 +41,26 @@ Backend (Pest/PHPUnit)
 
 Frontend (Vitest + RTL)
 - Run: `cd frontend && npm test`
+- Coverage: `cd frontend && npm run test:coverage`
 - MSW for API mocking: global server in `frontend/src/setupTests.ts`; handlers per resource under `frontend/src/mocks` using absolute URLs; mirror `{ data: ... }` API shape.
 - `sonner` toasts are mocked in `frontend/src/setupTests.ts`.
 
-## 5) Non-obvious workflows
+## 5) Static Analysis & Quality Gates
+
+- **PHPStan (Level 5):** Enforces type safety in the backend.
+  - Run: `cd backend && composer phpstan`
+  - Update baseline: `composer phpstan:baseline`
+- **Deptrac:** Enforces architectural layers (e.g., Domain, Services, Http).
+  - Run: `cd backend && composer deptrac`
+  - Update baseline: `composer deptrac:baseline > deptrac.baseline.yaml` (then merge into `deptrac.yaml`)
+
+## 6) Non-obvious workflows
 
 - Frontend build feeds backend views (see `welcome.blade.php`). Docker build compiles frontend first, then copies assets into the backend image.
 - Runtime setup happens in `backend/docker-entrypoint.sh` (e.g., `storage:link`). Check here for upload issues.
 - Email settings are database-driven via Filament at `/admin/email-configurations`. An active DB config overrides `.env` `MAIL_*`.
 
-## 6) Debugging playbook
+## 7) Debugging playbook
 General loop
 1) Observe the exact error/behavior
 2) Isolate (backend logs, browser devtools)
@@ -66,12 +79,12 @@ Common issues
 - Frontend test environment gaps (Radix/shadcn)
   - Polyfills and DOM stubs live in `frontend/src/setupTests.ts` (PointerEvent, `scrollIntoView`, etc.).
 
-## 7) Linting & formatting
+## 8) Linting & formatting
 
 - Backend: Laravel Pint (`./vendor/bin/pint`).
 - Frontend: ESLint + Prettier + TypeScript (`npm run lint`, `npm run typecheck`).
 
-## 8) Quick commands
+## 9) Quick commands
 
 - Start (Docker): `docker compose up -d --build`
 - Backend tests: `docker compose exec backend php artisan test`

@@ -45,7 +45,7 @@ docker compose down
 
 ## Tech Stack Overview
 
-**Backend**: Laravel 11 + PHP 8.4
+**Backend**: Laravel 12 + PHP 8.4
 - Pet management with health tracking
 - Placement & transfer workflows  
 - Email notifications & admin panel
@@ -85,3 +85,90 @@ cd frontend && npm run test:coverage
 docker compose exec backend php artisan migrate:fresh --seed
 docker compose exec backend php artisan shield:generate --all
 ```
+
+---
+
+## Static Analysis & Quality Gates
+
+### PHPStan (Backend Type Analysis)
+
+PHPStan enforces type safety and catches bugs at write-time using static analysis. Currently configured at **Level 5** (recommended Laravel starting point).
+
+**Run analysis:**
+```bash
+cd backend
+composer phpstan
+```
+
+**Update baseline (when intentionally adding new patterns):**
+```bash
+composer phpstan:baseline
+```
+
+**Configuration:**
+- `backend/phpstan.neon` - Rules, paths, exclusions
+- `backend/phpstan-baseline.neon` - Known issues snapshot (if exists)
+
+**Level progression:**
+- Level 5: Current baseline (medium strictness)
+- Level 6: Planned after Deptrac & PHP Insights mature
+- Level 7: Target for i18n foundation code
+
+### Deptrac (Architecture Layer Enforcement)
+
+Deptrac prevents architectural violations by enforcing allowed dependencies between layers. Think of it as a compiler for your architecture decisions.
+
+**Current Layers:**
+- `Domain` (Models, Enums) - Core business entities
+- `Services` - Business logic orchestration
+- `Notifications` - Email/push notification classes
+- `Mail` - Mailable classes
+- `Http` - Controllers, middleware, requests
+- `Console` - Artisan commands
+- `Providers` - Service container bindings
+- `Policies` - Authorization logic
+
+**Allowed Dependencies (simplified):**
+```
+Http → Services → Domain
+Services → Domain
+Notifications → Services + Domain
+Mail → Services + Domain
+Console → Services + Domain
+Policies → Domain
+Providers → Services + Domain
+Domain → (nothing)
+```
+
+**Run analysis:**
+```bash
+cd backend
+composer deptrac
+```
+
+**Interpreting output:**
+- **Violations**: Layer rules breached (build fails on new violations)
+- **Skipped violations**: Baselined (10 currently; frozen to prevent drift)
+- **Uncovered**: Classes not yet assigned to layers (767 currently; acceptable during early phase)
+- **Allowed**: Valid dependencies following the rules
+
+**Update baseline (after intentional refactor):**
+```bash
+composer deptrac:baseline > deptrac.baseline.yaml
+# Then merge the new skip_violations into deptrac.yaml
+```
+
+**Configuration:**
+- `backend/deptrac.yaml` - Layer definitions, rules, baseline
+- Inline `skip_violations` section contains baselined dependencies
+
+**Strategy:**
+1. Baseline captures current state (prevents regression)
+2. New violations fail the build
+3. Gradually refactor baselined violations over time
+4. Classify more namespaces into layers as needed (Events, Jobs, Listeners currently uncovered)
+
+**Why baseline early?**
+Without a baseline, teams ignore noisy output. With it, the quality bar only moves forward—new violations are blocked while you refactor the legacy gradually.
+
+---

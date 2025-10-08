@@ -81,7 +81,7 @@ describe('HelperProfileEditPage', () => {
 
   it('updates a field and submits the form', async () => {
     server.use(
-      http.post(`http://localhost:3000/api/helper-profiles/${mockHelperProfile.id}`, async ({ request }) => {
+      http.post(`http://localhost:3000/api/helper-profiles/${mockHelperProfile.id}`, async () => {
         return HttpResponse.json({ data: { id: mockHelperProfile.id } });
       })
     );

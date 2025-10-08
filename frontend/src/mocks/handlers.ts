@@ -513,7 +513,7 @@ const inviteSystemHandlers = [
   }),
 
   // Invitation endpoints
-  http.get('http://localhost:3000/api/invitations', ({ request }) => {
+  http.get('http://localhost:3000/api/invitations', () => {
     // In test environment, be more lenient with auth
     // Return mock invitations for testing
     return HttpResponse.json({
@@ -546,7 +546,7 @@ const inviteSystemHandlers = [
     })
   }),
 
-  http.get('http://localhost:3000/api/invitations/stats', ({ request }) => {
+  http.get('http://localhost:3000/api/invitations/stats', () => {
     // In test environment, be more lenient with auth
     return HttpResponse.json({
       data: {
@@ -559,21 +559,21 @@ const inviteSystemHandlers = [
     })
   }),
 
-  http.post('http://localhost:3000/api/invitations', ({ request }) => {
+  http.post('http://localhost:3000/api/invitations', () => {
     // In test environment, be more lenient with auth
     return HttpResponse.json({
       data: {
         id: Date.now(),
-        code: 'mock-code-' + Date.now(),
+        code: 'mock-code-' + String(Date.now()),
         status: 'pending',
         expires_at: null,
         created_at: new Date().toISOString(),
-        invitation_url: `http://localhost:3000/register?invitation_code=mock-code-${Date.now()}`
+        invitation_url: `http://localhost:3000/register?invitation_code=mock-code-${String(Date.now())}`
       }
     }, { status: 201 })
   }),
 
-  http.delete('http://localhost:3000/api/invitations/:id', ({ request }) => {
+  http.delete('http://localhost:3000/api/invitations/:id', () => {
     // In test environment, be more lenient with auth
     return HttpResponse.json({
       data: []

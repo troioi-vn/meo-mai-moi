@@ -104,7 +104,7 @@ describe('useInviteSystem', () => {
     await waitFor(() => {
       expect(result.current.mode).toBe('invite-only-with-code')
       expect(result.current.invitationCode).toBe('valid-code-123')
-      expect(result.current.invitationValidation?.inviter?.name).toBe('John Doe')
+      expect(result.current.invitationValidation?.inviter.name).toBe('John Doe')
       expect(result.current.isLoading).toBe(false)
       expect(result.current.error).toBeNull()
     })

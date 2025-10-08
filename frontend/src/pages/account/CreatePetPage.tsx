@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { FileInput } from '@/components/ui/FileInput'
 import { useCreatePetForm } from '@/hooks/useCreatePetForm'
 import { deletePet, updatePetStatus, getPet } from '@/api/pets'
+import type { Pet } from '@/types/pet'
 import { toast } from 'sonner'
 // alert-dialog primitives used in PetDangerZone
 import { PetTypeSelect } from '@/components/pets/PetTypeSelect'
@@ -23,7 +24,7 @@ const CreatePetPage: React.FC = () => {
   const [deletePassword, setDeletePassword] = useState('')
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [loadedPet, setLoadedPet] = useState<any | null>(null)
+  const [loadedPet, setLoadedPet] = useState<Pet | null>(null)
 
   const {
     formData,
@@ -41,17 +42,20 @@ const CreatePetPage: React.FC = () => {
   // Load current status in edit mode
   useEffect(() => {
     if (!isEditMode || !petId) return
-    void (async () => {
+    const loadPet = async () => {
       try {
         const pet = await getPet(petId)
         setLoadedPet(pet)
-        const st: 'active' | 'lost' | 'deceased' | 'deleted' = pet.status
+        const st = pet.status
         setCurrentStatus(st)
         setNewStatus(st === 'deleted' ? 'active' : st)
       } catch {
         /* ignore */
       }
-    })()
+    }
+    void loadPet().catch(() => {
+      // Ignore errors during pet loading
+    })
   }, [isEditMode, petId])
 
   const handleUpdateStatusClick = async () => {
@@ -70,7 +74,7 @@ const CreatePetPage: React.FC = () => {
       setCurrentStatus(updated.status)
       toast.success('Status updated')
       // Redirect to pet profile after status change
-      navigate(`/pets/${petId}`)
+      void navigate(`/pets/${petId}`)
     } catch {
       toast.error('Failed to update status')
     } finally {

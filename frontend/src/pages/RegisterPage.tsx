@@ -38,6 +38,7 @@ export default function RegisterPage() {
               <p className="text-red-800 text-sm">{error}</p>
             </div>
             <button
+              type="button"
               onClick={clearError}
               className="text-primary hover:underline text-sm"
             >
@@ -101,7 +102,7 @@ export default function RegisterPage() {
           <RegisterForm 
             onSuccess={handleRegistrationSuccess}
             invitationCode={invitationCode}
-            inviterName={invitationValidation?.inviter?.name}
+            inviterName={invitationValidation?.inviter.name}
           />
         )}
       </div>

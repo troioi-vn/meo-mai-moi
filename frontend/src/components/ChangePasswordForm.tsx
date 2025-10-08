@@ -69,7 +69,7 @@ const ChangePasswordForm: React.FC = () => {
       } catch {
         /* ignore logout error */
       }
-      navigate('/login')
+      void navigate('/login')
     } catch (error: unknown) {
       let errorMessage = 'An unexpected error occurred.'
       if (error instanceof AxiosError) {

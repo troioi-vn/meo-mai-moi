@@ -2,7 +2,7 @@ import { screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, userEvent } from '@/test-utils'
 import InvitationShare from './InvitationShare'
-import { toast } from 'sonner'
+
 
 vi.mock('sonner', async () => {
   const actual = await vi.importActual('sonner')

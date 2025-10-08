@@ -100,7 +100,7 @@ export const generateInvitation = async (expiresAt?: string): Promise<Invitation
  * Revoke an invitation
  */
 export const revokeInvitation = async (id: number): Promise<void> => {
-  await api.delete(`/invitations/${id}`)
+  await api.delete(`/invitations/${String(id)}`)
 }
 
 /**

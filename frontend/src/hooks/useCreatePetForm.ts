@@ -119,7 +119,7 @@ export const useCreatePetForm = (petId?: string) => {
             birthday_year: pet.birthday_year ? String(pet.birthday_year) : '',
             birthday_month: pet.birthday_month ? String(pet.birthday_month) : '',
             birthday_day: pet.birthday_day ? String(pet.birthday_day) : '',
-            birthday_precision: pet.birthday_precision || (pet.birthday ? 'day' : 'unknown'),
+            birthday_precision: pet.birthday_precision ?? (pet.birthday ? 'day' : 'unknown'),
             location: pet.location,
             description: pet.description,
             pet_type_id: pet.pet_type.id,

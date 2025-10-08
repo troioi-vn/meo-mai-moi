@@ -5,9 +5,9 @@ import { server } from './mocks/server'
 
 // Configure testing library to be less verbose
 configure({
-  getElementError: (message, container) => {
+  getElementError: (message) => {
     // Return a much shorter error message without the full DOM dump
-    const error = new Error(message || 'Element not found')
+    const error = new Error(message ?? 'Element not found')
     error.name = 'TestingLibraryElementError'
     return error
   },
@@ -79,24 +79,20 @@ Object.defineProperty(window, 'matchMedia', {
 })
 
 // Mock Navigator APIs - but allow tests to override
-if (!navigator.clipboard) {
-  Object.defineProperty(navigator, 'clipboard', {
-    writable: true,
-    configurable: true,
-    value: {
-      writeText: vi.fn().mockResolvedValue(undefined),
-      readText: vi.fn().mockResolvedValue(''),
-    },
-  })
-}
+Object.defineProperty(navigator, 'clipboard', {
+  writable: true,
+  configurable: true,
+  value: {
+    writeText: vi.fn().mockResolvedValue(undefined),
+    readText: vi.fn().mockResolvedValue(''),
+  },
+})
 
-if (!navigator.share) {
-  Object.defineProperty(navigator, 'share', {
-    writable: true,
-    configurable: true,
-    value: vi.fn().mockResolvedValue(undefined),
-  })
-}
+Object.defineProperty(navigator, 'share', {
+  writable: true,
+  configurable: true,
+  value: vi.fn().mockResolvedValue(undefined),
+})
 
 // No need to mock buttonVariants export from button anymore
 

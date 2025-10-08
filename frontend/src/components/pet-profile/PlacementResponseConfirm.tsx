@@ -25,7 +25,7 @@ export function PlacementResponseConfirm({
       <p>
         Helper Profile: {selected ? `${selected.city ?? ''}, ${selected.state ?? ''}` : ''}
       </p>
-  <p>Relationship Type: {requestedRelationshipType?.replace('_', ' ').toUpperCase() ?? ''}</p>
+  <p>Relationship Type: {requestedRelationshipType ? requestedRelationshipType.replace('_', ' ').toUpperCase() : ''}</p>
       {requestedRelationshipType === 'fostering' && (
         <>
           <p>Fostering Type: {fosteringType.toUpperCase()}</p>

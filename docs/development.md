@@ -305,3 +305,34 @@ npm run lint:dead
 - Utility functions in shared modules
 
 ---
+## Supply Chain Security
+
+### Composer Audit (Backend Dependencies)
+
+Used to detect known security advisories in PHP dependencies.
+
+**Run audit:**
+```bash
+cd backend
+composer audit --locked
+```
+
+**Current Baseline (2025-10-09):**
+- 0 security advisories
+- 1 abandoned package: `qossmic/deptrac` (suggested: `deptrac/deptrac`) — monitored, non-critical
+
+**Add to CI:** (future task)
+- Run daily or per PR
+- Fail only on new advisories (allow list legacy if needed)
+
+**Response Playbook:**
+1. Evaluate severity (critical/high first)
+2. Check changelog of patched version
+3. Run test suite + quality gates
+4. Merge patch promptly if safe
+
+### npm Audit (Frontend Dependencies)
+
+Currently informational (2 vulnerabilities: 1 low, 1 high). Will integrate after i18n foundation to avoid noise. Strategy: switch to `npm audit --production` for runtime focus, and track dev-only separately.
+
+---

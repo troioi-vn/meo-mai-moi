@@ -65,7 +65,7 @@ class InviteSystemAuthTest extends TestCase
     public function test_user_can_register_with_valid_invitation_code()
     {
         Settings::set('invite_only_enabled', 'true');
-        
+
         $inviter = User::factory()->create();
         $invitation = Invitation::factory()->create([
             'inviter_user_id' => $inviter->id,
@@ -122,7 +122,7 @@ class InviteSystemAuthTest extends TestCase
     public function test_user_cannot_register_with_expired_invitation_code()
     {
         Settings::set('invite_only_enabled', 'true');
-        
+
         $inviter = User::factory()->create();
         $invitation = Invitation::factory()->create([
             'inviter_user_id' => $inviter->id,
@@ -149,7 +149,7 @@ class InviteSystemAuthTest extends TestCase
     public function test_user_cannot_register_with_already_used_invitation_code()
     {
         Settings::set('invite_only_enabled', 'true');
-        
+
         $inviter = User::factory()->create();
         $recipient = User::factory()->create();
         $invitation = Invitation::factory()->create([
@@ -177,7 +177,7 @@ class InviteSystemAuthTest extends TestCase
     public function test_user_cannot_register_with_revoked_invitation_code()
     {
         Settings::set('invite_only_enabled', 'true');
-        
+
         $inviter = User::factory()->create();
         $invitation = Invitation::factory()->create([
             'inviter_user_id' => $inviter->id,
@@ -203,7 +203,7 @@ class InviteSystemAuthTest extends TestCase
     public function test_invitation_code_is_optional_when_invite_only_is_disabled()
     {
         Settings::set('invite_only_enabled', 'false');
-        
+
         $inviter = User::factory()->create();
         $invitation = Invitation::factory()->create([
             'inviter_user_id' => $inviter->id,
@@ -232,7 +232,7 @@ class InviteSystemAuthTest extends TestCase
     public function test_invitation_code_is_accepted_even_when_invite_only_is_disabled()
     {
         Settings::set('invite_only_enabled', 'false');
-        
+
         $inviter = User::factory()->create();
         $invitation = Invitation::factory()->create([
             'inviter_user_id' => $inviter->id,
@@ -311,7 +311,7 @@ class InviteSystemAuthTest extends TestCase
     public function test_registration_validates_other_fields_regardless_of_invite_mode()
     {
         Settings::set('invite_only_enabled', 'true');
-        
+
         $inviter = User::factory()->create();
         $invitation = Invitation::factory()->create([
             'inviter_user_id' => $inviter->id,

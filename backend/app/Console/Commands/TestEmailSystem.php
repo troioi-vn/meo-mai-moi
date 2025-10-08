@@ -40,7 +40,7 @@ class TestEmailSystem extends Command
         $waitlistEntry = WaitlistEntry::first();
         if ($waitlistEntry) {
             $this->info("✉️  Testing waitlist confirmation for: {$waitlistEntry->email}");
-            
+
             try {
                 Mail::send('emails.waitlist-confirmation', [
                     'waitlistEntry' => $waitlistEntry,
@@ -48,7 +48,7 @@ class TestEmailSystem extends Command
                     $message->to($waitlistEntry->email)
                             ->subject('You\'re on the waitlist for ' . config('app.name') . '!');
                 });
-                
+
                 $this->info('✅ Waitlist confirmation email sent successfully!');
             } catch (\Exception $e) {
                 $this->error('❌ Waitlist email failed: ' . $e->getMessage());
@@ -58,10 +58,10 @@ class TestEmailSystem extends Command
         // Test invitation email
         $invitation = Invitation::first();
         $inviter = User::first();
-        
+
         if ($invitation && $inviter) {
             $this->info('📨 Testing invitation email...');
-            
+
             try {
                 Mail::send('emails.invitation', [
                     'inviter' => $inviter,
@@ -71,7 +71,7 @@ class TestEmailSystem extends Command
                     $message->to('test-invite@example.com')
                             ->subject('You\'re invited to join ' . config('app.name') . '!');
                 });
-                
+
                 $this->info('✅ Invitation email sent successfully!');
             } catch (\Exception $e) {
                 $this->error('❌ Invitation email failed: ' . $e->getMessage());

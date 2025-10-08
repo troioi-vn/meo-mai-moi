@@ -9,6 +9,7 @@
                             <div class="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
                                 <x-heroicon-s-lock-closed class="w-5 h-5 text-amber-600" />
                             </div>
+
                         @else
                             <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                                 <x-heroicon-s-lock-open class="w-5 h-5 text-green-600" />

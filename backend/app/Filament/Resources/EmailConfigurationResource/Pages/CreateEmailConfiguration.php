@@ -19,7 +19,7 @@ class CreateEmailConfiguration extends CreateRecord
     protected function afterCreate(): void
     {
         $record = $this->record;
-        
+
         if (!$record instanceof \App\Models\EmailConfiguration) {
             return;
         }

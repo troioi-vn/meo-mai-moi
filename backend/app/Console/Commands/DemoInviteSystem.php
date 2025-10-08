@@ -87,11 +87,11 @@ class DemoInviteSystem extends Command
         $this->line('🔄 Testing Settings Toggle...');
         $settingsService = app(SettingsService::class);
         $originalState = $settingsService->isInviteOnlyEnabled();
-        
+
         $settingsService->setInviteOnlyEnabled(!$originalState);
         $newState = $settingsService->isInviteOnlyEnabled();
         $this->line("   ✅ Toggled from {$this->boolToText($originalState)} to {$this->boolToText($newState)}");
-        
+
         // Restore original state
         $settingsService->setInviteOnlyEnabled($originalState);
         $this->line("   ✅ Restored to original state: {$this->boolToText($originalState)}");

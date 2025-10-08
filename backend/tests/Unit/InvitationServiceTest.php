@@ -60,7 +60,7 @@ class InvitationServiceTest extends TestCase
 
         $this->assertInstanceOf(Invitation::class, $invitation);
         $this->assertEquals($this->user->id, $invitation->inviter_user_id);
-        
+
         // Note: We can't easily test the email sending in unit tests since it uses a static method
         // This would be better tested in a feature test
     }
@@ -128,7 +128,7 @@ class InvitationServiceTest extends TestCase
     {
         $invitation1 = $this->service->generateInvitation($this->user);
         $invitation2 = $this->service->generateInvitation($this->user);
-        
+
         // Create invitation from different user
         $otherUser = User::factory()->create();
         $this->service->generateInvitation($otherUser);
@@ -198,7 +198,7 @@ class InvitationServiceTest extends TestCase
         $invitation1 = $this->service->generateInvitation($this->user);
         $invitation2 = $this->service->generateInvitation($this->user);
         $invitation3 = $this->service->generateInvitation($this->user, Carbon::now()->subDay());
-        
+
         $recipient = User::factory()->create();
         $invitation1->markAsAccepted($recipient);
         $invitation2->markAsRevoked();
@@ -245,11 +245,11 @@ class InvitationServiceTest extends TestCase
     public function test_get_system_invitation_stats_returns_system_wide_stats()
     {
         $user2 = User::factory()->create();
-        
+
         $invitation1 = $this->service->generateInvitation($this->user);
         $invitation2 = $this->service->generateInvitation($user2);
         $invitation3 = $this->service->generateInvitation($this->user);
-        
+
         $recipient = User::factory()->create();
         $invitation1->markAsAccepted($recipient);
         $invitation2->markAsRevoked();

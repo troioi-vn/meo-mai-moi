@@ -3,16 +3,14 @@
 namespace App\Services\Waitlist;
 
 use App\Models\User;
-use App\Services\InvitationService;
+
 use Illuminate\Support\Facades\DB;
 
 class BulkInvitationProcessor
 {
-    private InvitationService $invitationService;
-
-    public function __construct(InvitationService $invitationService)
+    public function __construct()
     {
-        $this->invitationService = $invitationService;
+        // No dependencies needed - uses callback pattern
     }
 
     /**

@@ -60,7 +60,7 @@ class InvitationController extends Controller
     {
         $user = $request->user();
         $invitations = $this->invitationService->getUserInvitations($user);
-        
+
         $data = [];
         foreach ($invitations as $invitation) {
             /** @var \App\Models\Invitation $invitation */
@@ -152,7 +152,7 @@ class InvitationController extends Controller
 
         try {
             $expiresAt = $request->expires_at ? Carbon::parse($request->expires_at) : null;
-            
+
             // If email is provided, check if it's on waitlist first
             if ($request->email) {
                 // Check if email is on waitlist

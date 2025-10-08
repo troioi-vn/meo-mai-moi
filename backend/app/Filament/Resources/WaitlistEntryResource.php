@@ -249,11 +249,11 @@ class WaitlistEntryResource extends Resource
     public static function getNavigationBadgeColor(): ?string
     {
         $pendingCount = static::getModel()::pending()->count();
-        
+
         if ($pendingCount === 0) {
             return null;
         }
-        
+
         return $pendingCount > 10 ? 'warning' : 'primary';
     }
 

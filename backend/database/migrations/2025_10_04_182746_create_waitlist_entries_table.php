@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('status')->default('pending');
             $table->timestamp('invited_at')->nullable();
             $table->timestamps();
-            
+
             $table->index(['email', 'status']);
         });
     }

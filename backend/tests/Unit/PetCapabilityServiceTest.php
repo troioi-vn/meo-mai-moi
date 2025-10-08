@@ -18,7 +18,7 @@ class PetCapabilityServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Run the PetTypeSeeder to ensure pet types exist with correct capabilities
         $this->seed(\Database\Seeders\PetTypeSeeder::class);
     }

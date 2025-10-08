@@ -60,11 +60,11 @@ class SystemSettings extends Page
                             ->live()
                             ->afterStateUpdated(function (bool $state) {
                                 $this->settingsService->setInviteOnlyEnabled($state);
-                                
-                                $message = $state 
+
+                                $message = $state
                                     ? 'Invite-only registration enabled. New users must have invitation codes.'
                                     : 'Open registration enabled. Anyone can register freely.';
-                                
+
                                 Notification::make()
                                     ->title('Registration Mode Updated')
                                     ->body($message)
@@ -87,7 +87,7 @@ class SystemSettings extends Page
                     $this->form->fill([
                         'invite_only_enabled' => $this->settingsService->isInviteOnlyEnabled(),
                     ]);
-                    
+
                     Notification::make()
                         ->title('Settings Refreshed')
                         ->success()

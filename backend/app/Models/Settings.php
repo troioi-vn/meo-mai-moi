@@ -15,7 +15,7 @@ class Settings extends Model
     public static function get(string $key, $default = null)
     {
         $cacheKey = "settings.{$key}";
-        
+
         return Cache::remember($cacheKey, 3600, function () use ($key, $default) {
             $setting = static::where('key', $key)->first();
             return $setting ? $setting->value : $default;
@@ -43,9 +43,9 @@ class Settings extends Model
     {
         $currentValue = static::get($key, false);
         $newValue = !filter_var($currentValue, FILTER_VALIDATE_BOOLEAN);
-        
+
         static::set($key, $newValue ? 'true' : 'false');
-        
+
         return $newValue;
     }
 

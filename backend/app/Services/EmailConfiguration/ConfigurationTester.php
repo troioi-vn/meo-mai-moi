@@ -18,13 +18,13 @@ class ConfigurationTester
     {
         try {
             $testConfig = $this->prepareTestConfiguration($provider, $config);
-            
+
             if (!$testConfig['success']) {
                 return $testConfig;
             }
 
             $validationResult = $this->validateConfiguration($testConfig['config']);
-            
+
             if (!$validationResult['success']) {
                 return $validationResult;
             }
@@ -39,7 +39,7 @@ class ConfigurationTester
     {
         if ($provider === null || $config === null) {
             $activeConfig = EmailConfiguration::getActive();
-            
+
             if (!$activeConfig) {
                 return [
                     'success' => false,
@@ -47,7 +47,7 @@ class ConfigurationTester
                     'error_type' => 'configuration_missing',
                 ];
             }
-            
+
             $provider = $activeConfig->provider;
             $config = $activeConfig->config;
         }
@@ -64,7 +64,7 @@ class ConfigurationTester
     private function validateConfiguration(EmailConfiguration $testConfig): array
     {
         $validationErrors = $testConfig->validateConfig();
-        
+
         if ($validationErrors) {
             return [
                 'success' => false,

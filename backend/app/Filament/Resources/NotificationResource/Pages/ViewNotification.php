@@ -32,7 +32,7 @@ class ViewNotification extends ViewRecord
                     if (!$notification) {
                         return;
                     }
-                    
+
                     $notification->update([
                         'is_read' => true,
                         'read_at' => now(),
@@ -51,7 +51,7 @@ class ViewNotification extends ViewRecord
                     if (!$notification) {
                         return;
                     }
-                    
+
                     $notification->update([
                         'delivered_at' => now(),
                         'failed_at' => null,
@@ -72,7 +72,7 @@ class ViewNotification extends ViewRecord
                     if (!$notification) {
                         return;
                     }
-                    
+
                     $notification->update([
                         'failed_at' => null,
                         'failure_reason' => null,

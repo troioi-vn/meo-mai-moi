@@ -23,7 +23,7 @@ class EditEmailConfiguration extends EditRecord
                     if (!$this->record instanceof \App\Models\EmailConfiguration) {
                         return;
                     }
-                    
+
                     $service = app(EmailConfigurationService::class);
 
                     try {
@@ -63,7 +63,7 @@ class EditEmailConfiguration extends EditRecord
                     if (!$this->record instanceof \App\Models\EmailConfiguration) {
                         return;
                     }
-                    
+
                     try {
                         $this->record->activate();
 
@@ -105,7 +105,7 @@ class EditEmailConfiguration extends EditRecord
     protected function afterSave(): void
     {
         $record = $this->record;
-        
+
         if (!$record instanceof \App\Models\EmailConfiguration) {
             return;
         }

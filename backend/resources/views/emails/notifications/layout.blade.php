@@ -106,10 +106,10 @@
 
         <div class="footer">
             <p>This email was sent by {{ $appName }}. If you have any questions, please contact our support team.</p>
-            
+
             <div class="unsubscribe">
                 <p>
-                    Don't want to receive these emails? 
+                    Don't want to receive these emails?
                     <a href="{{ $unsubscribeUrl }}">Unsubscribe from this notification type</a>
                 </p>
             </div>

@@ -10,6 +10,12 @@ Quick reference for running, developing, and testing Meo Mai Moi locally.
    ```bash
    docker compose up -d --build
    ```
+   
+   **For development/testing:** If you need to run backend tests, rebuild with dev dependencies:
+   ```bash
+   docker compose build --build-arg INSTALL_DEV=true backend
+   docker compose up -d backend
+   ```
 
 2. **Initialize (first time only)**
    ```bash
@@ -33,7 +39,7 @@ docker compose up -d
 cd frontend && npm run dev  # → http://localhost:5173
 
 # Run tests
-docker compose exec backend php artisan test
+docker compose exec backend ./vendor/bin/phpunit
 cd frontend && npm test
 
 # Generate coverage reports
@@ -71,7 +77,7 @@ docker compose down
 ```bash
 # Development
 docker compose up -d --build
-docker compose exec backend php artisan test
+docker compose exec backend ./vendor/bin/phpunit
 cd frontend && npm test && npm run lint
 
 # Code quality

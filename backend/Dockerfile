@@ -24,7 +24,12 @@ FROM php:8.4-fpm
 WORKDIR /var/www
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y     libpng-dev libjpeg62-turbo-dev libfreetype6-dev libonig-dev libzip-dev     libpq-dev libicu-dev locales zip unzip curl nginx supervisor procps net-tools postgresql-client
+ARG INSTALL_XDEBUG=true
+ARG INSTALL_DEV=false
+RUN apt-get update && apt-get install -y \
+	libpng-dev libjpeg62-turbo-dev libfreetype6-dev libonig-dev libzip-dev \
+	libpq-dev libicu-dev locales zip unzip curl nginx supervisor procps net-tools postgresql-client \
+ && if [ "$INSTALL_XDEBUG" = "true" ]; then pecl install xdebug >/dev/null 2>&1 && docker-php-ext-enable xdebug; fi
 
 # Install PHP extensions
 RUN docker-php-ext-install mbstring zip exif pcntl intl pdo_pgsql     && docker-php-ext-configure gd --with-freetype --with-jpeg     && docker-php-ext-install gd
@@ -35,6 +40,7 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # Copy custom PHP-FPM pool configuration
 COPY backend/www.conf /usr/local/etc/php-fpm.d/www.conf
 COPY backend/php.ini /usr/local/etc/php/conf.d/custom.ini
+COPY backend/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 RUN rm /usr/local/etc/php-fpm.d/www.conf.default && rm /usr/local/etc/php-fpm.d/zz-docker.conf
 
 RUN mkdir -p /var/run/php-fpm && chown www-data:www-data /var/run/php-fpm && chmod 775 /var/run/php-fpm
@@ -58,9 +64,13 @@ RUN install -d -o www-data -g www-data \
  && chmod -R 775 /var/www/storage /var/www/bootstrap/cache \
  && chown www-data:www-data /var/www
 
-# Switch to the application user to install Composer dependencies
+##
+# Composer installation
+# By default we install production dependencies only. For test/coverage builds
+# pass --build-arg INSTALL_DEV=true to include dev packages (phpunit, pest, etc.).
+##
 USER www-data
-RUN rm -f bootstrap/cache/packages.php && composer install --no-dev --optimize-autoloader
+RUN rm -f bootstrap/cache/packages.php && if [ "$INSTALL_DEV" = "true" ]; then composer install --no-interaction --prefer-dist; else composer install --no-dev --optimize-autoloader; fi
 
 # Switch back to root for final setup
 USER root

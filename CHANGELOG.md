@@ -12,7 +12,7 @@ All notable changes to this project are documented here, following the [Keep a C
 - Pet API: Deprecated strict required exact `birthday`; now optional and superseded by precision + component fields. Supplying legacy `birthday` alone auto-coerces precision=day.
 
 ### Added
-- Dedicated PostgreSQL development container setup in `utils/dev-pgsql-docker/`
+
 - PgAdmin interface for local database management
 - Enhanced documentation for PostgreSQL-only development workflow
 - Comprehensive frontend code quality improvements with 140+ ESLint fixes

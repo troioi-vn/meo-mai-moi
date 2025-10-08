@@ -148,16 +148,16 @@ class SettingsTest extends TestCase
     {
         // Clear cache first to ensure clean state
         Cache::flush();
-        
+
         Settings::set('cached_key', 'cached_value');
-        
+
         // Get the value to ensure it's cached
         $firstResult = Settings::get('cached_key');
         $this->assertEquals('cached_value', $firstResult);
-        
+
         // Delete from database but not cache
         Settings::where('key', 'cached_key')->delete();
-        
+
         // Should still return cached value
         $result = Settings::get('cached_key');
         $this->assertEquals('cached_value', $result);
@@ -167,23 +167,23 @@ class SettingsTest extends TestCase
     {
         // Clear cache first to ensure clean state
         Cache::flush();
-        
+
         Settings::set('cache_test_key', 'initial_value');
-        
+
         // Get the value to ensure it's cached
         $firstResult = Settings::get('cache_test_key');
         $this->assertEquals('initial_value', $firstResult);
-        
+
         // Delete from database but not cache
         Settings::where('key', 'cache_test_key')->delete();
-        
+
         // Verify it's still cached
         $cachedResult = Settings::get('cache_test_key');
         $this->assertEquals('initial_value', $cachedResult);
-        
+
         // Set new value (should clear cache and create new record)
         Settings::set('cache_test_key', 'new_value');
-        
+
         // Should return new value from database
         $result = Settings::get('cache_test_key');
         $this->assertEquals('new_value', $result);

@@ -13,11 +13,11 @@ class EmailNotificationChannel implements NotificationChannelInterface
     {
         try {
             $notification = $this->createNotificationRecord($user, $type, $data);
-            
+
             SendNotificationEmail::dispatch($user, $type, $data, $notification->id);
-            
+
             $this->logSuccess($user, $notification, $type);
-            
+
             return true;
         } catch (\Exception $e) {
             $this->logError($user, $type, $e);

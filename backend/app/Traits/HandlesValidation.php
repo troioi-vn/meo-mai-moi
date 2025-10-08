@@ -13,21 +13,21 @@ trait HandlesValidation
     protected function dateValidationRules(bool $required = true, bool $allowFuture = true): array
     {
         $rules = $required ? ['required', 'date'] : ['nullable', 'date'];
-        
+
         if (!$allowFuture) {
             $rules[] = 'before_or_equal:today';
         }
-        
+
         return $rules;
     }
 
     /**
      * Common validation rules for email.
      */
-    protected function emailValidationRules(bool $required = true, string $uniqueTable = null, int $ignoreId = null): array
+    protected function emailValidationRules(bool $required = true, ?string $uniqueTable = null, ?int $ignoreId = null): array
     {
         $rules = $required ? ['required', 'email', 'max:255'] : ['nullable', 'email', 'max:255'];
-        
+
         if ($uniqueTable) {
             $unique = "unique:{$uniqueTable},email";
             if ($ignoreId) {
@@ -35,7 +35,7 @@ trait HandlesValidation
             }
             $rules[] = $unique;
         }
-        
+
         return $rules;
     }
 
@@ -45,29 +45,29 @@ trait HandlesValidation
     protected function textValidationRules(bool $required = true, int $maxLength = 255): array
     {
         $rules = $required ? ['required', 'string'] : ['nullable', 'string'];
-        
+
         if ($maxLength > 0) {
             $rules[] = "max:{$maxLength}";
         }
-        
+
         return $rules;
     }
 
     /**
      * Common validation rules for numeric fields.
      */
-    protected function numericValidationRules(bool $required = true, float $min = null, float $max = null): array
+    protected function numericValidationRules(bool $required = true, ?float $min = null, ?float $max = null): array
     {
         $rules = $required ? ['required', 'numeric'] : ['nullable', 'numeric'];
-        
+
         if ($min !== null) {
             $rules[] = "min:{$min}";
         }
-        
+
         if ($max !== null) {
             $rules[] = "max:{$max}";
         }
-        
+
         return $rules;
     }
 
@@ -79,7 +79,7 @@ trait HandlesValidation
         $rules = $required ? ['required', 'image'] : ['nullable', 'image'];
         $rules[] = 'mimes:jpeg,png,jpg,gif,svg';
         $rules[] = "max:{$maxSizeKb}";
-        
+
         return $rules;
     }
 
@@ -96,7 +96,7 @@ trait HandlesValidation
                 'errors' => $e->errors(),
                 'input' => $request->except(['password', 'password_confirmation']),
             ]);
-            
+
             throw $e;
         }
     }
@@ -117,11 +117,11 @@ trait HandlesValidation
     protected function passwordValidationRules(bool $requireConfirmation = true, int $minLength = 8): array
     {
         $rules = ['required', 'string', "min:{$minLength}"];
-        
+
         if ($requireConfirmation) {
             $rules[] = 'confirmed';
         }
-        
+
         return $rules;
     }
 
@@ -131,15 +131,15 @@ trait HandlesValidation
     protected function uniqueValidationRule(string $table, string $column, array $conditions = [], int $ignoreId = null): string
     {
         $rule = "unique:{$table},{$column}";
-        
+
         if ($ignoreId) {
             $rule .= ",{$ignoreId}";
         }
-        
+
         foreach ($conditions as $field => $value) {
             $rule .= ",{$field},{$value}";
         }
-        
+
         return $rule;
     }
 }

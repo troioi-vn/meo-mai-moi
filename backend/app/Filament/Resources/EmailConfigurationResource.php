@@ -284,8 +284,8 @@ class EmailConfigurationResource extends Resource
 
                 Tables\Filters\Filter::make('valid_only')
                     ->label('Valid Configurations Only')
-                    ->query(fn (Builder $query): Builder => 
-                        $query->whereIn('id', 
+                    ->query(fn (Builder $query): Builder =>
+                        $query->whereIn('id',
                             \App\Models\EmailConfiguration::all()
                                 ->filter(fn (\App\Models\EmailConfiguration $config) => $config->isValid())
                                 ->pluck('id')

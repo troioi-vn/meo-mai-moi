@@ -102,7 +102,7 @@
 
         <div class="content" style="color: #333333;">
             <h2 style="color: #333333;">Hello {{ $user->name }},</h2>
-            
+
             <p style="color: #333333;">We received a request to reset your password for your {{ config('app.name') }} account.</p>
 
             <div class="reset-info" style="color: #333333;">

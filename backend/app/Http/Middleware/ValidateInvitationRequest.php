@@ -43,7 +43,7 @@ class ValidateInvitationRequest
         // Additional security checks for waitlist requests
         if ($request->is('api/waitlist') && $request->isMethod('POST')) {
             $email = $request->input('email');
-            
+
             // Check for suspicious email patterns
             if ($email && (
                 str_contains($email, '+') && substr_count($email, '+') > 2 || // Multiple + signs

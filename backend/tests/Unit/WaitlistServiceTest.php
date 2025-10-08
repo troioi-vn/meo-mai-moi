@@ -94,7 +94,7 @@ class WaitlistServiceTest extends TestCase
         $entry1 = $this->service->addToWaitlist('pending1@example.com');
         $entry2 = $this->service->addToWaitlist('pending2@example.com');
         $entry3 = $this->service->addToWaitlist('invited@example.com');
-        
+
         $entry3->markAsInvited();
 
         $pendingEntries = $this->service->getPendingEntries();
@@ -114,7 +114,7 @@ class WaitlistServiceTest extends TestCase
 
         $this->assertInstanceOf(Invitation::class, $invitation);
         $this->assertEquals($this->user->id, $invitation->inviter_user_id);
-        
+
         $entry->refresh();
         $this->assertEquals('invited', $entry->status);
         $this->assertNotNull($entry->invited_at);
@@ -143,23 +143,23 @@ class WaitlistServiceTest extends TestCase
         $email1 = 'test1@example.com';
         $email2 = 'test2@example.com';
         $email3 = 'nonexistent@example.com';
-        
+
         $this->service->addToWaitlist($email1);
         $this->service->addToWaitlist($email2);
 
         $results = $this->service->bulkInviteFromWaitlist([$email1, $email2, $email3], $this->user);
 
         $this->assertCount(3, $results);
-        
+
         // First two should succeed
         $this->assertTrue($results[0]['success']);
         $this->assertEquals($email1, $results[0]['email']);
         $this->assertInstanceOf(Invitation::class, $results[0]['invitation']);
-        
+
         $this->assertTrue($results[1]['success']);
         $this->assertEquals($email2, $results[1]['email']);
         $this->assertInstanceOf(Invitation::class, $results[1]['invitation']);
-        
+
         // Third should fail
         $this->assertFalse($results[2]['success']);
         $this->assertEquals($email3, $results[2]['email']);
@@ -189,7 +189,7 @@ class WaitlistServiceTest extends TestCase
         $entry1 = $this->service->addToWaitlist('pending1@example.com');
         $entry2 = $this->service->addToWaitlist('pending2@example.com');
         $entry3 = $this->service->addToWaitlist('invited@example.com');
-        
+
         $entry3->markAsInvited();
 
         $stats = $this->service->getWaitlistStats();
@@ -207,7 +207,7 @@ class WaitlistServiceTest extends TestCase
         // Create entries today
         $this->service->addToWaitlist('today1@example.com');
         $this->service->addToWaitlist('today2@example.com');
-        
+
         // Create entry yesterday and mark as invited
         $yesterdayEntry = $this->service->addToWaitlist('yesterday@example.com');
         $yesterdayEntry->update(['created_at' => now()->subDay()]);

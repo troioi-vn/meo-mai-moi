@@ -42,7 +42,7 @@ class InvitationSent extends Notification implements ShouldQueue
     {
         $appName = config('app.name', 'Our Platform');
         $invitationUrl = $this->invitation->getInvitationUrl();
-        
+
         return (new MailMessage())
             ->subject("You're invited to join {$appName}!")
             ->markdown('emails.invitation', [

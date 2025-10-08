@@ -47,7 +47,7 @@ class InviteSystemIntegrationTest extends TestCase
         ]);
 
         $invitationResponse->assertStatus(201);
-        
+
         $invitation = Invitation::where('inviter_user_id', $admin->id)->first();
         $this->assertNotNull($invitation);
 
@@ -91,7 +91,7 @@ class InviteSystemIntegrationTest extends TestCase
         ]);
 
         $invitationResponse->assertStatus(201);
-        
+
         $invitation = Invitation::where('inviter_user_id', $inviter->id)->first();
         $this->assertNotNull($invitation);
 
@@ -131,7 +131,7 @@ class InviteSystemIntegrationTest extends TestCase
         // List invitations
         $listResponse = $this->getJson('/api/invitations');
         $listResponse->assertStatus(200);
-        
+
         $invitations = $listResponse->json('data');
         $this->assertCount(1, $invitations);
         $this->assertEquals($invitation->id, $invitations[0]['id']);
@@ -213,7 +213,7 @@ class InviteSystemIntegrationTest extends TestCase
             $response = $this->postJson('/api/waitlist', [
                 'email' => "test{$i}@example.com"
             ]);
-            
+
             if ($response->getStatusCode() === 201) {
                 $waitlistAttempts++;
             }
@@ -224,7 +224,7 @@ class InviteSystemIntegrationTest extends TestCase
         $invitationAttempts = 0;
         for ($i = 0; $i < 15; $i++) {
             $response = $this->postJson('/api/invitations');
-            
+
             if ($response->getStatusCode() === 201) {
                 $invitationAttempts++;
             }
@@ -247,10 +247,10 @@ class InviteSystemIntegrationTest extends TestCase
 
         foreach ($endpoints as [$method, $url, $data]) {
             $response = $this->json($method, $url, $data);
-            
+
             $response->assertStatus(422)
                 ->assertJsonValidationErrors(['email']);
-            
+
             // Ensure error format is consistent
             $this->assertArrayHasKey('message', $response->json());
             $this->assertArrayHasKey('errors', $response->json());
@@ -260,7 +260,7 @@ class InviteSystemIntegrationTest extends TestCase
     public function test_database_consistency_during_concurrent_operations()
     {
         $user = $this->createUserAndLogin();
-        
+
         // Create invitation
         $invitation = Invitation::factory()->create([
             'inviter_user_id' => $user->id,
@@ -269,7 +269,7 @@ class InviteSystemIntegrationTest extends TestCase
 
         // Simulate concurrent acceptance attempts
         Settings::set('invite_only_enabled', 'true');
-        
+
         $response1 = $this->postJson('/api/register', [
             'name' => 'User One',
             'email' => 'user1@example.com',

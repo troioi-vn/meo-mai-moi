@@ -105,19 +105,20 @@
                     You are about to unsubscribe from email notifications for:
                 </div>
 
+
                 <div class="notification-type">
                     <strong>{{ $notificationTypeLabel }}</strong>
                 </div>
 
                 <div class="message">
-                    Are you sure you want to stop receiving these email notifications? 
+                    Are you sure you want to stop receiving these email notifications?
                     You can always re-enable them in your account settings.
                 </div>
 
                 <button onclick="confirmUnsubscribe()" class="button">
                     Yes, Unsubscribe Me
                 </button>
-                
+
                 <a href="{{ config('app.url') }}" class="button secondary">
                     Cancel
                 </a>
@@ -127,9 +128,9 @@
                 <div class="success">
                     <strong>Success!</strong> You have been unsubscribed from "{{ $notificationTypeLabel }}" email notifications.
                 </div>
-                
+
                 <div class="message">
-                    You will no longer receive email notifications for this type of event. 
+                    You will no longer receive email notifications for this type of event.
                     You can manage all your notification preferences in your account settings.
                 </div>
 
@@ -160,7 +161,7 @@
 
         <div class="footer">
             <p>
-                If you have any questions about your notification preferences, 
+                If you have any questions about your notification preferences,
                 please contact our support team or visit your account settings.
             </p>
         </div>

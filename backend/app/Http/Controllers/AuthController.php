@@ -77,7 +77,7 @@ class AuthController extends Controller
     {
         // Check if invite-only mode is enabled
         $isInviteOnlyEnabled = $this->settingsService->isInviteOnlyEnabled();
-        
+
         // Base validation rules
         $validationRules = [
             'name' => 'required|string|max:255',
@@ -120,7 +120,7 @@ class AuthController extends Controller
 
         // Create a personal access token for API clients
         $token = $user->createToken('auth_token')->plainTextToken;
-        
+
         // For SPA authentication, only login if we have a session and it's not an API test
         if ($request->hasSession() && !app()->runningInConsole() && !app()->runningUnitTests()) {
             try {

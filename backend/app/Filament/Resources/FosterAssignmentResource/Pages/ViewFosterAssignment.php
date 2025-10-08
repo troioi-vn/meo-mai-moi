@@ -34,7 +34,7 @@ class ViewFosterAssignment extends ViewRecord
                     if (!$this->record instanceof \App\Models\FosterAssignment) {
                         return;
                     }
-                    
+
                     $this->record->update([
                         'status' => 'completed',
                         'completed_at' => now(),
@@ -53,7 +53,7 @@ class ViewFosterAssignment extends ViewRecord
                     if (!$this->record instanceof \App\Models\FosterAssignment) {
                         return;
                     }
-                    
+
                     $this->record->update([
                         'status' => 'canceled',
                         'canceled_at' => now(),

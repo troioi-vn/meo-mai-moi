@@ -18,7 +18,7 @@ trait HandlesAuthentication
         // If no user and bearer token exists, try to resolve from token
         if (! $user && $request->bearerToken()) {
             $token = PersonalAccessToken::findToken($request->bearerToken());
-            if ($token) {
+            if ($token && $token->tokenable instanceof \Illuminate\Contracts\Auth\Authenticatable) {
                 $user = $token->tokenable;
                 $request->setUserResolver(fn () => $user);
             }

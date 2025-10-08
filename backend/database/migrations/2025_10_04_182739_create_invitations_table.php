@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('status')->default('pending');
             $table->timestamp('expires_at')->nullable();
             $table->timestamps();
-            
+
             $table->index(['code', 'status']);
             $table->index('inviter_user_id');
             $table->index('recipient_user_id');

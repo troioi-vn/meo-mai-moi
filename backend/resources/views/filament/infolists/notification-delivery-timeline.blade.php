@@ -1,7 +1,7 @@
 @php
     $record = $getRecord();
     $timeline = [];
-    
+
     // Build timeline events
     if ($record->created_at) {
         $timeline[] = [
@@ -13,7 +13,7 @@
             'status' => 'completed'
         ];
     }
-    
+
     if ($record->delivered_at) {
         $timeline[] = [
             'timestamp' => $record->delivered_at,
@@ -24,7 +24,7 @@
             'status' => 'completed'
         ];
     }
-    
+
     if ($record->failed_at) {
         $timeline[] = [
             'timestamp' => $record->failed_at,
@@ -35,7 +35,7 @@
             'status' => 'failed'
         ];
     }
-    
+
     if ($record->read_at) {
         $timeline[] = [
             'timestamp' => $record->read_at,
@@ -46,7 +46,7 @@
             'status' => 'completed'
         ];
     }
-    
+
     // Sort by timestamp
     usort($timeline, function($a, $b) {
         return $a['timestamp']->timestamp <=> $b['timestamp']->timestamp;
@@ -65,7 +65,7 @@
                     <div class="mt-2 h-8 w-0.5 {{ $event['status'] === 'failed' ? 'bg-danger-200 dark:bg-danger-800' : 'bg-gray-200 dark:bg-gray-700' }}"></div>
                 @endif
             </div>
-            
+
             <!-- Event content -->
             <div class="flex-1 pb-8">
                 <div class="flex items-center justify-between">
@@ -79,7 +79,7 @@
                 <p class="mt-1 text-sm {{ $event['status'] === 'failed' ? 'text-danger-600 dark:text-danger-400' : 'text-gray-600 dark:text-gray-400' }}">
                     {{ $event['description'] }}
                 </p>
-                
+
                 @if($event['status'] === 'failed' && $record->failure_reason)
                     <div class="mt-2 rounded-md bg-danger-50 p-3 dark:bg-danger-950">
                         <div class="flex">
@@ -100,7 +100,7 @@
             </div>
         </div>
     @endforeach
-    
+
     @if(empty($timeline))
         <div class="text-center text-gray-500 dark:text-gray-400">
             <p>No delivery events recorded</p>

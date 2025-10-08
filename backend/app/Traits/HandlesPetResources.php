@@ -33,15 +33,15 @@ trait HandlesPetResources
     {
         // Require owner or admin access
         $user = $this->requireOwnerOrAdmin($request, $pet);
-        
+
         // Check capability
         $this->ensurePetCapability($pet, $capability);
-        
+
         // Validate resource belongs to pet if provided
         if ($resource) {
             $this->ensureResourceBelongsToPet($resource, $pet, $foreignKey);
         }
-        
+
         return $user;
     }
 

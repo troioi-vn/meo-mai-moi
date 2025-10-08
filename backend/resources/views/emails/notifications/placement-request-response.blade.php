@@ -27,7 +27,7 @@
 
     @if(isset($helperProfile) && $helperProfile)
         <div class="message">
-            <strong>{{ $helperProfile->user->name }}</strong> has responded to your placement request. 
+            <strong>{{ $helperProfile->user->name }}</strong> has responded to your placement request.
             They are interested in helping with @if(isset($pet) && $pet){!! htmlspecialchars($pet->name, ENT_COMPAT, 'UTF-8', false) !!}@else your pet @endif.
         </div>
 

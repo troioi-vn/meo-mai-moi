@@ -74,13 +74,13 @@ class WaitlistEntryTest extends TestCase
             'status' => 'pending',
             'created_at' => Carbon::now()->subDays(2)
         ]);
-        
+
         $entry2 = WaitlistEntry::factory()->create([
             'email' => 'second@example.com',
             'status' => 'pending',
             'created_at' => Carbon::now()->subDay()
         ]);
-        
+
         $entry3 = WaitlistEntry::factory()->create([
             'email' => 'invited@example.com',
             'status' => 'invited',

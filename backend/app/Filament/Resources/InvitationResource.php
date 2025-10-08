@@ -150,7 +150,7 @@ class InvitationResource extends Resource
 
                 Tables\Filters\Filter::make('expired')
                     ->label('Expired')
-                    ->query(fn (Builder $query): Builder => 
+                    ->query(fn (Builder $query): Builder =>
                         $query->where('expires_at', '<', now())
                               ->where('status', 'pending')
                     ),
@@ -166,7 +166,7 @@ class InvitationResource extends Resource
                     ->color('info')
                     ->action(function (Invitation $record): void {
                         $url = $record->getInvitationUrl();
-                        
+
                         Notification::make()
                             ->title('Invitation URL Copied')
                             ->body('The invitation URL has been copied to your clipboard.')
@@ -181,7 +181,7 @@ class InvitationResource extends Resource
                     ->visible(fn (Invitation $record): bool => $record->status === 'pending')
                     ->action(function (Invitation $record): void {
                         $record->markAsRevoked();
-                        
+
                         Notification::make()
                             ->title('Invitation Revoked')
                             ->body('The invitation has been revoked and can no longer be used.')
@@ -204,7 +204,7 @@ class InvitationResource extends Resource
                         ->action(function (Collection $records): void {
                             /** @var Collection<int, \App\Models\Invitation> $records */
                             $pendingRecords = $records->filter(fn (\App\Models\Invitation $record) => $record->status === 'pending');
-                            
+
                             if ($pendingRecords->isEmpty()) {
                                 Notification::make()
                                     ->title('No Pending Invitations')
@@ -283,11 +283,11 @@ class InvitationResource extends Resource
     public static function getNavigationBadgeColor(): ?string
     {
         $pendingCount = static::getModel()::pending()->count();
-        
+
         if ($pendingCount === 0) {
             return null;
         }
-        
+
         return 'primary';
     }
 

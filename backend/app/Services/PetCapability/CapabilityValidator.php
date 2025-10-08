@@ -31,7 +31,7 @@ class CapabilityValidator
         ];
 
         $exception = ValidationException::withMessages($messages);
-        
+
         $exception->response = response()->json([
             'message' => 'The given data was invalid.',
             'error_code' => 'FEATURE_NOT_AVAILABLE_FOR_PET_TYPE',

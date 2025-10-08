@@ -96,7 +96,7 @@ class WaitlistControllerTest extends TestCase
             $response = $this->postJson('/api/waitlist', [
                 'email' => "test{$i}@example.com"
             ]);
-            
+
             if ($i < 5) {
                 $response->assertStatus(201);
             }

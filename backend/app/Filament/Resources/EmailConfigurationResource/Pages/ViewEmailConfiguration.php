@@ -27,7 +27,7 @@ class ViewEmailConfiguration extends ViewRecord
                     if (!$this->record instanceof \App\Models\EmailConfiguration) {
                         return;
                     }
-                    
+
                     $service = app(EmailConfigurationService::class);
 
                     try {
@@ -67,7 +67,7 @@ class ViewEmailConfiguration extends ViewRecord
                     if (!$this->record instanceof \App\Models\EmailConfiguration) {
                         return;
                     }
-                    
+
                     try {
                         $this->record->activate();
 
@@ -104,7 +104,7 @@ class ViewEmailConfiguration extends ViewRecord
                     if (!$this->record instanceof \App\Models\EmailConfiguration) {
                         return;
                     }
-                    
+
                     try {
                         $this->record->update(['is_active' => false]);
 

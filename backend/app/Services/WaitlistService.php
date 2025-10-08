@@ -30,7 +30,7 @@ class WaitlistService
         $this->invitationService = $invitationService;
         $this->validator = $validator ?? new WaitlistValidator();
         $this->statsCalculator = $statsCalculator ?? new WaitlistStatsCalculator();
-        $this->bulkProcessor = $bulkProcessor ?? new BulkInvitationProcessor($invitationService);
+        $this->bulkProcessor = $bulkProcessor ?? new BulkInvitationProcessor();
     }
 
     /**

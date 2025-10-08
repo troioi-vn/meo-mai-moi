@@ -248,7 +248,7 @@ class InvitationControllerTest extends TestCase
 
         $data = $response->json('data');
         $this->assertCount(3, $data);
-        
+
         // Should be ordered by created_at desc (newest first)
         $this->assertEquals($invitation3->id, $data[0]['id']);
         $this->assertEquals($invitation2->id, $data[1]['id']);

@@ -78,7 +78,7 @@ class SettingsControllerTest extends TestCase
         $response = $this->getJson('/api/settings/public');
 
         $response->assertStatus(200);
-        
+
         // Should have cache control headers
         $this->assertNotNull($response->headers->get('Cache-Control'));
     }
@@ -166,7 +166,7 @@ class SettingsControllerTest extends TestCase
         $executionTime = $endTime - $startTime;
 
         $response->assertStatus(200);
-        
+
         // Should be fast due to caching (less than 100ms)
         $this->assertLessThan(0.1, $executionTime);
     }

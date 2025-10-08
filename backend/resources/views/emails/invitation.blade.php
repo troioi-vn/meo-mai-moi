@@ -17,18 +17,18 @@
     <div class="header">
         <h1>🎉 You're Invited!</h1>
     </div>
-    
+
     <div class="content">
         <p>Hello there! 👋</p>
-        
+
         <p><strong>{{ $inviter->name }}</strong> has invited you to join <strong>{{ config('app.name') }}</strong>.</p>
-        
+
         <p>We're building an amazing community and would love to have you as part of it!</p>
-        
+
         <div style="text-align: center; margin: 30px 0;">
             <a href="{{ $invitationUrl }}" class="button">Accept Invitation</a>
         </div>
-        
+
         <div class="highlight">
             <h3>Important Notes:</h3>
             <ul>
@@ -37,14 +37,14 @@
                 <li>If you have any questions, just reply to this email</li>
             </ul>
         </div>
-        
+
         <p>We can't wait to welcome you to the community!</p>
-        
+
         <div class="footer">
             <p>Best regards,<br>The {{ config('app.name') }} Team</p>
-            
+
             <hr style="margin: 20px 0;">
-            
+
             <p><small>
                 If you're having trouble clicking the "Accept Invitation" button, copy and paste the URL below into your web browser:<br>
                 <a href="{{ $invitationUrl }}">{{ $invitationUrl }}</a>

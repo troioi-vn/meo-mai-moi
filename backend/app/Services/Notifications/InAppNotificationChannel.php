@@ -20,11 +20,11 @@ class InAppNotificationChannel implements NotificationChannelInterface
         try {
             $processedData = $this->isFallback ? $this->prepareFallbackData($data) : $data;
             $notification = $this->createNotificationRecord($user, $type, $processedData);
-            
+
             $notification->update(['delivered_at' => now()]);
-            
+
             $this->logSuccess($user, $notification, $type);
-            
+
             return true;
         } catch (\Exception $e) {
             $this->logError($user, $type, $e);
@@ -60,10 +60,10 @@ class InAppNotificationChannel implements NotificationChannelInterface
 
     private function logSuccess(User $user, Notification $notification, string $type): void
     {
-        $message = $this->isFallback 
+        $message = $this->isFallback
             ? 'Fallback in-app notification created'
             : 'In-app notification created';
-            
+
         $context = [
             'user_id' => $user->id,
             'notification_id' => $notification->id,
@@ -79,7 +79,7 @@ class InAppNotificationChannel implements NotificationChannelInterface
 
     private function logError(User $user, string $type, \Exception $e): void
     {
-        $message = $this->isFallback 
+        $message = $this->isFallback
             ? 'Failed to create fallback in-app notification'
             : 'Failed to create in-app notification';
 

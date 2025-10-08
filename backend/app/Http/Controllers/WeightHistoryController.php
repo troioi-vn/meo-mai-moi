@@ -6,6 +6,7 @@ use App\Models\Pet;
 use App\Models\WeightHistory;
 use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesAuthentication;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -27,7 +28,7 @@ use OpenApi\Annotations as OA;
  */
 class WeightHistoryController extends Controller
 {
-    use ApiResponseTrait;
+    use ApiResponseTrait, HandlesAuthentication;
 
     /**
      * @OA\Get(
@@ -54,16 +55,7 @@ class WeightHistoryController extends Controller
     */
     public function index(Request $request, Pet $pet)
     {
-        $user = $request->user();
-        if (! $user) {
-            return $this->sendError('Unauthenticated.', 401);
-        }
-        // Owner or admin may view; otherwise deny.
-        $isOwner = $user->id === $pet->user_id;
-        $isAdmin = method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
-        if (! $isOwner && ! $isAdmin) {
-            return $this->sendError('Forbidden.', 403);
-        }
+        $user = $this->requireOwnerOrAdmin($request, $pet);
 
         // Capability check
         PetCapabilityService::ensure($pet, 'weight');
@@ -149,15 +141,7 @@ class WeightHistoryController extends Controller
     public function store(Request $request, Pet $pet)
     {
         // Only the pet's owner or an admin can add weight records
-        $user = $request->user();
-        if (! $user) {
-            return $this->sendError('Unauthenticated.', 401);
-        }
-        $isOwner = $user->id === $pet->user_id;
-        $isAdmin = method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
-        if (! $isOwner && ! $isAdmin) {
-            return $this->sendError('You are not authorized to add weight records for this pet.', 403);
-        }
+        $user = $this->requireOwnerOrAdmin($request, $pet);
 
         // Capability check
         PetCapabilityService::ensure($pet, 'weight');

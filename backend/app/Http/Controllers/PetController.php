@@ -8,12 +8,13 @@ use App\Models\Pet;
 use App\Models\PetType;
 use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesAuthentication;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
-use Laravel\Sanctum\PersonalAccessToken;
+
 use OpenApi\Annotations as OA;
 
 /**
@@ -40,7 +41,7 @@ use OpenApi\Annotations as OA;
  */
 class PetController extends Controller
 {
-    use ApiResponseTrait;
+    use ApiResponseTrait, HandlesAuthentication;
 
     protected PetCapabilityService $capabilityService;
 
@@ -121,10 +122,7 @@ class PetController extends Controller
      */
     public function myPetsSections(Request $request)
     {
-        $user = $request->user();
-        if (! $user) {
-            return $this->sendError('Unauthenticated.', 401);
-        }
+        $user = $this->requireAuth($request);
 
         // Owned (current owner)
         $owned = Pet::where('user_id', $user->id)->with('petType')->get();
@@ -204,26 +202,10 @@ class PetController extends Controller
         // Load placement requests and nested relations needed for the view
         $pet->load(['placementRequests.transferRequests.helperProfile.user', 'petType']);
 
-        // Resolve user from bearer token for optional-auth route if missing
-        $authUser = $request->user();
-        if (! $authUser && $request->bearerToken()) {
-            $token = PersonalAccessToken::findToken($request->bearerToken());
-            if ($token) {
-                $authUser = $token->tokenable;
-                $request->setUserResolver(fn () => $authUser);
-            }
-        }
-
-        // Centralize access via policy (explicit user if available)
-        if ($authUser) {
-            Gate::forUser($authUser)->authorize('view', $pet);
-        } else {
-            $this->authorize('view', $pet);
-        }
-
-        $user = $request->user();
-        $isOwner = $user && $pet->user_id === $user->id;
-        $isAdmin = $user && method_exists($user, 'hasRole') ? $user->hasRole(['admin', 'super_admin']) : false;
+        // Resolve user and authorize access
+        $user = $this->authorizeUser($request, 'view', $pet);
+        $isOwner = $this->isOwnerOrAdmin($user, $pet);
+        $isAdmin = $this->hasRole($user, ['admin', 'super_admin']);
 
         $viewerPermissions = [
             'can_edit' => $isOwner || $isAdmin,
@@ -528,19 +510,7 @@ class PetController extends Controller
      */
     public function update(Request $request, Pet $pet)
     {
-        // Resolve user from bearer token for optional-auth route if missing
-        $user = $request->user();
-        if (! $user && $request->bearerToken()) {
-            $token = PersonalAccessToken::findToken($request->bearerToken());
-            if ($token) {
-                $user = $token->tokenable;
-                $request->setUserResolver(fn () => $user);
-            }
-        }
-        if (! $user) {
-            return $this->sendError('Unauthenticated.', 401);
-        }
-        Gate::forUser($user)->authorize('update', $pet);
+        $user = $this->authorizeUser($request, 'update', $pet);
 
         $rules = [
             'name' => 'sometimes|required|string|max:255',
@@ -718,19 +688,7 @@ class PetController extends Controller
      */
     public function destroy(Request $request, Pet $pet)
     {
-        // Resolve user from bearer token for optional-auth route if missing
-        $user = $request->user();
-        if (! $user && $request->bearerToken()) {
-            $token = PersonalAccessToken::findToken($request->bearerToken());
-            if ($token) {
-                $user = $token->tokenable;
-                $request->setUserResolver(fn () => $user);
-            }
-        }
-        if (! $user) {
-            return $this->sendError('Unauthenticated.', 401);
-        }
-        Gate::forUser($user)->authorize('delete', $pet);
+        $user = $this->authorizeUser($request, 'delete', $pet);
 
         if (! Hash::check($request->input('password'), $user->password)) {
             return $this->sendError('The provided password does not match our records.', 422);
@@ -774,19 +732,7 @@ class PetController extends Controller
      */
     public function updateStatus(Request $request, Pet $pet)
     {
-        // Resolve user from bearer token for optional-auth route if missing
-        $user = $request->user();
-        if (! $user && $request->bearerToken()) {
-            $token = PersonalAccessToken::findToken($request->bearerToken());
-            if ($token) {
-                $user = $token->tokenable;
-                $request->setUserResolver(fn () => $user);
-            }
-        }
-        if (! $user) {
-            return $this->sendError('Unauthenticated.', 401);
-        }
-        Gate::forUser($user)->authorize('update', $pet);
+        $user = $this->authorizeUser($request, 'update', $pet);
 
         $validated = $request->validate([
             'status' => ['required', 'string', new \Illuminate\Validation\Rules\Enum(PetStatus::class)],

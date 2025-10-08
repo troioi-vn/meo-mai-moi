@@ -1,0 +1,77 @@
+deptrac:
+  paths:
+    - ./app
+  exclude_files:
+    - '#/Tests/#'
+  skip_violations:
+    App\Models\EmailConfiguration:
+      - App\Services\EmailConfigurationService
+    App\Models\User:
+      - App\Notifications\CustomPasswordReset
+    App\Notifications\CustomPasswordReset:
+      - App\Mail\PasswordResetMail
+    App\Providers\AuthServiceProvider:
+      - App\Policies\HelperProfilePolicy
+      - App\Policies\PetPolicy
+      - App\Policies\PlacementRequestPolicy
+      - App\Policies\TransferRequestPolicy
+    App\Services\InvitationService:
+      - App\Notifications\InvitationToEmail
+    App\Services\WaitlistService:
+      - App\Notifications\WaitlistConfirmation
+  layers:
+    - name: Domain
+      collectors:
+        - type: classLike
+          value: App\\Models\\.*
+        - type: classLike
+          value: App\\Enums\\.*
+    - name: Services
+      collectors:
+        - type: classLike
+          value: App\\Services\\.*
+    - name: Policies
+      collectors:
+        - type: classLike
+          value: App\\Policies\\.*
+    - name: Notifications
+      collectors:
+        - type: classLike
+          value: App\\Notifications\\.*
+    - name: Mail
+      collectors:
+        - type: classLike
+          value: App\\Mail\\.*
+    - name: Http
+      collectors:
+        - type: classLike
+          value: App\\Http\\.*
+    - name: Console
+      collectors:
+        - type: classLike
+          value: App\\Console\\.*
+    - name: Providers
+      collectors:
+        - type: classLike
+          value: App\\Providers\\.*
+  ruleset:
+    Http:
+      - Services
+      - Domain
+    Services:
+      - Domain
+    Policies:
+      - Domain
+    Notifications:
+      - Services
+      - Domain
+    Mail:
+      - Services
+      - Domain
+    Console:
+      - Services
+      - Domain
+    Providers:
+      - Services
+      - Domain
+    Domain: []

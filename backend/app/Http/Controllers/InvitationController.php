@@ -58,7 +58,7 @@ class InvitationController extends Controller
         $user = $request->user();
         $invitations = $this->invitationService->getUserInvitations($user);
 
-        $data = $invitations->map(function ($invitation) {
+        $data = $invitations->map(function (\App\Models\Invitation $invitation) {
             return [
                 'id' => $invitation->id,
                 'code' => $invitation->code,
@@ -172,7 +172,7 @@ class InvitationController extends Controller
                 'expires_at' => $invitation->expires_at,
                 'invitation_url' => $invitation->getInvitationUrl(),
                 'created_at' => $invitation->created_at,
-            ], 201, 'Invitation created successfully');
+            ], 201);
 
         } catch (\Exception $e) {
             return $this->sendError(
@@ -238,7 +238,7 @@ class InvitationController extends Controller
             );
         }
 
-        return $this->sendSuccess([], 200, 'Invitation revoked successfully');
+        return $this->sendSuccess([], 200);
     }
 
     /**

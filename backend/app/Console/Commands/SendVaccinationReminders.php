@@ -37,10 +37,14 @@ class SendVaccinationReminders extends Command
         $count = 0;
         $service = app(NotificationService::class);
 
-        $query->chunkById(100, function ($records) use (&$count, $service, $today) {
+        $query->chunkById(100, function ($records) use (&$count, $service) {
             foreach ($records as $record) {
                 $pet = $record->pet;
-                if (! $pet || ! $pet->user) {
+                if (! $pet instanceof Pet) {
+                    continue;
+                }
+
+                if (! $pet->user) {
                     continue;
                 }
 
@@ -52,6 +56,9 @@ class SendVaccinationReminders extends Command
                 }
 
                 $owner = $pet->user;
+                if (!$owner instanceof \App\Models\User) {
+                    continue;
+                }
 
                 $data = [
                     'message' => sprintf(

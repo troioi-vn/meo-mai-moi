@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Sanctum\PersonalAccessToken;
 use OpenApi\Annotations as OA;
+use Exception;
 
 /**
  * @OA\Schema(

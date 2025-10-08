@@ -22,12 +22,12 @@ if (app()->environment('testing')) {
             return response()->noContent();
         })->name('filament.admin.resources.notifications.create');
         Route::get('/notifications/{record}', function ($record) {
-            abort_unless(\App\Models\Notification::find($record), 404);
+            abort_unless(\App\Models\Notification::find($record) !== null, 404);
 
             return response('', 200);
         })->name('filament.admin.resources.notifications.view');
         Route::get('/notifications/{record}/edit', function ($record) {
-            abort_unless(\App\Models\Notification::find($record), 404);
+            abort_unless(\App\Models\Notification::find($record) !== null, 404);
 
             return response('', 200);
         })->name('filament.admin.resources.notifications.edit');

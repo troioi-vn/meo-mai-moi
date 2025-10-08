@@ -99,7 +99,7 @@ class WaitlistController extends Controller
                 'email' => $waitlistEntry->email,
                 'status' => $waitlistEntry->status,
                 'created_at' => $waitlistEntry->created_at,
-            ], 201, 'Successfully added to waitlist');
+            ], 201);
 
         } catch (ValidationException $e) {
             return response()->json([

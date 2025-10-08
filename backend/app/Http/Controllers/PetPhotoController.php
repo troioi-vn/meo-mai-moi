@@ -168,6 +168,7 @@ class PetPhotoController extends Controller
         $this->capabilityService->ensure($pet, 'photos');
 
         // Find the photo that belongs to this pet
+        /** @var \App\Models\PetPhoto $photoModel */
         $photoModel = $pet->photos()->findOrFail($photo);
 
         // Delete the file from storage

@@ -82,6 +82,7 @@ class HelperProfileController extends Controller
             'pet_type_ids.*' => 'exists:pet_types,id',
         ]);
 
+        /** @var \App\Models\HelperProfile $helperProfile */
         $helperProfile = Auth::user()->helperProfiles()->create($validatedData);
 
         if (isset($validatedData['pet_type_ids'])) {
@@ -313,6 +314,7 @@ class HelperProfileController extends Controller
     {
         $this->authorize('update', $helperProfile);
 
+        /** @var \App\Models\HelperProfilePhoto $photo */
         $photo = $helperProfile->photos()->findOrFail($photoId);
 
         // Delete the photo file from storage

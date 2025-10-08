@@ -171,4 +171,54 @@ composer deptrac:baseline > deptrac.baseline.yaml
 **Why baseline early?**
 Without a baseline, teams ignore noisy output. With it, the quality bar only moves forward—new violations are blocked while you refactor the legacy gradually.
 
+### PHP Insights (Holistic Quality Score)
+
+PHP Insights provides a unified quality score (0-100) across four dimensions: Code, Complexity, Architecture, and Style. Think of it as a health dashboard for your codebase.
+
+**Current Baseline (2025-10-09):**
+- **Code**: 84.4 pts (7020 lines analyzed)
+- **Complexity**: 79.5 pts (avg cyclomatic complexity: 1.98)
+- **Architecture**: 81.3 pts (112 files, 92% classes)
+- **Style**: 75.6 pts (0 security issues)
+
+**Run analysis:**
+```bash
+cd backend
+composer insights
+```
+
+**Minimum thresholds** (enforced by composer script):
+- Quality: 80+
+- Complexity: 75+
+- Architecture: 75+
+- Style: 75+
+
+**What each dimension measures:**
+- **Code**: Comments coverage, class/function distribution, code organization
+- **Complexity**: Cyclomatic complexity (branching/nesting), cognitive load
+- **Architecture**: Class structure (interfaces, traits, globals), coupling
+- **Style**: PSR standards, import ordering, naming conventions
+
+**Configuration:**
+- `backend/config/insights.php` - Exclusions, custom rules, removed checks
+- Excludes: migrations, seeders, Filament (auto-generated), config, vendor
+
+**Common issues flagged:**
+- Public properties (use getters/setters)
+- Unordered imports (alphabetical)
+- Missing type hints (though we allow mixed in Laravel context)
+- Cognitive complexity (deeply nested logic)
+
+**Interpreting scores:**
+- **80-100**: Green zone (production-ready)
+- **50-79**: Yellow zone (needs attention)
+- **1-49**: Red zone (refactor urgently)
+
+**Strategy:**
+Current baseline is solid (all categories 75+). Focus on:
+1. Keep scores above thresholds during i18n work
+2. Address public property warnings in Mail classes incrementally
+3. Monitor complexity as translation logic is added
+4. Use as pre-commit gate once stable
+
 ---

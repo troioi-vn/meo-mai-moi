@@ -9,6 +9,7 @@ use App\Models\PetType;
 use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesErrors;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -41,7 +42,7 @@ use OpenApi\Annotations as OA;
  */
 class PetController extends Controller
 {
-    use ApiResponseTrait, HandlesAuthentication;
+    use ApiResponseTrait, HandlesAuthentication, HandlesErrors;
 
     protected PetCapabilityService $capabilityService;
 
@@ -77,7 +78,7 @@ class PetController extends Controller
     public function myPets(Request $request)
     {
         if (! $request->user()) {
-            return $this->sendError('Unauthenticated.', 401);
+            return $this->handleUnauthorized();
         }
         $query = Pet::where('user_id', $request->user()->id)->with('petType');
 
@@ -691,7 +692,7 @@ class PetController extends Controller
         $user = $this->authorizeUser($request, 'delete', $pet);
 
         if (! Hash::check($request->input('password'), $user->password)) {
-            return $this->sendError('The provided password does not match our records.', 422);
+            return $this->handleBusinessError('The provided password does not match our records.', 422);
         }
         // Soft delete via status mutation (handled by overridden delete())
         $pet->delete();
@@ -740,7 +741,7 @@ class PetController extends Controller
         ]);
 
         if (! Hash::check($validated['password'], $user->password)) {
-            return $this->sendError('The provided password does not match our records.', 422);
+            return $this->handleBusinessError('The provided password does not match our records.', 422);
         }
 
         $pet->status = $validated['status'];

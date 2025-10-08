@@ -51,7 +51,7 @@ const InvitationQRCode: React.FC<InvitationQRCodeProps> = ({ invitationUrl, invi
       .then(() => {
         setIsLoading(false)
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         console.error('Failed to generate QR code:', error)
         setError('Failed to generate QR code')
         setIsLoading(false)
@@ -59,7 +59,7 @@ const InvitationQRCode: React.FC<InvitationQRCodeProps> = ({ invitationUrl, invi
       })
     })
 
-    return () => cancelAnimationFrame(rafId)
+    return () => { cancelAnimationFrame(rafId); }
   }, [invitationUrl, isOpen])
 
   const handleDownload = () => {
@@ -122,7 +122,9 @@ const InvitationQRCode: React.FC<InvitationQRCodeProps> = ({ invitationUrl, invi
                       onClick={() => {
                         setError(null)
                         setIsOpen(false)
-                        setTimeout(() => setIsOpen(true), 100)
+                        setTimeout(() => {
+                          setIsOpen(true)
+                        }, 100)
                       }}
                     >
                       Retry

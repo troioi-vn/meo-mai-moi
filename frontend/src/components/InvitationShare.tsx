@@ -19,7 +19,7 @@ const InvitationShare: React.FC<InvitationShareProps> = ({ invitationUrl, invita
     try {
       await navigator.clipboard.writeText(invitationUrl)
       toast.success('Invitation link copied!')
-    } catch (err) {
+    } catch {
       toast.error('Failed to copy link')
     }
   }
@@ -29,7 +29,7 @@ const InvitationShare: React.FC<InvitationShareProps> = ({ invitationUrl, invita
     try {
       await navigator.clipboard.writeText(message)
       toast.success('Message copied!')
-    } catch (err) {
+    } catch {
       toast.error('Failed to copy message')
     }
   }
@@ -67,7 +67,7 @@ const InvitationShare: React.FC<InvitationShareProps> = ({ invitationUrl, invita
                 readOnly
                 className="font-mono text-sm"
               />
-              <Button variant="outline" size="sm" onClick={() => void handleCopyUrl()}>
+              <Button variant="outline" size="sm" onClick={() => { void handleCopyUrl() }}>
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
@@ -84,7 +84,7 @@ const InvitationShare: React.FC<InvitationShareProps> = ({ invitationUrl, invita
                 rows={3}
                 className="text-sm"
               />
-              <Button variant="outline" size="sm" onClick={() => void handleCopyMessage()} className="w-full">
+              <Button variant="outline" size="sm" onClick={() => { void handleCopyMessage() }} className="w-full">
                 <Copy className="h-4 w-4 mr-2" />
                 Copy Message
               </Button>

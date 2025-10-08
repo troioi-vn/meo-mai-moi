@@ -104,7 +104,7 @@ const mockUser = {
   email: 'jane@example.com',
 }
 
-type MockUser = { id: number; name: string; email: string }
+interface MockUser { id: number; name: string; email: string }
 
 const renderWithProviders = (
   component: React.ReactElement,

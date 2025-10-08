@@ -231,7 +231,7 @@ export default function InvitationsPage() {
           <CardDescription>
             {invitations.length === 0 
               ? "You haven't sent any invitations yet." 
-              : `You have sent ${invitations.length} invitation${invitations.length === 1 ? '' : 's'}.`
+              : `You have sent ${String(invitations.length)} invitation${invitations.length === 1 ? '' : 's'}.`
             }
           </CardDescription>
         </CardHeader>

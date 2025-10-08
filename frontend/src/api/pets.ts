@@ -92,7 +92,7 @@ export const getPet = async (id: string): Promise<Pet> => {
   return response.data.data
 }
 
-export interface UpdatePetPayload extends Partial<CreatePetPayload> {}
+export type UpdatePetPayload = Partial<CreatePetPayload>
 
 export const updatePet = async (id: string, petData: UpdatePetPayload): Promise<Pet> => {
   const response = await api.put<{ data: Pet }>(`/pets/${id}`, petData)

@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AxiosError } from 'axios'
 import { useNavigate } from 'react-router-dom'
-import { CheckCircle, UserCheck } from 'lucide-react'
+import { UserCheck } from 'lucide-react'
 
 interface ApiError {
   message: string

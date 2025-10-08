@@ -28,9 +28,9 @@ class SettingsService
     {
         $currentValue = $this->isInviteOnlyEnabled();
         $newValue = !$currentValue;
-        
+
         $this->setCachedSetting('invite_only_enabled', $newValue ? 'true' : 'false');
-        
+
         return $newValue;
     }
 
@@ -58,7 +58,7 @@ class SettingsService
     private function getCachedSetting(string $key, $default = null)
     {
         $cacheKey = self::CACHE_PREFIX . $key;
-        
+
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($key, $default) {
             return Settings::get($key, $default);
         });
@@ -70,7 +70,7 @@ class SettingsService
     private function setCachedSetting(string $key, $value): void
     {
         Settings::set($key, $value);
-        
+
         // Update cache immediately
         $cacheKey = self::CACHE_PREFIX . $key;
         Cache::put($cacheKey, $value, self::CACHE_TTL);
@@ -82,7 +82,7 @@ class SettingsService
     public function clearCache(): void
     {
         $keys = ['invite_only_enabled'];
-        
+
         foreach ($keys as $key) {
             Cache::forget(self::CACHE_PREFIX . $key);
         }

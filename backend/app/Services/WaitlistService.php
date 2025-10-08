@@ -198,10 +198,10 @@ class WaitlistService
     private function getDailyBreakdown(int $days): array
     {
         $breakdown = [];
-        
+
         for ($i = 0; $i < $days; $i++) {
             $date = now()->subDays($i)->toDateString();
-            
+
             $breakdown[] = [
                 'date' => $date,
                 'new_entries' => WaitlistEntry::whereDate('created_at', $date)->count(),

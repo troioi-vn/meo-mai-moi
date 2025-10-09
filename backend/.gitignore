@@ -4,8 +4,7 @@
 .env.backup
 .env.production
 .env.docker
-# Keep a docker-specific env committed for compose reliability
-!.env.docker
+
 .phpactor.json
 .phpunit.result.cache
 /.fleet

@@ -5,6 +5,9 @@
   "test:backend": "docker compose exec backend php artisan test",
   "test": "cd frontend && npm test",
   "test:frontend": "cd frontend && npm test",
-  "typecheck:frontend": "cd frontend && npx tsc -p tsconfig.typecheck.json --noEmit"
+  "typecheck:frontend": "cd frontend && npx tsc -p tsconfig.typecheck.json --noEmit",
+  "e2e": "cd frontend && npm run e2e",
+  "e2e:ui": "cd frontend && npm run e2e:ui",
+  "e2e:report": "cd frontend && npm run e2e:report"
   }
 }

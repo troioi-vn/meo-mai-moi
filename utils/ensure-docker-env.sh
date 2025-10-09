@@ -15,82 +15,20 @@ if [[ ! -f "$ENV_EXAMPLE" ]]; then
   exit 1
 fi
 
-# If .env.docker doesn't exist, copy from example
-if [[ ! -f "$ENV_FILE" ]]; then
-  echo "Creating $ENV_FILE from $ENV_EXAMPLE"
-  cp "$ENV_EXAMPLE" "$ENV_FILE"
-else
-  echo "$ENV_FILE already exists. Skipping copy and leaving values as-is."
-  echo "You can edit it manually or delete it to regenerate from the example."
-  exit 0
-fi
-
-# Helper to get current value from env file
-get_val() {
-  local key="$1"
-  # Use grep to find the first non-commented match
-  local line
-  line=$(grep -E "^${key}=" -m1 "$ENV_FILE" || true)
-  echo "${line#*=}"
-}
-
-# Prompt function with default
-prompt() {
-  local key="$1"; shift
-  local current="$1"; shift
-  local label="$1"; shift
-
-  local input
-  if [[ -t 0 ]]; then
-    read -rp "$label [$current]: " input || true
+# If .env.docker exists, ask to overwrite
+if [[ -f "$ENV_FILE" ]]; then
+  read -p "$ENV_FILE already exists. Overwrite with $ENV_EXAMPLE? [y/N] " -n 1 -r
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo "Overwriting $ENV_FILE with $ENV_EXAMPLE"
+    cp "$ENV_EXAMPLE" "$ENV_FILE"
   else
-    input=""
+    echo "Skipping overwrite. You can edit it manually or delete it to regenerate from the example."
+    exit 0
   fi
-  if [[ -z "$input" ]]; then
-    echo "$current"
-  else
-    echo "$input"
-  fi
-}
-
-# Read current values or defaults
-current_app_url=$(get_val APP_URL)
-current_frontend_url=$(get_val FRONTEND_URL)
-current_app_key=$(get_val APP_KEY)
-
-# Fallback defaults if not present in file
-: "${current_app_url:=http://localhost:8000}"
-: "${current_frontend_url:=http://localhost:8000}"
-
-# Prompt user (only on first creation). Non-TTY keeps existing/default values
-new_app_url=$(prompt APP_URL "$current_app_url" "Enter APP_URL")
-new_frontend_url=$(prompt FRONTEND_URL "$current_frontend_url" "Enter FRONTEND_URL")
-
-#!/usr/bin/env bash
-set -euo pipefail
-
-# Ensure script is run from repo root
-SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-cd "$REPO_ROOT"
-
-ENV_DIR="backend"
-ENV_FILE="$ENV_DIR/.env.docker"
-ENV_EXAMPLE="$ENV_DIR/.env.docker.example"
-
-if [[ ! -f "$ENV_EXAMPLE" ]]; then
-  echo "Error: $ENV_EXAMPLE not found."
-  exit 1
-fi
-
-# If .env.docker doesn't exist, copy from example
-if [[ ! -f "$ENV_FILE" ]]; then
-  echo "Creating $ENV_FILE from $ENV_EXAMPLE"
-  cp "$ENV_EXAMPLE" "$ENV_FILE"
 else
-  echo "$ENV_FILE already exists. Skipping copy and leaving values as-is."
-  echo "You can edit it manually or delete it to regenerate from the example."
-  exit 0
+    echo "Creating $ENV_FILE from $ENV_EXAMPLE"
+    cp "$ENV_EXAMPLE" "$ENV_FILE"
 fi
 
 # Helper to get current value from env file
@@ -177,4 +115,3 @@ Tip: Next steps
   - Build and start containers: docker compose up -d --build
   - Seed database (optional):   docker compose exec backend php artisan migrate:fresh --seed
 TIP
-

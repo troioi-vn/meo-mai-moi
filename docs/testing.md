@@ -40,6 +40,32 @@ npm test -- --reporter=verbose
 
 **Coverage Reports**: Latest coverage reports are committed to `frontend/coverage/` and can be viewed by opening `frontend/coverage/index.html` in a browser.
 
+## End-to-End (Playwright)
+
+Playwright E2E tests live under `frontend/e2e/` and run against the dev server.
+
+Quick start:
+
+```bash
+# In one terminal (dev server)
+cd frontend
+npm run dev
+
+# In another terminal (from repo root)
+npm run e2e            # headless run
+npm run e2e:ui         # interactive UI
+npm run e2e:report     # open last HTML report
+```
+
+Defaults:
+- Base URL: `http://localhost:5173` (set `PLAYWRIGHT_BASE_URL` to override)
+- Tracing: on first retry
+- Video/Screenshots: retained on failure
+
+Notes:
+- The E2E suite stubs network calls where appropriate using Playwright `page.route(...)` to keep tests fast and deterministic (no backend required for core UI flows).
+- If you prefer hitting a real backend, run the Laravel API locally and remove or adjust the route stubs in the spec files.
+
 ## Test Coverage
 
 **Current Status:**

@@ -10,8 +10,11 @@ Dockerized • Laravel 12 • React 19 • Vite 7 • PostgreSQL 14 • Filament
 ```bash
 git clone https://github.com/troioi-vn/meo-mai-moi.git
 cd meo-mai-moi
-cp backend/.env.docker.example backend/.env.docker
+# Prepare Docker env file (will prompt for APP_URL and FRONTEND_URL, or keep defaults)
+./utils/ensure-docker-env.sh
+# Build and start containers
 docker compose up -d --build
+# Optional: initialize app data
 docker compose exec backend php artisan migrate:fresh --seed
 docker compose exec backend php artisan shield:generate --all
 docker compose exec backend php artisan storage:link
@@ -36,7 +39,7 @@ We welcome contributions of all sizes — features, fixes, tests, and docs.
 ```bash
 git clone https://github.com/troioi-vn/meo-mai-moi.git
 cd meo-mai-moi
-cp backend/.env.docker.example backend/.env.docker
+./utils/ensure-docker-env.sh
 docker compose up -d --build
 docker compose exec backend php artisan migrate:fresh --seed
 docker compose exec backend php artisan shield:generate --all

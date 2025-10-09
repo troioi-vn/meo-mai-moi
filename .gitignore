@@ -22,7 +22,6 @@ node_modules/
 npm-debug.log
 yarn-error.log
 
-backend/.env.docker
 .env.local
 .env.development.local
 .env.test.local
@@ -41,6 +40,7 @@ Thumbs.db
 # ESLint
 .eslintcache
 
-
 .gemini/
 gha-creds-*.json
+
+.github/

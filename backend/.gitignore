@@ -3,7 +3,7 @@
 .env
 .env.backup
 .env.production
-/backend/.env.docker
+.env.docker
 
 .phpactor.json
 .phpunit.result.cache
@@ -28,4 +28,4 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 coverage-clover.xml
-/backend/coverage-html
+/coverage-html

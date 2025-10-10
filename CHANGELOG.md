@@ -32,6 +32,9 @@ All notable changes to this project are documented here, following the [Keep a C
   - Fixed missing test setup imports (`beforeAll`, `afterAll`)
   - All 6 test cases now pass successfully
 - Maintained all existing functionality while significantly improving code quality
+- **Email Configuration:** Fixed test email failures by adding missing `symfony/http-client` dependency required by Mailgun mailer
+  - Added confirmation dialogs to email configuration delete actions to prevent accidental deletion
+  - Improved empty state messaging in email configuration admin panel to guide users when no configurations are visible
 
 ### Removed
 - SQLite database connection configuration and references

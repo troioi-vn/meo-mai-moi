@@ -137,6 +137,13 @@ class EmailConfigurationResource extends Resource
                             ->label('From Name')
                             ->placeholder('Your App Name')
                             ->helperText('Name that will appear as sender (optional)'),
+
+                        Forms\Components\TextInput::make('config.test_email_address')
+                            ->label('Test Email Address')
+                            ->email()
+                            ->placeholder('test@example.com')
+                            ->helperText('Email address to send test emails to (for testing purposes only)')
+                            ->columnSpanFull(),
                     ])
                     ->columns(2)
                     ->visible(fn (Forms\Get $get): bool => $get('provider') === 'smtp'),
@@ -158,18 +165,15 @@ class EmailConfigurationResource extends Resource
                             ->required()
                             ->password()
                             ->revealable()
-                            ->placeholder('key-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+                            ->placeholder('your-mailgun-api-key')
                             ->helperText('Your Mailgun API key')
-                            ->rules(['regex:/^key-[a-zA-Z0-9]+$/'])
-                            ->validationMessages([
-                                'regex' => 'API key must be in format "key-" followed by alphanumeric characters',
-                            ]),
+                            ->minLength(10)
+                            ->maxLength(255),
 
                         Forms\Components\TextInput::make('config.endpoint')
-                            ->label('API Endpoint')
-                            ->default('api.mailgun.net')
+                            ->label('API Endpoint (Optional)')
                             ->placeholder('api.mailgun.net')
-                            ->helperText('Mailgun API endpoint (use api.eu.mailgun.net for EU)'),
+                            ->helperText('Leave empty to use default (api.mailgun.net). Use api.eu.mailgun.net for EU region.'),
 
                         Forms\Components\TextInput::make('config.from_address')
                             ->label('From Email Address')
@@ -294,19 +298,41 @@ class EmailConfigurationResource extends Resource
             ])
             ->actions([
                 Tables\Actions\Action::make('test_connection')
-                    ->label('Test Connection')
+                    ->label(fn (EmailConfiguration $record): string => 
+                        $record->provider === 'smtp' ? 'Send Test Email' : 'Test Connection'
+                    )
                     ->icon('heroicon-o-signal')
                     ->color('info')
                     ->action(function (EmailConfiguration $record): void {
                         $service = app(EmailConfigurationService::class);
 
                         try {
-                            $testResult = $service->testConfigurationWithDetails($record->provider, $record->config);
+                            // For SMTP, check if test email address is provided
+                            if ($record->provider === 'smtp') {
+                                $testEmailAddress = $record->config['test_email_address'] ?? null;
+                                if (!$testEmailAddress) {
+                                    Notification::make()
+                                        ->title('Test Email Address Required')
+                                        ->body('Please configure a test email address in the SMTP settings before sending a test email.')
+                                        ->warning()
+                                        ->send();
+                                    return;
+                                }
+
+                                $testResult = $service->testConfigurationWithDetails($record->provider, $record->config, $testEmailAddress);
+                            } else {
+                                $testResult = $service->testConfigurationWithDetails($record->provider, $record->config);
+                            }
 
                             if ($testResult['success']) {
+                                $title = $record->provider === 'smtp' ? 'Test Email Sent Successfully' : 'Connection Test Successful';
+                                $body = $record->provider === 'smtp' 
+                                    ? 'Test email was sent successfully to ' . ($record->config['test_email_address'] ?? 'the configured address') . '.'
+                                    : 'Email configuration is working correctly. A test email was sent to ' . ($record->config['from_address'] ?? 'the configured address') . '.';
+
                                 Notification::make()
-                                    ->title('Connection Test Successful')
-                                    ->body('Email configuration is working correctly. A test email was sent to '.($record->config['from_address'] ?? 'the configured address').'.')
+                                    ->title($title)
+                                    ->body($body)
                                     ->success()
                                     ->send();
                             } else {
@@ -328,8 +354,10 @@ class EmailConfigurationResource extends Resource
 
                                 $body .= "\n\nSuggestion: {$hints}";
 
+                                $title = $record->provider === 'smtp' ? 'Test Email Failed' : 'Connection Test Failed';
+
                                 Notification::make()
-                                    ->title('Connection Test Failed')
+                                    ->title($title)
                                     ->body($body)
                                     ->danger()
                                     ->send();
@@ -347,15 +375,21 @@ class EmailConfigurationResource extends Resource
                                 ->send();
                         } catch (\Exception $e) {
                             Notification::make()
-                                ->title('Connection Test Error')
+                                ->title('Test Error')
                                 ->body('Unexpected error: '.$e->getMessage())
                                 ->danger()
                                 ->send();
                         }
                     })
                     ->requiresConfirmation()
-                    ->modalHeading('Test Email Configuration')
-                    ->modalDescription('This will send a test email to verify the configuration. Continue?'),
+                    ->modalHeading(fn (EmailConfiguration $record): string => 
+                        $record->provider === 'smtp' ? 'Send Test Email' : 'Test Email Configuration'
+                    )
+                    ->modalDescription(fn (EmailConfiguration $record): string => 
+                        $record->provider === 'smtp' 
+                            ? 'This will send a test email to the configured test email address. Continue?'
+                            : 'This will send a test email to verify the configuration. Continue?'
+                    ),
 
                 Tables\Actions\Action::make('activate')
                     ->label('Activate')
@@ -453,7 +487,10 @@ class EmailConfigurationResource extends Resource
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn (EmailConfiguration $record): bool => ! $record->is_active),
+                    ->visible(fn (EmailConfiguration $record): bool => ! $record->is_active)
+                    ->requiresConfirmation()
+                    ->modalHeading('Delete Email Configuration')
+                    ->modalDescription('This will permanently delete the configuration. This action cannot be undone.'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -495,6 +532,9 @@ class EmailConfigurationResource extends Resource
                         ->modalDescription('This will test all selected email configurations. Continue?'),
 
                     Tables\Actions\DeleteBulkAction::make()
+                        ->requiresConfirmation()
+                        ->modalHeading('Delete Selected Email Configurations')
+                        ->modalDescription('This will permanently delete the selected configurations (active ones cannot be deleted). This action cannot be undone.')
                         ->action(function (Collection $records): void {
                             // Prevent deletion of active configurations
                             $activeRecords = $records->filter(fn ($record) => $record->is_active);
@@ -521,7 +561,7 @@ class EmailConfigurationResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->emptyStateHeading('No Email Configurations')
-            ->emptyStateDescription('Create your first email configuration to start sending notifications.')
+            ->emptyStateDescription('No configurations found. Clear filters or check permissions, or create a new configuration to start sending emails.')
             ->emptyStateIcon('heroicon-o-envelope-open');
     }
 

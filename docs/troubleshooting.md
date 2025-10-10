@@ -126,3 +126,36 @@ Check that routes are properly defined in `routes/api.php` and controllers have 
 | `Permission denied` | File permissions | Check Docker volume mounts |
 | `Connection refused` | Service not running | Check `docker compose ps` |
 | `Port already in use` | Conflicting services | Stop other services or change ports |
+
+## Email Configuration Issues
+
+### Email configurations not showing in Admin
+Possible causes:
+
+- Filters active in the list (e.g., Provider, Active Status, or Valid-only filter)
+- Missing database table/migrations not run
+- Insufficient permissions for the current admin user
+- All configurations deleted (bulk delete) or hidden by search
+
+How to diagnose and fix:
+
+1) Clear filters/search in the Email Configuration list.
+2) Ensure migrations exist and are applied:
+```
+docker compose exec backend php artisan migrate --force
+```
+3) Verify the table exists and has rows:
+```
+docker compose exec backend php artisan tinker --execute "\App\Models\EmailConfiguration::count()"
+```
+4) If count is 0, create a new configuration in Admin → Communication → Email Configuration.
+5) If permissions are suspected, grant super admin:
+```
+docker compose exec backend php artisan shield:super-admin
+```
+6) If cache/config issues persist:
+```
+docker compose exec backend php artisan optimize:clear
+```
+
+Note: Deleting an active configuration is blocked in the UI. Deactivate first to delete. Bulk delete now requires confirmation.

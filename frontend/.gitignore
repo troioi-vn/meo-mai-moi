@@ -3,3 +3,7 @@ dist-ssr
 
 # Ignore frontend coverage output
 coverage/
+
+# Ignore Playwright artifacts
+playwright-report/
+test-results/

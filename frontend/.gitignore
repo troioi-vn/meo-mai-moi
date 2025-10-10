@@ -7,3 +7,6 @@ coverage/
 # Ignore Playwright artifacts
 playwright-report/
 test-results/
+
+# Ignore local env files for E2E/config
+.env*

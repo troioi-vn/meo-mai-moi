@@ -1,4 +1,21 @@
 import { defineConfig, devices } from '@playwright/test'
+import fs from 'fs'
+import path from 'path'
+import dotenv from 'dotenv'
+
+// Load env from local files (explicit env vars still take precedence)
+const envFiles = [
+  '.env.e2e.local',
+  '.env.e2e',
+  '.env.local',
+  '.env',
+].map((f) => path.resolve(__dirname, f))
+
+for (const f of envFiles) {
+  if (fs.existsSync(f)) {
+    dotenv.config({ path: f, override: false })
+  }
+}
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5173'
 const isLocalhost = /localhost|127\.0\.0\.1/.test(baseURL)

@@ -21,7 +21,7 @@ class WaitlistEntryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-queue-list';
 
-    protected static ?string $navigationGroup = 'User Access';
+    protected static ?string $navigationGroup = 'Invitation';
 
     protected static ?string $navigationLabel = 'Waitlist';
 

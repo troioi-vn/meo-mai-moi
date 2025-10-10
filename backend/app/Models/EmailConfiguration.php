@@ -89,6 +89,9 @@ class EmailConfiguration extends Model
                         'domain' => $config['domain'],
                         'secret' => $config['api_key'],
                         'endpoint' => $config['endpoint'] ?? 'api.mailgun.net',
+                        // Preserve or default the scheme to https so Symfony Mailgun transport
+                        // uses a secure connection when our dynamic config overrides base config.
+                        'scheme' => config('services.mailgun.scheme', 'https'),
                     ],
                 ],
                 'from' => [
@@ -240,9 +243,9 @@ class EmailConfiguration extends Model
         }
 
         if (! empty($config['api_key'])) {
-            // Basic API key format validation - should start with 'key-'
-            if (! preg_match('/^key-[a-zA-Z0-9]+$/', $config['api_key'])) {
-                $errors[] = "Mailgun API key must be in format 'key-' followed by alphanumeric characters";
+            // Basic API key format validation - just check it's not empty and has reasonable length
+            if (strlen($config['api_key']) < 10) {
+                $errors[] = "Mailgun API key appears to be too short";
             }
         }
 

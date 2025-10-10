@@ -16,7 +16,10 @@ class EditEmailConfiguration extends EditRecord
     {
         return [
             Actions\Action::make('test_connection')
-                ->label('Test Connection')
+                ->label(fn (): string => 
+                    $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp' 
+                        ? 'Send Test Email' : 'Test Connection'
+                )
                 ->icon('heroicon-o-signal')
                 ->color('info')
                 ->action(function (): void {
@@ -27,32 +30,66 @@ class EditEmailConfiguration extends EditRecord
                     $service = app(EmailConfigurationService::class);
 
                     try {
-                        $success = $service->testConfiguration($this->record->provider, $this->record->config);
+                        // For SMTP, check if test email address is provided
+                        if ($this->record->provider === 'smtp') {
+                            $testEmailAddress = $this->record->config['test_email_address'] ?? null;
+                            if (!$testEmailAddress) {
+                                Notification::make()
+                                    ->title('Test Email Address Required')
+                                    ->body('Please configure a test email address in the SMTP settings before sending a test email.')
+                                    ->warning()
+                                    ->send();
+                                return;
+                            }
 
-                        if ($success) {
+                            $testResult = $service->testConfigurationWithDetails($this->record->provider, $this->record->config, $testEmailAddress);
+                        } else {
+                            $testResult = $service->testConfigurationWithDetails($this->record->provider, $this->record->config);
+                        }
+
+                        if ($testResult['success']) {
+                            $title = $this->record->provider === 'smtp' ? 'Test Email Sent Successfully' : 'Connection Test Successful';
+                            $body = $this->record->provider === 'smtp' 
+                                ? 'Test email was sent successfully to ' . ($this->record->config['test_email_address'] ?? 'the configured address') . '.'
+                                : 'Email configuration is working correctly. A test email was sent.';
+
                             Notification::make()
-                                ->title('Connection Test Successful')
-                                ->body('Email configuration is working correctly. A test email was sent.')
+                                ->title($title)
+                                ->body($body)
                                 ->success()
                                 ->send();
                         } else {
+                            $title = $this->record->provider === 'smtp' ? 'Test Email Failed' : 'Connection Test Failed';
+                            $body = 'Email configuration test failed. Please check your settings.';
+                            
+                            if (isset($testResult['error'])) {
+                                $body = 'Test failed: ' . $testResult['error'];
+                            }
+
                             Notification::make()
-                                ->title('Connection Test Failed')
-                                ->body('Email configuration test failed. Please check your settings.')
+                                ->title($title)
+                                ->body($body)
                                 ->danger()
                                 ->send();
                         }
                     } catch (\Exception $e) {
                         Notification::make()
-                            ->title('Connection Test Error')
+                            ->title('Test Error')
                             ->body('Error testing configuration: '.$e->getMessage())
                             ->danger()
                             ->send();
                     }
                 })
                 ->requiresConfirmation()
-                ->modalHeading('Test Email Configuration')
-                ->modalDescription('This will send a test email to verify the configuration. Continue?'),
+                ->modalHeading(fn (): string => 
+                    $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp' 
+                        ? 'Send Test Email' : 'Test Email Configuration'
+                )
+                ->modalDescription(fn (): string => 
+                    $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp' 
+                        ? 'This will send a test email to the configured test email address. Continue?'
+                        : 'This will send a test email to verify the configuration. Continue?'
+                ),
 
             Actions\Action::make('activate')
                 ->label('Activate Configuration')

@@ -154,10 +154,9 @@ export default function InvitationsPage() {
   return (
     <div className="container mx-auto py-8 space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">Invitations</h1>
-          <p className="text-muted-foreground">Manage your sent invitations</p>
         </div>
         <Button onClick={() => void handleGenerateInvitation()} disabled={isGenerating}>
           {isGenerating ? (
@@ -253,72 +252,74 @@ export default function InvitationsPage() {
               {invitations.map((invitation) => (
                 <div
                   key={invitation.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  className="p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                 >
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      {getStatusBadge(invitation.status)}
-                      <span className="text-sm text-muted-foreground font-mono">
-                        {invitation.code.slice(0, 8)}...
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        Created {format(new Date(invitation.created_at), 'MMM d, yyyy')}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="space-y-2 flex-1">
+                      <div className="flex items-center gap-3">
+                        {getStatusBadge(invitation.status)}
+                        <span className="text-sm text-muted-foreground font-mono">
+                          {invitation.code.slice(0, 8)}...
+                        </span>
                       </div>
                       
-                      {invitation.recipient && (
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
-                          <Users className="h-3 w-3" />
-                          Accepted by {invitation.recipient.name}
+                          <Calendar className="h-3 w-3" />
+                          Created {format(new Date(invitation.created_at), 'MMM d, yyyy')}
                         </div>
-                      )}
-                      
-                      {invitation.expires_at && (
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          Expires {format(new Date(invitation.expires_at), 'MMM d, yyyy')}
-                        </div>
-                      )}
+                        
+                        {invitation.recipient && (
+                          <div className="flex items-center gap-1">
+                            <Users className="h-3 w-3" />
+                            Accepted by {invitation.recipient.name}
+                          </div>
+                        )}
+                        
+                        {invitation.expires_at && (
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            Expires {format(new Date(invitation.expires_at), 'MMM d, yyyy')}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => void handleCopyInvitation(invitation)}
-                      disabled={invitation.status !== 'pending'}
-                      title="Copy invitation link"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
                     
-                    {invitation.status === 'pending' && (
-                      <>
-                        <InvitationShare 
-                          invitationUrl={invitation.invitation_url}
-                          invitationCode={invitation.code}
-                        />
-                        <InvitationQRCode 
-                          invitationUrl={invitation.invitation_url}
-                          invitationCode={invitation.code}
-                        />
-                      </>
-                    )}
-                    
-                    {invitation.status === 'pending' && (
+                    <div className="flex items-center gap-2 sm:flex-shrink-0">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => void handleRevokeInvitation(invitation)}
-                        title="Revoke invitation"
+                        onClick={() => void handleCopyInvitation(invitation)}
+                        disabled={invitation.status !== 'pending'}
+                        title="Copy invitation link"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Copy className="h-4 w-4" />
                       </Button>
-                    )}
+                      
+                      {invitation.status === 'pending' && (
+                        <>
+                          <InvitationShare 
+                            invitationUrl={invitation.invitation_url}
+                            invitationCode={invitation.code}
+                          />
+                          <InvitationQRCode 
+                            invitationUrl={invitation.invitation_url}
+                            invitationCode={invitation.code}
+                          />
+                        </>
+                      )}
+                      
+                      {invitation.status === 'pending' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => void handleRevokeInvitation(invitation)}
+                          title="Revoke invitation"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

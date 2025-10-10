@@ -11,8 +11,9 @@ export default tseslint.config([
   {
     ignores: ['dist', 'node_modules'],
   },
+  // Main application files
   {
-    files: ['**/*.{ts,tsx}'],
+    files: ['src/**/*.{ts,tsx}', 'vite.config.ts'],
     extends: [
       js.configs.recommended,
       tseslint.configs.recommended,
@@ -26,11 +27,50 @@ export default tseslint.config([
     ],
     languageOptions: {
       parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        project: ['./tsconfig.app.json', './tsconfig.node.json'],
         tsconfigRootDir: import.meta.dirname,
       },
       ecmaVersion: 2020,
       globals: globals.browser,
+    },
+  },
+  // Test files
+  {
+    files: [
+      'src/**/*.test.{ts,tsx}',
+      'src/**/*.behavior.test.{ts,tsx}',
+      'src/**/*.integration.test.{ts,tsx}',
+      'test/**/*.{ts,tsx}',
+    ],
+    extends: [
+      js.configs.recommended,
+      tseslint.configs.recommended,
+      ...tseslint.configs.recommendedTypeChecked,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.test.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      ecmaVersion: 2020,
+      globals: { ...globals.browser, ...globals.node },
+    },
+  },
+  // E2E test files
+  {
+    files: ['e2e/**/*.{ts,tsx}', 'playwright.config.ts'],
+    extends: [
+      js.configs.recommended,
+      tseslint.configs.recommended,
+      ...tseslint.configs.recommendedTypeChecked,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.e2e.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      ecmaVersion: 2020,
+      globals: { ...globals.browser, ...globals.node },
     },
   },
   // Relax some strict rules in tests and mocks to keep tests readable

@@ -39,6 +39,8 @@ export default defineConfig(({ mode }) => ({
     setupFiles: './test/setupTests.ts',
     css: false,
     testTimeout: 30000,
+    // Exclude e2e tests from Vitest (they should be run with Playwright)
+    exclude: ['**/node_modules/**', '**/e2e/**'],
     // Make test output much more concise
     reporters: [
       [

@@ -10,7 +10,7 @@ async function login(page: import('@playwright/test').Page, {
   await page.route('**/sanctum/csrf-cookie', (route) => route.fulfill({ status: 204, body: '' }))
   await page.route('**/api/login', async (route) => {
     // Basic body validation
-    const body = JSON.parse(route.request().postData() ?? '{}')
+    const body = JSON.parse(route.request().postData() ?? '{}') as { email?: string; password?: string }
     if (body.email === email && body.password === password) {
       await route.fulfill({ status: 204, body: '' })
     } else {

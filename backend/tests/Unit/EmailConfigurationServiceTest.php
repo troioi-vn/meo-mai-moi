@@ -18,7 +18,7 @@ class EmailConfigurationServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new EmailConfigurationService;
+        $this->service = new EmailConfigurationService();
     }
 
     public function test_get_active_configuration_returns_null_when_no_active_config()

@@ -4,14 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Pet;
 use App\Models\PetMicrochip;
-use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use App\Traits\HandlesPetResources;
 use App\Traits\HandlesValidation;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
 use OpenApi\Annotations as OA;
 
 /**
@@ -31,7 +28,10 @@ use OpenApi\Annotations as OA;
  */
 class PetMicrochipController extends Controller
 {
-    use ApiResponseTrait, HandlesAuthentication, HandlesPetResources, HandlesValidation;
+    use ApiResponseTrait;
+    use HandlesAuthentication;
+    use HandlesPetResources;
+    use HandlesValidation;
 
     /**
      * @OA\Get(

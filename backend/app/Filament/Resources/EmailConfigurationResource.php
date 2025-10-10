@@ -288,8 +288,10 @@ class EmailConfigurationResource extends Resource
 
                 Tables\Filters\Filter::make('valid_only')
                     ->label('Valid Configurations Only')
-                    ->query(fn (Builder $query): Builder =>
-                        $query->whereIn('id',
+                    ->query(
+                        fn (Builder $query): Builder =>
+                        $query->whereIn(
+                            'id',
                             \App\Models\EmailConfiguration::all()
                                 ->filter(fn (\App\Models\EmailConfiguration $config) => $config->isValid())
                                 ->pluck('id')
@@ -298,7 +300,8 @@ class EmailConfigurationResource extends Resource
             ])
             ->actions([
                 Tables\Actions\Action::make('test_connection')
-                    ->label(fn (EmailConfiguration $record): string => 
+                    ->label(
+                        fn (EmailConfiguration $record): string =>
                         $record->provider === 'smtp' ? 'Send Test Email' : 'Test Connection'
                     )
                     ->icon('heroicon-o-signal')
@@ -326,7 +329,7 @@ class EmailConfigurationResource extends Resource
 
                             if ($testResult['success']) {
                                 $title = $record->provider === 'smtp' ? 'Test Email Sent Successfully' : 'Connection Test Successful';
-                                $body = $record->provider === 'smtp' 
+                                $body = $record->provider === 'smtp'
                                     ? 'Test email was sent successfully to ' . ($record->config['test_email_address'] ?? 'the configured address') . '.'
                                     : 'Email configuration is working correctly. A test email was sent to ' . ($record->config['from_address'] ?? 'the configured address') . '.';
 
@@ -382,11 +385,13 @@ class EmailConfigurationResource extends Resource
                         }
                     })
                     ->requiresConfirmation()
-                    ->modalHeading(fn (EmailConfiguration $record): string => 
+                    ->modalHeading(
+                        fn (EmailConfiguration $record): string =>
                         $record->provider === 'smtp' ? 'Send Test Email' : 'Test Email Configuration'
                     )
-                    ->modalDescription(fn (EmailConfiguration $record): string => 
-                        $record->provider === 'smtp' 
+                    ->modalDescription(
+                        fn (EmailConfiguration $record): string =>
+                        $record->provider === 'smtp'
                             ? 'This will send a test email to the configured test email address. Continue?'
                             : 'This will send a test email to verify the configuration. Continue?'
                     ),

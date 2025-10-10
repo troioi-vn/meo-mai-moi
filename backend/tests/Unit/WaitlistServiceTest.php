@@ -5,7 +5,6 @@ namespace Tests\Unit;
 use App\Models\Invitation;
 use App\Models\User;
 use App\Models\WaitlistEntry;
-use App\Notifications\WaitlistConfirmation;
 use App\Services\InvitationService;
 use App\Services\WaitlistService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -16,7 +15,8 @@ use Tests\Traits\CreatesUsers;
 
 class WaitlistServiceTest extends TestCase
 {
-    use RefreshDatabase, CreatesUsers;
+    use RefreshDatabase;
+    use CreatesUsers;
 
     private WaitlistService $service;
     private InvitationService $invitationService;
@@ -25,7 +25,7 @@ class WaitlistServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->invitationService = new InvitationService;
+        $this->invitationService = new InvitationService();
         $this->service = new WaitlistService($this->invitationService);
         $this->user = User::factory()->create();
     }

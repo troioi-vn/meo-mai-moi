@@ -2,22 +2,22 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
+use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
-use Filament\Tables;
+use Filament\Forms;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
-use Filament\Tables\Table;
 use Filament\Resources\Resource;
-use Illuminate\Support\Facades\Hash;
+use Filament\Tables;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use App\Filament\Resources\UserResource\Pages;
+use Illuminate\Support\Facades\Hash;
 use STS\FilamentImpersonate\Tables\Actions\Impersonate;
 
 class UserResource extends Resource
@@ -67,7 +67,7 @@ class UserResource extends Resource
                 ->label(trans('filament-users::user.resource.password'))
                 ->password()
                 ->maxLength(255)
-                ->dehydrateStateUsing(static function ($state, $record) use ($form) {
+                ->dehydrateStateUsing(static function ($state, $record) {
                     return !empty($state)
                         ? Hash::make($state)
                         : $record->password;
@@ -90,7 +90,7 @@ class UserResource extends Resource
 
     public static function table(Table $table): Table
     {
-        if(class_exists( STS\FilamentImpersonate\Tables\Actions\Impersonate::class) && config('filament-users.impersonate')){
+        if (class_exists(STS\FilamentImpersonate\Tables\Actions\Impersonate::class) && config('filament-users.impersonate')) {
             $table->actions([Impersonate::make('impersonate')]);
         }
         $table
@@ -123,10 +123,10 @@ class UserResource extends Resource
             ->filters([
                 Tables\Filters\Filter::make('verified')
                     ->label(trans('filament-users::user.resource.verified'))
-                    ->query(fn(Builder $query): Builder => $query->whereNotNull('email_verified_at')),
+                    ->query(fn (Builder $query): Builder => $query->whereNotNull('email_verified_at')),
                 Tables\Filters\Filter::make('unverified')
                     ->label(trans('filament-users::user.resource.unverified'))
-                    ->query(fn(Builder $query): Builder => $query->whereNull('email_verified_at')),
+                    ->query(fn (Builder $query): Builder => $query->whereNull('email_verified_at')),
             ])
             ->actions([
                 ActionGroup::make([

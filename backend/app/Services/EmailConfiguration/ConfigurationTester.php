@@ -85,10 +85,10 @@ class ConfigurationTester
 
         try {
             $this->setupTestMailConfiguration($testConfig->provider, $mailConfig, $fromConfig);
-            
+
             // Determine the recipient email address
             $recipientEmail = $testEmailAddress ?? $fromConfig['address'];
-            
+
             $this->sendTestEmail($fromConfig, $recipientEmail);
             $this->restoreOriginalConfiguration($originalConfig);
 
@@ -124,7 +124,7 @@ class ConfigurationTester
 
     private function sendTestEmail(array $fromConfig, string $recipientEmail): void
     {
-        Mail::raw('This is a test email to verify your email configuration.', function (Message $message) use ($fromConfig, $recipientEmail) {
+        Mail::raw('This is a test email to verify your email configuration.', function (Message $message) use ($recipientEmail) {
             $message->to($recipientEmail)
                 ->subject('Email Configuration Test - ' . config('app.name'));
         });

@@ -3,7 +3,6 @@
 namespace App\Services\Waitlist;
 
 use App\Models\User;
-
 use Illuminate\Support\Facades\DB;
 
 class BulkInvitationProcessor

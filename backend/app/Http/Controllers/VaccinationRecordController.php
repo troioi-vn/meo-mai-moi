@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Pet;
 use App\Models\VaccinationRecord;
-use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use App\Traits\HandlesPetResources;
@@ -15,7 +14,10 @@ use OpenApi\Annotations as OA;
 
 class VaccinationRecordController extends Controller
 {
-    use ApiResponseTrait, HandlesAuthentication, HandlesPetResources, HandlesValidation;
+    use ApiResponseTrait;
+    use HandlesAuthentication;
+    use HandlesPetResources;
+    use HandlesValidation;
 
     /**
      * @OA\Schema(

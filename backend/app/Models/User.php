@@ -15,8 +15,11 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements FilamentUser
 {
+    use HasApiTokens;
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, HasRoles, Notifiable;
+    use HasFactory;
+    use HasRoles;
+    use Notifiable;
 
     /**
      * The attributes that are mass assignable.

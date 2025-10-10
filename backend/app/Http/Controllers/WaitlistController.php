@@ -7,11 +7,12 @@ use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesErrors;
 use App\Traits\HandlesValidation;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 
 class WaitlistController extends Controller
 {
-    use ApiResponseTrait, HandlesErrors, HandlesValidation;
+    use ApiResponseTrait;
+    use HandlesErrors;
+    use HandlesValidation;
 
     private WaitlistService $waitlistService;
 

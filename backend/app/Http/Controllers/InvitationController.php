@@ -12,7 +12,10 @@ use Illuminate\Http\Request;
 
 class InvitationController extends Controller
 {
-    use ApiResponseTrait, HandlesAuthentication, HandlesErrors, HandlesValidation;
+    use ApiResponseTrait;
+    use HandlesAuthentication;
+    use HandlesErrors;
+    use HandlesValidation;
 
     private InvitationService $invitationService;
 

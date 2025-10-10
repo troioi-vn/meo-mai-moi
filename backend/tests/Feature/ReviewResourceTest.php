@@ -11,7 +11,8 @@ use Tests\Traits\CreatesUsers;
 
 class ReviewResourceTest extends TestCase
 {
-    use CreatesUsers, RefreshDatabase;
+    use CreatesUsers;
+    use RefreshDatabase;
 
     protected User $adminUser;
 

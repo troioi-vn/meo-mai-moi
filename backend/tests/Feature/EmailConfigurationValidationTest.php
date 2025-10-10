@@ -6,7 +6,6 @@ use App\Exceptions\EmailConfigurationException;
 use App\Models\EmailConfiguration;
 use App\Services\EmailConfigurationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
 use Symfony\Component\Mailer\Exception\TransportException;
 use Tests\TestCase;
@@ -179,8 +178,10 @@ class EmailConfigurationValidationTest extends TestCase
             ]);
 
             $errors = $config->validateConfig();
-            $this->assertEmpty(array_filter($errors, fn ($error) => str_contains($error, 'email address')),
-                "Valid email {$email} should not produce validation errors");
+            $this->assertEmpty(
+                array_filter($errors, fn ($error) => str_contains($error, 'email address')),
+                "Valid email {$email} should not produce validation errors"
+            );
         }
 
         foreach ($invalidEmails as $email) {
@@ -197,8 +198,10 @@ class EmailConfigurationValidationTest extends TestCase
             ]);
 
             $errors = $config->validateConfig();
-            $this->assertNotEmpty(array_filter($errors, fn ($error) => str_contains($error, 'email address')),
-                "Invalid email {$email} should produce validation errors");
+            $this->assertNotEmpty(
+                array_filter($errors, fn ($error) => str_contains($error, 'email address')),
+                "Invalid email {$email} should produce validation errors"
+            );
         }
     }
 
@@ -222,8 +225,10 @@ class EmailConfigurationValidationTest extends TestCase
             ]);
 
             $errors = $config->validateConfig();
-            $this->assertEmpty(array_filter($errors, fn ($error) => str_contains($error, 'port')),
-                "Valid port {$port} should not produce validation errors");
+            $this->assertEmpty(
+                array_filter($errors, fn ($error) => str_contains($error, 'port')),
+                "Valid port {$port} should not produce validation errors"
+            );
         }
 
         foreach ($invalidPorts as $port) {
@@ -240,8 +245,10 @@ class EmailConfigurationValidationTest extends TestCase
             ]);
 
             $errors = $config->validateConfig();
-            $this->assertNotEmpty(array_filter($errors, fn ($error) => str_contains($error, 'port')),
-                "Invalid port {$port} should produce validation errors");
+            $this->assertNotEmpty(
+                array_filter($errors, fn ($error) => str_contains($error, 'port')),
+                "Invalid port {$port} should produce validation errors"
+            );
         }
     }
 }

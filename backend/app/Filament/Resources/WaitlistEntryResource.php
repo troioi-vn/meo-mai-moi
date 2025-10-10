@@ -4,7 +4,6 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\WaitlistEntryResource\Pages;
 use App\Models\WaitlistEntry;
-use App\Services\InvitationService;
 use App\Services\WaitlistService;
 use Filament\Forms;
 use Filament\Forms\Form;

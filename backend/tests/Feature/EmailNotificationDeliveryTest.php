@@ -21,7 +21,8 @@ use Tests\Traits\CreatesUsers;
 
 class EmailNotificationDeliveryTest extends TestCase
 {
-    use CreatesUsers, RefreshDatabase;
+    use CreatesUsers;
+    use RefreshDatabase;
 
     protected function setUp(): void
     {

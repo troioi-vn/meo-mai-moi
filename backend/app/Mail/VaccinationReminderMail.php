@@ -2,9 +2,7 @@
 
 namespace App\Mail;
 
-use App\Enums\NotificationType;
 use App\Models\Pet;
-use App\Models\VaccinationRecord;
 
 class VaccinationReminderMail extends NotificationMail
 {

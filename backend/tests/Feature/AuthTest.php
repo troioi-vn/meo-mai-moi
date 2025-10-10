@@ -10,7 +10,8 @@ use Tests\Traits\CreatesUsers;
 
 class AuthTest extends TestCase
 {
-    use CreatesUsers, RefreshDatabase;
+    use CreatesUsers;
+    use RefreshDatabase;
 
     #[Test]
     public function a_user_can_register_successfully()

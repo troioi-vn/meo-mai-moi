@@ -16,7 +16,8 @@ use Illuminate\Queue\SerializesModels;
 
 abstract class NotificationMail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable;
+    use SerializesModels;
 
     protected User $user;
 

@@ -215,7 +215,8 @@ class FosterAssignmentResource extends Resource
 
                 Tables\Filters\Filter::make('overdue_assignments')
                     ->label('Overdue Assignments')
-                    ->query(fn (Builder $query): Builder => $query->where('status', 'active')
+                    ->query(
+                        fn (Builder $query): Builder => $query->where('status', 'active')
                         ->whereNotNull('expected_end_date')
                         ->whereDate('expected_end_date', '<', now())
                     )

@@ -49,7 +49,7 @@ class EmailMonitoringTest extends TestCase
             'failed_at' => null,
         ]);
 
-        $widget = new NotificationStatsWidget;
+        $widget = new NotificationStatsWidget();
 
         // Use reflection to access protected method
         $reflection = new \ReflectionClass($widget);
@@ -75,7 +75,7 @@ class EmailMonitoringTest extends TestCase
             'is_active' => false,
         ]);
 
-        $widget = new EmailSystemAlertsWidget;
+        $widget = new EmailSystemAlertsWidget();
         $viewData = $widget->getViewData();
 
         $this->assertTrue($viewData['hasAlerts']);
@@ -106,7 +106,7 @@ class EmailMonitoringTest extends TestCase
             'delivered_at' => now()->subHours(11),
         ]);
 
-        $widget = new EmailSystemAlertsWidget;
+        $widget = new EmailSystemAlertsWidget();
         $viewData = $widget->getViewData();
 
         $this->assertTrue($viewData['hasAlerts']);
@@ -131,7 +131,7 @@ class EmailMonitoringTest extends TestCase
             'failed_at' => null,
         ]);
 
-        $widget = new EmailSystemAlertsWidget;
+        $widget = new EmailSystemAlertsWidget();
         $viewData = $widget->getViewData();
 
         $this->assertTrue($viewData['hasAlerts']);
@@ -170,7 +170,7 @@ class EmailMonitoringTest extends TestCase
             'delivered_at' => now()->subHours(1),
         ]);
 
-        $widget = new EmailSystemAlertsWidget;
+        $widget = new EmailSystemAlertsWidget();
         $viewData = $widget->getViewData();
 
         $this->assertFalse($viewData['hasAlerts']);
@@ -199,7 +199,7 @@ class EmailMonitoringTest extends TestCase
             ]);
         }
 
-        $widget = new EmailDeliveryChart;
+        $widget = new EmailDeliveryChart();
 
         // Use reflection to access protected method
         $reflection = new \ReflectionClass($widget);

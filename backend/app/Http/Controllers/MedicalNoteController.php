@@ -15,7 +15,10 @@ use OpenApi\Annotations as OA;
 
 class MedicalNoteController extends Controller
 {
-    use ApiResponseTrait, HandlesAuthentication, HandlesPetResources, HandlesValidation;
+    use ApiResponseTrait;
+    use HandlesAuthentication;
+    use HandlesPetResources;
+    use HandlesValidation;
 
     /**
      * @OA\Schema(
@@ -137,13 +140,19 @@ class MedicalNoteController extends Controller
     public function show(Request $request, Pet $pet, MedicalNote $note)
     {
         $user = $request->user();
-        if (! $user) return $this->sendError('Unauthenticated.', 401);
+        if (! $user) {
+            return $this->sendError('Unauthenticated.', 401);
+        }
         $isOwner = $user->id === $pet->user_id;
         $isAdmin = method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
-        if (! $isOwner && ! $isAdmin) return $this->sendError('Forbidden.', 403);
+        if (! $isOwner && ! $isAdmin) {
+            return $this->sendError('Forbidden.', 403);
+        }
         PetCapabilityService::ensure($pet, 'medical');
 
-        if ($note->pet_id !== $pet->id) return $this->sendError('Not found.', 404);
+        if ($note->pet_id !== $pet->id) {
+            return $this->sendError('Not found.', 404);
+        }
         return $this->sendSuccess($note);
     }
 
@@ -169,12 +178,18 @@ class MedicalNoteController extends Controller
     public function update(Request $request, Pet $pet, MedicalNote $note)
     {
         $user = $request->user();
-        if (! $user) return $this->sendError('Unauthenticated.', 401);
+        if (! $user) {
+            return $this->sendError('Unauthenticated.', 401);
+        }
         $isOwner = $user->id === $pet->user_id;
         $isAdmin = method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
-        if (! $isOwner && ! $isAdmin) return $this->sendError('Forbidden.', 403);
+        if (! $isOwner && ! $isAdmin) {
+            return $this->sendError('Forbidden.', 403);
+        }
         PetCapabilityService::ensure($pet, 'medical');
-        if ($note->pet_id !== $pet->id) return $this->sendError('Not found.', 404);
+        if ($note->pet_id !== $pet->id) {
+            return $this->sendError('Not found.', 404);
+        }
 
         $validated = $request->validate([
             'note' => 'sometimes|string',
@@ -214,12 +229,18 @@ class MedicalNoteController extends Controller
     public function destroy(Request $request, Pet $pet, MedicalNote $note)
     {
         $user = $request->user();
-        if (! $user) return $this->sendError('Unauthenticated.', 401);
+        if (! $user) {
+            return $this->sendError('Unauthenticated.', 401);
+        }
         $isOwner = $user->id === $pet->user_id;
         $isAdmin = method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
-        if (! $isOwner && ! $isAdmin) return $this->sendError('Forbidden.', 403);
+        if (! $isOwner && ! $isAdmin) {
+            return $this->sendError('Forbidden.', 403);
+        }
         PetCapabilityService::ensure($pet, 'medical');
-        if ($note->pet_id !== $pet->id) return $this->sendError('Not found.', 404);
+        if ($note->pet_id !== $pet->id) {
+            return $this->sendError('Not found.', 404);
+        }
         $note->delete();
         return response()->json(['data' => true]);
     }

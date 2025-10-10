@@ -10,7 +10,8 @@ use Tests\Traits\CreatesUsers;
 
 class UserProfileTest extends TestCase
 {
-    use CreatesUsers, RefreshDatabase;
+    use CreatesUsers;
+    use RefreshDatabase;
 
     protected $user;
 

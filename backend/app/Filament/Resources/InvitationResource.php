@@ -150,7 +150,8 @@ class InvitationResource extends Resource
 
                 Tables\Filters\Filter::make('expired')
                     ->label('Expired')
-                    ->query(fn (Builder $query): Builder =>
+                    ->query(
+                        fn (Builder $query): Builder =>
                         $query->where('expires_at', '<', now())
                               ->where('status', 'pending')
                     ),

@@ -14,7 +14,8 @@ use Tests\Traits\CreatesUsers;
 
 class InviteSystemIntegrationTest extends TestCase
 {
-    use RefreshDatabase, CreatesUsers;
+    use RefreshDatabase;
+    use CreatesUsers;
 
     protected function setUp(): void
     {
@@ -288,8 +289,12 @@ class InviteSystemIntegrationTest extends TestCase
 
         // Only one should succeed
         $successCount = 0;
-        if ($response1->getStatusCode() === 201) $successCount++;
-        if ($response2->getStatusCode() === 201) $successCount++;
+        if ($response1->getStatusCode() === 201) {
+            $successCount++;
+        }
+        if ($response2->getStatusCode() === 201) {
+            $successCount++;
+        }
 
         $this->assertEquals(1, $successCount);
 

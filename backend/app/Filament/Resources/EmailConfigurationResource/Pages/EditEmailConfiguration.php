@@ -16,8 +16,9 @@ class EditEmailConfiguration extends EditRecord
     {
         return [
             Actions\Action::make('test_connection')
-                ->label(fn (): string => 
-                    $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp' 
+                ->label(
+                    fn (): string =>
+                    $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'
                         ? 'Send Test Email' : 'Test Connection'
                 )
                 ->icon('heroicon-o-signal')
@@ -49,7 +50,7 @@ class EditEmailConfiguration extends EditRecord
 
                         if ($testResult['success']) {
                             $title = $this->record->provider === 'smtp' ? 'Test Email Sent Successfully' : 'Connection Test Successful';
-                            $body = $this->record->provider === 'smtp' 
+                            $body = $this->record->provider === 'smtp'
                                 ? 'Test email was sent successfully to ' . ($this->record->config['test_email_address'] ?? 'the configured address') . '.'
                                 : 'Email configuration is working correctly. A test email was sent.';
 
@@ -61,7 +62,7 @@ class EditEmailConfiguration extends EditRecord
                         } else {
                             $title = $this->record->provider === 'smtp' ? 'Test Email Failed' : 'Connection Test Failed';
                             $body = 'Email configuration test failed. Please check your settings.';
-                            
+
                             if (isset($testResult['error'])) {
                                 $body = 'Test failed: ' . $testResult['error'];
                             }
@@ -81,12 +82,14 @@ class EditEmailConfiguration extends EditRecord
                     }
                 })
                 ->requiresConfirmation()
-                ->modalHeading(fn (): string => 
-                    $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp' 
+                ->modalHeading(
+                    fn (): string =>
+                    $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'
                         ? 'Send Test Email' : 'Test Email Configuration'
                 )
-                ->modalDescription(fn (): string => 
-                    $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp' 
+                ->modalDescription(
+                    fn (): string =>
+                    $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'
                         ? 'This will send a test email to the configured test email address. Continue?'
                         : 'This will send a test email to verify the configuration. Continue?'
                 ),

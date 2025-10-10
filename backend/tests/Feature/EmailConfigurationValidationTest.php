@@ -53,7 +53,7 @@ class EmailConfigurationValidationTest extends TestCase
             'provider' => 'mailgun',
             'config' => [
                 'domain' => 'invalid-domain', // Invalid domain format
-                'api_key' => 'invalid-key', // Invalid API key format
+                'api_key' => 'short', // Invalid API key - too short
                 'from_address' => 'invalid-email', // Invalid email
             ],
         ]);
@@ -61,7 +61,7 @@ class EmailConfigurationValidationTest extends TestCase
         $errors = $config->validateConfig();
 
         $this->assertContains('Mailgun domain must be a valid domain format', $errors);
-        $this->assertContains('Mailgun API key must be in format \'key-\' followed by alphanumeric characters', $errors);
+        $this->assertContains('Mailgun API key appears to be too short', $errors);
         $this->assertContains('From email address must be a valid email format', $errors);
     }
 

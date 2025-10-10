@@ -107,9 +107,9 @@ class EmailConfigurationService
     /**
      * Test an email configuration with detailed error information.
      */
-    public function testConfigurationWithDetails(?string $provider = null, ?array $config = null): array
+    public function testConfigurationWithDetails(?string $provider = null, ?array $config = null, ?string $testEmailAddress = null): array
     {
-        return $this->tester->testConfiguration($provider, $config);
+        return $this->tester->testConfiguration($provider, $config, $testEmailAddress);
     }
 
 

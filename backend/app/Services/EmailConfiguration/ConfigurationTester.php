@@ -14,7 +14,7 @@ class ConfigurationTester
     /**
      * Test an email configuration with detailed error information.
      */
-    public function testConfiguration(?string $provider = null, ?array $config = null): array
+    public function testConfiguration(?string $provider = null, ?array $config = null, ?string $testEmailAddress = null): array
     {
         try {
             $testConfig = $this->prepareTestConfiguration($provider, $config);
@@ -29,7 +29,7 @@ class ConfigurationTester
                 return $validationResult;
             }
 
-            return $this->performConnectionTest($testConfig['config']);
+            return $this->performConnectionTest($testConfig['config'], $testEmailAddress);
         } catch (Exception $e) {
             return $this->handleTestException($e, $provider);
         }
@@ -77,7 +77,7 @@ class ConfigurationTester
         return ['success' => true];
     }
 
-    private function performConnectionTest(EmailConfiguration $testConfig): array
+    private function performConnectionTest(EmailConfiguration $testConfig, ?string $testEmailAddress = null): array
     {
         $mailConfig = $testConfig->getMailConfig();
         $fromConfig = $testConfig->getFromAddress();
@@ -85,10 +85,14 @@ class ConfigurationTester
 
         try {
             $this->setupTestMailConfiguration($testConfig->provider, $mailConfig, $fromConfig);
-            $this->sendTestEmail($fromConfig);
+            
+            // Determine the recipient email address
+            $recipientEmail = $testEmailAddress ?? $fromConfig['address'];
+            
+            $this->sendTestEmail($fromConfig, $recipientEmail);
             $this->restoreOriginalConfiguration($originalConfig);
 
-            $this->logTestSuccess($testConfig->provider, $fromConfig);
+            $this->logTestSuccess($testConfig->provider, $fromConfig, $recipientEmail);
 
             return [
                 'success' => true,
@@ -118,10 +122,10 @@ class ConfigurationTester
         app('mail.manager')->purge();
     }
 
-    private function sendTestEmail(array $fromConfig): void
+    private function sendTestEmail(array $fromConfig, string $recipientEmail): void
     {
-        Mail::raw('This is a test email to verify your email configuration.', function (Message $message) use ($fromConfig) {
-            $message->to($fromConfig['address'])
+        Mail::raw('This is a test email to verify your email configuration.', function (Message $message) use ($fromConfig, $recipientEmail) {
+            $message->to($recipientEmail)
                 ->subject('Email Configuration Test - ' . config('app.name'));
         });
     }
@@ -132,11 +136,12 @@ class ConfigurationTester
         app('mail.manager')->purge();
     }
 
-    private function logTestSuccess(string $provider, array $fromConfig): void
+    private function logTestSuccess(string $provider, array $fromConfig, string $recipientEmail): void
     {
         Log::info('Email configuration test successful', [
             'provider' => $provider,
             'from_address' => $fromConfig['address'],
+            'recipient_email' => $recipientEmail,
         ]);
     }
 

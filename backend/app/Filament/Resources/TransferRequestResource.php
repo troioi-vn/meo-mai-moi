@@ -31,7 +31,7 @@ class TransferRequestResource extends Resource
 
     protected static ?string $navigationLabel = 'Transfer Requests';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form
     {

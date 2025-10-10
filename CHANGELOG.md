@@ -43,6 +43,14 @@ All notable changes to this project are documented here, following the [Keep a C
 - SQLite references from documentation and development guides
 
 ### Unreleased (delta)
+- **Admin Panel Navigation Improvements**: Reorganized navigation groups for better clarity and usability:
+  - Moved "Roles" from "Filament Shield" section to "System" section
+  - Moved "Users" from "Filament Shield" section to "Users & Helpers" section as first item
+  - Removed empty "Filament Shield" section
+  - Moved "Pets" to top of "Pet Management" section
+  - Renamed "User Access" section to "Invitation"
+  - Updated navigation groups structure: Pet Management, Users & Helpers, Invitation, Communication, System
+  - Published and customized UserResource for better control over navigation ordering
 - Frontend: Added a prominent "Lost" status badge to `PetCard` and corresponding unit test to ensure the badge renders when `pet.status === 'lost'`.
 - Frontend tests: Fixed typing for test helpers (added `MockUser` type) so tests accept a mock user object; all `PetCard` tests pass.
 - Password flow: Moved password change UI to a dedicated `/account/password` page (`PasswordPage`), updated `ChangePasswordForm` to force logout and redirect to `/login` after a successful password change, and updated tests to assert logout/redirect behavior and adjusted copy.

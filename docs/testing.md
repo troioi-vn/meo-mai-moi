@@ -65,6 +65,27 @@ cd frontend && npm run e2e
 
 Note: For non-local targets, the Playwright config will not start a web server; make sure the URL is live before running tests.
 
+### Configure baseURL via .env
+
+Playwright reads environment variables from local files in `frontend/` if present:
+
+Priority order (topmost has highest priority):
+
+1. Process environment (export PLAYWRIGHT_BASE_URL=...)
+2. `.env.e2e.local`
+3. `.env.e2e`
+4. `.env.local`
+5. `.env`
+
+Quick setup:
+
+```
+cd frontend
+cp .env.e2e.example .env.e2e.local
+# edit .env.e2e.local, set PLAYWRIGHT_BASE_URL
+npm run e2e
+```
+
 ### Network stubbing pattern
 
 We stub backend endpoints via `page.route` to keep E2E fast and deterministic without a real backend:

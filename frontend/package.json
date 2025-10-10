@@ -70,6 +70,7 @@
     "@vitest/coverage-v8": "^3.2.4",
     "autoprefixer": "^10.4.21",
     "dependency-cruiser": "^17.0.2",
+    "dotenv": "^17.2.3",
     "eslint": "^9.32.0",
     "eslint-formatter-codeframe": "^7.32.1",
     "eslint-plugin-react-dom": "^1.1.0",

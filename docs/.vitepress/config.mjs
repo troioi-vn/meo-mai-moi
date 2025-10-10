@@ -9,8 +9,8 @@ export default defineConfig({
     /^http:\/\/localhost/,
     // API endpoints that don't exist during static build
     './api',
-    // External files outside docs directory
-    '../GEMINI.md'
+    // External files outside docs directory - match various patterns
+    /\.\.\/.*GEMINI/
   ],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config

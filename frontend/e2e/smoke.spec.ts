@@ -5,6 +5,12 @@ import { test, expect } from '@playwright/test'
 
 test('loads home page shell', async ({ page }) => {
   await page.goto('/')
-  await expect(page).toHaveTitle(/Vite \+ React/i)
+  const expected = process.env.PLAYWRIGHT_EXPECT_TITLE
+  if (expected && expected.trim()) {
+    await expect(page).toHaveTitle(new RegExp(expected, 'i'))
+  } else {
+    // Support both local Vite template and branded deployments
+    await expect(page).toHaveTitle(/Meo Mai Moi|Vite \+ React/i)
+  }
   await expect(page.locator('#root')).toBeVisible()
 })

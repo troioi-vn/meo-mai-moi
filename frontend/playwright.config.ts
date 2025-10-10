@@ -1,15 +1,18 @@
 import { defineConfig, devices } from '@playwright/test'
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'node:url'
 import dotenv from 'dotenv'
 
 // Load env from local files (explicit env vars still take precedence)
-const envFiles = [
-  '.env.e2e.local',
-  '.env.e2e',
-  '.env.local',
-  '.env',
-].map((f) => path.resolve(__dirname, f))
+// In ESM, __dirname is not defined. Derive a root directory safely.
+const __filename = fileURLToPath(import.meta.url)
+const __dirnameShim = path.dirname(__filename)
+// Prefer project root (frontend/) as base for env files
+const baseDir = process.cwd() || __dirnameShim
+const envFiles = ['.env.e2e.local', '.env.e2e', '.env.local', '.env'].map((f) =>
+  path.resolve(baseDir, f),
+)
 
 for (const f of envFiles) {
   if (fs.existsSync(f)) {

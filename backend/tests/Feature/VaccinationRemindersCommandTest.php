@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Console\Commands\SendVaccinationReminders;
 use App\Enums\NotificationType;
 use App\Models\Notification;
 use App\Models\NotificationPreference;

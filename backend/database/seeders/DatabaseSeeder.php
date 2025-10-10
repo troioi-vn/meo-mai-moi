@@ -37,7 +37,10 @@ class DatabaseSeeder extends Seeder
         ];
         $seedImageDir = null;
         foreach ($possibleSeedDirs as $dir) {
-            if (is_dir($dir)) { $seedImageDir = $dir; break; }
+            if (is_dir($dir)) {
+                $seedImageDir = $dir;
+                break;
+            }
         }
 
         $publicPetsDir = storage_path('app/public/pets');
@@ -46,14 +49,21 @@ class DatabaseSeeder extends Seeder
         }
 
         $expectedPairs = [];
-        foreach (range(1,5) as $n) { $expectedPairs[] = ["cat{$n}.jpeg", 'Cat']; $expectedPairs[] = ["dog{$n}.jpeg", 'Dog']; }
+        foreach (range(1, 5) as $n) {
+            $expectedPairs[] = ["cat{$n}.jpeg", 'Cat'];
+            $expectedPairs[] = ["dog{$n}.jpeg", 'Dog'];
+        }
 
         if ($seedImageDir) {
             foreach ($expectedPairs as [$file]) {
                 $src = $seedImageDir.DIRECTORY_SEPARATOR.$file;
                 $dest = $publicPetsDir.DIRECTORY_SEPARATOR.$file;
                 if (file_exists($src) && ! file_exists($dest)) {
-                    try { copy($src, $dest); } catch (\Throwable $e) { echo "Failed to copy seed image {$file}: {$e->getMessage()}".PHP_EOL; }
+                    try {
+                        copy($src, $dest);
+                    } catch (\Throwable $e) {
+                        echo "Failed to copy seed image {$file}: {$e->getMessage()}".PHP_EOL;
+                    }
                 }
             }
         }

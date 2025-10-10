@@ -12,7 +12,8 @@ use Tests\Traits\CreatesUsers;
 
 class InvitationControllerTest extends TestCase
 {
-    use RefreshDatabase, CreatesUsers;
+    use RefreshDatabase;
+    use CreatesUsers;
 
     protected function setUp(): void
     {

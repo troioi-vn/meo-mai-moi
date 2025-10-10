@@ -2,7 +2,6 @@
 
 namespace Tests\Unit\Models;
 
-use App\Models\User;
 use App\Models\WaitlistEntry;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;

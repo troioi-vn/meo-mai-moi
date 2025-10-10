@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Invitation;
 use App\Models\User;
-
 use App\Notifications\InvitationToEmail;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;

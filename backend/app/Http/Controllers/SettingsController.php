@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Services\SettingsService;
 use App\Traits\ApiResponseTrait;
-use Illuminate\Http\Request;
 
 class SettingsController extends Controller
 {

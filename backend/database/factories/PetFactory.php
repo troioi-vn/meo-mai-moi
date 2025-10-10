@@ -38,10 +38,13 @@ class PetFactory extends Factory
         $birthday_month = null;
         $birthday_day = null;
         if ($precision === 'day') {
-            $birthday_year = $year; $birthday_month = $month; $birthday_day = $day;
+            $birthday_year = $year;
+            $birthday_month = $month;
+            $birthday_day = $day;
             $birthday = sprintf('%04d-%02d-%02d', $year, $month, $day);
         } elseif ($precision === 'month') {
-            $birthday_year = $year; $birthday_month = $month;
+            $birthday_year = $year;
+            $birthday_month = $month;
         } elseif ($precision === 'year') {
             $birthday_year = $year;
         }

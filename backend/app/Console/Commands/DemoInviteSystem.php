@@ -6,9 +6,7 @@ use App\Models\Invitation;
 use App\Models\Settings;
 use App\Models\User;
 use App\Models\WaitlistEntry;
-use App\Services\InvitationService;
 use App\Services\SettingsService;
-use App\Services\WaitlistService;
 use Illuminate\Console\Command;
 
 class DemoInviteSystem extends Command

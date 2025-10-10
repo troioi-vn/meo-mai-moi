@@ -20,7 +20,7 @@ class UnsubscribeServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new UnsubscribeService;
+        $this->service = new UnsubscribeService();
         $this->user = User::factory()->create();
     }
 

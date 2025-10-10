@@ -3,7 +3,6 @@
 namespace Tests\Unit;
 
 use App\Models\Pet;
-use App\Models\PetType;
 use App\Models\User;
 use App\Services\PetCapabilityService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

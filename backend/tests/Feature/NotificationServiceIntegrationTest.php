@@ -24,7 +24,7 @@ class NotificationServiceIntegrationTest extends TestCase
         $user = User::factory()->create();
         // Ensure email is considered enabled for this integration path
         EmailConfiguration::factory()->smtp()->valid()->create(['is_active' => true]);
-        $service = new NotificationService;
+        $service = new NotificationService();
 
         // Test with a real notification scenario
         $data = [
@@ -71,7 +71,7 @@ class NotificationServiceIntegrationTest extends TestCase
 
         $user = User::factory()->create();
         EmailConfiguration::factory()->smtp()->valid()->create(['is_active' => true]);
-        $service = new NotificationService;
+        $service = new NotificationService();
 
         // Set different preferences for different notification types
         NotificationPreference::updatePreference(
@@ -117,7 +117,7 @@ class NotificationServiceIntegrationTest extends TestCase
 
         $user = User::factory()->create();
         EmailConfiguration::factory()->smtp()->valid()->create(['is_active' => true]);
-        $service = new NotificationService;
+        $service = new NotificationService();
 
         // Send notification with minimal data
         $data = []; // Empty data array
@@ -143,7 +143,7 @@ class NotificationServiceIntegrationTest extends TestCase
     {
         $user = User::factory()->create();
         EmailConfiguration::factory()->smtp()->valid()->create(['is_active' => true]);
-        $service = new NotificationService;
+        $service = new NotificationService();
 
         // Create notifications using the service
         $service->send(

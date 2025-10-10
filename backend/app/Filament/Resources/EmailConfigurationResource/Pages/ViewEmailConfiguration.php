@@ -233,7 +233,8 @@ class ViewEmailConfiguration extends ViewRecord
                                     ->label('')
                                     ->color('danger'),
                             ])
-                            ->state(fn (): array => ($this->record instanceof \App\Models\EmailConfiguration) ? collect($this->record->validateConfig())
+                            ->state(
+                                fn (): array => ($this->record instanceof \App\Models\EmailConfiguration) ? collect($this->record->validateConfig())
                                 ->map(fn (string $error) => ['error' => $error])
                                 ->toArray() : []
                             )

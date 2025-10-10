@@ -4,7 +4,6 @@ namespace Tests\Unit;
 
 use App\Models\Invitation;
 use App\Models\User;
-use App\Notifications\InvitationToEmail;
 use App\Services\InvitationService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -14,7 +13,8 @@ use Tests\Traits\CreatesUsers;
 
 class InvitationServiceTest extends TestCase
 {
-    use RefreshDatabase, CreatesUsers;
+    use RefreshDatabase;
+    use CreatesUsers;
 
     private InvitationService $service;
     private User $user;
@@ -22,7 +22,7 @@ class InvitationServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new InvitationService;
+        $this->service = new InvitationService();
         $this->user = User::factory()->create();
     }
 

@@ -149,7 +149,7 @@ class NotificationPreferenceTest extends TestCase
 
     public function test_fillable_attributes()
     {
-        $preference = new NotificationPreference;
+        $preference = new NotificationPreference();
         $fillable = $preference->getFillable();
 
         $this->assertContains('user_id', $fillable);

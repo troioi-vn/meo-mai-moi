@@ -12,10 +12,8 @@ use App\Traits\HandlesAuthentication;
 use App\Traits\HandlesErrors;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
-
 use OpenApi\Annotations as OA;
 
 /**
@@ -42,7 +40,9 @@ use OpenApi\Annotations as OA;
  */
 class PetController extends Controller
 {
-    use ApiResponseTrait, HandlesAuthentication, HandlesErrors;
+    use ApiResponseTrait;
+    use HandlesAuthentication;
+    use HandlesErrors;
 
     protected PetCapabilityService $capabilityService;
 

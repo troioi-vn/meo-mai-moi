@@ -8,8 +8,8 @@ use App\Models\User;
 use App\Models\WeightHistory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
-use Tests\TestCase;
 use Spatie\Permission\Models\Role;
+use Tests\TestCase;
 
 class WeightHistoryFeatureTest extends TestCase
 {

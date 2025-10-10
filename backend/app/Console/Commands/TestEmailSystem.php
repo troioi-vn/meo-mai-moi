@@ -5,8 +5,6 @@ namespace App\Console\Commands;
 use App\Models\Invitation;
 use App\Models\User;
 use App\Models\WaitlistEntry;
-use App\Notifications\InvitationToEmail;
-use App\Notifications\WaitlistConfirmation;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
 

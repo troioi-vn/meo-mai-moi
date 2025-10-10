@@ -14,7 +14,10 @@ use Illuminate\Support\Facades\Auth;
 
 class PetPhotoController extends Controller
 {
-    use ApiResponseTrait, HandlesAuthentication, HandlesPetResources, HandlesValidation;
+    use ApiResponseTrait;
+    use HandlesAuthentication;
+    use HandlesPetResources;
+    use HandlesValidation;
 
     protected FileUploadService $fileUploadService;
 

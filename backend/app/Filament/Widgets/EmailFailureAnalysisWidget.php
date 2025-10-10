@@ -86,7 +86,8 @@ class EmailFailureAnalysisWidget extends BaseWidget
                 Tables\Actions\Action::make('view_details')
                     ->label('View')
                     ->icon('heroicon-o-eye')
-                    ->url(fn (Notification $record): string => route('filament.admin.resources.notifications.view', $record)
+                    ->url(
+                        fn (Notification $record): string => route('filament.admin.resources.notifications.view', $record)
                     ),
             ])
             ->defaultPaginationPageOption(10)

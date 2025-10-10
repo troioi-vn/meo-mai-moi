@@ -15,7 +15,8 @@ use Tests\Traits\CreatesUsers;
 
 class TransferRequestResourceTest extends TestCase
 {
-    use CreatesUsers, RefreshDatabase;
+    use CreatesUsers;
+    use RefreshDatabase;
 
     protected function setUp(): void
     {

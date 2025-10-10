@@ -64,8 +64,12 @@ class EmailSystemAlertsWidget extends Widget
                 $alerts[] = [
                     'type' => 'danger',
                     'title' => 'High Email Failure Rate',
-                    'message' => sprintf('Email failure rate is %.1f%% in the last 24 hours (%d failed out of %d total).',
-                        $failureRate, $recentFailed, $recentTotal),
+                    'message' => sprintf(
+                        'Email failure rate is %.1f%% in the last 24 hours (%d failed out of %d total).',
+                        $failureRate,
+                        $recentFailed,
+                        $recentTotal
+                    ),
                     'action' => 'View Failed Notifications',
                     'action_url' => route('filament.admin.resources.notifications.index', [
                         'tableFilters' => ['delivery_status' => ['value' => 'failed']],

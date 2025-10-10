@@ -123,7 +123,7 @@ class WaitlistService
         return $this->bulkProcessor->processBulkInvitations(
             $emails,
             $inviter,
-            fn($email, $inviter) => $this->inviteFromWaitlist($email, $inviter)
+            fn ($email, $inviter) => $this->inviteFromWaitlist($email, $inviter)
         );
     }
 

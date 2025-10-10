@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources\UserResource\Pages;
 
-use App\Models\User;
 use App\Filament\Resources\UserResource;
-use Filament\Resources\Pages\EditRecord;
+use App\Models\User;
 use Filament\Actions\DeleteAction;
+use Filament\Resources\Pages\EditRecord;
 use STS\FilamentImpersonate\Pages\Actions\Impersonate;
 
 class EditUser extends EditRecord

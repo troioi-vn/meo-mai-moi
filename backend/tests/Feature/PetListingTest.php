@@ -10,7 +10,8 @@ use Tests\Traits\CreatesUsers;
 
 class PetListingTest extends TestCase
 {
-    use CreatesUsers, RefreshDatabase;
+    use CreatesUsers;
+    use RefreshDatabase;
 
     #[Test]
     public function can_get_single_pet_profile(): void

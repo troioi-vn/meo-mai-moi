@@ -7,11 +7,11 @@ hero:
   tagline: Community-driven pet rescue and rehoming.
   actions:
     - theme: brand
-  text: Development Guide
-  link: /development
+      text: Development Guide
+      link: /development
     - theme: alt
       text: View on GitHub
-  link: https://github.com/troioi-vn/meo-mai-moi
+      link: https://github.com/troioi-vn/meo-mai-moi
 
 features:
   - title: Community-Focused

@@ -64,7 +64,7 @@ Emergency rollback
     - ./scripts/restore.sh  # interactive: DB and/or uploads
 3) Revert code
     - git log
-    - git checkout <good-commit>
+    - git checkout `<good-commit>`
 4) Re-deploy old version
     - docker compose up -d --build
     - docker compose exec backend php artisan migrate --force

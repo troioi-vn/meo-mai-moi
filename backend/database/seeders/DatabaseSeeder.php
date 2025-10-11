@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             ReviewSeeder::class,
             NotificationPreferenceSeeder::class,
             EmailConfigurationSeeder::class,
+            NotificationTemplateSeeder::class,
         ]);
 
         // Ensure sample pet images are available.

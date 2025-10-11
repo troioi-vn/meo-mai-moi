@@ -19,6 +19,28 @@ class InAppNotificationChannel implements NotificationChannelInterface
     {
         try {
             $processedData = $this->isFallback ? $this->prepareFallbackData($data) : $data;
+
+            // If message missing, try templated rendering
+            if (empty($processedData['message'])) {
+                $resolved = app(NotificationTemplateResolver::class)->resolve($type, 'in_app');
+                if ($resolved) {
+                    $render = app(NotificationTemplateRenderer::class)->render($resolved, $this->buildTemplateData($user, $type, $processedData), 'in_app');
+                    if (!empty($render['message'])) {
+                        $processedData['message'] = $render['message'];
+                    }
+                    if (!empty($render['title'])) {
+                        $processedData['title'] = $render['title'];
+                    }
+                    if (!empty($render['link'])) {
+                        $processedData['link'] = $render['link'];
+                    }
+                    // Attach template metadata for observability
+                    $processedData['template_source'] = $resolved['source'] ?? 'unknown';
+                    $processedData['template_locale'] = $resolved['locale'] ?? null;
+                    $processedData['template_version'] = $resolved['version'] ?? null;
+                }
+            }
+
             $notification = $this->createNotificationRecord($user, $type, $processedData);
 
             $notification->update(['delivered_at' => now()]);
@@ -56,6 +78,18 @@ class InAppNotificationChannel implements NotificationChannelInterface
             'data' => array_merge($data, ['channel' => $this->getChannelName()]),
             'is_read' => false,
         ]);
+    }
+
+    private function buildTemplateData(User $user, string $type, array $data): array
+    {
+        // Reuse NotificationMail data builder conventions for consistency
+        // At minimum include user and actionUrl when available
+        $base = [
+            'user' => $user,
+            'actionUrl' => $data['actionUrl'] ?? $data['link'] ?? config('app.url').'/requests',
+        ];
+
+        return array_merge($base, $data);
     }
 
     private function logSuccess(User $user, Notification $notification, string $type): void

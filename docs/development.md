@@ -66,11 +66,33 @@ docker compose down
 
 ## Related Documentation
 
+- [Email Configuration](./email_configuration.md) - SMTP and Mailgun setup with test email logging
 - [Testing Guide](./testing.md) - Comprehensive testing instructions
 - [Git Workflow](./git-workflow.md) - Branching strategy and conflict resolution
 - [Troubleshooting](./troubleshooting.md) - Common issues and solutions
 - [Deployment](./deploy.md) - Production deployment guide
 - [Architecture](../GEMINI.md) - System architecture overview
+
+## Email Configuration
+
+Set up SMTP and Mailgun email configurations with test email logging:
+
+```bash
+# Quick setup with your domain settings
+php artisan email:setup
+
+# Setup with credentials and activate
+php artisan email:setup \
+  --smtp-username=your-email@gmail.com \
+  --smtp-password=your-app-password \
+  --activate=smtp
+
+# Access admin panel
+# → http://localhost:8000/admin/email-configurations
+# → http://localhost:8000/admin/email-logs
+```
+
+See the [Email Configuration Guide](./email_configuration.md) for detailed setup instructions.
 
 ## Quick Commands
 

@@ -11,5 +11,6 @@ Our primary goal is a geographically modular system anyone can deploy for their 
 ## Where to Start
 
 - Development setup, testing, and tips: [Development Guide](./development.md)
+- Email configuration and testing: [Email Configuration Guide](./email_configuration.md)
 - Production steps: [Deployment Guide](./deploy.md)
 - AI-agent's guide: [GEMINI.md](../GEMINI.md)

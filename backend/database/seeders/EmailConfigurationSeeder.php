@@ -18,6 +18,8 @@ class EmailConfigurationSeeder extends Seeder
                 'provider' => 'smtp',
             ],
             [
+                'name' => 'SMTP Configuration',
+                'description' => 'SMTP email configuration for dev.meo-mai-moi.com',
                 'is_active' => false,
                 'config' => [
                     'host' => 'smtp.gmail.com',
@@ -25,8 +27,9 @@ class EmailConfigurationSeeder extends Seeder
                     'username' => 'your-email@gmail.com',
                     'password' => 'your-app-password',
                     'encryption' => 'tls',
-                    'from_address' => 'noreply@meomaimoi.com',
+                    'from_address' => 'mail@meo-mai-moi.com',
                     'from_name' => 'Meo Mai Moi',
+                    'test_email_address' => 'pavel@catarchy.space',
                 ],
             ]
         );
@@ -37,13 +40,16 @@ class EmailConfigurationSeeder extends Seeder
                 'provider' => 'mailgun',
             ],
             [
+                'name' => 'Mailgun Configuration',
+                'description' => 'Mailgun API configuration for dev.meo-mai-moi.com',
                 'is_active' => false,
                 'config' => [
-                    'domain' => 'mg.meomaimoi.com',
+                    'domain' => 'dev.meo-mai-moi.com',
                     'api_key' => 'key-your-mailgun-api-key-here',
                     'endpoint' => 'api.mailgun.net',
-                    'from_address' => 'noreply@meomaimoi.com',
+                    'from_address' => 'mail@meo-mai-moi.com',
                     'from_name' => 'Meo Mai Moi',
+                    'test_email_address' => 'pavel@catarchy.space',
                 ],
             ]
         );

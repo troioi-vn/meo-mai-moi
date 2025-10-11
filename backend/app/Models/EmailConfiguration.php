@@ -199,6 +199,10 @@ class EmailConfiguration extends Model
             $errors[] = 'From email address must be a valid email format';
         }
 
+        if (! empty($config['test_email_address']) && ! filter_var($config['test_email_address'], FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Test email address must be a valid email format';
+        }
+
         if (! empty($config['host'])) {
             // Basic hostname validation
             if (! preg_match('/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', $config['host']) &&
@@ -233,6 +237,10 @@ class EmailConfiguration extends Model
         // Specific field validations
         if (! empty($config['from_address']) && ! filter_var($config['from_address'], FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'From email address must be a valid email format';
+        }
+
+        if (! empty($config['test_email_address']) && ! filter_var($config['test_email_address'], FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Test email address must be a valid email format';
         }
 
         if (! empty($config['domain'])) {

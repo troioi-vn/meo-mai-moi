@@ -186,6 +186,13 @@ class EmailConfigurationResource extends Resource
                             ->label('From Name')
                             ->placeholder('Your App Name')
                             ->helperText('Name that will appear as sender (optional)'),
+
+                        Forms\Components\TextInput::make('config.test_email_address')
+                            ->label('Test Email Address')
+                            ->email()
+                            ->placeholder('test@example.com')
+                            ->helperText('Email address to send test emails to (for testing purposes only)')
+                            ->columnSpanFull(),
                     ])
                     ->columns(2)
                     ->visible(fn (Forms\Get $get): bool => $get('provider') === 'mailgun'),
@@ -300,38 +307,29 @@ class EmailConfigurationResource extends Resource
             ])
             ->actions([
                 Tables\Actions\Action::make('test_connection')
-                    ->label(
-                        fn (EmailConfiguration $record): string =>
-                        $record->provider === 'smtp' ? 'Send Test Email' : 'Test Connection'
-                    )
+                    ->label('Send Test Email')
                     ->icon('heroicon-o-signal')
                     ->color('info')
                     ->action(function (EmailConfiguration $record): void {
                         $service = app(EmailConfigurationService::class);
 
                         try {
-                            // For SMTP, check if test email address is provided
-                            if ($record->provider === 'smtp') {
-                                $testEmailAddress = $record->config['test_email_address'] ?? null;
-                                if (!$testEmailAddress) {
-                                    Notification::make()
-                                        ->title('Test Email Address Required')
-                                        ->body('Please configure a test email address in the SMTP settings before sending a test email.')
-                                        ->warning()
-                                        ->send();
-                                    return;
-                                }
-
-                                $testResult = $service->testConfigurationWithDetails($record->provider, $record->config, $testEmailAddress);
-                            } else {
-                                $testResult = $service->testConfigurationWithDetails($record->provider, $record->config);
+                            // Check if test email address is provided for both SMTP and Mailgun
+                            $testEmailAddress = $record->config['test_email_address'] ?? null;
+                            if (!$testEmailAddress) {
+                                Notification::make()
+                                    ->title('Test Email Address Required')
+                                    ->body('Please configure a test email address in the ' . strtoupper($record->provider) . ' settings before sending a test email.')
+                                    ->warning()
+                                    ->send();
+                                return;
                             }
 
+                            $testResult = $service->testConfigurationWithDetails($record->provider, $record->config, $testEmailAddress);
+
                             if ($testResult['success']) {
-                                $title = $record->provider === 'smtp' ? 'Test Email Sent Successfully' : 'Connection Test Successful';
-                                $body = $record->provider === 'smtp'
-                                    ? 'Test email was sent successfully to ' . ($record->config['test_email_address'] ?? 'the configured address') . '.'
-                                    : 'Email configuration is working correctly. A test email was sent to ' . ($record->config['from_address'] ?? 'the configured address') . '.';
+                                $title = 'Test Email Sent Successfully';
+                                $body = 'Test email was sent successfully to ' . ($record->config['test_email_address'] ?? 'the configured address') . '.';
 
                                 Notification::make()
                                     ->title($title)
@@ -357,7 +355,7 @@ class EmailConfigurationResource extends Resource
 
                                 $body .= "\n\nSuggestion: {$hints}";
 
-                                $title = $record->provider === 'smtp' ? 'Test Email Failed' : 'Connection Test Failed';
+                                $title = 'Test Email Failed';
 
                                 Notification::make()
                                     ->title($title)
@@ -385,16 +383,8 @@ class EmailConfigurationResource extends Resource
                         }
                     })
                     ->requiresConfirmation()
-                    ->modalHeading(
-                        fn (EmailConfiguration $record): string =>
-                        $record->provider === 'smtp' ? 'Send Test Email' : 'Test Email Configuration'
-                    )
-                    ->modalDescription(
-                        fn (EmailConfiguration $record): string =>
-                        $record->provider === 'smtp'
-                            ? 'This will send a test email to the configured test email address. Continue?'
-                            : 'This will send a test email to verify the configuration. Continue?'
-                    ),
+                    ->modalHeading('Send Test Email')
+                    ->modalDescription('This will send a test email to the configured test email address. Continue?'),
 
                 Tables\Actions\Action::make('activate')
                     ->label('Activate')

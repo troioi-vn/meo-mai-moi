@@ -351,4 +351,91 @@ class EmailConfigurationTest extends TestCase
         $this->assertTrue($config->hasConfigValue('empty_value')); // null values still count as "has"
         $this->assertFalse($config->hasConfigValue('nonexistent'));
     }
+
+    public function test_smtp_configuration_with_test_email_address()
+    {
+        $configData = [
+            'host' => 'smtp.example.com',
+            'port' => 587,
+            'username' => 'test@example.com',
+            'password' => 'password',
+            'encryption' => 'tls',
+            'from_address' => 'noreply@example.com',
+            'from_name' => 'Test App',
+            'test_email_address' => 'test@example.com',
+        ];
+
+        $config = EmailConfiguration::create([
+            'provider' => 'smtp',
+            'is_active' => false,
+            'config' => $configData,
+        ]);
+
+        $this->assertEquals('test@example.com', $config->getConfigValue('test_email_address'));
+        $this->assertTrue($config->hasConfigValue('test_email_address'));
+        
+        // Test validation passes with valid test email
+        $validationErrors = $config->validateConfig();
+        $this->assertEmpty($validationErrors);
+    }
+
+    public function test_mailgun_configuration_with_test_email_address()
+    {
+        $configData = [
+            'domain' => 'mg.example.com',
+            'api_key' => 'key-test123456789',
+            'from_address' => 'noreply@example.com',
+            'from_name' => 'Test App',
+            'test_email_address' => 'test@example.com',
+        ];
+
+        $config = EmailConfiguration::create([
+            'provider' => 'mailgun',
+            'is_active' => false,
+            'config' => $configData,
+        ]);
+
+        $this->assertEquals('test@example.com', $config->getConfigValue('test_email_address'));
+        $this->assertTrue($config->hasConfigValue('test_email_address'));
+        
+        // Test validation passes with valid test email
+        $validationErrors = $config->validateConfig();
+        $this->assertEmpty($validationErrors);
+    }
+
+    public function test_validation_fails_with_invalid_test_email_address()
+    {
+        // Test SMTP with invalid test email
+        $smtpConfig = EmailConfiguration::create([
+            'provider' => 'smtp',
+            'is_active' => false,
+            'config' => [
+                'host' => 'smtp.example.com',
+                'port' => 587,
+                'username' => 'test@example.com',
+                'password' => 'password',
+                'encryption' => 'tls',
+                'from_address' => 'noreply@example.com',
+                'test_email_address' => 'invalid-email',
+            ],
+        ]);
+
+        $smtpErrors = $smtpConfig->validateConfig();
+        $this->assertContains('Test email address must be a valid email format', $smtpErrors);
+
+        // Test Mailgun with invalid test email
+        $mailgunConfig = EmailConfiguration::create([
+            'provider' => 'mailgun',
+            'is_active' => false,
+            'config' => [
+                'domain' => 'mg.example.com',
+                'api_key' => 'key-test123456789',
+                'from_address' => 'noreply@example.com',
+                'test_email_address' => 'invalid-email',
+            ],
+        ]);
+
+        $mailgunErrors = $mailgunConfig->validateConfig();
+        $this->assertContains('Test email address must be a valid email format', $mailgunErrors);
+    }
 }

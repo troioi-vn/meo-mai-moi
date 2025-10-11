@@ -148,7 +148,10 @@ docker compose exec backend php artisan migrate --force
 ```
 docker compose exec backend php artisan tinker --execute "\App\Models\EmailConfiguration::count()"
 ```
-4) If count is 0, create a new configuration in Admin → Communication → Email Configuration.
+4) If count is 0, create configurations using the setup command:
+```
+docker compose exec backend php artisan email:setup
+```
 5) If permissions are suspected, grant super admin:
 ```
 docker compose exec backend php artisan shield:super-admin
@@ -159,3 +162,43 @@ docker compose exec backend php artisan optimize:clear
 ```
 
 Note: Deleting an active configuration is blocked in the UI. Deactivate first to delete. Bulk delete now requires confirmation.
+
+### Test Email Address Required Error
+When sending test emails, both SMTP and Mailgun configurations now require a test email address:
+
+1) Edit the email configuration in the admin panel
+2) Add a valid email address to the "Test Email Address" field
+3) Save the configuration
+4) Try sending the test email again
+
+### Test Emails Not Appearing in Email Logs
+If test emails aren't showing in `/admin/email-logs`:
+
+1) Check that the email configuration test completed successfully
+2) Verify the EmailLog table exists:
+```
+docker compose exec backend php artisan migrate --force
+```
+3) Check if logs were created:
+```
+docker compose exec backend php artisan tinker --execute "\App\Models\EmailLog::latest()->take(5)->get(['recipient_email', 'subject', 'status'])"
+```
+4) Clear any filters in the Email Logs admin panel
+
+### Gmail SMTP Authentication Issues
+For Gmail SMTP configurations:
+
+1) Enable 2-factor authentication on your Google account
+2) Generate an App Password (not your regular password)
+3) Use the App Password in the SMTP configuration
+4) Ensure "Less secure app access" is not required (App Passwords bypass this)
+
+### Mailgun API Issues
+For Mailgun configurations:
+
+1) Verify your domain is properly configured in Mailgun dashboard
+2) Check that your API key is active and has sending permissions
+3) For EU accounts, use `api.eu.mailgun.net` as the endpoint
+4) Ensure your domain is verified and not in sandbox mode
+
+See the [Email Configuration Guide](./email_configuration.md) for detailed setup instructions.

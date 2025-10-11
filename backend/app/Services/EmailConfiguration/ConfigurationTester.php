@@ -124,10 +124,35 @@ class ConfigurationTester
 
     private function sendTestEmail(array $fromConfig, string $recipientEmail): void
     {
-        Mail::raw('This is a test email to verify your email configuration.', function (Message $message) use ($recipientEmail) {
-            $message->to($recipientEmail)
-                ->subject('Email Configuration Test - ' . config('app.name'));
-        });
+        $subject = 'Email Configuration Test - ' . config('app.name');
+        $body = 'This is a test email to verify your email configuration.';
+        
+        // Create EmailLog entry for test email
+        $emailLog = \App\Models\EmailLog::create([
+            'user_id' => auth()->id(),
+            'notification_id' => null,
+            'email_configuration_id' => \App\Models\EmailConfiguration::getActive()?->id,
+            'recipient_email' => $recipientEmail,
+            'subject' => $subject,
+            'body' => $body,
+            'headers' => [],
+            'status' => 'pending',
+            'retry_count' => 0,
+        ]);
+
+        try {
+            Mail::raw($body, function (Message $message) use ($recipientEmail, $subject) {
+                $message->to($recipientEmail)
+                    ->subject($subject);
+            });
+            
+            // Update the log entry to mark as sent
+            $emailLog->markAsSent('Test email sent successfully');
+        } catch (\Exception $e) {
+            // Update the log entry to mark as failed
+            $emailLog->markAsFailed('Test email failed: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
     private function restoreOriginalConfiguration(array $originalConfig): void

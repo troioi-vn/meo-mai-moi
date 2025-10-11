@@ -53,7 +53,7 @@ class EmailTemplateRenderingTest extends TestCase
         // This will throw an exception if the template has syntax errors
         $rendered = $mail->render();
 
-        $this->assertStringContainsString($this->user->name, $rendered);
+        $this->assertStringContainsString(e($this->user->name), $rendered);
         $this->assertStringContainsString($this->pet->name, $rendered);
         $this->assertStringContainsString('unsubscribe', $rendered);
         $this->assertStringContainsString('View Response', $rendered);
@@ -73,7 +73,7 @@ class EmailTemplateRenderingTest extends TestCase
         $rendered = $mail->render();
 
         $this->assertStringContainsString('Congratulations', $rendered);
-        $this->assertStringContainsString($this->user->name, $rendered);
+        $this->assertStringContainsString(e($this->user->name), $rendered);
         $this->assertStringContainsString($this->pet->name, $rendered);
         $this->assertStringContainsString('accepted', $rendered);
     }
@@ -92,7 +92,7 @@ class EmailTemplateRenderingTest extends TestCase
         $rendered = $mail->render();
 
         $this->assertStringContainsString('Wonderful news', $rendered);
-        $this->assertStringContainsString($this->user->name, $rendered);
+        $this->assertStringContainsString(e($this->user->name), $rendered);
         $this->assertStringContainsString($this->pet->name, $rendered);
         $this->assertStringContainsString('accepted', $rendered);
     }
@@ -110,7 +110,7 @@ class EmailTemplateRenderingTest extends TestCase
         $rendered = $mail->render();
 
         $this->assertStringContainsString('Thank you for your interest', $rendered);
-        $this->assertStringContainsString($this->user->name, $rendered);
+        $this->assertStringContainsString(e($this->user->name), $rendered);
         $this->assertStringContainsString($this->pet->name, $rendered);
         $this->assertStringContainsString('Browse Other Requests', $rendered);
     }
@@ -126,7 +126,7 @@ class EmailTemplateRenderingTest extends TestCase
 
         $rendered = $mail->render();
 
-        $this->assertStringContainsString($this->user->name, $rendered);
+        $this->assertStringContainsString(e($this->user->name), $rendered);
         $this->assertStringContainsString('your pet', $rendered); // Fallback text (updated)
         $this->assertStringContainsString('unsubscribe', $rendered);
     }
@@ -152,7 +152,7 @@ class EmailTemplateRenderingTest extends TestCase
             $rendered = $mail->render();
 
             // Check for required elements in all templates
-            $this->assertStringContainsString($this->user->name, $rendered, "User name '{$this->user->name}' missing in {$mailClass}");
+            $this->assertStringContainsString(e($this->user->name), $rendered, "User name '{$this->user->name}' missing in {$mailClass}");
             $this->assertStringContainsString('unsubscribe', $rendered, "Unsubscribe link missing in {$mailClass}");
             $this->assertStringContainsString(config('app.name', 'Meo Mai Moi'), $rendered, "App name missing in {$mailClass}");
             $this->assertStringContainsString('Cat Rehoming Platform', $rendered, "Platform description missing in {$mailClass}");

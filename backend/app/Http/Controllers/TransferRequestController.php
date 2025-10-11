@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\NotificationType;
 use App\Enums\PlacementRequestStatus;
+use App\Enums\TransferRequestStatus;
 use App\Models\Pet;
 use App\Models\TransferRequest;
 use App\Services\NotificationService;
@@ -190,7 +191,7 @@ class TransferRequestController extends Controller
         // Prevent duplicate pending responses from the same user for the same placement request
         $alreadyPending = TransferRequest::where('placement_request_id', $validatedData['placement_request_id'])
             ->where('initiator_user_id', $user->id)
-            ->where('status', 'pending')
+            ->where('status', TransferRequestStatus::PENDING)
             ->exists();
 
         if ($alreadyPending) {
@@ -202,7 +203,7 @@ class TransferRequestController extends Controller
             'initiator_user_id' => $user->id,
             'recipient_user_id' => $pet->user_id, // Pet owner is the recipient
             'requester_id' => $user->id, // User making the request
-            'status' => 'pending',
+            'status' => TransferRequestStatus::PENDING,
         ]));
 
         // Send notification to pet owner using NotificationService
@@ -270,12 +271,12 @@ class TransferRequestController extends Controller
         $this->authorize('accept', $transferRequest);
 
         // Ensure pending before proceeding
-        if ($transferRequest->status !== 'pending') {
+        if ($transferRequest->status !== TransferRequestStatus::PENDING) {
             return $this->sendError('Only pending requests can be accepted.', 409);
         }
 
         DB::transaction(function () use ($transferRequest) {
-            $transferRequest->status = 'accepted';
+            $transferRequest->status = TransferRequestStatus::ACCEPTED;
             $transferRequest->accepted_at = now();
             $transferRequest->save();
 
@@ -299,11 +300,11 @@ class TransferRequestController extends Controller
                 // Auto-reject other pending transfer requests for the same placement
                 $rejectedRequests = \App\Models\TransferRequest::where('placement_request_id', $placement->id)
                     ->where('id', '!=', $transferRequest->id)
-                    ->where('status', 'pending')
+                    ->where('status', TransferRequestStatus::PENDING)
                     ->get();
 
                 foreach ($rejectedRequests as $rejectedRequest) {
-                    $rejectedRequest->update(['status' => 'rejected', 'rejected_at' => now()]);
+                    $rejectedRequest->update(['status' => TransferRequestStatus::REJECTED, 'rejected_at' => now()]);
 
                     // Notify rejected helper
                     try {
@@ -408,11 +409,11 @@ class TransferRequestController extends Controller
         $this->authorize('reject', $transferRequest);
 
         // Ensure pending before proceeding to avoid duplicate notifications
-        if ($transferRequest->status !== 'pending') {
+        if ($transferRequest->status !== TransferRequestStatus::PENDING) {
             return $this->sendError('Only pending requests can be rejected.', 409);
         }
 
-        $transferRequest->status = 'rejected';
+        $transferRequest->status = TransferRequestStatus::REJECTED;
         $transferRequest->rejected_at = now();
         $transferRequest->save();
 

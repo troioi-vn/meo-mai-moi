@@ -39,7 +39,7 @@ class TransferAcceptanceLifecycleTest extends TestCase
             'recipient_user_id' => $owner->id,
             'placement_request_id' => $placement->id,
             'helper_profile_id' => $helperProfile->id,
-            'status' => 'pending',
+            'status' => \App\Enums\TransferRequestStatus::PENDING,
             'requested_relationship_type' => 'permanent_foster',
         ]);
         $otherPending = TransferRequest::factory()->create([
@@ -48,7 +48,7 @@ class TransferAcceptanceLifecycleTest extends TestCase
             'recipient_user_id' => $owner->id,
             'placement_request_id' => $placement->id,
             'helper_profile_id' => $loserProfile->id,
-            'status' => 'pending',
+            'status' => \App\Enums\TransferRequestStatus::PENDING,
             'requested_relationship_type' => 'permanent_foster',
         ]);
 
@@ -84,8 +84,8 @@ class TransferAcceptanceLifecycleTest extends TestCase
         $this->assertEquals(\App\Enums\PlacementRequestStatus::FULFILLED, $placement->fresh()->status);
 
         // Other pending auto-rejected
-        $this->assertEquals('rejected', $otherPending->fresh()->status);
-        $this->assertEquals('accepted', $accepted->fresh()->status);
+        $this->assertEquals(\App\Enums\TransferRequestStatus::REJECTED, $otherPending->fresh()->status);
+        $this->assertEquals(\App\Enums\TransferRequestStatus::ACCEPTED, $accepted->fresh()->status);
     }
 
     public function test_accept_fostering_creates_assignment_and_keeps_owner(): void
@@ -108,7 +108,7 @@ class TransferAcceptanceLifecycleTest extends TestCase
             'recipient_user_id' => $owner->id,
             'placement_request_id' => $placement->id,
             'helper_profile_id' => $helperProfile->id,
-            'status' => 'pending',
+            'status' => \App\Enums\TransferRequestStatus::PENDING,
             'requested_relationship_type' => 'fostering',
         ]);
 
@@ -139,7 +139,7 @@ class TransferAcceptanceLifecycleTest extends TestCase
             'pet_id' => $pet->id,
             'owner_user_id' => $owner->id,
             'foster_user_id' => $helper->id,
-            'status' => 'active',
+            'status' => \App\Enums\FosterAssignmentStatus::ACTIVE->value,
         ]);
     }
 }

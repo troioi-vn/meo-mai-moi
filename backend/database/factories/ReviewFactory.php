@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\ReviewStatus;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -18,7 +19,7 @@ class ReviewFactory extends Factory
             'rating' => $this->faker->numberBetween(1, 5),
             'comment' => $this->faker->paragraph(),
             'transfer_id' => null, // Make nullable by default
-            'status' => 'active',
+            'status' => ReviewStatus::ACTIVE,
             'moderation_notes' => null,
             'is_flagged' => false,
             'flagged_at' => null,
@@ -30,7 +31,7 @@ class ReviewFactory extends Factory
     public function flagged(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'flagged',
+            'status' => ReviewStatus::FLAGGED,
             'is_flagged' => true,
             'flagged_at' => $this->faker->dateTimeBetween('-1 month', 'now'),
             'moderation_notes' => $this->faker->sentence(),
@@ -40,7 +41,7 @@ class ReviewFactory extends Factory
     public function hidden(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'hidden',
+            'status' => ReviewStatus::HIDDEN,
             'moderated_by' => User::factory(),
             'moderated_at' => $this->faker->dateTimeBetween('-1 week', 'now'),
         ]);
@@ -49,7 +50,7 @@ class ReviewFactory extends Factory
     public function deleted(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'deleted',
+            'status' => ReviewStatus::DELETED,
             'moderated_by' => User::factory(),
             'moderated_at' => $this->faker->dateTimeBetween('-1 week', 'now'),
         ]);

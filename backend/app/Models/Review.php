@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Enums\ReviewStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 // ...existing code...
 class Review extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'reviewer_user_id',
@@ -29,6 +31,7 @@ class Review extends Model
         'is_flagged' => 'boolean',
         'flagged_at' => 'datetime',
         'moderated_at' => 'datetime',
+        'status' => ReviewStatus::class,
     ];
 
     public function reviewer(): BelongsTo

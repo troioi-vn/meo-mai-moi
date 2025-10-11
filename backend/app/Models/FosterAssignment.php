@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Enums\FosterAssignmentStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class FosterAssignment extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'pet_id', // Updated from cat_id
@@ -28,6 +30,7 @@ class FosterAssignment extends Model
         'expected_end_date' => 'date',
         'completed_at' => 'datetime',
         'canceled_at' => 'datetime',
+        'status' => FosterAssignmentStatus::class,
     ];
 
     public function pet(): BelongsTo
@@ -71,7 +74,7 @@ class FosterAssignment extends Model
 
     public function getDaysRemainingAttribute(): ?int
     {
-        if ($this->status !== 'active' || ! $this->expected_end_date) {
+        if ($this->status !== FosterAssignmentStatus::ACTIVE || ! $this->expected_end_date) {
             return null;
         }
 
@@ -80,7 +83,7 @@ class FosterAssignment extends Model
 
     public function getIsOverdueAttribute(): bool
     {
-        return $this->status === 'active'
+        return $this->status === FosterAssignmentStatus::ACTIVE
             && $this->expected_end_date
             && now()->isAfter($this->expected_end_date);
     }
@@ -88,19 +91,19 @@ class FosterAssignment extends Model
     // Scopes for filtering
     public function scopeActive($query)
     {
-        return $query->where('status', 'active');
+        return $query->where('status', FosterAssignmentStatus::ACTIVE);
     }
 
     public function scopeOverdue($query)
     {
-        return $query->where('status', 'active')
+        return $query->where('status', FosterAssignmentStatus::ACTIVE)
             ->whereNotNull('expected_end_date')
             ->whereDate('expected_end_date', '<', now());
     }
 
     public function scopeEndingSoon($query, $days = 7)
     {
-        return $query->where('status', 'active')
+        return $query->where('status', FosterAssignmentStatus::ACTIVE)
             ->whereNotNull('expected_end_date')
             ->whereDate('expected_end_date', '<=', now()->addDays($days))
             ->whereDate('expected_end_date', '>=', now());

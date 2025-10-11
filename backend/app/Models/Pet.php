@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Pet extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'pet_type_id',
@@ -39,7 +40,7 @@ class Pet extends Model
     protected $appends = ['photo_url'];
 
     /**
-     * Booted: add global scope to hide deleted pets.
+     * Boot the model and add global scope to hide deleted pets.
      */
     protected static function booted()
     {
@@ -49,18 +50,21 @@ class Pet extends Model
     }
 
     /**
-     * Override delete to implement status-based soft delete.
+     * Override delete to implement status-based soft delete for business logic.
+     * This maintains the DELETED status while also supporting Laravel's soft deletes.
      */
     public function delete()
     {
         if ($this->status !== PetStatus::DELETED) {
             $this->status = PetStatus::DELETED;
-
             return $this->save();
         }
 
-        return true;
+        // If already marked as DELETED, perform actual soft delete
+        return parent::delete();
     }
+
+
 
     /**
      * Get the pet type this pet belongs to

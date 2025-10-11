@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Enums\TransferRequestStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TransferRequest extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'pet_id', // Updated from cat_id
@@ -28,6 +30,7 @@ class TransferRequest extends Model
     protected $casts = [
         'accepted_at' => 'datetime',
         'rejected_at' => 'datetime',
+        'status' => TransferRequestStatus::class,
     ];
 
     public function pet(): BelongsTo

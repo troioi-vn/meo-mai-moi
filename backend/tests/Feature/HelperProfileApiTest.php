@@ -74,7 +74,8 @@ class HelperProfileApiTest extends TestCase
         $response = $this->actingAs($user)->deleteJson("/api/helper-profiles/{$profile->id}");
 
         $response->assertStatus(204);
-        $this->assertDatabaseMissing('helper_profiles', ['id' => $profile->id]);
+        // Helper profiles use soft deletes, so record still exists but is soft deleted
+        $this->assertSoftDeleted('helper_profiles', ['id' => $profile->id]);
     }
 
     #[Test]

@@ -7,11 +7,12 @@ use App\Enums\PlacementRequestType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PlacementRequest extends Model
 {
     // ...existing code...
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'pet_id', // Updated from cat_id

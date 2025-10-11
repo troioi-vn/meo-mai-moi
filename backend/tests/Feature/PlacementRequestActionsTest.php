@@ -41,7 +41,8 @@ class PlacementRequestActionsTest extends TestCase
         $response = $this->deleteJson("/api/placement-requests/{$placementRequest->id}");
 
         $response->assertStatus(204);
-        $this->assertDatabaseMissing('placement_requests', ['id' => $placementRequest->id]);
+        // Placement requests use soft deletes, so record still exists but is soft deleted
+        $this->assertSoftDeleted('placement_requests', ['id' => $placementRequest->id]);
     }
 
     public function test_non_owner_cannot_delete_a_placement_request()

@@ -10,6 +10,11 @@ All notable changes to this project are documented here, following the [Keep a C
 - Tests now run against PostgreSQL instead of SQLite in-memory database
 - Queue and batching configuration updated to use PostgreSQL instead of SQLite fallbacks
 - Pet API: Deprecated strict required exact `birthday`; now optional and superseded by precision + component fields. Supplying legacy `birthday` alone auto-coerces precision=day.
+- **Email Configuration:**
+  - Both SMTP and Mailgun configurations now require test email address for sending test emails
+  - Test connection action labels unified to "Send Test Email" for both providers
+  - Email configuration seeder updated with dev.meo-mai-moi.com domain and pavel@catarchy.space test recipient
+  - Enhanced email configuration validation to include optional test_email_address field
 
 ### Added
 
@@ -17,6 +22,27 @@ All notable changes to this project are documented here, following the [Keep a C
 - Enhanced documentation for PostgreSQL-only development workflow
 - Comprehensive frontend code quality improvements with 140+ ESLint fixes
 - Support for approximate / unknown pet birthdays via `birthday_precision` enum (`day|month|year|unknown`) and component fields `birthday_year`, `birthday_month`, `birthday_day`; frontend form precision selector & age display helper.
+- Notification Templates system (Phase 1-2):
+  - Registry-driven notification types with channel support and variable docs (`backend/config/notification_templates.php`).
+  - File-based defaults with locale fallbacks:
+    - Email: Blade views at `emails.notifications.{locale}.{slug}` (legacy path supported).
+    - In-App: Markdown at `resources/templates/notifications/bell/{locale}/{slug}.md`.
+  - DB overrides via Filament admin resource (CRUD) with:
+    - Full preview modal (email HTML, in-app text)
+    - Compare with default (side-by-side)
+    - Reset to default (removes override)
+    - Send test email to logged-in admin
+    - Type select populated from registry, channel-aware filtering, triggers browser modal
+    - Prefill from defaults when selecting type/channel/locale
+    - Filters and variable docs panel
+  - Services: locale resolver, template resolver, renderer; email + in-app integration with safe fallbacks.
+  - Seeder: `NotificationTemplateSeeder` seeds two inactive in-app overrides for quick discovery.
+- **Email Configuration Enhancements**:
+  - Added test email address field for Mailgun API configurations (matching existing SMTP functionality)
+  - Test emails now create EmailLog entries and appear in admin panel at `/admin/email-logs`
+  - Added `php artisan email:setup` command for quick configuration with domain-specific defaults
+  - Enhanced email configuration validation to include test email address format checking
+  - Added comprehensive email configuration documentation at `docs/email_configuration.md`
 
 ### Fixed
 - Resolved test failures after SQLite removal by installing `postgresql-client` and fixing test setup to use seeders
@@ -35,6 +61,11 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Email Configuration:** Fixed test email failures by adding missing `symfony/http-client` dependency required by Mailgun mailer
   - Added confirmation dialogs to email configuration delete actions to prevent accidental deletion
   - Improved empty state messaging in email configuration admin panel to guide users when no configurations are visible
+- **Email Configuration Improvements:**
+  - Fixed test emails not appearing in email logs by creating EmailLog entries for all test emails
+  - Fixed inconsistent user experience between SMTP and Mailgun test email functionality
+  - Improved error handling and user feedback for email configuration testing
+  - Enhanced email configuration seeder with domain-specific defaults (dev.meo-mai-moi.com)
 
 ### Removed
 - SQLite database connection configuration and references

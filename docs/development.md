@@ -67,6 +67,7 @@ docker compose down
 ## Related Documentation
 
 - [Email Configuration](./email_configuration.md) - SMTP and Mailgun setup with test email logging
+- [Notification Templates Admin](./notifications.md) - Registry, file defaults, DB overrides, admin usage
 - [Testing Guide](./testing.md) - Comprehensive testing instructions
 - [Git Workflow](./git-workflow.md) - Branching strategy and conflict resolution
 - [Troubleshooting](./troubleshooting.md) - Common issues and solutions

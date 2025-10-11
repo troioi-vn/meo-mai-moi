@@ -1,3 +1,4 @@
+name: meo-mai-moi
 services:
   backend:
     build:
@@ -7,6 +8,8 @@ services:
       - "8000:80"
     env_file:
       - ./backend/.env.docker
+    environment:
+      - RUN_MIGRATIONS=false
     networks:
       - meo-mai-moi-network
     depends_on:

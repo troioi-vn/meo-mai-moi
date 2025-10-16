@@ -70,7 +70,7 @@ class InviteSystemAuthTest extends TestCase
         $invitation = Invitation::factory()->create([
             'inviter_user_id' => $inviter->id,
             'status' => 'pending',
-            'expires_at' => null
+            'expires_at' => null,
         ]);
 
         $response = $this->postJson('/api/register', [
@@ -127,7 +127,7 @@ class InviteSystemAuthTest extends TestCase
         $invitation = Invitation::factory()->create([
             'inviter_user_id' => $inviter->id,
             'status' => 'pending',
-            'expires_at' => now()->subDay()
+            'expires_at' => now()->subDay(),
         ]);
 
         $response = $this->postJson('/api/register', [
@@ -155,7 +155,7 @@ class InviteSystemAuthTest extends TestCase
         $invitation = Invitation::factory()->create([
             'inviter_user_id' => $inviter->id,
             'status' => 'accepted',
-            'recipient_user_id' => $recipient->id
+            'recipient_user_id' => $recipient->id,
         ]);
 
         $response = $this->postJson('/api/register', [
@@ -181,7 +181,7 @@ class InviteSystemAuthTest extends TestCase
         $inviter = User::factory()->create();
         $invitation = Invitation::factory()->create([
             'inviter_user_id' => $inviter->id,
-            'status' => 'revoked'
+            'status' => 'revoked',
         ]);
 
         $response = $this->postJson('/api/register', [
@@ -207,7 +207,7 @@ class InviteSystemAuthTest extends TestCase
         $inviter = User::factory()->create();
         $invitation = Invitation::factory()->create([
             'inviter_user_id' => $inviter->id,
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
 
         // Should work without invitation code
@@ -236,7 +236,7 @@ class InviteSystemAuthTest extends TestCase
         $inviter = User::factory()->create();
         $invitation = Invitation::factory()->create([
             'inviter_user_id' => $inviter->id,
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
 
         // Should work with invitation code even when not required
@@ -290,7 +290,7 @@ class InviteSystemAuthTest extends TestCase
         $inviter = User::factory()->create();
         $invitation = Invitation::factory()->create([
             'inviter_user_id' => $inviter->id,
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
 
         $response3 = $this->postJson('/api/register', [
@@ -315,7 +315,7 @@ class InviteSystemAuthTest extends TestCase
         $inviter = User::factory()->create();
         $invitation = Invitation::factory()->create([
             'inviter_user_id' => $inviter->id,
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
 
         // Missing required fields

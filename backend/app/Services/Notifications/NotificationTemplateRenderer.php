@@ -12,7 +12,7 @@ class NotificationTemplateRenderer
         private ?CommonMarkConverter $markdown = null
     ) {
         if ($this->markdown === null && class_exists(CommonMarkConverter::class)) {
-            $this->markdown = new CommonMarkConverter();
+            $this->markdown = new CommonMarkConverter;
         }
     }
 
@@ -29,6 +29,7 @@ class NotificationTemplateRenderer
         if ($channel === 'email') {
             $html = $this->renderBody($engine, $body, $data);
             $subjectOut = $subject ? $this->renderInline($subject, $data) : null;
+
             return ['subject' => $subjectOut, 'html' => $html];
         }
 
@@ -37,6 +38,7 @@ class NotificationTemplateRenderer
             $rendered = $this->renderBody($engine, $body, $data);
             $plain = $this->toPlainText($rendered);
             $link = $data['link'] ?? ($data['actionUrl'] ?? null);
+
             return ['title' => $data['title'] ?? null, 'message' => $plain, 'link' => $link];
         }
 
@@ -53,6 +55,7 @@ class NotificationTemplateRenderer
             };
         } catch (\Throwable $e) {
             Log::error('Template rendering failed', ['error' => $e->getMessage()]);
+
             return e($body);
         }
     }
@@ -74,6 +77,7 @@ class NotificationTemplateRenderer
                 // fall through
             }
         }
+
         return e($interpolated);
     }
 

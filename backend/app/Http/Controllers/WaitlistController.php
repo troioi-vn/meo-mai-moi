@@ -88,7 +88,7 @@ class WaitlistController extends Controller
             // Validate email comprehensively
             $validationErrors = $this->waitlistService->validateEmailForWaitlist($email);
 
-            if (!empty($validationErrors)) {
+            if (! empty($validationErrors)) {
                 return $this->handleBusinessError(
                     implode(', ', $validationErrors),
                     409
@@ -123,7 +123,7 @@ class WaitlistController extends Controller
             'email' => $email,
             'on_waitlist' => $isOnWaitlist,
             'is_registered' => $isRegistered,
-            'can_join_waitlist' => !$isOnWaitlist && !$isRegistered,
+            'can_join_waitlist' => ! $isOnWaitlist && ! $isRegistered,
         ]);
     }
 }

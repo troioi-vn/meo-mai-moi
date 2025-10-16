@@ -48,7 +48,7 @@ class NotificationController extends Controller
         $status = $request->query('status', 'all');
         $query = Notification::where('user_id', Auth::id())
             ->when($status === 'unread', function ($q) {
-                $q->where('is_read', false);
+                $q->unread();
             })
             ->latest();
 
@@ -63,7 +63,7 @@ class NotificationController extends Controller
                 'body' => property_exists($n, 'body') ? $n->body : null,
                 'url' => property_exists($n, 'url') && $n->url ? $n->url : $n->link,
                 'created_at' => optional($n->created_at)->toISOString(),
-                'read_at' => ($n->is_read ? optional($n->updated_at)->toISOString() : null),
+                'read_at' => optional($n->read_at)->toISOString(),
             ];
         });
 
@@ -84,8 +84,8 @@ class NotificationController extends Controller
     public function markAllRead()
     {
         Notification::where('user_id', Auth::id())
-            ->where('is_read', false)
-            ->update(['is_read' => true]);
+            ->unread()
+            ->update(['read_at' => now()]);
 
         return $this->sendSuccess(null, 204);
     }
@@ -110,9 +110,8 @@ class NotificationController extends Controller
             return $this->sendError('Forbidden', 403);
         }
 
-        if (! $notification->is_read) {
-            $notification->is_read = true;
-            $notification->save();
+        if (! $notification->isRead()) {
+            $notification->markAsRead();
         }
 
         return $this->sendSuccess(null, 204);

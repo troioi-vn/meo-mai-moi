@@ -100,7 +100,8 @@ class WaitlistEntryResource extends Resource
                     ->label('Days Waiting')
                     ->getStateUsing(function (WaitlistEntry $record): string {
                         $days = $record->created_at->diffInDays(now());
-                        return $days . ' day' . ($days !== 1 ? 's' : '');
+
+                        return $days.' day'.($days !== 1 ? 's' : '');
                     })
                     ->sortable(query: function (Builder $query, string $direction): Builder {
                         return $query->orderBy('created_at', $direction === 'asc' ? 'desc' : 'asc');
@@ -150,7 +151,7 @@ class WaitlistEntryResource extends Resource
                         } catch (\Exception $e) {
                             Notification::make()
                                 ->title('Error')
-                                ->body('Failed to send invitation: ' . $e->getMessage())
+                                ->body('Failed to send invitation: '.$e->getMessage())
                                 ->danger()
                                 ->send();
                         }
@@ -183,6 +184,7 @@ class WaitlistEntryResource extends Resource
                                     ->body('No pending waitlist entries selected.')
                                     ->warning()
                                     ->send();
+
                                 return;
                             }
 
@@ -205,7 +207,7 @@ class WaitlistEntryResource extends Resource
                             } catch (\Exception $e) {
                                 Notification::make()
                                     ->title('Error')
-                                    ->body('Failed to send invitations: ' . $e->getMessage())
+                                    ->body('Failed to send invitations: '.$e->getMessage())
                                     ->danger()
                                     ->send();
                             }

@@ -40,7 +40,9 @@ class InvitationController extends Controller
      *         @OA\JsonContent(
      *
      *             @OA\Property(property="data", type="array",
+     *
      *                 @OA\Items(type="object",
+     *
      *                     @OA\Property(property="id", type="integer"),
      *                     @OA\Property(property="code", type="string"),
      *                     @OA\Property(property="status", type="string"),
@@ -142,7 +144,7 @@ class InvitationController extends Controller
         $user = $request->user();
 
         // Check rate limiting
-        if (!$this->invitationService->canUserGenerateInvitation($user)) {
+        if (! $this->invitationService->canUserGenerateInvitation($user)) {
             return $this->handleRateLimit(
                 'Failed to generate invitation. You may have reached your daily limit.'
             );
@@ -235,7 +237,7 @@ class InvitationController extends Controller
 
         $success = $this->invitationService->revokeInvitation($id, $user);
 
-        if (!$success) {
+        if (! $success) {
             return $this->handleBusinessError(
                 'Invitation not found or cannot be revoked',
                 404
@@ -267,7 +269,7 @@ class InvitationController extends Controller
 
         $invitation = $this->invitationService->validateInvitationCode($request->code);
 
-        if (!$invitation) {
+        if (! $invitation) {
             return $this->handleBusinessError(
                 'Invalid or expired invitation code',
                 404

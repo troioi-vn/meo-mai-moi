@@ -34,7 +34,8 @@ const MicrochipForm: React.FC<{
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     const errs: typeof errors = {}
-    if (!chipNumber || chipNumber.trim().length < 10) errs.chip_number = 'Microchip number is required (min 10)'
+    if (!chipNumber || chipNumber.trim().length < 10)
+      errs.chip_number = 'Microchip number is required (min 10)'
     setErrors(errs)
     if (Object.keys(errs).length) return
     await onSubmit({
@@ -45,14 +46,22 @@ const MicrochipForm: React.FC<{
   }
 
   return (
-  <form onSubmit={(e) => { void submit(e) }} className="space-y-4" noValidate>
+    <form
+      onSubmit={(e) => {
+        void submit(e)
+      }}
+      className="space-y-4"
+      noValidate
+    >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="block text-sm font-medium">Chip number</label>
           <input
             type="text"
             value={chipNumber}
-            onChange={(e) => { setChipNumber(e.target.value) }}
+            onChange={(e) => {
+              setChipNumber(e.target.value)
+            }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
             placeholder="e.g., 982000123456789"
           />
@@ -63,7 +72,9 @@ const MicrochipForm: React.FC<{
           <input
             type="text"
             value={issuer}
-            onChange={(e) => { setIssuer(e.target.value) }}
+            onChange={(e) => {
+              setIssuer(e.target.value)
+            }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
             placeholder="HomeAgain, AVID, ..."
           />
@@ -73,7 +84,9 @@ const MicrochipForm: React.FC<{
           <input
             type="date"
             value={implantedAt}
-            onChange={(e) => { setImplantedAt(e.target.value) }}
+            onChange={(e) => {
+              setImplantedAt(e.target.value)
+            }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
           />
         </div>
@@ -91,7 +104,10 @@ const MicrochipForm: React.FC<{
   )
 }
 
-export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = ({ petId, canEdit }) => {
+export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = ({
+  petId,
+  canEdit,
+}) => {
   const { items, loading, error, create, update, remove } = useMicrochips(petId)
   const [adding, setAdding] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -106,8 +122,16 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
     })
   }, [items])
 
-  const startAdd = () => { setAdding(true); setEditingId(null); setServerError(null) }
-  const cancel = () => { setAdding(false); setEditingId(null); setServerError(null) }
+  const startAdd = () => {
+    setAdding(true)
+    setEditingId(null)
+    setServerError(null)
+  }
+  const cancel = () => {
+    setAdding(false)
+    setEditingId(null)
+    setServerError(null)
+  }
 
   const handleCreate = async (values: FormValues) => {
     setSubmitting(true)
@@ -118,7 +142,8 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
     } catch (err: unknown) {
       // Prefer AxiosError typing to avoid any/unsafe accesses
       const status = (err as { response?: { status?: number } }).response?.status
-      const message = (err as { response?: { data?: { message?: string } } }).response?.data?.message
+      const message = (err as { response?: { data?: { message?: string } } }).response?.data
+        ?.message
       if (status === 422) setServerError(message ?? 'Validation error')
       else setServerError('Failed to add microchip')
     } finally {
@@ -134,7 +159,8 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
       setEditingId(null)
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } }).response?.status
-      const message = (err as { response?: { data?: { message?: string } } }).response?.data?.message
+      const message = (err as { response?: { data?: { message?: string } } }).response?.data
+        ?.message
       if (status === 422) setServerError(message ?? 'Validation error')
       else setServerError('Failed to update microchip')
     } finally {
@@ -150,13 +176,25 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-2xl font-bold">Microchips</h2>
         {canEdit && !adding && editingId == null && (
-          <Button size="sm" onClick={() => { startAdd() }}>Add</Button>
+          <Button
+            size="sm"
+            onClick={() => {
+              startAdd()
+            }}
+          >
+            Add
+          </Button>
         )}
       </div>
 
       {adding && canEdit && (
         <div className="mb-4 rounded-md border p-3">
-          <MicrochipForm onSubmit={handleCreate} onCancel={cancel} submitting={submitting} serverError={serverError} />
+          <MicrochipForm
+            onSubmit={handleCreate}
+            onCancel={cancel}
+            submitting={submitting}
+            serverError={serverError}
+          />
         </div>
       )}
 
@@ -168,9 +206,17 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
           <li key={String(m.id)} className="flex items-center justify-between p-3">
             {editingId === m.id ? (
               <MicrochipForm
-                initial={{ chip_number: m.chip_number, issuer: m.issuer ?? undefined, implanted_at: m.implanted_at ?? undefined }}
-                onSubmit={async (v) => { await handleUpdate(m.id, v) }}
-                onCancel={() => { setEditingId(null) }}
+                initial={{
+                  chip_number: m.chip_number,
+                  issuer: m.issuer ?? undefined,
+                  implanted_at: m.implanted_at ?? undefined,
+                }}
+                onSubmit={async (v) => {
+                  await handleUpdate(m.id, v)
+                }}
+                onCancel={() => {
+                  setEditingId(null)
+                }}
                 submitting={submitting}
                 serverError={serverError}
               />
@@ -182,15 +228,26 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
                     {m.issuer ? `Issuer: ${m.issuer}` : 'Issuer: —'}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Implanted: {m.implanted_at ? new Date(m.implanted_at).toLocaleDateString() : '—'}
+                    Implanted:{' '}
+                    {m.implanted_at ? new Date(m.implanted_at).toLocaleDateString() : '—'}
                   </div>
                 </div>
                 {canEdit && (
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => { setEditingId(m.id) }}>Edit</Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setEditingId(m.id)
+                      }}
+                    >
+                      Edit
+                    </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button size="sm" variant="destructive">Delete</Button>
+                        <Button size="sm" variant="destructive">
+                          Delete
+                        </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
@@ -201,7 +258,12 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => { void remove(m.id) }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          <AlertDialogAction
+                            onClick={() => {
+                              void remove(m.id)
+                            }}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
                             Delete
                           </AlertDialogAction>
                         </AlertDialogFooter>

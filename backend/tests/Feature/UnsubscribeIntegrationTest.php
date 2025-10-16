@@ -27,8 +27,8 @@ class UnsubscribeIntegrationTest extends TestCase
     {
         parent::setUp();
         $this->user = User::factory()->create();
-        $this->notificationService = new NotificationService();
-        $this->unsubscribeService = new UnsubscribeService();
+        $this->notificationService = new NotificationService;
+        $this->unsubscribeService = new UnsubscribeService;
     }
 
     public function test_complete_unsubscribe_flow()

@@ -15,10 +15,15 @@ class VaccinationRecordsFeatureTest extends TestCase
     use RefreshDatabase;
 
     protected User $owner;
+
     protected User $otherUser;
+
     protected PetType $catType;
+
     protected PetType $dogType;
+
     protected Pet $cat;
+
     protected Pet $dog;
 
     protected function setUp(): void

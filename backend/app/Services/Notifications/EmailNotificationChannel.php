@@ -21,6 +21,7 @@ class EmailNotificationChannel implements NotificationChannelInterface
             return true;
         } catch (\Exception $e) {
             $this->logError($user, $type, $e);
+
             return false;
         }
     }
@@ -38,7 +39,7 @@ class EmailNotificationChannel implements NotificationChannelInterface
             'message' => $data['message'] ?? '',
             'link' => $data['link'] ?? null,
             'data' => array_merge($data, ['channel' => $this->getChannelName()]),
-            'is_read' => false,
+
         ]);
     }
 

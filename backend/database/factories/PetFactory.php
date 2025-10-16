@@ -23,10 +23,10 @@ class PetFactory extends Factory
     public function definition(): array
     {
         $precision = $this->faker->randomElement([
-            'day','day','day','day', // weight day ~40%
-            'month','month','month', // month ~30%
-            'year','year',           // year ~20%
-            'unknown'                // unknown ~10%
+            'day', 'day', 'day', 'day', // weight day ~40%
+            'month', 'month', 'month', // month ~30%
+            'year', 'year',           // year ~20%
+            'unknown',                // unknown ~10%
         ]);
 
         $year = $this->faker->numberBetween(now()->year - 15, now()->year - 1);
@@ -69,11 +69,12 @@ class PetFactory extends Factory
                 if ($existing) {
                     return $existing->id;
                 }
+
                 return PetType::create([
                     'name' => 'Cat',
                     'slug' => 'cat',
                     'description' => 'Default cat type (auto-created by factory)',
-                    'is_active' => true,
+                    'status' => \App\Enums\PetTypeStatus::ACTIVE,
                     'is_system' => true,
                     'display_order' => 1,
                 ])->id;

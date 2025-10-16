@@ -19,13 +19,13 @@ class ConfigurationTester
         try {
             $testConfig = $this->prepareTestConfiguration($provider, $config);
 
-            if (!$testConfig['success']) {
+            if (! $testConfig['success']) {
                 return $testConfig;
             }
 
             $validationResult = $this->validateConfiguration($testConfig['config']);
 
-            if (!$validationResult['success']) {
+            if (! $validationResult['success']) {
                 return $validationResult;
             }
 
@@ -40,7 +40,7 @@ class ConfigurationTester
         if ($provider === null || $config === null) {
             $activeConfig = EmailConfiguration::getActive();
 
-            if (!$activeConfig) {
+            if (! $activeConfig) {
                 return [
                     'success' => false,
                     'error' => 'No active email configuration found',
@@ -68,7 +68,7 @@ class ConfigurationTester
         if ($validationErrors) {
             return [
                 'success' => false,
-                'error' => 'Configuration validation failed: ' . implode(', ', $validationErrors),
+                'error' => 'Configuration validation failed: '.implode(', ', $validationErrors),
                 'error_type' => 'validation_failed',
                 'validation_errors' => $validationErrors,
             ];
@@ -124,9 +124,9 @@ class ConfigurationTester
 
     private function sendTestEmail(array $fromConfig, string $recipientEmail): void
     {
-        $subject = 'Email Configuration Test - ' . config('app.name');
+        $subject = 'Email Configuration Test - '.config('app.name');
         $body = 'This is a test email to verify your email configuration.';
-        
+
         // Create EmailLog entry for test email
         $emailLog = \App\Models\EmailLog::create([
             'user_id' => auth()->id(),
@@ -145,12 +145,12 @@ class ConfigurationTester
                 $message->to($recipientEmail)
                     ->subject($subject);
             });
-            
+
             // Update the log entry to mark as sent
             $emailLog->markAsSent('Test email sent successfully');
         } catch (\Exception $e) {
             // Update the log entry to mark as failed
-            $emailLog->markAsFailed('Test email failed: ' . $e->getMessage());
+            $emailLog->markAsFailed('Test email failed: '.$e->getMessage());
             throw $e;
         }
     }
@@ -226,7 +226,7 @@ class ConfigurationTester
             'ssl_error' => 'SSL/TLS connection error. Please check your encryption settings and server certificates.',
             'mailgun_auth_failed' => 'Mailgun authentication failed. Please verify your API key is correct and active.',
             'mailgun_domain_error' => 'Mailgun domain error. Please verify your domain is correctly configured in Mailgun.',
-            default => 'Email configuration test failed: ' . $e->getMessage()
+            default => 'Email configuration test failed: '.$e->getMessage()
         };
     }
 }

@@ -12,11 +12,11 @@ class PasswordResetMail extends Mailable
 {
     use SerializesModels;
 
-    public User $user;
+    private User $user;
 
-    public string $token;
+    private string $token;
 
-    public string $resetUrl;
+    private string $resetUrl;
 
     /**
      * Create a new message instance.
@@ -29,6 +29,30 @@ class PasswordResetMail extends Mailable
         // Build the reset URL for the frontend
         $frontendUrl = config('app.frontend_url', 'http://localhost:8000');
         $this->resetUrl = $frontendUrl.'/reset-password?token='.$token.'&email='.urlencode($user->email);
+    }
+
+    /**
+     * Get the user.
+     */
+    public function getUser(): User
+    {
+        return $this->user;
+    }
+
+    /**
+     * Get the token.
+     */
+    public function getToken(): string
+    {
+        return $this->token;
+    }
+
+    /**
+     * Get the reset URL.
+     */
+    public function getResetUrl(): string
+    {
+        return $this->resetUrl;
     }
 
     /**

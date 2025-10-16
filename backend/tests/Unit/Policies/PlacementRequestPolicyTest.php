@@ -19,7 +19,7 @@ class PlacementRequestPolicyTest extends TestCase
         $placement = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
-            'is_active' => true,
+            'status' => \App\Enums\PlacementRequestStatus::OPEN,
         ]);
 
         $this->actingAs($owner);
@@ -35,7 +35,7 @@ class PlacementRequestPolicyTest extends TestCase
         $placement = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
-            'is_active' => true,
+            'status' => \App\Enums\PlacementRequestStatus::OPEN,
         ]);
 
         $this->actingAs($other);

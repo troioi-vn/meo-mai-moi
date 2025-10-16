@@ -26,7 +26,8 @@ interface Props {
 }
 
 export function AcceptedSection({ placementRequest, onSchedule, hasHandover, getHandover }: Props) {
-  const accepted = placementRequest.transfer_requests?.filter((tr) => tr.status === 'accepted') ?? []
+  const accepted =
+    placementRequest.transfer_requests?.filter((tr) => tr.status === 'accepted') ?? []
   if (accepted.length === 0) return null
   return (
     <div className="mb-4 p-4 border rounded-lg">
@@ -72,7 +73,12 @@ export function AcceptedSection({ placementRequest, onSchedule, hasHandover, get
               </div>
               <div className="flex items-center gap-2">
                 {!hasHandover(tr.id) && (
-                  <Button size="sm" onClick={() => { onSchedule(tr.id) }}>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      onSchedule(tr.id)
+                    }}
+                  >
                     Schedule handover
                   </Button>
                 )}

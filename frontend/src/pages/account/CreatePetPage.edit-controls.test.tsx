@@ -12,8 +12,12 @@ vi.mock('@/api/pets', async () => {
   return {
     ...actual,
     getPet: vi.fn() as unknown as MockedFunction<(id: string) => Promise<any>>,
-    updatePetStatus: vi.fn() as unknown as MockedFunction<(id: string, status: string, password: string) => Promise<any>>,
-    deletePet: vi.fn() as unknown as MockedFunction<(id: string, password: string) => Promise<void>>,
+    updatePetStatus: vi.fn() as unknown as MockedFunction<
+      (id: string, status: string, password: string) => Promise<any>
+    >,
+    deletePet: vi.fn() as unknown as MockedFunction<
+      (id: string, password: string) => Promise<void>
+    >,
   }
 })
 
@@ -39,18 +43,25 @@ const renderEditPage = (petId = '1', initialUser = { id: 1, name: 'User', email:
           </Routes>
         </AuthProvider>
       </BrowserRouter>
-    </QueryClientProvider>
-  , { wrapper: ({ children }) => {
-      // Navigate to edit route
-      window.history.pushState({}, 'Edit', `/pets/${petId}/edit`)
-      return <>{children}</>
-    } })
+    </QueryClientProvider>,
+    {
+      wrapper: ({ children }) => {
+        // Navigate to edit route
+        window.history.pushState({}, 'Edit', `/pets/${petId}/edit`)
+        return <>{children}</>
+      },
+    }
+  )
 }
 
 describe('CreatePetPage edit controls', () => {
   const mockGetPet = getPet as unknown as MockedFunction<(id: string) => Promise<any>>
-  const mockUpdatePetStatus = updatePetStatus as unknown as MockedFunction<(id: string, status: string, password: string) => Promise<any>>
-  const mockDeletePet = deletePet as unknown as MockedFunction<(id: string, password: string) => Promise<void>>
+  const mockUpdatePetStatus = updatePetStatus as unknown as MockedFunction<
+    (id: string, status: string, password: string) => Promise<any>
+  >
+  const mockDeletePet = deletePet as unknown as MockedFunction<
+    (id: string, password: string) => Promise<void>
+  >
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -68,11 +79,15 @@ describe('CreatePetPage edit controls', () => {
     })
 
     // Open status select and choose Lost (find the button combobox after Pet Type)
-    const comboButtons = screen.getAllByRole('combobox').filter(el => el.tagName.toLowerCase() === 'button')
+    const comboButtons = screen
+      .getAllByRole('combobox')
+      .filter((el) => el.tagName.toLowerCase() === 'button')
     // First button combobox is pet type. Assume second is status.
     const statusCombo = comboButtons[1]
     fireEvent.click(statusCombo)
-    const lost = await screen.findByRole('option', { name: 'Lost' }).catch(() => screen.findByText('Lost'))
+    const lost = await screen
+      .findByRole('option', { name: 'Lost' })
+      .catch(() => screen.findByText('Lost'))
     fireEvent.click(await lost)
 
     // Type password
@@ -96,10 +111,14 @@ describe('CreatePetPage edit controls', () => {
     })
 
     // Select Deceased but do not enter password
-    const comboButtons = screen.getAllByRole('combobox').filter(el => el.tagName.toLowerCase() === 'button')
+    const comboButtons = screen
+      .getAllByRole('combobox')
+      .filter((el) => el.tagName.toLowerCase() === 'button')
     const statusCombo = comboButtons[1]
     fireEvent.click(statusCombo)
-    const deceased = await screen.findByRole('option', { name: 'Deceased' }).catch(() => screen.findByText('Deceased'))
+    const deceased = await screen
+      .findByRole('option', { name: 'Deceased' })
+      .catch(() => screen.findByText('Deceased'))
     fireEvent.click(await deceased)
 
     const btn = screen.getByRole('button', { name: /Update status/i })

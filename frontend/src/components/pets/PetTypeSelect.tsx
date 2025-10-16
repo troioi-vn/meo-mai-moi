@@ -1,6 +1,12 @@
 import React from 'react'
 import type { PetType } from '@/types/pet'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface Props {
   petTypes: PetType[]
@@ -19,9 +25,12 @@ export const PetTypeSelect: React.FC<Props> = ({ petTypes, loading, value, onCha
       {loading ? (
         <div className="text-sm text-muted-foreground">Loading pet types...</div>
       ) : (
-        <Select value={value === '' ? '' : String(value)} onValueChange={(v) => {
-          onChange(Number(v))
-        }}>
+        <Select
+          value={value === '' ? '' : String(value)}
+          onValueChange={(v) => {
+            onChange(Number(v))
+          }}
+        >
           <SelectTrigger>
             <SelectValue placeholder="Select a pet type..." />
           </SelectTrigger>

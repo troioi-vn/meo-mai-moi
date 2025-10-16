@@ -31,7 +31,7 @@ const HelperProfileEditPage: React.FC = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ['helper-profile', id],
     queryFn: () => (id ? getHelperProfile(id) : Promise.reject(new Error('missing id'))),
@@ -44,11 +44,11 @@ const HelperProfileEditPage: React.FC = () => {
   })
 
   const numericId = id ? Number(id) : undefined
-  
+
   // Prepare initial form data from loaded data
   const initialFormData = useMemo(() => {
     if (!data?.data) return {}
-    
+
     return {
       country: data.data.country ?? '',
       address: data.data.address ?? '',
@@ -66,7 +66,7 @@ const HelperProfileEditPage: React.FC = () => {
       pet_type_ids: data.data.pet_types?.map((pt) => pt.id) ?? [],
     }
   }, [data?.data])
-  
+
   // Initialize the form hook with proper initial data
   const { formData, errors, isSubmitting, updateField, handleSubmit, handleCancel } =
     useHelperProfileForm(numericId, initialFormData)
@@ -99,9 +99,18 @@ const HelperProfileEditPage: React.FC = () => {
     },
   })
 
-  if (isLoading) return <div className="flex justify-center items-center min-h-screen">Loading...</div>
-  if (isError) return <div className="flex justify-center items-center min-h-screen">Error fetching helper profile</div>
-  if (!data?.data) return <div className="flex justify-center items-center min-h-screen">Helper profile not found</div>
+  if (isLoading)
+    return <div className="flex justify-center items-center min-h-screen">Loading...</div>
+  if (isError)
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        Error fetching helper profile
+      </div>
+    )
+  if (!data?.data)
+    return (
+      <div className="flex justify-center items-center min-h-screen">Helper profile not found</div>
+    )
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
@@ -110,7 +119,7 @@ const HelperProfileEditPage: React.FC = () => {
           Edit Helper Profile
         </h1>
         <PhotosGrid
-          photos={(data.data.photos as { id: number; path: string }[])}
+          photos={data.data.photos as { id: number; path: string }[]}
           onDelete={(photoId) => {
             deletePhotoMutation.mutate(photoId)
           }}
@@ -121,7 +130,9 @@ const HelperProfileEditPage: React.FC = () => {
           <PetTypesSelector
             petTypes={petTypes ?? []}
             selectedPetTypeIds={formData.pet_type_ids}
-            onChangePetTypeIds={(ids) => { updateField('pet_type_ids')(ids); }}
+            onChangePetTypeIds={(ids) => {
+              updateField('pet_type_ids')(ids)
+            }}
             label="Pet Types"
           />
           <FileInput
@@ -136,7 +147,14 @@ const HelperProfileEditPage: React.FC = () => {
             <Button type="submit" aria-label="Update Helper Profile" disabled={isSubmitting}>
               {isSubmitting ? 'Updating...' : 'Update'}
             </Button>
-            <Button type="button" variant="outline" onClick={() => { handleCancel() }} disabled={isSubmitting}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                handleCancel()
+              }}
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
             <AlertDialog>
@@ -154,7 +172,7 @@ const HelperProfileEditPage: React.FC = () => {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction 
+                  <AlertDialogAction
                     onClick={() => {
                       deleteMutation.mutate()
                     }}

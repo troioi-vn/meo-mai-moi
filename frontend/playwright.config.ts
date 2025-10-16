@@ -11,7 +11,7 @@ const __dirnameShim = path.dirname(__filename)
 // Prefer project root (frontend/) as base for env files
 const baseDir = process.cwd() || __dirnameShim
 const envFiles = ['.env.e2e.local', '.env.e2e', '.env.local', '.env'].map((f) =>
-  path.resolve(baseDir, f),
+  path.resolve(baseDir, f)
 )
 
 for (const f of envFiles) {

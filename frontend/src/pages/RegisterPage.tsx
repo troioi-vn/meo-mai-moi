@@ -7,7 +7,8 @@ import { Loader2, Lock, Globe } from 'lucide-react'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
-  const { mode, isLoading, invitationCode, invitationValidation, error, clearError } = useInviteSystem()
+  const { mode, isLoading, invitationCode, invitationValidation, error, clearError } =
+    useInviteSystem()
 
   const handleRegistrationSuccess = () => {
     toast.success('You are registered, now login please.')
@@ -79,9 +80,7 @@ export default function RegisterPage() {
     <div className="flex items-center justify-center min-h-screen bg-background">
       <div className="w-full max-w-md p-8 space-y-8 bg-card rounded-lg shadow-lg border">
         <div className="text-center space-y-2">
-          <div className="flex justify-center">
-            {getIcon()}
-          </div>
+          <div className="flex justify-center">{getIcon()}</div>
           <h1 className="text-2xl font-bold text-card-foreground">{getTitle()}</h1>
           {mode === 'open-registration' && (
             <p className="text-sm text-muted-foreground">Anyone can join our community</p>
@@ -94,12 +93,10 @@ export default function RegisterPage() {
           )}
         </div>
 
-        {mode === 'invite-only-no-code' && (
-          <WaitlistForm onSuccess={handleWaitlistSuccess} />
-        )}
+        {mode === 'invite-only-no-code' && <WaitlistForm onSuccess={handleWaitlistSuccess} />}
 
         {(mode === 'invite-only-with-code' || mode === 'open-registration') && (
-          <RegisterForm 
+          <RegisterForm
             onSuccess={handleRegistrationSuccess}
             invitationCode={invitationCode}
             inviterName={invitationValidation?.inviter.name}

@@ -1,7 +1,10 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 
-export interface Photo { id: number; path: string }
+export interface Photo {
+  id: number
+  path: string
+}
 
 interface Props {
   photos: Photo[]

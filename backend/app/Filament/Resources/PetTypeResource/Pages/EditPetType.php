@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\PetTypeResource\Pages;
 
+use App\Enums\PetTypeStatus;
 use App\Filament\Resources\PetTypeResource;
 use Filament\Actions;
 use Filament\Notifications\Notification;
@@ -51,7 +52,7 @@ class EditPetType extends EditRecord
     {
         // Prevent changing system status or deactivating Cat
         if ($this->record instanceof \App\Models\PetType && $this->record->slug === 'cat') {
-            $data['is_active'] = true; // Force Cat to remain active
+            $data['status'] = PetTypeStatus::ACTIVE->value; // Force Cat to remain active
             $data['is_system'] = true; // Force Cat to remain system
         }
 

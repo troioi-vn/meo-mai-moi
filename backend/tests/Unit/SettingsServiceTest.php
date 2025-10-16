@@ -17,7 +17,7 @@ class SettingsServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new SettingsService();
+        $this->service = new SettingsService;
         Cache::flush(); // Clear cache before each test
     }
 
@@ -39,24 +39,24 @@ class SettingsServiceTest extends TestCase
 
     public function test_set_invite_only_enabled_stores_setting()
     {
-        $this->service->setInviteOnlyEnabled(true);
+        $this->service->configureInviteOnlyMode(true);
 
         $this->assertTrue($this->service->isInviteOnlyEnabled());
         $this->assertDatabaseHas('settings', [
             'key' => 'invite_only_enabled',
-            'value' => 'true'
+            'value' => 'true',
         ]);
     }
 
     public function test_set_invite_only_enabled_can_disable()
     {
-        $this->service->setInviteOnlyEnabled(true);
-        $this->service->setInviteOnlyEnabled(false);
+        $this->service->configureInviteOnlyMode(true);
+        $this->service->configureInviteOnlyMode(false);
 
         $this->assertFalse($this->service->isInviteOnlyEnabled());
         $this->assertDatabaseHas('settings', [
             'key' => 'invite_only_enabled',
-            'value' => 'false'
+            'value' => 'false',
         ]);
     }
 
@@ -72,7 +72,7 @@ class SettingsServiceTest extends TestCase
 
     public function test_toggle_invite_only_changes_state_back()
     {
-        $this->service->setInviteOnlyEnabled(true);
+        $this->service->configureInviteOnlyMode(true);
 
         $result = $this->service->toggleInviteOnly();
 
@@ -82,7 +82,7 @@ class SettingsServiceTest extends TestCase
 
     public function test_get_public_settings_returns_correct_structure()
     {
-        $this->service->setInviteOnlyEnabled(true);
+        $this->service->configureInviteOnlyMode(true);
 
         $settings = $this->service->getPublicSettings();
 
@@ -94,7 +94,7 @@ class SettingsServiceTest extends TestCase
     public function test_settings_are_cached()
     {
         // First call should hit database
-        $this->service->setInviteOnlyEnabled(true);
+        $this->service->configureInviteOnlyMode(true);
 
         // Clear the database but not cache
         Settings::where('key', 'invite_only_enabled')->delete();
@@ -105,7 +105,7 @@ class SettingsServiceTest extends TestCase
 
     public function test_clear_cache_removes_cached_values()
     {
-        $this->service->setInviteOnlyEnabled(true);
+        $this->service->configureInviteOnlyMode(true);
 
         // Clear cache
         $this->service->clearCache();

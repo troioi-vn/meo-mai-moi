@@ -28,11 +28,11 @@ class NotificationControllerTest extends TestCase
     public function test_authenticated_user_can_mark_notifications_as_read()
     {
         $user = User::factory()->create();
-        Notification::factory()->count(5)->create(['user_id' => $user->id, 'is_read' => false]);
+        Notification::factory()->count(5)->create(['user_id' => $user->id, 'read_at' => null]);
 
         $response = $this->actingAs($user)->postJson('/api/notifications/mark-as-read');
 
         $response->assertStatus(204);
-        $this->assertDatabaseHas('notifications', ['user_id' => $user->id, 'is_read' => true]);
+        $this->assertDatabaseMissing('notifications', ['user_id' => $user->id, 'read_at' => null]);
     }
 }

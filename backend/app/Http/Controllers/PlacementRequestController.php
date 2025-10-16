@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PlacementRequestStatus;
 use App\Enums\PlacementRequestType;
 use App\Http\Resources\PlacementRequestResource;
 use App\Models\Pet;
@@ -139,8 +140,7 @@ class PlacementRequestController extends Controller
             'expires_at' => $validatedData['expires_at'] ?? null,
             'start_date' => $validatedData['start_date'] ?? null,
             'end_date' => $validatedData['end_date'] ?? null,
-            'is_active' => true,
-            'status' => 'open',
+            'status' => PlacementRequestStatus::OPEN,
         ]);
         $placementRequest->refresh();
 

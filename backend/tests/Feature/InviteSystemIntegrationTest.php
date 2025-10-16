@@ -14,8 +14,8 @@ use Tests\Traits\CreatesUsers;
 
 class InviteSystemIntegrationTest extends TestCase
 {
-    use RefreshDatabase;
     use CreatesUsers;
+    use RefreshDatabase;
 
     protected function setUp(): void
     {
@@ -32,19 +32,19 @@ class InviteSystemIntegrationTest extends TestCase
         // Step 2: User joins waitlist
         $email = 'waitlist@example.com';
         $waitlistResponse = $this->postJson('/api/waitlist', [
-            'email' => $email
+            'email' => $email,
         ]);
 
         $waitlistResponse->assertStatus(201);
         $this->assertDatabaseHas('waitlist_entries', [
             'email' => $email,
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
 
         // Step 3: Admin invites user from waitlist
         $admin = $this->createUserAndLogin();
         $invitationResponse = $this->postJson('/api/invitations', [
-            'email' => $email
+            'email' => $email,
         ]);
 
         $invitationResponse->assertStatus(201);
@@ -70,7 +70,7 @@ class InviteSystemIntegrationTest extends TestCase
         // Verify user was created
         $this->assertDatabaseHas('users', [
             'email' => $email,
-            'name' => 'Waitlist User'
+            'name' => 'Waitlist User',
         ]);
 
         // Invitation should be marked as accepted
@@ -88,7 +88,7 @@ class InviteSystemIntegrationTest extends TestCase
         $email = 'direct@example.com';
 
         $invitationResponse = $this->postJson('/api/invitations', [
-            'email' => $email
+            'email' => $email,
         ]);
 
         $invitationResponse->assertStatus(201);
@@ -110,7 +110,7 @@ class InviteSystemIntegrationTest extends TestCase
         // Verify user was created
         $this->assertDatabaseHas('users', [
             'email' => $email,
-            'name' => 'Direct User'
+            'name' => 'Direct User',
         ]);
 
         // Invitation should be marked as accepted
@@ -200,7 +200,7 @@ class InviteSystemIntegrationTest extends TestCase
 
         // But can join waitlist
         $waitlistResponse = $this->postJson('/api/waitlist', [
-            'email' => 'waitlist@example.com'
+            'email' => 'waitlist@example.com',
         ]);
 
         $waitlistResponse->assertStatus(201);
@@ -212,7 +212,7 @@ class InviteSystemIntegrationTest extends TestCase
         $waitlistAttempts = 0;
         for ($i = 0; $i < 10; $i++) {
             $response = $this->postJson('/api/waitlist', [
-                'email' => "test{$i}@example.com"
+                'email' => "test{$i}@example.com",
             ]);
 
             if ($response->getStatusCode() === 201) {
@@ -265,7 +265,7 @@ class InviteSystemIntegrationTest extends TestCase
         // Create invitation
         $invitation = Invitation::factory()->create([
             'inviter_user_id' => $user->id,
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
 
         // Simulate concurrent acceptance attempts

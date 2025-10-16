@@ -44,7 +44,6 @@ class FosterReturnHandoverController extends Controller
             'user_id' => $handover->owner_user_id,
             'message' => 'Fosterer scheduled a return handover.',
             'link' => '/account/return-handovers/'.$handover->id,
-            'is_read' => false,
         ]);
 
         return $this->sendSuccess($handover, 201);
@@ -76,7 +75,6 @@ class FosterReturnHandoverController extends Controller
             'user_id' => $handover->foster_user_id,
             'message' => 'Owner has '.($handover->status === 'confirmed' ? 'confirmed' : 'disputed').' the return handover.',
             'link' => '/account/return-handovers/'.$handover->id,
-            'is_read' => false,
         ]);
 
         return $this->sendSuccess($handover);
@@ -113,7 +111,6 @@ class FosterReturnHandoverController extends Controller
                 'user_id' => $handover->owner_user_id,
                 'message' => 'Return handover completed. Foster assignment closed.',
                 'link' => '/account/return-handovers/'.$handover->id,
-                'is_read' => false,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -121,7 +118,6 @@ class FosterReturnHandoverController extends Controller
                 'user_id' => $handover->foster_user_id,
                 'message' => 'Return handover completed. Thank you for fostering!',
                 'link' => '/account/return-handovers/'.$handover->id,
-                'is_read' => false,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

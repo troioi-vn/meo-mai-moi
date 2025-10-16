@@ -18,7 +18,7 @@ describe('PlacementRequestModal', () => {
   const mockOnClose = vi.fn()
 
   beforeEach(() => {
-    (
+    ;(
       useCreatePlacementRequest as unknown as Mock<
         () => Partial<UseMutationResult<PlacementRequest, AxiosError, PlacementRequestPayload>>
       >

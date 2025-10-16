@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { createMicrochip, deleteMicrochip, getMicrochips, updateMicrochip, type PetMicrochip } from '@/api/pets'
+import {
+  createMicrochip,
+  deleteMicrochip,
+  getMicrochips,
+  updateMicrochip,
+  type PetMicrochip,
+} from '@/api/pets'
 
 export interface UseMicrochipsResult {
   items: PetMicrochip[]
@@ -9,7 +15,11 @@ export interface UseMicrochipsResult {
   loading: boolean
   error: string | null
   refresh: (page?: number) => Promise<void>
-  create: (payload: { chip_number: string; issuer?: string | null; implanted_at?: string | null }) => Promise<PetMicrochip>
+  create: (payload: {
+    chip_number: string
+    issuer?: string | null
+    implanted_at?: string | null
+  }) => Promise<PetMicrochip>
   update: (
     id: number,
     payload: Partial<{ chip_number: string; issuer?: string | null; implanted_at?: string | null }>
@@ -56,7 +66,11 @@ export const useMicrochips = (petId: number): UseMicrochipsResult => {
   )
 
   const create = useCallback(
-    async (payload: { chip_number: string; issuer?: string | null; implanted_at?: string | null }) => {
+    async (payload: {
+      chip_number: string
+      issuer?: string | null
+      implanted_at?: string | null
+    }) => {
       const item = await createMicrochip(petId, payload)
       setItems((prev) => [item, ...prev])
       void refresh(1)
@@ -66,7 +80,14 @@ export const useMicrochips = (petId: number): UseMicrochipsResult => {
   )
 
   const updateOne = useCallback(
-    async (id: number, payload: Partial<{ chip_number: string; issuer?: string | null; implanted_at?: string | null }>) => {
+    async (
+      id: number,
+      payload: Partial<{
+        chip_number: string
+        issuer?: string | null
+        implanted_at?: string | null
+      }>
+    ) => {
       const item = await updateMicrochip(petId, id, payload)
       setItems((prev) => prev.map((n) => (n.id === id ? item : n)))
       return item
@@ -84,7 +105,18 @@ export const useMicrochips = (petId: number): UseMicrochipsResult => {
   )
 
   return useMemo(
-    () => ({ items, page, meta, links, loading, error, refresh, create, update: updateOne, remove }),
+    () => ({
+      items,
+      page,
+      meta,
+      links,
+      loading,
+      error,
+      refresh,
+      create,
+      update: updateOne,
+      remove,
+    }),
     [items, page, meta, links, loading, error, refresh, create, updateOne, remove]
   )
 }

@@ -15,7 +15,7 @@ class WaitlistEntryTest extends TestCase
     {
         $entry = WaitlistEntry::factory()->create([
             'status' => 'pending',
-            'invited_at' => null
+            'invited_at' => null,
         ]);
 
         $entry->markAsInvited();
@@ -71,19 +71,19 @@ class WaitlistEntryTest extends TestCase
         $entry1 = WaitlistEntry::factory()->create([
             'email' => 'first@example.com',
             'status' => 'pending',
-            'created_at' => Carbon::now()->subDays(2)
+            'created_at' => Carbon::now()->subDays(2),
         ]);
 
         $entry2 = WaitlistEntry::factory()->create([
             'email' => 'second@example.com',
             'status' => 'pending',
-            'created_at' => Carbon::now()->subDay()
+            'created_at' => Carbon::now()->subDay(),
         ]);
 
         $entry3 = WaitlistEntry::factory()->create([
             'email' => 'invited@example.com',
             'status' => 'invited',
-            'created_at' => Carbon::now()
+            'created_at' => Carbon::now(),
         ]);
 
         $pendingEntries = WaitlistEntry::getPendingEntries();
@@ -121,7 +121,7 @@ class WaitlistEntryTest extends TestCase
     {
         $invitedAt = Carbon::now();
         $entry = WaitlistEntry::factory()->create([
-            'invited_at' => $invitedAt
+            'invited_at' => $invitedAt,
         ]);
 
         $this->assertInstanceOf(Carbon::class, $entry->invited_at);
@@ -131,7 +131,7 @@ class WaitlistEntryTest extends TestCase
     public function test_invited_at_can_be_null()
     {
         $entry = WaitlistEntry::factory()->create([
-            'invited_at' => null
+            'invited_at' => null,
         ]);
 
         $this->assertNull($entry->invited_at);
@@ -139,7 +139,7 @@ class WaitlistEntryTest extends TestCase
 
     public function test_fillable_attributes_are_correct()
     {
-        $entry = new WaitlistEntry();
+        $entry = new WaitlistEntry;
         $fillable = $entry->getFillable();
 
         $this->assertContains('email', $fillable);
@@ -152,7 +152,7 @@ class WaitlistEntryTest extends TestCase
         $data = [
             'email' => 'test@example.com',
             'status' => 'pending',
-            'invited_at' => null
+            'invited_at' => null,
         ];
 
         $entry = WaitlistEntry::create($data);

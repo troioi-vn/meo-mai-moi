@@ -53,7 +53,7 @@ class CapabilityMatrixBuilder
     {
         $petType = PetType::where('slug', $petTypeSlug)->first();
 
-        if (!$petType) {
+        if (! $petType) {
             return [
                 'placement' => false,
                 'weight' => false,

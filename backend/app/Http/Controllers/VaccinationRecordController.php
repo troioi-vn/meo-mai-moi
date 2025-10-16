@@ -24,6 +24,7 @@ class VaccinationRecordController extends Controller
      *     schema="VaccinationRecord",
      *     title="VaccinationRecord",
      *     description="Vaccination record model",
+     *
      *     @OA\Property(property="id", type="integer", format="int64"),
      *     @OA\Property(property="pet_id", type="integer", format="int64"),
      *     @OA\Property(property="vaccine_name", type="string"),
@@ -42,12 +43,16 @@ class VaccinationRecordController extends Controller
      *     summary="List vaccination records for a pet",
      *     tags={"Pets"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(name="pet", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Parameter(name="page", in="query", required=false, @OA\Schema(type="integer")),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="List of vaccination records",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/VaccinationRecord")),
      *                 @OA\Property(property="links", type="object"),
@@ -55,6 +60,7 @@ class VaccinationRecordController extends Controller
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(response=401, description="Unauthenticated"),
      *     @OA\Response(response=403, description="Forbidden")
      * )
@@ -79,14 +85,18 @@ class VaccinationRecordController extends Controller
      *     summary="Create a vaccination record",
      *     tags={"Pets"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(name="pet", in="path", required=true, @OA\Schema(type="integer")),
+     *
      *     @OA\RequestBody(required=true, @OA\JsonContent(
      *         required={"vaccine_name","administered_at"},
+     *
      *         @OA\Property(property="vaccine_name", type="string", example="Rabies"),
      *         @OA\Property(property="administered_at", type="string", format="date", example="2024-06-01"),
      *         @OA\Property(property="due_at", type="string", format="date", example="2025-06-01"),
      *         @OA\Property(property="notes", type="string", example="Booster due next year"),
      *     )),
+     *
      *     @OA\Response(response=201, description="Created", @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/VaccinationRecord"))),
      *     @OA\Response(response=401, description="Unauthenticated"),
      *     @OA\Response(response=403, description="Forbidden"),
@@ -116,6 +126,7 @@ class VaccinationRecordController extends Controller
         }
 
         $created = $pet->vaccinations()->create($validated);
+
         return $this->sendSuccess($created, 201);
     }
 
@@ -125,8 +136,10 @@ class VaccinationRecordController extends Controller
      *     summary="Get a single vaccination record",
      *     tags={"Pets"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(name="pet", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Parameter(name="record", in="path", required=true, @OA\Schema(type="integer")),
+     *
      *     @OA\Response(response=200, description="OK", @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/VaccinationRecord"))),
      *     @OA\Response(response=401, description="Unauthenticated"),
      *     @OA\Response(response=403, description="Forbidden"),
@@ -136,6 +149,7 @@ class VaccinationRecordController extends Controller
     public function show(Request $request, Pet $pet, VaccinationRecord $record)
     {
         $this->validatePetResource($request, $pet, 'vaccinations', $record);
+
         return $this->sendSuccess($record);
     }
 
@@ -145,14 +159,18 @@ class VaccinationRecordController extends Controller
      *     summary="Update a vaccination record",
      *     tags={"Pets"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(name="pet", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Parameter(name="record", in="path", required=true, @OA\Schema(type="integer")),
+     *
      *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *
      *         @OA\Property(property="vaccine_name", type="string"),
      *         @OA\Property(property="administered_at", type="string", format="date"),
      *         @OA\Property(property="due_at", type="string", format="date"),
      *         @OA\Property(property="notes", type="string")
      *     )),
+     *
      *     @OA\Response(response=200, description="OK", @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/VaccinationRecord"))),
      *     @OA\Response(response=401, description="Unauthenticated"),
      *     @OA\Response(response=403, description="Forbidden"),
@@ -186,6 +204,7 @@ class VaccinationRecordController extends Controller
         }
 
         $record->update($validated);
+
         return $this->sendSuccess($record);
     }
 
@@ -195,8 +214,10 @@ class VaccinationRecordController extends Controller
      *     summary="Delete a vaccination record",
      *     tags={"Pets"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(name="pet", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Parameter(name="record", in="path", required=true, @OA\Schema(type="integer")),
+     *
      *     @OA\Response(response=200, description="Deleted", @OA\JsonContent(@OA\Property(property="data", type="boolean", example=true))),
      *     @OA\Response(response=401, description="Unauthenticated"),
      *     @OA\Response(response=403, description="Forbidden"),
@@ -207,6 +228,7 @@ class VaccinationRecordController extends Controller
     {
         $this->validatePetResource($request, $pet, 'vaccinations', $record);
         $record->delete();
+
         return response()->json(['data' => true]);
     }
 }

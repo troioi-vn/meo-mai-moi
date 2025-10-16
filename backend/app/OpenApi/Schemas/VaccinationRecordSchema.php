@@ -9,6 +9,7 @@ use OpenApi\Annotations as OA;
  *     schema="VaccinationRecord",
  *     title="VaccinationRecord",
  *     description="Vaccination record model",
+ *
  *     @OA\Property(property="id", type="integer", format="int64"),
  *     @OA\Property(property="pet_id", type="integer", format="int64"),
  *     @OA\Property(property="vaccine_name", type="string"),

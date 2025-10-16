@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Cache;
 class SettingsService
 {
     private const CACHE_TTL = 3600; // 1 hour
+
     private const CACHE_PREFIX = 'settings.';
 
     /**
@@ -27,19 +28,19 @@ class SettingsService
     public function toggleInviteOnly(): bool
     {
         $currentValue = $this->isInviteOnlyEnabled();
-        $newValue = !$currentValue;
+        $newValue = ! $currentValue;
 
-        $this->setCachedSetting('invite_only_enabled', $newValue ? 'true' : 'false');
+        $this->updateCachedSetting('invite_only_enabled', $newValue ? 'true' : 'false');
 
         return $newValue;
     }
 
     /**
-     * Set invite-only mode state
+     * Enable or disable invite-only mode
      */
-    public function setInviteOnlyEnabled(bool $enabled): void
+    public function configureInviteOnlyMode(bool $enabled): void
     {
-        $this->setCachedSetting('invite_only_enabled', $enabled ? 'true' : 'false');
+        $this->updateCachedSetting('invite_only_enabled', $enabled ? 'true' : 'false');
     }
 
     /**
@@ -57,7 +58,7 @@ class SettingsService
      */
     private function getCachedSetting(string $key, $default = null)
     {
-        $cacheKey = self::CACHE_PREFIX . $key;
+        $cacheKey = self::CACHE_PREFIX.$key;
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($key, $default) {
             return Settings::get($key, $default);
@@ -65,14 +66,14 @@ class SettingsService
     }
 
     /**
-     * Set a setting value and update cache
+     * Update a setting value and refresh cache
      */
-    private function setCachedSetting(string $key, $value): void
+    private function updateCachedSetting(string $key, $value): void
     {
         Settings::set($key, $value);
 
         // Update cache immediately
-        $cacheKey = self::CACHE_PREFIX . $key;
+        $cacheKey = self::CACHE_PREFIX.$key;
         Cache::put($cacheKey, $value, self::CACHE_TTL);
     }
 
@@ -84,7 +85,7 @@ class SettingsService
         $keys = ['invite_only_enabled'];
 
         foreach ($keys as $key) {
-            Cache::forget(self::CACHE_PREFIX . $key);
+            Cache::forget(self::CACHE_PREFIX.$key);
         }
     }
 }

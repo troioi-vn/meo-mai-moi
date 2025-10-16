@@ -13,16 +13,17 @@ use Tests\Traits\CreatesUsers;
 
 class InvitationServiceTest extends TestCase
 {
-    use RefreshDatabase;
     use CreatesUsers;
+    use RefreshDatabase;
 
     private InvitationService $service;
+
     private User $user;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new InvitationService();
+        $this->service = new InvitationService;
         $this->user = User::factory()->create();
     }
 
@@ -38,7 +39,7 @@ class InvitationServiceTest extends TestCase
         $this->assertDatabaseHas('invitations', [
             'id' => $invitation->id,
             'inviter_user_id' => $this->user->id,
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
     }
 

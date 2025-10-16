@@ -7,7 +7,12 @@ WORKDIR /app
 # Update npm to the latest version
 RUN npm install -g npm@11.5.2
 
-# Copy all source code into the build stage
+# Copy package files first to leverage Docker cache
+COPY ./frontend/package.json ./frontend/package-lock.json /app/frontend/
+WORKDIR /app/frontend
+RUN npm ci
+
+# Copy the rest of the source code
 COPY ./frontend /app/frontend
 COPY ./backend /app/backend
 

@@ -22,13 +22,29 @@ interface Props {
 export const PetFormFields: React.FC<Props> = ({ formData, errors, updateField }) => {
   return (
     <>
-      <FormField id="name" label="Name" value={formData.name} onChange={updateField('name')} error={errors.name} placeholder="Enter pet's name" />
+      <FormField
+        id="name"
+        label="Name"
+        value={formData.name}
+        onChange={updateField('name')}
+        error={errors.name}
+        placeholder="Enter pet's name"
+      />
 
-      <FormField id="breed" label="Breed" value={formData.breed} onChange={updateField('breed')} error={errors.breed} placeholder="Enter pet's breed" />
+      <FormField
+        id="breed"
+        label="Breed"
+        value={formData.breed}
+        onChange={updateField('breed')}
+        error={errors.breed}
+        placeholder="Enter pet's breed"
+      />
 
       {/* Birthday Precision Selection */}
       <div className="space-y-2">
-        <label className="text-sm font-medium text-foreground" htmlFor="birthday_precision">Birthday Precision</label>
+        <label className="text-sm font-medium text-foreground" htmlFor="birthday_precision">
+          Birthday Precision
+        </label>
         <select
           id="birthday_precision"
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -46,7 +62,14 @@ export const PetFormFields: React.FC<Props> = ({ formData, errors, updateField }
       </div>
 
       {formData.birthday_precision === 'day' && (
-        <FormField id="birthday" label="Birthday" type="date" value={formData.birthday} onChange={updateField('birthday')} error={errors.birthday} />
+        <FormField
+          id="birthday"
+          label="Birthday"
+          type="date"
+          value={formData.birthday}
+          onChange={updateField('birthday')}
+          error={errors.birthday}
+        />
       )}
       {formData.birthday_precision === 'month' && (
         <div className="grid grid-cols-2 gap-4">
@@ -82,9 +105,24 @@ export const PetFormFields: React.FC<Props> = ({ formData, errors, updateField }
         />
       )}
 
-      <FormField id="location" label="Location" value={formData.location} onChange={updateField('location')} error={errors.location} placeholder="Enter pet's location" />
+      <FormField
+        id="location"
+        label="Location"
+        value={formData.location}
+        onChange={updateField('location')}
+        error={errors.location}
+        placeholder="Enter pet's location"
+      />
 
-      <FormField id="description" label="Description" type="textarea" value={formData.description} onChange={updateField('description')} error={errors.description} placeholder="Describe the pet's personality and characteristics" />
+      <FormField
+        id="description"
+        label="Description"
+        type="textarea"
+        value={formData.description}
+        onChange={updateField('description')}
+        error={errors.description}
+        placeholder="Describe the pet's personality and characteristics"
+      />
     </>
   )
 }

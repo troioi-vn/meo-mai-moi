@@ -23,27 +23,27 @@ class WaitlistControllerTest extends TestCase
         $email = 'test@example.com';
 
         $response = $this->postJson('/api/waitlist', [
-            'email' => $email
+            'email' => $email,
         ]);
 
         $response->assertStatus(201)
             ->assertJson([
                 'data' => [
                     'email' => $email,
-                    'status' => 'pending'
-                ]
+                    'status' => 'pending',
+                ],
             ]);
 
         $this->assertDatabaseHas('waitlist_entries', [
             'email' => $email,
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
     }
 
     public function test_cannot_join_waitlist_with_invalid_email()
     {
         $response = $this->postJson('/api/waitlist', [
-            'email' => 'invalid-email'
+            'email' => 'invalid-email',
         ]);
 
         $response->assertStatus(422)
@@ -64,12 +64,12 @@ class WaitlistControllerTest extends TestCase
         WaitlistEntry::create(['email' => $email, 'status' => 'pending']);
 
         $response = $this->postJson('/api/waitlist', [
-            'email' => $email
+            'email' => $email,
         ]);
 
         $response->assertStatus(409)
             ->assertJson([
-                'error' => 'Email is already on waitlist'
+                'error' => 'Email is already on waitlist',
             ]);
     }
 
@@ -78,12 +78,12 @@ class WaitlistControllerTest extends TestCase
         $user = User::factory()->create(['email' => 'existing@example.com']);
 
         $response = $this->postJson('/api/waitlist', [
-            'email' => $user->email
+            'email' => $user->email,
         ]);
 
         $response->assertStatus(409)
             ->assertJson([
-                'error' => 'Email is already registered'
+                'error' => 'Email is already registered',
             ]);
     }
 
@@ -94,7 +94,7 @@ class WaitlistControllerTest extends TestCase
         // Make multiple requests quickly
         for ($i = 0; $i < 10; $i++) {
             $response = $this->postJson('/api/waitlist', [
-                'email' => "test{$i}@example.com"
+                'email' => "test{$i}@example.com",
             ]);
 
             if ($i < 5) {
@@ -104,7 +104,7 @@ class WaitlistControllerTest extends TestCase
 
         // The next request should be rate limited
         $response = $this->postJson('/api/waitlist', [
-            'email' => 'final@example.com'
+            'email' => 'final@example.com',
         ]);
 
         // Should be rate limited (429) or still succeed depending on rate limit config
@@ -115,7 +115,7 @@ class WaitlistControllerTest extends TestCase
     {
         // Mock a database error by using an invalid email that would cause issues
         $response = $this->postJson('/api/waitlist', [
-            'email' => str_repeat('a', 300) . '@example.com' // Too long email
+            'email' => str_repeat('a', 300).'@example.com', // Too long email
         ]);
 
         $response->assertStatus(422)
@@ -127,7 +127,7 @@ class WaitlistControllerTest extends TestCase
         $email = 'structure@example.com';
 
         $response = $this->postJson('/api/waitlist', [
-            'email' => $email
+            'email' => $email,
         ]);
 
         $response->assertStatus(201)
@@ -135,8 +135,8 @@ class WaitlistControllerTest extends TestCase
                 'data' => [
                     'email',
                     'status',
-                    'created_at'
-                ]
+                    'created_at',
+                ],
             ]);
     }
 
@@ -145,19 +145,19 @@ class WaitlistControllerTest extends TestCase
         $email = 'Test@Example.Com';
 
         $response = $this->postJson('/api/waitlist', [
-            'email' => $email
+            'email' => $email,
         ]);
 
         $response->assertStatus(201);
 
         // Try to add the same email with different case
         $response2 = $this->postJson('/api/waitlist', [
-            'email' => strtolower($email)
+            'email' => strtolower($email),
         ]);
 
         $response2->assertStatus(409)
             ->assertJson([
-                'error' => 'Email is already on waitlist'
+                'error' => 'Email is already on waitlist',
             ]);
     }
 
@@ -166,14 +166,14 @@ class WaitlistControllerTest extends TestCase
         $email = '  whitespace@example.com  ';
 
         $response = $this->postJson('/api/waitlist', [
-            'email' => $email
+            'email' => $email,
         ]);
 
         $response->assertStatus(201);
 
         $this->assertDatabaseHas('waitlist_entries', [
             'email' => trim($email),
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
     }
 }

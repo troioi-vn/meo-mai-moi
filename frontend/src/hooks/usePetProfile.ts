@@ -52,4 +52,3 @@ export const usePetProfile = (id: string | undefined): UsePetProfileResult => {
 
   return { pet, loading, error, refresh }
 }
-

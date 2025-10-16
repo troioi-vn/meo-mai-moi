@@ -24,12 +24,16 @@ class TestPointerEvent extends MouseEvent {
   TestPointerEvent as unknown as typeof MouseEvent
 
 // Polyfills for PointerEvent methods on Element
-Element.prototype.hasPointerCapture = (() => false) as unknown as typeof Element.prototype.hasPointerCapture
-Element.prototype.setPointerCapture = (() => {}) as unknown as typeof Element.prototype.setPointerCapture
-Element.prototype.releasePointerCapture = (() => {}) as unknown as typeof Element.prototype.releasePointerCapture
+Element.prototype.hasPointerCapture = (() =>
+  false) as unknown as typeof Element.prototype.hasPointerCapture
+Element.prototype.setPointerCapture =
+  (() => {}) as unknown as typeof Element.prototype.setPointerCapture
+Element.prototype.releasePointerCapture =
+  (() => {}) as unknown as typeof Element.prototype.releasePointerCapture
 
 // Polyfill for scrollIntoView
-window.HTMLElement.prototype.scrollIntoView = (() => {}) as typeof window.HTMLElement.prototype.scrollIntoView
+window.HTMLElement.prototype.scrollIntoView =
+  (() => {}) as typeof window.HTMLElement.prototype.scrollIntoView
 
 vi.mock('sonner', async (importOriginal) => {
   const actual = await importOriginal<typeof import('sonner')>()

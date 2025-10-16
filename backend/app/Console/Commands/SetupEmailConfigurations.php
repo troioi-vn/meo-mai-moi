@@ -89,6 +89,7 @@ class SetupEmailConfigurations extends Command
                 $this->info('✓ Mailgun configuration activated');
             } else {
                 $this->error('Invalid provider. Use --activate=smtp or --activate=mailgun');
+
                 return 1;
             }
         }
@@ -96,24 +97,24 @@ class SetupEmailConfigurations extends Command
         $this->newLine();
         $this->info('Email configurations setup complete!');
         $this->newLine();
-        
+
         $this->comment('Configuration details:');
         $this->line('• Domain: dev.meo-mai-moi.com');
         $this->line('• From Email: mail@meo-mai-moi.com');
         $this->line('• Test Email: pavel@catarchy.space');
         $this->newLine();
-        
-        if (!$this->option('smtp-username') || !$this->option('smtp-password')) {
+
+        if (! $this->option('smtp-username') || ! $this->option('smtp-password')) {
             $this->warn('Remember to update SMTP credentials:');
             $this->line('php artisan email:setup --smtp-username=your-email@gmail.com --smtp-password=your-app-password');
         }
-        
-        if (!$this->option('mailgun-api-key')) {
+
+        if (! $this->option('mailgun-api-key')) {
             $this->warn('Remember to update Mailgun API key:');
             $this->line('php artisan email:setup --mailgun-api-key=key-your-actual-api-key');
         }
-        
-        if (!$activateProvider) {
+
+        if (! $activateProvider) {
             $this->comment('To activate a configuration:');
             $this->line('php artisan email:setup --activate=smtp');
             $this->line('php artisan email:setup --activate=mailgun');

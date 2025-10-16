@@ -93,9 +93,7 @@ describe('App Routing', () => {
 
       await waitFor(
         async () => {
-          expect(
-            await screen.findByRole('heading', { name: /edit pet/i })
-          ).toBeInTheDocument()
+          expect(await screen.findByRole('heading', { name: /edit pet/i })).toBeInTheDocument()
         },
         { timeout: 5000 }
       )

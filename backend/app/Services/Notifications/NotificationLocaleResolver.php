@@ -9,7 +9,7 @@ class NotificationLocaleResolver
     public function resolve(?\App\Models\User $user = null, ?Request $request = null): string
     {
         // 1) Explicit user profile locale
-        $candidate = $user?->locale ?? null;
+        $candidate = $user->locale ?? null;
 
         // 2) Accept-Language header
         if (! $candidate && $request) {
@@ -34,6 +34,7 @@ class NotificationLocaleResolver
     {
         $defaults = [config('notification_templates.default_locale', 'en'), 'en'];
         $chain = array_values(array_unique(array_filter([$primary, ...$defaults])));
+
         return $chain;
     }
 
@@ -44,6 +45,7 @@ class NotificationLocaleResolver
         if (is_array($supported) && $supported) {
             return $supported;
         }
+
         return [config('notification_templates.default_locale', 'en')];
     }
 }

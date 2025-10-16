@@ -26,7 +26,7 @@ const mockInvitations = [
     expires_at: null,
     created_at: '2024-01-01T00:00:00Z',
     invitation_url: 'http://localhost:3000/register?invitation_code=abc123xyz',
-    recipient: null
+    recipient: null,
   },
   {
     id: 2,
@@ -38,8 +38,8 @@ const mockInvitations = [
     recipient: {
       id: 2,
       name: 'Jane Doe',
-      email: 'jane@example.com'
-    }
+      email: 'jane@example.com',
+    },
   },
   {
     id: 3,
@@ -48,14 +48,14 @@ const mockInvitations = [
     expires_at: '2024-01-01T00:00:00Z',
     created_at: '2024-01-01T00:00:00Z',
     invitation_url: 'http://localhost:3000/register?invitation_code=ghi789def',
-    recipient: null
-  }
+    recipient: null,
+  },
 ]
 
 const mockUser: User = {
   id: 1,
   name: 'Test User',
-  email: 'test@example.com'
+  email: 'test@example.com',
 }
 
 describe('InvitationsPage', () => {
@@ -64,8 +64,8 @@ describe('InvitationsPage', () => {
       initialAuthState: {
         user: mockUser,
         isLoading: false,
-        isAuthenticated: true
-      }
+        isAuthenticated: true,
+      },
     })
   }
 
@@ -77,7 +77,9 @@ describe('InvitationsPage', () => {
         return HttpResponse.json({ data: mockInvitations })
       }),
       http.get('http://localhost:3000/api/invitations/stats', () => {
-        return HttpResponse.json({ data: { total: 3, pending: 1, accepted: 1, expired: 1, revoked: 0 } })
+        return HttpResponse.json({
+          data: { total: 3, pending: 1, accepted: 1, expired: 1, revoked: 0 },
+        })
       })
     )
   })
@@ -111,7 +113,20 @@ describe('InvitationsPage', () => {
   it('generates new invitation successfully', async () => {
     server.use(
       http.post('http://localhost:3000/api/invitations', () => {
-        return HttpResponse.json({ data: { id: 4, code: 'new123', status: 'pending', created_at: '2024-01-03T00:00:00Z', invitation_url: 'http://localhost:3000/register?invitation_code=new123', recipient: null, expires_at: null } }, { status: 201 })
+        return HttpResponse.json(
+          {
+            data: {
+              id: 4,
+              code: 'new123',
+              status: 'pending',
+              created_at: '2024-01-03T00:00:00Z',
+              invitation_url: 'http://localhost:3000/register?invitation_code=new123',
+              recipient: null,
+              expires_at: null,
+            },
+          },
+          { status: 201 }
+        )
       })
     )
 
@@ -146,7 +161,9 @@ describe('InvitationsPage', () => {
     await user.click(screen.getByRole('button', { name: /generate invitation/i }))
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Failed to generate invitation. You may have reached your daily limit.')
+      expect(toast.error).toHaveBeenCalledWith(
+        'Failed to generate invitation. You may have reached your daily limit.'
+      )
     })
   })
 
@@ -205,14 +222,16 @@ describe('InvitationsPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/no invitations yet/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /generate your first invitation/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /generate your first invitation/i })
+      ).toBeInTheDocument()
     })
   })
 
   it('shows loading state while fetching invitations', async () => {
     server.use(
       http.get('http://localhost:3000/api/invitations', async () => {
-        await new Promise(resolve => setTimeout(resolve, 100))
+        await new Promise((resolve) => setTimeout(resolve, 100))
         return HttpResponse.json({ data: mockInvitations })
       })
     )
@@ -254,12 +273,14 @@ describe('InvitationsPage', () => {
 
     // Find the copy button for the pending invitation (should be enabled)
     const copyButtons = screen.getAllByTitle('Copy invitation link')
-    const enabledCopyButton = copyButtons.find(button => !(button as HTMLButtonElement).disabled)
+    const enabledCopyButton = copyButtons.find((button) => !(button as HTMLButtonElement).disabled)
     expect(enabledCopyButton).toBeDefined()
 
     await user.click(enabledCopyButton!)
 
-    expect(writeTextSpy).toHaveBeenCalledWith('http://localhost:3000/register?invitation_code=abc123xyz')
+    expect(writeTextSpy).toHaveBeenCalledWith(
+      'http://localhost:3000/register?invitation_code=abc123xyz'
+    )
     expect(toast.success).toHaveBeenCalledWith('Invitation link copied to clipboard!')
   })
-});
+})

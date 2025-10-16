@@ -14,7 +14,9 @@ export const MedicalNoteForm: React.FC<{
   serverError?: string | null
 }> = ({ initial, onSubmit, onCancel, submitting, serverError }) => {
   const [note, setNote] = useState<string>(initial?.note ?? '')
-  const [date, setDate] = useState<string>(initial?.record_date ?? new Date().toISOString().split('T')[0])
+  const [date, setDate] = useState<string>(
+    initial?.record_date ?? new Date().toISOString().split('T')[0]
+  )
   const [errors, setErrors] = useState<{ note?: string; record_date?: string }>({})
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,13 +34,21 @@ export const MedicalNoteForm: React.FC<{
   }
 
   return (
-    <form onSubmit={(e) => { void handleSubmit(e) }} className="space-y-4" noValidate>
+    <form
+      onSubmit={(e) => {
+        void handleSubmit(e)
+      }}
+      className="space-y-4"
+      noValidate
+    >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
           <label className="block text-sm font-medium">Note</label>
           <textarea
             value={note}
-            onChange={(e) => { setNote(e.target.value) }}
+            onChange={(e) => {
+              setNote(e.target.value)
+            }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
             placeholder="e.g., Vaccination: Rabies"
             rows={3}
@@ -50,12 +60,12 @@ export const MedicalNoteForm: React.FC<{
           <input
             type="date"
             value={date}
-            onChange={(e) => { setDate(e.target.value) }}
+            onChange={(e) => {
+              setDate(e.target.value)
+            }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
           />
-          {errors.record_date && (
-            <p className="text-xs text-red-600 mt-1">{errors.record_date}</p>
-          )}
+          {errors.record_date && <p className="text-xs text-red-600 mt-1">{errors.record_date}</p>}
         </div>
       </div>
       {serverError && <p className="text-sm text-red-600">{serverError}</p>}

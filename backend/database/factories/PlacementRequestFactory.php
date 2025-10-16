@@ -24,7 +24,7 @@ class PlacementRequestFactory extends Factory
             'expires_at' => $this->faker->dateTimeBetween('+1 week', '+1 month'),
             'start_date' => $this->faker->dateTimeBetween('now', '+1 week'),
             'end_date' => $this->faker->dateTimeBetween('+1 month', '+2 months'),
-            'is_active' => true,
+
         ];
     }
 }

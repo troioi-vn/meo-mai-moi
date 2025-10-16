@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\PetTypeStatus;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,7 +21,7 @@ class PetTypeFactory extends Factory
             'name' => $this->faker->word,
             'slug' => $this->faker->slug,
             'description' => $this->faker->sentence,
-            'is_active' => true,
+            'status' => PetTypeStatus::ACTIVE,
             'is_system' => false,
             'display_order' => 0,
             'placement_requests_allowed' => false,

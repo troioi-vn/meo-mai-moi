@@ -92,24 +92,27 @@ export function usePlacementResponse({
             ? parseFloat(price)
             : undefined,
       })
-    toast.success('Placement response submitted successfully!')
-  if (onSuccess) onSuccess()
-  onClose()
-  setShowConfirmation(false)
+      toast.success('Placement response submitted successfully!')
+      if (onSuccess) onSuccess()
+      onClose()
+      setShowConfirmation(false)
     } catch (error) {
       console.error('Failed to submit placement response', error)
       const anyErr = error as {
-        response?: { status?: number; data?: { message?: string; errors?: Record<string, string[]> } }
+        response?: {
+          status?: number
+          data?: { message?: string; errors?: Record<string, string[]> }
+        }
       }
       if (anyErr.response?.status === 409) {
-  toast.info("You've already responded to this request. We'll refresh the page.")
-  if (onSuccess) onSuccess()
-  onClose()
-  setShowConfirmation(false)
+        toast.info("You've already responded to this request. We'll refresh the page.")
+        if (onSuccess) onSuccess()
+        onClose()
+        setShowConfirmation(false)
       } else if (anyErr.response?.status === 422) {
         const errs = anyErr.response.data?.errors ?? {}
         const joined = Object.values(errs).flat().join('\n')
-        const msg = joined !== '' ? joined : anyErr.response.data?.message ?? 'Validation error.'
+        const msg = joined !== '' ? joined : (anyErr.response.data?.message ?? 'Validation error.')
         toast.error(msg)
       } else {
         toast.error('Failed to submit placement response.')

@@ -33,7 +33,7 @@ class SendVaccinationReminders extends Command
             ->with([
                 'pet' => function ($q) {
                     $q->with('user', 'petType');
-                }
+                },
             ]);
 
         $count = 0;
@@ -58,7 +58,7 @@ class SendVaccinationReminders extends Command
                 }
 
                 $owner = $pet->user;
-                if (!$owner instanceof \App\Models\User) {
+                if (! $owner instanceof \App\Models\User) {
                     continue;
                 }
 

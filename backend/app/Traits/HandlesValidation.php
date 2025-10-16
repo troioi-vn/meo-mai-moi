@@ -14,7 +14,7 @@ trait HandlesValidation
     {
         $rules = $required ? ['required', 'date'] : ['nullable', 'date'];
 
-        if (!$allowFuture) {
+        if (! $allowFuture) {
             $rules[] = 'before_or_equal:today';
         }
 
@@ -106,8 +106,8 @@ trait HandlesValidation
      */
     protected function validateModelExists(string $model, $id, string $field = 'id'): void
     {
-        if (!$model::where($field, $id)->exists()) {
-            abort(404, class_basename($model) . ' not found.');
+        if (! $model::where($field, $id)->exists()) {
+            abort(404, class_basename($model).' not found.');
         }
     }
 

@@ -95,7 +95,7 @@ class EmailConfigurationValidationTest extends TestCase
         $this->expectException(EmailConfigurationException::class);
 
         try {
-            $this->service->setActiveConfiguration('smtp', [
+            $this->service->createAndActivateConfiguration('smtp', [
                 'host' => '', // Missing required field
                 'port' => 587,
                 'username' => 'test@example.com',

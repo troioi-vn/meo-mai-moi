@@ -21,16 +21,18 @@ class PetType extends Model
         'name',
         'slug',
         'description',
-        'is_active',
+        'status',
         'is_system',
         'display_order',
         'placement_requests_allowed',
         'weight_tracking_allowed',
         'microchips_allowed',
+        // Backward-compatibility bridge for legacy references
+        'is_active',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'status' => \App\Enums\PetTypeStatus::class,
         'is_system' => 'boolean',
         'placement_requests_allowed' => 'boolean',
         'weight_tracking_allowed' => 'boolean',
@@ -68,11 +70,65 @@ class PetType extends Model
     }
 
     /**
+     * Check if the pet type is active.
+     */
+    public function isActive(): bool
+    {
+        return $this->status === \App\Enums\PetTypeStatus::ACTIVE;
+    }
+
+    /**
+     * Virtual attribute accessor for legacy `is_active` boolean.
+     */
+    public function getIsActiveAttribute(): bool
+    {
+        return $this->isActive();
+    }
+
+    /**
+     * Virtual attribute mutator mapping `is_active` writes to status enum.
+     */
+    public function setIsActiveAttribute($value): void
+    {
+        $bool = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+        if ($bool === null) {
+            $bool = ! empty($value);
+        }
+        $this->attributes['status'] = $bool
+            ? \App\Enums\PetTypeStatus::ACTIVE->value
+            : \App\Enums\PetTypeStatus::INACTIVE->value;
+    }
+
+    /**
+     * Mark the pet type as active.
+     */
+    public function markAsActive(): void
+    {
+        $this->update(['status' => \App\Enums\PetTypeStatus::ACTIVE]);
+    }
+
+    /**
+     * Mark the pet type as inactive.
+     */
+    public function markAsInactive(): void
+    {
+        $this->update(['status' => \App\Enums\PetTypeStatus::INACTIVE]);
+    }
+
+    /**
+     * Mark the pet type as archived.
+     */
+    public function markAsArchived(): void
+    {
+        $this->update(['status' => \App\Enums\PetTypeStatus::ARCHIVED]);
+    }
+
+    /**
      * Scope to get only active pet types
      */
     public function scopeActive($query)
     {
-        return $query->where('is_active', true);
+        return $query->where('status', \App\Enums\PetTypeStatus::ACTIVE);
     }
 
     /**

@@ -148,16 +148,14 @@ export const getPetTypes = async (): Promise<PetType[]> => {
   return response.data.data
 }
 
-
 // Weights API
 export const getPetWeights = async (
   petId: number,
   page = 1
 ): Promise<{ data: WeightHistory[]; links: unknown; meta: unknown }> => {
-  const response = await api.get<{ data: { data: WeightHistory[]; links: unknown; meta: unknown } }>(
-    `/pets/${String(petId)}/weights`,
-    { params: { page } }
-  )
+  const response = await api.get<{
+    data: { data: WeightHistory[]; links: unknown; meta: unknown }
+  }>(`/pets/${String(petId)}/weights`, { params: { page } })
   return response.data.data
 }
 
@@ -165,7 +163,10 @@ export const createWeight = async (
   petId: number,
   payload: { weight_kg: number; record_date: string }
 ): Promise<WeightHistory> => {
-  const response = await api.post<{ data: WeightHistory }>(`/pets/${String(petId)}/weights`, payload)
+  const response = await api.post<{ data: WeightHistory }>(
+    `/pets/${String(petId)}/weights`,
+    payload
+  )
   return response.data.data
 }
 
@@ -204,7 +205,10 @@ export const createMedicalNote = async (
   petId: number,
   payload: { note: string; record_date: string }
 ): Promise<MedicalNote> => {
-  const response = await api.post<{ data: MedicalNote }>(`/pets/${String(petId)}/medical-notes`, payload)
+  const response = await api.post<{ data: MedicalNote }>(
+    `/pets/${String(petId)}/medical-notes`,
+    payload
+  )
   return response.data.data
 }
 
@@ -232,10 +236,9 @@ export const getVaccinations = async (
   petId: number,
   page = 1
 ): Promise<{ data: VaccinationRecord[]; links: unknown; meta: unknown }> => {
-  const response = await api.get<{ data: { data: VaccinationRecord[]; links: unknown; meta: unknown } }>(
-    `/pets/${String(petId)}/vaccinations`,
-    { params: { page } }
-  )
+  const response = await api.get<{
+    data: { data: VaccinationRecord[]; links: unknown; meta: unknown }
+  }>(`/pets/${String(petId)}/vaccinations`, { params: { page } })
   return response.data.data
 }
 
@@ -283,7 +286,12 @@ export const deleteMicrochip = async (petId: number, microchipId: number): Promi
 
 export const createVaccination = async (
   petId: number,
-  payload: { vaccine_name: string; administered_at: string; due_at?: string | null; notes?: string | null }
+  payload: {
+    vaccine_name: string
+    administered_at: string
+    due_at?: string | null
+    notes?: string | null
+  }
 ): Promise<VaccinationRecord> => {
   const response = await api.post<{ data: VaccinationRecord }>(
     `/pets/${String(petId)}/vaccinations`,
@@ -295,7 +303,12 @@ export const createVaccination = async (
 export const updateVaccination = async (
   petId: number,
   recordId: number,
-  payload: Partial<{ vaccine_name: string; administered_at: string; due_at?: string | null; notes?: string | null }>
+  payload: Partial<{
+    vaccine_name: string
+    administered_at: string
+    due_at?: string | null
+    notes?: string | null
+  }>
 ): Promise<VaccinationRecord> => {
   const response = await api.put<{ data: VaccinationRecord }>(
     `/pets/${String(petId)}/vaccinations/${String(recordId)}`,
@@ -310,4 +323,3 @@ export const deleteVaccination = async (petId: number, recordId: number): Promis
   )
   return response.data.data
 }
-

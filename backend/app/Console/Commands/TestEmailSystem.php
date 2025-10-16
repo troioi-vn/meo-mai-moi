@@ -32,7 +32,7 @@ class TestEmailSystem extends Command
         $this->info('🧪 Testing Email System...');
 
         // Test basic mail configuration
-        $this->info('📧 Mail driver: ' . config('mail.default'));
+        $this->info('📧 Mail driver: '.config('mail.default'));
 
         // Test waitlist confirmation
         $waitlistEntry = WaitlistEntry::first();
@@ -44,12 +44,12 @@ class TestEmailSystem extends Command
                     'waitlistEntry' => $waitlistEntry,
                 ], function ($message) use ($waitlistEntry) {
                     $message->to($waitlistEntry->email)
-                            ->subject('You\'re on the waitlist for ' . config('app.name') . '!');
+                        ->subject('You\'re on the waitlist for '.config('app.name').'!');
                 });
 
                 $this->info('✅ Waitlist confirmation email sent successfully!');
             } catch (\Exception $e) {
-                $this->error('❌ Waitlist email failed: ' . $e->getMessage());
+                $this->error('❌ Waitlist email failed: '.$e->getMessage());
             }
         }
 
@@ -67,12 +67,12 @@ class TestEmailSystem extends Command
                     'invitationUrl' => $invitation->getInvitationUrl(),
                 ], function ($message) {
                     $message->to('test-invite@example.com')
-                            ->subject('You\'re invited to join ' . config('app.name') . '!');
+                        ->subject('You\'re invited to join '.config('app.name').'!');
                 });
 
                 $this->info('✅ Invitation email sent successfully!');
             } catch (\Exception $e) {
-                $this->error('❌ Invitation email failed: ' . $e->getMessage());
+                $this->error('❌ Invitation email failed: '.$e->getMessage());
             }
         }
 

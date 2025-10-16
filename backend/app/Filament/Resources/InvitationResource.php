@@ -128,7 +128,8 @@ class InvitationResource extends Resource
                     ->label('Age')
                     ->getStateUsing(function (Invitation $record): string {
                         $days = $record->created_at->diffInDays(now());
-                        return $days . ' day' . ($days !== 1 ? 's' : '');
+
+                        return $days.' day'.($days !== 1 ? 's' : '');
                     })
                     ->sortable(query: function (Builder $query, string $direction): Builder {
                         return $query->orderBy('created_at', $direction === 'asc' ? 'desc' : 'asc');
@@ -151,9 +152,8 @@ class InvitationResource extends Resource
                 Tables\Filters\Filter::make('expired')
                     ->label('Expired')
                     ->query(
-                        fn (Builder $query): Builder =>
-                        $query->where('expires_at', '<', now())
-                              ->where('status', 'pending')
+                        fn (Builder $query): Builder => $query->where('expires_at', '<', now())
+                            ->where('status', 'pending')
                     ),
 
                 Tables\Filters\Filter::make('recent')
@@ -212,6 +212,7 @@ class InvitationResource extends Resource
                                     ->body('No pending invitations were selected.')
                                     ->warning()
                                     ->send();
+
                                 return;
                             }
 

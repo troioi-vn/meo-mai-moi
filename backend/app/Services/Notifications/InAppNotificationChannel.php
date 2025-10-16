@@ -25,13 +25,13 @@ class InAppNotificationChannel implements NotificationChannelInterface
                 $resolved = app(NotificationTemplateResolver::class)->resolve($type, 'in_app');
                 if ($resolved) {
                     $render = app(NotificationTemplateRenderer::class)->render($resolved, $this->buildTemplateData($user, $type, $processedData), 'in_app');
-                    if (!empty($render['message'])) {
+                    if (! empty($render['message'])) {
                         $processedData['message'] = $render['message'];
                     }
-                    if (!empty($render['title'])) {
+                    if (! empty($render['title'])) {
                         $processedData['title'] = $render['title'];
                     }
-                    if (!empty($render['link'])) {
+                    if (! empty($render['link'])) {
                         $processedData['link'] = $render['link'];
                     }
                     // Attach template metadata for observability
@@ -50,6 +50,7 @@ class InAppNotificationChannel implements NotificationChannelInterface
             return true;
         } catch (\Exception $e) {
             $this->logError($user, $type, $e);
+
             return false;
         }
     }
@@ -76,7 +77,7 @@ class InAppNotificationChannel implements NotificationChannelInterface
             'message' => $data['message'] ?? '',
             'link' => $data['link'] ?? null,
             'data' => array_merge($data, ['channel' => $this->getChannelName()]),
-            'is_read' => false,
+
         ]);
     }
 

@@ -14,8 +14,6 @@ class ViewEmailConfiguration extends ViewRecord
 {
     protected static string $resource = EmailConfigurationResource::class;
 
-
-
     protected function getHeaderActions(): array
     {
         return [
@@ -24,7 +22,7 @@ class ViewEmailConfiguration extends ViewRecord
                 ->icon('heroicon-o-signal')
                 ->color('info')
                 ->action(function (): void {
-                    if (!$this->record instanceof \App\Models\EmailConfiguration) {
+                    if (! $this->record instanceof \App\Models\EmailConfiguration) {
                         return;
                     }
 
@@ -62,9 +60,9 @@ class ViewEmailConfiguration extends ViewRecord
                 ->label('Activate')
                 ->icon('heroicon-o-power')
                 ->color('success')
-                ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && ! $this->record->is_active && $this->record->isValid())
+                ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && ! $this->record->isActive() && $this->record->isValid())
                 ->action(function (): void {
-                    if (!$this->record instanceof \App\Models\EmailConfiguration) {
+                    if (! $this->record instanceof \App\Models\EmailConfiguration) {
                         return;
                     }
 
@@ -99,14 +97,14 @@ class ViewEmailConfiguration extends ViewRecord
                 ->label('Deactivate')
                 ->icon('heroicon-o-power')
                 ->color('warning')
-                ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && $this->record->is_active)
+                ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && $this->record->isActive())
                 ->action(function (): void {
-                    if (!$this->record instanceof \App\Models\EmailConfiguration) {
+                    if (! $this->record instanceof \App\Models\EmailConfiguration) {
                         return;
                     }
 
                     try {
-                        $this->record->update(['is_active' => false]);
+                        $this->record->deactivate();
 
                         Notification::make()
                             ->title('Configuration Deactivated')
@@ -130,7 +128,7 @@ class ViewEmailConfiguration extends ViewRecord
 
             Actions\EditAction::make(),
             Actions\DeleteAction::make()
-                ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && ! $this->record->is_active),
+                ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && ! $this->record->isActive()),
         ];
     }
 
@@ -150,15 +148,21 @@ class ViewEmailConfiguration extends ViewRecord
                             })
                             ->formatStateUsing(fn (string $state): string => strtoupper($state)),
 
-                        Infolists\Components\IconEntry::make('is_active')
-                            ->label('Active Status')
-                            ->boolean()
-                            ->trueIcon('heroicon-o-check-circle')
-                            ->falseIcon('heroicon-o-x-circle')
-                            ->trueColor('success')
-                            ->falseColor('gray'),
-
                         Infolists\Components\TextEntry::make('status')
+                            ->label('Active Status')
+                            ->badge()
+                            ->formatStateUsing(fn (\App\Enums\EmailConfigurationStatus $state): string => match($state) {
+                                \App\Enums\EmailConfigurationStatus::ACTIVE => 'Active',
+                                \App\Enums\EmailConfigurationStatus::INACTIVE => 'Inactive',
+                                \App\Enums\EmailConfigurationStatus::DRAFT => 'Draft',
+                            })
+                            ->color(fn (\App\Enums\EmailConfigurationStatus $state): string => match($state) {
+                                \App\Enums\EmailConfigurationStatus::ACTIVE => 'success',
+                                \App\Enums\EmailConfigurationStatus::INACTIVE => 'gray',
+                                \App\Enums\EmailConfigurationStatus::DRAFT => 'warning',
+                            }),
+
+                        Infolists\Components\TextEntry::make('validation_status')
                             ->label('Configuration Status')
                             ->badge()
                             ->color(fn (): string => ($this->record instanceof \App\Models\EmailConfiguration && $this->record->isValid()) ? 'success' : 'danger')
@@ -235,10 +239,10 @@ class ViewEmailConfiguration extends ViewRecord
                             ])
                             ->state(
                                 fn (): array => ($this->record instanceof \App\Models\EmailConfiguration) ? collect($this->record->validateConfig())
-                                ->map(fn (string $error) => ['error' => $error])
-                                ->toArray() : []
+                                    ->map(fn (string $error) => ['error' => $error])
+                                    ->toArray() : []
                             )
-                            ->visible(fn (): bool => ($this->record instanceof \App\Models\EmailConfiguration) && !$this->record->isValid()),
+                            ->visible(fn (): bool => ($this->record instanceof \App\Models\EmailConfiguration) && ! $this->record->isValid()),
 
                         Infolists\Components\TextEntry::make('validation_status')
                             ->label('Validation Status')
@@ -247,7 +251,7 @@ class ViewEmailConfiguration extends ViewRecord
                             ->state('All configuration requirements are met')
                             ->visible(fn (): bool => ($this->record instanceof \App\Models\EmailConfiguration) && $this->record->isValid()),
                     ])
-                    ->visible(fn (): bool => ($this->record instanceof \App\Models\EmailConfiguration) && (!empty($this->record->validateConfig()) || $this->record->isValid())),
+                    ->visible(fn (): bool => ($this->record instanceof \App\Models\EmailConfiguration) && (! empty($this->record->validateConfig()) || $this->record->isValid())),
             ]);
     }
 }

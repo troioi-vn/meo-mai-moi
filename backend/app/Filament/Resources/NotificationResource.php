@@ -79,9 +79,9 @@ class NotificationResource extends Resource
 
                 Forms\Components\Section::make('Delivery Status')
                     ->schema([
-                        Forms\Components\Toggle::make('is_read')
-                            ->label('Mark as Read')
-                            ->default(false),
+                        Forms\Components\DateTimePicker::make('read_at')
+                            ->label('Read At')
+                            ->nullable(),
 
                         Forms\Components\DateTimePicker::make('read_at')
                             ->label('Read At')
@@ -173,9 +173,10 @@ class NotificationResource extends Resource
                         default => ucfirst(str_replace('_', ' ', $state)),
                     }),
 
-                Tables\Columns\IconColumn::make('is_read')
+                Tables\Columns\IconColumn::make('read_at')
                     ->label('Read')
                     ->boolean()
+                    ->getStateUsing(fn ($record) => $record->isRead())
                     ->trueIcon('heroicon-o-check-circle')
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
@@ -300,24 +301,18 @@ class NotificationResource extends Resource
                     ->label('Mark as Read')
                     ->icon('heroicon-o-check')
                     ->color('success')
-                    ->visible(fn (Notification $record): bool => ! $record->is_read)
+                    ->visible(fn (Notification $record): bool => ! $record->isRead())
                     ->action(function (Notification $record): void {
-                        $record->update([
-                            'is_read' => true,
-                            'read_at' => now(),
-                        ]);
+                        $record->markAsRead();
                     }),
 
                 Tables\Actions\Action::make('mark_as_unread')
                     ->label('Mark as Unread')
                     ->icon('heroicon-o-x-mark')
                     ->color('warning')
-                    ->visible(fn (Notification $record): bool => $record->is_read)
+                    ->visible(fn (Notification $record): bool => $record->isRead())
                     ->action(function (Notification $record): void {
-                        $record->update([
-                            'is_read' => false,
-                            'read_at' => null,
-                        ]);
+                        $record->markAsUnread();
                     }),
 
                 Tables\Actions\Action::make('mark_as_delivered')
@@ -384,10 +379,7 @@ class NotificationResource extends Resource
                         ->action(function (Collection $records): void {
                             /** @var Collection<int, \App\Models\Notification> $records */
                             $records->each(function (\App\Models\Notification $record): void {
-                                $record->update([
-                                    'is_read' => true,
-                                    'read_at' => now(),
-                                ]);
+                                $record->markAsRead();
                             });
                         }),
 
@@ -399,10 +391,7 @@ class NotificationResource extends Resource
                         ->action(function (Collection $records): void {
                             /** @var Collection<int, \App\Models\Notification> $records */
                             $records->each(function (\App\Models\Notification $record): void {
-                                $record->update([
-                                    'is_read' => false,
-                                    'read_at' => null,
-                                ]);
+                                $record->markAsUnread();
                             });
                         }),
 
@@ -452,7 +441,7 @@ class NotificationResource extends Resource
                             $query = Notification::where('created_at', '<', $cutoffDate);
 
                             if ($data['read_only']) {
-                                $query->where('is_read', true);
+                                $query->read();
                             }
 
                             $query->delete();

@@ -57,7 +57,7 @@ export function AppRoutes() {
     <Routes>
       <Route path="/" element={<MainPage />} />
       <Route path="/requests" element={<RequestsPage />} />
-      
+
       {/* Pet routes */}
       <Route path="/pets/:id" element={<PetProfilePage />} />
       <Route
@@ -68,13 +68,13 @@ export function AppRoutes() {
           </PrivateRoute>
         }
       />
-      
+
       {/* Legacy cat route redirects */}
       <Route path="/cats/:id" element={<CatToPetRedirect />} />
       <Route path="/cats/:id/edit" element={<CatToPetEditRedirect />} />
       <Route path="/account/cats" element={<Navigate to="/account/pets" replace />} />
       <Route path="/account/cats/create" element={<Navigate to="/account/pets/create" replace />} />
-      
+
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -87,7 +87,7 @@ export function AppRoutes() {
           </PrivateRoute>
         }
       />
-      
+
       {/* Pet routes */}
       <Route
         path="/account/pets"

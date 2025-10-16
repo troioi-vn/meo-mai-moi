@@ -11,7 +11,7 @@ class CapabilityValidator
 
     public function __construct(?CapabilityChecker $checker = null)
     {
-        $this->checker = $checker ?? new CapabilityChecker();
+        $this->checker = $checker ?? new CapabilityChecker;
     }
 
     /**
@@ -19,7 +19,7 @@ class CapabilityValidator
      */
     public function ensure(Pet $pet, string $capability): void
     {
-        if (!$this->checker->supports($pet, $capability)) {
+        if (! $this->checker->supports($pet, $capability)) {
             $this->throwCapabilityException();
         }
     }

@@ -20,6 +20,7 @@ class AuthController extends Controller
     use ApiResponseTrait;
 
     private SettingsService $settingsService;
+
     private InvitationService $invitationService;
 
     public function __construct(SettingsService $settingsService, InvitationService $invitationService)
@@ -66,7 +67,6 @@ class AuthController extends Controller
      *         response=422,
      *         description="Validation error"
      *     ),
-     *
      *     @OA\Response(
      *         response=403,
      *         description="Registration not allowed (invite-only mode active without valid invitation)"
@@ -98,7 +98,7 @@ class AuthController extends Controller
             $invitation = $this->invitationService->validateInvitationCode($request->invitation_code);
 
             // If invite-only mode is enabled, invitation code must be valid
-            if ($isInviteOnlyEnabled && !$invitation) {
+            if ($isInviteOnlyEnabled && ! $invitation) {
                 return response()->json([
                     'message' => 'The given data was invalid.',
                     'errors' => ['invitation_code' => ['The provided invitation code is invalid or has expired.']],
@@ -122,7 +122,7 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         // For SPA authentication, only login if we have a session and it's not an API test
-        if ($request->hasSession() && !app()->runningInConsole() && !app()->runningUnitTests()) {
+        if ($request->hasSession() && ! app()->runningInConsole() && ! app()->runningUnitTests()) {
             try {
                 \Illuminate\Support\Facades\Auth::login($user);
                 $request->session()->regenerate();

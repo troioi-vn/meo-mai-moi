@@ -6,24 +6,25 @@ use App\Filament\Resources\NotificationTemplateResource\Pages;
 use App\Models\NotificationTemplate;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Resources\Resource;
-use Filament\Tables\Table;
-use Filament\Tables;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification as FilamentNotification;
+use Filament\Resources\Resource;
+use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
-use Illuminate\Support\HtmlString;
-use Illuminate\Support\Facades\Mail;
+use Filament\Tables\Table;
 use Illuminate\Mail\Mailable;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\HtmlString;
 
 class NotificationTemplateResource extends Resource
 {
     protected static ?string $model = NotificationTemplate::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-bell-alert';
+
     protected static ?string $navigationGroup = 'Notifications';
+
     protected static ?string $navigationLabel = 'Templates';
 
     public static function form(Form $form): Form
@@ -44,9 +45,11 @@ class NotificationTemplateResource extends Resource
                                     return [];
                                 }
                                 $label = \Illuminate\Support\Str::headline($slug)." ($key)";
+
                                 return [$key => $label];
                             })
                             ->toArray();
+
                         return $opts;
                     })
                     ->preload()
@@ -98,12 +101,14 @@ class NotificationTemplateResource extends Resource
                                     return 'No documented variables for this type yet.';
                                 }
                                 $lines = array_map(function ($v) {
-                                    $req = !empty($v['required']) ? ' (required)' : '';
+                                    $req = ! empty($v['required']) ? ' (required)' : '';
                                     $type = $v['type'] ?? 'mixed';
+
                                     return "- {{$v['name']}}: $type$req";
                                 }, $vars);
+
                                 return new HtmlString(nl2br(e(implode("\n", $lines))));
-                            })
+                            }),
                     ])->columnSpanFull(),
                 Forms\Components\Actions::make([
                     Forms\Components\Actions\Action::make('browse_triggers')
@@ -136,6 +141,7 @@ class NotificationTemplateResource extends Resource
                                 .'</tr></thead><tbody>'
                                 .$rows
                                 .'</tbody></table></div>';
+
                             return new HtmlString($html);
                         }),
                     Forms\Components\Actions\Action::make('preview')
@@ -166,12 +172,14 @@ class NotificationTemplateResource extends Resource
 
                             if ($channel === 'email') {
                                 $html = $rendered['html'] ?? '<em>(no html)</em>';
+
                                 return new HtmlString('<div style="max-height:70vh; overflow:auto; border:1px solid #e5e7eb; padding:12px; background:#fff">'.$html.'</div>');
                             }
 
                             $msg = e($rendered['message'] ?? '(no message)');
+
                             return new HtmlString('<div style="white-space:pre-wrap; max-height:70vh; overflow:auto; border:1px solid #e5e7eb; padding:12px; background:#fafafa">'.$msg.'</div>');
-                        })
+                        }),
                 ])->columnSpanFull(),
             ]);
     }
@@ -208,6 +216,7 @@ class NotificationTemplateResource extends Resource
                     ->label('Type')
                     ->options(function () {
                         $types = config('notification_templates.types');
+
                         // show slug for readability
                         return collect($types)->mapWithKeys(fn ($cfg, $key) => [$key => $cfg['slug'] ?? $key])->toArray();
                     }),
@@ -222,16 +231,7 @@ class NotificationTemplateResource extends Resource
                 Tables\Actions\Action::make('compare')
                     ->label('Compare with Default')
                     // Use a safe icon; if not present, omit the icon to avoid SvgNotFound.
-                    ->icon(function () {
-                        // Prefer heroicons outline arrows-right-left; if not available, return null
-                        $candidate = 'heroicon-o-arrows-right-left';
-                        try {
-                            // Blade UI will throw only when rendering; keeping defensive return here
-                            return $candidate;
-                        } catch (\Throwable $e) {
-                            return null;
-                        }
-                    })
+                    ->icon('heroicon-o-arrows-right-left')
                     ->modalHeading('Compare with Default')
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Close')
@@ -272,7 +272,7 @@ class NotificationTemplateResource extends Resource
                             }
                         }
 
-                        $tpl = fn($title, $content) => '<div style="width:48%; display:inline-block; vertical-align:top;">'
+                        $tpl = fn ($title, $content) => '<div style="width:48%; display:inline-block; vertical-align:top;">'
                             .'<div style="font-weight:600; margin-bottom:6px">'.e($title).'</div>'
                             .'<pre style="white-space:pre-wrap; border:1px solid #e5e7eb; padding:10px; background:#f8fafc; max-height:60vh; overflow:auto">'.e($content).'</pre>'
                             .'</div>';
@@ -319,9 +319,14 @@ class NotificationTemplateResource extends Resource
                         $html = $rendered['html'] ?? '<p>(no content)</p>';
 
                         // Send using a lightweight anonymous mailable
-                        Mail::to($user->email)->send(new class($subject, $html) extends Mailable {
+                        Mail::to($user->email)->send(new class($subject, $html) extends Mailable
+                        {
                             public function __construct(private string $s, private string $h) {}
-                            public function build(): self { return $this->subject($this->s)->html($this->h); }
+
+                            public function build(): self
+                            {
+                                return $this->subject($this->s)->html($this->h);
+                            }
                         });
 
                         FilamentNotification::make()->title('Test email sent')->body('Sent to your email address.')->success()->send();
@@ -362,6 +367,7 @@ class NotificationTemplateResource extends Resource
             if (is_file($path)) {
                 $set('engine', 'markdown');
                 $set('body_template', file_get_contents($path) ?: '');
+
                 return;
             }
         }
@@ -372,11 +378,13 @@ class NotificationTemplateResource extends Resource
             if (view()->exists($view)) {
                 $set('engine', 'blade');
                 $set('body_template', "@include('$view')");
+
                 return;
             }
             if (view()->exists($legacy)) {
                 $set('engine', 'blade');
                 $set('body_template', "@include('$legacy')");
+
                 return;
             }
         }

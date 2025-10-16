@@ -40,12 +40,16 @@ class WeightHistoryController extends Controller
      *     summary="List weight records for a pet",
      *     tags={"Pets"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(name="pet", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Parameter(name="page", in="query", required=false, @OA\Schema(type="integer")),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="List of weight records",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/WeightHistory")),
      *                 @OA\Property(property="links", type="object"),
@@ -53,10 +57,11 @@ class WeightHistoryController extends Controller
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(response=401, description="Unauthenticated"),
      *     @OA\Response(response=403, description="Forbidden")
      * )
-    */
+     */
     public function index(Request $request, Pet $pet)
     {
         $this->validatePetResource($request, $pet, 'weight');
@@ -72,14 +77,14 @@ class WeightHistoryController extends Controller
     }
 
     /**
-    * @OA\Post(
-    *     path="/api/pets/{pet}/weights",
-    *     summary="Add a new weight record for a pet",
-    *     tags={"Pets"},
-    *     security={{"sanctum": {}}},
-    *
-    *     @OA\Parameter(
-    *         name="pet",
+     * @OA\Post(
+     *     path="/api/pets/{pet}/weights",
+     *     summary="Add a new weight record for a pet",
+     *     tags={"Pets"},
+     *     security={{"sanctum": {}}},
+     *
+     *     @OA\Parameter(
+     *         name="pet",
      *         in="path",
      *         required=true,
      *         description="ID of the pet to add a weight record for",
@@ -98,11 +103,12 @@ class WeightHistoryController extends Controller
      *         )
      *     ),
      *
-    *     @OA\Response(
-    *         response=201,
-    *         description="Weight record created successfully",
-    *         @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/WeightHistory"))
-    *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Weight record created successfully",
+     *
+     *         @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/WeightHistory"))
+     *     ),
      *
      *     @OA\Response(
      *         response=422,
@@ -152,8 +158,10 @@ class WeightHistoryController extends Controller
      *     summary="Get a single weight record",
      *     tags={"Pets"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(name="pet", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Parameter(name="weight", in="path", required=true, @OA\Schema(type="integer")),
+     *
      *     @OA\Response(response=200, description="OK", @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/WeightHistory"))),
      *     @OA\Response(response=401, description="Unauthenticated"),
      *     @OA\Response(response=403, description="Forbidden"),
@@ -186,12 +194,16 @@ class WeightHistoryController extends Controller
      *     summary="Update a weight record",
      *     tags={"Pets"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(name="pet", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Parameter(name="weight", in="path", required=true, @OA\Schema(type="integer")),
+     *
      *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *
      *         @OA\Property(property="weight_kg", type="number", format="float"),
      *         @OA\Property(property="record_date", type="string", format="date")
      *     )),
+     *
      *     @OA\Response(response=200, description="OK", @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/WeightHistory"))),
      *     @OA\Response(response=401, description="Unauthenticated"),
      *     @OA\Response(response=403, description="Forbidden"),
@@ -247,8 +259,10 @@ class WeightHistoryController extends Controller
      *     summary="Delete a weight record",
      *     tags={"Pets"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(name="pet", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Parameter(name="weight", in="path", required=true, @OA\Schema(type="integer")),
+     *
      *     @OA\Response(response=200, description="Deleted", @OA\JsonContent(@OA\Property(property="data", type="boolean", example=true))),
      *     @OA\Response(response=401, description="Unauthenticated"),
      *     @OA\Response(response=403, description="Forbidden"),

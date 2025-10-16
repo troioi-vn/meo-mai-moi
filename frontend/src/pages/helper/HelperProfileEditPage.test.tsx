@@ -60,93 +60,96 @@ describe('HelperProfileEditPage', () => {
   it('shows loading state', () => {
     server.use(
       http.get(`http://localhost:3000/api/helper-profiles/${mockHelperProfile.id}`, () => {
-        return new Promise(() => {}); // Never resolve to keep it in loading state
+        return new Promise(() => {}) // Never resolve to keep it in loading state
       })
-    );
-    renderComponent();
-    expect(screen.getByText(/loading.../i)).toBeInTheDocument();
-  });
+    )
+    renderComponent()
+    expect(screen.getByText(/loading.../i)).toBeInTheDocument()
+  })
 
   it('shows error state', async () => {
     server.use(
       http.get(`http://localhost:3000/api/helper-profiles/${mockHelperProfile.id}`, () => {
-        return new HttpResponse(null, { status: 500 });
+        return new HttpResponse(null, { status: 500 })
       })
-    );
-    renderComponent();
+    )
+    renderComponent()
     await waitFor(() => {
-      expect(screen.getByText(/error fetching helper profile/i)).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByText(/error fetching helper profile/i)).toBeInTheDocument()
+    })
+  })
 
   it('updates a field and submits the form', async () => {
     server.use(
       http.post(`http://localhost:3000/api/helper-profiles/${mockHelperProfile.id}`, async () => {
-        return HttpResponse.json({ data: { id: mockHelperProfile.id } });
+        return HttpResponse.json({ data: { id: mockHelperProfile.id } })
       })
-    );
-    renderComponent();
+    )
+    renderComponent()
 
-    await screen.findByLabelText(/city/i);
+    await screen.findByLabelText(/city/i)
 
-    const cityInput = screen.getByLabelText(/city/i);
-    fireEvent.change(cityInput, { target: { value: 'New City' } });
+    const cityInput = screen.getByLabelText(/city/i)
+    fireEvent.change(cityInput, { target: { value: 'New City' } })
 
-    const submitButton = screen.getByRole('button', { name: /update/i });
-    fireEvent.click(submitButton);
+    const submitButton = screen.getByRole('button', { name: /update/i })
+    fireEvent.click(submitButton)
 
     await waitFor(() => {
-        expect(toast.success).toHaveBeenCalledWith('Helper profile updated successfully!');
-    });
-  });
+      expect(toast.success).toHaveBeenCalledWith('Helper profile updated successfully!')
+    })
+  })
 
   it('deletes a photo', async () => {
     server.use(
-      http.delete(`http://localhost:3000/api/helper-profiles/${mockHelperProfile.id}/photos/${mockHelperProfile.photos[0].id}`, () => {
-        return new HttpResponse(null, { status: 204 });
-      })
-    );
-    renderComponent();
+      http.delete(
+        `http://localhost:3000/api/helper-profiles/${mockHelperProfile.id}/photos/${mockHelperProfile.photos[0].id}`,
+        () => {
+          return new HttpResponse(null, { status: 204 })
+        }
+      )
+    )
+    renderComponent()
 
     await waitFor(() => {
-      expect(screen.getAllByAltText(/helper profile photo/i)).toHaveLength(2);
-    });
+      expect(screen.getAllByAltText(/helper profile photo/i)).toHaveLength(2)
+    })
 
-    const deleteButton = screen.getByLabelText(`Delete photo ${mockHelperProfile.photos[0].id}`);
-    fireEvent.click(deleteButton);
+    const deleteButton = screen.getByLabelText(`Delete photo ${mockHelperProfile.photos[0].id}`)
+    fireEvent.click(deleteButton)
 
     await waitFor(() => {
-        expect(toast.success).toHaveBeenCalledWith('Photo deleted successfully!');
-    });
-  });
+      expect(toast.success).toHaveBeenCalledWith('Photo deleted successfully!')
+    })
+  })
 
   it('deletes the profile', async () => {
     server.use(
       http.delete(`http://localhost:3000/api/helper-profiles/${mockHelperProfile.id}`, () => {
-        return new HttpResponse(null, { status: 204 });
+        return new HttpResponse(null, { status: 204 })
       })
-    );
-    renderComponent();
+    )
+    renderComponent()
 
     await waitFor(() => {
-      expect(screen.getByText(/edit helper profile/i)).toBeInTheDocument();
-    });
+      expect(screen.getByText(/edit helper profile/i)).toBeInTheDocument()
+    })
 
     // Find the main delete button (not photo delete buttons)
-    const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-    const profileDeleteButton = deleteButtons.find(btn => 
-      !btn.getAttribute('aria-label')?.includes('Delete photo')
-    );
-    expect(profileDeleteButton).toBeDefined();
-    fireEvent.click(profileDeleteButton!);
+    const deleteButtons = screen.getAllByRole('button', { name: /delete/i })
+    const profileDeleteButton = deleteButtons.find(
+      (btn) => !btn.getAttribute('aria-label')?.includes('Delete photo')
+    )
+    expect(profileDeleteButton).toBeDefined()
+    fireEvent.click(profileDeleteButton!)
 
-    await screen.findByText(/are you sure?/i);
-    
-    const confirmDeleteButton = screen.getByRole('button', { name: /delete/i });
-    fireEvent.click(confirmDeleteButton);
+    await screen.findByText(/are you sure?/i)
+
+    const confirmDeleteButton = screen.getByRole('button', { name: /delete/i })
+    fireEvent.click(confirmDeleteButton)
 
     await waitFor(() => {
-        expect(toast.success).toHaveBeenCalledWith('Helper profile deleted successfully!');
-    });
-  });
+      expect(toast.success).toHaveBeenCalledWith('Helper profile deleted successfully!')
+    })
+  })
 })

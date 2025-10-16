@@ -17,7 +17,7 @@ export const mockHelperProfile = {
   status: 'active',
   photos: [
     { id: 1, path: '/test-photo-1.jpg' },
-    { id: 2, path: '/test-photo-2.jpg' }
+    { id: 2, path: '/test-photo-2.jpg' },
   ],
 }
 

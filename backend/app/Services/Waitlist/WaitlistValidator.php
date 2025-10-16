@@ -14,7 +14,7 @@ class WaitlistValidator
     {
         $errors = [];
 
-        if (!$this->isValidEmailFormat($email)) {
+        if (! $this->isValidEmailFormat($email)) {
             $errors[] = 'Invalid email format';
         }
 

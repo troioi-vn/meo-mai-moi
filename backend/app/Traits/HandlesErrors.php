@@ -25,7 +25,7 @@ trait HandlesErrors
     protected function handleException(Throwable $e, string $defaultMessage = 'An error occurred', int $statusCode = 500): JsonResponse
     {
         // Log the exception for debugging
-        \Log::error('Controller exception: ' . $e->getMessage(), [
+        \Log::error('Controller exception: '.$e->getMessage(), [
             'exception' => $e,
             'trace' => $e->getTraceAsString(),
         ]);

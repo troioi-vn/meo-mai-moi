@@ -217,8 +217,8 @@ class FosterAssignmentResource extends Resource
                     ->label('Overdue Assignments')
                     ->query(
                         fn (Builder $query): Builder => $query->where('status', 'active')
-                        ->whereNotNull('expected_end_date')
-                        ->whereDate('expected_end_date', '<', now())
+                            ->whereNotNull('expected_end_date')
+                            ->whereDate('expected_end_date', '<', now())
                     )
                     ->toggle(),
             ])

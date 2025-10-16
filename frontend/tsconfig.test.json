@@ -24,7 +24,7 @@
   },
   "include": [
     "src/**/*.test.ts",
-    "src/**/*.test.tsx", 
+    "src/**/*.test.tsx",
     "src/**/*.behavior.test.ts",
     "src/**/*.behavior.test.tsx",
     "src/**/*.integration.test.ts",

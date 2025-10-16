@@ -59,15 +59,15 @@ export const useCreatePetForm = (petId?: string) => {
   const navigate = useNavigate()
   const isEditMode = Boolean(petId)
   const [isLoadingPet, setIsLoadingPet] = useState(isEditMode)
-  
+
   const [formData, setFormData] = useState<CreatePetFormData>({
     name: '',
     breed: '',
-  birthday: '',
-  birthday_year: '',
-  birthday_month: '',
-  birthday_day: '',
-  birthday_precision: 'unknown',
+    birthday: '',
+    birthday_year: '',
+    birthday_month: '',
+    birthday_day: '',
+    birthday_precision: 'unknown',
     location: '',
     description: '',
     pet_type_id: null,
@@ -86,9 +86,9 @@ export const useCreatePetForm = (petId?: string) => {
         const types = await getPetTypes()
         setPetTypes(types)
         // Default to cat if available
-        const catType = types.find(t => t.slug === 'cat')
+        const catType = types.find((t) => t.slug === 'cat')
         if (catType) {
-          setFormData(prev => ({ ...prev, pet_type_id: catType.id }))
+          setFormData((prev) => ({ ...prev, pet_type_id: catType.id }))
         }
       } catch (err) {
         console.error('Failed to load pet types:', err)
@@ -150,7 +150,7 @@ export const useCreatePetForm = (petId?: string) => {
     } else {
       value = valueOrEvent
     }
-    
+
     setFormData((prev) => ({ ...prev, [field]: value as never }))
     // Clear field error when user starts typing (only for non-photo fields)
     if (field !== 'photos' && errors[field as keyof FormErrors]) {
@@ -169,7 +169,10 @@ export const useCreatePetForm = (petId?: string) => {
     }
     // Precision-specific validation
     if (formData.birthday_precision === 'day') {
-      if (!formData.birthday.trim() && (!formData.birthday_year || !formData.birthday_month || !formData.birthday_day)) {
+      if (
+        !formData.birthday.trim() &&
+        (!formData.birthday_year || !formData.birthday_month || !formData.birthday_day)
+      ) {
         newErrors.birthday = VALIDATION_MESSAGES.REQUIRED_BIRTHDAY_COMPONENTS
       }
     } else if (formData.birthday_precision === 'month') {
@@ -208,7 +211,7 @@ export const useCreatePetForm = (petId?: string) => {
     setIsSubmitting(true)
     try {
       let pet: Pet
-      
+
       // Build payload with precision rules
       const payload: import('@/api/pets').CreatePetPayload = {
         name: formData.name,
@@ -227,10 +230,10 @@ export const useCreatePetForm = (petId?: string) => {
           payload.birthday_day = Number(formData.birthday_day)
         }
       } else if (formData.birthday_precision === 'month') {
-  payload.birthday_year = formData.birthday_year ? Number(formData.birthday_year) : null
-  payload.birthday_month = formData.birthday_month ? Number(formData.birthday_month) : null
+        payload.birthday_year = formData.birthday_year ? Number(formData.birthday_year) : null
+        payload.birthday_month = formData.birthday_month ? Number(formData.birthday_month) : null
       } else if (formData.birthday_precision === 'year') {
-  payload.birthday_year = formData.birthday_year ? Number(formData.birthday_year) : null
+        payload.birthday_year = formData.birthday_year ? Number(formData.birthday_year) : null
       }
 
       if (isEditMode && petId) {
@@ -249,10 +252,10 @@ export const useCreatePetForm = (petId?: string) => {
           }
         }
       }
-      
+
       const successMessage = isEditMode ? 'Pet updated successfully' : SUCCESS_MESSAGES.PET_CREATED
       toast.success(successMessage)
-      
+
       if (isEditMode && petId) {
         void navigate(`/pets/${petId}`)
       } else {
@@ -285,4 +288,3 @@ export const useCreatePetForm = (petId?: string) => {
     handleCancel,
   }
 }
-

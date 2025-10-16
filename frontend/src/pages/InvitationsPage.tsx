@@ -3,26 +3,26 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { 
-  getUserInvitations, 
-  generateInvitation, 
-  revokeInvitation, 
+import {
+  getUserInvitations,
+  generateInvitation,
+  revokeInvitation,
   getInvitationStats,
-  type Invitation, 
-  type InvitationStats 
+  type Invitation,
+  type InvitationStats,
 } from '@/api/invite-system'
-import { 
-  Plus, 
-  Copy, 
-  Trash2, 
-  Users, 
-  Clock, 
-  CheckCircle, 
+import {
+  Plus,
+  Copy,
+  Trash2,
+  Users,
+  Clock,
+  CheckCircle,
   XCircle,
   Mail,
   Calendar,
   Loader2,
-  RefreshCw
+  RefreshCw,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import InvitationQRCode from '@/components/InvitationQRCode'
@@ -41,7 +41,7 @@ export default function InvitationsPage() {
       setError(null)
       const [invitationsData, statsData] = await Promise.all([
         getUserInvitations(),
-        getInvitationStats()
+        getInvitationStats(),
       ])
       setInvitations(invitationsData)
       setStats(statsData)
@@ -61,8 +61,10 @@ export default function InvitationsPage() {
     try {
       setIsGenerating(true)
       const newInvitation = await generateInvitation()
-      setInvitations(prev => [newInvitation, ...prev])
-      setStats(prev => prev ? { ...prev, total: prev.total + 1, pending: prev.pending + 1 } : null)
+      setInvitations((prev) => [newInvitation, ...prev])
+      setStats((prev) =>
+        prev ? { ...prev, total: prev.total + 1, pending: prev.pending + 1 } : null
+      )
       toast.success('Invitation generated successfully!')
     } catch (err) {
       console.error('Failed to generate invitation:', err)
@@ -85,18 +87,18 @@ export default function InvitationsPage() {
   const handleRevokeInvitation = async (invitation: Invitation) => {
     try {
       await revokeInvitation(invitation.id)
-      setInvitations(prev => 
-        prev.map(inv => 
-          inv.id === invitation.id 
-            ? { ...inv, status: 'revoked' as const }
-            : inv
-        )
+      setInvitations((prev) =>
+        prev.map((inv) => (inv.id === invitation.id ? { ...inv, status: 'revoked' as const } : inv))
       )
-      setStats(prev => prev ? { 
-        ...prev, 
-        pending: prev.pending - 1, 
-        revoked: prev.revoked + 1 
-      } : null)
+      setStats((prev) =>
+        prev
+          ? {
+              ...prev,
+              pending: prev.pending - 1,
+              revoked: prev.revoked + 1,
+            }
+          : null
+      )
       toast.success('Invitation revoked successfully')
     } catch (err) {
       console.error('Failed to revoke invitation:', err)
@@ -111,9 +113,9 @@ export default function InvitationsPage() {
       expired: { variant: 'destructive' as const, icon: XCircle, color: 'text-red-600' },
       revoked: { variant: 'outline' as const, icon: XCircle, color: 'text-gray-600' },
     }
-    
+
     const { variant, icon: Icon, color } = variants[status]
-    
+
     return (
       <Badge variant={variant} className="flex items-center gap-1">
         <Icon className={`h-3 w-3 ${color}`} />
@@ -180,7 +182,7 @@ export default function InvitationsPage() {
               <div className="text-2xl font-bold">{stats.total}</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Pending</CardTitle>
@@ -190,7 +192,7 @@ export default function InvitationsPage() {
               <div className="text-2xl font-bold">{stats.pending}</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Accepted</CardTitle>
@@ -200,7 +202,7 @@ export default function InvitationsPage() {
               <div className="text-2xl font-bold">{stats.accepted}</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Expired</CardTitle>
@@ -210,7 +212,7 @@ export default function InvitationsPage() {
               <div className="text-2xl font-bold">{stats.expired}</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Revoked</CardTitle>
@@ -228,10 +230,9 @@ export default function InvitationsPage() {
         <CardHeader>
           <CardTitle>Your Invitations</CardTitle>
           <CardDescription>
-            {invitations.length === 0 
-              ? "You haven't sent any invitations yet." 
-              : `You have sent ${String(invitations.length)} invitation${invitations.length === 1 ? '' : 's'}.`
-            }
+            {invitations.length === 0
+              ? "You haven't sent any invitations yet."
+              : `You have sent ${String(invitations.length)} invitation${invitations.length === 1 ? '' : 's'}.`}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -240,7 +241,9 @@ export default function InvitationsPage() {
               <Mail className="h-12 w-12 text-muted-foreground mx-auto" />
               <div>
                 <p className="text-lg font-medium">No invitations yet</p>
-                <p className="text-muted-foreground">Generate your first invitation to get started!</p>
+                <p className="text-muted-foreground">
+                  Generate your first invitation to get started!
+                </p>
               </div>
               <Button onClick={() => void handleGenerateInvitation()} disabled={isGenerating}>
                 <Plus className="h-4 w-4 mr-2" />
@@ -262,20 +265,20 @@ export default function InvitationsPage() {
                           {invitation.code.slice(0, 8)}...
                         </span>
                       </div>
-                      
+
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
                           Created {format(new Date(invitation.created_at), 'MMM d, yyyy')}
                         </div>
-                        
+
                         {invitation.recipient && (
                           <div className="flex items-center gap-1">
                             <Users className="h-3 w-3" />
                             Accepted by {invitation.recipient.name}
                           </div>
                         )}
-                        
+
                         {invitation.expires_at && (
                           <div className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
@@ -284,7 +287,7 @@ export default function InvitationsPage() {
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-2 sm:flex-shrink-0">
                       <Button
                         variant="outline"
@@ -295,20 +298,20 @@ export default function InvitationsPage() {
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
-                      
+
                       {invitation.status === 'pending' && (
                         <>
-                          <InvitationShare 
+                          <InvitationShare
                             invitationUrl={invitation.invitation_url}
                             invitationCode={invitation.code}
                           />
-                          <InvitationQRCode 
+                          <InvitationQRCode
                             invitationUrl={invitation.invitation_url}
                             invitationCode={invitation.code}
                           />
                         </>
                       )}
-                      
+
                       {invitation.status === 'pending' && (
                         <Button
                           variant="outline"

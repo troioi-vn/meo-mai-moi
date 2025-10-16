@@ -10,12 +10,14 @@ import { AuthProvider } from '@/contexts/AuthContext'
 
 // Mock the API function
 vi.mock('@/api/pets', () => ({
-  getMyPetsSections: vi.fn() as unknown as MockedFunction<() => Promise<{
-    owned: Pet[]
-    fostering_active: Pet[]
-    fostering_past: Pet[]
-    transferred_away: Pet[]
-  }>>,
+  getMyPetsSections: vi.fn() as unknown as MockedFunction<
+    () => Promise<{
+      owned: Pet[]
+      fostering_active: Pet[]
+      fostering_past: Pet[]
+      transferred_away: Pet[]
+    }>
+  >,
 }))
 
 // Mock the PetCard component
@@ -63,7 +65,12 @@ const mockDogType: PetType = {
   updated_at: '2023-01-01T00:00:00Z',
 }
 
-const createMockPet = (id: number, name: string, status: 'active' | 'deceased' = 'active', petType: PetType = mockCatType): Pet => ({
+const createMockPet = (
+  id: number,
+  name: string,
+  status: 'active' | 'deceased' = 'active',
+  petType: PetType = mockCatType
+): Pet => ({
   id,
   name,
   breed: 'Test Breed',
@@ -109,12 +116,14 @@ const renderWithProviders = (component: React.ReactElement, user = mockUser) => 
 }
 
 describe('MyPetsPage', () => {
-  const mockGetMyPetsSections = getMyPetsSections as unknown as MockedFunction<() => Promise<{
-    owned: Pet[]
-    fostering_active: Pet[]
-    fostering_past: Pet[]
-    transferred_away: Pet[]
-  }>>
+  const mockGetMyPetsSections = getMyPetsSections as unknown as MockedFunction<
+    () => Promise<{
+      owned: Pet[]
+      fostering_active: Pet[]
+      fostering_past: Pet[]
+      transferred_away: Pet[]
+    }>
+  >
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -148,7 +157,9 @@ describe('MyPetsPage', () => {
     renderWithProviders(<MyPetsPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('Failed to fetch your pets. Please try again later.')).toBeInTheDocument()
+      expect(
+        screen.getByText('Failed to fetch your pets. Please try again later.')
+      ).toBeInTheDocument()
     })
   })
 

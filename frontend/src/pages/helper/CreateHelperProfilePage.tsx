@@ -11,7 +11,7 @@ import { PetTypesSelector } from '@/components/helper/PetTypesSelector'
 const CreateHelperProfilePage: React.FC = () => {
   const { formData, errors, isSubmitting, updateField, handleSubmit, handleCancel } =
     useHelperProfileForm(undefined, {})
-  
+
   const [petTypes, setPetTypes] = useState<PetType[]>([])
   const [loadingPetTypes, setLoadingPetTypes] = useState(true)
 
@@ -44,7 +44,9 @@ const CreateHelperProfilePage: React.FC = () => {
           <PetTypesSelector
             petTypes={petTypes}
             selectedPetTypeIds={formData.pet_type_ids}
-            onChangePetTypeIds={(ids) => { updateField('pet_type_ids')(ids); }}
+            onChangePetTypeIds={(ids) => {
+              updateField('pet_type_ids')(ids)
+            }}
             loading={loadingPetTypes}
             label="Pet Types Available for Placement Requests"
             error={errors.pet_type_ids}
@@ -59,10 +61,21 @@ const CreateHelperProfilePage: React.FC = () => {
           />
 
           <div className="flex gap-4">
-            <Button type="submit" aria-label="Create Helper Profile" disabled={isSubmitting || loadingPetTypes}>
+            <Button
+              type="submit"
+              aria-label="Create Helper Profile"
+              disabled={isSubmitting || loadingPetTypes}
+            >
               {isSubmitting ? 'Creating...' : 'Create'}
             </Button>
-            <Button type="button" variant="outline" onClick={() => { handleCancel() }} disabled={isSubmitting}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                handleCancel()
+              }}
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
           </div>

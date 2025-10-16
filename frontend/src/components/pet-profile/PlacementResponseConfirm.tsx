@@ -22,10 +22,11 @@ export function PlacementResponseConfirm({
     <div className="py-4">
       <p>Are you sure you want to submit this response?</p>
       <p>Pet: {petName}</p>
+      <p>Helper Profile: {selected ? `${selected.city ?? ''}, ${selected.state ?? ''}` : ''}</p>
       <p>
-        Helper Profile: {selected ? `${selected.city ?? ''}, ${selected.state ?? ''}` : ''}
+        Relationship Type:{' '}
+        {requestedRelationshipType ? requestedRelationshipType.replace('_', ' ').toUpperCase() : ''}
       </p>
-  <p>Relationship Type: {requestedRelationshipType ? requestedRelationshipType.replace('_', ' ').toUpperCase() : ''}</p>
       {requestedRelationshipType === 'fostering' && (
         <>
           <p>Fostering Type: {fosteringType.toUpperCase()}</p>

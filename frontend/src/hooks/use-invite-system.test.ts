@@ -38,8 +38,8 @@ describe('useInviteSystem', () => {
       http.get('http://localhost:3000/api/settings/public', () => {
         return HttpResponse.json({
           data: {
-            invite_only_enabled: false
-          }
+            invite_only_enabled: false,
+          },
         })
       })
     )
@@ -58,8 +58,8 @@ describe('useInviteSystem', () => {
       http.get('http://localhost:3000/api/settings/public', () => {
         return HttpResponse.json({
           data: {
-            invite_only_enabled: true
-          }
+            invite_only_enabled: true,
+          },
         })
       })
     )
@@ -74,7 +74,7 @@ describe('useInviteSystem', () => {
   })
 
   it('returns invite-only-with-code mode when invite-only is enabled with valid invitation code', async () => {
-    mockSearchParams.get.mockImplementation((key) => 
+    mockSearchParams.get.mockImplementation((key) =>
       key === 'invitation_code' ? 'valid-code-123' : null
     )
 
@@ -82,8 +82,8 @@ describe('useInviteSystem', () => {
       http.get('http://localhost:3000/api/settings/public', () => {
         return HttpResponse.json({
           data: {
-            invite_only_enabled: true
-          }
+            invite_only_enabled: true,
+          },
         })
       }),
       http.post('http://localhost:3000/api/invitations/validate', () => {
@@ -91,10 +91,10 @@ describe('useInviteSystem', () => {
           data: {
             valid: true,
             inviter: {
-              name: 'John Doe'
+              name: 'John Doe',
             },
-            expires_at: null
-          }
+            expires_at: null,
+          },
         })
       })
     )
@@ -111,7 +111,7 @@ describe('useInviteSystem', () => {
   })
 
   it('returns invite-only-no-code mode when invitation code is invalid', async () => {
-    mockSearchParams.get.mockImplementation((key) => 
+    mockSearchParams.get.mockImplementation((key) =>
       key === 'invitation_code' ? 'invalid-code' : null
     )
 
@@ -119,14 +119,17 @@ describe('useInviteSystem', () => {
       http.get('http://localhost:3000/api/settings/public', () => {
         return HttpResponse.json({
           data: {
-            invite_only_enabled: true
-          }
+            invite_only_enabled: true,
+          },
         })
       }),
       http.post('http://localhost:3000/api/invitations/validate', () => {
-        return HttpResponse.json({
-          error: 'Invalid or expired invitation code'
-        }, { status: 404 })
+        return HttpResponse.json(
+          {
+            error: 'Invalid or expired invitation code',
+          },
+          { status: 404 }
+        )
       })
     )
 
@@ -137,12 +140,14 @@ describe('useInviteSystem', () => {
       expect(result.current.invitationCode).toBe('invalid-code') // Code is preserved
       expect(result.current.invitationValidation).toBeNull()
       expect(result.current.isLoading).toBe(false)
-      expect(result.current.error).toBe('Invalid or expired invitation code. You can join the waitlist instead.')
+      expect(result.current.error).toBe(
+        'Invalid or expired invitation code. You can join the waitlist instead.'
+      )
     })
   })
 
   it('allows invitation code in open registration mode', async () => {
-    mockSearchParams.get.mockImplementation((key) => 
+    mockSearchParams.get.mockImplementation((key) =>
       key === 'invitation_code' ? 'valid-code-123' : null
     )
 
@@ -150,8 +155,8 @@ describe('useInviteSystem', () => {
       http.get('http://localhost:3000/api/settings/public', () => {
         return HttpResponse.json({
           data: {
-            invite_only_enabled: false
-          }
+            invite_only_enabled: false,
+          },
         })
       }),
       http.post('http://localhost:3000/api/invitations/validate', () => {
@@ -159,10 +164,10 @@ describe('useInviteSystem', () => {
           data: {
             valid: true,
             inviter: {
-              name: 'Jane Doe'
+              name: 'Jane Doe',
             },
-            expires_at: null
-          }
+            expires_at: null,
+          },
         })
       })
     )
@@ -181,9 +186,12 @@ describe('useInviteSystem', () => {
   it('handles settings fetch error', async () => {
     server.use(
       http.get('http://localhost:3000/api/settings/public', () => {
-        return HttpResponse.json({
-          error: 'Server error'
-        }, { status: 500 })
+        return HttpResponse.json(
+          {
+            error: 'Server error',
+          },
+          { status: 500 }
+        )
       })
     )
 
@@ -197,7 +205,7 @@ describe('useInviteSystem', () => {
   })
 
   it('handles invitation validation error gracefully', async () => {
-    mockSearchParams.get.mockImplementation((key) => 
+    mockSearchParams.get.mockImplementation((key) =>
       key === 'invitation_code' ? 'error-code' : null
     )
 
@@ -205,14 +213,17 @@ describe('useInviteSystem', () => {
       http.get('http://localhost:3000/api/settings/public', () => {
         return HttpResponse.json({
           data: {
-            invite_only_enabled: true
-          }
+            invite_only_enabled: true,
+          },
         })
       }),
       http.post('http://localhost:3000/api/invitations/validate', () => {
-        return HttpResponse.json({
-          error: 'Server error'
-        }, { status: 500 })
+        return HttpResponse.json(
+          {
+            error: 'Server error',
+          },
+          { status: 500 }
+        )
       })
     )
 
@@ -223,18 +234,20 @@ describe('useInviteSystem', () => {
       expect(result.current.invitationCode).toBe('error-code') // Code is still set
       expect(result.current.invitationValidation).toBeNull()
       expect(result.current.isLoading).toBe(false)
-      expect(result.current.error).toBe('Invalid or expired invitation code. You can join the waitlist instead.')
+      expect(result.current.error).toBe(
+        'Invalid or expired invitation code. You can join the waitlist instead.'
+      )
     })
   })
 
   it('shows loading state initially', () => {
     server.use(
       http.get('http://localhost:3000/api/settings/public', async () => {
-        await new Promise(resolve => setTimeout(resolve, 100))
+        await new Promise((resolve) => setTimeout(resolve, 100))
         return HttpResponse.json({
           data: {
-            invite_only_enabled: false
-          }
+            invite_only_enabled: false,
+          },
         })
       })
     )
@@ -249,9 +262,12 @@ describe('useInviteSystem', () => {
   it('clears error when clearError is called', async () => {
     server.use(
       http.get('http://localhost:3000/api/settings/public', () => {
-        return HttpResponse.json({
-          error: 'Server error'
-        }, { status: 500 })
+        return HttpResponse.json(
+          {
+            error: 'Server error',
+          },
+          { status: 500 }
+        )
       })
     )
 

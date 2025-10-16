@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\PetTypeStatus;
 use App\Models\PetType;
 use Illuminate\Database\Seeder;
 
@@ -21,7 +22,7 @@ class PetTypeSeeder extends Seeder
                 'id' => 1,
                 'name' => 'Cat',
                 'description' => 'Domestic cats and felines',
-                'is_active' => true,
+                'status' => PetTypeStatus::ACTIVE,
                 'is_system' => true,
                 'display_order' => 0,
             ]
@@ -39,7 +40,7 @@ class PetTypeSeeder extends Seeder
                 'id' => 2,
                 'name' => 'Dog',
                 'description' => 'Domestic dogs and canines',
-                'is_active' => true,
+                'status' => PetTypeStatus::ACTIVE,
                 'is_system' => true,
                 'display_order' => 1,
             ]

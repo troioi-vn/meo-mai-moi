@@ -98,8 +98,8 @@ class NotificationResourceTest extends TestCase
     public function test_notification_scopes()
     {
         // Create test notifications
-        $unreadNotification = Notification::factory()->create(['is_read' => false]);
-        $readNotification = Notification::factory()->create(['is_read' => true]);
+        $unreadNotification = Notification::factory()->create(['read_at' => null]);
+        $readNotification = Notification::factory()->create(['read_at' => now()]);
         $deliveredNotification = Notification::factory()->create(['delivered_at' => now()]);
         $failedNotification = Notification::factory()->create(['failed_at' => now()]);
         $pendingNotification = Notification::factory()->create([

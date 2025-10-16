@@ -15,8 +15,11 @@ class PetMicrochipsFeatureTest extends TestCase
     use RefreshDatabase;
 
     private User $owner;
+
     private Pet $pet;
+
     private User $admin;
+
     private User $otherUser;
 
     protected function setUp(): void

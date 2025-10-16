@@ -36,11 +36,11 @@ const WaitlistForm: React.FC<WaitlistFormProps> = ({ onSuccess }) => {
       if (err instanceof AxiosError) {
         const axiosError = err as AxiosError<ApiError>
         console.error('Waitlist error:', axiosError.response?.data ?? axiosError)
-        
+
         // Handle specific API error responses
         if (axiosError.response?.data) {
           const responseData = axiosError.response.data
-          
+
           // Check for error field first (our API format)
           if ('error' in responseData && typeof responseData.error === 'string') {
             setError(responseData.error)
@@ -75,10 +75,12 @@ const WaitlistForm: React.FC<WaitlistFormProps> = ({ onSuccess }) => {
         <div className="flex justify-center">
           <CheckCircle className="h-16 w-16 text-green-500" />
         </div>
-        <h2 className="text-2xl font-bold text-green-700 dark:text-green-400">You're on the waitlist! 🎉</h2>
+        <h2 className="text-2xl font-bold text-green-700 dark:text-green-400">
+          You're on the waitlist! 🎉
+        </h2>
         <p className="text-muted-foreground">
-          We've sent a confirmation email to <strong>{email}</strong>. 
-          You'll be among the first to know when we have space available!
+          We've sent a confirmation email to <strong>{email}</strong>. You'll be among the first to
+          know when we have space available!
         </p>
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 text-sm text-green-800 dark:text-green-200">
           <p className="font-medium">What happens next?</p>
@@ -94,7 +96,12 @@ const WaitlistForm: React.FC<WaitlistFormProps> = ({ onSuccess }) => {
 
   return (
     <div className="space-y-6">
-      <form onSubmit={(e) => { void handleSubmit(e) }} className="space-y-4">
+      <form
+        onSubmit={(e) => {
+          void handleSubmit(e)
+        }}
+        className="space-y-4"
+      >
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3">
             <p className="text-red-800 text-sm">{error}</p>

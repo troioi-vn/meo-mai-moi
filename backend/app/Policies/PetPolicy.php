@@ -25,7 +25,7 @@ class PetPolicy
     public function view(?User $user, Pet $pet): bool
     {
         // Public pets with active placement requests are visible to everyone.
-        if ($pet->placementRequests()->where('is_active', true)->exists()) {
+        if ($pet->placementRequests()->where('status', \App\Enums\PlacementRequestStatus::OPEN)->exists()) {
             return true;
         }
 

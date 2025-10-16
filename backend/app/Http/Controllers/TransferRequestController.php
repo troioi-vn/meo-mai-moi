@@ -284,7 +284,7 @@ class TransferRequestController extends Controller
 
             if ($placement) {
                 // Fulfill the placement request
-                $placement->is_active = false;
+                $placement->markAsFulfilled();
                 // If status enum supports it, set to fulfilled
                 if (in_array('status', $placement->getFillable(), true)) {
                     $placement->status = PlacementRequestStatus::FULFILLED;

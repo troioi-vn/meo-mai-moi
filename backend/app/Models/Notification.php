@@ -25,7 +25,6 @@ class Notification extends Model
     protected $fillable = [
         'user_id',
         'message',
-        'is_read',
         'link',
         'type',
         'data',
@@ -36,7 +35,6 @@ class Notification extends Model
     ];
 
     protected $casts = [
-        'is_read' => 'boolean',
         'data' => 'array',
         'read_at' => 'datetime',
         'delivered_at' => 'datetime',
@@ -108,7 +106,7 @@ class Notification extends Model
      */
     public function scopeUnread($query)
     {
-        return $query->where('is_read', false);
+        return $query->whereNull('read_at');
     }
 
     /**
@@ -116,7 +114,7 @@ class Notification extends Model
      */
     public function scopeRead($query)
     {
-        return $query->where('is_read', true);
+        return $query->whereNotNull('read_at');
     }
 
     /**
@@ -141,5 +139,33 @@ class Notification extends Model
     public function scopePending($query)
     {
         return $query->whereNull('delivered_at')->whereNull('failed_at');
+    }
+
+    /**
+     * Check if the notification has been read.
+     */
+    public function isRead(): bool
+    {
+        return $this->read_at !== null;
+    }
+
+    /**
+     * Mark the notification as read.
+     */
+    public function markAsRead(): void
+    {
+        if (! $this->isRead()) {
+            $this->update(['read_at' => now()]);
+        }
+    }
+
+    /**
+     * Mark the notification as unread.
+     */
+    public function markAsUnread(): void
+    {
+        if ($this->isRead()) {
+            $this->update(['read_at' => null]);
+        }
     }
 }

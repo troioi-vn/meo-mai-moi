@@ -32,6 +32,7 @@ class BulkInvitationProcessor
     {
         try {
             $invitation = $inviteCallback($email, $inviter);
+
             return $this->buildSuccessResult($email, $invitation);
         } catch (\Exception $e) {
             return $this->buildErrorResult($email, $e);

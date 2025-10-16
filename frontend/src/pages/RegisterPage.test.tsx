@@ -30,14 +30,14 @@ vi.mock('sonner', async () => {
 describe('RegisterPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    
+
     // Mock the settings endpoint to return open registration by default
     server.use(
       http.get('http://localhost:3000/api/settings/public', () => {
         return HttpResponse.json({
           data: {
-            invite_only_enabled: false
-          }
+            invite_only_enabled: false,
+          },
         })
       })
     )
@@ -63,8 +63,8 @@ describe('RegisterPage', () => {
       http.get('http://localhost:3000/api/settings/public', () => {
         return HttpResponse.json({
           data: {
-            invite_only_enabled: true
-          }
+            invite_only_enabled: true,
+          },
         })
       })
     )
@@ -72,11 +72,13 @@ describe('RegisterPage', () => {
     renderWithRouter(<RegisterPage />, { route: '/register' })
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { level: 1, name: /join the waitlist/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { level: 1, name: /join the waitlist/i })
+      ).toBeInTheDocument()
       expect(screen.getByText(/we're currently invite-only/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /join waitlist/i })).toBeInTheDocument()
-      
+
       // Should not show registration form fields
       expect(screen.queryByLabelText(/name/i)).not.toBeInTheDocument()
       expect(screen.queryByLabelText(/^Password$/i)).not.toBeInTheDocument()
@@ -89,8 +91,8 @@ describe('RegisterPage', () => {
       http.get('http://localhost:3000/api/settings/public', () => {
         return HttpResponse.json({
           data: {
-            invite_only_enabled: true
-          }
+            invite_only_enabled: true,
+          },
         })
       }),
       http.post('http://localhost:3000/api/invitations/validate', () => {
@@ -98,10 +100,10 @@ describe('RegisterPage', () => {
           data: {
             valid: true,
             inviter: {
-              name: 'John Doe'
+              name: 'John Doe',
             },
-            expires_at: null
-          }
+            expires_at: null,
+          },
         })
       })
     )
@@ -109,7 +111,9 @@ describe('RegisterPage', () => {
     renderWithRouter(<RegisterPage />, { route: '/register?invitation_code=valid-code-123' })
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /complete your registration/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { name: /complete your registration/i })
+      ).toBeInTheDocument()
       expect(screen.getByText(/you have a valid invitation/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/name/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
@@ -165,11 +169,11 @@ describe('RegisterPage', () => {
     // Mock a delayed response
     server.use(
       http.get('http://localhost:3000/api/settings/public', async () => {
-        await new Promise(resolve => setTimeout(resolve, 100))
+        await new Promise((resolve) => setTimeout(resolve, 100))
         return HttpResponse.json({
           data: {
-            invite_only_enabled: false
-          }
+            invite_only_enabled: false,
+          },
         })
       })
     )

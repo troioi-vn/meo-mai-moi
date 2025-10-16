@@ -3,7 +3,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, userEvent } from '@/test-utils'
 import InvitationShare from './InvitationShare'
 
-
 vi.mock('sonner', async () => {
   const actual = await vi.importActual('sonner')
   return {
@@ -18,7 +17,7 @@ vi.mock('sonner', async () => {
 describe('InvitationShare', () => {
   const defaultProps = {
     invitationUrl: 'http://localhost:3000/register?invitation_code=abc123',
-    invitationCode: 'abc123'
+    invitationCode: 'abc123',
   }
 
   beforeEach(() => {
@@ -104,7 +103,7 @@ describe('InvitationShare', () => {
     render(<InvitationShare {...defaultProps} />)
 
     await userEvent.click(screen.getByRole('button', { name: /share invitation/i }))
-    
+
     await waitFor(() => {
       expect(screen.getByDisplayValue(defaultProps.invitationUrl)).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /copy message/i })).toBeInTheDocument()

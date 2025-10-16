@@ -6,9 +6,15 @@ import { createMedicalNote, deleteMedicalNote, getMedicalNotes, updateMedicalNot
 const server = setupServer(...handlers)
 
 describe('medical notes api client', () => {
-  beforeAll(() => { server.listen({ onUnhandledRequest: 'error' }) })
-  afterEach(() => { server.resetHandlers() })
-  afterAll(() => { server.close() })
+  beforeAll(() => {
+    server.listen({ onUnhandledRequest: 'error' })
+  })
+  afterEach(() => {
+    server.resetHandlers()
+  })
+  afterAll(() => {
+    server.close()
+  })
 
   it('lists medical notes with pagination envelope', async () => {
     const res = await getMedicalNotes(1)

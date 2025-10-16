@@ -20,12 +20,12 @@ class CreateEmailConfiguration extends CreateRecord
     {
         $record = $this->record;
 
-        if (!$record instanceof \App\Models\EmailConfiguration) {
+        if (! $record instanceof \App\Models\EmailConfiguration) {
             return;
         }
 
         // If this configuration is set to active, activate it properly
-        if ($record->is_active) {
+        if ($record->isActive()) {
             try {
                 $record->activate();
 

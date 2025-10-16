@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import QRCode from 'qrcode'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { QrCode, Download } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -29,37 +35,39 @@ const InvitationQRCode: React.FC<InvitationQRCodeProps> = ({ invitationUrl, invi
 
       setIsLoading(true)
       setError(null)
-      
+
       const canvas = canvasRef.current
-      
+
       // Clear the canvas first
       const ctx = canvas.getContext('2d')
       if (ctx) {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
       }
-      
+
       // Generate QR code
       QRCode.toCanvas(canvas, invitationUrl, {
         width: 256,
         margin: 2,
         color: {
           dark: '#000000',
-          light: '#FFFFFF'
+          light: '#FFFFFF',
         },
-        errorCorrectionLevel: 'M'
+        errorCorrectionLevel: 'M',
       })
-      .then(() => {
-        setIsLoading(false)
-      })
-      .catch((error: unknown) => {
-        console.error('Failed to generate QR code:', error)
-        setError('Failed to generate QR code')
-        setIsLoading(false)
-        toast.error('Failed to generate QR code')
-      })
+        .then(() => {
+          setIsLoading(false)
+        })
+        .catch((error: unknown) => {
+          console.error('Failed to generate QR code:', error)
+          setError('Failed to generate QR code')
+          setIsLoading(false)
+          toast.error('Failed to generate QR code')
+        })
     })
 
-    return () => { cancelAnimationFrame(rafId); }
+    return () => {
+      cancelAnimationFrame(rafId)
+    }
   }, [invitationUrl, isOpen])
 
   const handleDownload = () => {
@@ -95,10 +103,10 @@ const InvitationQRCode: React.FC<InvitationQRCodeProps> = ({ invitationUrl, invi
         <div className="space-y-4">
           <div className="flex justify-center">
             <div className="relative w-64 h-64">
-              <canvas 
-                ref={canvasRef} 
+              <canvas
+                ref={canvasRef}
                 className="border rounded-lg"
-                role="img" 
+                role="img"
                 aria-label="Invitation QR Code"
                 width={256}
                 height={256}
@@ -116,9 +124,9 @@ const InvitationQRCode: React.FC<InvitationQRCodeProps> = ({ invitationUrl, invi
                 <div className="absolute inset-0 border rounded-lg flex items-center justify-center bg-background z-10">
                   <div className="text-center space-y-2">
                     <p className="text-sm text-red-600">{error}</p>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => {
                         setError(null)
                         setIsOpen(false)
@@ -138,19 +146,11 @@ const InvitationQRCode: React.FC<InvitationQRCodeProps> = ({ invitationUrl, invi
             <p className="text-sm text-muted-foreground">
               Share this QR code for easy access to your invitation
             </p>
-            <p className="text-xs font-mono bg-muted p-2 rounded">
-              {invitationCode}
-            </p>
-            <p className="text-xs text-muted-foreground break-all">
-              {invitationUrl}
-            </p>
+            <p className="text-xs font-mono bg-muted p-2 rounded">{invitationCode}</p>
+            <p className="text-xs text-muted-foreground break-all">{invitationUrl}</p>
           </div>
           <div className="flex gap-2">
-            <Button 
-              onClick={handleDownload} 
-              className="flex-1"
-              disabled={isLoading || !!error}
-            >
+            <Button onClick={handleDownload} className="flex-1" disabled={isLoading || !!error}>
               <Download className="h-4 w-4 mr-2" />
               Download QR Code
             </Button>

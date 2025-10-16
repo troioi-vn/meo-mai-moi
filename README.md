@@ -1,6 +1,22 @@
-# Meo Mai Moi — Pet Rehoming Platform Engine
+# Meo Mai Moi — Cat Care Management Platform
 
-Connecting owners, fosters, and adopters to help pets find new homes. Built with Laravel, React, and PostgreSQL.
+Helping cat (and other pets) owners manage with health tracking, vaccination reminders, weight monitoring, and care scheduling. Built with Laravel, React, and PostgreSQL.
+
+## What is Meo Mai Moi?
+
+Meo Mai Moi is a comprehensive pet care platform designed to help cat owners (and other pet owners) stay on top of their companions' health and wellbeing. Many pet owners struggle to remember vaccination schedules, track weight changes, or maintain organized health records - especially when managing multiple pets.
+
+**The Problem**: Pet owners often rely on scattered notes, calendar reminders, or memory to track their pets' health needs. This leads to missed vaccinations, unnoticed weight trends, and disorganized medical records that are crucial during vet visits.
+
+**Our Solution**: A centralized platform that makes pet care management effortless with automated reminders, visual health tracking, and comprehensive record keeping.
+
+**Who It's For**:
+- **Dedicated Cat Owners**: Our primary focus - people who want the best care for their feline companions
+- **Multi-Pet Households**: Families managing several cats or mixed pets with individual care needs  
+- **Health-Conscious Pet Parents**: Owners who want to track trends and catch health issues early
+- **Busy Pet Owners**: People who need automated reminders and organized records
+
+*Future expansion: Pet rehoming and adoption features planned after establishing core cat care functionality.*
 
 Dockerized • Laravel 12 • React 19 • Vite 7 • PostgreSQL 14 • Filament 3
 
@@ -73,11 +89,23 @@ cd frontend && npm run lint && npm run typecheck
 
 For architecture context, see `GEMINI.md` (AI Agent Guide).
 
-## Admin Panel Features (highlights)
+## Core Features (MVP Focus)
 
-- Pet management: profiles, photos, medical records, status filters, pet type support
-- Weight tracking: per-pet weight history with owner CRUD; enable per pet type via Pet Types → "Weight tracking allowed"
-- Users & helpers: verification, suspension, moderation tools
-- Placement & transfer: request workflow, foster assignments, handovers
-- Reviews moderation: hide/flag, bulk actions, filters
+**Cat Care Management**:
+- **Cat Profiles**: Comprehensive profiles with photos, breed info, and personality traits
+- **Health Tracking**: Medical records, vaccination schedules, and appointment reminders
+- **Weight Monitoring**: Regular weight tracking with visual charts and health insights
+- **Care Scheduling**: Feeding schedules, medication reminders, and routine care tasks
+- **Veterinary Integration**: Vet contact management and appointment history
+- **Multi-Cat Support**: Manage multiple cats with individual profiles and care plans
+
+**Admin Panel Features**:
+- Cat profile management with health record oversight
+- Weight tracking analytics and health trend monitoring
+- Vaccination reminder system with email notifications
+- User account management and verification
+- Care schedule templates and customization
+- Health alert configuration and monitoring
 - RBAC: Spatie Permission + Filament Shield
+
+*Future Features*: Pet rehoming, foster networks, and adoption workflows will be added after establishing the core cat care platform.

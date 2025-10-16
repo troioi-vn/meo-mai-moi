@@ -12,8 +12,11 @@ use Illuminate\Support\Facades\Log;
 class NotificationService
 {
     private EmailNotificationChannel $emailChannel;
+
     private InAppNotificationChannel $inAppChannel;
+
     private InAppNotificationChannel $fallbackChannel;
+
     private EmailConfigurationStatusBuilder $configStatusBuilder;
 
     public function __construct(
@@ -23,8 +26,8 @@ class NotificationService
     ) {
         $emailConfigService = $emailConfigurationService ?? app(EmailConfigurationService::class);
 
-        $this->emailChannel = $emailChannel ?? new EmailNotificationChannel();
-        $this->inAppChannel = $inAppChannel ?? new InAppNotificationChannel();
+        $this->emailChannel = $emailChannel ?? new EmailNotificationChannel;
+        $this->inAppChannel = $inAppChannel ?? new InAppNotificationChannel;
         $this->fallbackChannel = new InAppNotificationChannel(true);
         $this->configStatusBuilder = new EmailConfigurationStatusBuilder($emailConfigService);
     }
@@ -56,7 +59,7 @@ class NotificationService
 
     private function handleFallbackIfNeeded(User $user, string $type, array $data, $preferences, bool $emailSent, bool $inAppSent): void
     {
-        if ($preferences->email_enabled && !$emailSent && !$inAppSent) {
+        if ($preferences->email_enabled && ! $emailSent && ! $inAppSent) {
             $this->logFallbackAttempt($user, $type);
             $this->fallbackChannel->send($user, $type, $data);
         }

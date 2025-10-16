@@ -26,29 +26,26 @@ class ViewNotification extends ViewRecord
                 ->label('Mark as Read')
                 ->icon('heroicon-o-check')
                 ->color('success')
-                ->visible(fn (): bool => ($notification = $this->getNotification()) && !$notification->is_read)
+                ->visible(fn (): bool => ($notification = $this->getNotification()) && ! $notification->isRead())
                 ->action(function (): void {
                     $notification = $this->getNotification();
-                    if (!$notification) {
+                    if (! $notification) {
                         return;
                     }
 
-                    $notification->update([
-                        'is_read' => true,
-                        'read_at' => now(),
-                    ]);
+                    $notification->markAsRead();
 
-                    $this->refreshFormData(['is_read', 'read_at']);
+                    $this->refreshFormData(['read_at']);
                 }),
 
             Actions\Action::make('mark_as_delivered')
                 ->label('Mark as Delivered')
                 ->icon('heroicon-o-paper-airplane')
                 ->color('success')
-                ->visible(fn (): bool => ($notification = $this->getNotification()) && !$notification->delivered_at)
+                ->visible(fn (): bool => ($notification = $this->getNotification()) && ! $notification->delivered_at)
                 ->action(function (): void {
                     $notification = $this->getNotification();
-                    if (!$notification) {
+                    if (! $notification) {
                         return;
                     }
 
@@ -69,7 +66,7 @@ class ViewNotification extends ViewRecord
                 ->requiresConfirmation()
                 ->action(function (): void {
                     $notification = $this->getNotification();
-                    if (!$notification) {
+                    if (! $notification) {
                         return;
                     }
 
@@ -175,9 +172,10 @@ class ViewNotification extends ViewRecord
                                 default => ucfirst(str_replace('_', ' ', $state)),
                             }),
 
-                        Infolists\Components\IconEntry::make('is_read')
+                        Infolists\Components\IconEntry::make('read_at')
                             ->label('Read Status')
                             ->boolean()
+                            ->getStateUsing(fn ($record) => $record->isRead())
                             ->trueIcon('heroicon-o-check-circle')
                             ->falseIcon('heroicon-o-x-circle')
                             ->trueColor('success')

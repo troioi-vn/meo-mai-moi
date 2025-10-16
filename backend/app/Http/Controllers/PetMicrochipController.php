@@ -39,12 +39,16 @@ class PetMicrochipController extends Controller
      *     summary="List microchips for a pet",
      *     tags={"Pets"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(name="pet", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Parameter(name="page", in="query", required=false, @OA\Schema(type="integer")),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="List of microchips",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/PetMicrochip")),
      *                 @OA\Property(property="links", type="object"),
@@ -52,6 +56,7 @@ class PetMicrochipController extends Controller
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(response=401, description="Unauthenticated"),
      *     @OA\Response(response=403, description="Forbidden"),
      *     @OA\Response(response=404, description="Not found"),
@@ -110,6 +115,7 @@ class PetMicrochipController extends Controller
      *         description="Microchip record created successfully",
      *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="data", ref="#/components/schemas/PetMicrochip")
      *         )
      *     ),
@@ -148,13 +154,17 @@ class PetMicrochipController extends Controller
      *     summary="Get a specific microchip record",
      *     tags={"Pets"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(name="pet", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Parameter(name="microchip", in="path", required=true, @OA\Schema(type="integer")),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="OK",
+     *
      *         @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/PetMicrochip"))
      *     ),
+     *
      *     @OA\Response(response=401, description="Unauthenticated"),
      *     @OA\Response(response=403, description="Forbidden"),
      *     @OA\Response(response=404, description="Not found")
@@ -174,21 +184,28 @@ class PetMicrochipController extends Controller
      *     summary="Update a microchip record",
      *     tags={"Pets"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(name="pet", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Parameter(name="microchip", in="path", required=true, @OA\Schema(type="integer")),
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="chip_number", type="string"),
      *             @OA\Property(property="issuer", type="string"),
      *             @OA\Property(property="implanted_at", type="string", format="date")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="OK",
+     *
      *         @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/PetMicrochip"))
      *     ),
+     *
      *     @OA\Response(response=401, description="Unauthenticated"),
      *     @OA\Response(response=403, description="Forbidden"),
      *     @OA\Response(response=404, description="Not found"),
@@ -224,13 +241,17 @@ class PetMicrochipController extends Controller
      *     summary="Delete a microchip record",
      *     tags={"Pets"},
      *     security={{"sanctum": {}}},
+     *
      *     @OA\Parameter(name="pet", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Parameter(name="microchip", in="path", required=true, @OA\Schema(type="integer")),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Deleted",
+     *
      *         @OA\JsonContent(@OA\Property(property="data", type="boolean", example=true))
      *     ),
+     *
      *     @OA\Response(response=401, description="Unauthenticated"),
      *     @OA\Response(response=403, description="Forbidden"),
      *     @OA\Response(response=404, description="Not found")

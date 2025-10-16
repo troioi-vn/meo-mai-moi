@@ -225,34 +225,33 @@ const PetProfilePage: React.FC = () => {
             />
           )}
         </div>
-
         {/* Pet Profile Content */}
-          <PetDetails
-            pet={pet}
-            onDeletePlacementRequest={handleDeletePlacementRequest}
-            onCancelTransferRequest={handleCancelMyTransferRequest}
-            onTransferResponseSuccess={refresh}
-            onOpenPlacementRequest={handleOpenModal}
-          />        {/* Weight history (owner) */}
+        <PetDetails
+          pet={pet}
+          onDeletePlacementRequest={handleDeletePlacementRequest}
+          onCancelTransferRequest={handleCancelMyTransferRequest}
+          onTransferResponseSuccess={refresh}
+          onOpenPlacementRequest={handleOpenModal}
+        />{' '}
+        {/* Weight history (owner) */}
         {petSupportsCapability(pet.pet_type, 'weight') && (
-          <WeightHistorySection petId={pet.id} canEdit={Boolean(pet.viewer_permissions?.can_edit)} />
+          <WeightHistorySection
+            petId={pet.id}
+            canEdit={Boolean(pet.viewer_permissions?.can_edit)}
+          />
         )}
-
         {/* Vaccinations below weight history */}
         {petSupportsCapability(pet.pet_type, 'vaccinations') && (
           <VaccinationsSection petId={pet.id} canEdit={Boolean(pet.viewer_permissions?.can_edit)} />
         )}
-
         {/* Medical notes (owner) */}
         {petSupportsCapability(pet.pet_type, 'medical') && (
           <MedicalNotesSection petId={pet.id} canEdit={Boolean(pet.viewer_permissions?.can_edit)} />
         )}
-
         {/* Microchips (owner) */}
         {petSupportsCapability(pet.pet_type, 'microchips') && (
           <MicrochipsSection petId={pet.id} canEdit={Boolean(pet.viewer_permissions?.can_edit)} />
         )}
-
         {/* Responses Section */}
         {pet.viewer_permissions?.can_edit && hasPendingTransfers(pet) && (
           <div className="mt-8">
@@ -274,7 +273,6 @@ const PetProfilePage: React.FC = () => {
             ))}
           </div>
         )}
-
         {pet.viewer_permissions?.can_edit && hasAcceptedTransfers(pet) && (
           <div className="mt-8">
             <h2 className="text-2xl font-bold mb-4">Accepted Transfer</h2>
@@ -292,7 +290,6 @@ const PetProfilePage: React.FC = () => {
             ))}
           </div>
         )}
-
         {/* Schedule Handover modal after acceptance */}
         {handoverForTransferId != null && (
           <ScheduleHandoverModal
@@ -306,7 +303,6 @@ const PetProfilePage: React.FC = () => {
             }}
           />
         )}
-
         <PlacementRequestModal
           petId={pet.id}
           isOpen={isModalOpen}
@@ -315,7 +311,6 @@ const PetProfilePage: React.FC = () => {
             refresh()
           }}
         />
-
         {/* Owner-only helper profile preview */}
         <HelperProfileDialog
           open={profileModalOpen}
@@ -335,7 +330,6 @@ const PetProfilePage: React.FC = () => {
             }
           }}
         />
-
         {/* Helper-facing handover confirmation panel */}
         {!pet.viewer_permissions?.can_edit &&
           myAcceptedTransferId != null &&
@@ -384,7 +378,6 @@ const PetProfilePage: React.FC = () => {
               </div>
             </div>
           )}
-
         {/* Meeting notice (confirmed) for both roles with cancel */}
         {(() => {
           const entries = Object.values(existingHandoverByTransfer)

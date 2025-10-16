@@ -20,6 +20,7 @@ class EditUser extends EditRecord
                 $data['password'] = $getUser->password;
             }
         }
+
         return $data;
     }
 
@@ -30,7 +31,7 @@ class EditUser extends EditRecord
 
     protected function getActions(): array
     {
-        !config('filament-users.impersonate') ?: $ret[] = Impersonate::make()->record($this->getRecord());
+        ! config('filament-users.impersonate') ?: $ret[] = Impersonate::make()->record($this->getRecord());
         $ret[] = DeleteAction::make();
 
         return $ret;

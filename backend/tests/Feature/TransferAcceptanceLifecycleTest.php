@@ -22,7 +22,6 @@ class TransferAcceptanceLifecycleTest extends TestCase
         $placement = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
-            'is_active' => true,
             'status' => \App\Enums\PlacementRequestStatus::OPEN,
         ]);
 
@@ -80,7 +79,7 @@ class TransferAcceptanceLifecycleTest extends TestCase
         $this->assertEquals($helper->id, $pet->fresh()->user_id);
 
         // Placement fulfilled and inactive
-        $this->assertFalse((bool) $placement->fresh()->is_active);
+        $this->assertFalse($placement->fresh()->isActive());
         $this->assertEquals(\App\Enums\PlacementRequestStatus::FULFILLED, $placement->fresh()->status);
 
         // Other pending auto-rejected
@@ -95,7 +94,6 @@ class TransferAcceptanceLifecycleTest extends TestCase
         $placement = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
-            'is_active' => true,
             'status' => \App\Enums\PlacementRequestStatus::OPEN,
         ]);
 

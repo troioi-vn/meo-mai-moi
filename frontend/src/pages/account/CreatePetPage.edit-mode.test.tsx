@@ -17,9 +17,20 @@ const mockPet: Partial<Pet> = {
   location: 'Hanoi',
   description: 'A lovely cat',
   status: 'active' as const,
-  pet_type: { id: 1, name: 'Cat', slug: 'cat', description: '', is_active: true, is_system: true, display_order: 1, placement_requests_allowed: true, created_at: '', updated_at: '' },
+  pet_type: {
+    id: 1,
+    name: 'Cat',
+    slug: 'cat',
+    description: '',
+    is_active: true,
+    is_system: true,
+    display_order: 1,
+    placement_requests_allowed: true,
+    created_at: '',
+    updated_at: '',
+  },
   // Cast to any to include photos array used by deriveImageUrl utility
-  ...( { photos: [{ url: 'https://example.com/photo.jpg' }] } as any ),
+  ...({ photos: [{ url: 'https://example.com/photo.jpg' }] } as any),
   viewer_permissions: { can_edit: true },
   user_id: 1,
 }
@@ -27,7 +38,9 @@ const mockPet: Partial<Pet> = {
 const mockUser = { id: 1, name: 'Test User', email: 'test@example.com' }
 
 function renderEditPage() {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  })
   return render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
@@ -47,16 +60,32 @@ describe('CreatePetPage edit mode enhancements', () => {
     vi.clearAllMocks()
     vi.mocked(petsApi.getPet).mockResolvedValue(mockPet as Pet)
     vi.mocked(petsApi.getPetTypes).mockResolvedValue([
-      { id: 1, name: 'Cat', slug: 'cat', description: '', is_active: true, is_system: true, display_order: 1, placement_requests_allowed: true, created_at: '', updated_at: '' },
+      {
+        id: 1,
+        name: 'Cat',
+        slug: 'cat',
+        description: '',
+        is_active: true,
+        is_system: true,
+        display_order: 1,
+        placement_requests_allowed: true,
+        created_at: '',
+        updated_at: '',
+      },
     ])
-    vi.mocked(petsApi.updatePetStatus).mockImplementation(async (_id, status) => ({ ...(mockPet as Pet), status: status as 'active' | 'lost' | 'deceased' | 'deleted' }))
+    vi.mocked(petsApi.updatePetStatus).mockImplementation(async (_id, status) => ({
+      ...(mockPet as Pet),
+      status: status as 'active' | 'lost' | 'deceased' | 'deleted',
+    }))
   })
 
   it('shows current photo preview in edit mode', async () => {
     window.history.pushState({}, 'Edit Pet', '/pets/123/edit')
     renderEditPage()
 
-    await waitFor(() => expect(screen.getByRole('heading', { name: /edit pet/i })).toBeInTheDocument())
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: /edit pet/i })).toBeInTheDocument()
+    )
     const img = await screen.findByTestId('current-photo-preview')
     expect(img).toHaveAttribute('src', 'https://example.com/photo.jpg')
   })
@@ -64,7 +93,9 @@ describe('CreatePetPage edit mode enhancements', () => {
   it('has navigation button', async () => {
     window.history.pushState({}, 'Edit Pet', '/pets/123/edit')
     renderEditPage()
-    await waitFor(() => expect(screen.getByRole('heading', { name: /edit pet/i })).toBeInTheDocument())
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: /edit pet/i })).toBeInTheDocument()
+    )
 
     expect(screen.getByRole('link', { name: /back to pet/i })).toBeInTheDocument()
   })
@@ -72,7 +103,9 @@ describe('CreatePetPage edit mode enhancements', () => {
   it('redirects to pet profile after status update', async () => {
     window.history.pushState({}, 'Edit Pet', '/pets/123/edit')
     renderEditPage()
-    await waitFor(() => expect(screen.getByRole('heading', { name: /edit pet/i })).toBeInTheDocument())
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: /edit pet/i })).toBeInTheDocument()
+    )
 
     // Fill status password and trigger update - pick the first of multiple password fields
     const passwordInputs = screen.getAllByPlaceholderText(/confirm with your password/i)

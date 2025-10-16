@@ -18,7 +18,9 @@ const CreatePetPage: React.FC = () => {
   const { id: petId } = useParams<{ id: string }>()
   const isEditMode = !!petId
   const navigate = useNavigate()
-  const [currentStatus, setCurrentStatus] = useState<'active' | 'lost' | 'deceased' | 'deleted' | ''>('')
+  const [currentStatus, setCurrentStatus] = useState<
+    'active' | 'lost' | 'deceased' | 'deleted' | ''
+  >('')
   const [newStatus, setNewStatus] = useState<'active' | 'lost' | 'deceased' | ''>('')
   const [statusPassword, setStatusPassword] = useState('')
   const [deletePassword, setDeletePassword] = useState('')
@@ -116,7 +118,10 @@ const CreatePetPage: React.FC = () => {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" asChild>
-              <Link to={isEditMode ? `/pets/${petId}` : '/account/pets'} className="flex items-center gap-2">
+              <Link
+                to={isEditMode ? `/pets/${petId}` : '/account/pets'}
+                className="flex items-center gap-2"
+              >
                 <ArrowLeft className="h-4 w-4" />
                 {isEditMode ? 'Back to Pet' : 'Back to My Pets'}
               </Link>
@@ -152,13 +157,20 @@ const CreatePetPage: React.FC = () => {
               petTypes={petTypes}
               loading={loadingPetTypes}
               value={formData.pet_type_id ?? ''}
-              onChange={(id) => { updateField('pet_type_id')(id); }}
+              onChange={(id) => {
+                updateField('pet_type_id')(id)
+              }}
               error={errors.pet_type_id}
             />
 
             <PetFormFields formData={formData} errors={errors} updateField={updateField} />
 
-            <FileInput id="photos" label={isEditMode ? 'Add More Photos' : 'Photos'} onChange={updateField('photos')} multiple />
+            <FileInput
+              id="photos"
+              label={isEditMode ? 'Add More Photos' : 'Photos'}
+              onChange={updateField('photos')}
+              multiple
+            />
 
             {error && (
               <p className="text-destructive" data-testid="form-error">
@@ -167,10 +179,27 @@ const CreatePetPage: React.FC = () => {
             )}
 
             <div className="flex gap-4">
-              <Button type="submit" aria-label={isEditMode ? 'Update Pet' : 'Create Pet'} disabled={isSubmitting || loadingPetTypes}>
-                {isSubmitting ? (isEditMode ? 'Updating...' : 'Creating...') : isEditMode ? 'Update Pet' : 'Create Pet'}
+              <Button
+                type="submit"
+                aria-label={isEditMode ? 'Update Pet' : 'Create Pet'}
+                disabled={isSubmitting || loadingPetTypes}
+              >
+                {isSubmitting
+                  ? isEditMode
+                    ? 'Updating...'
+                    : 'Creating...'
+                  : isEditMode
+                    ? 'Update Pet'
+                    : 'Create Pet'}
               </Button>
-              <Button type="button" variant="outline" onClick={() => { handleCancel() }} disabled={isSubmitting}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  handleCancel()
+                }}
+                disabled={isSubmitting}
+              >
                 Cancel
               </Button>
             </div>
@@ -180,12 +209,16 @@ const CreatePetPage: React.FC = () => {
         {isEditMode && (
           <div className="mt-10 space-y-6">
             <PetStatusControls
-              currentStatus={(currentStatus || 'active')}
-              newStatus={(newStatus || 'active')}
-              setNewStatus={(s) => { setNewStatus(s); }}
+              currentStatus={currentStatus || 'active'}
+              newStatus={newStatus || 'active'}
+              setNewStatus={(s) => {
+                setNewStatus(s)
+              }}
               statusPassword={statusPassword}
               setStatusPassword={setStatusPassword}
-              onUpdateStatus={() => { void handleUpdateStatusClick() }}
+              onUpdateStatus={() => {
+                void handleUpdateStatusClick()
+              }}
               isUpdating={isUpdatingStatus}
             />
 
@@ -193,7 +226,9 @@ const CreatePetPage: React.FC = () => {
               deletePassword={deletePassword}
               setDeletePassword={setDeletePassword}
               isDeleting={isDeleting}
-              onDelete={() => { void handleDeletePetClick() }}
+              onDelete={() => {
+                void handleDeletePetClick()
+              }}
             />
           </div>
         )}

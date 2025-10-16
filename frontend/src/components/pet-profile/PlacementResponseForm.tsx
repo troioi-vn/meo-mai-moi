@@ -1,4 +1,10 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import type { HelperProfile } from '@/types/helper-profile'
 import type { FosteringType, RelationshipType } from '@/hooks/usePlacementResponse'
@@ -45,7 +51,7 @@ export function PlacementResponseForm({
         <label htmlFor="helper-profile" className="text-right">
           Helper Profile
         </label>
-  <Select onValueChange={setSelectedProfile} value={selectedProfile}>
+        <Select onValueChange={setSelectedProfile} value={selectedProfile}>
           <SelectTrigger className="col-span-3">
             <SelectValue placeholder="Select a profile..." />
           </SelectTrigger>

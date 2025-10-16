@@ -22,11 +22,11 @@ class EmailConfigurationStatusBuilder
         try {
             $activeConfig = $this->emailConfigurationService->getActiveConfiguration();
 
-            if (!$activeConfig) {
+            if (! $activeConfig) {
                 return $this->buildStatus(false, 'no_configuration', 'No email configuration found');
             }
 
-            if (!$activeConfig->isValid()) {
+            if (! $activeConfig->isValid()) {
                 return $this->buildInvalidConfigStatus($activeConfig);
             }
 
@@ -79,7 +79,7 @@ class EmailConfigurationStatusBuilder
         return $this->buildStatus(
             false,
             'error',
-            'Error checking email configuration: ' . $e->getMessage()
+            'Error checking email configuration: '.$e->getMessage()
         );
     }
 }

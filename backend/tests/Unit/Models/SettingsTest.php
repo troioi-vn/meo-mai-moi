@@ -37,7 +37,7 @@ class SettingsTest extends TestCase
 
         $this->assertDatabaseHas('settings', [
             'key' => 'test_key',
-            'value' => 'test_value'
+            'value' => 'test_value',
         ]);
     }
 
@@ -48,7 +48,7 @@ class SettingsTest extends TestCase
 
         $this->assertDatabaseHas('settings', [
             'key' => 'test_key',
-            'value' => 'updated_value'
+            'value' => 'updated_value',
         ]);
 
         // Should only have one record

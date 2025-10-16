@@ -21,7 +21,7 @@ export default function ResetPasswordPage() {
   const auth = use(AuthContext)
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  
+
   const [password, setPassword] = useState('')
   const [passwordConfirmation, setPasswordConfirmation] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -67,7 +67,7 @@ export default function ResetPasswordPage() {
     try {
       // Ensure CSRF token is set
       await csrf()
-      
+
       // Make API call to reset password
       await api.post('/reset-password', {
         token,
@@ -78,16 +78,16 @@ export default function ResetPasswordPage() {
 
       setIsSubmitted(true)
       toast.success('Password reset successfully! You can now log in with your new password.')
-      
+
       // Redirect to login after a short delay
       setTimeout(() => {
         void navigate('/login')
       }, 2000)
     } catch (error) {
       console.error('Reset password error:', error)
-      
+
       let errorMessage = 'Failed to reset password. Please try again.'
-      
+
       if (error instanceof AxiosError) {
         const responseData = error.response?.data as ResetPasswordErrorResponse | undefined
 
@@ -95,7 +95,8 @@ export default function ResetPasswordPage() {
           // Validation errors or invalid token
           const errors = responseData?.errors
           if (errors?.token?.length) {
-            errorMessage = 'This password reset link has expired or is invalid. Please request a new one.'
+            errorMessage =
+              'This password reset link has expired or is invalid. Please request a new one.'
           } else if (errors?.password?.length) {
             errorMessage = errors.password[0] ?? errorMessage
           } else {
@@ -105,7 +106,7 @@ export default function ResetPasswordPage() {
           errorMessage = responseData.message
         }
       }
-      
+
       toast.error(errorMessage)
     } finally {
       setIsLoading(false)
@@ -155,9 +156,7 @@ export default function ResetPasswordPage() {
       <Card>
         <CardHeader>
           <h1 className="text-2xl leading-none font-semibold">Set New Password</h1>
-          <CardDescription>
-            Enter your new password for {email}
-          </CardDescription>
+          <CardDescription>Enter your new password for {email}</CardDescription>
         </CardHeader>
         <CardContent>
           <form
@@ -183,7 +182,7 @@ export default function ResetPasswordPage() {
                   Password must be at least 8 characters long.
                 </p>
               </div>
-              
+
               <div className="grid gap-2">
                 <Label htmlFor="password_confirmation">Confirm New Password</Label>
                 <Input

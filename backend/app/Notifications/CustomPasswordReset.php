@@ -13,7 +13,7 @@ class CustomPasswordReset extends Notification
 {
     // Removed Queueable trait and ShouldQueue interface to process synchronously
 
-    public string $token;
+    private string $token;
 
     /**
      * Create a new notification instance.
@@ -21,6 +21,14 @@ class CustomPasswordReset extends Notification
     public function __construct(string $token)
     {
         $this->token = $token;
+    }
+
+    /**
+     * Get the token.
+     */
+    public function getToken(): string
+    {
+        return $this->token;
     }
 
     /**
@@ -41,7 +49,7 @@ class CustomPasswordReset extends Notification
         // Create EmailLog entry for admin tracking (following your system's pattern)
         $this->createEmailLogEntry($notifiable);
 
-        return new PasswordResetMail($notifiable, $this->token);
+        return new PasswordResetMail($notifiable, $this->getToken());
     }
 
     /**
@@ -56,13 +64,13 @@ class CustomPasswordReset extends Notification
             $configId = $activeConfig ? $activeConfig->id : 1;
 
             $frontendUrl = config('app.frontend_url', 'http://localhost:8000');
-            $resetUrl = $frontendUrl.'/reset-password?token='.$this->token.'&email='.urlencode($notifiable->email);
+            $resetUrl = $frontendUrl.'/reset-password?token='.$this->getToken().'&email='.urlencode($notifiable->email);
 
             // Create email body using the template
             $emailBody = view('emails.password-reset', [
                 'user' => $notifiable,
                 'resetUrl' => $resetUrl,
-                'token' => $this->token,
+                'token' => $this->getToken(),
             ])->render();
 
             // Create EmailLog entry for admin panel viewing
@@ -91,7 +99,7 @@ class CustomPasswordReset extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'token' => $this->token,
+            'token' => $this->getToken(),
             'email' => $notifiable->email,
         ];
     }

@@ -104,12 +104,13 @@ const mockUser = {
   email: 'jane@example.com',
 }
 
-interface MockUser { id: number; name: string; email: string }
+interface MockUser {
+  id: number
+  name: string
+  email: string
+}
 
-const renderWithProviders = (
-  component: React.ReactElement,
-  user: MockUser | null = null
-) => {
+const renderWithProviders = (component: React.ReactElement, user: MockUser | null = null) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
@@ -120,9 +121,7 @@ const renderWithProviders = (
   return render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AuthProvider initialUser={user}>
-          {component}
-        </AuthProvider>
+        <AuthProvider initialUser={user}>{component}</AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
   )
@@ -153,7 +152,6 @@ describe('PetCard', () => {
 
     expect(screen.getByText('Respond')).toBeInTheDocument()
   })
-
 
   it('does not show respond button when user is not authenticated', () => {
     renderWithProviders(<PetCard pet={mockCat} />)

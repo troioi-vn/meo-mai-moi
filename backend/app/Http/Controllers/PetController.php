@@ -268,7 +268,7 @@ class PetController extends Controller
     public function placementRequests(Request $request)
     {
         $pets = Pet::whereHas('placementRequests', function ($query) {
-            $query->where('is_active', true)->where('status', \App\Enums\PlacementRequestStatus::OPEN->value);
+            $query->where('status', \App\Enums\PlacementRequestStatus::OPEN);
         })->with(['placementRequests', 'petType'])->get();
 
         return $this->sendSuccess($pets);
@@ -338,6 +338,7 @@ class PetController extends Controller
                     // Components without precision not allowed
                     $v->errors()->add('birthday_precision', 'birthday_precision is required when providing birthday components.');
                 }
+
                 return;
             }
 
@@ -426,7 +427,7 @@ class PetController extends Controller
             $petTypeId = PetType::create([
                 'name' => 'Cat',
                 'slug' => 'cat',
-                'is_active' => true,
+                'status' => \App\Enums\PetTypeStatus::ACTIVE,
                 'is_system' => true,
                 'display_order' => 0,
             ])->id;
@@ -542,6 +543,7 @@ class PetController extends Controller
                 if ($legacyBirthday || $year || $month || $day) {
                     $v->errors()->add('birthday_precision', 'birthday_precision is required when providing birthday components.');
                 }
+
                 return;
             }
             switch ($precision) {

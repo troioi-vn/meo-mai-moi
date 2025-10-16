@@ -31,7 +31,7 @@ class ViewFosterAssignment extends ViewRecord
                 ->visible(fn () => $this->record instanceof \App\Models\FosterAssignment && $this->record->status === 'active')
                 ->requiresConfirmation()
                 ->action(function () {
-                    if (!$this->record instanceof \App\Models\FosterAssignment) {
+                    if (! $this->record instanceof \App\Models\FosterAssignment) {
                         return;
                     }
 
@@ -50,7 +50,7 @@ class ViewFosterAssignment extends ViewRecord
                 ->visible(fn () => $this->record instanceof \App\Models\FosterAssignment && $this->record->status === 'active')
                 ->requiresConfirmation()
                 ->action(function () {
-                    if (!$this->record instanceof \App\Models\FosterAssignment) {
+                    if (! $this->record instanceof \App\Models\FosterAssignment) {
                         return;
                     }
 
@@ -127,7 +127,7 @@ class ViewFosterAssignment extends ViewRecord
                                     ->label('Duration')
                                     ->getStateUsing(function () {
                                         $assignment = $this->getFosterAssignment();
-                                        if (!$assignment || !$assignment->start_date) {
+                                        if (! $assignment || ! $assignment->start_date) {
                                             return 'Not started';
                                         }
 
@@ -147,7 +147,7 @@ class ViewFosterAssignment extends ViewRecord
                                     ->label('Days Remaining')
                                     ->getStateUsing(function () {
                                         $assignment = $this->getFosterAssignment();
-                                        if (!$assignment || $assignment->status !== 'active' || !$assignment->expected_end_date) {
+                                        if (! $assignment || $assignment->status !== 'active' || ! $assignment->expected_end_date) {
                                             return 'N/A';
                                         }
 
@@ -161,7 +161,7 @@ class ViewFosterAssignment extends ViewRecord
                                     })
                                     ->color(function () {
                                         $assignment = $this->getFosterAssignment();
-                                        if (!$assignment || $assignment->status !== 'active' || !$assignment->expected_end_date) {
+                                        if (! $assignment || $assignment->status !== 'active' || ! $assignment->expected_end_date) {
                                             return 'secondary';
                                         }
 

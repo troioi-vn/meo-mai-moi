@@ -16,9 +16,13 @@ class WeightHistoryFeatureTest extends TestCase
     use RefreshDatabase;
 
     protected User $owner;
+
     protected User $otherUser;
+
     protected PetType $catType;
+
     protected PetType $dogType;
+
     protected Pet $pet;
 
     protected function setUp(): void
@@ -147,7 +151,7 @@ class WeightHistoryFeatureTest extends TestCase
             'weight_kg' => 10.0,
             'record_date' => '2024-02-02',
         ])->assertStatus(422)
-          ->assertJsonPath('error_code', 'FEATURE_NOT_AVAILABLE_FOR_PET_TYPE');
+            ->assertJsonPath('error_code', 'FEATURE_NOT_AVAILABLE_FOR_PET_TYPE');
     }
 
     public function test_admin_can_access_other_pets_weights()

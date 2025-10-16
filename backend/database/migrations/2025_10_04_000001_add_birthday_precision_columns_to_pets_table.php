@@ -5,7 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class () extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         // Create enum type for PostgreSQL if not exists (idempotent check for PG)
@@ -26,12 +27,12 @@ return new class () extends Migration {
             $table->tinyInteger('birthday_day')->nullable()->after('birthday_month');
 
             if ($driver === 'pgsql') {
-                $table->enum('birthday_precision', ['day','month','year','unknown'])
+                $table->enum('birthday_precision', ['day', 'month', 'year', 'unknown'])
                     ->default('unknown')
                     ->nullable(false)
                     ->after('birthday_day');
             } else {
-                $table->enum('birthday_precision', ['day','month','year','unknown'])
+                $table->enum('birthday_precision', ['day', 'month', 'year', 'unknown'])
                     ->default('unknown')
                     ->after('birthday_day');
             }
@@ -74,7 +75,7 @@ return new class () extends Migration {
         });
 
         if ($driver === 'pgsql') {
-            DB::statement("DROP TYPE IF EXISTS pet_birthday_precision");
+            DB::statement('DROP TYPE IF EXISTS pet_birthday_precision');
         }
     }
 };

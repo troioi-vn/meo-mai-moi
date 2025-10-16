@@ -102,7 +102,6 @@ class TransferHandoverController extends Controller
             'user_id' => $handover->helper_user_id,
             'message' => 'Handover scheduled for your accepted transfer. Please confirm details.',
             'link' => '/account/handovers/'.$handover->id,
-            'is_read' => false,
         ]);
 
         return $this->sendSuccess($handover, 201);
@@ -146,7 +145,6 @@ class TransferHandoverController extends Controller
             'user_id' => $handover->owner_user_id,
             'message' => 'Helper has '.($handover->status === 'confirmed' ? 'confirmed' : 'disputed').' the handover conditions.',
             'link' => '/account/handovers/'.$handover->id,
-            'is_read' => false,
         ]);
 
         return $this->sendSuccess($handover);
@@ -231,7 +229,6 @@ class TransferHandoverController extends Controller
                 'user_id' => $handover->owner_user_id,
                 'message' => 'Handover completed.',
                 'link' => '/account/handovers/'.$handover->id,
-                'is_read' => false,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -239,7 +236,6 @@ class TransferHandoverController extends Controller
                 'user_id' => $handover->helper_user_id,
                 'message' => 'Handover completed.',
                 'link' => '/account/handovers/'.$handover->id,
-                'is_read' => false,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -279,7 +275,6 @@ class TransferHandoverController extends Controller
                 'user_id' => $handover->owner_user_id,
                 'message' => 'Handover was canceled.',
                 'link' => '/account/handovers/'.$handover->id,
-                'is_read' => false,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -287,7 +282,6 @@ class TransferHandoverController extends Controller
                 'user_id' => $handover->helper_user_id,
                 'message' => 'Handover was canceled.',
                 'link' => '/account/handovers/'.$handover->id,
-                'is_read' => false,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

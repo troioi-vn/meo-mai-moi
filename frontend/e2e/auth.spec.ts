@@ -24,7 +24,11 @@ async function stubAuthNetwork(page: Page) {
 
   // Register
   await page.route('**/api/register', async (route) => {
-    const body = await route.request().postDataJSON()
+    const body = (await route.request().postDataJSON()) as {
+      email?: string
+      password?: string
+      password_confirmation?: string
+    }
     if (!body?.email || !body?.password || !body?.password_confirmation) {
       return route.fulfill({ status: 422, body: JSON.stringify({ message: 'Invalid' }) })
     }
@@ -33,7 +37,7 @@ async function stubAuthNetwork(page: Page) {
 
   // Login
   await page.route('**/api/login', async (route) => {
-    const body = await route.request().postDataJSON()
+    const body = (await route.request().postDataJSON()) as { email?: string; password?: string }
     if (body?.email === TEST_USER.email && body?.password === TEST_USER.password) {
       return route.fulfill({ status: 200, body: JSON.stringify({ message: 'ok' }) })
     }
@@ -107,11 +111,14 @@ test('auth flow: register → login → logout', async ({ page }) => {
 })
 
 // Helpers
-async function login(page: Page, {
-  email = 'user@example.com',
-  password = 'password',
-  remember = false,
-}: { email?: string; password?: string; remember?: boolean } = {}) {
+async function login(
+  page: Page,
+  {
+    email = 'user@example.com',
+    password = 'password',
+    remember = false,
+  }: { email?: string; password?: string; remember?: boolean } = {}
+) {
   // Intercept CSRF and login calls
   await page.route('**/sanctum/csrf-cookie', (route) => route.fulfill({ status: 204, body: '' }))
 
@@ -119,7 +126,10 @@ async function login(page: Page, {
 
   await page.route('**/api/login', async (route) => {
     // Basic body validation
-    const body = JSON.parse(route.request().postData() ?? '{}') as { email?: string; password?: string }
+    const body = JSON.parse(route.request().postData() ?? '{}') as {
+      email?: string
+      password?: string
+    }
     if (body.email === email && body.password === password) {
       authenticated = true
       await route.fulfill({ status: 200, body: JSON.stringify({ message: 'ok' }) })

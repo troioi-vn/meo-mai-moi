@@ -76,14 +76,11 @@ class NotificationSeeder extends Seeder
                 }
                 // 5% still pending (no delivered_at or failed_at)
 
-                // Determine read status (only for delivered notifications)
-                $is_read = false;
+                // Determine read timestamp (only for delivered notifications)
                 $read_at = null;
-
                 if ($delivered_at && rand(1, 100) <= 70) {
-                    // 70% of delivered notifications are read
-                    $is_read = true;
-                    $read_at = $delivered_at->copy()->addMinutes(rand(5, 1440)); // Read within 1-24 hours
+                    // 70% of delivered notifications are read within 1-24 hours
+                    $read_at = $delivered_at->copy()->addMinutes(rand(5, 1440));
                 }
 
                 \App\Models\Notification::create([
@@ -96,7 +93,6 @@ class NotificationSeeder extends Seeder
                         'entity_type' => ['Cat', 'Transfer', 'PlacementRequest'][array_rand(['Cat', 'Transfer', 'PlacementRequest'])],
                         'priority' => ['low', 'medium', 'high'][array_rand(['low', 'medium', 'high'])],
                     ] : null,
-                    'is_read' => $is_read,
                     'read_at' => $read_at,
                     'delivered_at' => $delivered_at,
                     'failed_at' => $failed_at,

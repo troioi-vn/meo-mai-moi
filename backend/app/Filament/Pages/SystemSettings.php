@@ -36,7 +36,7 @@ class SystemSettings extends Page
     public function mount(): void
     {
         // Check if user has super_admin role
-        if (!auth()->user()->hasRole('super_admin')) {
+        if (! auth()->user()->hasRole('super_admin')) {
             abort(403, 'Access denied. Super Admin role required.');
         }
 
@@ -58,7 +58,7 @@ class SystemSettings extends Page
                             ->helperText('When enabled, only users with valid invitation codes can register. Others can join the waitlist.')
                             ->live()
                             ->afterStateUpdated(function (bool $state) {
-                                $this->settingsService->setInviteOnlyEnabled($state);
+                                $this->settingsService->configureInviteOnlyMode($state);
 
                                 $message = $state
                                     ? 'Invite-only registration enabled. New users must have invitation codes.'
@@ -109,6 +109,7 @@ class SystemSettings extends Page
     public static function getNavigationBadge(): ?string
     {
         $settingsService = app(SettingsService::class);
+
         return $settingsService->isInviteOnlyEnabled() ? 'Invite Only' : 'Open';
     }
 
@@ -118,6 +119,7 @@ class SystemSettings extends Page
     public static function getNavigationBadgeColor(): ?string
     {
         $settingsService = app(SettingsService::class);
+
         return $settingsService->isInviteOnlyEnabled() ? 'warning' : 'success';
     }
 

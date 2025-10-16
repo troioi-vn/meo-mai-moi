@@ -29,7 +29,7 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
     try {
       // Ensure CSRF token is set
       await csrf()
-      
+
       // Make API call to request password reset
       await api.post('/forgot-password', { email })
 
@@ -37,9 +37,9 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
       toast.success('Password reset instructions have been sent to your email.')
     } catch (error) {
       console.error('Forgot password error:', error)
-      
+
       let errorMessage = 'Failed to send reset instructions. Please try again.'
-      
+
       if (error instanceof AxiosError) {
         const responseData = error.response?.data as ForgotPasswordErrorResponse | undefined
 
@@ -57,7 +57,7 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
           errorMessage = responseData.message
         }
       }
-      
+
       toast.error(errorMessage)
     } finally {
       setIsLoading(false)

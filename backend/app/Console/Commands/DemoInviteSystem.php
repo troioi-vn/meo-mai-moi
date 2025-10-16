@@ -12,6 +12,7 @@ use Illuminate\Console\Command;
 class DemoInviteSystem extends Command
 {
     protected $signature = 'demo:invite-system';
+
     protected $description = 'Demonstrate the complete Dynamic Invite-Only System';
 
     public function handle()
@@ -48,7 +49,7 @@ class DemoInviteSystem extends Command
         $settingsService = app(SettingsService::class);
         $inviteOnlyEnabled = $settingsService->isInviteOnlyEnabled();
 
-        $this->line('🔧 Registration Mode: ' . ($inviteOnlyEnabled ? '🔒 INVITE-ONLY' : '🌐 OPEN'));
+        $this->line('🔧 Registration Mode: '.($inviteOnlyEnabled ? '🔒 INVITE-ONLY' : '🌐 OPEN'));
         $this->line('📧 Email System: ✅ ACTIVE (Log Driver)');
         $this->line('🛡️  Security: ✅ RATE LIMITING & LOGGING ACTIVE');
         $this->line('⚡ Caching: ✅ OPTIMIZED PERFORMANCE');
@@ -86,7 +87,7 @@ class DemoInviteSystem extends Command
         $settingsService = app(SettingsService::class);
         $originalState = $settingsService->isInviteOnlyEnabled();
 
-        $settingsService->setInviteOnlyEnabled(!$originalState);
+        $settingsService->setInviteOnlyEnabled(! $originalState);
         $newState = $settingsService->isInviteOnlyEnabled();
         $this->line("   ✅ Toggled from {$this->boolToText($originalState)} to {$this->boolToText($newState)}");
 
@@ -110,7 +111,7 @@ class DemoInviteSystem extends Command
             $this->call('test:email-system');
             $this->line('   ✅ Email system operational');
         } catch (\Exception $e) {
-            $this->line('   ❌ Email system error: ' . $e->getMessage());
+            $this->line('   ❌ Email system error: '.$e->getMessage());
         }
     }
 
@@ -137,7 +138,7 @@ class DemoInviteSystem extends Command
                 '/admin/system-settings' => 'Toggle invite-only mode (Super Admin)',
                 '/admin/waitlist-entries' => 'Manage waitlist (Admin+)',
                 '/admin/invitations' => 'Manage invitations (Admin+)',
-            ]
+            ],
         ];
 
         foreach ($endpoints as $category => $routes) {

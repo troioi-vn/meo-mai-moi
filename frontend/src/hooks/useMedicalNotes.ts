@@ -90,7 +90,18 @@ export const useMedicalNotes = (petId: number): UseMedicalNotesResult => {
   )
 
   return useMemo(
-    () => ({ items, page, meta, links, loading, error, refresh, create, update: updateOne, remove }),
+    () => ({
+      items,
+      page,
+      meta,
+      links,
+      loading,
+      error,
+      refresh,
+      create,
+      update: updateOne,
+      remove,
+    }),
     [items, page, meta, links, loading, error, refresh, create, updateOne, remove]
   )
 }

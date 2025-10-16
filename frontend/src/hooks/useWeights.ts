@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { createWeight, deleteWeight, getPetWeights, updateWeight, type WeightHistory } from '@/api/pets'
+import {
+  createWeight,
+  deleteWeight,
+  getPetWeights,
+  updateWeight,
+  type WeightHistory,
+} from '@/api/pets'
 
 export interface UseWeightsResult {
   items: WeightHistory[]
@@ -10,7 +16,10 @@ export interface UseWeightsResult {
   error: string | null
   refresh: (page?: number) => Promise<void>
   create: (payload: { weight_kg: number; record_date: string }) => Promise<WeightHistory>
-  update: (id: number, payload: Partial<{ weight_kg: number; record_date: string }>) => Promise<WeightHistory>
+  update: (
+    id: number,
+    payload: Partial<{ weight_kg: number; record_date: string }>
+  ) => Promise<WeightHistory>
   remove: (id: number) => Promise<boolean>
 }
 
@@ -45,9 +54,12 @@ export const useWeights = (petId: number): UseWeightsResult => {
     void load(1)
   }, [load])
 
-  const refresh = useCallback(async (pg?: number) => {
-    await load(pg ?? page)
-  }, [load, page])
+  const refresh = useCallback(
+    async (pg?: number) => {
+      await load(pg ?? page)
+    },
+    [load, page]
+  )
 
   const create = useCallback(
     async (payload: { weight_kg: number; record_date: string }) => {
@@ -79,7 +91,18 @@ export const useWeights = (petId: number): UseWeightsResult => {
   )
 
   return useMemo(
-    () => ({ items, page, meta, links, loading, error, refresh, create, update: updateOne, remove }),
+    () => ({
+      items,
+      page,
+      meta,
+      links,
+      loading,
+      error,
+      refresh,
+      create,
+      update: updateOne,
+      remove,
+    }),
     [items, page, meta, links, loading, error, refresh, create, updateOne, remove]
   )
 }

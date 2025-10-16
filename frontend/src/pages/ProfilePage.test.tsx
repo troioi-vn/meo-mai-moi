@@ -49,15 +49,15 @@ describe('ProfilePage', () => {
     // Wait for user name to appear (ensures AuthProvider has loaded user)
     expect(await screen.findByText(mockUser.name)).toBeInTheDocument()
 
-  // Check for password section
-  expect(screen.getByRole('heading', { name: /password/i })).toBeInTheDocument()
-  expect(screen.getByText('Change Password')).toBeInTheDocument()
-  expect(screen.getByText('Update your account password')).toBeInTheDocument()
-  const passwordLink = screen.getByRole('link', { name: /change password/i })
-  expect(passwordLink).toBeInTheDocument()
-  expect(passwordLink).toHaveAttribute('href', '/account/password')
+    // Check for password section
+    expect(screen.getByRole('heading', { name: /password/i })).toBeInTheDocument()
+    expect(screen.getByText('Change Password')).toBeInTheDocument()
+    expect(screen.getByText('Update your account password')).toBeInTheDocument()
+    const passwordLink = screen.getByRole('link', { name: /change password/i })
+    expect(passwordLink).toBeInTheDocument()
+    expect(passwordLink).toHaveAttribute('href', '/account/password')
 
-  // Check for notifications section
+    // Check for notifications section
     expect(screen.getByRole('heading', { name: /notifications/i })).toBeInTheDocument()
     expect(screen.getByText('Notification Preferences')).toBeInTheDocument()
     expect(screen.getByText('Manage email and in-app notification settings')).toBeInTheDocument()

@@ -54,9 +54,9 @@ class PlacementRequestExporter extends Exporter
                 ->label('End Date'),
             ExportColumn::make('expires_at')
                 ->label('Expires At'),
-            ExportColumn::make('is_active')
-                ->label('Active')
-                ->formatStateUsing(fn (bool $state): string => $state ? 'Yes' : 'No'),
+            ExportColumn::make('status')
+                ->label('Status')
+                ->formatStateUsing(fn ($state) => $state->value ?? 'Unknown'),
             ExportColumn::make('transfer_requests_count')
                 ->label('Response Count')
                 ->counts('transferRequests'),

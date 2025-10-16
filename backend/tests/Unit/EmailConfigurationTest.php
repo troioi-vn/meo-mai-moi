@@ -202,7 +202,7 @@ class EmailConfigurationTest extends TestCase
 
     public function test_fillable_attributes()
     {
-        $config = new EmailConfiguration();
+        $config = new EmailConfiguration;
         $fillable = $config->getFillable();
 
         $this->assertContains('provider', $fillable);
@@ -212,7 +212,7 @@ class EmailConfigurationTest extends TestCase
 
     public function test_casts_configuration()
     {
-        $config = new EmailConfiguration();
+        $config = new EmailConfiguration;
         $casts = $config->getCasts();
 
         $this->assertArrayHasKey('config', $casts);
@@ -373,7 +373,7 @@ class EmailConfigurationTest extends TestCase
 
         $this->assertEquals('test@example.com', $config->getConfigValue('test_email_address'));
         $this->assertTrue($config->hasConfigValue('test_email_address'));
-        
+
         // Test validation passes with valid test email
         $validationErrors = $config->validateConfig();
         $this->assertEmpty($validationErrors);
@@ -397,7 +397,7 @@ class EmailConfigurationTest extends TestCase
 
         $this->assertEquals('test@example.com', $config->getConfigValue('test_email_address'));
         $this->assertTrue($config->hasConfigValue('test_email_address'));
-        
+
         // Test validation passes with valid test email
         $validationErrors = $config->validateConfig();
         $this->assertEmpty($validationErrors);

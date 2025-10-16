@@ -1,5 +1,11 @@
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -36,12 +42,16 @@ const InvitationShare: React.FC<InvitationShareProps> = ({ invitationUrl, invita
 
   const handleEmailShare = () => {
     const subject = encodeURIComponent("You're invited to join our platform!")
-    const body = encodeURIComponent(`Hi there!\n\nI'd like to invite you to join our platform. Click the link below to create your account:\n\n${invitationUrl}\n\nLooking forward to seeing you there!`)
+    const body = encodeURIComponent(
+      `Hi there!\n\nI'd like to invite you to join our platform. Click the link below to create your account:\n\n${invitationUrl}\n\nLooking forward to seeing you there!`
+    )
     window.open(`mailto:?subject=${subject}&body=${body}`)
   }
 
   const handleSMSShare = () => {
-    const message = encodeURIComponent(`Hi! I'd like to invite you to join our platform: ${invitationUrl}`)
+    const message = encodeURIComponent(
+      `Hi! I'd like to invite you to join our platform: ${invitationUrl}`
+    )
     window.open(`sms:?body=${message}`)
   }
 
@@ -67,7 +77,13 @@ const InvitationShare: React.FC<InvitationShareProps> = ({ invitationUrl, invita
                 readOnly
                 className="font-mono text-sm"
               />
-              <Button variant="outline" size="sm" onClick={() => { void handleCopyUrl() }}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  void handleCopyUrl()
+                }}
+              >
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
@@ -84,7 +100,14 @@ const InvitationShare: React.FC<InvitationShareProps> = ({ invitationUrl, invita
                 rows={3}
                 className="text-sm"
               />
-              <Button variant="outline" size="sm" onClick={() => { void handleCopyMessage() }} className="w-full">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  void handleCopyMessage()
+                }}
+                className="w-full"
+              >
                 <Copy className="h-4 w-4 mr-2" />
                 Copy Message
               </Button>

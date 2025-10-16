@@ -40,9 +40,9 @@ describe('ChangePasswordForm', () => {
 
   beforeEach(() => {
     user = userEvent.setup()
-  changePasswordMock.mockClear()
-  logoutMock.mockClear()
-  navigateMock.mockClear()
+    changePasswordMock.mockClear()
+    logoutMock.mockClear()
+    navigateMock.mockClear()
     changePasswordMock.mockImplementation(async () => Promise.resolve())
     vi.mocked(toast).mockClear()
   })
@@ -127,7 +127,11 @@ describe('ChangePasswordForm', () => {
     await user.click(submitButton)
 
     await waitFor(() => {
-      expect(changePasswordMock).toHaveBeenCalledWith('currentpass', 'newpassword123', 'newpassword123')
+      expect(changePasswordMock).toHaveBeenCalledWith(
+        'currentpass',
+        'newpassword123',
+        'newpassword123'
+      )
       expect(logoutMock).toHaveBeenCalled()
       expect(navigateMock).toHaveBeenCalledWith('/login')
       expect(vi.mocked(toast)).toHaveBeenCalledWith(

@@ -15,17 +15,19 @@ use Tests\Traits\CreatesUsers;
 
 class WaitlistServiceTest extends TestCase
 {
-    use RefreshDatabase;
     use CreatesUsers;
+    use RefreshDatabase;
 
     private WaitlistService $service;
+
     private InvitationService $invitationService;
+
     private User $user;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->invitationService = new InvitationService();
+        $this->invitationService = new InvitationService;
         $this->service = new WaitlistService($this->invitationService);
         $this->user = User::factory()->create();
     }
@@ -42,7 +44,7 @@ class WaitlistServiceTest extends TestCase
         $this->assertEquals('pending', $entry->status);
         $this->assertDatabaseHas('waitlist_entries', [
             'email' => $email,
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
     }
 

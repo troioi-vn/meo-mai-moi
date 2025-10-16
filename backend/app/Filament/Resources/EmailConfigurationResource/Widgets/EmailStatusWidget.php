@@ -13,7 +13,7 @@ class EmailStatusWidget extends BaseWidget
     {
         $service = app(EmailConfigurationService::class);
         $totalConfigs = EmailConfiguration::count();
-        $activeConfig = EmailConfiguration::where('is_active', true)->first();
+        $activeConfig = EmailConfiguration::getActive();
         $validConfigs = EmailConfiguration::all()->filter(fn (EmailConfiguration $config) => $config->isValid())->count();
 
         return [

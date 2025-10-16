@@ -25,25 +25,40 @@ export const usePlacementInfo = (pet: Pet, userId?: number) => {
     const placementRequests = pet.placement_requests ?? []
     const activePlacementRequest =
       placementRequests.find((request) => isPlacementRequestActive(request)) ??
-      placementRequests.find((request) => request.status === 'open' || request.status === 'pending_review')
+      placementRequests.find(
+        (request) => request.status === 'open' || request.status === 'pending_review'
+      )
 
     const hasActivePlacementRequest =
       pet.placement_request_active === true ||
       placementRequests.some((request) => isPlacementRequestActive(request))
 
     if (!userId || !placementRequests.length) {
-      return { supportsPlacement, hasActivePlacementRequest, activePlacementRequest, myPendingTransfer: undefined }
+      return {
+        supportsPlacement,
+        hasActivePlacementRequest,
+        activePlacementRequest,
+        myPendingTransfer: undefined,
+      }
     }
 
-    const myPendingTransfer = placementRequests.reduce<TransferRequest | undefined>((found, request) => {
-      if (found) return found
-      return request.transfer_requests?.find((transfer) => {
-        if (transfer.status !== 'pending') return false
-        if (transfer.initiator_user_id && transfer.initiator_user_id === userId) return true
-        return transfer.helper_profile?.user?.id === userId
-      })
-    }, undefined)
+    const myPendingTransfer = placementRequests.reduce<TransferRequest | undefined>(
+      (found, request) => {
+        if (found) return found
+        return request.transfer_requests?.find((transfer) => {
+          if (transfer.status !== 'pending') return false
+          if (transfer.initiator_user_id && transfer.initiator_user_id === userId) return true
+          return transfer.helper_profile?.user?.id === userId
+        })
+      },
+      undefined
+    )
 
-    return { supportsPlacement, hasActivePlacementRequest, activePlacementRequest, myPendingTransfer }
+    return {
+      supportsPlacement,
+      hasActivePlacementRequest,
+      activePlacementRequest,
+      myPendingTransfer,
+    }
   }, [pet, userId])
 }

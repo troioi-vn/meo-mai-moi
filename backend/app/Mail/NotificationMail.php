@@ -41,6 +41,7 @@ abstract class NotificationMail extends Mailable
     public function envelope(): Envelope
     {
         $subject = $this->subject ?: $this->getSubject();
+
         return new Envelope(
             subject: $subject,
         );
@@ -52,16 +53,16 @@ abstract class NotificationMail extends Mailable
     public function content(): Content
     {
         // Try DB/file override via resolver first
-    $resolver = app(\App\Services\Notifications\NotificationTemplateResolver::class);
-    $renderer = app(\App\Services\Notifications\NotificationTemplateRenderer::class);
-    $localeResolver = app(\App\Services\Notifications\NotificationLocaleResolver::class);
+        $resolver = app(\App\Services\Notifications\NotificationTemplateResolver::class);
+        $renderer = app(\App\Services\Notifications\NotificationTemplateRenderer::class);
+        $localeResolver = app(\App\Services\Notifications\NotificationLocaleResolver::class);
 
-    $locale = $localeResolver->resolve($this->user, request());
-    $resolved = $resolver->resolve($this->notificationType->value, 'email', $locale);
+        $locale = $localeResolver->resolve($this->user, request());
+        $resolved = $resolver->resolve($this->notificationType->value, 'email', $locale);
 
         if ($resolved) {
             // If resolved from file and we have a concrete view name, prefer returning the view
-            if (($resolved['source'] ?? null) === 'file' && !empty($resolved['view'])) {
+            if (($resolved['source'] ?? null) === 'file' && ! empty($resolved['view'])) {
                 return new Content(
                     view: $resolved['view'],
                     with: $this->getTemplateData(),
@@ -70,7 +71,7 @@ abstract class NotificationMail extends Mailable
 
             // Otherwise, render inline HTML (DB overrides)
             $rendered = $renderer->render($resolved, $this->getTemplateData(), 'email');
-            if (!empty($rendered['subject'])) {
+            if (! empty($rendered['subject'])) {
                 $this->subject($rendered['subject']);
             }
 

@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { getPublicSettings, validateInvitationCode, type InvitationValidation } from '@/api/invite-system'
+import {
+  getPublicSettings,
+  validateInvitationCode,
+  type InvitationValidation,
+} from '@/api/invite-system'
 
 export type RegistrationMode = 'invite-only-no-code' | 'invite-only-with-code' | 'open-registration'
 
@@ -27,7 +31,7 @@ export const useInviteSystem = () => {
   useEffect(() => {
     const initializeInviteSystem = async () => {
       try {
-        setState(prev => ({ ...prev, isLoading: true, error: null }))
+        setState((prev) => ({ ...prev, isLoading: true, error: null }))
 
         // Get invitation code from URL
         const invitationCode = searchParams.get('invitation_code')
@@ -48,9 +52,9 @@ export const useInviteSystem = () => {
             } catch (error) {
               console.error('Invalid invitation code:', error)
               mode = 'invite-only-no-code'
-              setState(prev => ({ 
-                ...prev, 
-                error: 'Invalid or expired invitation code. You can join the waitlist instead.' 
+              setState((prev) => ({
+                ...prev,
+                error: 'Invalid or expired invitation code. You can join the waitlist instead.',
               }))
             }
           } else {
@@ -58,7 +62,7 @@ export const useInviteSystem = () => {
           }
         }
 
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           mode,
           isLoading: false,
@@ -66,10 +70,9 @@ export const useInviteSystem = () => {
           invitationCode,
           invitationValidation,
         }))
-
       } catch (error) {
         console.error('Failed to initialize invite system:', error)
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           isLoading: false,
           error: 'Failed to load registration settings. Please try again.',
@@ -81,7 +84,7 @@ export const useInviteSystem = () => {
   }, [searchParams])
 
   const clearError = () => {
-    setState(prev => ({ ...prev, error: null }))
+    setState((prev) => ({ ...prev, error: null }))
   }
 
   return {

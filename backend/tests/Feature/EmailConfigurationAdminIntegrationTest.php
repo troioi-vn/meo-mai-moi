@@ -42,7 +42,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
 
         $smtpData = [
             'provider' => 'smtp',
-            'is_active' => false,
+            'status' => \App\Enums\EmailConfigurationStatus::INACTIVE,
             'config' => [
                 'host' => 'smtp.gmail.com',
                 'port' => 587,
@@ -56,7 +56,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
 
         $component = Livewire::test(EmailConfigurationResource\Pages\CreateEmailConfiguration::class)
             ->set('data.provider', 'smtp')
-            ->set('data.is_active', false)
+            ->set('data.status', \App\Enums\EmailConfigurationStatus::INACTIVE->value)
             ->set('data.config.host', 'smtp.gmail.com')
             ->set('data.config.port', 587)
             ->set('data.config.username', 'test@example.com')
@@ -70,7 +70,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
         // Verify configuration was created in database
         $this->assertDatabaseHas('email_configurations', [
             'provider' => 'smtp',
-            'is_active' => false,
+            'status' => 'inactive',
         ]);
 
         $config = EmailConfiguration::where('provider', 'smtp')->first();
@@ -86,7 +86,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
 
         $mailgunData = [
             'provider' => 'mailgun',
-            'is_active' => false,
+            'status' => \App\Enums\EmailConfigurationStatus::INACTIVE,
             'config' => [
                 'domain' => 'mg.test.com',
                 'api_key' => 'key-test123',
@@ -98,7 +98,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
 
         Livewire::test(EmailConfigurationResource\Pages\CreateEmailConfiguration::class)
             ->set('data.provider', 'mailgun')
-            ->set('data.is_active', false)
+            ->set('data.status', \App\Enums\EmailConfigurationStatus::INACTIVE->value)
             ->set('data.config.domain', 'mg.test.com')
             ->set('data.config.api_key', 'key-test123')
             ->set('data.config.endpoint', 'api.mailgun.net')
@@ -109,7 +109,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
 
         $this->assertDatabaseHas('email_configurations', [
             'provider' => 'mailgun',
-            'is_active' => false,
+            'status' => 'inactive',
         ]);
 
         $config = EmailConfiguration::where('provider', 'mailgun')->first();
@@ -118,13 +118,13 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
 
     public function test_admin_can_activate_configuration_through_filament()
     {
-        $config1 = EmailConfiguration::factory()->create(['is_active' => true]);
-        $config2 = EmailConfiguration::factory()->create(['is_active' => false]);
+        $config1 = EmailConfiguration::factory()->create(['status' => \App\Enums\EmailConfigurationStatus::ACTIVE]);
+        $config2 = EmailConfiguration::factory()->create(['status' => \App\Enums\EmailConfigurationStatus::INACTIVE]);
 
         Livewire::test(EmailConfigurationResource\Pages\EditEmailConfiguration::class, [
             'record' => $config2->getRouteKey(),
         ])
-            ->set('data.is_active', true)
+            ->set('data.status', \App\Enums\EmailConfigurationStatus::ACTIVE->value)
             ->call('save')
             ->assertHasNoFormErrors();
 
@@ -132,8 +132,8 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
         $config2->refresh();
 
         // Only one configuration should be active
-        $this->assertFalse($config1->is_active);
-        $this->assertTrue($config2->is_active);
+        $this->assertFalse($config1->isActive());
+        $this->assertTrue($config2->isActive());
     }
 
     public function test_admin_can_test_email_configuration()
@@ -142,7 +142,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
 
         $config = EmailConfiguration::factory()->create([
             'provider' => 'smtp',
-            'is_active' => true,
+            'status' => \App\Enums\EmailConfigurationStatus::ACTIVE,
             'config' => [
                 'host' => 'smtp.gmail.com',
                 'port' => 587,
@@ -205,7 +205,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
 
         $newData = [
             'provider' => 'smtp',
-            'is_active' => false,
+            'status' => \App\Enums\EmailConfigurationStatus::INACTIVE,
             'config' => [
                 'host' => 'new.smtp.com',
                 'port' => 465,
@@ -221,7 +221,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
             'record' => $config->getRouteKey(),
         ])
             ->set('data.provider', 'smtp')
-            ->set('data.is_active', false)
+            ->set('data.status', \App\Enums\EmailConfigurationStatus::INACTIVE->value)
             ->set('data.config.host', 'new.smtp.com')
             ->set('data.config.port', 465)
             ->set('data.config.username', 'new@example.com')
@@ -241,7 +241,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
 
     public function test_admin_cannot_delete_active_configuration()
     {
-        $config = EmailConfiguration::factory()->create(['is_active' => true]);
+        $config = EmailConfiguration::factory()->create(['status' => \App\Enums\EmailConfigurationStatus::ACTIVE]);
 
         $component = Livewire::test(EmailConfigurationResource\Pages\EditEmailConfiguration::class, [
             'record' => $config->getRouteKey(),
@@ -250,13 +250,13 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
         // The delete action should not be available for active configurations
         $this->assertDatabaseHas('email_configurations', [
             'id' => $config->id,
-            'is_active' => true,
+            'status' => 'active',
         ]);
     }
 
     public function test_admin_can_delete_inactive_configuration()
     {
-        $config = EmailConfiguration::factory()->create(['is_active' => false]);
+        $config = EmailConfiguration::factory()->create(['status' => \App\Enums\EmailConfigurationStatus::INACTIVE]);
 
         Livewire::test(EmailConfigurationResource\Pages\EditEmailConfiguration::class, [
             'record' => $config->getRouteKey(),
@@ -270,7 +270,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
     {
         $invalidSmtpData = [
             'provider' => 'smtp',
-            'is_active' => false,
+            'status' => \App\Enums\EmailConfigurationStatus::INACTIVE->value,
             'config' => [
                 'host' => '', // Required field missing
                 'port' => 'invalid_port', // Invalid port
@@ -295,7 +295,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
     {
         $invalidMailgunData = [
             'provider' => 'mailgun',
-            'is_active' => false,
+            'status' => \App\Enums\EmailConfigurationStatus::INACTIVE->value,
             'config' => [
                 'domain' => '', // Required field missing
                 'api_key' => '', // Required field missing
@@ -324,7 +324,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
         // Create configuration through Filament
         $configData = [
             'provider' => 'smtp',
-            'is_active' => true,
+            'status' => \App\Enums\EmailConfigurationStatus::ACTIVE,
             'config' => [
                 'host' => 'smtp.gmail.com',
                 'port' => 587,
@@ -338,7 +338,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
 
         Livewire::test(EmailConfigurationResource\Pages\CreateEmailConfiguration::class)
             ->set('data.provider', 'smtp')
-            ->set('data.is_active', true)
+            ->set('data.status', \App\Enums\EmailConfigurationStatus::ACTIVE->value)
             ->set('data.config.host', 'smtp.gmail.com')
             ->set('data.config.port', 587)
             ->set('data.config.username', 'test@example.com')
@@ -359,7 +359,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
     {
         $config = EmailConfiguration::factory()->create([
             'provider' => 'smtp',
-            'is_active' => false,
+            'status' => \App\Enums\EmailConfigurationStatus::INACTIVE,
             'config' => [
                 'host' => 'smtp.test.com',
                 'port' => 587,
@@ -375,7 +375,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
         Livewire::test(EmailConfigurationResource\Pages\EditEmailConfiguration::class, [
             'record' => $config->getRouteKey(),
         ])
-            ->set('data.is_active', true)
+            ->set('data.status', \App\Enums\EmailConfigurationStatus::ACTIVE->value)
             ->call('save');
 
         // Verify Laravel mail configuration was updated

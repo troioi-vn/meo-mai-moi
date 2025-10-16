@@ -54,10 +54,7 @@ class TestNotificationResource extends Command
         $this->info('3. Testing notification actions...');
 
         // Mark as read
-        $notification->update([
-            'is_read' => true,
-            'read_at' => now(),
-        ]);
+        $notification->markAsRead();
         $this->info('✓ Marked notification as read');
         $this->info("✓ New engagement status: {$notification->fresh()->engagement_status}");
 
@@ -80,7 +77,7 @@ class TestNotificationResource extends Command
             'user_id' => $user->id,
             'type' => 'system_announcement',
             'message' => 'Old notification for cleanup test',
-            'is_read' => true,
+
             'read_at' => now()->subDays(100),
             'delivered_at' => now()->subDays(100),
             'created_at' => now()->subDays(100),
@@ -91,7 +88,7 @@ class TestNotificationResource extends Command
         // Simulate cleanup (notifications older than 90 days that are read)
         $cutoffDate = now()->subDays(90);
         $cleanupCount = Notification::where('created_at', '<', $cutoffDate)
-            ->where('is_read', true)
+            ->read()
             ->count();
 
         $this->info("✓ Notifications eligible for cleanup (90+ days old, read): {$cleanupCount}");

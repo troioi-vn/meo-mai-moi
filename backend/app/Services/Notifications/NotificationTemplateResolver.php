@@ -3,13 +3,12 @@
 namespace App\Services\Notifications;
 
 use App\Models\NotificationTemplate;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class NotificationTemplateResolver
 {
     public function __construct(
-        private NotificationLocaleResolver $localeResolver = new NotificationLocaleResolver()
+        private NotificationLocaleResolver $localeResolver = new NotificationLocaleResolver
     ) {}
 
     /**
@@ -74,7 +73,7 @@ class NotificationTemplateResolver
         $slug = $entry['slug'];
         $engine = $this->defaultEngineFor($channel);
 
-    if ($channel === 'email') {
+        if ($channel === 'email') {
             // Expect Blade views in emails/notifications/{locale}/{slug}.blade.php
             $view = "emails.notifications.$locale.$slug";
             // Backward-compat: also accept legacy path without locale folder for default locale
@@ -83,6 +82,7 @@ class NotificationTemplateResolver
             if (view()->exists($view)) {
                 $subject = null; // Subject typically provided by mailable; can add subject files later if needed
                 $body = "@include('$view')"; // body will be rendered via Blade::render when html required
+
                 return [
                     'source' => 'file',
                     'subject' => $subject,
@@ -97,6 +97,7 @@ class NotificationTemplateResolver
             if ($locale === $defaultLocale && view()->exists($legacyView)) {
                 $subject = null;
                 $body = "@include('$legacyView')";
+
                 return [
                     'source' => 'file',
                     'subject' => $subject,
@@ -116,6 +117,7 @@ class NotificationTemplateResolver
             $path = resource_path("templates/notifications/bell/$locale/$slug.md");
             if (is_file($path)) {
                 $body = file_get_contents($path) ?: '';
+
                 return [
                     'source' => 'file',
                     'subject' => null,
@@ -125,6 +127,7 @@ class NotificationTemplateResolver
                     'version' => null,
                 ];
             }
+
             return null;
         }
 

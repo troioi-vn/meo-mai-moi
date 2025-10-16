@@ -30,7 +30,7 @@ class EmailSystemAlertsWidget extends Widget
         $alerts = [];
 
         // Check for inactive email configurations
-        $inactiveConfigs = EmailConfiguration::where('is_active', false)->count();
+        $inactiveConfigs = EmailConfiguration::inactive()->count();
         if ($inactiveConfigs > 0) {
             $alerts[] = [
                 'type' => 'warning',
@@ -42,7 +42,7 @@ class EmailSystemAlertsWidget extends Widget
         }
 
         // Check for no active email configurations
-        $activeConfigs = EmailConfiguration::where('is_active', true)->count();
+        $activeConfigs = EmailConfiguration::active()->count();
         if ($activeConfigs === 0) {
             $alerts[] = [
                 'type' => 'danger',
@@ -118,7 +118,7 @@ class EmailSystemAlertsWidget extends Widget
         }
 
         // Check for invalid email configurations
-        $invalidConfigs = EmailConfiguration::where('is_active', true)
+        $invalidConfigs = EmailConfiguration::active()
             ->get()
             ->filter(function ($config) {
                 return ! $config->isValid();

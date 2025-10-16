@@ -9,6 +9,7 @@ use OpenApi\Annotations as OA;
  *     schema="MedicalNote",
  *     title="MedicalNote",
  *     description="Medical note model",
+ *
  *     @OA\Property(property="id", type="integer", format="int64"),
  *     @OA\Property(property="pet_id", type="integer", format="int64"),
  *     @OA\Property(property="note", type="string"),

@@ -18,7 +18,7 @@ class EmailConfigurationServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new EmailConfigurationService();
+        $this->service = new EmailConfigurationService;
     }
 
     public function test_get_active_configuration_returns_null_when_no_active_config()
@@ -54,7 +54,7 @@ class EmailConfigurationServiceTest extends TestCase
         $this->expectExceptionMessage('Configuration validation failed');
 
         // Missing required fields
-        $this->service->setActiveConfiguration('smtp', [
+        $this->service->createAndActivateConfiguration('smtp', [
             'host' => 'smtp.example.com',
             // Missing other required fields
         ]);
@@ -74,7 +74,7 @@ class EmailConfigurationServiceTest extends TestCase
             'from_name' => 'Test App',
         ];
 
-        $result = $this->service->setActiveConfiguration('smtp', $config);
+        $result = $this->service->createAndActivateConfiguration('smtp', $config);
 
         $this->assertInstanceOf(EmailConfiguration::class, $result);
         $this->assertTrue($result->is_active);
@@ -114,7 +114,7 @@ class EmailConfigurationServiceTest extends TestCase
             'from_name' => 'Test App',
         ];
 
-        $newConfig = $this->service->setActiveConfiguration('smtp', $newConfigData);
+        $newConfig = $this->service->createAndActivateConfiguration('smtp', $newConfigData);
 
         // Verify old config is deactivated
         $oldConfig->refresh();

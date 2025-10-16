@@ -68,12 +68,11 @@ class UserResource extends Resource
                 ->password()
                 ->maxLength(255)
                 ->dehydrateStateUsing(static function ($state, $record) {
-                    return !empty($state)
+                    return ! empty($state)
                         ? Hash::make($state)
                         : $record->password;
                 }),
         ];
-
 
         if (config('filament-users.shield') && class_exists(\BezhanSalleh\FilamentShield\FilamentShield::class)) {
             $rows[] = Forms\Components\Select::make('roles')
@@ -132,9 +131,10 @@ class UserResource extends Resource
                 ActionGroup::make([
                     ViewAction::make(),
                     EditAction::make(),
-                    DeleteAction::make()
+                    DeleteAction::make(),
                 ]),
             ]);
+
         return $table;
     }
 

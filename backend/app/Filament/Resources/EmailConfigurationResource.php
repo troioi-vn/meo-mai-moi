@@ -75,10 +75,16 @@ class EmailConfigurationResource extends Resource
                             })
                             ->helperText('Choose your email service provider'),
 
-                        Forms\Components\Toggle::make('is_active')
-                            ->label('Active Configuration')
-                            ->helperText('Only one configuration can be active at a time')
-                            ->default(false),
+                        Forms\Components\Select::make('status')
+                            ->label('Status')
+                            ->options([
+                                \App\Enums\EmailConfigurationStatus::ACTIVE->value => 'Active',
+                                \App\Enums\EmailConfigurationStatus::INACTIVE->value => 'Inactive',
+                                \App\Enums\EmailConfigurationStatus::DRAFT->value => 'Draft',
+                            ])
+                            ->default(\App\Enums\EmailConfigurationStatus::INACTIVE)
+                            ->required()
+                            ->helperText('Only one configuration can be active at a time'),
                     ])
                     ->columns(2),
 
@@ -254,16 +260,23 @@ class EmailConfigurationResource extends Resource
                     ->placeholder('No description')
                     ->color('gray'),
 
-                Tables\Columns\IconColumn::make('is_active')
-                    ->label('Active')
-                    ->boolean()
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle')
-                    ->trueColor('success')
-                    ->falseColor('gray'),
-
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
+                    ->badge()
+                    ->formatStateUsing(fn (\App\Enums\EmailConfigurationStatus $state): string => match($state) {
+                        \App\Enums\EmailConfigurationStatus::ACTIVE => 'Active',
+                        \App\Enums\EmailConfigurationStatus::INACTIVE => 'Inactive',
+                        \App\Enums\EmailConfigurationStatus::DRAFT => 'Draft',
+                    })
+                    ->color(fn (\App\Enums\EmailConfigurationStatus $state): string => match($state) {
+                        \App\Enums\EmailConfigurationStatus::ACTIVE => 'success',
+                        \App\Enums\EmailConfigurationStatus::INACTIVE => 'gray',
+                        \App\Enums\EmailConfigurationStatus::DRAFT => 'warning',
+                    })
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('validation_status')
+                    ->label('Validation')
                     ->badge()
                     ->color(fn (EmailConfiguration $record): string => $record->isValid() ? 'success' : 'danger')
                     ->formatStateUsing(fn (EmailConfiguration $record): string => $record->isValid() ? 'Valid' : 'Invalid'),
@@ -287,17 +300,19 @@ class EmailConfigurationResource extends Resource
                         'mailgun' => 'Mailgun',
                     ]),
 
-                Tables\Filters\TernaryFilter::make('is_active')
-                    ->label('Active Status')
-                    ->placeholder('All configurations')
-                    ->trueLabel('Active only')
-                    ->falseLabel('Inactive only'),
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Status')
+                    ->options([
+                        'active' => 'Active',
+                        'inactive' => 'Inactive',
+                        'draft' => 'Draft',
+                    ])
+                    ->multiple(),
 
                 Tables\Filters\Filter::make('valid_only')
                     ->label('Valid Configurations Only')
                     ->query(
-                        fn (Builder $query): Builder =>
-                        $query->whereIn(
+                        fn (Builder $query): Builder => $query->whereIn(
                             'id',
                             \App\Models\EmailConfiguration::all()
                                 ->filter(fn (\App\Models\EmailConfiguration $config) => $config->isValid())
@@ -316,12 +331,13 @@ class EmailConfigurationResource extends Resource
                         try {
                             // Check if test email address is provided for both SMTP and Mailgun
                             $testEmailAddress = $record->config['test_email_address'] ?? null;
-                            if (!$testEmailAddress) {
+                            if (! $testEmailAddress) {
                                 Notification::make()
                                     ->title('Test Email Address Required')
-                                    ->body('Please configure a test email address in the ' . strtoupper($record->provider) . ' settings before sending a test email.')
+                                    ->body('Please configure a test email address in the '.strtoupper($record->provider).' settings before sending a test email.')
                                     ->warning()
                                     ->send();
+
                                 return;
                             }
 
@@ -329,7 +345,7 @@ class EmailConfigurationResource extends Resource
 
                             if ($testResult['success']) {
                                 $title = 'Test Email Sent Successfully';
-                                $body = 'Test email was sent successfully to ' . ($record->config['test_email_address'] ?? 'the configured address') . '.';
+                                $body = 'Test email was sent successfully to '.($record->config['test_email_address'] ?? 'the configured address').'.';
 
                                 Notification::make()
                                     ->title($title)
@@ -390,7 +406,7 @@ class EmailConfigurationResource extends Resource
                     ->label('Activate')
                     ->icon('heroicon-o-power')
                     ->color('success')
-                    ->visible(fn (EmailConfiguration $record): bool => ! $record->is_active && $record->isValid())
+                    ->visible(fn (EmailConfiguration $record): bool => ! $record->isActive() && $record->isValid())
                     ->action(function (EmailConfiguration $record): void {
                         try {
                             // Validate configuration before activation
@@ -457,10 +473,10 @@ class EmailConfigurationResource extends Resource
                     ->label('Deactivate')
                     ->icon('heroicon-o-power')
                     ->color('warning')
-                    ->visible(fn (EmailConfiguration $record): bool => $record->is_active)
+                    ->visible(fn (EmailConfiguration $record): bool => $record->isActive())
                     ->action(function (EmailConfiguration $record): void {
                         try {
-                            $record->update(['is_active' => false]);
+                            $record->deactivate();
 
                             Notification::make()
                                 ->title('Configuration Deactivated')
@@ -532,7 +548,7 @@ class EmailConfigurationResource extends Resource
                         ->modalDescription('This will permanently delete the selected configurations (active ones cannot be deleted). This action cannot be undone.')
                         ->action(function (Collection $records): void {
                             // Prevent deletion of active configurations
-                            $activeRecords = $records->filter(fn ($record) => $record->is_active);
+                            $activeRecords = $records->filter(fn ($record) => $record->isActive());
 
                             if ($activeRecords->isNotEmpty()) {
                                 Notification::make()
@@ -579,14 +595,14 @@ class EmailConfigurationResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        $activeCount = static::getModel()::where('is_active', true)->count();
+        $activeCount = static::getModel()::active()->count();
 
         return $activeCount > 0 ? (string) $activeCount : null;
     }
 
     public static function getNavigationBadgeColor(): ?string
     {
-        $activeCount = static::getModel()::where('is_active', true)->count();
+        $activeCount = static::getModel()::active()->count();
 
         if ($activeCount === 0) {
             return 'danger';

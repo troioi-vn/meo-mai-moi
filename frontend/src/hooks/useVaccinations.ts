@@ -11,8 +11,21 @@ export interface UseVaccinationsResult {
   items: VaccinationRecord[]
   loading: boolean
   error: string | null
-  create: (payload: { vaccine_name: string; administered_at: string; due_at?: string | null; notes?: string | null }) => Promise<void>
-  update: (id: number, payload: Partial<{ vaccine_name: string; administered_at: string; due_at?: string | null; notes?: string | null }>) => Promise<void>
+  create: (payload: {
+    vaccine_name: string
+    administered_at: string
+    due_at?: string | null
+    notes?: string | null
+  }) => Promise<void>
+  update: (
+    id: number,
+    payload: Partial<{
+      vaccine_name: string
+      administered_at: string
+      due_at?: string | null
+      notes?: string | null
+    }>
+  ) => Promise<void>
   remove: (id: number) => Promise<void>
 }
 
@@ -39,14 +52,24 @@ export const useVaccinations = (petId: number): UseVaccinationsResult => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [petId])
 
-  const create = async (payload: { vaccine_name: string; administered_at: string; due_at?: string | null; notes?: string | null }) => {
+  const create = async (payload: {
+    vaccine_name: string
+    administered_at: string
+    due_at?: string | null
+    notes?: string | null
+  }) => {
     const created = await createVaccination(petId, payload)
     setItems((prev) => [created, ...prev])
   }
 
   const update = async (
     id: number,
-    payload: Partial<{ vaccine_name: string; administered_at: string; due_at?: string | null; notes?: string | null }>
+    payload: Partial<{
+      vaccine_name: string
+      administered_at: string
+      due_at?: string | null
+      notes?: string | null
+    }>
   ) => {
     const updated = await updateVaccination(petId, id, payload)
     setItems((prev) => prev.map((w) => (w.id === id ? updated : w)))

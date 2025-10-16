@@ -22,13 +22,16 @@ describe('WaitlistForm', () => {
   it('submits email successfully and calls onSuccess', async () => {
     server.use(
       http.post('http://localhost:3000/api/waitlist', () => {
-        return HttpResponse.json({
-          data: {
-            email: 'test@example.com',
-            status: 'pending',
-            created_at: '2024-01-01T00:00:00Z'
-          }
-        }, { status: 201 })
+        return HttpResponse.json(
+          {
+            data: {
+              email: 'test@example.com',
+              status: 'pending',
+              created_at: '2024-01-01T00:00:00Z',
+            },
+          },
+          { status: 201 }
+        )
       })
     )
 
@@ -58,9 +61,12 @@ describe('WaitlistForm', () => {
   it('shows error when email is already on waitlist', async () => {
     server.use(
       http.post('http://localhost:3000/api/waitlist', () => {
-        return HttpResponse.json({
-          error: 'Email is already on waitlist'
-        }, { status: 409 })
+        return HttpResponse.json(
+          {
+            error: 'Email is already on waitlist',
+          },
+          { status: 409 }
+        )
       })
     )
 
@@ -80,9 +86,12 @@ describe('WaitlistForm', () => {
   it('shows error when email is already registered', async () => {
     server.use(
       http.post('http://localhost:3000/api/waitlist', () => {
-        return HttpResponse.json({
-          error: 'Email is already registered'
-        }, { status: 409 })
+        return HttpResponse.json(
+          {
+            error: 'Email is already registered',
+          },
+          { status: 409 }
+        )
       })
     )
 
@@ -102,14 +111,17 @@ describe('WaitlistForm', () => {
   it('shows loading state during submission', async () => {
     server.use(
       http.post('http://localhost:3000/api/waitlist', async () => {
-        await new Promise(resolve => setTimeout(resolve, 100))
-        return HttpResponse.json({
-          data: {
-            email: 'test@example.com',
-            status: 'pending',
-            created_at: '2024-01-01T00:00:00Z'
-          }
-        }, { status: 201 })
+        await new Promise((resolve) => setTimeout(resolve, 100))
+        return HttpResponse.json(
+          {
+            data: {
+              email: 'test@example.com',
+              status: 'pending',
+              created_at: '2024-01-01T00:00:00Z',
+            },
+          },
+          { status: 201 }
+        )
       })
     )
 
@@ -131,9 +143,12 @@ describe('WaitlistForm', () => {
   it('handles server errors gracefully', async () => {
     server.use(
       http.post('http://localhost:3000/api/waitlist', () => {
-        return HttpResponse.json({
-          error: 'Server error'
-        }, { status: 500 })
+        return HttpResponse.json(
+          {
+            error: 'Server error',
+          },
+          { status: 500 }
+        )
       })
     )
 
@@ -153,9 +168,12 @@ describe('WaitlistForm', () => {
   it('clears error when user starts typing again', async () => {
     server.use(
       http.post('http://localhost:3000/api/waitlist', () => {
-        return HttpResponse.json({
-          error: 'Email is already on waitlist'
-        }, { status: 409 })
+        return HttpResponse.json(
+          {
+            error: 'Email is already on waitlist',
+          },
+          { status: 409 }
+        )
       })
     )
 

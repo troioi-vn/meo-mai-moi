@@ -12,8 +12,8 @@ use Tests\Traits\CreatesUsers;
 
 class InvitationControllerTest extends TestCase
 {
-    use RefreshDatabase;
     use CreatesUsers;
+    use RefreshDatabase;
 
     protected function setUp(): void
     {
@@ -35,13 +35,13 @@ class InvitationControllerTest extends TestCase
                     'status',
                     'expires_at',
                     'invitation_url',
-                    'created_at'
-                ]
+                    'created_at',
+                ],
             ]);
 
         $this->assertDatabaseHas('invitations', [
             'inviter_user_id' => $user->id,
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
     }
 
@@ -58,7 +58,7 @@ class InvitationControllerTest extends TestCase
         $expiryDate = Carbon::now()->addDays(7)->toISOString();
 
         $response = $this->postJson('/api/invitations', [
-            'expires_at' => $expiryDate
+            'expires_at' => $expiryDate,
         ]);
 
         $response->assertStatus(201);
@@ -73,14 +73,14 @@ class InvitationControllerTest extends TestCase
         $email = 'invite@example.com';
 
         $response = $this->postJson('/api/invitations', [
-            'email' => $email
+            'email' => $email,
         ]);
 
         $response->assertStatus(201);
 
         $this->assertDatabaseHas('invitations', [
             'inviter_user_id' => $user->id,
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
     }
 
@@ -122,9 +122,9 @@ class InvitationControllerTest extends TestCase
                         'expires_at',
                         'invitation_url',
                         'created_at',
-                        'recipient'
-                    ]
-                ]
+                        'recipient',
+                    ],
+                ],
             ]);
 
         // Should only see their own invitations
@@ -145,14 +145,14 @@ class InvitationControllerTest extends TestCase
         $user = $this->createUserAndLogin();
         $invitation = Invitation::factory()->create([
             'inviter_user_id' => $user->id,
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
 
         $response = $this->deleteJson("/api/invitations/{$invitation->id}");
 
         $response->assertStatus(200)
             ->assertJson([
-                'data' => []
+                'data' => [],
             ]);
 
         $invitation->refresh();
@@ -165,14 +165,14 @@ class InvitationControllerTest extends TestCase
         $otherUser = User::factory()->create();
         $invitation = Invitation::factory()->create([
             'inviter_user_id' => $otherUser->id,
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
 
         $response = $this->deleteJson("/api/invitations/{$invitation->id}");
 
         $response->assertStatus(404)
             ->assertJson([
-                'error' => 'Invitation not found or cannot be revoked'
+                'error' => 'Invitation not found or cannot be revoked',
             ]);
 
         $invitation->refresh();
@@ -186,14 +186,14 @@ class InvitationControllerTest extends TestCase
         $invitation = Invitation::factory()->create([
             'inviter_user_id' => $user->id,
             'status' => 'accepted',
-            'recipient_user_id' => $recipient->id
+            'recipient_user_id' => $recipient->id,
         ]);
 
         $response = $this->deleteJson("/api/invitations/{$invitation->id}");
 
         $response->assertStatus(404)
             ->assertJson([
-                'error' => 'Invitation not found or cannot be revoked'
+                'error' => 'Invitation not found or cannot be revoked',
             ]);
 
         $invitation->refresh();
@@ -208,7 +208,7 @@ class InvitationControllerTest extends TestCase
 
         $response->assertStatus(404)
             ->assertJson([
-                'error' => 'Invitation not found or cannot be revoked'
+                'error' => 'Invitation not found or cannot be revoked',
             ]);
     }
 
@@ -232,15 +232,15 @@ class InvitationControllerTest extends TestCase
         // Create invitations with different timestamps
         $invitation1 = Invitation::factory()->create([
             'inviter_user_id' => $user->id,
-            'created_at' => Carbon::now()->subDays(2)
+            'created_at' => Carbon::now()->subDays(2),
         ]);
         $invitation2 = Invitation::factory()->create([
             'inviter_user_id' => $user->id,
-            'created_at' => Carbon::now()->subDay()
+            'created_at' => Carbon::now()->subDay(),
         ]);
         $invitation3 = Invitation::factory()->create([
             'inviter_user_id' => $user->id,
-            'created_at' => Carbon::now()
+            'created_at' => Carbon::now(),
         ]);
 
         $response = $this->getJson('/api/invitations');
@@ -263,7 +263,7 @@ class InvitationControllerTest extends TestCase
         $invitation = Invitation::factory()->create([
             'inviter_user_id' => $user->id,
             'status' => 'accepted',
-            'recipient_user_id' => $recipient->id
+            'recipient_user_id' => $recipient->id,
         ]);
 
         $response = $this->getJson('/api/invitations');

@@ -39,7 +39,8 @@ export const MedicalNotesSection: React.FC<{
       toast.success('Medical note added')
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } }).response?.status
-      const message = (err as { response?: { data?: { message?: string } } }).response?.data?.message
+      const message = (err as { response?: { data?: { message?: string } } }).response?.data
+        ?.message
       if (status === 422) {
         setServerError(message ?? 'Validation error')
       } else {
@@ -60,7 +61,8 @@ export const MedicalNotesSection: React.FC<{
       toast.success('Medical note updated')
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } }).response?.status
-      const message = (err as { response?: { data?: { message?: string } } }).response?.data?.message
+      const message = (err as { response?: { data?: { message?: string } } }).response?.data
+        ?.message
       if (status === 422) {
         setServerError(message ?? 'Validation error')
       } else {
@@ -85,7 +87,12 @@ export const MedicalNotesSection: React.FC<{
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-2xl font-bold">Medical notes</h2>
         {canEdit && !adding && !editing && (
-          <Button size="sm" onClick={() => { setAdding(true) }}>
+          <Button
+            size="sm"
+            onClick={() => {
+              setAdding(true)
+            }}
+          >
             Add
           </Button>
         )}
@@ -128,23 +135,34 @@ export const MedicalNotesSection: React.FC<{
             </div>
             {canEdit && (
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => { setEditing(n) }}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setEditing(n)
+                  }}
+                >
                   Edit
                 </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="destructive">Delete</Button>
+                    <Button size="sm" variant="destructive">
+                      Delete
+                    </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete medical note?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone.
-                      </AlertDialogDescription>
+                      <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => { void handleDelete(n.id) }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      <AlertDialogAction
+                        onClick={() => {
+                          void handleDelete(n.id)
+                        }}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
                         Delete
                       </AlertDialogAction>
                     </AlertDialogFooter>

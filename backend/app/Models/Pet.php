@@ -57,14 +57,13 @@ class Pet extends Model
     {
         if ($this->status !== PetStatus::DELETED) {
             $this->status = PetStatus::DELETED;
+
             return $this->save();
         }
 
         // If already marked as DELETED, perform actual soft delete
         return parent::delete();
     }
-
-
 
     /**
      * Get the pet type this pet belongs to

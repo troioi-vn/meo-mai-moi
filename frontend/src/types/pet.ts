@@ -90,7 +90,7 @@ export interface PlacementRequest {
 export interface TransferRequest {
   id: number
   pet_id?: number
-  
+
   placement_request_id?: number
   helper_profile_id?: number
   initiator_user_id?: number
@@ -130,7 +130,12 @@ export const calculateAge = (birthday: string): number => {
 }
 
 // Returns a human friendly age/approximation string based on precision fields
-export const formatPetAge = (pet: Pick<Pet, 'birthday' | 'birthday_precision' | 'birthday_year' | 'birthday_month' | 'birthday_day'>): string => {
+export const formatPetAge = (
+  pet: Pick<
+    Pet,
+    'birthday' | 'birthday_precision' | 'birthday_year' | 'birthday_month' | 'birthday_day'
+  >
+): string => {
   const precision = pet.birthday_precision ?? (pet.birthday ? 'day' : 'unknown')
   const today = new Date()
   switch (precision) {
@@ -142,18 +147,29 @@ export const formatPetAge = (pet: Pick<Pet, 'birthday' | 'birthday_precision' | 
       return 'Age unknown'
     case 'month': {
       if (!pet.birthday_year || !pet.birthday_month) return 'Age unknown'
-      const years = today.getFullYear() - pet.birthday_year - (today.getMonth() + 1 < pet.birthday_month ? 1 : 0)
+      const years =
+        today.getFullYear() -
+        pet.birthday_year -
+        (today.getMonth() + 1 < pet.birthday_month ? 1 : 0)
       if (years <= 0) {
         // Show months old if less than a year
-        const monthsDiff = (today.getFullYear() - pet.birthday_year) * 12 + (today.getMonth() + 1 - pet.birthday_month)
-        return monthsDiff <= 1 ? '1 month old (approx)' : `${String(monthsDiff)} months old (approx)`
+        const monthsDiff =
+          (today.getFullYear() - pet.birthday_year) * 12 +
+          (today.getMonth() + 1 - pet.birthday_month)
+        return monthsDiff <= 1
+          ? '1 month old (approx)'
+          : `${String(monthsDiff)} months old (approx)`
       }
       return years === 1 ? '≈1 year old' : `≈${String(years)} years old`
     }
     case 'year': {
       if (!pet.birthday_year) return 'Age unknown'
       const years = today.getFullYear() - pet.birthday_year
-      return years <= 0 ? 'Less than 1 year (approx)' : (years === 1 ? '≈1 year old' : `≈${String(years)} years old`)
+      return years <= 0
+        ? 'Less than 1 year (approx)'
+        : years === 1
+          ? '≈1 year old'
+          : `≈${String(years)} years old`
     }
     case 'unknown':
     default:

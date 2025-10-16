@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\EmailConfigurationStatus;
 use App\Models\EmailConfiguration;
 use Illuminate\Database\Seeder;
 
@@ -20,7 +21,7 @@ class EmailConfigurationSeeder extends Seeder
             [
                 'name' => 'SMTP Configuration',
                 'description' => 'SMTP email configuration for dev.meo-mai-moi.com',
-                'is_active' => false,
+                'status' => EmailConfigurationStatus::INACTIVE,
                 'config' => [
                     'host' => 'smtp.gmail.com',
                     'port' => 587,
@@ -42,7 +43,7 @@ class EmailConfigurationSeeder extends Seeder
             [
                 'name' => 'Mailgun Configuration',
                 'description' => 'Mailgun API configuration for dev.meo-mai-moi.com',
-                'is_active' => false,
+                'status' => EmailConfigurationStatus::INACTIVE,
                 'config' => [
                     'domain' => 'dev.meo-mai-moi.com',
                     'api_key' => 'key-your-mailgun-api-key-here',

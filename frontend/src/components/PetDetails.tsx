@@ -10,8 +10,6 @@ import { usePlacementInfo } from '@/hooks/usePlacementInfo'
 import { PlacementRequestsSection } from '@/components/pet-profile/PlacementRequestsSection'
 import { PlacementResponseSection } from '@/components/pet-profile/PlacementResponseSection'
 
-
-
 interface PetDetailsProps {
   pet: Pet
   onDeletePlacementRequest: (id: number) => void | Promise<void>
@@ -36,7 +34,12 @@ const PetDetails: React.FC<PetDetailsProps> = ({
   const imageUrl = useMemo(() => deriveImageUrl(pet), [pet])
 
   const placementInfo = usePlacementInfo(pet, user?.id)
-  const { supportsPlacement, hasActivePlacementRequest, activePlacementRequest, myPendingTransfer } = placementInfo
+  const {
+    supportsPlacement,
+    hasActivePlacementRequest,
+    activePlacementRequest,
+    myPendingTransfer,
+  } = placementInfo
 
   const placementRequests = pet.placement_requests ?? []
   const showPlacementRequests = supportsPlacement && placementRequests.length > 0
@@ -54,7 +57,9 @@ const PetDetails: React.FC<PetDetailsProps> = ({
           alt={pet.name}
           className={`w-full h-64 object-cover ${isDeceased ? 'grayscale' : ''}`}
         />
-        <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-sm font-medium ${statusClasses}`}>
+        <div
+          className={`absolute top-4 right-4 px-3 py-1 rounded-full text-sm font-medium ${statusClasses}`}
+        >
           {statusDisplay}
         </div>
       </div>
@@ -75,11 +80,21 @@ const PetDetails: React.FC<PetDetailsProps> = ({
           {pet.viewer_permissions?.can_edit && (
             <div className="flex flex-wrap justify-end gap-2">
               {supportsPlacement && onOpenPlacementRequest && (
-                <Button onClick={() => { onOpenPlacementRequest() }} variant="outline">
+                <Button
+                  onClick={() => {
+                    onOpenPlacementRequest()
+                  }}
+                  variant="outline"
+                >
                   Placement Requests
                 </Button>
               )}
-              <Button onClick={() => { handleEditClick() }} variant="outline">
+              <Button
+                onClick={() => {
+                  handleEditClick()
+                }}
+                variant="outline"
+              >
                 Edit
               </Button>
             </div>
@@ -122,7 +137,8 @@ const PetDetails: React.FC<PetDetailsProps> = ({
           {!supportsPlacement && (
             <div className="border-t pt-4">
               <p className="text-sm text-muted-foreground text-center">
-                Placement requests are not available for {pet.pet_type.name.toLowerCase()}s at this time.
+                Placement requests are not available for {pet.pet_type.name.toLowerCase()}s at this
+                time.
               </p>
             </div>
           )}
@@ -132,4 +148,3 @@ const PetDetails: React.FC<PetDetailsProps> = ({
   )
 }
 export default PetDetails
-

@@ -150,10 +150,8 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
                 />
               </>
             )}
-
         </div>
       </CardContent>
     </Card>
   )
 }
-

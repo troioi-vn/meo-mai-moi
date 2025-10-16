@@ -52,12 +52,12 @@ class SettingsController extends Controller
             $settings = $this->settingsService->getPublicSettings();
 
             return response()->json([
-                'data' => $settings
+                'data' => $settings,
             ])->header('Cache-Control', 'public, max-age=300'); // Cache for 5 minutes
 
         } catch (\Exception $e) {
             return $this->sendError(
-                'Unable to retrieve settings: ' . $e->getMessage(),
+                'Unable to retrieve settings: '.$e->getMessage(),
                 500
             );
         }
@@ -72,12 +72,12 @@ class SettingsController extends Controller
             $isEnabled = $this->settingsService->isInviteOnlyEnabled();
 
             return response()->json([
-                'invite_only_enabled' => $isEnabled
+                'invite_only_enabled' => $isEnabled,
             ])->header('Cache-Control', 'public, max-age=300');
 
         } catch (\Exception $e) {
             return $this->sendError(
-                'Unable to retrieve invite-only status: ' . $e->getMessage(),
+                'Unable to retrieve invite-only status: '.$e->getMessage(),
                 500
             );
         }

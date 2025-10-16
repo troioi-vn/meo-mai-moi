@@ -31,12 +31,24 @@ const installMemHandlers = () => {
         data: {
           data,
           links: { first: null, last: null, prev: null, next: null },
-          meta: { current_page: page, from: 1, last_page: 1, path: request.url, per_page: 25, to: data.length, total: data.length },
+          meta: {
+            current_page: page,
+            from: 1,
+            last_page: 1,
+            path: request.url,
+            per_page: 25,
+            to: data.length,
+            total: data.length,
+          },
         },
       })
     }),
     http.post('http://localhost:3000/api/pets/:petId/microchips', async ({ params, request }) => {
-      const body = await request.json() as { chip_number?: string; issuer?: string | null; implanted_at?: string | null }
+      const body = (await request.json()) as {
+        chip_number?: string
+        issuer?: string | null
+        implanted_at?: string | null
+      }
       if (!body.chip_number || body.chip_number.trim().length < 10) {
         return HttpResponse.json({ message: 'Validation error' }, { status: 422 })
       }
@@ -52,14 +64,21 @@ const installMemHandlers = () => {
       mem.unshift(item)
       return HttpResponse.json({ data: item }, { status: 201 })
     }),
-    http.put('http://localhost:3000/api/pets/:petId/microchips/:microchipId', async ({ params, request }) => {
-      const body = await request.json() as Partial<{ chip_number: string; issuer?: string | null; implanted_at?: string | null }>
-      const id = Number(params.microchipId)
-      const idx = mem.findIndex((m) => m.id === id)
-      if (idx === -1) return new HttpResponse(null, { status: 404 })
-      mem[idx] = { ...mem[idx], ...body, updated_at: now() }
-      return HttpResponse.json({ data: mem[idx] })
-    }),
+    http.put(
+      'http://localhost:3000/api/pets/:petId/microchips/:microchipId',
+      async ({ params, request }) => {
+        const body = (await request.json()) as Partial<{
+          chip_number: string
+          issuer?: string | null
+          implanted_at?: string | null
+        }>
+        const id = Number(params.microchipId)
+        const idx = mem.findIndex((m) => m.id === id)
+        if (idx === -1) return new HttpResponse(null, { status: 404 })
+        mem[idx] = { ...mem[idx], ...body, updated_at: now() }
+        return HttpResponse.json({ data: mem[idx] })
+      }
+    ),
     http.delete('http://localhost:3000/api/pets/:petId/microchips/:microchipId', ({ params }) => {
       const id = Number(params.microchipId)
       mem = mem.filter((m) => m.id !== id)
@@ -86,9 +105,9 @@ describe('MicrochipsSection', () => {
 
     // Start adding
     fireEvent.click(screen.getByRole('button', { name: 'Add' }))
-  const chipInput = screen.getByPlaceholderText('e.g., 982000123456789')
+    const chipInput = screen.getByPlaceholderText('e.g., 982000123456789')
     fireEvent.change(chipInput, { target: { value: '982000123456789' } })
-  const issuerInput = screen.getByPlaceholderText('HomeAgain, AVID, ...')
+    const issuerInput = screen.getByPlaceholderText('HomeAgain, AVID, ...')
     fireEvent.change(issuerInput, { target: { value: 'HomeAgain' } })
 
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
@@ -108,7 +127,7 @@ describe('MicrochipsSection', () => {
     })
 
     fireEvent.click(screen.getByRole('button', { name: 'Add' }))
-  const chipInput = screen.getByPlaceholderText('e.g., 982000123456789')
+    const chipInput = screen.getByPlaceholderText('e.g., 982000123456789')
     fireEvent.change(chipInput, { target: { value: 'short' } })
 
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
@@ -126,14 +145,16 @@ describe('MicrochipsSection', () => {
 
     // Add one
     fireEvent.click(screen.getByRole('button', { name: 'Add' }))
-    fireEvent.change(screen.getByPlaceholderText('e.g., 982000123456789'), { target: { value: '982000123456789' } })
+    fireEvent.change(screen.getByPlaceholderText('e.g., 982000123456789'), {
+      target: { value: '982000123456789' },
+    })
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
 
     await screen.findByText('982000123456789')
 
     // Edit
     fireEvent.click(screen.getByRole('button', { name: 'Edit' }))
-  const issuerInput = screen.getByPlaceholderText('HomeAgain, AVID, ...')
+    const issuerInput = screen.getByPlaceholderText('HomeAgain, AVID, ...')
     fireEvent.change(issuerInput, { target: { value: 'AVID' } })
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
 
@@ -153,8 +174,16 @@ describe('MicrochipsSection', () => {
 
   it('renders read-only when canEdit is false', async () => {
     // Preseed memory
-  resetMem()
-    mem.push({ id: 1, pet_id: 1, chip_number: '982000111111111', issuer: null, implanted_at: null, created_at: now(), updated_at: now() })
+    resetMem()
+    mem.push({
+      id: 1,
+      pet_id: 1,
+      chip_number: '982000111111111',
+      issuer: null,
+      implanted_at: null,
+      created_at: now(),
+      updated_at: now(),
+    })
     installMemHandlers()
 
     render(<MicrochipsSection petId={1} canEdit={false} />)

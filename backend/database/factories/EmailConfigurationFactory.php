@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\EmailConfigurationStatus;
 use App\Models\EmailConfiguration;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -25,7 +26,7 @@ class EmailConfigurationFactory extends Factory
             'provider' => $provider,
             'name' => $this->faker->company().' Mail',
             'description' => $this->faker->sentence(),
-            'is_active' => false,
+            'status' => EmailConfigurationStatus::INACTIVE,
             'config' => $this->getConfigForProvider($provider),
         ];
     }
@@ -72,7 +73,7 @@ class EmailConfigurationFactory extends Factory
     public function active(): static
     {
         return $this->state(fn (array $attributes) => [
-            'is_active' => true,
+            'status' => EmailConfigurationStatus::ACTIVE,
         ]);
     }
 
@@ -82,7 +83,17 @@ class EmailConfigurationFactory extends Factory
     public function inactive(): static
     {
         return $this->state(fn (array $attributes) => [
-            'is_active' => false,
+            'status' => EmailConfigurationStatus::INACTIVE,
+        ]);
+    }
+
+    /**
+     * Mark configuration as draft.
+     */
+    public function draft(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => EmailConfigurationStatus::DRAFT,
         ]);
     }
 

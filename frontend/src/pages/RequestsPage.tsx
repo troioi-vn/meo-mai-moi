@@ -109,10 +109,7 @@ const RequestsPage = () => {
               <SelectItem value="adoption">Adoption</SelectItem>
             </SelectContent>
           </Select>
-          <Select
-            value={petTypeFilter}
-            onValueChange={setPetTypeFilter}
-          >
+          <Select value={petTypeFilter} onValueChange={setPetTypeFilter}>
             <SelectTrigger className="w-[220px]" aria-label="Pet Type Filter">
               <SelectValue placeholder="All Pet Types" />
             </SelectTrigger>

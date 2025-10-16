@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\PetTypeStatus;
 use App\Filament\Resources\PetTypeResource\Pages;
 use App\Models\PetType;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -73,9 +75,14 @@ class PetTypeResource extends Resource
                     ->default(false)
                     ->helperText('Enable microchips feature for this pet type'),
 
-
-                Toggle::make('is_active')
-                    ->default(true)
+                Select::make('status')
+                    ->options([
+                        PetTypeStatus::ACTIVE->value => 'Active',
+                        PetTypeStatus::INACTIVE->value => 'Inactive',
+                        PetTypeStatus::ARCHIVED->value => 'Archived',
+                    ])
+                    ->default(PetTypeStatus::ACTIVE->value)
+                    ->required()
                     ->helperText('Inactive pet types cannot be selected when creating new pets')
                     ->disabled(fn ($record) => $record?->slug === 'cat'), // Cat cannot be deactivated
 
@@ -114,7 +121,12 @@ class PetTypeResource extends Resource
                         return $state;
                     }),
 
-                BooleanColumn::make('is_active')
+                BadgeColumn::make('status')
+                    ->colors([
+                        'success' => PetTypeStatus::ACTIVE->value,
+                        'warning' => PetTypeStatus::INACTIVE->value,
+                        'gray' => PetTypeStatus::ARCHIVED->value,
+                    ])
                     ->sortable(),
 
                 BooleanColumn::make('placement_requests_allowed')
@@ -157,11 +169,12 @@ class PetTypeResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                TernaryFilter::make('is_active')
-                    ->label('Active Status')
-                    ->boolean()
-                    ->trueLabel('Active only')
-                    ->falseLabel('Inactive only')
+                Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        PetTypeStatus::ACTIVE->value => 'Active',
+                        PetTypeStatus::INACTIVE->value => 'Inactive',
+                        PetTypeStatus::ARCHIVED->value => 'Archived',
+                    ])
                     ->native(false),
 
                 TernaryFilter::make('is_system')
@@ -176,23 +189,23 @@ class PetTypeResource extends Resource
                 EditAction::make()
                     ->disabled(fn ($record) => $record->slug === 'cat' && request()->has('deactivate')),
                 Tables\Actions\Action::make('toggle_active')
-                    ->label(fn ($record) => $record->is_active ? 'Deactivate' : 'Activate')
-                    ->icon(fn ($record) => $record->is_active ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
-                    ->color(fn ($record) => $record->is_active ? 'danger' : 'success')
-                    ->disabled(fn ($record) => $record->slug === 'cat' && $record->is_active) // Cannot deactivate Cat
+                    ->label(fn ($record) => $record->isActive() ? 'Deactivate' : 'Activate')
+                    ->icon(fn ($record) => $record->isActive() ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
+                    ->color(fn ($record) => $record->isActive() ? 'danger' : 'success')
+                    ->disabled(fn ($record) => $record->slug === 'cat' && $record->isActive()) // Cannot deactivate Cat
                     ->requiresConfirmation()
-                    ->modalHeading(fn ($record) => ($record->is_active ? 'Deactivate' : 'Activate').' Pet Type')
+                    ->modalHeading(fn ($record) => ($record->isActive() ? 'Deactivate' : 'Activate').' Pet Type')
                     ->modalDescription(function ($record) {
-                        if ($record->slug === 'cat' && $record->is_active) {
+                        if ($record->slug === 'cat' && $record->isActive()) {
                             return 'Cat pet type cannot be deactivated as it is required by the system.';
                         }
 
-                        return $record->is_active
+                        return $record->isActive()
                             ? 'This will prevent new pets of this type from being created.'
                             : 'This will allow new pets of this type to be created again.';
                     })
                     ->action(function ($record) {
-                        if ($record->slug === 'cat' && $record->is_active) {
+                        if ($record->slug === 'cat' && $record->isActive()) {
                             Notification::make()
                                 ->title('Cannot deactivate Cat pet type')
                                 ->body('Cat is a system pet type and cannot be deactivated.')
@@ -202,10 +215,14 @@ class PetTypeResource extends Resource
                             return;
                         }
 
-                        $record->update(['is_active' => ! $record->is_active]);
+                        if ($record->isActive()) {
+                            $record->markAsInactive();
+                        } else {
+                            $record->markAsActive();
+                        }
 
                         Notification::make()
-                            ->title('Pet type '.($record->is_active ? 'activated' : 'deactivated'))
+                            ->title('Pet type '.($record->isActive() ? 'activated' : 'deactivated'))
                             ->success()
                             ->send();
                     }),

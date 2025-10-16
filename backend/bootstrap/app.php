@@ -26,11 +26,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'validate.invitation' => \App\Http\Middleware\ValidateInvitationRequest::class,
         ]);
 
-    // Note: Avoid trusting all proxies by default, which can trigger null IP edge cases
-    // in Symfony's IpUtils when REMOTE_ADDR is missing. If needed in production behind
-    // a real proxy/load balancer, set concrete IPs/CIDRs here. For local/container use,
-    // it's safe to trust the local nginx reverse proxy so Laravel reads X-Forwarded-* headers.
-    $middleware->trustProxies(at: ['127.0.0.1', '::1']);
+        // Note: Avoid trusting all proxies by default, which can trigger null IP edge cases
+        // in Symfony's IpUtils when REMOTE_ADDR is missing. If needed in production behind
+        // a real proxy/load balancer, set concrete IPs/CIDRs here. For local/container use,
+        // it's safe to trust the local nginx reverse proxy so Laravel reads X-Forwarded-* headers.
+        $middleware->trustProxies(at: ['127.0.0.1', '::1']);
 
         $middleware->api(append: [
             Illuminate\Http\Middleware\HandleCors::class,

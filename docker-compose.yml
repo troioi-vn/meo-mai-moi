@@ -27,6 +27,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 30s
     restart: unless-stopped
 
   db:
@@ -45,7 +46,7 @@ services:
       # Use container env vars (escaped $ -> $$) so expansion happens inside container, not by compose
       test:
         - CMD-SHELL
-        - PGUSER=$${POSTGRES_USER} PGPASSWORD=$${POSTGRES_PASSWORD} pg_isready -q -d $${POSTGRES_DB} -h 127.0.0.1 -p 5432
+        - PGUSER=$${POSTGRES_USER} PGPASSWORD=$${POSTGRES_PASSWORD} pg_isready -q -d $${POSTGRES_DB} -h 127.0.0.1 -p 5432 && PGPASSWORD=$${POSTGRES_PASSWORD} psql -U $$POSTGRES_USER -d $$POSTGRES_DB -h 127.0.0.1 -c 'SELECT 1'
       interval: 10s
       timeout: 5s
       retries: 5

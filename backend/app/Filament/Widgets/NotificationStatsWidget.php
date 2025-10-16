@@ -43,7 +43,7 @@ class NotificationStatsWidget extends BaseWidget
             : 0;
 
         // Email configuration status
-        $activeEmailConfigs = EmailConfiguration::where('is_active', true)->count();
+        $activeEmailConfigs = EmailConfiguration::active()->count();
         $totalEmailConfigs = EmailConfiguration::count();
 
         // Queue status for email jobs

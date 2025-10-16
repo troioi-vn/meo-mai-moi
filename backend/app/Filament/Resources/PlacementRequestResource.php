@@ -14,7 +14,6 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -131,9 +130,7 @@ class PlacementRequestResource extends Resource
                 DateTimePicker::make('expires_at')
                     ->label('Expires At'),
 
-                Toggle::make('is_active')
-                    ->label('Active')
-                    ->default(true),
+                // Status is managed through the status field above
             ]);
     }
 
@@ -233,9 +230,11 @@ class PlacementRequestResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->color(fn ($state) => $state && $state < now() ? 'danger' : null),
 
-                TextColumn::make('is_active')
-                    ->label('Active')
+                TextColumn::make('status')
+                    ->label('Status')
                     ->badge()
+                    ->getStateUsing(fn ($record) => $record->isActive() ? 'Active' : 'Inactive')
+                    ->color(fn ($record) => $record->isActive() ? 'success' : 'gray')
                     ->formatStateUsing(fn (bool $state): string => $state ? 'Active' : 'Inactive')
                     ->colors([
                         'success' => true,
@@ -358,7 +357,7 @@ class PlacementRequestResource extends Resource
 
                 Filter::make('active_only')
                     ->label('Active Only')
-                    ->query(fn (Builder $query): Builder => $query->where('is_active', true))
+                    ->query(fn (Builder $query): Builder => $query->where('status', \App\Enums\PlacementRequestStatus::OPEN))
                     ->default(),
 
                 Filter::make('has_responses')

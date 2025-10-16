@@ -15,9 +15,13 @@ class MedicalNotesFeatureTest extends TestCase
     use RefreshDatabase;
 
     protected User $owner;
+
     protected User $otherUser;
+
     protected PetType $catType;
+
     protected PetType $dogType;
+
     protected Pet $pet;
 
     protected function setUp(): void

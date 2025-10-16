@@ -21,7 +21,11 @@ interface Props {
   onDeletePlacementRequest: (id: number) => void | Promise<void>
 }
 
-export const PlacementRequestsSection: React.FC<Props> = ({ placementRequests, canEdit, onDeletePlacementRequest }) => {
+export const PlacementRequestsSection: React.FC<Props> = ({
+  placementRequests,
+  canEdit,
+  onDeletePlacementRequest,
+}) => {
   const handleDelete = useCallback(
     async (requestId: number) => {
       try {
@@ -40,9 +44,14 @@ export const PlacementRequestsSection: React.FC<Props> = ({ placementRequests, c
   return (
     <div className="space-y-2">
       {placementRequests.map((request) => (
-        <div key={request.id} className="flex justify-between items-center p-3 bg-background rounded border">
+        <div
+          key={request.id}
+          className="flex justify-between items-center p-3 bg-background rounded border"
+        >
           <div>
-            <span className="font-medium">{request.request_type.replace('_', ' ').toUpperCase()}</span>
+            <span className="font-medium">
+              {request.request_type.replace('_', ' ').toUpperCase()}
+            </span>
             {request.notes && <p className="text-sm text-muted-foreground">{request.notes}</p>}
           </div>
           {canEdit && (
@@ -56,7 +65,8 @@ export const PlacementRequestsSection: React.FC<Props> = ({ placementRequests, c
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete Placement Request</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to delete this placement request? This action cannot be undone.
+                    Are you sure you want to delete this placement request? This action cannot be
+                    undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

@@ -33,7 +33,7 @@ class CapabilityChecker
 
     private function ensurePetTypeLoaded(Pet $pet): void
     {
-        if (!$pet->relationLoaded('petType')) {
+        if (! $pet->relationLoaded('petType')) {
             $pet->load('petType');
         }
     }
@@ -56,6 +56,7 @@ class CapabilityChecker
     private function supportsStaticCapability(Pet $pet, string $capability): bool
     {
         $allowedTypes = self::STATIC_CAPABILITIES[$capability] ?? [];
+
         return in_array($pet->petType->slug, $allowedTypes);
     }
 }

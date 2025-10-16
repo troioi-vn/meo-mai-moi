@@ -24,8 +24,8 @@ class SettingsControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'data' => [
-                    'invite_only_enabled'
-                ]
+                    'invite_only_enabled',
+                ],
             ]);
     }
 
@@ -36,8 +36,8 @@ class SettingsControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson([
                 'data' => [
-                    'invite_only_enabled' => false
-                ]
+                    'invite_only_enabled' => false,
+                ],
             ]);
     }
 
@@ -50,8 +50,8 @@ class SettingsControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson([
                 'data' => [
-                    'invite_only_enabled' => true
-                ]
+                    'invite_only_enabled' => true,
+                ],
             ]);
     }
 
@@ -109,8 +109,8 @@ class SettingsControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'data' => [
-                    'invite_only_enabled'
-                ]
+                    'invite_only_enabled',
+                ],
             ]);
 
         $data = $response->json('data');
@@ -140,8 +140,8 @@ class SettingsControllerTest extends TestCase
             $response->assertStatus(200)
                 ->assertJson([
                     'data' => [
-                        'invite_only_enabled' => $expectedResponse
-                    ]
+                        'invite_only_enabled' => $expectedResponse,
+                    ],
                 ]);
         }
     }
@@ -149,7 +149,7 @@ class SettingsControllerTest extends TestCase
     public function test_public_settings_endpoint_supports_cors()
     {
         $response = $this->getJson('/api/settings/public', [
-            'Origin' => 'https://example.com'
+            'Origin' => 'https://example.com',
         ]);
 
         $response->assertStatus(200);

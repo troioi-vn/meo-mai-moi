@@ -17,14 +17,13 @@ class EditEmailConfiguration extends EditRecord
         return [
             Actions\Action::make('test_connection')
                 ->label(
-                    fn (): string =>
-                    $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'
+                    fn (): string => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'
                         ? 'Send Test Email' : 'Test Connection'
                 )
                 ->icon('heroicon-o-signal')
                 ->color('info')
                 ->action(function (): void {
-                    if (!$this->record instanceof \App\Models\EmailConfiguration) {
+                    if (! $this->record instanceof \App\Models\EmailConfiguration) {
                         return;
                     }
 
@@ -34,12 +33,13 @@ class EditEmailConfiguration extends EditRecord
                         // For SMTP, check if test email address is provided
                         if ($this->record->provider === 'smtp') {
                             $testEmailAddress = $this->record->config['test_email_address'] ?? null;
-                            if (!$testEmailAddress) {
+                            if (! $testEmailAddress) {
                                 Notification::make()
                                     ->title('Test Email Address Required')
                                     ->body('Please configure a test email address in the SMTP settings before sending a test email.')
                                     ->warning()
                                     ->send();
+
                                 return;
                             }
 
@@ -51,7 +51,7 @@ class EditEmailConfiguration extends EditRecord
                         if ($testResult['success']) {
                             $title = $this->record->provider === 'smtp' ? 'Test Email Sent Successfully' : 'Connection Test Successful';
                             $body = $this->record->provider === 'smtp'
-                                ? 'Test email was sent successfully to ' . ($this->record->config['test_email_address'] ?? 'the configured address') . '.'
+                                ? 'Test email was sent successfully to '.($this->record->config['test_email_address'] ?? 'the configured address').'.'
                                 : 'Email configuration is working correctly. A test email was sent.';
 
                             Notification::make()
@@ -64,7 +64,7 @@ class EditEmailConfiguration extends EditRecord
                             $body = 'Email configuration test failed. Please check your settings.';
 
                             if (isset($testResult['error'])) {
-                                $body = 'Test failed: ' . $testResult['error'];
+                                $body = 'Test failed: '.$testResult['error'];
                             }
 
                             Notification::make()
@@ -83,13 +83,11 @@ class EditEmailConfiguration extends EditRecord
                 })
                 ->requiresConfirmation()
                 ->modalHeading(
-                    fn (): string =>
-                    $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'
+                    fn (): string => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'
                         ? 'Send Test Email' : 'Test Email Configuration'
                 )
                 ->modalDescription(
-                    fn (): string =>
-                    $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'
+                    fn (): string => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'
                         ? 'This will send a test email to the configured test email address. Continue?'
                         : 'This will send a test email to verify the configuration. Continue?'
                 ),
@@ -98,9 +96,9 @@ class EditEmailConfiguration extends EditRecord
                 ->label('Activate Configuration')
                 ->icon('heroicon-o-power')
                 ->color('success')
-                ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && ! $this->record->is_active && $this->record->isValid())
+                ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && ! $this->record->isActive() && $this->record->isValid())
                 ->action(function (): void {
-                    if (!$this->record instanceof \App\Models\EmailConfiguration) {
+                    if (! $this->record instanceof \App\Models\EmailConfiguration) {
                         return;
                     }
 
@@ -112,7 +110,7 @@ class EditEmailConfiguration extends EditRecord
                         $service->updateMailConfig();
 
                         // Refresh the record to show updated status
-                        $this->refreshFormData(['is_active']);
+                        $this->refreshFormData(['status']);
 
                         Notification::make()
                             ->title('Configuration Activated')
@@ -133,7 +131,7 @@ class EditEmailConfiguration extends EditRecord
 
             Actions\ViewAction::make(),
             Actions\DeleteAction::make()
-                ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && ! $this->record->is_active),
+                ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && ! $this->record->isActive()),
         ];
     }
 
@@ -146,12 +144,12 @@ class EditEmailConfiguration extends EditRecord
     {
         $record = $this->record;
 
-        if (!$record instanceof \App\Models\EmailConfiguration) {
+        if (! $record instanceof \App\Models\EmailConfiguration) {
             return;
         }
 
         // If this configuration is set to active, activate it properly
-        if ($record->is_active) {
+        if ($record->isActive()) {
             try {
                 $record->activate();
 

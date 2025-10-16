@@ -20,7 +20,7 @@ class NotificationFactory extends Factory
         return [
             'user_id' => User::factory(),
             'message' => $this->faker->sentence,
-            'is_read' => $this->faker->boolean,
+            'read_at' => $this->faker->boolean ? $this->faker->dateTime : null,
             'link' => $this->faker->url,
         ];
     }

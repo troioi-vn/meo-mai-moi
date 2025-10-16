@@ -23,7 +23,7 @@ class NotificationServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new NotificationService();
+        $this->service = new NotificationService;
         $this->user = User::factory()->create();
     }
 
@@ -222,7 +222,7 @@ class NotificationServiceTest extends TestCase
         $this->assertEquals($data['link'], $notification->link);
         $this->assertEquals('email', $notification->data['channel']);
         $this->assertEquals($data['extra_data'], $notification->data['extra_data']);
-        $this->assertFalse($notification->is_read);
+        $this->assertFalse($notification->isRead());
         $this->assertNull($notification->delivered_at); // Email delivery handled by job
     }
 
@@ -246,7 +246,7 @@ class NotificationServiceTest extends TestCase
         $this->assertEquals($data['message'], $notification->message);
         $this->assertEquals($data['link'], $notification->link);
         $this->assertEquals('in_app', $notification->data['channel']);
-        $this->assertFalse($notification->is_read);
+        $this->assertFalse($notification->isRead());
         $this->assertNotNull($notification->delivered_at); // Should be marked as delivered immediately
     }
 

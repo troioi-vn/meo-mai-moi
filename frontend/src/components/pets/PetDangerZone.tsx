@@ -61,7 +61,12 @@ export const PetDangerZone: React.FC<Props> = ({
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => { onDelete() }}>
+              <AlertDialogAction
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={() => {
+                  onDelete()
+                }}
+              >
                 Confirm remove
               </AlertDialogAction>
             </AlertDialogFooter>

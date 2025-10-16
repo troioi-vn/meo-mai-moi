@@ -50,7 +50,7 @@ class PetPhotoManagementTest extends TestCase
         $path = $response->json('data.photo.path');
         Storage::disk('public')->assertExists($path);
 
-        $image = (new ImageManager(new Driver()))->read(Storage::disk('public')->get($path));
+        $image = (new ImageManager(new Driver))->read(Storage::disk('public')->get($path));
         $this->assertEquals(1200, $image->width());
         $this->assertEquals(675, $image->height());
     }

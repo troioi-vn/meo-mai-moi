@@ -13,12 +13,17 @@ class EmailConfiguration extends Model
         'provider',
         'name',
         'description',
-        'is_active',
+        'status',
         'config',
+        // Backward-compatibility bridge for legacy references
+        // Note: not a DB column; handled via accessor/mutator below
+        'is_active',
     ];
 
     protected $casts = [
         'config' => 'array',
+        'status' => \App\Enums\EmailConfigurationStatus::class,
+        // Backward-compatibility: expose boolean cast for legacy expectations
         'is_active' => 'boolean',
     ];
 
@@ -27,7 +32,7 @@ class EmailConfiguration extends Model
      */
     public static function getActive(): ?self
     {
-        return self::where('is_active', true)->first();
+        return self::where('status', \App\Enums\EmailConfigurationStatus::ACTIVE)->first();
     }
 
     /**
@@ -39,15 +44,83 @@ class EmailConfiguration extends Model
     }
 
     /**
+     * Check if this configuration is active.
+     */
+    public function isActive(): bool
+    {
+        return $this->status === \App\Enums\EmailConfigurationStatus::ACTIVE;
+    }
+
+    /**
+     * Backward-compatibility accessor to expose `is_active` as a virtual attribute.
+     * Allows existing Filament resources, seeders, and tests to read a boolean.
+     */
+    public function getIsActiveAttribute(): bool
+    {
+        return $this->isActive();
+    }
+
+    /**
+     * Backward-compatibility mutator to accept `is_active` writes and map to status.
+     * Accepts truthy/falsy and coerces to ACTIVE/INACTIVE (preserves DRAFT if false written when currently DRAFT).
+     */
+    public function setIsActiveAttribute($value): void
+    {
+        $bool = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+        if ($bool === null) {
+            // Fallback: treat non-empty as true
+            $bool = ! empty($value);
+        }
+
+        $this->attributes['status'] = $bool
+            ? \App\Enums\EmailConfigurationStatus::ACTIVE->value
+            : ($this->status === \App\Enums\EmailConfigurationStatus::DRAFT
+                ? \App\Enums\EmailConfigurationStatus::DRAFT->value
+                : \App\Enums\EmailConfigurationStatus::INACTIVE->value);
+    }
+
+    /**
+     * Check if this configuration is inactive.
+     */
+    public function isInactive(): bool
+    {
+        return $this->status === \App\Enums\EmailConfigurationStatus::INACTIVE;
+    }
+
+    /**
+     * Check if this configuration is a draft.
+     */
+    public function isDraft(): bool
+    {
+        return $this->status === \App\Enums\EmailConfigurationStatus::DRAFT;
+    }
+
+    /**
      * Activate this configuration and deactivate all others.
      */
     public function activate(): void
     {
         // Deactivate all other configurations
-        self::where('id', '!=', $this->id)->update(['is_active' => false]);
+        self::where('id', '!=', $this->id)->update(['status' => \App\Enums\EmailConfigurationStatus::INACTIVE]);
 
         // Activate this configuration
-        $this->update(['is_active' => true]);
+        $this->update(['status' => \App\Enums\EmailConfigurationStatus::ACTIVE]);
+    }
+
+    /**
+     * Deactivate this configuration.
+     */
+    public function deactivate(): void
+    {
+        $this->update(['status' => \App\Enums\EmailConfigurationStatus::INACTIVE]);
+    }
+
+    /**
+     * Mark this configuration as draft.
+     */
+    public function markAsDraft(): void
+    {
+        $this->update(['status' => \App\Enums\EmailConfigurationStatus::DRAFT]);
     }
 
     /**
@@ -253,7 +326,7 @@ class EmailConfiguration extends Model
         if (! empty($config['api_key'])) {
             // Basic API key format validation - just check it's not empty and has reasonable length
             if (strlen($config['api_key']) < 10) {
-                $errors[] = "Mailgun API key appears to be too short";
+                $errors[] = 'Mailgun API key appears to be too short';
             }
         }
 
@@ -280,7 +353,7 @@ class EmailConfiguration extends Model
      */
     public function scopeActive($query)
     {
-        return $query->where('is_active', true);
+        return $query->where('status', \App\Enums\EmailConfigurationStatus::ACTIVE);
     }
 
     /**
@@ -288,7 +361,15 @@ class EmailConfiguration extends Model
      */
     public function scopeInactive($query)
     {
-        return $query->where('is_active', false);
+        return $query->where('status', \App\Enums\EmailConfigurationStatus::INACTIVE);
+    }
+
+    /**
+     * Scope to get only draft configurations.
+     */
+    public function scopeDraft($query)
+    {
+        return $query->where('status', \App\Enums\EmailConfigurationStatus::DRAFT);
     }
 
     /**

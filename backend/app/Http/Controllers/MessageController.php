@@ -120,7 +120,6 @@ class MessageController extends Controller
             'user_id' => $message->recipient_id,
             'message' => 'You have a new message from '.$request->user()->name,
             'link' => '/account/messages/'.$message->id,
-            'is_read' => false,
         ]);
 
         return $this->sendSuccess($message, 201);

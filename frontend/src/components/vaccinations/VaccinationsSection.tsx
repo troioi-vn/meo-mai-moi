@@ -14,14 +14,25 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 
-export const VaccinationsSection: React.FC<{ petId: number; canEdit: boolean }> = ({ petId, canEdit }) => {
+export const VaccinationsSection: React.FC<{ petId: number; canEdit: boolean }> = ({
+  petId,
+  canEdit,
+}) => {
   const { items, loading, error, create, update, remove } = useVaccinations(petId)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [adding, setAdding] = useState<boolean>(false)
   const [serverError, setServerError] = useState<string | null>(null)
 
-  const startAdd = () => { setAdding(true); setEditingId(null); setServerError(null) }
-  const cancel = () => { setAdding(false); setEditingId(null); setServerError(null) }
+  const startAdd = () => {
+    setAdding(true)
+    setEditingId(null)
+    setServerError(null)
+  }
+  const cancel = () => {
+    setAdding(false)
+    setEditingId(null)
+    setServerError(null)
+  }
 
   const onCreate = async (values: VaccinationFormValues) => {
     setServerError(null)
@@ -51,7 +62,13 @@ export const VaccinationsSection: React.FC<{ petId: number; canEdit: boolean }> 
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Vaccinations</h2>
         {canEdit && !adding && (
-          <Button onClick={() => { startAdd() }}>Add vaccination</Button>
+          <Button
+            onClick={() => {
+              startAdd()
+            }}
+          >
+            Add vaccination
+          </Button>
         )}
       </div>
 
@@ -62,7 +79,9 @@ export const VaccinationsSection: React.FC<{ petId: number; canEdit: boolean }> 
       )}
 
       <ul className="mt-4 space-y-3">
-        {items.length === 0 && <li className="text-sm text-muted-foreground">No vaccinations recorded yet.</li>}
+        {items.length === 0 && (
+          <li className="text-sm text-muted-foreground">No vaccinations recorded yet.</li>
+        )}
         {items.map((r) => (
           <li key={r.id} className="rounded-md border p-4">
             {editingId === r.id ? (
@@ -73,8 +92,12 @@ export const VaccinationsSection: React.FC<{ petId: number; canEdit: boolean }> 
                   due_at: r.due_at ?? undefined,
                   notes: r.notes ?? undefined,
                 }}
-                onSubmit={async (v) => { await onUpdate(r.id, v) }}
-                onCancel={() => { setEditingId(null) }}
+                onSubmit={async (v) => {
+                  await onUpdate(r.id, v)
+                }}
+                onCancel={() => {
+                  setEditingId(null)
+                }}
                 serverError={serverError}
               />
             ) : (
@@ -93,7 +116,14 @@ export const VaccinationsSection: React.FC<{ petId: number; canEdit: boolean }> 
                 </div>
                 {canEdit && (
                   <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => { setEditingId(r.id) }}>Edit</Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setEditingId(r.id)
+                      }}
+                    >
+                      Edit
+                    </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="destructive">Delete</Button>
@@ -107,7 +137,12 @@ export const VaccinationsSection: React.FC<{ petId: number; canEdit: boolean }> 
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => { void remove(r.id) }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          <AlertDialogAction
+                            onClick={() => {
+                              void remove(r.id)
+                            }}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
                             Delete
                           </AlertDialogAction>
                         </AlertDialogFooter>

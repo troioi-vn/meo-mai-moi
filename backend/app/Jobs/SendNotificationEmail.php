@@ -40,8 +40,7 @@ class SendNotificationEmail implements ShouldQueue
         public string $type,
         public array $data,
         public int $notificationId
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -245,7 +244,7 @@ class SendNotificationEmail implements ShouldQueue
                     'message' => $this->data['message'] ?? '',
                     'link' => $this->data['link'] ?? null,
                     'data' => array_merge($fallbackData, ['channel' => 'in_app_fallback']),
-                    'is_read' => false,
+
                     'delivered_at' => now(), // Mark as delivered immediately for in-app
                 ]);
 

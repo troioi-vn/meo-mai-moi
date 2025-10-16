@@ -37,12 +37,12 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, invitationCode, 
     }
 
     try {
-      const payload = { 
-        name, 
-        email, 
-        password, 
+      const payload = {
+        name,
+        email,
+        password,
         password_confirmation: passwordConfirmation,
-        ...(invitationCode && { invitation_code: invitationCode })
+        ...(invitationCode && { invitation_code: invitationCode }),
       }
       await register(payload)
       if (onSuccess) {
@@ -74,7 +74,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, invitationCode, 
               <p className="text-sm font-medium text-green-800">
                 You've been invited by <strong>{inviterName}</strong>
               </p>
-              <p className="text-xs text-green-600">Complete the form below to create your account</p>
+              <p className="text-xs text-green-600">
+                Complete the form below to create your account
+              </p>
             </div>
           </div>
         </div>
@@ -90,70 +92,70 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, invitationCode, 
             {error}
           </p>
         )}
-      <div className="mb-4">
-        <Label htmlFor="name">Name</Label>
-        <Input
-          type="text"
-          id="name"
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value)
-          }}
-          required
-        />
-      </div>
-      <div className="mb-4">
-        <Label htmlFor="email">Email</Label>
-        <Input
-          type="email"
-          id="email"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value)
-          }}
-          required
-        />
-      </div>
-      <div className="mb-4">
-        <Label htmlFor="password">Password</Label>
-        <Input
-          type="password"
-          id="password"
-          value={password}
-          onChange={(e) => {
-            setPassword(e.target.value)
-          }}
-          required
-        />
-      </div>
-      <div className="mb-6">
-        <Label htmlFor="passwordConfirmation">Confirm Password</Label>
-        <Input
-          type="password"
-          id="passwordConfirmation"
-          value={passwordConfirmation}
-          onChange={(e) => {
-            setPasswordConfirmation(e.target.value)
-          }}
-          required
-        />
-      </div>
-      <Button type="submit" className="w-full">
-        Register
-      </Button>
-      <div className="mt-4 text-center text-sm">
-        Already have an account?{' '}
-        <a
-          href="#"
-          className="underline underline-offset-4"
-          onClick={(e) => {
-            e.preventDefault()
-            void navigate('/login')
-          }}
-        >
-          Sign in
-        </a>
-      </div>
+        <div className="mb-4">
+          <Label htmlFor="name">Name</Label>
+          <Input
+            type="text"
+            id="name"
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value)
+            }}
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            type="email"
+            id="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value)
+            }}
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="password">Password</Label>
+          <Input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value)
+            }}
+            required
+          />
+        </div>
+        <div className="mb-6">
+          <Label htmlFor="passwordConfirmation">Confirm Password</Label>
+          <Input
+            type="password"
+            id="passwordConfirmation"
+            value={passwordConfirmation}
+            onChange={(e) => {
+              setPasswordConfirmation(e.target.value)
+            }}
+            required
+          />
+        </div>
+        <Button type="submit" className="w-full">
+          Register
+        </Button>
+        <div className="mt-4 text-center text-sm">
+          Already have an account?{' '}
+          <a
+            href="#"
+            className="underline underline-offset-4"
+            onClick={(e) => {
+              e.preventDefault()
+              void navigate('/login')
+            }}
+          >
+            Sign in
+          </a>
+        </div>
       </form>
     </div>
   )

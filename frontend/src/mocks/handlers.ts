@@ -253,7 +253,15 @@ const weightHistoryHandlers = [
       data: {
         data: [],
         links: { first: null, last: null, prev: null, next: null },
-        meta: { current_page: 1, from: null, last_page: 1, path: '/api/pets/1/weights', per_page: 25, to: null, total: 0 },
+        meta: {
+          current_page: 1,
+          from: null,
+          last_page: 1,
+          path: '/api/pets/1/weights',
+          per_page: 25,
+          to: null,
+          total: 0,
+        },
       },
     })
   }),
@@ -261,34 +269,43 @@ const weightHistoryHandlers = [
     const body = (await request.json()) as { weight_kg?: number; record_date?: string }
     if (!body.weight_kg || !body.record_date) {
       return HttpResponse.json(
-        { message: 'Validation Error', errors: { weight_kg: ['Required'], record_date: ['Required'] } },
+        {
+          message: 'Validation Error',
+          errors: { weight_kg: ['Required'], record_date: ['Required'] },
+        },
         { status: 422 }
       )
     }
-    return HttpResponse.json({
-      data: {
-        id: Date.now(),
-        pet_id: 1,
-        weight_kg: body.weight_kg,
-        record_date: body.record_date,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+    return HttpResponse.json(
+      {
+        data: {
+          id: Date.now(),
+          pet_id: 1,
+          weight_kg: body.weight_kg,
+          record_date: body.record_date,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
       },
-    }, { status: 201 })
+      { status: 201 }
+    )
   }),
-  http.put('http://localhost:3000/api/pets/:petId/weights/:weightId', async ({ request, params }) => {
-    const body = (await request.json()) as Partial<{ weight_kg: number; record_date: string }>
-    return HttpResponse.json({
-      data: {
-        id: Number(params.weightId),
-        pet_id: Number(params.petId),
-        weight_kg: body.weight_kg ?? 4.2,
-        record_date: body.record_date ?? '2024-01-01',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-    })
-  }),
+  http.put(
+    'http://localhost:3000/api/pets/:petId/weights/:weightId',
+    async ({ request, params }) => {
+      const body = (await request.json()) as Partial<{ weight_kg: number; record_date: string }>
+      return HttpResponse.json({
+        data: {
+          id: Number(params.weightId),
+          pet_id: Number(params.petId),
+          weight_kg: body.weight_kg ?? 4.2,
+          record_date: body.record_date ?? '2024-01-01',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      })
+    }
+  ),
   http.delete('http://localhost:3000/api/pets/:petId/weights/:weightId', () => {
     return HttpResponse.json({ data: true })
   }),
@@ -305,7 +322,15 @@ const medicalNoteHandlers = [
       data: {
         data: [],
         links: { first: null, last: null, prev: null, next: null },
-        meta: { current_page: 1, from: null, last_page: 1, path: '/api/pets/1/medical-notes', per_page: 25, to: null, total: 0 },
+        meta: {
+          current_page: 1,
+          from: null,
+          last_page: 1,
+          path: '/api/pets/1/medical-notes',
+          per_page: 25,
+          to: null,
+          total: 0,
+        },
       },
     })
   }),
@@ -317,30 +342,36 @@ const medicalNoteHandlers = [
         { status: 422 }
       )
     }
-    return HttpResponse.json({
-      data: {
-        id: Date.now(),
-        pet_id: Number(params.petId),
-        note: body.note,
-        record_date: body.record_date,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+    return HttpResponse.json(
+      {
+        data: {
+          id: Date.now(),
+          pet_id: Number(params.petId),
+          note: body.note,
+          record_date: body.record_date,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
       },
-    }, { status: 201 })
+      { status: 201 }
+    )
   }),
-  http.put('http://localhost:3000/api/pets/:petId/medical-notes/:noteId', async ({ request, params }) => {
-    const body = (await request.json()) as Partial<{ note: string; record_date: string }>
-    return HttpResponse.json({
-      data: {
-        id: Number(params.noteId),
-        pet_id: Number(params.petId),
-        note: body.note ?? 'Note',
-        record_date: body.record_date ?? '2024-01-01',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-    })
-  }),
+  http.put(
+    'http://localhost:3000/api/pets/:petId/medical-notes/:noteId',
+    async ({ request, params }) => {
+      const body = (await request.json()) as Partial<{ note: string; record_date: string }>
+      return HttpResponse.json({
+        data: {
+          id: Number(params.noteId),
+          pet_id: Number(params.petId),
+          note: body.note ?? 'Note',
+          record_date: body.record_date ?? '2024-01-01',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      })
+    }
+  ),
   http.delete('http://localhost:3000/api/pets/:petId/medical-notes/:noteId', () => {
     return HttpResponse.json({ data: true })
   }),
@@ -352,48 +383,75 @@ const vaccinationHandlers = [
       data: {
         data: [],
         links: { first: null, last: null, prev: null, next: null },
-        meta: { current_page: 1, from: null, last_page: 1, path: '/api/pets/1/vaccinations', per_page: 25, to: null, total: 0 },
+        meta: {
+          current_page: 1,
+          from: null,
+          last_page: 1,
+          path: '/api/pets/1/vaccinations',
+          per_page: 25,
+          to: null,
+          total: 0,
+        },
       },
     })
   }),
   http.post('http://localhost:3000/api/pets/:petId/vaccinations', async ({ request, params }) => {
-    const body = (await request.json()) as { vaccine_name?: string; administered_at?: string; due_at?: string | null; notes?: string | null }
+    const body = (await request.json()) as {
+      vaccine_name?: string
+      administered_at?: string
+      due_at?: string | null
+      notes?: string | null
+    }
     if (!body.vaccine_name || !body.administered_at) {
       return HttpResponse.json(
-        { message: 'Validation Error', errors: { vaccine_name: ['Required'], administered_at: ['Required'] } },
+        {
+          message: 'Validation Error',
+          errors: { vaccine_name: ['Required'], administered_at: ['Required'] },
+        },
         { status: 422 }
       )
     }
-    return HttpResponse.json({
-      data: {
-        id: Date.now(),
-        pet_id: Number(params.petId),
-        vaccine_name: body.vaccine_name,
-        administered_at: body.administered_at,
-        due_at: body.due_at ?? null,
-        notes: body.notes ?? null,
-        reminder_sent_at: null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+    return HttpResponse.json(
+      {
+        data: {
+          id: Date.now(),
+          pet_id: Number(params.petId),
+          vaccine_name: body.vaccine_name,
+          administered_at: body.administered_at,
+          due_at: body.due_at ?? null,
+          notes: body.notes ?? null,
+          reminder_sent_at: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
       },
-    }, { status: 201 })
+      { status: 201 }
+    )
   }),
-  http.put('http://localhost:3000/api/pets/:petId/vaccinations/:recordId', async ({ request, params }) => {
-    const body = (await request.json()) as Partial<{ vaccine_name: string; administered_at: string; due_at?: string | null; notes?: string | null }>
-    return HttpResponse.json({
-      data: {
-        id: Number(params.recordId),
-        pet_id: Number(params.petId),
-        vaccine_name: body.vaccine_name ?? 'Rabies',
-        administered_at: body.administered_at ?? '2024-01-01',
-        due_at: body.due_at ?? null,
-        notes: body.notes ?? null,
-        reminder_sent_at: null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-    })
-  }),
+  http.put(
+    'http://localhost:3000/api/pets/:petId/vaccinations/:recordId',
+    async ({ request, params }) => {
+      const body = (await request.json()) as Partial<{
+        vaccine_name: string
+        administered_at: string
+        due_at?: string | null
+        notes?: string | null
+      }>
+      return HttpResponse.json({
+        data: {
+          id: Number(params.recordId),
+          pet_id: Number(params.petId),
+          vaccine_name: body.vaccine_name ?? 'Rabies',
+          administered_at: body.administered_at ?? '2024-01-01',
+          due_at: body.due_at ?? null,
+          notes: body.notes ?? null,
+          reminder_sent_at: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      })
+    }
+  ),
   http.delete('http://localhost:3000/api/pets/:petId/vaccinations/:recordId', () => {
     return HttpResponse.json({ data: true })
   }),
@@ -405,44 +463,66 @@ const microchipHandlers = [
       data: {
         data: [],
         links: { first: null, last: null, prev: null, next: null },
-        meta: { current_page: 1, from: null, last_page: 1, path: '/api/pets/1/microchips', per_page: 25, to: null, total: 0 },
+        meta: {
+          current_page: 1,
+          from: null,
+          last_page: 1,
+          path: '/api/pets/1/microchips',
+          per_page: 25,
+          to: null,
+          total: 0,
+        },
       },
     })
   }),
   http.post('http://localhost:3000/api/pets/:petId/microchips', async ({ request, params }) => {
-    const body = (await request.json()) as { chip_number?: string; issuer?: string | null; implanted_at?: string | null }
+    const body = (await request.json()) as {
+      chip_number?: string
+      issuer?: string | null
+      implanted_at?: string | null
+    }
     if (!body.chip_number) {
       return HttpResponse.json(
         { message: 'Validation Error', errors: { chip_number: ['Required'] } },
         { status: 422 }
       )
     }
-    return HttpResponse.json({
-      data: {
-        id: Date.now(),
-        pet_id: Number(params.petId),
-        chip_number: body.chip_number,
-        issuer: body.issuer ?? null,
-        implanted_at: body.implanted_at ?? null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+    return HttpResponse.json(
+      {
+        data: {
+          id: Date.now(),
+          pet_id: Number(params.petId),
+          chip_number: body.chip_number,
+          issuer: body.issuer ?? null,
+          implanted_at: body.implanted_at ?? null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
       },
-    }, { status: 201 })
+      { status: 201 }
+    )
   }),
-  http.put('http://localhost:3000/api/pets/:petId/microchips/:microchipId', async ({ request, params }) => {
-    const body = (await request.json()) as Partial<{ chip_number: string; issuer?: string | null; implanted_at?: string | null }>
-    return HttpResponse.json({
-      data: {
-        id: Number(params.microchipId),
-        pet_id: Number(params.petId),
-        chip_number: body.chip_number ?? '982000000000000',
-        issuer: body.issuer ?? null,
-        implanted_at: body.implanted_at ?? null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-    })
-  }),
+  http.put(
+    'http://localhost:3000/api/pets/:petId/microchips/:microchipId',
+    async ({ request, params }) => {
+      const body = (await request.json()) as Partial<{
+        chip_number: string
+        issuer?: string | null
+        implanted_at?: string | null
+      }>
+      return HttpResponse.json({
+        data: {
+          id: Number(params.microchipId),
+          pet_id: Number(params.petId),
+          chip_number: body.chip_number ?? '982000000000000',
+          issuer: body.issuer ?? null,
+          implanted_at: body.implanted_at ?? null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      })
+    }
+  ),
   http.delete('http://localhost:3000/api/pets/:petId/microchips/:microchipId', () => {
     return HttpResponse.json({ data: true })
   }),
@@ -461,8 +541,8 @@ const inviteSystemHandlers = [
   http.get('http://localhost:3000/api/settings/public', () => {
     return HttpResponse.json({
       data: {
-        invite_only_enabled: false
-      }
+        invite_only_enabled: false,
+      },
     })
   }),
 
@@ -475,8 +555,8 @@ const inviteSystemHandlers = [
         email: 'test@example.com',
         email_verified_at: new Date().toISOString(),
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
+        updated_at: new Date().toISOString(),
+      },
     })
   }),
 
@@ -484,32 +564,44 @@ const inviteSystemHandlers = [
   http.post('http://localhost:3000/api/waitlist', async ({ request }) => {
     const raw = await request.json()
     const body = raw && typeof raw === 'object' ? (raw as { email?: string }) : {}
-    
+
     if (!body.email) {
-      return HttpResponse.json({
-        error: 'Invalid email format'
-      }, { status: 409 })
+      return HttpResponse.json(
+        {
+          error: 'Invalid email format',
+        },
+        { status: 409 }
+      )
     }
 
     if (body.email === 'existing@example.com') {
-      return HttpResponse.json({
-        error: 'Email is already on waitlist'
-      }, { status: 409 })
+      return HttpResponse.json(
+        {
+          error: 'Email is already on waitlist',
+        },
+        { status: 409 }
+      )
     }
 
     if (body.email === 'registered@example.com') {
-      return HttpResponse.json({
-        error: 'Email is already registered'
-      }, { status: 409 })
+      return HttpResponse.json(
+        {
+          error: 'Email is already registered',
+        },
+        { status: 409 }
+      )
     }
 
-    return HttpResponse.json({
-      data: {
-        email: body.email,
-        status: 'pending',
-        created_at: new Date().toISOString()
-      }
-    }, { status: 201 })
+    return HttpResponse.json(
+      {
+        data: {
+          email: body.email,
+          status: 'pending',
+          created_at: new Date().toISOString(),
+        },
+      },
+      { status: 201 }
+    )
   }),
 
   // Invitation endpoints
@@ -524,7 +616,7 @@ const inviteSystemHandlers = [
           status: 'pending',
           expires_at: null,
           created_at: new Date().toISOString(),
-          invitation_url: 'http://localhost:3000/register?invitation_code=abc123'
+          invitation_url: 'http://localhost:3000/register?invitation_code=abc123',
         },
         {
           id: 2,
@@ -532,7 +624,7 @@ const inviteSystemHandlers = [
           status: 'accepted',
           expires_at: null,
           created_at: new Date().toISOString(),
-          invitation_url: 'http://localhost:3000/register?invitation_code=def456'
+          invitation_url: 'http://localhost:3000/register?invitation_code=def456',
         },
         {
           id: 3,
@@ -540,9 +632,9 @@ const inviteSystemHandlers = [
           status: 'expired',
           expires_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
           created_at: new Date().toISOString(),
-          invitation_url: 'http://localhost:3000/register?invitation_code=ghi789'
-        }
-      ]
+          invitation_url: 'http://localhost:3000/register?invitation_code=ghi789',
+        },
+      ],
     })
   }),
 
@@ -554,51 +646,57 @@ const inviteSystemHandlers = [
         pending: 1,
         accepted: 1,
         expired: 1,
-        revoked: 0
-      }
+        revoked: 0,
+      },
     })
   }),
 
   http.post('http://localhost:3000/api/invitations', () => {
     // In test environment, be more lenient with auth
-    return HttpResponse.json({
-      data: {
-        id: Date.now(),
-        code: 'mock-code-' + String(Date.now()),
-        status: 'pending',
-        expires_at: null,
-        created_at: new Date().toISOString(),
-        invitation_url: `http://localhost:3000/register?invitation_code=mock-code-${String(Date.now())}`
-      }
-    }, { status: 201 })
+    return HttpResponse.json(
+      {
+        data: {
+          id: Date.now(),
+          code: 'mock-code-' + String(Date.now()),
+          status: 'pending',
+          expires_at: null,
+          created_at: new Date().toISOString(),
+          invitation_url: `http://localhost:3000/register?invitation_code=mock-code-${String(Date.now())}`,
+        },
+      },
+      { status: 201 }
+    )
   }),
 
   http.delete('http://localhost:3000/api/invitations/:id', () => {
     // In test environment, be more lenient with auth
     return HttpResponse.json({
-      data: []
+      data: [],
     })
   }),
 
   http.post('http://localhost:3000/api/invitations/validate', async ({ request }) => {
     const raw = await request.json()
     const body = raw && typeof raw === 'object' ? (raw as { code?: string }) : {}
-    
+
     if (body.code === 'valid-code-123') {
       return HttpResponse.json({
         data: {
           valid: true,
           inviter: {
-            name: 'John Doe'
+            name: 'John Doe',
           },
-          expires_at: null
-        }
+          expires_at: null,
+        },
       })
     }
 
-    return HttpResponse.json({
-      error: 'Invalid or expired invitation code'
-    }, { status: 404 })
+    return HttpResponse.json(
+      {
+        error: 'Invalid or expired invitation code',
+      },
+      { status: 404 }
+    )
   }),
 ]
 

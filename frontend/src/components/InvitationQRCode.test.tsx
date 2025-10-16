@@ -24,7 +24,7 @@ vi.mock('qrcode', () => ({
 describe('InvitationQRCode', () => {
   const defaultProps = {
     invitationUrl: 'http://localhost:3000/register?invitation_code=abc123',
-    invitationCode: 'abc123'
+    invitationCode: 'abc123',
   }
 
   beforeEach(() => {
@@ -45,7 +45,9 @@ describe('InvitationQRCode', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Invitation QR Code')).toBeInTheDocument()
-      expect(screen.getByText('Share this QR code for easy access to your invitation')).toBeInTheDocument()
+      expect(
+        screen.getByText('Share this QR code for easy access to your invitation')
+      ).toBeInTheDocument()
     })
   })
 
@@ -104,12 +106,15 @@ describe('InvitationQRCode', () => {
     await user.click(screen.getByRole('button'))
 
     // Wait for dialog to open and download button to be available
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /download qr code/i })).toBeInTheDocument()
-    }, { timeout: 1000 })
+    await waitFor(
+      () => {
+        expect(screen.getByRole('button', { name: /download qr code/i })).toBeInTheDocument()
+      },
+      { timeout: 1000 }
+    )
 
     // Wait for QR generation to complete (requestAnimationFrame + async QRCode.toCanvas)
-    await new Promise(resolve => setTimeout(resolve, 200))
+    await new Promise((resolve) => setTimeout(resolve, 200))
 
     await user.click(screen.getByRole('button', { name: /download qr code/i }))
 
@@ -118,4 +123,4 @@ describe('InvitationQRCode', () => {
       expect(toast.success).toHaveBeenCalledWith('QR code downloaded!')
     })
   })
-});
+})

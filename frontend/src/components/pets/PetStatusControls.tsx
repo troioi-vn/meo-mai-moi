@@ -1,5 +1,11 @@
 import React from 'react'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 
@@ -33,9 +39,12 @@ export const PetStatusControls: React.FC<Props> = ({
       <div className="grid gap-3 sm:grid-cols-[200px_1fr] items-center">
         <div className="text-sm font-medium">New status</div>
         <div>
-          <Select value={newStatus} onValueChange={(v) => {
-            setNewStatus(v as typeof newStatus)
-          }}>
+          <Select
+            value={newStatus}
+            onValueChange={(v) => {
+              setNewStatus(v as typeof newStatus)
+            }}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select status" />
             </SelectTrigger>
@@ -53,12 +62,19 @@ export const PetStatusControls: React.FC<Props> = ({
             type="password"
             placeholder="Confirm with your password"
             value={statusPassword}
-            onChange={(e) => { setStatusPassword(e.target.value) }}
+            onChange={(e) => {
+              setStatusPassword(e.target.value)
+            }}
           />
         </div>
       </div>
       <div className="mt-4">
-        <Button onClick={() => { onUpdateStatus() }} disabled={isUpdating}>
+        <Button
+          onClick={() => {
+            onUpdateStatus()
+          }}
+          disabled={isUpdating}
+        >
           {isUpdating ? 'Updating...' : 'Update status'}
         </Button>
       </div>

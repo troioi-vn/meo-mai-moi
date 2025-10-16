@@ -464,12 +464,12 @@ export const petHandlers = [
   // Returns a { data: { ... } } object
   http.post('http://localhost:3000/api/pets', async ({ request }) => {
     const newPetData = (await request.json()) as Partial<Pet>
-    const petType = mockPetTypes.find(t => t.id === newPetData.pet_type_id) || mockCatType
-    const newPet: Pet = { 
-      ...mockPet, 
-      id: Date.now(), 
+    const petType = mockPetTypes.find((t) => t.id === newPetData.pet_type_id) || mockCatType
+    const newPet: Pet = {
+      ...mockPet,
+      id: Date.now(),
       pet_type: petType,
-      ...newPetData 
+      ...newPetData,
     }
     return HttpResponse.json({ data: newPet }, { status: 201 })
   }),
@@ -490,7 +490,7 @@ export const petHandlers = [
   http.post('http://localhost:3000/api/pets/:petId/photos', () => {
     return HttpResponse.json({ data: mockPet }, { status: 200 })
   }),
-  
+
   http.delete('http://localhost:3000/api/pets/:petId/photos/:photoId', () => {
     return new HttpResponse(null, { status: 204 })
   }),

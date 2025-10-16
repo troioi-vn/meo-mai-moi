@@ -123,7 +123,6 @@ class EmailNotificationFallbackTest extends TestCase
             'message' => 'Test notification',
             'link' => '/test',
             'data' => ['channel' => 'email'],
-            'is_read' => false,
         ]);
 
         // Create and fail the email job
@@ -169,7 +168,6 @@ class EmailNotificationFallbackTest extends TestCase
             'message' => 'Test notification',
             'link' => '/test',
             'data' => ['channel' => 'email'],
-            'is_read' => false,
         ]);
 
         // Create and fail the email job

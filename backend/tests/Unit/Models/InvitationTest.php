@@ -13,6 +13,7 @@ class InvitationTest extends TestCase
     use RefreshDatabase;
 
     private User $inviter;
+
     private User $recipient;
 
     protected function setUp(): void
@@ -25,7 +26,7 @@ class InvitationTest extends TestCase
     public function test_invitation_belongs_to_inviter()
     {
         $invitation = Invitation::factory()->create([
-            'inviter_user_id' => $this->inviter->id
+            'inviter_user_id' => $this->inviter->id,
         ]);
 
         $this->assertEquals($this->inviter->id, $invitation->inviter->id);
@@ -34,7 +35,7 @@ class InvitationTest extends TestCase
     public function test_invitation_belongs_to_recipient()
     {
         $invitation = Invitation::factory()->create([
-            'recipient_user_id' => $this->recipient->id
+            'recipient_user_id' => $this->recipient->id,
         ]);
 
         $this->assertEquals($this->recipient->id, $invitation->recipient->id);
@@ -44,7 +45,7 @@ class InvitationTest extends TestCase
     {
         $invitation = Invitation::factory()->create([
             'status' => 'pending',
-            'expires_at' => Carbon::now()->addDay()
+            'expires_at' => Carbon::now()->addDay(),
         ]);
 
         $this->assertTrue($invitation->isValid());
@@ -53,7 +54,7 @@ class InvitationTest extends TestCase
     public function test_is_valid_returns_false_for_accepted_invitation()
     {
         $invitation = Invitation::factory()->create([
-            'status' => 'accepted'
+            'status' => 'accepted',
         ]);
 
         $this->assertFalse($invitation->isValid());
@@ -62,7 +63,7 @@ class InvitationTest extends TestCase
     public function test_is_valid_returns_false_for_revoked_invitation()
     {
         $invitation = Invitation::factory()->create([
-            'status' => 'revoked'
+            'status' => 'revoked',
         ]);
 
         $this->assertFalse($invitation->isValid());
@@ -72,7 +73,7 @@ class InvitationTest extends TestCase
     {
         $invitation = Invitation::factory()->create([
             'status' => 'pending',
-            'expires_at' => Carbon::now()->subDay()
+            'expires_at' => Carbon::now()->subDay(),
         ]);
 
         $this->assertFalse($invitation->isValid());
@@ -82,7 +83,7 @@ class InvitationTest extends TestCase
     {
         $invitation = Invitation::factory()->create([
             'status' => 'pending',
-            'expires_at' => Carbon::now()->subDay()
+            'expires_at' => Carbon::now()->subDay(),
         ]);
 
         $invitation->isValid();
@@ -95,7 +96,7 @@ class InvitationTest extends TestCase
     {
         $invitation = Invitation::factory()->create([
             'status' => 'pending',
-            'expires_at' => null
+            'expires_at' => null,
         ]);
 
         $this->assertTrue($invitation->isValid());
@@ -104,7 +105,7 @@ class InvitationTest extends TestCase
     public function test_mark_as_accepted_updates_status_and_recipient()
     {
         $invitation = Invitation::factory()->create([
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
 
         $invitation->markAsAccepted($this->recipient);
@@ -117,7 +118,7 @@ class InvitationTest extends TestCase
     public function test_mark_as_revoked_updates_status()
     {
         $invitation = Invitation::factory()->create([
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
 
         $invitation->markAsRevoked();
@@ -189,11 +190,11 @@ class InvitationTest extends TestCase
         $expiredByStatus = Invitation::factory()->create(['status' => 'expired']);
         $expiredByDate = Invitation::factory()->create([
             'status' => 'pending',
-            'expires_at' => Carbon::now()->subDay()
+            'expires_at' => Carbon::now()->subDay(),
         ]);
         $validInvitation = Invitation::factory()->create([
             'status' => 'pending',
-            'expires_at' => Carbon::now()->addDay()
+            'expires_at' => Carbon::now()->addDay(),
         ]);
 
         $expiredInvitations = Invitation::expired()->get();
@@ -217,7 +218,7 @@ class InvitationTest extends TestCase
     {
         $expiryDate = Carbon::now()->addDays(7);
         $invitation = Invitation::factory()->create([
-            'expires_at' => $expiryDate
+            'expires_at' => $expiryDate,
         ]);
 
         $this->assertInstanceOf(Carbon::class, $invitation->expires_at);

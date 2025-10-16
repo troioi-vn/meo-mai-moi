@@ -4,7 +4,9 @@ Concise, AI-facing guide for architecture, workflows, testing, and troubleshooti
 
 ## 1) What this app is
 
-Meo Mai Moi helps communities rehome pets. Users can list pets, manage helper profiles, and coordinate placements. Admins moderate and manage the system.
+Meo Mai Moi is a cat care management platform that helps cat owners track their feline companions' health, schedule care routines, and maintain detailed medical records. The MVP focuses on vaccination reminders, weight monitoring, health tracking, and care scheduling.
+
+**MVP Strategy**: Build a strong base of engaged cat owners first, then expand to pet rehoming features in future phases.
 
 ## 2) Tech and architecture
 
@@ -19,6 +21,7 @@ Key models and auth
 - Policies prefer `$user->can(...)`; permissions like `view_pet`, `create_pet`, etc.
 - Pet status enum: `active`, `lost`, `deceased`, `deleted`.
 - Pet types (Cat, Dog, …) with capability gating via `PetCapabilityService`.
+- Health tracking models: vaccinations, weight records, care schedules, vet appointments.
 - React `AuthProvider` manages session auth; Axios interceptor handles cookies.
 - File uploads live under `storage/app/public` (exposed via `public/storage`).
 ## 3) Development basics (quick)

@@ -1,6 +1,6 @@
 # Development Guide
 
-Quick reference for running, developing, and testing Meo Mai Moi locally.
+Quick reference for running, developing, and testing Meo Mai Moi - the cat care management platform.
 
 ## Quick Start
 
@@ -52,15 +52,20 @@ docker compose down
 ## Tech Stack Overview
 
 **Backend**: Laravel 12 + PHP 8.4
-- Pet management with health tracking
-- Placement & transfer workflows  
+- Cat profile management with comprehensive health tracking
+- Vaccination scheduling and reminder system
+- Weight monitoring with trend analysis
+- Care routine scheduling and notifications
 - Email notifications & admin panel
 - Sanctum auth + Spatie permissions
 - Full OpenAPI documentation
 
 **Frontend**: React 18 + TypeScript + Vite
-- Pet profiles & health management
-- Request workflows & notifications
+- Cat profiles with photo timelines
+- Health dashboard with vaccination tracking
+- Weight charts and health insights
+- Care scheduling interface
+- Mobile-responsive design
 - shadcn/ui + Tailwind CSS
 - 238+ tests with Vitest
 

@@ -10,6 +10,7 @@ services:
       - ./backend/.env.docker
     environment:
       - RUN_MIGRATIONS=false
+      - IGNORE_OPTIMIZE_CLEAR_FAILURE=true
     networks:
       - meo-mai-moi-network
     depends_on:

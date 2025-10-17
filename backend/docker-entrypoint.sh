@@ -94,8 +94,16 @@ else
 fi
 
 echo "[Step 6] Linking storage..."
-su -s /bin/sh -c "php artisan optimize:clear && php artisan storage:link --force" www-data
-echo "Storage linked."
+# Some environments may not have DB/cache ready yet (e.g., when migrations are
+# deliberately run later from the host). Allow ignoring optimize:clear failures
+# when IGNORE_OPTIMIZE_CLEAR_FAILURE=true. Default is strict (fail on error).
+if [ "${IGNORE_OPTIMIZE_CLEAR_FAILURE:-false}" = "true" ]; then
+    su -s /bin/sh -c "php artisan optimize:clear || true; php artisan storage:link --force" www-data
+    echo "Storage linked (optimize:clear failures are ignored)."
+else
+    su -s /bin/sh -c "php artisan optimize:clear && php artisan storage:link --force" www-data
+    echo "Storage linked."
+fi
 
 echo "[Step 7] Testing PHP-FPM configuration..."
 /usr/local/sbin/php-fpm -t

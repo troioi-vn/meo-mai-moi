@@ -15,21 +15,6 @@ class PetCapabilityService
 
     private static ?CapabilityMatrixBuilder $matrixBuilder = null;
 
-    private static function getChecker(): CapabilityChecker
-    {
-        return self::$checker ??= new CapabilityChecker;
-    }
-
-    private static function getValidator(): CapabilityValidator
-    {
-        return self::$validator ??= new CapabilityValidator;
-    }
-
-    private static function getMatrixBuilder(): CapabilityMatrixBuilder
-    {
-        return self::$matrixBuilder ??= new CapabilityMatrixBuilder;
-    }
-
     /**
      * Check if a pet supports a specific capability
      */
@@ -60,5 +45,20 @@ class PetCapabilityService
     public static function getCapabilityMatrix(): array
     {
         return self::getMatrixBuilder()->getCapabilityMatrix();
+    }
+
+    private static function getChecker(): CapabilityChecker
+    {
+        return self::$checker ??= new CapabilityChecker;
+    }
+
+    private static function getValidator(): CapabilityValidator
+    {
+        return self::$validator ??= new CapabilityValidator;
+    }
+
+    private static function getMatrixBuilder(): CapabilityMatrixBuilder
+    {
+        return self::$matrixBuilder ??= new CapabilityMatrixBuilder;
     }
 }

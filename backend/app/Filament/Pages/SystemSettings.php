@@ -43,6 +43,7 @@ class SystemSettings extends Page
         // Initialize form data with current settings
         $this->form->fill([
             'invite_only_enabled' => $this->settingsService->isInviteOnlyEnabled(),
+            'email_verification_required' => $this->settingsService->isEmailVerificationRequired(),
         ]);
     }
 
@@ -70,6 +71,24 @@ class SystemSettings extends Page
                                     ->success()
                                     ->send();
                             }),
+
+                        Toggle::make('email_verification_required')
+                            ->label('Require Email Verification')
+                            ->helperText('When enabled, users must verify their email address before accessing the application.')
+                            ->live()
+                            ->afterStateUpdated(function (bool $state) {
+                                $this->settingsService->configureEmailVerificationRequirement($state);
+
+                                $message = $state
+                                    ? 'Email verification is now required for all new registrations.'
+                                    : 'Email verification is now optional. Users can access the app immediately.';
+
+                                Notification::make()
+                                    ->title('Email Verification Setting Updated')
+                                    ->body($message)
+                                    ->success()
+                                    ->send();
+                            }),
                     ])
                     ->columns(1),
             ])
@@ -85,6 +104,7 @@ class SystemSettings extends Page
                 ->action(function () {
                     $this->form->fill([
                         'invite_only_enabled' => $this->settingsService->isInviteOnlyEnabled(),
+                        'email_verification_required' => $this->settingsService->isEmailVerificationRequired(),
                     ]);
 
                     Notification::make()

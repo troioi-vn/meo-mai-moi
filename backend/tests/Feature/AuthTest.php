@@ -28,6 +28,10 @@ class AuthTest extends TestCase
                 'data' => [
                     'access_token',
                     'token_type',
+                    'email_verified',
+                    'email_sent',
+                    'requires_verification',
+                    'message',
                 ],
             ]);
 
@@ -107,6 +111,7 @@ class AuthTest extends TestCase
                 'data' => [
                     'access_token',
                     'token_type',
+                    'email_verified',
                 ],
             ]);
     }

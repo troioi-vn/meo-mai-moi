@@ -39,7 +39,6 @@ class UpdateEmailLogOnSent
                     'recipient' => $recipientEmail,
                 ]);
             }
-
         } catch (\Exception $e) {
             Log::error('Failed to update EmailLog after email sent', [
                 'error' => $e->getMessage(),

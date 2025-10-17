@@ -57,9 +57,12 @@ class AuthController extends Controller
      *
      *         @OA\JsonContent(
      *
-     *             @OA\Property(property="message", type="string", example="User registered successfully"),
+     *             @OA\Property(property="message", type="string", example="We have sent you verification email, please check your inbox and click the link to verify your email address."),
      *             @OA\Property(property="access_token", type="string", example="2|aBcDeFgHiJkLmNoPqRsTuVwXyZ"),
-     *             @OA\Property(property="token_type", type="string", example="Bearer")
+     *             @OA\Property(property="token_type", type="string", example="Bearer"),
+     *             @OA\Property(property="email_verified", type="boolean", example=false),
+     *             @OA\Property(property="email_sent", type="boolean", example=true),
+     *             @OA\Property(property="requires_verification", type="boolean", example=true)
      *         )
      *     ),
      *
@@ -106,11 +109,15 @@ class AuthController extends Controller
             }
         }
 
+        // Check if email verification is required
+        $emailVerificationRequired = $this->settingsService->isEmailVerificationRequired();
+
         /** @var User $user */
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'email_verified_at' => $emailVerificationRequired ? null : now(), // Auto-verify if not required
         ]);
 
         // If we used an invitation code, mark it as accepted (regardless of invite-only mode)
@@ -118,23 +125,50 @@ class AuthController extends Controller
             $this->invitationService->acceptInvitation($request->invitation_code, $user);
         }
 
+        // Send email verification notification only if required
+                $emailSent = false;
+                $emailMessage = '';
+        
+                if ($emailVerificationRequired) {            try {
+                $user->sendEmailVerificationNotification();
+                $emailSent = true;
+                $emailMessage = 'We\'ve sent a verification email to '.$user->email.'. Please check your inbox and click the link to verify your email address. If you did not receive the email, check your spam folder.';
+            } catch (\Exception $e) {
+                // Log the error but don't fail registration
+                Log::warning('Email verification could not be sent during registration', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'error' => $e->getMessage(),
+                ]);
+                $emailSent = false;
+                $emailMessage = 'We\'ve failed to send a verification email. But hopefully you will receive it soon.';
+            }
+        } else {
+            $emailMessage = 'Registration completed successfully. You can now access your account.';
+        }
+
         // Create a personal access token for API clients
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        // For SPA authentication, only login if we have a session and it's not an API test
-        if ($request->hasSession() && ! app()->runningInConsole() && ! app()->runningUnitTests()) {
+        // Don't automatically log in unverified users - they need to verify email first
+        // For SPA authentication, only login if we have a session and user is verified
+        if ($request->hasSession() && ! app()->runningInConsole() && ! app()->runningUnitTests() && $user->hasVerifiedEmail()) {
             try {
-                \Illuminate\Support\Facades\Auth::login($user);
+                Auth::login($user);
                 $request->session()->regenerate();
             } catch (\Exception $e) {
                 // Ignore login errors in API context
-                \Log::debug('Session login failed in API context', ['error' => $e->getMessage()]);
+                Log::debug('Session login failed in API context', ['error' => $e->getMessage()]);
             }
         }
 
         return $this->sendSuccess([
             'access_token' => $token,
             'token_type' => 'Bearer',
+            'email_verified' => $user->hasVerifiedEmail(),
+            'email_sent' => $emailSent,
+            'requires_verification' => $emailVerificationRequired && ! $user->hasVerifiedEmail(),
+            'message' => $emailMessage,
         ], 201);
     }
 
@@ -165,7 +199,8 @@ class AuthController extends Controller
      *
      *             @OA\Property(property="message", type="string", example="Logged in successfully"),
      *             @OA\Property(property="access_token", type="string", example="1|aBcDeFgHiJkLmNoPqRsTuVwXyZ"),
-     *             @OA\Property(property="token_type", type="string", example="Bearer")
+     *             @OA\Property(property="token_type", type="string", example="Bearer"),
+     *             @OA\Property(property="email_verified", type="boolean", example=true)
      *         )
      *     ),
      *
@@ -186,11 +221,29 @@ class AuthController extends Controller
             $request->session()->regenerate();
             /** @var User $user */
             $user = Auth::user();
+
+            // Check if email verification is required and user is not verified
+            $emailVerificationRequired = $this->settingsService->isEmailVerificationRequired();
+
+            if ($emailVerificationRequired && ! $user->hasVerifiedEmail()) {
+                // Don't fully log in unverified users, but provide token for verification process
+                $token = $user->createToken('auth_token')->plainTextToken;
+
+                return $this->sendSuccess([
+                    'access_token' => $token,
+                    'token_type' => 'Bearer',
+                    'email_verified' => false,
+                    'requires_verification' => true,
+                    'message' => 'Please verify your email address. We have sent you verification link to your email.',
+                ]);
+            }
+
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return $this->sendSuccess([
                 'access_token' => $token,
                 'token_type' => 'Bearer',
+                'email_verified' => $user->hasVerifiedEmail(),
             ]);
         }
 

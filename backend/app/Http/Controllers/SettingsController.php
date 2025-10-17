@@ -54,7 +54,6 @@ class SettingsController extends Controller
             return response()->json([
                 'data' => $settings,
             ])->header('Cache-Control', 'public, max-age=300'); // Cache for 5 minutes
-
         } catch (\Exception $e) {
             return $this->sendError(
                 'Unable to retrieve settings: '.$e->getMessage(),
@@ -74,7 +73,6 @@ class SettingsController extends Controller
             return response()->json([
                 'invite_only_enabled' => $isEnabled,
             ])->header('Cache-Control', 'public, max-age=300');
-
         } catch (\Exception $e) {
             return $this->sendError(
                 'Unable to retrieve invite-only status: '.$e->getMessage(),

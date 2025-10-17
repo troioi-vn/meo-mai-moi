@@ -263,12 +263,12 @@ class EmailConfigurationResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->formatStateUsing(fn (\App\Enums\EmailConfigurationStatus $state): string => match($state) {
+                    ->formatStateUsing(fn (\App\Enums\EmailConfigurationStatus $state): string => match ($state) {
                         \App\Enums\EmailConfigurationStatus::ACTIVE => 'Active',
                         \App\Enums\EmailConfigurationStatus::INACTIVE => 'Inactive',
                         \App\Enums\EmailConfigurationStatus::DRAFT => 'Draft',
                     })
-                    ->color(fn (\App\Enums\EmailConfigurationStatus $state): string => match($state) {
+                    ->color(fn (\App\Enums\EmailConfigurationStatus $state): string => match ($state) {
                         \App\Enums\EmailConfigurationStatus::ACTIVE => 'success',
                         \App\Enums\EmailConfigurationStatus::INACTIVE => 'gray',
                         \App\Enums\EmailConfigurationStatus::DRAFT => 'warning',
@@ -329,12 +329,14 @@ class EmailConfigurationResource extends Resource
                         $service = app(EmailConfigurationService::class);
 
                         try {
-                            // Check if test email address is provided for both SMTP and Mailgun
+                            // Get test email address if provided
                             $testEmailAddress = $record->config['test_email_address'] ?? null;
-                            if (! $testEmailAddress) {
+                            
+                            // For SMTP, require test email address
+                            if ($record->provider === 'smtp' && ! $testEmailAddress) {
                                 Notification::make()
                                     ->title('Test Email Address Required')
-                                    ->body('Please configure a test email address in the '.strtoupper($record->provider).' settings before sending a test email.')
+                                    ->body('Please configure a test email address in the SMTP settings before sending a test email.')
                                     ->warning()
                                     ->send();
 
@@ -345,7 +347,10 @@ class EmailConfigurationResource extends Resource
 
                             if ($testResult['success']) {
                                 $title = 'Test Email Sent Successfully';
-                                $body = 'Test email was sent successfully to '.($record->config['test_email_address'] ?? 'the configured address').'.';
+                                
+                                // Determine where the email was actually sent
+                                $actualRecipient = $testEmailAddress ?? $record->config['from_address'] ?? 'the configured address';
+                                $body = 'Test email was sent successfully to '.$actualRecipient.'.';
 
                                 Notification::make()
                                     ->title($title)

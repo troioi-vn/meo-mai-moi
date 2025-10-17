@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Enums\NotificationType;
+use App\Mail\EmailVerificationMail;
 use App\Mail\HelperResponseAcceptedMail;
 use App\Mail\HelperResponseRejectedMail;
 use App\Mail\PlacementRequestAcceptedMail;
@@ -127,7 +128,6 @@ class SendNotificationEmail implements ShouldQueue
                 'user_email' => $this->user->email,
                 'type' => $this->type,
             ]);
-
         } catch (\Exception $e) {
             // Mark email as failed in log if it was created
             if ($this->emailLog) {
@@ -161,6 +161,7 @@ class SendNotificationEmail implements ShouldQueue
             NotificationType::HELPER_RESPONSE_ACCEPTED => new HelperResponseAcceptedMail($this->user, $notificationType, $this->data),
             NotificationType::HELPER_RESPONSE_REJECTED => new HelperResponseRejectedMail($this->user, $notificationType, $this->data),
             NotificationType::VACCINATION_REMINDER => new VaccinationReminderMail($this->user, $notificationType, $this->data),
+            NotificationType::EMAIL_VERIFICATION => new EmailVerificationMail($this->user, $notificationType, $this->data),
             default => null,
         };
     }

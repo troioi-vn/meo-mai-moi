@@ -50,5 +50,14 @@ return [
             'channels' => ['email', 'in_app'],
             'variables' => [],
         ],
+        NotificationType::EMAIL_VERIFICATION->value => [
+            'slug' => 'email-verification',
+            'channels' => ['email'],
+            'variables' => [
+                ['name' => 'user', 'type' => 'App\\Models\\User', 'required' => true],
+                ['name' => 'verificationUrl', 'type' => 'string', 'required' => true],
+                ['name' => 'appName', 'type' => 'string', 'required' => true],
+            ],
+        ],
     ],
 ];

@@ -15,5 +15,10 @@ class SettingsSeeder extends Seeder
             ['key' => 'invite_only_enabled'],
             ['value' => 'true']
         );
+
+        \App\Models\Settings::updateOrCreate(
+            ['key' => 'email_verification_required'],
+            ['value' => 'true']
+        );
     }
 }

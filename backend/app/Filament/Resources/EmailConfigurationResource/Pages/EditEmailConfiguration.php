@@ -30,9 +30,16 @@ class EditEmailConfiguration extends EditRecord
                     $service = app(EmailConfigurationService::class);
 
                     try {
+                        // Get current form data (including unsaved changes)
+                        $formData = $this->form->getState();
+                        $currentProvider = $formData['provider'] ?? $this->record->provider;
+                        $currentConfig = $formData['config'] ?? $this->record->config;
+
+                        // Get test email address for all providers
+                        $testEmailAddress = $currentConfig['test_email_address'] ?? null;
+
                         // For SMTP, check if test email address is provided
-                        if ($this->record->provider === 'smtp') {
-                            $testEmailAddress = $this->record->config['test_email_address'] ?? null;
+                        if ($currentProvider === 'smtp') {
                             if (! $testEmailAddress) {
                                 Notification::make()
                                     ->title('Test Email Address Required')
@@ -42,17 +49,17 @@ class EditEmailConfiguration extends EditRecord
 
                                 return;
                             }
-
-                            $testResult = $service->testConfigurationWithDetails($this->record->provider, $this->record->config, $testEmailAddress);
-                        } else {
-                            $testResult = $service->testConfigurationWithDetails($this->record->provider, $this->record->config);
                         }
 
+                        // Always pass the test email address if available (for all providers)
+                        $testResult = $service->testConfigurationWithDetails($currentProvider, $currentConfig, $testEmailAddress);
+
                         if ($testResult['success']) {
-                            $title = $this->record->provider === 'smtp' ? 'Test Email Sent Successfully' : 'Connection Test Successful';
-                            $body = $this->record->provider === 'smtp'
-                                ? 'Test email was sent successfully to '.($this->record->config['test_email_address'] ?? 'the configured address').'.'
-                                : 'Email configuration is working correctly. A test email was sent.';
+                            $title = 'Test Email Sent Successfully';
+                            
+                            // Determine where the email was actually sent
+                            $actualRecipient = $testEmailAddress ?? $currentConfig['from_address'] ?? 'the configured address';
+                            $body = 'Test email was sent successfully to '.$actualRecipient.'.';
 
                             Notification::make()
                                 ->title($title)
@@ -60,7 +67,7 @@ class EditEmailConfiguration extends EditRecord
                                 ->success()
                                 ->send();
                         } else {
-                            $title = $this->record->provider === 'smtp' ? 'Test Email Failed' : 'Connection Test Failed';
+                            $title = $currentProvider === 'smtp' ? 'Test Email Failed' : 'Connection Test Failed';
                             $body = 'Email configuration test failed. Please check your settings.';
 
                             if (isset($testResult['error'])) {
@@ -82,15 +89,8 @@ class EditEmailConfiguration extends EditRecord
                     }
                 })
                 ->requiresConfirmation()
-                ->modalHeading(
-                    fn (): string => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'
-                        ? 'Send Test Email' : 'Test Email Configuration'
-                )
-                ->modalDescription(
-                    fn (): string => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'
-                        ? 'This will send a test email to the configured test email address. Continue?'
-                        : 'This will send a test email to verify the configuration. Continue?'
-                ),
+                ->modalHeading('Test Email Configuration')
+                ->modalDescription('This will test the current configuration (including any unsaved changes) and send a test email. Continue?'),
 
             Actions\Action::make('activate')
                 ->label('Activate Configuration')
@@ -137,7 +137,8 @@ class EditEmailConfiguration extends EditRecord
 
     protected function getRedirectUrl(): string
     {
-        return $this->getResource()::getUrl('index');
+        // Stay on the same page after saving instead of redirecting to list
+        return $this->getResource()::getUrl('edit', ['record' => $this->record]);
     }
 
     protected function afterSave(): void

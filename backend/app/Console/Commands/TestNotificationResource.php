@@ -73,7 +73,7 @@ class TestNotificationResource extends Command
 
         // Test cleanup functionality
         $this->info('4. Testing cleanup functionality...');
-        $oldNotification = Notification::create([
+        Notification::create([
             'user_id' => $user->id,
             'type' => 'system_announcement',
             'message' => 'Old notification for cleanup test',

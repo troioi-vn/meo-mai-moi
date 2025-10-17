@@ -512,7 +512,7 @@ class PetController extends Controller
      */
     public function update(Request $request, Pet $pet)
     {
-        $user = $this->authorizeUser($request, 'update', $pet);
+        $this->authorizeUser($request, 'update', $pet);
 
         $rules = [
             'name' => 'sometimes|required|string|max:255',

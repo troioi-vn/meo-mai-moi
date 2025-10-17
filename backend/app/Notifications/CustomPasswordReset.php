@@ -5,7 +5,6 @@ namespace App\Notifications;
 use App\Mail\PasswordResetMail;
 use App\Models\EmailLog;
 use App\Services\EmailConfigurationService;
-use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 
@@ -53,6 +52,19 @@ class CustomPasswordReset extends Notification
     }
 
     /**
+     * Get the array representation of the notification.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(object $notifiable): array
+    {
+        return [
+            'token' => $this->getToken(),
+            'email' => $notifiable->email,
+        ];
+    }
+
+    /**
      * Create EmailLog entry following the existing system pattern.
      */
     protected function createEmailLogEntry(object $notifiable): void
@@ -82,25 +94,11 @@ class CustomPasswordReset extends Notification
                 'body' => $emailBody,
                 'status' => 'pending', // Will be updated when email is actually sent
             ]);
-
         } catch (\Exception $e) {
             Log::error('Failed to create password reset EmailLog entry', [
                 'user_id' => $notifiable->id,
                 'error' => $e->getMessage(),
             ]);
         }
-    }
-
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(object $notifiable): array
-    {
-        return [
-            'token' => $this->getToken(),
-            'email' => $notifiable->email,
-        ];
     }
 }

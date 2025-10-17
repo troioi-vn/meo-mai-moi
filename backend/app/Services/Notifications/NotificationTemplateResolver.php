@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 class NotificationTemplateResolver
 {
     public function __construct(
-        private NotificationLocaleResolver $localeResolver = new NotificationLocaleResolver
+        private NotificationLocaleResolver $localeResolver = new NotificationLocaleResolver()
     ) {}
 
     /**
@@ -24,7 +24,7 @@ class NotificationTemplateResolver
      */
     public function resolve(string $type, string $channel, ?string $locale = null): ?array
     {
-        $primary = $locale ?: $this->localeResolver->resolve();
+        $primary = $locale ?? $this->localeResolver->resolve();
         $chain = $this->localeResolver->fallbackChain($primary);
 
         foreach ($chain as $loc) {
@@ -71,17 +71,16 @@ class NotificationTemplateResolver
         }
 
         $slug = $entry['slug'];
-        $engine = $this->defaultEngineFor($channel);
 
         if ($channel === 'email') {
             // Expect Blade views in emails/notifications/{locale}/{slug}.blade.php
-            $view = "emails.notifications.$locale.$slug";
+            $view = "emails.notifications.{$locale}.{$slug}";
             // Backward-compat: also accept legacy path without locale folder for default locale
-            $legacyView = "emails.notifications.$slug";
+            $legacyView = "emails.notifications.{$slug}";
 
             if (view()->exists($view)) {
                 $subject = null; // Subject typically provided by mailable; can add subject files later if needed
-                $body = "@include('$view')"; // body will be rendered via Blade::render when html required
+                $body = " @include('{$view}')"; // body will be rendered via Blade::render when html required
 
                 return [
                     'source' => 'file',
@@ -96,7 +95,7 @@ class NotificationTemplateResolver
 
             if ($locale === $defaultLocale && view()->exists($legacyView)) {
                 $subject = null;
-                $body = "@include('$legacyView')";
+                $body = " @include('{$legacyView}')";
 
                 return [
                     'source' => 'file',
@@ -114,9 +113,9 @@ class NotificationTemplateResolver
 
         if ($channel === 'in_app') {
             // Expect Markdown file under resources/templates/notifications/bell/{locale}/{slug}.md
-            $path = resource_path("templates/notifications/bell/$locale/$slug.md");
+            $path = resource_path("templates/notifications/bell/{$locale}/{$slug}.md");
             if (is_file($path)) {
-                $body = file_get_contents($path) ?: '';
+                $body = file_get_contents($path) ?? '';
 
                 return [
                     'source' => 'file',
@@ -136,6 +135,6 @@ class NotificationTemplateResolver
 
     private function defaultEngineFor(string $channel): string
     {
-        return config("notification_templates.channels.$channel.engine", 'blade');
+        return config("notification_templates.channels.{$channel}.engine", 'blade');
     }
 }

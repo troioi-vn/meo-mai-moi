@@ -24,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => AdminMiddleware::class,
             'optional.auth' => OptionalAuth::class,
             'validate.invitation' => \App\Http\Middleware\ValidateInvitationRequest::class,
+            'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
         ]);
 
         // Note: Avoid trusting all proxies by default, which can trigger null IP edge cases

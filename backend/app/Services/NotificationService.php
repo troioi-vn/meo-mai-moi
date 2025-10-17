@@ -26,8 +26,8 @@ class NotificationService
     ) {
         $emailConfigService = $emailConfigurationService ?? app(EmailConfigurationService::class);
 
-        $this->emailChannel = $emailChannel ?? new EmailNotificationChannel;
-        $this->inAppChannel = $inAppChannel ?? new InAppNotificationChannel;
+        $this->emailChannel = $emailChannel ?? new EmailNotificationChannel();
+        $this->inAppChannel = $inAppChannel ?? new InAppNotificationChannel();
         $this->fallbackChannel = new InAppNotificationChannel(true);
         $this->configStatusBuilder = new EmailConfigurationStatusBuilder($emailConfigService);
     }
@@ -45,6 +45,38 @@ class NotificationService
         $inAppSent = $this->sendInAppIfEnabled($user, $type, $data, $preferences);
 
         $this->handleFallbackIfNeeded($user, $type, $data, $preferences, $emailSent, $inAppSent);
+    }
+
+    /**
+     * Send an email notification to the user.
+     */
+    public function sendEmail(User $user, string $type, array $data): bool
+    {
+        return $this->emailChannel->send($user, $type, $data);
+    }
+
+    /**
+     * Send an in-app notification to the user.
+     */
+    public function sendInApp(User $user, string $type, array $data): bool
+    {
+        return $this->inAppChannel->send($user, $type, $data);
+    }
+
+    /**
+     * Send an in-app notification as a fallback when email fails.
+     */
+    public function sendInAppFallback(User $user, string $type, array $data): bool
+    {
+        return $this->fallbackChannel->send($user, $type, $data);
+    }
+
+    /**
+     * Check if email notifications are properly configured and available.
+     */
+    public function getEmailConfigurationStatus(): array
+    {
+        return $this->configStatusBuilder->getStatus();
     }
 
     private function sendEmailIfEnabled(User $user, string $type, array $data, $preferences): bool
@@ -81,38 +113,6 @@ class NotificationService
             'user_id' => $user->id,
             'type' => $type,
         ]);
-    }
-
-    /**
-     * Send an email notification to the user.
-     */
-    public function sendEmail(User $user, string $type, array $data): bool
-    {
-        return $this->emailChannel->send($user, $type, $data);
-    }
-
-    /**
-     * Send an in-app notification to the user.
-     */
-    public function sendInApp(User $user, string $type, array $data): bool
-    {
-        return $this->inAppChannel->send($user, $type, $data);
-    }
-
-    /**
-     * Send an in-app notification as a fallback when email fails.
-     */
-    public function sendInAppFallback(User $user, string $type, array $data): bool
-    {
-        return $this->fallbackChannel->send($user, $type, $data);
-    }
-
-    /**
-     * Check if email notifications are properly configured and available.
-     */
-    public function getEmailConfigurationStatus(): array
-    {
-        return $this->configStatusBuilder->getStatus();
     }
 
     private function getUserPreferences(User $user, string $type): NotificationPreference

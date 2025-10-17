@@ -27,15 +27,14 @@ class NotificationLocaleResolver
         // Normalize
         $candidate = substr((string) $candidate, 0, 5);
 
-        return $candidate ?: 'en';
+        return $candidate ?? 'en';
     }
 
     public function fallbackChain(string $primary): array
     {
         $defaults = [config('notification_templates.default_locale', 'en'), 'en'];
-        $chain = array_values(array_unique(array_filter([$primary, ...$defaults])));
 
-        return $chain;
+        return array_values(array_unique(array_filter([$primary, ...$defaults])));
     }
 
     private function supportedLocales(): array

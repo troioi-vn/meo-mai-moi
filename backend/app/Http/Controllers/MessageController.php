@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Message;
-use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use OpenApi\Annotations as OA;

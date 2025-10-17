@@ -151,12 +151,12 @@ class ViewEmailConfiguration extends ViewRecord
                         Infolists\Components\TextEntry::make('status')
                             ->label('Active Status')
                             ->badge()
-                            ->formatStateUsing(fn (\App\Enums\EmailConfigurationStatus $state): string => match($state) {
+                            ->formatStateUsing(fn (\App\Enums\EmailConfigurationStatus $state): string => match ($state) {
                                 \App\Enums\EmailConfigurationStatus::ACTIVE => 'Active',
                                 \App\Enums\EmailConfigurationStatus::INACTIVE => 'Inactive',
                                 \App\Enums\EmailConfigurationStatus::DRAFT => 'Draft',
                             })
-                            ->color(fn (\App\Enums\EmailConfigurationStatus $state): string => match($state) {
+                            ->color(fn (\App\Enums\EmailConfigurationStatus $state): string => match ($state) {
                                 \App\Enums\EmailConfigurationStatus::ACTIVE => 'success',
                                 \App\Enums\EmailConfigurationStatus::INACTIVE => 'gray',
                                 \App\Enums\EmailConfigurationStatus::DRAFT => 'warning',

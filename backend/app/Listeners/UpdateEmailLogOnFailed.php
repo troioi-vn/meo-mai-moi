@@ -17,7 +17,6 @@ class UpdateEmailLogOnFailed
             Log::error('Email sending failed', [
                 'error' => $exception->getMessage(),
             ]);
-
         } catch (\Exception $e) {
             Log::error('Failed to handle email failure event', [
                 'error' => $e->getMessage(),

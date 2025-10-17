@@ -23,6 +23,17 @@ class SettingsService
     }
 
     /**
+     * Check if email verification is required
+     */
+    public function isEmailVerificationRequired(): bool
+    {
+        return filter_var(
+            $this->getCachedSetting('email_verification_required', 'true'),
+            FILTER_VALIDATE_BOOLEAN
+        );
+    }
+
+    /**
      * Toggle invite-only mode and return new state
      */
     public function toggleInviteOnly(): bool
@@ -44,13 +55,34 @@ class SettingsService
     }
 
     /**
+     * Enable or disable email verification requirement
+     */
+    public function configureEmailVerificationRequirement(bool $required): void
+    {
+        $this->updateCachedSetting('email_verification_required', $required ? 'true' : 'false');
+    }
+
+    /**
      * Get public settings that can be exposed to frontend
      */
     public function getPublicSettings(): array
     {
         return [
             'invite_only_enabled' => $this->isInviteOnlyEnabled(),
+            'email_verification_required' => $this->isEmailVerificationRequired(),
         ];
+    }
+
+    /**
+     * Clear all settings cache
+     */
+    public function clearCache(): void
+    {
+        $keys = ['invite_only_enabled', 'email_verification_required'];
+
+        foreach ($keys as $key) {
+            Cache::forget(self::CACHE_PREFIX.$key);
+        }
     }
 
     /**
@@ -75,17 +107,5 @@ class SettingsService
         // Update cache immediately
         $cacheKey = self::CACHE_PREFIX.$key;
         Cache::put($cacheKey, $value, self::CACHE_TTL);
-    }
-
-    /**
-     * Clear all settings cache
-     */
-    public function clearCache(): void
-    {
-        $keys = ['invite_only_enabled'];
-
-        foreach ($keys as $key) {
-            Cache::forget(self::CACHE_PREFIX.$key);
-        }
     }
 }

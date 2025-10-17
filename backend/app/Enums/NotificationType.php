@@ -11,6 +11,7 @@ enum NotificationType: string
     case FOSTER_ASSIGNMENT_COMPLETED = 'foster_assignment_completed';
     case FOSTER_ASSIGNMENT_CANCELED = 'foster_assignment_canceled';
     case VACCINATION_REMINDER = 'vaccination_reminder';
+    case EMAIL_VERIFICATION = 'email_verification';
 
     public function getGroup(): string
     {
@@ -22,6 +23,7 @@ enum NotificationType: string
             self::FOSTER_ASSIGNMENT_COMPLETED,
             self::FOSTER_ASSIGNMENT_CANCELED => 'helper_profile',
             self::VACCINATION_REMINDER => 'pet_health',
+            self::EMAIL_VERIFICATION => 'account_security',
         };
     }
 
@@ -35,6 +37,7 @@ enum NotificationType: string
             self::FOSTER_ASSIGNMENT_COMPLETED => 'Foster Assignment Completed',
             self::FOSTER_ASSIGNMENT_CANCELED => 'Foster Assignment Canceled',
             self::VACCINATION_REMINDER => 'Vaccination Due Soon',
+            self::EMAIL_VERIFICATION => 'Email Verification Required',
         };
     }
 }

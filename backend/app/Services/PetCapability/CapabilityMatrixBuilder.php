@@ -22,9 +22,8 @@ class CapabilityMatrixBuilder
     public function getCapabilities(string $petTypeSlug): array
     {
         $capabilities = $this->getStaticCapabilities($petTypeSlug);
-        $capabilities = array_merge($capabilities, $this->getDynamicCapabilities($petTypeSlug));
 
-        return $capabilities;
+        return array_merge($capabilities, $this->getDynamicCapabilities($petTypeSlug));
     }
 
     /**
@@ -33,9 +32,8 @@ class CapabilityMatrixBuilder
     public function getCapabilityMatrix(): array
     {
         $matrix = self::STATIC_CAPABILITIES;
-        $matrix = array_merge($matrix, $this->getDynamicCapabilityMatrix());
 
-        return $matrix;
+        return array_merge($matrix, $this->getDynamicCapabilityMatrix());
     }
 
     private function getStaticCapabilities(string $petTypeSlug): array

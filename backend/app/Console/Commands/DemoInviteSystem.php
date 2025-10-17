@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Models\Invitation;
-use App\Models\Settings;
 use App\Models\User;
 use App\Models\WaitlistEntry;
 use App\Services\SettingsService;

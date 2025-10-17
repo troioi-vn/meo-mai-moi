@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { AxiosError } from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { UserCheck } from 'lucide-react'
+import type { RegisterResponse } from '@/types/auth'
 
 interface ApiError {
   message: string
@@ -13,7 +14,7 @@ interface ApiError {
 }
 
 interface RegisterFormProps {
-  onSuccess?: () => void
+  onSuccess?: (response: RegisterResponse, email: string) => void
   invitationCode?: string | null
   inviterName?: string | null
 }
@@ -44,9 +45,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, invitationCode, 
         password_confirmation: passwordConfirmation,
         ...(invitationCode && { invitation_code: invitationCode }),
       }
-      await register(payload)
+      const response = await register(payload)
       if (onSuccess) {
-        onSuccess()
+        onSuccess(response, email)
       }
     } catch (err: unknown) {
       if (err instanceof AxiosError) {

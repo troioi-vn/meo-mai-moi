@@ -1,22 +1,57 @@
+import { useState } from 'react'
 import RegisterForm from '@/components/RegisterForm'
 import WaitlistForm from '@/components/WaitlistForm'
+import EmailVerificationPrompt from '@/components/EmailVerificationPrompt'
 import { useInviteSystem } from '@/hooks/use-invite-system'
+import { useAuth } from '@/hooks/use-auth'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 import { Loader2, Lock, Globe } from 'lucide-react'
+import type { RegisterResponse } from '@/types/auth'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
+  const { loadUser } = useAuth()
   const { mode, isLoading, invitationCode, invitationValidation, error, clearError } =
     useInviteSystem()
+  const [registrationResponse, setRegistrationResponse] = useState<RegisterResponse | null>(null)
+  const [registeredEmail, setRegisteredEmail] = useState<string>('')
 
-  const handleRegistrationSuccess = () => {
-    toast.success('You are registered, now login please.')
-    void navigate('/login')
+  const handleRegistrationSuccess = (response: RegisterResponse, email: string) => {
+    if (response.requires_verification) {
+      // Stay on same page, show verification prompt
+      setRegistrationResponse(response)
+      setRegisteredEmail(email)
+    } else {
+      // User is already verified, can proceed
+      toast.success('Registration successful! Welcome!')
+      void navigate('/dashboard')
+    }
+  }
+
+  const handleVerificationComplete = async () => {
+    // Reload user data and redirect to dashboard
+    await loadUser()
+    toast.success('Email verified successfully! Welcome!')
+    void navigate('/dashboard')
   }
 
   const handleWaitlistSuccess = () => {
     toast.success('Successfully joined the waitlist! Check your email for confirmation.')
+  }
+
+  // Show email verification prompt if registration requires verification
+  if (registrationResponse?.requires_verification) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <EmailVerificationPrompt
+          email={registeredEmail}
+          message={registrationResponse.message}
+          emailSent={registrationResponse.email_sent}
+          onVerificationComplete={handleVerificationComplete}
+        />
+      </div>
+    )
   }
 
   if (isLoading) {

@@ -1,21 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { api, csrf } from '@/api/axios'
 import type { User } from '@/types/user'
+import type { RegisterPayload, RegisterResponse, LoginPayload, LoginResponse } from '@/types/auth'
 import { AuthContext } from './auth-context'
-
-interface RegisterPayload {
-  name: string
-  email: string
-  password: string
-  password_confirmation: string
-  invitation_code?: string
-}
-
-interface LoginPayload {
-  email: string
-  password: string
-  remember?: boolean
-}
 
 export { AuthContext }
 
@@ -48,19 +35,32 @@ export function AuthProvider({
   }, [])
 
   const register = useCallback(
-    async (payload: RegisterPayload) => {
+    async (payload: RegisterPayload): Promise<RegisterResponse> => {
       await csrf()
-      await api.post('/register', payload)
-      await loadUser()
+      const { data } = await api.post<{ data: RegisterResponse }>('/register', payload)
+      
+      // Don't automatically load user if verification is required
+      // The user will be loaded after email verification
+      if (data.data.email_verified) {
+        await loadUser()
+      }
+      
+      return data.data
     },
     [loadUser]
   )
 
   const login = useCallback(
-    async (payload: LoginPayload) => {
+    async (payload: LoginPayload): Promise<LoginResponse> => {
       await csrf()
-      await api.post('/login', payload)
-      await loadUser()
+      const { data } = await api.post<{ data: LoginResponse }>('/login', payload)
+      
+      // Only load user if email is verified
+      if (data.data.email_verified) {
+        await loadUser()
+      }
+      
+      return data.data
     },
     [loadUser]
   )

@@ -13,14 +13,22 @@ describe('LoginForm', () => {
     // Mock successful login by default
     server.use(
       http.post('http://localhost:3000/api/login', () => {
-        return new HttpResponse(null, { status: 204 })
-      }),
-      http.get('http://localhost:3000/api/user', () => {
         return HttpResponse.json({
-          id: 1,
-          name: 'Test User',
-          email: 'test@example.com',
-          avatar_url: 'https://example.com/avatar.jpg',
+          data: {
+            access_token: 'mock-token-logged-in',
+            token_type: 'Bearer',
+            email_verified: true,
+          }
+        })
+      }),
+      http.get('http://localhost:3000/api/users/me', () => {
+        return HttpResponse.json({
+          data: {
+            id: 1,
+            name: 'Test User',
+            email: 'test@example.com',
+            avatar_url: 'https://example.com/avatar.jpg',
+          }
         })
       })
     )
@@ -129,6 +137,32 @@ describe('LoginForm', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Pet Account Page')).toBeInTheDocument()
+    })
+  })
+
+  it('shows email verification prompt for unverified users', async () => {
+    server.use(
+      http.post('http://localhost:3000/api/login', () => {
+        return HttpResponse.json({
+          data: {
+            access_token: 'mock-token-logged-in',
+            token_type: 'Bearer',
+            email_verified: false,
+          }
+        })
+      })
+    )
+
+    renderWithRouter(<LoginForm />)
+
+    await user.type(screen.getByLabelText(/email/i), 'unverified@example.com')
+    await user.type(screen.getByLabelText(/password/i), 'password123')
+    await user.click(screen.getByRole('button', { name: /login/i }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /verify your email/i })).toBeInTheDocument()
+      expect(screen.getByText(/please verify your email address before accessing/i)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /back to login/i })).toBeInTheDocument()
     })
   })
 })

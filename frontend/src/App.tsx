@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/use-auth'
 import MainPage from './pages/MainPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import EmailVerificationPage from './pages/EmailVerificationPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import ProfilePage from './pages/ProfilePage'
@@ -77,6 +78,8 @@ export function AppRoutes() {
 
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/email/verify/:id/:hash" element={<EmailVerificationPage />} />
+      <Route path="/email/verify" element={<EmailVerificationPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route

@@ -110,11 +110,21 @@ const userHandlers = [
         { status: 422 }
       )
     }
+    
+    // Simulate email verification flow
+    const emailSent = body.email !== 'no-email@example.com' // Simulate email send failure
     return HttpResponse.json(
       {
-        message: 'User registered successfully',
-        access_token: 'mock-token-registered',
-        token_type: 'Bearer',
+        data: {
+          access_token: 'mock-token-registered',
+          token_type: 'Bearer',
+          email_verified: false,
+          email_sent: emailSent,
+          requires_verification: true,
+          message: emailSent 
+            ? 'We have sent you verification email, please check your inbox and click the link to verify your email address. If you did not receive the email, check your spam folder.'
+            : 'We are unable to send verification email at the moment. But hopefully admins are working on it and you will receive it soon.',
+        }
       },
       { status: 201 }
     )
@@ -128,11 +138,17 @@ const userHandlers = [
     if (body.email === 'fail@example.com') {
       return HttpResponse.json({ message: 'Invalid credentials' }, { status: 401 })
     }
+    
+    // Simulate unverified user
+    const emailVerified = body.email !== 'unverified@example.com'
+    
     return HttpResponse.json(
       {
-        message: 'Logged in successfully',
-        access_token: 'mock-token-logged-in',
-        token_type: 'Bearer',
+        data: {
+          access_token: 'mock-token-logged-in',
+          token_type: 'Bearer',
+          email_verified: emailVerified,
+        }
       },
       { status: 200 }
     )
@@ -160,6 +176,47 @@ const userHandlers = [
       )
     }
     return HttpResponse.json({ message: 'Password reset link sent to your email address.' })
+  }),
+
+  // Email verification endpoints
+  http.get('http://localhost:3000/api/email/verify/:id/:hash', ({ params, request }) => {
+    const url = new URL(request.url)
+    const expires = url.searchParams.get('expires')
+    const signature = url.searchParams.get('signature')
+    
+    if (!expires || !signature) {
+      return HttpResponse.json({ message: 'Invalid verification link.' }, { status: 403 })
+    }
+    
+    // Simulate expired link
+    if (params.hash === 'expired-hash') {
+      return HttpResponse.json({ message: 'Invalid or expired verification link.' }, { status: 403 })
+    }
+    
+    return HttpResponse.json({
+      data: {
+        message: 'Email verified successfully.',
+        verified: true,
+      }
+    })
+  }),
+
+  http.post('http://localhost:3000/api/email/verification-notification', () => {
+    return HttpResponse.json({
+      data: {
+        message: 'We have sent you verification email, please check your inbox and click the link to verify your email address. If you did not receive the email, check your spam folder.',
+        email_sent: true,
+      }
+    })
+  }),
+
+  http.get('http://localhost:3000/api/email/verification-status', () => {
+    return HttpResponse.json({
+      data: {
+        verified: false,
+        email: 'test@example.com',
+      }
+    })
   }),
 
   // CSRF cookie endpoint

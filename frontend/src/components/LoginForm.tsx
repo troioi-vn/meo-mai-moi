@@ -7,6 +7,8 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
+import EmailVerificationPrompt from './EmailVerificationPrompt'
+import type { LoginResponse } from '@/types/auth'
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
   const [email, setEmail] = useState('')
@@ -14,7 +16,8 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
-  const { login } = useAuth()
+  const [loginResponse, setLoginResponse] = useState<LoginResponse | null>(null)
+  const { login, loadUser } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -34,14 +37,56 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     setIsLoading(true)
 
     try {
-      await login({ email, password, remember: rememberMe })
-      void navigate(getRedirectPath())
+      const response = await login({ email, password, remember: rememberMe })
+      
+      if (response.email_verified) {
+        // User is verified, proceed to dashboard
+        void navigate(getRedirectPath())
+      } else {
+        // User needs to verify email
+        setLoginResponse(response)
+      }
     } catch (err: unknown) {
       setError('Failed to login. Please check your credentials.')
       console.error(err)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleVerificationComplete = async () => {
+    // Reload user data and redirect to dashboard
+    await loadUser()
+    void navigate(getRedirectPath())
+  }
+
+  // Show email verification prompt if user needs to verify
+  if (loginResponse && !loginResponse.email_verified) {
+    return (
+      <div className={cn('flex flex-col gap-6', className)} {...props}>
+        <EmailVerificationPrompt
+          email={email}
+          message={loginResponse.message || "Please verify your email address before accessing your account."}
+          emailSent={false}
+          onVerificationComplete={handleVerificationComplete}
+        />
+        <Card>
+          <CardContent className="pt-6">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                setLoginResponse(null)
+                setEmail('')
+                setPassword('')
+              }}
+            >
+              Back to Login
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (

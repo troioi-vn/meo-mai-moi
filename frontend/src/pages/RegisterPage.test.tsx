@@ -123,24 +123,7 @@ describe('RegisterPage', () => {
     })
   })
 
-  it('registers a new user and navigates to login on success', async () => {
-    // Mock the register endpoint
-    server.use(
-      http.post('http://localhost:3000/api/register', async ({ request }) => {
-        const data = await request.json()
-        if (typeof data === 'object' && data !== null && 'email' in data) {
-          if (data.email === mockUser.email) {
-            return HttpResponse.json({ message: 'Email already taken.' }, { status: 422 })
-          }
-          return HttpResponse.json(
-            { data: { access_token: 'mock-token', token_type: 'Bearer' } },
-            { status: 201 }
-          )
-        }
-        return HttpResponse.json({ message: 'Invalid request' }, { status: 400 })
-      })
-    )
-
+  it('registers a new user and shows email verification prompt', async () => {
     renderWithRouter(<RegisterPage />, { route: '/register' })
     const user = userEvent.setup()
 
@@ -155,13 +138,36 @@ describe('RegisterPage', () => {
     await user.type(screen.getByLabelText(/confirm password/i), 'password123')
     await user.click(screen.getByRole('button', { name: /register/i }))
 
+    // Should show email verification prompt instead of navigating
     await waitFor(() => {
-      expect(toast.success).toHaveBeenCalledWith('You are registered, now login please.')
+      expect(screen.getByRole('heading', { name: /verify your email/i })).toBeInTheDocument()
+      expect(screen.getByText(/we have sent you verification email/i)).toBeInTheDocument()
     })
 
-    // Assert navigation to /login
+    // Should not navigate to login
+    expect(navigate).not.toHaveBeenCalledWith('/login')
+  })
+
+  it('shows appropriate message when email sending fails', async () => {
+    renderWithRouter(<RegisterPage />, { route: '/register' })
+    const user = userEvent.setup()
+
+    // Wait for the page to load
     await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith('/login')
+      expect(screen.getByRole('heading', { name: /create an account/i })).toBeInTheDocument()
+    })
+
+    await user.type(screen.getByLabelText(/name/i), 'New User')
+    await user.type(screen.getByLabelText(/email/i), 'no-email@example.com') // This triggers email send failure
+    await user.type(screen.getByLabelText(/^Password$/i), 'password123')
+    await user.type(screen.getByLabelText(/confirm password/i), 'password123')
+    await user.click(screen.getByRole('button', { name: /register/i }))
+
+    // Should show email verification prompt with failure message
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /verify your email/i })).toBeInTheDocument()
+      expect(screen.getByText(/unable to send verification email/i)).toBeInTheDocument()
+      expect(screen.getByText(/hopefully admins are working on it/i)).toBeInTheDocument()
     })
   })
 

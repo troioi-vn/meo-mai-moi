@@ -43,7 +43,7 @@ describe('RegisterForm', () => {
     vi.restoreAllMocks()
   })
 
-  it('shows a success message on successful registration', async () => {
+  it('calls onSuccess with registration response on successful registration', async () => {
     const onSuccess = vi.fn()
     renderWithRouter(<RegisterForm onSuccess={onSuccess} />)
 
@@ -54,7 +54,16 @@ describe('RegisterForm', () => {
     await user.click(screen.getByRole('button', { name: /register/i }))
 
     await waitFor(() => {
-      expect(onSuccess).toHaveBeenCalled()
+      expect(onSuccess).toHaveBeenCalledWith(
+        expect.objectContaining({
+          access_token: 'mock-token-registered',
+          token_type: 'Bearer',
+          email_verified: false,
+          email_sent: true,
+          requires_verification: true,
+        }),
+        'success@example.com'
+      )
     })
   })
 })

@@ -23,6 +23,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Super Admin',
                 'password' => Hash::make('password'),
+                'email_verified_at' => now(),
             ]
         );
         $admin->assignRole($superAdminRole);
@@ -32,6 +33,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Admin User',
                 'password' => Hash::make('password'),
+                'email_verified_at' => now(),
             ]
         );
         $user1->assignRole($adminRole);
@@ -41,6 +43,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Regular User',
                 'password' => Hash::make('password'),
+                'email_verified_at' => now(),
             ]
         );
         if ($viewerRole) {

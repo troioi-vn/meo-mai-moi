@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\EmailConfigurationStatusController;
+use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\FosterAssignmentController;
 use App\Http\Controllers\FosterReturnHandoverController;
 use App\Http\Controllers\HelperProfileController;
@@ -26,6 +28,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/version', [VersionController::class, 'show']);
 
+// Email verification routes (MUST be before any auth middleware)
+Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+    ->middleware(['signed', 'throttle:6,1'])
+    ->name('verification.verify');
+
 // Public settings endpoints
 Route::get('/settings/public', [SettingsController::class, 'public']);
 Route::get('/settings/invite-only-status', [SettingsController::class, 'inviteOnlyStatus']);
@@ -39,6 +46,16 @@ Route::post('/invitations/validate', [InvitationController::class, 'validateCode
 
 // Unsubscribe endpoint (no auth required)
 Route::post('/unsubscribe', [UnsubscribeController::class, 'unsubscribe']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/email/verification-notification', [EmailVerificationController::class, 'resend'])
+        ->middleware('throttle:6,1')
+        ->name('verification.send');
+    Route::get('/email/verification-status', [EmailVerificationController::class, 'status']);
+    Route::get('/email/configuration-status', [EmailConfigurationStatusController::class, 'status']);
+});
+
+// Routes that don't require email verification (notifications, email verification management)
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead']); // legacy alias
@@ -56,7 +73,8 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
-Route::middleware('auth:sanctum')->group(function () {
+// Main application routes that require email verification
+Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/user', function (Request $request) {
         return response()->json(['data' => $request->user()]);
     });

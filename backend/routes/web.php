@@ -37,6 +37,31 @@ if (app()->environment('testing')) {
 // Unsubscribe route (must be before catch-all)
 Route::get('/unsubscribe', [\App\Http\Controllers\UnsubscribeController::class, 'show'])->name('unsubscribe');
 
+// Email verification redirect (minimal middleware, before catch-all)
+Route::get('/email/verify/{id}/{hash}', function ($id, $hash, \Illuminate\Http\Request $request) {
+    // Simple verification and redirect without heavy middleware
+    $user = \App\Models\User::find($id);
+
+    if (! $user) {
+        return redirect(env('FRONTEND_URL', 'http://localhost:5173').'/email/verify?error=invalid_link');
+    }
+
+    // Verify the hash matches the user's email
+    if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+        return redirect(env('FRONTEND_URL', 'http://localhost:5173').'/email/verify?error=invalid_link');
+    }
+
+    if ($user->hasVerifiedEmail()) {
+        return redirect(env('FRONTEND_URL', 'http://localhost:5173').'/email/verify?status=already_verified');
+    }
+
+    if ($user->markEmailAsVerified()) {
+        event(new \Illuminate\Auth\Events\Verified($user));
+    }
+
+    return redirect(env('FRONTEND_URL', 'http://localhost:5173').'/email/verify?status=success');
+})->middleware(['throttle:6,1'])->name('verification.verify.web');
+
 Route::get('/{any}', function () {
     return view('welcome');
 })->where('any', '.*');

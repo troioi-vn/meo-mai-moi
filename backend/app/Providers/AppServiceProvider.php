@@ -37,6 +37,12 @@ class AppServiceProvider extends ServiceProvider
             UpdateEmailLogOnSent::class
         );
 
+        // Register custom notification channel for email verification
+        $this->app->make('Illuminate\Notifications\ChannelManager')
+            ->extend('notification_email', function () {
+                return new \App\Channels\NotificationEmailChannel;
+            });
+
         // Update mail configuration on application boot if there's an active email configuration
         try {
             $emailConfigService = $this->app->make(\App\Services\EmailConfigurationService::class);

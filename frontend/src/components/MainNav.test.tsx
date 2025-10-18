@@ -1,8 +1,7 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
-import { TestAuthProvider } from '@/contexts/TestAuthProvider'
-import MainNav from './MainNav'
 import { beforeEach, describe, expect, it } from 'vitest'
+import { screen, waitFor } from '@testing-library/react'
+import { renderWithRouter } from '@/test-utils'
+import MainNav from './MainNav'
 import { server } from '@/mocks/server'
 import { HttpResponse, http } from 'msw'
 
@@ -11,35 +10,30 @@ describe('MainNav', () => {
     server.use(
       http.get('http://localhost:3000/api/notifications', () => {
         return HttpResponse.json({ data: [] })
+      }),
+      http.get('http://localhost:3000/api/impersonation/status', () => {
+        return HttpResponse.json({ is_impersonating: false })
       })
     )
   })
+
   it('renders login and register buttons when not authenticated', () => {
-    render(
-      <TestAuthProvider mockValues={{ isAuthenticated: false, user: null }}>
-        <MemoryRouter>
-          <MainNav />
-        </MemoryRouter>
-      </TestAuthProvider>
-    )
+    renderWithRouter(<MainNav />, {
+      initialAuthState: { isAuthenticated: false, user: null, isLoading: false }
+    })
 
     expect(screen.getByText('Login')).toBeInTheDocument()
     expect(screen.getByText('Register')).toBeInTheDocument()
   })
 
   it('renders notification bell and user menu when authenticated', async () => {
-    render(
-      <TestAuthProvider
-        mockValues={{
-          isAuthenticated: true,
-          user: { id: 1, name: 'Test User', email: 'test@example.com' },
-        }}
-      >
-        <MemoryRouter>
-          <MainNav />
-        </MemoryRouter>
-      </TestAuthProvider>
-    )
+    renderWithRouter(<MainNav />, {
+      initialAuthState: {
+        isAuthenticated: true,
+        user: { id: 1, name: 'Test User', email: 'test@example.com' },
+        isLoading: false
+      }
+    })
 
     // Wait for notification bell to finish loading and check for its button
     await waitFor(() => {

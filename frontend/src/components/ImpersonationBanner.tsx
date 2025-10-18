@@ -100,8 +100,3 @@ export function ImpersonationIndicator() {
     </div>
   )
 }
-
-// Keep the old component for backward compatibility but make it empty
-export function ImpersonationBanner() {
-  return null
-}

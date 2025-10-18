@@ -20,7 +20,6 @@ class DatabaseSeeder extends Seeder
             PetTypeSeeder::class, // Add pet types first
             RolesAndPermissionsSeeder::class,
             UserSeeder::class,
-            HelperProfileSeeder::class,
             PlacementRequestSeeder::class,
             ShieldSeeder::class,
             ReviewSeeder::class,

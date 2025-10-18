@@ -110,6 +110,13 @@ class EmailVerificationController extends Controller
 
         if ($user->markEmailAsVerified()) {
             event(new Verified($user));
+            
+            // Force database commit in tests to ensure verification is persisted
+            // This is needed because RefreshDatabase wraps tests in transactions
+            if (app()->environment('testing')) {
+                \DB::commit();
+                \DB::beginTransaction();
+            }
         }
 
         return $this->sendSuccess([

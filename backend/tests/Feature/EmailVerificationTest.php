@@ -21,9 +21,14 @@ class EmailVerificationTest extends TestCase
     {
         Notification::fake();
 
+        // Mock email configuration service to simulate working email
+        $this->mock(\App\Services\EmailConfigurationService::class, function ($mock) {
+            $mock->shouldReceive('isEmailEnabled')->andReturn(true);
+        });
+
         $response = $this->postJson('/api/register', [
             'name' => 'Test User',
-            'email' => 'test@example.com',
+            'email' => 'test-notification@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);
@@ -46,7 +51,7 @@ class EmailVerificationTest extends TestCase
                 ],
             ]);
 
-        $user = User::where('email', 'test@example.com')->first();
+        $user = User::where('email', 'test-notification@example.com')->first();
         $this->assertNotNull($user);
         $this->assertNull($user->email_verified_at);
 
@@ -255,7 +260,7 @@ class EmailVerificationTest extends TestCase
 
         $response = $this->postJson('/api/register', [
             'name' => 'Test User',
-            'email' => 'test@example.com',
+            'email' => 'test-mail-config@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);

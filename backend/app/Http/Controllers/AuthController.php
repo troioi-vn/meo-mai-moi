@@ -126,22 +126,30 @@ class AuthController extends Controller
         }
 
         // Send email verification notification only if required
+        $emailSent = false;
+        $emailMessage = '';
+
+        if ($emailVerificationRequired) {
+            // Check if email is configured before attempting to send
+            $emailService = app(\App\Services\EmailConfigurationService::class);
+            if (! $emailService->isEmailEnabled()) {
                 $emailSent = false;
-                $emailMessage = '';
-        
-                if ($emailVerificationRequired) {            try {
-                $user->sendEmailVerificationNotification();
-                $emailSent = true;
-                $emailMessage = 'We\'ve sent a verification email to '.$user->email.'. Please check your inbox and click the link to verify your email address. If you did not receive the email, check your spam folder.';
-            } catch (\Exception $e) {
-                // Log the error but don't fail registration
-                Log::warning('Email verification could not be sent during registration', [
-                    'user_id' => $user->id,
-                    'email' => $user->email,
-                    'error' => $e->getMessage(),
-                ]);
-                $emailSent = false;
-                $emailMessage = 'We\'ve failed to send a verification email. But hopefully you will receive it soon.';
+                $emailMessage = 'We are unable to send verification email at the moment. But hopefully admins are working on it and you will receive it soon.';
+            } else {
+                try {
+                    $user->sendEmailVerificationNotification();
+                    $emailSent = true;
+                    $emailMessage = 'We\'ve sent a verification email to '.$user->email.'. Please check your inbox and click the link to verify your email address. If you did not receive the email, check your spam folder.';
+                } catch (\Exception $e) {
+                    // Log the error but don't fail registration
+                    Log::warning('Email verification could not be sent during registration', [
+                        'user_id' => $user->id,
+                        'email' => $user->email,
+                        'error' => $e->getMessage(),
+                    ]);
+                    $emailSent = false;
+                    $emailMessage = 'We\'ve failed to send a verification email. But hopefully you will receive it soon.';
+                }
             }
         } else {
             $emailMessage = 'Registration completed successfully. You can now access your account.';

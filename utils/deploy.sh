@@ -141,6 +141,20 @@ else
     fi
 fi
 
+echo "This is temporary, while we solving the 'empty db'-bug" #TODO: remove this later
+echo "Verifying admin authentication..."
+docker compose exec backend php artisan tinker --execute="
+\$user = App\Models\User::where('email', 'admin@catarchy.space')->first();
+if (!\$user || !Hash::check('password', \$user->password)) {
+    echo 'FIXING: Admin password corrupted, resetting...';
+    \$user->password = Hash::make('password');
+    \$user->save();
+    echo 'Admin password reset successfully';
+} else {
+    echo 'Admin authentication verified';
+}
+"
+
 echo ""
 echo "Generating Filament Shield resources..."
 docker compose exec backend php artisan shield:generate --all --panel=admin

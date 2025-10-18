@@ -18,6 +18,7 @@ class UserSeeder extends Seeder
         $adminRole = Role::where('name', 'admin')->first();
         $viewerRole = Role::where('name', 'viewer')->first();
 
+        // Create super admin
         $admin = User::firstOrCreate(
             ['email' => 'admin@catarchy.space'],
             [
@@ -28,6 +29,7 @@ class UserSeeder extends Seeder
         );
         $admin->assignRole($superAdminRole);
 
+        // Create admin user
         $user1 = User::firstOrCreate(
             ['email' => 'user1@catarchy.space'],
             [
@@ -38,16 +40,15 @@ class UserSeeder extends Seeder
         );
         $user1->assignRole($adminRole);
 
-        $user2 = User::firstOrCreate(
-            ['email' => 'user2@catarchy.space'],
-            [
-                'name' => 'Regular User',
+        // Create 3 regular users using factory
+        for ($i = 1; $i <= 3; $i++) {
+            $user = User::factory()->create([
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
-            ]
-        );
-        if ($viewerRole) {
-            $user2->assignRole($viewerRole);
+            ]);
+            if ($viewerRole) {
+                $user->assignRole($viewerRole);
+            }
         }
     }
 }

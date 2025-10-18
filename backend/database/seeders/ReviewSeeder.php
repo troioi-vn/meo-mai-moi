@@ -11,26 +11,32 @@ class ReviewSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create some sample reviews for testing
-        $users = \App\Models\User::factory()->count(10)->create();
+        // Use existing users for reviews
+        $users = \App\Models\User::all();
+        
+        if ($users->count() < 2) {
+            $this->command->info('Not enough users to create reviews');
+            return;
+        }
 
-        // Create active reviews
-        \App\Models\Review::factory()->count(15)->create([
+        // Create active reviews using existing users
+        \App\Models\Review::factory()->count(5)->create([
             'reviewer_user_id' => $users->random()->id,
             'reviewed_user_id' => $users->random()->id,
             'status' => 'active',
         ]);
 
         // Create some flagged reviews
-        \App\Models\Review::factory()->flagged()->count(3)->create([
+        \App\Models\Review::factory()->flagged()->count(2)->create([
             'reviewer_user_id' => $users->random()->id,
             'reviewed_user_id' => $users->random()->id,
         ]);
 
         // Create some hidden reviews
-        \App\Models\Review::factory()->hidden()->count(2)->create([
+        \App\Models\Review::factory()->hidden()->count(1)->create([
             'reviewer_user_id' => $users->random()->id,
             'reviewed_user_id' => $users->random()->id,
+            'moderated_by' => $users->random()->id,
         ]);
 
         $this->command->info('Created sample reviews for testing ReviewResource');

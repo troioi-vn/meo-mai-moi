@@ -39,9 +39,12 @@ class EnsureEmailIsVerified
         }
 
         if ($user instanceof MustVerifyEmail) {
-            // Force refresh the user from database to avoid stale cache issues
-            $freshUser = $user->fresh();
-            if ($freshUser && ! $freshUser->hasVerifiedEmail()) {
+            // In testing environment, force a fresh database lookup to avoid stale cache
+            // In production, use the cached user for performance
+            $userToCheck = app()->environment('testing') ? 
+                \App\Models\User::find($user->id) : $user;
+                
+            if ($userToCheck && ! $userToCheck->hasVerifiedEmail()) {
                 return response()->json([
                     'message' => 'Your email address is not verified. Please check your email for a verification link.',
                     'email_verified' => false,

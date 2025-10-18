@@ -46,6 +46,10 @@ beforeEach(() => {
           },
         ],
       })
+    }),
+    // Mock for impersonation status
+    http.get('http://localhost:3000/api/impersonation/status', () => {
+      return HttpResponse.json({ is_impersonating: false })
     })
   )
 })

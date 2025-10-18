@@ -89,9 +89,18 @@ class UserResource extends Resource
 
     public static function table(Table $table): Table
     {
-        if (class_exists(STS\FilamentImpersonate\Tables\Actions\Impersonate::class) && config('filament-users.impersonate')) {
-            $table->actions([Impersonate::make('impersonate')]);
+        // Build actions array
+        $actions = [
+            ViewAction::make(),
+            EditAction::make(),
+            DeleteAction::make(),
+        ];
+
+        // Add impersonation action if enabled
+        if (class_exists(\STS\FilamentImpersonate\Tables\Actions\Impersonate::class) && config('filament-users.impersonate')) {
+            $actions[] = Impersonate::make('impersonate');
         }
+
         $table
             ->columns([
                 TextColumn::make('id')
@@ -133,6 +142,10 @@ class UserResource extends Resource
                     EditAction::make(),
                     DeleteAction::make(),
                 ]),
+                // Add impersonation action outside the group if enabled
+                ...(class_exists(\STS\FilamentImpersonate\Tables\Actions\Impersonate::class) && config('filament-users.impersonate') 
+                    ? [Impersonate::make('impersonate')] 
+                    : [])
             ]);
 
         return $table;

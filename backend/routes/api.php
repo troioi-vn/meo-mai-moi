@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EmailConfigurationStatusController;
+use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\FosterAssignmentController;
 use App\Http\Controllers\FosterReturnHandoverController;
@@ -72,6 +73,12 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+
+// Impersonation routes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/impersonation/status', [ImpersonationController::class, 'status']);
+    Route::post('/impersonation/leave', [ImpersonationController::class, 'leave']);
+});
 
 // Main application routes that require email verification
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {

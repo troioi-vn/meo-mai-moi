@@ -83,7 +83,15 @@ class UserProfileController extends Controller
      */
     public function show(Request $request)
     {
-        return $this->sendSuccess($request->user());
+        $user = $request->user();
+        $user->load('roles'); // Load roles relationship
+        
+        // Add computed properties for easier frontend access
+        $userData = $user->toArray();
+        $userData['can_access_admin'] = $user->hasRole(['admin', 'super_admin']);
+        $userData['roles'] = $user->roles->pluck('name')->toArray();
+        
+        return $this->sendSuccess($userData);
     }
 
     /**

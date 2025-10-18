@@ -1,14 +1,14 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import type { Pet } from '@/types/pet'
 import { formatPetAge } from '@/types/pet'
 import { getStatusDisplay, getStatusClasses } from '@/utils/petStatus'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
 import { useNavigate } from 'react-router-dom'
-import { deriveImageUrl } from '@/utils/petImages'
 import { usePlacementInfo } from '@/hooks/usePlacementInfo'
 import { PlacementRequestsSection } from '@/components/pet-profile/PlacementRequestsSection'
 import { PlacementResponseSection } from '@/components/pet-profile/PlacementResponseSection'
+import { PetPhoto } from '@/components/PetPhoto'
 
 interface PetDetailsProps {
   pet: Pet
@@ -16,6 +16,7 @@ interface PetDetailsProps {
   onCancelTransferRequest?: (id: number) => void | Promise<void>
   onTransferResponseSuccess?: () => void
   onOpenPlacementRequest?: () => void
+  onPetUpdate?: (updatedPet: Pet) => void
 }
 
 const PetDetails: React.FC<PetDetailsProps> = ({
@@ -24,14 +25,13 @@ const PetDetails: React.FC<PetDetailsProps> = ({
   onCancelTransferRequest,
   onTransferResponseSuccess,
   onOpenPlacementRequest,
+  onPetUpdate,
 }) => {
   const ageDisplay = formatPetAge(pet)
   const statusDisplay = getStatusDisplay(pet.status)
   const statusClasses = getStatusClasses(pet.status)
   const { isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
-
-  const imageUrl = useMemo(() => deriveImageUrl(pet), [pet])
 
   const placementInfo = usePlacementInfo(pet, user?.id)
   const {
@@ -52,13 +52,14 @@ const PetDetails: React.FC<PetDetailsProps> = ({
   return (
     <div className="bg-card rounded-lg shadow-lg overflow-hidden">
       <div className="relative">
-        <img
-          src={imageUrl}
-          alt={pet.name}
+        <PetPhoto
+          pet={pet}
+          onPhotoUpdate={onPetUpdate || (() => {})}
+          showUploadControls={false} // No upload controls on view page
           className={`w-full h-64 object-cover ${isDeceased ? 'grayscale' : ''}`}
         />
         <div
-          className={`absolute top-4 right-4 px-3 py-1 rounded-full text-sm font-medium ${statusClasses}`}
+          className={`absolute top-4 left-4 px-3 py-1 rounded-full text-sm font-medium ${statusClasses}`}
         >
           {statusDisplay}
         </div>

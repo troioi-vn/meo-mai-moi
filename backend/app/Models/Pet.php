@@ -9,10 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Pet extends Model
+class Pet extends Model implements HasMedia
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, InteractsWithMedia, SoftDeletes;
 
     protected $fillable = [
         'pet_type_id',
@@ -81,32 +84,15 @@ class Pet extends Model
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Returns the latest photo (main photo) for the pet
-     */
-    public function photo(): HasOne
-    {
-        return $this->hasOne(PetPhoto::class)->latestOfMany();
-    }
+
 
     /**
-     * Get all photos for this pet
-     */
-    public function photos(): HasMany
-    {
-        return $this->hasMany(PetPhoto::class);
-    }
-
-    /**
-     * Get photo URL attribute
+     * Get photo URL attribute - returns URL from MediaLibrary.
      */
     public function getPhotoUrlAttribute()
     {
-        if ($this->photo) {
-            return url('storage/'.$this->photo->path);
-        }
-
-        return null;
+        // Try to get thumb conversion first, fall back to original
+        return $this->getFirstMediaUrl('photos', 'thumb') ?: $this->getFirstMediaUrl('photos') ?: null;
     }
 
     /**
@@ -187,5 +173,40 @@ class Pet extends Model
     public function activeFosterAssignment(): HasOne
     {
         return $this->hasOne(FosterAssignment::class)->where('status', 'active');
+    }
+
+    /**
+     * Register media collections for this model.
+     */
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('photos')
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/svg+xml']);
+    }
+
+    /**
+     * Register media conversions for this model.
+     */
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256)
+            ->nonQueued()
+            ->performOnCollections('photos');
+
+        $this->addMediaConversion('medium')
+            ->width(1024)
+            ->height(1024)
+            ->keepOriginalImageFormat()
+            ->nonQueued()
+            ->performOnCollections('photos');
+
+        $this->addMediaConversion('webp')
+            ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256)
+            ->format('webp')
+            ->nonQueued()
+            ->performOnCollections('photos');
+
+
     }
 }

@@ -4,6 +4,25 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Added
+- **🔥 HIGH IMPACT: MediaLibrary Integration**:
+  - Migrated from custom file upload system to `spatie/laravel-medialibrary` for unified media management
+  - **User Avatars**: Automatic conversions (128px thumb, 256px standard, WebP format)
+  - **Pet Photos**: Multiple photo support with conversions (256px thumb, 1024px medium, WebP format)
+  - **Admin Panel Enhancements**: Added avatar and photo displays to user and pet admin views
+    - User table: Circular avatar thumbnails (40px) with toggle visibility
+    - Pet table: Circular photo thumbnails (40px) with toggle visibility
+    - User view page: Large avatar display (150px) with user information layout
+    - Pet view page: Large photo display (200px) with comprehensive pet information
+    - **File Upload Actions**: Custom upload/delete actions in admin panel view pages
+    - **Photo Management**: Dedicated photos management page for pets with bulk operations
+  - **Automatic File Cleanup**: Files properly removed when records are deleted
+  - **API Compatibility**: Maintained backward compatibility - `avatar_url` and `photo_url` fields work identically
+  - **Enhanced Image Processing**: Automatic optimization and multiple format support
+  - **Backfill Command**: `medialibrary:backfill` for migrating existing files with dry-run support
+
+### Changed
+
 ### Changed
 - **Breaking:** Removed SQLite support entirely - PostgreSQL is now the only supported database
 - Default database connection changed from SQLite to PostgreSQL in all environments
@@ -46,6 +65,8 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Fixed
 - Resolved test failures after SQLite removal by installing `postgresql-client` and fixing test setup to use seeders
+- **MediaLibrary WebP Support**: Added WebP support by installing `libwebp-dev` and configuring GD with `--with-webp`
+- **Admin Panel File Uploads**: Added custom upload actions to user and pet view pages for proper MediaLibrary integration
 - **Major Code Quality Overhaul:** Fixed 140+ ESLint violations across the entire frontend codebase:
   - Converted type aliases to interfaces for better TypeScript practices
   - Removed unnecessary conditionals and optional chaining
@@ -72,8 +93,25 @@ All notable changes to this project are documented here, following the [Keep a C
 - `sqlite3` package from Docker image (no longer needed)
 - SQLite database file creation from Composer post-install scripts
 - SQLite references from documentation and development guides
+- **Legacy File Upload System Cleanup**:
+  - Removed `FileUploadService` class (replaced by MediaLibrary)
+  - Removed `PetPhoto` model (replaced by MediaLibrary media records)
+  - Dropped `users.avatar_url` database column (now computed from MediaLibrary)
+  - Dropped `pet_photos` database table (replaced by MediaLibrary `media` table)
+  - Updated database seeders to use MediaLibrary instead of legacy photo creation
 
 ### Unreleased (delta)
+- **🔥 HIGH IMPACT: Pet Photo Upload System Redesign**:
+  - **Single Photo Logic**: Migrated pet photos from multi-photo to single photo system (like user avatars)
+  - **Consistent UX**: Upload/Remove buttons now appear on pet edit page, not view page
+  - **MediaLibrary Integration**: Backend now clears existing photos before adding new ones (single photo collection)
+  - **Enhanced UI**: Upload and Remove buttons positioned below pet photo with clean styling
+  - **API Improvements**: Added support for deleting "current" photo via `/pets/{id}/photos/current` endpoint
+  - **Component Architecture**: Created reusable `PetPhoto` component with upload controls
+  - **Test Coverage**: Comprehensive test suite for pet photo upload functionality (9 test cases)
+  - **Removed Multi-Photo Support**: Simplified from complex multi-photo system to single photo (matching avatar pattern)
+  - **Form Integration**: Removed photo upload from create/edit forms, moved to dedicated photo management on edit page
+  - **Backward Compatibility**: Maintained `photo_url` API field with proper MediaLibrary integration
 - **Admin Panel Navigation Improvements**: Reorganized navigation groups for better clarity and usability:
   - Moved "Roles" from "Filament Shield" section to "System" section
   - Moved "Users" from "Filament Shield" section to "Users & Helpers" section as first item

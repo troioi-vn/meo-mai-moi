@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createPet, getPetTypes, getPet, updatePet, uploadPetPhoto } from '@/api/pets'
-import type { PetType, Pet } from '@/types/pet'
+import { createPet, getPetTypes, getPet, updatePet } from '@/api/pets'
+import type { PetType } from '@/types/pet'
 import { toast } from 'sonner'
 
 interface FormErrors {
@@ -28,7 +28,6 @@ interface CreatePetFormData {
   location: string
   description: string
   pet_type_id: number | null
-  photos: FileList | File[] | []
 }
 
 const VALIDATION_MESSAGES = {
@@ -71,7 +70,6 @@ export const useCreatePetForm = (petId?: string) => {
     location: '',
     description: '',
     pet_type_id: null,
-    photos: [],
   })
   const [petTypes, setPetTypes] = useState<PetType[]>([])
   const [loadingPetTypes, setLoadingPetTypes] = useState(true)
@@ -123,7 +121,6 @@ export const useCreatePetForm = (petId?: string) => {
             location: pet.location,
             description: pet.description,
             pet_type_id: pet.pet_type.id,
-            photos: [],
           })
         } catch (err) {
           console.error('Failed to load pet data:', err)
@@ -140,20 +137,16 @@ export const useCreatePetForm = (petId?: string) => {
     let value: unknown
     if (valueOrEvent && typeof valueOrEvent === 'object' && 'target' in valueOrEvent) {
       const { target } = valueOrEvent as {
-        target: { type?: string; files?: FileList; value?: unknown }
+        target: { value?: unknown }
       }
-      if (target.type === 'file' && target.files) {
-        value = target.files
-      } else {
-        value = target.value
-      }
+      value = target.value
     } else {
       value = valueOrEvent
     }
 
     setFormData((prev) => ({ ...prev, [field]: value as never }))
-    // Clear field error when user starts typing (only for non-photo fields)
-    if (field !== 'photos' && errors[field as keyof FormErrors]) {
+    // Clear field error when user starts typing
+    if (errors[field as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [field as keyof FormErrors]: undefined }))
     }
   }
@@ -210,8 +203,6 @@ export const useCreatePetForm = (petId?: string) => {
 
     setIsSubmitting(true)
     try {
-      let pet: Pet
-
       // Build payload with precision rules
       const payload: import('@/api/pets').CreatePetPayload = {
         name: formData.name,
@@ -237,21 +228,12 @@ export const useCreatePetForm = (petId?: string) => {
       }
 
       if (isEditMode && petId) {
-        pet = await updatePet(petId, payload)
+        await updatePet(petId, payload)
       } else {
-        pet = await createPet(payload)
+        await createPet(payload)
       }
 
-      // Upload photos if any
-      const photos = formData.photos
-      const photoArray = photos instanceof FileList ? Array.from(photos) : photos
-      if (photoArray.length > 0) {
-        for (const photo of photoArray) {
-          if (photo instanceof File) {
-            await uploadPetPhoto(pet.id, photo)
-          }
-        }
-      }
+
 
       const successMessage = isEditMode ? 'Pet updated successfully' : SUCCESS_MESSAGES.PET_CREATED
       toast.success(successMessage)

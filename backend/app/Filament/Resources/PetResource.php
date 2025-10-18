@@ -16,6 +16,7 @@ use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -82,6 +83,11 @@ class PetResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\ImageColumn::make('photo_url')
+                    ->label('Photo')
+                    ->circular()
+                    ->size(40)
+                    ->toggleable(),
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
@@ -181,6 +187,7 @@ class PetResource extends Resource
             'create' => Pages\CreatePet::route('/create'),
             'view' => Pages\ViewPet::route('/{record}'),
             'edit' => Pages\EditPet::route('/{record}/edit'),
+            'photos' => Pages\ManagePhotos::route('/{record}/photos'),
         ];
     }
 

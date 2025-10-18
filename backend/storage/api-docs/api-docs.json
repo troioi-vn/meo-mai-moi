@@ -74,7 +74,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "User registered successfully"
+                                            "example": "We have sent you verification email, please check your inbox and click the link to verify your email address."
                                         },
                                         "access_token": {
                                             "type": "string",
@@ -83,6 +83,18 @@
                                         "token_type": {
                                             "type": "string",
                                             "example": "Bearer"
+                                        },
+                                        "email_verified": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "email_sent": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "requires_verification": {
+                                            "type": "boolean",
+                                            "example": true
                                         }
                                     },
                                     "type": "object"
@@ -152,6 +164,10 @@
                                         "token_type": {
                                             "type": "string",
                                             "example": "Bearer"
+                                        },
+                                        "email_verified": {
+                                            "type": "boolean",
+                                            "example": true
                                         }
                                     },
                                     "type": "object"
@@ -365,6 +381,199 @@
                         }
                     }
                 }
+            }
+        },
+        "/api/email/configuration-status": {
+            "get": {
+                "tags": [
+                    "Email Configuration"
+                ],
+                "summary": "Check email configuration status",
+                "description": "Check if email system is properly configured and operational.",
+                "operationId": "7dc4d4e568836f6e0cb5772823b76c81",
+                "responses": {
+                    "200": {
+                        "description": "Email configuration status",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "enabled": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "provider": {
+                                            "type": "string",
+                                            "example": "smtp"
+                                        },
+                                        "from_address": {
+                                            "type": "string",
+                                            "example": "noreply@example.com"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "active"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/email/verify/{id}/{hash}": {
+            "get": {
+                "tags": [
+                    "Email Verification"
+                ],
+                "summary": "Verify email address",
+                "description": "Verify user's email address using signed URL from verification email.",
+                "operationId": "4b03a3529aa306eb0ba78fa210f77bcd",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "hash",
+                        "in": "path",
+                        "description": "Email hash",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "expires",
+                        "in": "query",
+                        "description": "Expiration timestamp",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "signature",
+                        "in": "query",
+                        "description": "URL signature",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Email verified successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Email verified successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Email already verified or invalid request"
+                    },
+                    "403": {
+                        "description": "Invalid or expired verification link"
+                    }
+                }
+            }
+        },
+        "/api/email/verification-notification": {
+            "post": {
+                "tags": [
+                    "Email Verification"
+                ],
+                "summary": "Resend verification email",
+                "description": "Resend email verification notification to the authenticated user.",
+                "operationId": "76303230a8fd8f1fe4c46107efa9fbfd",
+                "responses": {
+                    "200": {
+                        "description": "Verification email sent",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Verification email sent"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Email already verified"
+                    },
+                    "429": {
+                        "description": "Too many requests"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/email/verification-status": {
+            "get": {
+                "tags": [
+                    "Email Verification"
+                ],
+                "summary": "Check email verification status",
+                "description": "Check if the authenticated user's email is verified.",
+                "operationId": "77eaaf01f21e7000b76013450996b1c4",
+                "responses": {
+                    "200": {
+                        "description": "Verification status",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "verified": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "example": "user@example.com"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             }
         },
         "/api/foster-assignments/{assignment}/complete": {
@@ -4949,6 +5158,14 @@
         {
             "name": "Authentication",
             "description": "Authentication"
+        },
+        {
+            "name": "Email Configuration",
+            "description": "Email Configuration"
+        },
+        {
+            "name": "Email Verification",
+            "description": "Email Verification"
         },
         {
             "name": "Foster Assignments",

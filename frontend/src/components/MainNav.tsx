@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import { NotificationBell } from '@/components/NotificationBell'
 import { UserMenu } from './UserMenu'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ImpersonationIndicator } from '@/components/ImpersonationBanner'
+import { AdminPanelLink } from '@/components/AdminPanelLink'
 
 const MainNav: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth()
@@ -28,6 +30,8 @@ const MainNav: React.FC = () => {
             <Skeleton className="h-9 w-24" />
           ) : isAuthenticated ? (
             <>
+              <ImpersonationIndicator />
+              <AdminPanelLink />
               <NotificationBell />
               <UserMenu />
             </>

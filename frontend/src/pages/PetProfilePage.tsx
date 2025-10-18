@@ -229,6 +229,10 @@ const PetProfilePage: React.FC = () => {
         <PetDetails
           pet={pet}
           onDeletePlacementRequest={handleDeletePlacementRequest}
+          onPetUpdate={() => {
+            // Update the pet data in the profile hook
+            refresh()
+          }}
           onCancelTransferRequest={handleCancelMyTransferRequest}
           onTransferResponseSuccess={refresh}
           onOpenPlacementRequest={handleOpenModal}

@@ -129,7 +129,7 @@ export const uploadPetPhoto = async (petId: number, photo: File): Promise<Pet> =
   return response.data.data
 }
 
-export const deletePetPhoto = async (petId: number, photoId: number): Promise<void> => {
+export const deletePetPhoto = async (petId: number, photoId: number | string = 'current'): Promise<void> => {
   await api.delete(`/pets/${String(petId)}/photos/${String(photoId)}`)
 }
 

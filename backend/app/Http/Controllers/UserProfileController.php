@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\DeleteAccountRequest;
 use App\Http\Requests\UpdatePasswordRequest;
-use App\Services\FileUploadService;
+
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -90,6 +90,9 @@ class UserProfileController extends Controller
         $userData = $user->toArray();
         $userData['can_access_admin'] = $user->hasRole(['admin', 'super_admin']);
         $userData['roles'] = $user->roles->pluck('name')->toArray();
+        
+        // Ensure avatar_url is included (it should be from the accessor, but let's be explicit)
+        $userData['avatar_url'] = $user->avatar_url;
         
         return $this->sendSuccess($userData);
     }
@@ -311,19 +314,56 @@ class UserProfileController extends Controller
      *     )
      * )
      */
-    public function uploadAvatar(Request $request, FileUploadService $fileUploadService)
+    public function uploadAvatar(Request $request)
     {
+        \Log::info('Avatar upload request received', [
+            'user_id' => $request->user()->id,
+            'has_file' => $request->hasFile('avatar'),
+            'files' => $request->allFiles(),
+        ]);
+
         $request->validate([
             'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10240', // 10MB
         ]);
 
         $user = $request->user();
-        $avatarPath = $fileUploadService->uploadUserAvatar($request->file('avatar'), $user);
+        
+        \Log::info('Avatar upload validation passed', [
+            'user_id' => $user->id,
+            'file_info' => $request->file('avatar') ? [
+                'name' => $request->file('avatar')->getClientOriginalName(),
+                'size' => $request->file('avatar')->getSize(),
+                'mime' => $request->file('avatar')->getMimeType(),
+            ] : null,
+        ]);
+        
+        // Clear existing avatar
+        $user->clearMediaCollection('avatar');
+        
+        // Add new avatar to MediaLibrary
+        $media = $user->addMediaFromRequest('avatar')
+            ->toMediaCollection('avatar');
 
-        $user->avatar_url = Storage::url($avatarPath);
-        $user->save();
+        \Log::info('Avatar uploaded successfully', [
+            'user_id' => $user->id,
+            'media_id' => $media->id,
+            'media_url' => $media->getUrl(),
+        ]);
 
-        return $this->sendSuccess($user);
+        // Refresh user to get updated avatar_url from accessor
+        $user->refresh();
+
+        \Log::info('User refreshed', [
+            'user_id' => $user->id,
+            'avatar_url' => $user->avatar_url,
+        ]);
+
+        return $this->sendSuccess([
+            'message' => 'Avatar uploaded successfully',
+            'user' => $user,
+            'avatar_url' => $user->avatar_url,
+            'media_count' => $user->getMedia('avatar')->count(),
+        ]);
     }
 
     /**
@@ -361,15 +401,8 @@ class UserProfileController extends Controller
             return $this->sendError('No avatar to delete.', 404);
         }
 
-        // Extract the path relative to the storage disk
-        $pathToDelete = str_replace(Storage::url(''), '', $user->avatar_url);
-
-        if (Storage::disk('public')->exists($pathToDelete)) {
-            Storage::disk('public')->delete($pathToDelete);
-        }
-
-        $user->avatar_url = null;
-        $user->save();
+        // Clear avatar from MediaLibrary
+        $user->clearMediaCollection('avatar');
 
         return $this->sendSuccess(null, 204);
     }

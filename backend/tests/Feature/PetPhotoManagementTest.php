@@ -41,41 +41,45 @@ class PetPhotoManagementTest extends TestCase
         $response = $this->postJson('/api/pets/'.$this->pet->id.'/photos', ['photo' => $file]);
 
         $response->assertStatus(200)
-            ->assertJsonStructure(['data' => ['id', 'name', 'photo']]);
+            ->assertJsonStructure(['data' => ['id', 'name', 'photo_url']]);
 
-        $this->assertDatabaseHas('pet_photos', [
-            'pet_id' => $this->pet->id,
+        $this->assertDatabaseHas('media', [
+            'model_type' => Pet::class,
+            'model_id' => $this->pet->id,
+            'collection_name' => 'photos',
         ]);
 
-        $path = $response->json('data.photo.path');
-        Storage::disk('public')->assertExists($path);
+        // Check that the pet has a photo_url from MediaLibrary
+        $this->pet->refresh();
+        $this->assertNotNull($this->pet->photo_url);
 
-        $image = (new ImageManager(new Driver))->read(Storage::disk('public')->get($path));
-        $this->assertEquals(1200, $image->width());
-        $this->assertEquals(675, $image->height());
+        // Check that conversions were created
+        $media = $this->pet->getMedia('photos')->first();
+        $this->assertNotNull($media);
+        $this->assertTrue($media->hasGeneratedConversion('thumb'));
+        $this->assertTrue($media->hasGeneratedConversion('medium'));
+        $this->assertTrue($media->hasGeneratedConversion('webp'));
     }
 
     #[Test]
-    public function uploading_a_new_photo_replaces_the_old_one(): void
+    public function uploading_multiple_photos_adds_to_collection(): void
     {
         $this->actingAs($this->owner);
+        
+        // Upload first photo
         $oldFile = UploadedFile::fake()->image('old_photo.jpg');
-        $response = $this->postJson('/api/pets/'.$this->pet->id.'/photos', ['photo' => $oldFile]);
-        $oldPath = $response->json('data.photo.path');
-
-        $this->assertCount(1, $this->pet->photos);
-        Storage::disk('public')->assertExists($oldPath);
-
-        $newFile = UploadedFile::fake()->image('new_photo.jpg');
-        $response = $this->postJson('/api/pets/'.$this->pet->id.'/photos', ['photo' => $newFile]);
-        $newPath = $response->json('data.photo.path');
+        $this->postJson('/api/pets/'.$this->pet->id.'/photos', ['photo' => $oldFile]);
 
         $this->pet->refresh();
-        $this->assertCount(1, $this->pet->photos);
-        $this->assertEquals($newPath, $this->pet->photo->path);
+        $this->assertCount(1, $this->pet->getMedia('photos'));
 
-        Storage::disk('public')->assertMissing($oldPath);
-        Storage::disk('public')->assertExists($newPath);
+        // Upload second photo - should add to collection, not replace
+        $newFile = UploadedFile::fake()->image('new_photo.jpg');
+        $this->postJson('/api/pets/'.$this->pet->id.'/photos', ['photo' => $newFile]);
+
+        $this->pet->refresh();
+        $this->assertCount(2, $this->pet->getMedia('photos'));
+        $this->assertNotNull($this->pet->photo_url);
     }
 
     #[Test]
@@ -86,7 +90,11 @@ class PetPhotoManagementTest extends TestCase
         $file = UploadedFile::fake()->image('photo.jpg');
         $response = $this->postJson('/api/pets/'.$this->pet->id.'/photos', ['photo' => $file]);
         $response->assertStatus(403);
-        $this->assertDatabaseMissing('pet_photos', ['pet_id' => $this->pet->id]);
+        $this->assertDatabaseMissing('media', [
+            'model_type' => Pet::class,
+            'model_id' => $this->pet->id,
+            'collection_name' => 'photos',
+        ]);
     }
 
     #[Test]
@@ -111,15 +119,14 @@ class PetPhotoManagementTest extends TestCase
     {
         $this->actingAs($this->owner);
         $file = UploadedFile::fake()->image('photo.jpg');
-        $response = $this->postJson('/api/pets/'.$this->pet->id.'/photos', ['photo' => $file]);
-        $path = $response->json('data.photo.path');
-        $photo = $this->pet->photo;
-        Storage::disk('public')->assertExists($path);
+        $this->postJson('/api/pets/'.$this->pet->id.'/photos', ['photo' => $file]);
+        
+        $this->pet->refresh();
+        $media = $this->pet->getMedia('photos')->first();
 
-        $response = $this->deleteJson('/api/pets/'.$this->pet->id.'/photos/'.$photo->id);
+        $response = $this->deleteJson('/api/pets/'.$this->pet->id.'/photos/'.$media->id);
         $response->assertStatus(204);
-        $this->assertDatabaseMissing('pet_photos', ['id' => $photo->id]);
-        Storage::disk('public')->assertMissing($path);
+        $this->assertDatabaseMissing('media', ['id' => $media->id]);
     }
 
     #[Test]
@@ -128,12 +135,14 @@ class PetPhotoManagementTest extends TestCase
         $this->actingAs($this->owner);
         $file = UploadedFile::fake()->image('photo.jpg');
         $this->postJson('/api/pets/'.$this->pet->id.'/photos', ['photo' => $file]);
-        $photo = $this->pet->photo;
+        
+        $this->pet->refresh();
+        $media = $this->pet->getMedia('photos')->first();
 
         $nonOwner = User::factory()->create();
         $this->actingAs($nonOwner);
-        $response = $this->deleteJson('/api/pets/'.$this->pet->id.'/photos/'.$photo->id);
+        $response = $this->deleteJson('/api/pets/'.$this->pet->id.'/photos/'.$media->id);
         $response->assertStatus(403);
-        $this->assertDatabaseHas('pet_photos', ['id' => $photo->id]);
+        $this->assertDatabaseHas('media', ['id' => $media->id]);
     }
 }

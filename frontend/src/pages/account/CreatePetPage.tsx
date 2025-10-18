@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { FileInput } from '@/components/ui/FileInput'
+
 import { useCreatePetForm } from '@/hooks/useCreatePetForm'
 import { deletePet, updatePetStatus, getPet } from '@/api/pets'
 import type { Pet } from '@/types/pet'
@@ -12,7 +12,7 @@ import { PetFormFields } from '@/components/pets/PetFormFields'
 import { PetStatusControls } from '@/components/pets/PetStatusControls'
 import { PetDangerZone } from '@/components/pets/PetDangerZone'
 import { ArrowLeft } from 'lucide-react'
-import { deriveImageUrl } from '@/utils/petImages'
+import { PetPhoto } from '@/components/PetPhoto'
 
 const CreatePetPage: React.FC = () => {
   const { id: petId } = useParams<{ id: string }>()
@@ -103,14 +103,7 @@ const CreatePetPage: React.FC = () => {
     }
   }
 
-  const currentImageUrl = useMemo(() => {
-    if (!isEditMode || !loadedPet) return null
-    try {
-      return deriveImageUrl(loadedPet)
-    } catch {
-      return null
-    }
-  }, [isEditMode, loadedPet])
+
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
@@ -131,13 +124,15 @@ const CreatePetPage: React.FC = () => {
         <h1 className="text-3xl font-bold text-center text-card-foreground mb-2">
           {isEditMode ? 'Edit Pet' : 'Add a New Pet'}
         </h1>
-        {isEditMode && currentImageUrl && (
+        {isEditMode && loadedPet && (
           <div className="flex justify-center">
-            <img
-              src={currentImageUrl}
-              alt={formData.name || 'Current Pet Photo'}
+            <PetPhoto
+              pet={loadedPet}
+              onPhotoUpdate={(updatedPet) => {
+                setLoadedPet(updatedPet)
+              }}
+              showUploadControls={true}
               className="h-40 w-40 object-cover rounded-full border"
-              data-testid="current-photo-preview"
             />
           </div>
         )}
@@ -165,12 +160,7 @@ const CreatePetPage: React.FC = () => {
 
             <PetFormFields formData={formData} errors={errors} updateField={updateField} />
 
-            <FileInput
-              id="photos"
-              label={isEditMode ? 'Add More Photos' : 'Photos'}
-              onChange={updateField('photos')}
-              multiple
-            />
+
 
             {error && (
               <p className="text-destructive" data-testid="form-error">

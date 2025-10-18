@@ -34,10 +34,11 @@ ARG INSTALL_DEV=false
 RUN apt-get update && apt-get install -y \
 	libpng-dev libjpeg62-turbo-dev libfreetype6-dev libonig-dev libzip-dev \
 	libpq-dev libicu-dev locales zip unzip curl nginx supervisor procps net-tools postgresql-client \
+	libwebp-dev \
  && if [ "$INSTALL_XDEBUG" = "true" ]; then pecl install xdebug >/dev/null 2>&1 && docker-php-ext-enable xdebug; fi
 
 # Install PHP extensions
-RUN docker-php-ext-install mbstring zip exif pcntl intl pdo_pgsql     && docker-php-ext-configure gd --with-freetype --with-jpeg     && docker-php-ext-install gd
+RUN docker-php-ext-install mbstring zip exif pcntl intl pdo_pgsql     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp     && docker-php-ext-install gd
 
 # Clean up
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*

@@ -11,9 +11,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements FilamentUser, MustVerifyEmail
+class User extends Authenticatable implements FilamentUser, MustVerifyEmail, HasMedia
 {
     use HasApiTokens;
 
@@ -21,6 +24,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     use HasFactory;
 
     use HasRoles;
+    use InteractsWithMedia;
     use Notifiable;
 
     /**
@@ -32,7 +36,6 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'name',
         'email',
         'password',
-        'avatar_url',
     ];
 
     /**
@@ -147,6 +150,48 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function sendEmailVerificationNotification()
     {
         $this->notify(new \App\Notifications\VerifyEmail);
+    }
+
+    /**
+     * Register media collections for this model.
+     */
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('avatar')
+            ->singleFile()
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/svg+xml']);
+    }
+
+    /**
+     * Register media conversions for this model.
+     */
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('avatar_thumb')
+            ->fit(\Spatie\Image\Enums\Fit::Crop, 128, 128)
+            ->nonQueued()
+            ->performOnCollections('avatar');
+
+        $this->addMediaConversion('avatar_256')
+            ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256)
+            ->nonQueued()
+            ->performOnCollections('avatar');
+
+        $this->addMediaConversion('avatar_webp')
+            ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256)
+            ->format('webp')
+            ->nonQueued()
+            ->performOnCollections('avatar');
+
+
+    }
+
+    /**
+     * Get avatar URL attribute - returns URL from MediaLibrary.
+     */
+    public function getAvatarUrlAttribute()
+    {
+        return $this->getFirstMediaUrl('avatar', 'avatar_256') ?: null;
     }
 
     /**

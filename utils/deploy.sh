@@ -141,11 +141,17 @@ else
     fi
 fi
 
-echo "This is temporary, while we solving the 'empty db'-bug" #TODO: remove this later
 echo "Verifying admin authentication..."
 docker compose exec backend php artisan tinker --execute="
 \$user = App\Models\User::where('email', 'admin@catarchy.space')->first();
-if (!\$user || !Hash::check('password', \$user->password)) {
+if (!\$user) {
+    echo 'FIXING: Admin user missing, running seeders...';
+    // Ensure roles exist first
+    Artisan::call('db:seed', ['--class' => 'RolesAndPermissionsSeeder', '--force' => true]);
+    Artisan::call('db:seed', ['--class' => 'UserSeeder', '--force' => true]);
+    \$user = App\Models\User::where('email', 'admin@catarchy.space')->first();
+    echo 'Admin user created successfully';
+} elseif (!\$user || !Hash::check('password', \$user->password)) {
     echo 'FIXING: Admin password corrupted, resetting...';
     \$user->password = Hash::make('password');
     \$user->save();

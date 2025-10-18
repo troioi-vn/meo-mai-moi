@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pet;
-use App\Services\FileUploadService;
 use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
@@ -19,13 +18,10 @@ class PetPhotoController extends Controller
     use HandlesPetResources;
     use HandlesValidation;
 
-    protected FileUploadService $fileUploadService;
-
     protected PetCapabilityService $capabilityService;
 
-    public function __construct(FileUploadService $fileUploadService, PetCapabilityService $capabilityService)
+    public function __construct(PetCapabilityService $capabilityService)
     {
-        $this->fileUploadService = $fileUploadService;
         $this->capabilityService = $capabilityService;
     }
 
@@ -89,6 +85,13 @@ class PetPhotoController extends Controller
      */
     public function store(Request $request, Pet $pet)
     {
+        \Log::info('Pet photo upload request received', [
+            'pet_id' => $pet->id,
+            'user_id' => $request->user()->id,
+            'has_file' => $request->hasFile('photo'),
+            'files' => $request->allFiles(),
+        ]);
+
         $this->authorizeUser($request, 'update', $pet);
         $this->ensurePetCapability($pet, 'photos');
 
@@ -96,25 +99,37 @@ class PetPhotoController extends Controller
             'photo' => $this->imageValidationRules(),
         ]);
 
-        $file = $request->file('photo');
-        $size = $file->getSize();
-        $mimeType = $file->getMimeType();
-        $path = $this->fileUploadService->uploadPetPhoto($file, $pet);
-        $filename = basename($path);
-
-        $pet->photos()->create([
-            'path' => $path,
+        \Log::info('Pet photo validation passed', [
             'pet_id' => $pet->id,
-            'filename' => $filename,
-            'size' => $size,
-            'mime_type' => $mimeType,
-            'created_by' => Auth::id(),
+            'file_info' => $request->file('photo') ? [
+                'name' => $request->file('photo')->getClientOriginalName(),
+                'size' => $request->file('photo')->getSize(),
+                'mime' => $request->file('photo')->getMimeType(),
+            ] : null,
         ]);
 
-        // Refresh pet with new photo relationship
-        $pet->load('photo', 'photos', 'petType');
+        // Clear existing photos first (single photo like user avatar)
+        $pet->clearMediaCollection('photos');
+        
+        // Add new photo to MediaLibrary
+        $media = $pet->addMediaFromRequest('photo')
+            ->toMediaCollection('photos');
 
-        return $this->sendSuccess($pet);
+        \Log::info('Pet photo uploaded successfully', [
+            'pet_id' => $pet->id,
+            'media_id' => $media->id,
+            'media_url' => $media->getUrl(),
+        ]);
+
+        // Refresh pet with updated relationships and photo_url from accessor
+        $pet->load('petType');
+        $pet->refresh();
+
+        // Ensure photo_url is included in response (similar to User fix)
+        $petData = $pet->toArray();
+        $petData['photo_url'] = $pet->photo_url;
+
+        return $this->sendSuccess($petData);
     }
 
     /**
@@ -137,9 +152,9 @@ class PetPhotoController extends Controller
      *         name="photo",
      *         in="path",
      *         required=true,
-     *         description="ID of the photo",
+     *         description="ID of the photo or 'current' to delete the current photo",
      *
-     *         @OA\Schema(type="integer")
+     *         @OA\Schema(type="string")
      *     ),
      *
      *     @OA\Response(
@@ -171,15 +186,20 @@ class PetPhotoController extends Controller
         // Ensure this pet type supports photos
         $this->capabilityService->ensure($pet, 'photos');
 
-        // Find the photo that belongs to this pet
-        /** @var \App\Models\PetPhoto $photoModel */
-        $photoModel = $pet->photos()->findOrFail($photo);
+        // Handle 'current' photo deletion
+        if ($photo === 'current') {
+            $media = $pet->getFirstMedia('photos');
+        } else {
+            // Find the media that belongs to this pet's photos collection
+            $media = $pet->getMedia('photos')->firstWhere('id', (int) $photo);
+        }
+        
+        if (! $media) {
+            return $this->sendError('Photo not found.', 404);
+        }
 
-        // Delete the file from storage
-        $this->fileUploadService->delete($photoModel->path);
-
-        // Delete the photo record
-        $photoModel->delete();
+        // Delete the media (this will also delete the file)
+        $media->delete();
 
         return $this->sendSuccess(null, 204);
     }

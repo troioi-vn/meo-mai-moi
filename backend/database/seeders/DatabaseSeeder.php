@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Pet;
-use App\Models\PetPhoto;
+
 use App\Models\PetType;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -102,21 +102,16 @@ class DatabaseSeeder extends Seeder
                     'pet_type_id' => $catType->id,
                 ]);
 
-                // Add a random cat photo
+                // Add a random cat photo using MediaLibrary
                 $catImageNumber = rand(1, 5);
                 $catImagePath = "pets/cat{$catImageNumber}.jpeg";
                 $fullCatPath = storage_path("app/public/{$catImagePath}");
 
                 if (file_exists($fullCatPath)) {
                     try {
-                        PetPhoto::create([
-                            'pet_id' => $cat->id,
-                            'filename' => "cat{$catImageNumber}.jpeg",
-                            'path' => $catImagePath,
-                            'size' => filesize($fullCatPath),
-                            'mime_type' => 'image/jpeg',
-                            'created_by' => $user->id,
-                        ]);
+                        $cat->addMedia($fullCatPath)
+                            ->preservingOriginal()
+                            ->toMediaCollection('photos');
                     } catch (\Exception $e) {
                         echo "Failed to create cat photo for pet {$cat->id}: ".$e->getMessage().PHP_EOL;
                     }
@@ -129,21 +124,16 @@ class DatabaseSeeder extends Seeder
                     'pet_type_id' => $dogType->id,
                 ]);
 
-                // Add a random dog photo
+                // Add a random dog photo using MediaLibrary
                 $dogImageNumber = rand(1, 5);
                 $dogImagePath = "pets/dog{$dogImageNumber}.jpeg";
                 $fullDogPath = storage_path("app/public/{$dogImagePath}");
 
                 if (file_exists($fullDogPath)) {
                     try {
-                        PetPhoto::create([
-                            'pet_id' => $dog->id,
-                            'filename' => "dog{$dogImageNumber}.jpeg",
-                            'path' => $dogImagePath,
-                            'size' => filesize($fullDogPath),
-                            'mime_type' => 'image/jpeg',
-                            'created_by' => $user->id,
-                        ]);
+                        $dog->addMedia($fullDogPath)
+                            ->preservingOriginal()
+                            ->toMediaCollection('photos');
                     } catch (\Exception $e) {
                         echo "Failed to create dog photo for pet {$dog->id}: ".$e->getMessage().PHP_EOL;
                     }

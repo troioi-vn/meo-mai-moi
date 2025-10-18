@@ -79,15 +79,21 @@ describe('CreatePetPage edit mode enhancements', () => {
     }))
   })
 
-  it('shows current photo preview in edit mode', async () => {
+  it('shows pet photo with upload controls in edit mode', async () => {
     window.history.pushState({}, 'Edit Pet', '/pets/123/edit')
     renderEditPage()
 
     await waitFor(() =>
       expect(screen.getByRole('heading', { name: /edit pet/i })).toBeInTheDocument()
     )
-    const img = await screen.findByTestId('current-photo-preview')
-    expect(img).toHaveAttribute('src', 'https://example.com/photo.jpg')
+    
+    // Check that pet data is loaded into form fields
+    expect(screen.getByDisplayValue('Fluffy')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('Persian')).toBeInTheDocument()
+    
+    // Check that upload controls are shown
+    expect(screen.getByRole('button', { name: /upload/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /remove/i })).toBeInTheDocument()
   })
 
   it('has navigation button', async () => {

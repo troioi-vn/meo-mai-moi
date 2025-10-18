@@ -65,13 +65,15 @@ class PetPhotoControllerTest extends TestCase
                 'data' => [
                     'id',
                     'name',
-                    'photos',
+                    'photo_url', // This comes from the accessor
                 ],
             ]);
 
-        $this->assertDatabaseHas('pet_photos', [
-            'pet_id' => $cat->id,
-            'created_by' => $this->user->id,
+        // Check that media was created in MediaLibrary
+        $this->assertDatabaseHas('media', [
+            'model_type' => Pet::class,
+            'model_id' => $cat->id,
+            'collection_name' => 'photos',
         ]);
     }
 
@@ -92,9 +94,11 @@ class PetPhotoControllerTest extends TestCase
 
         $response->assertStatus(200);
 
-        $this->assertDatabaseHas('pet_photos', [
-            'pet_id' => $dog->id,
-            'created_by' => $this->user->id,
+        // Check that media was created in MediaLibrary
+        $this->assertDatabaseHas('media', [
+            'model_type' => Pet::class,
+            'model_id' => $dog->id,
+            'collection_name' => 'photos',
         ]);
     }
 
@@ -189,14 +193,14 @@ class PetPhotoControllerTest extends TestCase
         $file = UploadedFile::fake()->image('cat.jpg');
         $this->postJson("/api/pets/{$cat->id}/photos", ['photo' => $file]);
 
-        $photo = $cat->fresh()->photos()->first();
+        $media = $cat->fresh()->getMedia('photos')->first();
 
-        $response = $this->deleteJson("/api/pets/{$cat->id}/photos/{$photo->id}");
+        $response = $this->deleteJson("/api/pets/{$cat->id}/photos/{$media->id}");
 
         $response->assertStatus(204);
 
-        $this->assertDatabaseMissing('pet_photos', [
-            'id' => $photo->id,
+        $this->assertDatabaseMissing('media', [
+            'id' => $media->id,
         ]);
     }
 
@@ -214,11 +218,11 @@ class PetPhotoControllerTest extends TestCase
         $file = UploadedFile::fake()->image('cat.jpg');
         $this->postJson("/api/pets/{$cat->id}/photos", ['photo' => $file]);
 
-        $photo = $cat->fresh()->photos()->first();
+        $media = $cat->fresh()->getMedia('photos')->first();
 
         // Try to delete as different user
         Sanctum::actingAs($this->user);
-        $response = $this->deleteJson("/api/pets/{$cat->id}/photos/{$photo->id}");
+        $response = $this->deleteJson("/api/pets/{$cat->id}/photos/{$media->id}");
 
         $response->assertStatus(403);
     }

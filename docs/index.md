@@ -4,22 +4,22 @@ layout: home
 hero:
   name: "Meo Mai Moi"
   text: "Project Documentation"
-  tagline: Community-driven pet rescue and rehoming.
+  tagline: A comprehensive cat care management platform.
   actions:
     - theme: brand
       text: Development Guide
       link: /development
     - theme: alt
-      text: View on GitHub
-      link: https://github.com/troioi-vn/meo-mai-moi
+      text: Architecture
+      link: /architecture
 
 features:
-  - title: Community-Focused
-    details: Built to connect local cat owners, fosters, and adopters.
+  - title: Cat Care Management
+    details: Track your feline companions' health, schedule care routines, and maintain detailed medical records.
   - title: Open Source
     details: Free to use, modify, and deploy for your own community.
-  - title: Modular by Design
-    details: Architected to be geographically independent and easily deployable.
+  - title: Community-Focused
+    details: Built to connect local cat owners, fosters, and adopters.
 ---
 
 # Meo Mai Moi - Project Documentation
@@ -28,23 +28,11 @@ Welcome to the official documentation for the Meo Mai Moi project.
 
 ## About the Project
 
-Meo Mai Moi is an open-source web application engine designed to help communities build and manage local cat rehoming networks. It provides the tools to connect cat owners, fosters, and adopters in a seamless, community-driven platform.
-
-Our primary goal is to create a geographically modular system that anyone can deploy for their own city or region.
-
-## Project Planning & Technical Details
-
-The core technical design, data models, and development roadmap for this project are managed in our primary planning document. This document serves as the single source of truth for our development process.
-
--   For the architecture, tech stack, and phased plan, see the agent/architecture guide: [GEMINI.md](../GEMINI.md).
+Meo Mai Moi is a comprehensive cat care management platform that helps cat owners track their feline companions' health, schedule care routines, and maintain detailed medical records. The platform focuses on proactive cat care with vaccination reminders, weight monitoring, and health insights.
 
 ## Developer Docs
 
 - Local setup, testing, tips: [Development Guide](./development.md)
+- Architecture and coding standards: [Architecture](./architecture.md)
 - Deployment steps: [Production Deployment](./deploy.md)
-- Release steps: [Release Guide](./release.md)
-- Invitation system: [Invitations & Waitlist](./invites.md)
-- Notifications: [Notification Templates Admin](./notifications.md)
-- Pet health features are implemented (weights, vaccinations, microchips, medical notes). See Development Guide for details.
-
-This documentation site will be expanded over time to include user guides, API references, and deployment instructions.
+- Troubleshooting: [Troubleshooting Guide](./troubleshooting.md)

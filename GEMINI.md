@@ -4,47 +4,249 @@ Concise, AI-facing guide for architecture, workflows, testing, and troubleshooti
 
 ## 1) What this app is
 
-Meo Mai Moi is a cat care management platform that helps cat owners track their feline companions' health, schedule care routines, and maintain detailed medical records. The MVP focuses on vaccination reminders, weight monitoring, health tracking, and care scheduling.
+Meo Mai Moi is a comprehensive cat care management platform that helps cat owners track their feline companions' health, schedule care routines, and maintain detailed medical records. The platform focuses on proactive cat care with vaccination reminders, weight monitoring, and health insights.
 
-**MVP Strategy**: Build a strong base of engaged cat owners first, then expand to pet rehoming features in future phases.
+**MVP Strategy**: Launch with dedicated cat care features to build a strong user base of engaged cat owners, then expand to pet rehoming and adoption features in future phases.
+
+**Core Features (MVP Focus)**:
+**Cat Care Management**:
+- Cat profiles with photos, breed information, and personality traits
+- Health tracking with medical records and vaccination schedules
+- Weight monitoring with visual charts and trend analysis
+- Care scheduling for feeding, medications, and routine tasks
+- Veterinary contact management and appointment history
+- Multi-cat household support with individual care plans
+
+**System Features**:
+- Role-based access control (RBAC) via Spatie Permission
+- User impersonation system for admin support and testing
+- Email notification system for health reminders and alerts
+- Admin panel with cat care analytics and user management
+- Photo timeline tracking for growth and memorable moments
 
 ## 2) Tech and architecture
 
-- Backend: Laravel 12 + PHP 8.4
-- Frontend: React + TypeScript + Vite + Tailwind + shadcn/ui
-- Database: PostgreSQL only (all envs). SQLite is not supported.
-- Build/Run: Docker Compose; frontend assets copied into backend image in multi-stage builds
-- API First: OpenAPI annotations; contract tests enforce parity
 
-Key models and auth
-- RBAC via Spatie Permission (single source of truth). The legacy `users.role` column is removed.
-- Policies prefer `$user->can(...)`; permissions like `view_pet`, `create_pet`, etc.
-- Pet status enum: `active`, `lost`, `deceased`, `deleted`.
-- Pet types (Cat, Dog, …) with capability gating via `PetCapabilityService`.
-- Health tracking models: vaccinations, weight records, care schedules, vet appointments.
-- React `AuthProvider` manages session auth; Axios interceptor handles cookies.
-- File uploads live under `storage/app/public` (exposed via `public/storage`).
+
+- **Backend**: Laravel 12 + PHP 8.4
+
+- **Frontend**: React + TypeScript + Vite + Tailwind + shadcn/ui
+
+- **Database**: PostgreSQL only (all envs). SQLite is not supported.
+
+- **Build/Run**: Dockerized with multi-stage builds; frontend assets copied into backend image.
+
+- **API First**: OpenAPI documented with contract testing.
+
+- **Admin Panel**: Filament 3 with comprehensive pet and user management.
+
+
+
+### Key Technical Decisions
+
+- **Authentication**: Session-based with Sanctum
+
+- **File Storage**: Local storage under `storage/app/public`
+
+- **Quality Gates**: PHPStan Level 5, Deptrac architecture enforcement
+
+
+
+### Backend Architecture (Laravel)
+
+
+
+#### Layer Structure (Enforced by Deptrac)
+
+```
+
+Http (Controllers, Middleware, Requests)
+
+  ↓
+
+Services (Business Logic)
+
+  ↓
+
+Domain (Models, Enums)
+
+```
+
+
+
+**Key Patterns**:
+
+- Controllers are thin - delegate to Services
+
+- Services contain business logic and orchestration
+
+- Models are data containers with relationships
+
+- Policies use `$user->can(...)` for authorization
+
+- Use Spatie Permission as single source of truth for RBAC
+
+
+
+### Frontend Architecture (React + TypeScript)
+
+
+
+#### Component Structure
+
+```
+
+src/
+
+├── components/ui/     # shadcn/ui components
+
+├── components/       # Reusable business components
+
+├── pages/           # Route components (don't import other pages)
+
+├── hooks/           # Custom React hooks
+
+├── lib/             # Utilities and configurations
+
+├── api/             # API client and types
+
+└── mocks/           # MSW handlers for testing
+
+```
+
+
+
+**State Management**:
+
+- **React Query** for server state
+
+- **React Hook Form** for form state
+
+- **AuthProvider** for authentication context
+
+- Local state with `useState` for UI state
+
+
+
+### Security Patterns
+
+- CSRF protection enabled
+
+- Mass assignment protection via `$fillable`
+
+- File upload validation and sanitization
+
+- Rate limiting on API endpoints
+
+- Input validation via Form Requests
+
+
+
+## 2a) Coding Standards & Best Practices
+
+
+
+### PHP/Laravel Standards
+
+
+
+**Code Style**:
+
+- **Laravel Pint** enforces PSR-12 with Laravel conventions
+
+- Run before commit: `./vendor/bin/pint`
+
+
+
+**Naming Conventions**:
+
+- **Models**: Singular PascalCase (`Pet`, `User`, `PlacementRequest`)
+
+- **Controllers**: PascalCase + Controller suffix (`PetController`)
+
+- **Services**: PascalCase + Service suffix (`PetManagementService`)
+
+- **Methods**: camelCase (`createPet`, `updateStatus`)
+
+
+
+### TypeScript/React Standards
+
+
+
+**Code Style**:
+
+- **ESLint + Prettier** with strict TypeScript rules
+
+- Run before commit: `npm run lint && npm run typecheck`
+
+
+
+### Documentation Standards
+
+
+
+**Code Comments**:
+
+- Explain **why**, not **what**
+
+- Document complex business logic
+
+
+
+**API Documentation**:
+
+- OpenAPI annotations on all endpoints
+
+- Keep swagger docs up to date
+
+
+
 ## 3) Development basics (quick)
 
+**Quick Start Commands**
+```bash
+# Start development environment (recommended)
+./utils/deploy.sh
 
-Preferred: Docker
-- Start: `docker compose up -d --build`
-- First-time init: `docker compose exec backend php artisan migrate:fresh --seed && docker compose exec backend php artisan shield:generate --all && docker compose exec backend php artisan storage:link`
-- App: http://localhost:8000
-- Admin: http://localhost:8000/admin (admin@catarchy.space / password)
-- API docs: http://localhost:8000/api/documentation
-- Vite (optional): http://localhost:5173
+# Alternative: Manual Docker setup
+docker compose up -d --build
+
+# First-time setup (if not using deploy script)
+docker compose exec backend php artisan migrate:fresh --seed
+docker compose exec backend php artisan shield:generate --all
+docker compose exec backend php artisan storage:link
+```
+
+**Access Points**
+- **Main App**: http://localhost:8000
+- **Admin Panel**: http://localhost:8000/admin (admin@catarchy.space / password)
+- **API Docs**: http://localhost:8000/api/documentation
+
+**Test Users (Seeded Data)**
+- **Super Admin**: admin@catarchy.space / password
+- **Admin**: user1@catarchy.space / password  
+- **Regular Users**: 3 users with factory-generated names/emails / password
+
+**Admin Features**
+- **User Impersonation**: Click 👤 icon in Users table to impersonate any user
+- **Stop Impersonating**: Use navbar indicator or admin panel to return
 
 ## 4) Testing
 
-Backend (Pest/PHPUnit)
-- Run: `docker compose exec backend php artisan test`
+**Backend (Pest/PHPUnit)**:
+```bash
+docker compose exec backend php artisan test
+```
+
+**Frontend (Vitest + RTL)**:
+```bash
+cd frontend && npm test
+cd frontend && npm run typecheck
+```
+
 - With schema dumps: tests call `psql` for `RefreshDatabase`; install `postgresql-client` locally if missing.
 - Seed dependencies in tests (e.g., `PetTypeSeeder`) to avoid FK and enum gaps.
-
-Frontend (Vitest + RTL)
-- Run: `cd frontend && npm test`
-- Coverage: `cd frontend && npm run test:coverage`
 - MSW for API mocking: global server in `frontend/src/setupTests.ts`; handlers per resource under `frontend/src/mocks` using absolute URLs; mirror `{ data: ... }` API shape.
 - `sonner` toasts are mocked in `frontend/src/setupTests.ts`.
 
@@ -63,24 +265,36 @@ Frontend (Vitest + RTL)
 - Runtime setup happens in `backend/docker-entrypoint.sh` (e.g., `storage:link`). Check here for upload issues.
 - Email settings are database-driven via Filament at `/admin/email-configurations`. An active DB config overrides `.env` `MAIL_*`.
 
-## 7) Debugging playbook
-General loop
-1) Observe the exact error/behavior
-2) Isolate (backend logs, browser devtools)
-3) Fix one hypothesis
-4) Verify: rebuild/restart, `php artisan optimize:clear`, retest
+## 7) Troubleshooting Guide
 
-Common issues
-- Backend tests: schema or FK errors with `RefreshDatabase`
-  - Ensure dependent seeders run (e.g., `PetTypeSeeder`). Install `postgresql-client` if `psql` missing. Clear caches with `php artisan optimize:clear`.
-- DB driver missing
-  - Error: `could not find driver` → install `pdo_pgsql`, then `php artisan config:clear`.
-- 403 in backend tests (policies)
-  - Check roles/auth, factories/states, policies, mass assignment; inspect `response->json()`.
-- OpenAPI generation errors
-  - Fix minor `@OA` syntax (brackets/commas). Re-run `php artisan l5-swagger:generate`.
-- Frontend test environment gaps (Radix/shadcn)
-  - Polyfills and DOM stubs live in `frontend/src/setupTests.ts` (PointerEvent, `scrollIntoView`, etc.).
+**Common Issues & Solutions**
+
+**Backend Issues**
+
+*   **Database Connection Errors**: 
+    *   Check PostgreSQL is running: `docker compose ps db`
+    *   Reset database using deploy script (recommended): `./utils/deploy.sh --fresh --seed`
+*   **Login Issues (Admin Password Corruption)**:
+    *   Use deploy script (includes automatic password verification): `./utils/deploy.sh`
+*   **Test Failures with RefreshDatabase**:
+    *   Install `postgresql-client` if `psql` command missing.
+    *   Ensure `PetTypeSeeder` runs before pet-related tests.
+    *   Clear caches: `php artisan optimize:clear`
+
+**Frontend Issues**
+
+*   **Build Failures**:
+    *   Clear node_modules: `rm -rf node_modules && npm install`
+    *   Check TypeScript errors: `npm run typecheck`
+*   **Test Environment Issues**:
+    *   Radix/shadcn components need polyfills in `setupTests.ts`
+    *   MSW handlers must use absolute URLs
+
+**Docker Issues**
+
+*   **Container Won't Start**:
+    *   Check logs: `docker compose logs backend`
+    *   Use deploy script: `./utils/deploy.sh --no-cache`
 
 ## 8) Linting & formatting
 

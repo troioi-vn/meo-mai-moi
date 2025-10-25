@@ -5,6 +5,26 @@ All notable changes to this project are documented here, following the [Keep a C
 ## [Unreleased]
 
 ### Added
+
+- Fortify + Jetstream backend auth foundation for SPA-only flow:
+  - Custom Fortify response classes for login/register/logout/password reset with SPA-friendly JSON and non-JSON redirects to FRONTEND_URL
+  - Fortify actions for creating users, updating profile info and password, and resetting passwords
+  - API endpoint to validate password reset tokens for SPA flow, plus JSON email verification APIs
+  - Config: `config/fortify.php` and `config/jetstream.php` tuned for API features, views disabled
+  - New middleware `ForceWebGuard` to ensure consistent `web` guard on web routes
+  - Added comprehensive backend tests for registration, login, password reset, email verification, profile/password updates, API token management, and 2FA settings
+- Frontend auth UX improvements:
+  - Rebuilt Forgot Password and Reset Password pages with clear states, error handling, and success flows
+  - Added thorough tests for reset token validation and password reset UX
+- Deployment safety:
+  - Deploy script now seeds essential data on-demand (pet types, email configuration) and guarantees a Super Admin user exists
+- Documentation:
+  - `docs/authentication.md` explaining Fortify + Jetstream + Sanctum SPA integration
+  - `docs/inertia_remove.md` documenting complete removal of Inertia UI and backend Node toolchain
+  - `docs/inertia_rollout.md` (historical) notes from the prior evaluation
+
+### Added
+
 - **🔥 HIGH IMPACT: MediaLibrary Integration**:
   - Migrated from custom file upload system to `spatie/laravel-medialibrary` for unified media management
   - **User Avatars**: Automatic conversions (128px thumb, 256px standard, WebP format)
@@ -24,6 +44,7 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Changed
 
 ### Changed
+
 - **Breaking:** Removed SQLite support entirely - PostgreSQL is now the only supported database
 - Default database connection changed from SQLite to PostgreSQL in all environments
 - Tests now run against PostgreSQL instead of SQLite in-memory database
@@ -64,6 +85,7 @@ All notable changes to this project are documented here, following the [Keep a C
   - Added comprehensive email configuration documentation at `docs/email_configuration.md`
 
 ### Fixed
+
 - Resolved test failures after SQLite removal by installing `postgresql-client` and fixing test setup to use seeders
 - **MediaLibrary WebP Support**: Added WebP support by installing `libwebp-dev` and configuring GD with `--with-webp`
 - **Admin Panel File Uploads**: Added custom upload actions to user and pet view pages for proper MediaLibrary integration
@@ -89,6 +111,7 @@ All notable changes to this project are documented here, following the [Keep a C
   - Enhanced email configuration seeder with domain-specific defaults (dev.meo-mai-moi.com)
 
 ### Removed
+
 - SQLite database connection configuration and references
 - `sqlite3` package from Docker image (no longer needed)
 - SQLite database file creation from Composer post-install scripts
@@ -101,6 +124,7 @@ All notable changes to this project are documented here, following the [Keep a C
   - Updated database seeders to use MediaLibrary instead of legacy photo creation
 
 ### Unreleased (delta)
+
 - **🔥 HIGH IMPACT: Pet Photo Upload System Redesign**:
   - **Single Photo Logic**: Migrated pet photos from multi-photo to single photo system (like user avatars)
   - **Consistent UX**: Upload/Remove buttons now appear on pet edit page, not view page
@@ -129,8 +153,22 @@ All notable changes to this project are documented here, following the [Keep a C
 - Documentation: Removed several backend docs files (notification-related docs, OpenAPI dump, unsubscribe, send-email job, and other legacy docs) as part of documentation cleanup.
 - Repo config: Tweaked `.gitignore` and updated `backend/.env.docker` handling (dev docker env changes).
 
+### Changed
+
+- SPA-only UI: Removed dependency on server-rendered Inertia pages and ensured all non-JSON auth responses redirect into the SPA
+- Web routes updated to redirect reset-password and email verification flows into SPA routes where applicable
+- Backend configured as API-first for UI flows; Jetstream retained only for API features (tokens, 2FA) with views disabled
+- Frontend tests and setup streamlined: improved mocking for `sonner` and added reset password page tests
+
+### Removed
+
+- Inertia/Vue UI from the backend (no backend JS/Vite build used to serve UI)
+- Backend Node/Vite/Tailwind tooling tied to Inertia UI (kept out of runtime; see docs/inertia_remove.md)
+
 #### Major Backend Refactoring - Code Quality & Architecture Overhaul
+
 - **🔥 HIGH IMPACT: Trait-Based Architecture Implementation**:
+
   - Created `HandlesAuthentication` trait for centralized user authentication and authorization patterns
   - Created `HandlesPetResources` trait for consistent pet ownership validation and resource access
   - Created `HandlesValidation` trait for standardized validation patterns and error handling
@@ -139,17 +177,20 @@ All notable changes to this project are documented here, following the [Keep a C
   - **Impact**: Eliminated 200+ lines of repetitive code, consistent patterns across all pet resource endpoints, improved maintainability with centralized changes
 
 - **🔥 HIGH IMPACT: Service Layer Complexity Reduction**:
+
   - **NotificationService** refactoring (complexity 14 → 6): Extracted `NotificationChannelInterface`, `EmailNotificationChannel`, `InAppNotificationChannel`, and `EmailConfigurationStatusBuilder` for better separation of concerns
   - **WaitlistService** refactoring (complexity 14 → 8): Created `WaitlistValidator`, `WaitlistStatsCalculator`, and `BulkInvitationProcessor` for focused responsibilities
   - **PetCapabilityService** refactoring (complexity 10 → 4): Extracted `CapabilityChecker`, `CapabilityMatrixBuilder`, and `CapabilityValidator` with maintained static interface
   - **Impact**: Significantly reduced cyclomatic complexity, improved testability with focused components, better maintainability and readability
 
 - **🔥 HIGH IMPACT: Long Function Decomposition**:
+
   - **EmailConfigurationService** refactoring: Broke down 73-line `testConfigurationWithDetails()` method into focused components
   - Created `ConfigurationTester` class with specialized methods: `prepareTestConfiguration()`, `validateConfiguration()`, `performConnectionTest()`, `setupTestMailConfiguration()`, `sendTestEmail()`, `handleTestException()`
   - **Impact**: Improved code readability, better error handling and categorization, enhanced testability with single-responsibility methods
 
 - **🔥 MEDIUM IMPACT: Error Handling Standardization**:
+
   - Created `HandlesErrors` trait with centralized error handling methods
   - Standardized error response formats across all endpoints with specialized handlers:
     - `handleValidationError()` for 422 validation errors
@@ -165,6 +206,7 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Quality Assurance**: All 575 tests passing with zero breaking changes, comprehensive test coverage validates all refactoring changes, backward compatibility maintained for all APIs
 
 #### Invitation System Implementation
+
 - **Feature Complete**: Implemented a comprehensive invitation and waitlist system with both open and invite-only registration modes
 - **Backend Implementation**:
   - Added `Invitation`, `WaitlistEntry`, and `Settings` models with full relationship support
@@ -200,4 +242,3 @@ All notable changes to this project are documented here, following the [Keep a C
   - Real-time invitation statistics and status tracking
   - Automatic invitation validation during registration
   - Settings caching for optimal performance
-

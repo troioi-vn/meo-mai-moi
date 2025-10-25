@@ -12,6 +12,12 @@ hero:
     - theme: alt
       text: Architecture
       link: /architecture
+    - theme: alt
+      text: Authentication
+      link: /authentication
+    - theme: alt
+      text: Inertia Rollout
+      link: /inertia_rollout
 
 features:
   - title: Cat Care Management
@@ -34,5 +40,7 @@ Meo Mai Moi is a comprehensive cat care management platform that helps cat owner
 
 - Local setup, testing, tips: [Development Guide](./development.md)
 - Architecture and coding standards: [Architecture](./architecture.md)
+- Authentication details: [Authentication (Fortify + Jetstream)](./authentication.md)
+- Inertia coexistence plan: [Inertia Rollout](./inertia_rollout.md)
 - Deployment steps: [Production Deployment](./deploy.md)
 - Troubleshooting: [Troubleshooting Guide](./troubleshooting.md)

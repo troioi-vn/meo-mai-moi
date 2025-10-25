@@ -56,6 +56,12 @@ vi.mock('sonner', () => {
   }
 })
 
+// Also mock our Sonner wrapper component to avoid importing the real module
+vi.mock('@/components/ui/sonner', () => ({
+  __esModule: true,
+  default: () => null,
+}))
+
 // Mock ResizeObserver
 class MockResizeObserver {
   observe = vi.fn()

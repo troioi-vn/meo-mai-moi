@@ -1,16 +1,22 @@
 'use client'
 
-import { Toaster as Sonner } from 'sonner'
+// In tests, 'sonner' may be mocked or unavailable; provide a safe fallback
+// Importing as namespace to allow optional access in tests
+import * as SonnerModule from 'sonner'
 
 import { useTheme } from '@/hooks/use-theme'
 
-type ToasterProps = React.ComponentProps<typeof Sonner>
+// Use the real Toaster if available, otherwise a no-op component
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const SonnerToaster: any = (SonnerModule as any)?.Toaster ?? (() => null)
+
+type ToasterProps = React.ComponentProps<typeof SonnerToaster>
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = 'system' } = useTheme()
 
   return (
-    <Sonner
+    <SonnerToaster
       theme={theme === 'system' ? 'system' : theme === 'dark' ? 'dark' : 'light'}
       className="toaster group"
       toastOptions={{

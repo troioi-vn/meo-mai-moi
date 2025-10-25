@@ -41,19 +41,15 @@ window.HTMLElement.prototype.scrollIntoView = (() => {
   /* no-op */
 }) as typeof window.HTMLElement.prototype.scrollIntoView
 
-vi.mock('sonner', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('sonner')>()
-  return {
-    ...actual,
-    Toaster: () => null,
-    toast: {
-      success: vi.fn(),
-      error: vi.fn(),
-      info: vi.fn(),
-      warning: vi.fn(),
-    },
-  }
-})
+vi.mock('sonner', () => ({
+  Toaster: () => null,
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    warning: vi.fn(),
+  },
+}))
 
 // Mock ResizeObserver
 class MockResizeObserver {

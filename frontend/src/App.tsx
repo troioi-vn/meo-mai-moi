@@ -81,7 +81,7 @@ export function AppRoutes() {
       <Route path="/email/verify/:id/:hash" element={<EmailVerificationPage />} />
       <Route path="/email/verify" element={<EmailVerificationPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/password/reset/:token" element={<ResetPasswordPage />} />
       <Route
         path="/account"
         element={

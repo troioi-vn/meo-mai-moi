@@ -75,18 +75,15 @@ class VerifyEmail extends BaseVerifyEmail implements ShouldQueue
      */
     protected function verificationUrl($notifiable): string
     {
-        // Create a signed URL that points to the web route (not API)
-        $baseUrl = rtrim(config('app.url'), '/');
-        $id = $notifiable->getKey();
-        $hash = sha1($notifiable->getEmailForVerification());
-        $expires = Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60))->timestamp;
-        
-        // Build the URL manually to ensure it goes to web route, not API
-        $url = "{$baseUrl}/email/verify/{$id}/{$hash}?expires={$expires}";
-        
-        // Generate signature for the URL
-        $signature = hash_hmac('sha256', $url, config('app.key'));
-        
-        return "{$url}&signature={$signature}";
+        // Use Laravel's URL::temporarySignedRoute to create a proper signed URL
+        // Use the web route for email links (redirects to frontend after verification)
+        return URL::temporarySignedRoute(
+            'verification.verify',
+            Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)),
+            [
+                'id' => $notifiable->getKey(),
+                'hash' => sha1($notifiable->getEmailForVerification()),
+            ]
+        );
     }
 }

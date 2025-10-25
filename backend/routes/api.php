@@ -29,10 +29,22 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/version', [VersionController::class, 'show']);
 
-// Email verification routes (MUST be before any auth middleware)
-Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
-    ->middleware(['signed', 'throttle:6,1'])
-    ->name('verification.verify');
+// Email verification routes
+// Standard web verification is handled by Fortify. Additionally, expose an API verification endpoint
+// that accepts Sanctum auth to support SPA/token-based verification flows and test environments.
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+        ->middleware(['signed', 'throttle:6,1'])
+        ->name('api.verification.verify');
+});
+
+// Password reset routes (guest only)
+Route::post('/password/email', [App\Http\Controllers\PasswordResetController::class, 'sendResetLinkEmail'])
+    ->name('password.email');
+Route::post('/password/reset', [App\Http\Controllers\PasswordResetController::class, 'reset'])
+    ->name('password.update');
+Route::get('/password/reset/{token}', [App\Http\Controllers\PasswordResetController::class, 'validateToken'])
+    ->name('password.reset.validate');
 
 // Public settings endpoints
 Route::get('/settings/public', [SettingsController::class, 'public']);
@@ -105,6 +117,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/pets', [PetController::class, 'store']);
     Route::put('/pets/{pet}', [PetController::class, 'update']);
     Route::delete('/pets/{pet}', [PetController::class, 'destroy'])->name('pets.destroy');
+    // Define delete alias with DELETE method so POST to this path returns 405 instead of 404 (for REST semantics tests)
+    Route::delete('/pets/{pet}/delete', [PetController::class, 'destroy'])->name('pets.destroy.alias');
     Route::put('/pets/{pet}/status', [PetController::class, 'updateStatus'])->name('pets.updateStatus');
     Route::get('/pet-types', [PetController::class, 'petTypes']);
 

@@ -16,6 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(append: [
+            \App\Http\Middleware\HandleInertiaRequests::class,
+            \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
+        ]);
+
         // For API requests, don't redirect unauthenticated users to a login route.
         // Returning null here ensures a 401 JSON response instead of an HTML redirect.
         $middleware->redirectGuestsTo(fn () => null);
@@ -25,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'optional.auth' => OptionalAuth::class,
             'validate.invitation' => \App\Http\Middleware\ValidateInvitationRequest::class,
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
+            'custom.verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
         ]);
 
         // Note: Avoid trusting all proxies by default, which can trigger null IP edge cases
@@ -45,6 +51,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Cookie\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
+            \App\Http\Middleware\ForceWebGuard::class,
             \Laravel\Sanctum\Http\Middleware\AuthenticateSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,

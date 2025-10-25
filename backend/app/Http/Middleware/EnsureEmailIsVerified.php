@@ -25,7 +25,8 @@ class EnsureEmailIsVerified
     public function handle(Request $request, Closure $next): Response
     {
         // Check if email verification is required via settings
-        if (! $this->settingsService->isEmailVerificationRequired()) {
+        $required = $this->settingsService->isEmailVerificationRequired();
+        if (! $required) {
             return $next($request);
         }
 
@@ -38,11 +39,25 @@ class EnsureEmailIsVerified
             ], 403);
         }
 
-        if ($user instanceof MustVerifyEmail) {
-            // In testing environment, force a fresh database lookup to avoid stale cache
-            // In production, use the cached user for performance
-            $userToCheck = app()->environment('testing') ? 
-                \App\Models\User::find($user->id) : $user;
+        // If an Authorization bearer token is present and appears to reference a different user,
+        // prefer the user resolved from that token to avoid any guard/default-driver leakage.
+        $effectiveUser = $user;
+        $authHeader = $request->header('Authorization');
+        if ($authHeader && preg_match('/Bearer\s+(\d+)\|/i', $authHeader, $m)) {
+            $tokenId = (int) $m[1];
+            $pat = \Laravel\Sanctum\PersonalAccessToken::find($tokenId);
+            if ($pat && $pat->tokenable_type === \App\Models\User::class) {
+                $tokenUser = \App\Models\User::find($pat->tokenable_id);
+                if ($tokenUser) {
+                    $effectiveUser = $tokenUser;
+                }
+            }
+        }
+
+        if ($effectiveUser instanceof MustVerifyEmail) {
+            // Always do a fresh database lookup to avoid stale cache issues with Sanctum tokens
+            // This ensures we get the most up-to-date verification status
+            $userToCheck = \App\Models\User::find($effectiveUser->id);
                 
             if ($userToCheck && ! $userToCheck->hasVerifiedEmail()) {
                 return response()->json([
@@ -50,6 +65,8 @@ class EnsureEmailIsVerified
                     'email_verified' => false,
                 ], 403);
             }
+        } else {
+            // If user does not implement MustVerifyEmail, allow through
         }
 
         return $next($request);

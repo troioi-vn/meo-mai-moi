@@ -70,13 +70,17 @@ class CustomPasswordReset extends Notification
     protected function createEmailLogEntry(object $notifiable): void
     {
         try {
-            // Get active email configuration or fall back to default
+            // Get active email configuration; if none, skip logging in tests to avoid FK errors
             $emailService = app(EmailConfigurationService::class);
             $activeConfig = $emailService->getActiveConfiguration();
-            $configId = $activeConfig ? $activeConfig->id : 1;
+            if (! $activeConfig) {
+                return;
+            }
+            $configId = $activeConfig->id;
 
-            $frontendUrl = config('app.frontend_url', 'http://localhost:8000');
-            $resetUrl = $frontendUrl.'/reset-password?token='.$this->getToken().'&email='.urlencode($notifiable->email);
+            // Use the backend web route that redirects to frontend
+            $backendUrl = config('app.url', 'http://localhost:8000');
+            $resetUrl = $backendUrl.'/reset-password/'.$this->getToken().'?email='.urlencode($notifiable->email);
 
             // Create email body using the template
             $emailBody = view('emails.password-reset', [

@@ -1,67 +1,46 @@
 <?php
 
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+// Inertia is not used (SPA-only UI)
 
-// Minimal Filament admin routes for tests (List/Create/View/Edit) when running in testing environment
-if (app()->environment('testing')) {
-    Route::prefix('admin')->group(function () {
-        Route::get('/notifications', function () {
-            // For tests we just need a successful response
-            return response('', 200);
-        })->name('filament.admin.resources.notifications.index');
-        // For the purpose of tests, handle create via POST and persist a basic Notification
-        Route::post('/notifications', function (\Illuminate\Http\Request $request) {
-            $data = $request->validate([
-                'user_id' => 'required|exists:users,id',
-                'type' => 'nullable|string',
-                'message' => 'required|string',
-                'link' => 'nullable|url',
-            ]);
-            \App\Models\Notification::create($data + ['delivered_at' => now()]);
+// Serve the React SPA as the main app entry
+Route::get('/', function () {
+    return view('welcome');
+});
 
-            return response()->noContent();
-        })->name('filament.admin.resources.notifications.create');
-        Route::get('/notifications/{record}', function ($record) {
-            abort_unless(\App\Models\Notification::find($record) !== null, 404);
+// Fortify will register /login and /register routes when views are enabled.
+// No need for custom stubs here.
 
-            return response('', 200);
-        })->name('filament.admin.resources.notifications.view');
-        Route::get('/notifications/{record}/edit', function ($record) {
-            abort_unless(\App\Models\Notification::find($record) !== null, 404);
-
-            return response('', 200);
-        })->name('filament.admin.resources.notifications.edit');
-    });
+// Helper to resolve the frontend URL from config or env
+if (!function_exists('frontend_url')) {
+    function frontend_url(): string {
+        return config('app.frontend_url', env('FRONTEND_URL', 'http://localhost:5173'));
+    }
 }
 
-// Unsubscribe route (must be before catch-all)
+// Email verification routes are provided by Fortify/Jetstream (standard)
+
+// Unsubscribe route (required by tests and email links)
 Route::get('/unsubscribe', [\App\Http\Controllers\UnsubscribeController::class, 'show'])->name('unsubscribe');
 
-// Email verification redirect (minimal middleware, before catch-all)
-Route::get('/email/verify/{id}/{hash}', function ($id, $hash, \Illuminate\Http\Request $request) {
-    // Simple verification and redirect without heavy middleware
-    $user = \App\Models\User::find($id);
-
-    if (! $user) {
-        return redirect(env('FRONTEND_URL', 'http://localhost:5173').'/email/verify?error=invalid_link');
+// Password reset redirect (for email links) – redirects to frontend
+Route::get('/reset-password/{token}', function ($token, \Illuminate\Http\Request $request) {
+    $email = $request->query('email');
+    if (!$email) {
+        return redirect(frontend_url().'/password/reset?error=missing_email');
     }
+    return redirect(frontend_url().'/password/reset/'.$token.'?email='.urlencode($email));
+})->name('password.reset.web');
 
-    // Verify the hash matches the user's email
-    if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
-        return redirect(env('FRONTEND_URL', 'http://localhost:5173').'/email/verify?error=invalid_link');
-    }
-
-    if ($user->hasVerifiedEmail()) {
-        return redirect(env('FRONTEND_URL', 'http://localhost:5173').'/email/verify?status=already_verified');
-    }
-
-    if ($user->markEmailAsVerified()) {
-        event(new \Illuminate\Auth\Events\Verified($user));
-    }
-
-    return redirect(env('FRONTEND_URL', 'http://localhost:5173').'/email/verify?status=success');
-})->middleware(['throttle:6,1'])->name('verification.verify.web');
-
-Route::get('/{any}', function () {
-    return view('welcome');
-})->where('any', '.*');
+// Keep Jetstream's intended post-login route name but redirect to the SPA
+Route::middleware([
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    'verified',
+])->group(function () {
+    Route::get('/dashboard', function () {
+        $frontend = config('app.frontend_url', env('FRONTEND_URL', 'http://localhost:5173'));
+        return redirect()->to($frontend);
+    })->name('dashboard');
+});

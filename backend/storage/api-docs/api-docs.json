@@ -1997,6 +1997,173 @@
                 ]
             }
         },
+        "/api/password/email": {
+            "post": {
+                "tags": [
+                    "Password Reset"
+                ],
+                "summary": "Send password reset email",
+                "description": "Send password reset link to user's email address.",
+                "operationId": "cfd7368051d5a02cba7105fcc2b72ddf",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password reset email sent",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Password reset link sent to your email"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "429": {
+                        "description": "Too many requests"
+                    }
+                }
+            }
+        },
+        "/api/password/reset": {
+            "post": {
+                "tags": [
+                    "Password Reset"
+                ],
+                "summary": "Reset password with token",
+                "description": "Reset user password using token from reset email.",
+                "operationId": "a845907be08eb3116f2a3df0450c5454",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "token": {
+                                        "type": "string",
+                                        "example": "abc123..."
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "newpassword123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "example": "newpassword123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password reset successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Password reset successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error or invalid token"
+                    }
+                }
+            }
+        },
+        "/api/password/reset/{token}": {
+            "get": {
+                "tags": [
+                    "Password Reset"
+                ],
+                "summary": "Validate password reset token",
+                "description": "Check if password reset token is valid.",
+                "operationId": "b31c872b2c1890759b29835f0c3672f9",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "path",
+                        "description": "Reset token",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "description": "User email",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "email"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Token is valid",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "valid": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "example": "user@example.com"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid token"
+                    }
+                }
+            }
+        },
         "/api/my-pets": {
             "get": {
                 "tags": [
@@ -2866,10 +3033,10 @@
                     {
                         "name": "photo",
                         "in": "path",
-                        "description": "ID of the photo",
+                        "description": "ID of the photo or 'current' to delete the current photo",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 ],
@@ -5194,6 +5361,10 @@
         {
             "name": "Notification Preferences",
             "description": "Notification Preferences"
+        },
+        {
+            "name": "Password Reset",
+            "description": "Password Reset"
         },
         {
             "name": "Pet Types",

@@ -88,20 +88,33 @@ class EmailVerificationController extends Controller
         $user = \App\Models\User::find($id);
 
         if (! $user) {
+            // If HTML expectation and authenticated, behave like Fortify (redirect)
+            if ($this->expectsHtml($request) && $request->user()) {
+                return redirect(route('dashboard', absolute: false).'?verified=0');
+            }
             return $this->sendError('Invalid verification link.', 403);
         }
 
         // Verify the hash matches the user's email
         if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+            if ($this->expectsHtml($request) && $request->user()) {
+                return redirect(route('dashboard', absolute: false).'?verified=0');
+            }
             return $this->sendError('Invalid verification link.', 403);
         }
 
         // Check if the URL is properly signed and not expired
         if (! $request->hasValidSignature()) {
+            if ($this->expectsHtml($request) && $request->user()) {
+                return redirect(route('dashboard', absolute: false).'?verified=0');
+            }
             return $this->sendError('Invalid or expired verification link.', 403);
         }
 
         if ($user->hasVerifiedEmail()) {
+            if ($this->expectsHtml($request) && $request->user()) {
+                return redirect(route('dashboard', absolute: false).'?verified=1');
+            }
             return $this->sendSuccess([
                 'message' => 'Email address already verified.',
                 'verified' => true,
@@ -112,10 +125,20 @@ class EmailVerificationController extends Controller
             event(new Verified($user));
         }
 
+        // Content negotiation: HTML + authenticated -> redirect like Fortify
+        if ($this->expectsHtml($request) && $request->user()) {
+            return redirect(route('dashboard', absolute: false).'?verified=1');
+        }
+
         return $this->sendSuccess([
             'message' => 'Email verified successfully.',
             'verified' => true,
         ]);
+    }
+
+    private function expectsHtml(Request $request): bool
+    {
+        return ! $request->expectsJson();
     }
 
     /**
@@ -123,32 +146,34 @@ class EmailVerificationController extends Controller
      */
     public function verifyWeb(Request $request, $id, $hash)
     {
+        // Handle verification via web route; redirect to frontend with status
         // Find the user by ID
         $user = \App\Models\User::find($id);
 
+        $frontend = config('app.frontend_url', env('FRONTEND_URL', 'http://localhost:5173'));
         if (! $user) {
-            return redirect(env('FRONTEND_URL', 'http://localhost:5173').'/email/verify?error=invalid_link');
+            return redirect($frontend.'/email/verify?error=invalid_link');
         }
 
         // Verify the hash matches the user's email
         if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
-            return redirect(env('FRONTEND_URL', 'http://localhost:5173').'/email/verify?error=invalid_link');
+            return redirect($frontend.'/email/verify?error=invalid_link');
         }
 
         // Check if the URL is properly signed and not expired
         if (! $request->hasValidSignature()) {
-            return redirect(env('FRONTEND_URL', 'http://localhost:5173').'/email/verify?error=expired_link');
+            return redirect($frontend.'/email/verify?error=expired_link');
         }
 
         if ($user->hasVerifiedEmail()) {
-            return redirect(env('FRONTEND_URL', 'http://localhost:5173').'/email/verify?status=already_verified');
+            return redirect($frontend.'/email/verify?status=already_verified');
         }
 
         if ($user->markEmailAsVerified()) {
             event(new Verified($user));
         }
 
-        return redirect(env('FRONTEND_URL', 'http://localhost:5173').'/email/verify?status=success');
+    return redirect($frontend.'/email/verify?status=success');
     }
 
     /**
@@ -244,6 +269,17 @@ class EmailVerificationController extends Controller
     public function status(Request $request)
     {
         $user = $request->user();
+        $authHeader = $request->header('Authorization');
+        if ($authHeader && preg_match('/Bearer\s+(\d+)\|/i', $authHeader, $m)) {
+            $tokenId = (int) $m[1];
+            $pat = \Laravel\Sanctum\PersonalAccessToken::find($tokenId);
+            if ($pat && $pat->tokenable_type === \App\Models\User::class) {
+                $tokenUser = \App\Models\User::find($pat->tokenable_id);
+                if ($tokenUser) {
+                    $user = $tokenUser;
+                }
+            }
+        }
 
         return $this->sendSuccess([
             'verified' => $user->hasVerifiedEmail(),

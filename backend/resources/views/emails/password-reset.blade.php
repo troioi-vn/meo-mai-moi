@@ -48,9 +48,9 @@
         }
         .reset-button {
             display: inline-block;
-            background-color: #007bff;
-            color: #ffffff;
-            text-decoration: none;
+            background-color: #007bff !important;
+            color: #ffffff !important;
+            text-decoration: none !important;
             padding: 12px 24px;
             border-radius: 6px;
             font-weight: bold;
@@ -58,7 +58,8 @@
             margin: 20px 0;
         }
         .reset-button:hover {
-            background-color: #0056b3;
+            background-color: #0056b3 !important;
+            color: #ffffff !important;
         }
         .security-notice {
             background-color: #fff3cd;

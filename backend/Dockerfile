@@ -7,6 +7,9 @@ WORKDIR /app
 # Update npm to the latest version
 RUN npm install -g npm@11.5.2
 
+##
+# Build Frontend SPA assets
+##
 # Copy package files first to leverage Docker cache
 COPY ./frontend/package.json ./frontend/package-lock.json /app/frontend/
 WORKDIR /app/frontend
@@ -16,11 +19,13 @@ RUN npm ci
 COPY ./frontend /app/frontend
 COPY ./backend /app/backend
 
-# Navigate to the frontend directory to build it
+# Build the frontend SPA (copies to /app/backend/public/build via script)
 WORKDIR /app/frontend
 RUN npm ci
-# This script now builds Vite and updates the blade file in /app/backend/
 RUN npm run build:docker
+
+##
+# No backend JS build: backend is API-only. Frontend SPA build already copied into /app/backend/public/build.
 
 # Second stage: Final PHP image
 FROM php:8.4-fpm
@@ -58,8 +63,9 @@ COPY --from=composer:2.8 /usr/bin/composer /usr/bin/composer
 # including the Blade file that was updated by the frontend build.
 COPY --from=app-build --chown=www-data:www-data /app/backend .
 
-# Copy the built frontend assets from the build stage
-COPY --from=app-build --chown=www-data:www-data /app/frontend/dist ./public/build
+# Copy the built frontend assets from the build stage (already copied by script)
+# Note: Frontend build step copied to /app/backend/public/build during build stage.
+# We don't need an extra copy here. Keep backend Inertia assets in public/build-inertia.
 
 # Create Laravel's cache and storage directories with correct ownership
 RUN install -d -o www-data -g www-data \

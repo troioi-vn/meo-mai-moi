@@ -2,8 +2,9 @@ name: meo-mai-moi
 services:
   backend:
     build:
-      context: ./
+      context: .
       dockerfile: ./backend/Dockerfile
+    image: meomaimoi/backend
     ports:
       - "8000:80"
     env_file:

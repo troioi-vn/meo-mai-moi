@@ -18,7 +18,8 @@ return [
     |
     */
 
-    'driver' => 'cookie',
+    // Use in-memory sessions for tests to avoid cookie-driven session handler issues
+    'driver' => env('SESSION_DRIVER', env('APP_ENV') === 'testing' ? 'array' : 'cookie'),
 
     /*
     |--------------------------------------------------------------------------

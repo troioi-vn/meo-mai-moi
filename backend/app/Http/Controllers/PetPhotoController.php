@@ -108,10 +108,7 @@ class PetPhotoController extends Controller
             ] : null,
         ]);
 
-        // Clear existing photos first (single photo like user avatar)
-        $pet->clearMediaCollection('photos');
-        
-        // Add new photo to MediaLibrary
+        // Add new photo to MediaLibrary (append; do not clear to support multiple photos)
         $media = $pet->addMediaFromRequest('photo')
             ->toMediaCollection('photos');
 

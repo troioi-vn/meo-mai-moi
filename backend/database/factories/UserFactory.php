@@ -2,9 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\Team;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Laravel\Jetstream\Features;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
@@ -23,13 +26,44 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
-        return [
+        $attributes = [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
         ];
+
+        // Only add Jetstream columns if they exist in the database
+        if ($this->hasColumn('two_factor_secret')) {
+            $attributes['two_factor_secret'] = null;
+        }
+        
+        if ($this->hasColumn('two_factor_recovery_codes')) {
+            $attributes['two_factor_recovery_codes'] = null;
+        }
+        
+        if ($this->hasColumn('profile_photo_path')) {
+            $attributes['profile_photo_path'] = null;
+        }
+        
+        if ($this->hasColumn('current_team_id')) {
+            $attributes['current_team_id'] = null;
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Check if a column exists in the users table
+     */
+    private function hasColumn(string $column): bool
+    {
+        try {
+            return \Schema::hasColumn('users', $column);
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     /**
@@ -40,5 +74,26 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
+    }
+
+    /**
+     * Indicate that the user should have a personal team.
+     */
+    public function withPersonalTeam(?callable $callback = null): static
+    {
+        if (! Features::hasTeamFeatures()) {
+            return $this->state([]);
+        }
+
+        return $this->has(
+            Team::factory()
+                ->state(fn (array $attributes, User $user) => [
+                    'name' => $user->name.'\'s Team',
+                    'user_id' => $user->id,
+                    'personal_team' => true,
+                ])
+                ->when(is_callable($callback), $callback),
+            'ownedTeams'
+        );
     }
 }

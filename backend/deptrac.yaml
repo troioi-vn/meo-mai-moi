@@ -8,6 +8,7 @@ deptrac:
       - App\Services\EmailConfigurationService
     App\Models\User:
       - App\Notifications\CustomPasswordReset
+      - App\Notifications\VerifyEmail
     App\Notifications\CustomPasswordReset:
       - App\Mail\PasswordResetMail
     App\Providers\AuthServiceProvider:
@@ -15,6 +16,12 @@ deptrac:
       - App\Policies\PetPolicy
       - App\Policies\PlacementRequestPolicy
       - App\Policies\TransferRequestPolicy
+    App\Providers\FortifyServiceProvider:
+      - App\Http\Responses\Auth\RegisterResponse
+      - App\Http\Responses\Auth\LoginResponse
+      - App\Http\Responses\Auth\LogoutResponse
+      - App\Http\Responses\Auth\PasswordResetResponse
+      - App\Http\Responses\Auth\SuccessfulPasswordResetLinkRequestResponse
     App\Services\InvitationService:
       - App\Notifications\InvitationToEmail
     App\Services\WaitlistService:

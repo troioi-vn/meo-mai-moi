@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Fortify\CreateNewUser;
+use App\Http\Responses\Auth\LoginResponse;
+use App\Http\Responses\Auth\LogoutResponse;
+use App\Http\Responses\Auth\RegisterResponse;
 use App\Models\User;
 use App\Services\InvitationService;
 use App\Services\SettingsService;
@@ -10,7 +14,6 @@ use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -28,6 +31,8 @@ class AuthController extends Controller
         $this->settingsService = $settingsService;
         $this->invitationService = $invitationService;
     }
+
+    // Legacy custom auth removed; this controller now delegates to Fortify/Jetstream flows exclusively.
 
     /**
      * @OA\Post(
@@ -78,106 +83,38 @@ class AuthController extends Controller
      */
     public function register(Request $request)
     {
-        // Check if invite-only mode is enabled
-        $isInviteOnlyEnabled = $this->settingsService->isInviteOnlyEnabled();
+        // Delegate to Fortify/Jetstream implementation only
+        return $this->handleJetstreamRegistration($request);
+    }
 
-        // Base validation rules
-        $validationRules = [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-        ];
+    /**
+     * Handle registration using Jetstream/Fortify actions
+     */
+    private function handleJetstreamRegistration(Request $request)
+    {
+        $createNewUser = app(CreateNewUser::class);
+        $registerResponse = app(RegisterResponse::class);
 
-        // Add invitation code validation if invite-only mode is enabled
-        if ($isInviteOnlyEnabled) {
-            $validationRules['invitation_code'] = 'required|string';
-        }
+        // Create user using Fortify action (includes all business logic)
+        $user = $createNewUser->create($request->all());
 
-        $request->validate($validationRules);
-
-        // Validate invitation code if provided (required when invite-only is enabled)
-        $invitation = null;
-        if ($request->invitation_code) {
-            $invitation = $this->invitationService->validateInvitationCode($request->invitation_code);
-
-            // If invite-only mode is enabled, invitation code must be valid
-            if ($isInviteOnlyEnabled && ! $invitation) {
-                return response()->json([
-                    'message' => 'The given data was invalid.',
-                    'errors' => ['invitation_code' => ['The provided invitation code is invalid or has expired.']],
-                ], 422);
-            }
-        }
-
-        // Check if email verification is required
-        $emailVerificationRequired = $this->settingsService->isEmailVerificationRequired();
-
-        /** @var User $user */
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'email_verified_at' => $emailVerificationRequired ? null : now(), // Auto-verify if not required
-        ]);
-
-        // If we used an invitation code, mark it as accepted (regardless of invite-only mode)
-        if (isset($invitation)) {
-            $this->invitationService->acceptInvitation($request->invitation_code, $user);
-        }
-
-        // Send email verification notification only if required
-        $emailSent = false;
-        $emailMessage = '';
-
-        if ($emailVerificationRequired) {
-            // Check if email is configured before attempting to send
-            $emailService = app(\App\Services\EmailConfigurationService::class);
-            if (! $emailService->isEmailEnabled()) {
-                $emailSent = false;
-                $emailMessage = 'We are unable to send verification email at the moment. But hopefully admins are working on it and you will receive it soon.';
-            } else {
-                try {
-                    $user->sendEmailVerificationNotification();
-                    $emailSent = true;
-                    $emailMessage = 'We\'ve sent a verification email to '.$user->email.'. Please check your inbox and click the link to verify your email address. If you did not receive the email, check your spam folder.';
-                } catch (\Exception $e) {
-                    // Log the error but don't fail registration
-                    Log::warning('Email verification could not be sent during registration', [
-                        'user_id' => $user->id,
-                        'email' => $user->email,
-                        'error' => $e->getMessage(),
-                    ]);
-                    $emailSent = false;
-                    $emailMessage = 'We\'ve failed to send a verification email. But hopefully you will receive it soon.';
-                }
-            }
-        } else {
-            $emailMessage = 'Registration completed successfully. You can now access your account.';
-        }
-
-        // Create a personal access token for API clients
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        // Don't automatically log in unverified users - they need to verify email first
-        // For SPA authentication, only login if we have a session and user is verified
+        // Log in the user for session-based authentication
         if ($request->hasSession() && ! app()->runningInConsole() && ! app()->runningUnitTests() && $user->hasVerifiedEmail()) {
             try {
                 Auth::login($user);
                 $request->session()->regenerate();
             } catch (\Exception $e) {
                 // Ignore login errors in API context
-                Log::debug('Session login failed in API context', ['error' => $e->getMessage()]);
             }
         }
 
-        return $this->sendSuccess([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'email_verified' => $user->hasVerifiedEmail(),
-            'email_sent' => $emailSent,
-            'requires_verification' => $emailVerificationRequired && ! $user->hasVerifiedEmail(),
-            'message' => $emailMessage,
-        ], 201);
+        // Set the user in the request for the response class
+        $request->setUserResolver(function () use ($user) {
+            return $user;
+        });
+
+        // Return response using Fortify response class
+        return $registerResponse->toResponse($request);
     }
 
     /**
@@ -220,6 +157,15 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
+        // Delegate to Fortify/Jetstream implementation only
+        return $this->handleJetstreamLogin($request);
+    }
+
+    /**
+     * Handle login using Jetstream/Fortify logic
+     */
+    private function handleJetstreamLogin(Request $request)
+    {
         $credentials = $request->validate([
             'email' => 'required|string|email',
             'password' => 'required|string',
@@ -230,29 +176,14 @@ class AuthController extends Controller
             /** @var User $user */
             $user = Auth::user();
 
-            // Check if email verification is required and user is not verified
-            $emailVerificationRequired = $this->settingsService->isEmailVerificationRequired();
+            // Set the user in the request for the response class
+            $request->setUserResolver(function () use ($user) {
+                return $user;
+            });
 
-            if ($emailVerificationRequired && ! $user->hasVerifiedEmail()) {
-                // Don't fully log in unverified users, but provide token for verification process
-                $token = $user->createToken('auth_token')->plainTextToken;
-
-                return $this->sendSuccess([
-                    'access_token' => $token,
-                    'token_type' => 'Bearer',
-                    'email_verified' => false,
-                    'requires_verification' => true,
-                    'message' => 'Please verify your email address. We have sent you verification link to your email.',
-                ]);
-            }
-
-            $token = $user->createToken('auth_token')->plainTextToken;
-
-            return $this->sendSuccess([
-                'access_token' => $token,
-                'token_type' => 'Bearer',
-                'email_verified' => $user->hasVerifiedEmail(),
-            ]);
+            // Return response using Fortify response class
+            $loginResponse = app(LoginResponse::class);
+            return $loginResponse->toResponse($request);
         }
 
         throw ValidationException::withMessages([
@@ -286,6 +217,15 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
+        // Delegate to Fortify/Jetstream implementation only
+        return $this->handleJetstreamLogout($request);
+    }
+
+    /**
+     * Handle logout using Jetstream/Fortify logic
+     */
+    private function handleJetstreamLogout(Request $request)
+    {
         // Revoke current personal access token if present (skip TransientToken for cookie-based sessions)
         if ($request->user()) {
             $token = $request->user()->currentAccessToken();
@@ -299,7 +239,9 @@ class AuthController extends Controller
 
         $request->session()->regenerateToken();
 
-        return $this->sendSuccess(['message' => 'Logged out successfully']);
+        // Return response using Fortify response class
+        $logoutResponse = app(LogoutResponse::class);
+        return $logoutResponse->toResponse($request);
     }
 
     /**
@@ -349,33 +291,8 @@ class AuthController extends Controller
      */
     public function forgotPassword(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-        ]);
-
-        // If the email does not belong to any user, return a 404 so the frontend can notify explicitly
-        $userExists = User::where('email', $request->email)->exists();
-        if (! $userExists) {
-            return response()->json([
-                'message' => __('We couldn\'t find an account with that email address.'),
-            ], 404);
-        }
-
-        // Send password reset link
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
-
-        if ($status === Password::RESET_LINK_SENT) {
-            return $this->sendSuccess([
-                'message' => __('Password reset link sent to your email address.'),
-            ]);
-        }
-
-        // If throttled or other non-success status, return a generic message (avoid leaking details)
-        return response()->json([
-            'message' => __($status),
-        ], 429);
+        // Delegate to Fortify/Jetstream-compatible flow (via response classes)
+        return app(\App\Http\Controllers\PasswordResetController::class)->sendResetLinkEmail($request);
     }
 
     /**
@@ -423,32 +340,7 @@ class AuthController extends Controller
      */
     public function resetPassword(Request $request)
     {
-        $request->validate([
-            'token' => 'required',
-            'email' => 'required|email',
-            'password' => 'required|min:8|confirmed',
-        ]);
-
-        // Reset the password
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user, $password) {
-                $user->forceFill([
-                    'password' => Hash::make($password),
-                ])->setRememberToken(Str::random(60));
-
-                $user->save();
-
-                event(new PasswordReset($user));
-            }
-        );
-
-        if ($status === Password::PASSWORD_RESET) {
-            return $this->sendSuccess([
-                'message' => __('Password reset successfully.'),
-            ]);
-        }
-
-        return $this->sendError(__($status), 422);
+        // Delegate to Fortify/Jetstream-compatible flow (via response classes)
+        return app(\App\Http\Controllers\PasswordResetController::class)->reset($request);
     }
 }

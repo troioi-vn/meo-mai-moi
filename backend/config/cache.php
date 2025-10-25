@@ -15,7 +15,11 @@ return [
     |
     */
 
-    'default' => env('CACHE_STORE', 'database'),
+    // Force array cache in testing to avoid DB cache interactions during tests,
+    // regardless of .env overrides.
+    'default' => (env('APP_ENV') === 'testing')
+        ? 'array'
+        : env('CACHE_STORE', 'database'),
 
     /*
     |--------------------------------------------------------------------------

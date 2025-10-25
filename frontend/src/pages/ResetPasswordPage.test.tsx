@@ -7,6 +7,9 @@ import { http, HttpResponse } from 'msw'
 
 // Mock sonner
 vi.mock('sonner', () => ({
+  __esModule: true,
+  Toaster: () => null,
+  default: () => null,
   toast: {
     success: vi.fn(),
     error: vi.fn(),

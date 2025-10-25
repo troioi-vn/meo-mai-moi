@@ -21,15 +21,22 @@ export default function ForgotPasswordPage() {
     setError('')
 
     try {
+      // Basic client-side email validation to provide immediate feedback
+      const emailPattern = /[^@\s]+@[^@\s]+\.[^@\s]+/
+      if (!emailPattern.test(email)) {
+        setError('Please enter a valid email address')
+        return
+      }
+
       const response = await api.post('/password/email', { email })
-      
+
       if (response.data.data.email_sent) {
         setEmailSent(true)
         toast.success('Password reset link sent to your email')
       }
     } catch (error: any) {
       if (error.response?.status === 422) {
-        setError('Please enter a valid email address.')
+        setError('Please enter a valid email address')
       } else if (error.response?.status === 429) {
         setError('Too many requests. Please wait before trying again.')
       } else {
@@ -56,17 +63,17 @@ export default function ForgotPasswordPage() {
           <CardContent className="space-y-4">
             <Alert className="border-green-200 bg-green-50">
               <AlertDescription className="text-green-800">
-                If an account with that email exists, we have sent you a password reset link. 
-                Please check your inbox and spam folder.
+                If an account with that email exists, we have sent you a password reset link. Please
+                check your inbox and spam folder.
               </AlertDescription>
             </Alert>
-            
+
             <div className="space-y-2">
               <Button asChild className="w-full">
                 <Link to="/login">Back to Login</Link>
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="w-full"
                 onClick={() => {
                   setEmailSent(false)
@@ -92,12 +99,10 @@ export default function ForgotPasswordPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form noValidate onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <Alert className="border-red-200 bg-red-50">
-                <AlertDescription className="text-red-800">
-                  {error}
-                </AlertDescription>
+                <AlertDescription className="text-red-800">{error}</AlertDescription>
               </Alert>
             )}
 

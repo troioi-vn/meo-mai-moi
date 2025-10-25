@@ -132,12 +132,20 @@ elif [ "$SEED" = "true" ]; then
     echo "Seeding database..."
     docker compose exec backend php artisan db:seed --force
 else
-    # Check if pet types exist - they're required for the app to function
+    # Check if essential seed data exists
     PET_TYPE_COUNT=$(docker compose exec -T db psql -U user -d meo_mai_moi -c "SELECT COUNT(*) FROM pet_types;" 2>/dev/null | grep -oE '^[[:space:]]*[0-9]+' | tr -d ' ' || echo "0")
+    EMAIL_CONFIG_COUNT=$(docker compose exec -T db psql -U user -d meo_mai_moi -c "SELECT COUNT(*) FROM email_configurations;" 2>/dev/null | grep -oE '^[[:space:]]*[0-9]+' | tr -d ' ' || echo "0")
+    
     if [ "$PET_TYPE_COUNT" = "0" ]; then
         echo "⚠️  Database is missing required seed data (pet types)."
-        echo "⚠️  Running seeders to populate system data..."
+        echo "⚠️  Running PetTypeSeeder..."
         docker compose exec backend php artisan db:seed --class=PetTypeSeeder --force
+    fi
+    
+    if [ "$EMAIL_CONFIG_COUNT" = "0" ]; then
+        echo "⚠️  Database is missing email configurations."
+        echo "⚠️  Running EmailConfigurationSeeder..."
+        docker compose exec backend php artisan db:seed --class=EmailConfigurationSeeder --force
     fi
 fi
 
@@ -145,13 +153,25 @@ echo "Verifying admin authentication..."
 docker compose exec backend php artisan tinker --execute="
 \$user = App\Models\User::where('email', 'admin@catarchy.space')->first();
 if (!\$user) {
-    echo 'FIXING: Admin user missing, running seeders...';
-    // Ensure roles exist first
+    echo 'FIXING: Admin user missing, running minimal seeders...';
+    // Only run essential seeders to create admin user
     Artisan::call('db:seed', ['--class' => 'RolesAndPermissionsSeeder', '--force' => true]);
-    Artisan::call('db:seed', ['--class' => 'UserSeeder', '--force' => true]);
-    \$user = App\Models\User::where('email', 'admin@catarchy.space')->first();
+    
+    // Create admin user directly without running full UserSeeder
+    \$superAdminRole = Spatie\Permission\Models\Role::where('name', 'super_admin')->first();
+    \$admin = App\Models\User::firstOrCreate(
+        ['email' => 'admin@catarchy.space'],
+        [
+            'name' => 'Super Admin',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+        ]
+    );
+    if (\$superAdminRole) {
+        \$admin->assignRole(\$superAdminRole);
+    }
     echo 'Admin user created successfully';
-} elseif (!\$user || !Hash::check('password', \$user->password)) {
+} elseif (!Hash::check('password', \$user->password)) {
     echo 'FIXING: Admin password corrupted, resetting...';
     \$user->password = Hash::make('password');
     \$user->save();

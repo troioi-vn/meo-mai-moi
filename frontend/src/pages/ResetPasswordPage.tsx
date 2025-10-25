@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -122,7 +122,7 @@ export default function ResetPasswordPage() {
             <div className="flex justify-center mb-4">
               <Loader2 className="h-12 w-12 text-primary animate-spin" />
             </div>
-            <CardTitle className="text-2xl">Validating Reset Link</CardTitle>
+            <h1 className="text-2xl font-semibold">Validating Reset Link</h1>
             <CardDescription>
               Please wait while we validate your password reset link.
             </CardDescription>
@@ -140,7 +140,7 @@ export default function ResetPasswordPage() {
             <div className="flex justify-center mb-4">
               <XCircle className="h-12 w-12 text-red-600" />
             </div>
-            <CardTitle className="text-2xl">Invalid Reset Link</CardTitle>
+            <h1 className="text-2xl font-semibold">Invalid Reset Link</h1>
             <CardDescription>
               This password reset link is invalid or has expired.
             </CardDescription>
@@ -174,7 +174,7 @@ export default function ResetPasswordPage() {
             <div className="flex justify-center mb-4">
               <CheckCircle className="h-12 w-12 text-green-600" />
             </div>
-            <CardTitle className="text-2xl">Password Reset Successfully</CardTitle>
+            <h1 className="text-2xl font-semibold">Password Reset Successfully</h1>
             <CardDescription>
               Your password has been reset. You can now login with your new password.
             </CardDescription>
@@ -204,7 +204,7 @@ export default function ResetPasswordPage() {
     <div className="flex items-center justify-center min-h-screen bg-background">
       <Card className="w-full max-w-md mx-auto">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Reset Password</CardTitle>
+          <h1 className="text-2xl font-semibold">Reset Password</h1>
           <CardDescription>
             Enter your new password below.
           </CardDescription>

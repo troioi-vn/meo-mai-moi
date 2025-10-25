@@ -41,15 +41,20 @@ window.HTMLElement.prototype.scrollIntoView = (() => {
   /* no-op */
 }) as typeof window.HTMLElement.prototype.scrollIntoView
 
-vi.mock('sonner', () => ({
-  Toaster: () => null,
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-    info: vi.fn(),
-    warning: vi.fn(),
-  },
-}))
+vi.mock('sonner', () => {
+  const Toaster = () => null
+  return {
+    __esModule: true,
+    default: Toaster,
+    Toaster,
+    toast: {
+      success: vi.fn(),
+      error: vi.fn(),
+      info: vi.fn(),
+      warning: vi.fn(),
+    },
+  }
+})
 
 // Mock ResizeObserver
 class MockResizeObserver {

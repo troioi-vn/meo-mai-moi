@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -48,7 +48,7 @@ export default function ForgotPasswordPage() {
             <div className="flex justify-center mb-4">
               <Mail className="h-12 w-12 text-green-600" />
             </div>
-            <CardTitle className="text-2xl">Check Your Email</CardTitle>
+            <h1 className="text-2xl font-semibold">Check Your Email</h1>
             <CardDescription>
               We've sent password reset instructions to your email address.
             </CardDescription>
@@ -86,7 +86,7 @@ export default function ForgotPasswordPage() {
     <div className="flex items-center justify-center min-h-screen bg-background">
       <Card className="w-full max-w-md mx-auto">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Forgot Password</CardTitle>
+          <h1 className="text-2xl font-semibold">Forgot Password</h1>
           <CardDescription>
             Enter your email address and we'll send you a link to reset your password.
           </CardDescription>

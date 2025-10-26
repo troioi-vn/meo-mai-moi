@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use Illuminate\Auth\Notifications\ResetPassword;
 use App\Notifications\CustomPasswordReset;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Fortify\Features;
@@ -30,7 +30,7 @@ class PasswordResetTest extends TestCase
         // Test with jetstream auth driver
         putenv('AUTH_DRIVER=jetstream');
         $testCallback('jetstream');
-        
+
         // Reset to default
         putenv('AUTH_DRIVER=custom');
     }
@@ -96,7 +96,7 @@ class PasswordResetTest extends TestCase
         }
 
         // Try custom notification (cannot extract token from mailable here; just assert page renders)
-        if (!$asserted && Notification::sent($user, CustomPasswordReset::class)->count() > 0) {
+        if (! $asserted && Notification::sent($user, CustomPasswordReset::class)->count() > 0) {
             // We can't derive the reset token from CustomPasswordReset directly in this test path.
             // Assert that the forgot-password page is reachable as a minimal guarantee.
             $response = $this->get('/forgot-password');

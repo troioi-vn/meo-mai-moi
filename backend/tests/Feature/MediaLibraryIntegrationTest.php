@@ -16,6 +16,7 @@ class MediaLibraryIntegrationTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+
     protected PetType $catType;
 
     protected function setUp(): void

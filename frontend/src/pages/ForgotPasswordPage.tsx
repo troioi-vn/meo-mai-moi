@@ -28,19 +28,24 @@ export default function ForgotPasswordPage() {
         return
       }
 
-      const response = await api.post('/password/email', { email })
+      const response = await api.post<{ data: { email_sent: boolean } }>('/password/email', { email })
 
       if (response.data.data.email_sent) {
         setEmailSent(true)
         toast.success('Password reset link sent to your email')
       }
-    } catch (error: any) {
-      if (error.response?.status === 422) {
-        setError('Please enter a valid email address')
-      } else if (error.response?.status === 429) {
-        setError('Too many requests. Please wait before trying again.')
+    } catch (error: unknown) {
+      if (error instanceof Error && 'response' in error) {
+        const axiosError = error as { response?: { status?: number; data?: { message?: string } } }
+        if (axiosError.response?.status === 422) {
+          setError('Please enter a valid email address')
+        } else if (axiosError.response?.status === 429) {
+          setError('Too many requests. Please wait before trying again.')
+        } else {
+          setError(axiosError.response?.data?.message ?? 'Failed to send reset email. Please try again.')
+        }
       } else {
-        setError(error.response?.data?.message || 'Failed to send reset email. Please try again.')
+        setError('Failed to send reset email. Please try again.')
       }
     } finally {
       setIsLoading(false)
@@ -99,7 +104,7 @@ export default function ForgotPasswordPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form noValidate onSubmit={handleSubmit} className="space-y-4">
+          <form noValidate onSubmit={(e) => { void handleSubmit(e); }} className="space-y-4">
             {error && (
               <Alert className="border-red-200 bg-red-50">
                 <AlertDescription className="text-red-800">{error}</AlertDescription>
@@ -113,7 +118,7 @@ export default function ForgotPasswordPage() {
                 type="email"
                 placeholder="Enter your email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value) }}
                 required
                 disabled={isLoading}
               />

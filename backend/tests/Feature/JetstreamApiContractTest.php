@@ -29,7 +29,7 @@ class JetstreamApiContractTest extends TestCase
         // Test with jetstream auth driver
         putenv('AUTH_DRIVER=jetstream');
         $jetstreamResult = $testCallback('jetstream');
-        
+
         // Reset to default
         putenv('AUTH_DRIVER=custom');
 
@@ -41,7 +41,7 @@ class JetstreamApiContractTest extends TestCase
     public function register_endpoint_maintains_response_format()
     {
         $this->runApiContractTestWithBothDrivers(function ($authDriver) {
-            $response = $this->postJson('/api/register', [
+            $response = $this->postJson('/register', [
                 'name' => 'Test User',
                 'email' => "test-{$authDriver}@example.com",
                 'password' => 'password',
@@ -49,12 +49,11 @@ class JetstreamApiContractTest extends TestCase
             ]);
 
             $response->assertStatus(201);
-            
-            // Verify exact response structure
+
+            // Verify exact response structure (cookie-based, no tokens)
             $response->assertJsonStructure([
                 'data' => [
-                    'access_token',
-                    'token_type',
+                    'user' => ['id', 'name', 'email', 'email_verified_at'],
                     'email_verified',
                     'email_sent',
                     'requires_verification',
@@ -63,10 +62,11 @@ class JetstreamApiContractTest extends TestCase
             ]);
 
             $data = $response->json('data');
-            
+
             // Verify response field types and values
-            $this->assertIsString($data['access_token']);
-            $this->assertEquals('Bearer', $data['token_type']);
+            $this->assertIsArray($data['user']);
+            $this->assertIsInt($data['user']['id']);
+            $this->assertEquals("test-{$authDriver}@example.com", $data['user']['email']);
             $this->assertIsBool($data['email_verified']);
             $this->assertIsBool($data['email_sent']);
             $this->assertIsBool($data['requires_verification']);
@@ -75,7 +75,7 @@ class JetstreamApiContractTest extends TestCase
             return [
                 'status' => $response->status(),
                 'structure' => array_keys($data),
-                'token_type' => $data['token_type'],
+                'has_user' => isset($data['user']),
             ];
         });
     }
@@ -90,33 +90,33 @@ class JetstreamApiContractTest extends TestCase
                 'password' => Hash::make('password'),
             ]);
 
-            $response = $this->postJson('/api/login', [
+            $response = $this->postJson('/login', [
                 'email' => "login-{$authDriver}@example.com",
                 'password' => 'password',
             ]);
 
             $response->assertStatus(200);
-            
-            // Verify exact response structure
+
+            // Verify exact response structure (cookie-based, no tokens)
             $response->assertJsonStructure([
                 'data' => [
-                    'access_token',
-                    'token_type',
-                    'email_verified',
+                    'user' => ['id', 'name', 'email', 'email_verified_at'],
+                    'two_factor',
                 ],
             ]);
 
             $data = $response->json('data');
-            
+
             // Verify response field types and values
-            $this->assertIsString($data['access_token']);
-            $this->assertEquals('Bearer', $data['token_type']);
-            $this->assertIsBool($data['email_verified']);
+            $this->assertIsArray($data['user']);
+            $this->assertIsInt($data['user']['id']);
+            $this->assertEquals("login-{$authDriver}@example.com", $data['user']['email']);
+            $this->assertIsBool($data['two_factor']);
 
             return [
                 'status' => $response->status(),
                 'structure' => array_keys($data),
-                'token_type' => $data['token_type'],
+                'has_user' => isset($data['user']),
             ];
         });
     }
@@ -125,27 +125,25 @@ class JetstreamApiContractTest extends TestCase
     public function logout_endpoint_maintains_response_format()
     {
         $this->runApiContractTestWithBothDrivers(function ($authDriver) {
-            // Create and authenticate user
+            // Create and authenticate user (cookie-based session auth)
             $user = User::factory()->create([
                 'email' => "logout-{$authDriver}@example.com",
             ]);
-            $token = $user->createToken('test')->plainTextToken;
 
-            $response = $this->withHeaders([
-                'Authorization' => 'Bearer ' . $token,
-            ])->postJson('/api/logout');
+            $response = $this->actingAs($user, 'web')->postJson('/logout');
 
             $response->assertStatus(200);
-            
-            // Verify logout response structure
+
+            // Verify logout response structure (no nested 'data')
             $response->assertJsonStructure([
-                'data' => [
-                    'message',
-                ],
+                'message',
+                'redirect',
             ]);
 
-            $data = $response->json('data');
+            $data = $response->json();
             $this->assertIsString($data['message']);
+            $this->assertIsString($data['redirect']);
+            $this->assertEquals('/login', $data['redirect']);
 
             return [
                 'status' => $response->status(),
@@ -158,7 +156,7 @@ class JetstreamApiContractTest extends TestCase
     public function forgot_password_endpoint_maintains_response_format()
     {
         Notification::fake();
-        
+
         $this->runApiContractTestWithBothDrivers(function ($authDriver) {
             // Create user
             $user = User::factory()->create([
@@ -170,7 +168,7 @@ class JetstreamApiContractTest extends TestCase
             ]);
 
             $response->assertStatus(200);
-            
+
             // Verify response structure
             $response->assertJsonStructure([
                 'data' => [
@@ -193,14 +191,14 @@ class JetstreamApiContractTest extends TestCase
     {
         $this->runApiContractTestWithBothDrivers(function ($authDriver) {
             // Test registration validation
-            $response = $this->postJson('/api/register', [
+            $response = $this->postJson('/register', [
                 'name' => '',
                 'email' => 'invalid-email',
                 'password' => 'short',
             ]);
 
             $response->assertStatus(422);
-            
+
             // Verify validation error structure
             $response->assertJsonStructure([
                 'message',
@@ -227,7 +225,7 @@ class JetstreamApiContractTest extends TestCase
             $response = $this->getJson('/api/user');
 
             $response->assertStatus(401);
-            
+
             // Verify unauthenticated response structure
             $response->assertJson([
                 'message' => 'Unauthenticated.',
@@ -252,11 +250,11 @@ class JetstreamApiContractTest extends TestCase
             $token = $user->createToken('test')->plainTextToken;
 
             $response = $this->withHeaders([
-                'Authorization' => 'Bearer ' . $token,
+                'Authorization' => 'Bearer '.$token,
             ])->getJson('/api/user');
 
             $response->assertStatus(200);
-            
+
             // Verify authenticated user response structure
             $response->assertJsonStructure([
                 'data' => [
@@ -270,7 +268,7 @@ class JetstreamApiContractTest extends TestCase
             ]);
 
             $data = $response->json('data');
-            
+
             // Verify the response has the expected structure and types
             $this->assertIsInt($data['id']);
             $this->assertIsString($data['name']);
@@ -278,7 +276,7 @@ class JetstreamApiContractTest extends TestCase
             $this->assertNotNull($data['email_verified_at']);
             $this->assertIsString($data['created_at']);
             $this->assertIsString($data['updated_at']);
-            
+
             return [
                 'status' => $response->status(),
                 'structure' => array_keys($data),

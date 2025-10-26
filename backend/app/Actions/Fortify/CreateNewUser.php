@@ -5,9 +5,9 @@ namespace App\Actions\Fortify;
 use App\Models\User;
 use App\Services\InvitationService;
 use App\Services\SettingsService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
@@ -18,6 +18,7 @@ class CreateNewUser implements CreatesNewUsers
     use PasswordValidationRules;
 
     private SettingsService $settingsService;
+
     private InvitationService $invitationService;
 
     public function __construct(SettingsService $settingsService, InvitationService $invitationService)
@@ -57,7 +58,7 @@ class CreateNewUser implements CreatesNewUsers
             $invitation = $this->invitationService->validateInvitationCode($input['invitation_code']);
 
             // If invite-only mode is enabled, invitation code must be valid
-            if ($isInviteOnlyEnabled && !$invitation) {
+            if ($isInviteOnlyEnabled && ! $invitation) {
                 throw ValidationException::withMessages([
                     'invitation_code' => ['The provided invitation code is invalid or has expired.'],
                 ]);
@@ -85,7 +86,7 @@ class CreateNewUser implements CreatesNewUsers
         if ($emailVerificationRequired) {
             // Check if email is configured before attempting to send
             $emailService = app(\App\Services\EmailConfigurationService::class);
-            if (!$emailService->isEmailEnabled()) {
+            if (! $emailService->isEmailEnabled()) {
                 Log::info('Email verification not sent - email not configured', [
                     'user_id' => $user->id,
                     'email' => $user->email,

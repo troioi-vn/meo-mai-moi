@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
 
@@ -28,7 +27,7 @@ class EmailLinkIntegrationTest extends TestCase
         // Test with jetstream auth driver
         putenv('AUTH_DRIVER=jetstream');
         $testCallback('jetstream');
-        
+
         // Reset to default
         putenv('AUTH_DRIVER=custom');
     }
@@ -56,20 +55,20 @@ class EmailLinkIntegrationTest extends TestCase
         // User clicks the verification link
         $response = $this->get($verificationUrl);
 
-    // Standard Fortify behavior: unauthenticated users are redirected to login
-    $response->assertRedirect(route('login', absolute: false));
+        // Standard Fortify behavior: unauthenticated users are redirected to login
+        $response->assertRedirect(route('login', absolute: false));
 
-    // Not verified yet (must be logged in to verify)
-    $user->refresh();
-    $this->assertFalse($user->hasVerifiedEmail());
+        // Not verified yet (must be logged in to verify)
+        $user->refresh();
+        $this->assertFalse($user->hasVerifiedEmail());
 
-    // Clear intended URL set by previous redirect to login
-    session()->forget('url.intended');
-    // After login, visiting the link verifies and redirects to dashboard
-    $response = $this->actingAs($user)->get($verificationUrl);
-    $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
-    $user->refresh();
-    $this->assertTrue($user->hasVerifiedEmail());
+        // Clear intended URL set by previous redirect to login
+        session()->forget('url.intended');
+        // After login, visiting the link verifies and redirects to dashboard
+        $response = $this->actingAs($user)->get($verificationUrl);
+        $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
+        $user->refresh();
+        $this->assertTrue($user->hasVerifiedEmail());
     }
 
     public function test_complete_password_reset_flow()
@@ -92,12 +91,12 @@ class EmailLinkIntegrationTest extends TestCase
             $token = Password::createToken($user);
 
             // User clicks the reset link from email
-            $resetLinkResponse = $this->get("/reset-password/{$token}?email=" . urlencode($user->email));
+            $resetLinkResponse = $this->get("/reset-password/{$token}?email=".urlencode($user->email));
 
             // Should redirect to frontend
             $resetLinkResponse->assertRedirect();
             $redirectUrl = $resetLinkResponse->headers->get('Location');
-            
+
             $this->assertStringStartsWith('http://localhost:5173', $redirectUrl);
             $this->assertStringContainsString('/password/reset/', $redirectUrl);
             $this->assertStringContainsString($token, $redirectUrl);
@@ -137,8 +136,8 @@ class EmailLinkIntegrationTest extends TestCase
         );
 
         $response = $this->get($verificationUrl);
-    // Standard Fortify behavior: unauthenticated users are redirected to login
-    $response->assertRedirect(route('login', absolute: false));
+        // Standard Fortify behavior: unauthenticated users are redirected to login
+        $response->assertRedirect(route('login', absolute: false));
 
         // Test password reset redirect
         $token = 'test-token';

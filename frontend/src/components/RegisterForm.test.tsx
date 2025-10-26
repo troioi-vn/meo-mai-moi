@@ -43,6 +43,15 @@ describe('RegisterForm', () => {
     vi.restoreAllMocks()
   })
 
+  it('pre-fills email field when initialEmail is provided', async () => {
+    renderWithRouter(<RegisterForm initialEmail="prefilled@example.com" />)
+
+    await waitFor(() => {
+      const emailInput = screen.getByLabelText(/email/i)
+      expect(emailInput.value).toBe('prefilled@example.com')
+    })
+  })
+
   it('calls onSuccess with registration response on successful registration', async () => {
     const onSuccess = vi.fn()
     renderWithRouter(<RegisterForm onSuccess={onSuccess} />)
@@ -56,8 +65,11 @@ describe('RegisterForm', () => {
     await waitFor(() => {
       expect(onSuccess).toHaveBeenCalledWith(
         expect.objectContaining({
-          access_token: 'mock-token-registered',
-          token_type: 'Bearer',
+          user: expect.objectContaining({
+            email: 'success@example.com',
+            name: 'Test User',
+            email_verified_at: null,
+          }),
           email_verified: false,
           email_sent: true,
           requires_verification: true,

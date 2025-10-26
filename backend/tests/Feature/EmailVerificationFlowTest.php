@@ -30,7 +30,7 @@ class EmailVerificationFlowTest extends TestCase
         // Test with jetstream auth driver
         putenv('AUTH_DRIVER=jetstream');
         $testCallback('jetstream');
-        
+
         // Reset to default
         putenv('AUTH_DRIVER=custom');
     }
@@ -49,49 +49,49 @@ class EmailVerificationFlowTest extends TestCase
             });
 
             // Step 1: User registers
-            $response = $this->postJson('/api/register', [
+            $response = $this->postJson('/register', [
                 'name' => 'Test User',
                 'email' => "test-{$authDriver}@example.com",
                 'password' => 'password',
                 'password_confirmation' => 'password',
             ]);
 
-        $response->assertStatus(201);
-        $responseData = $response->json('data');
+            $response->assertStatus(201);
+            $responseData = $response->json('data');
 
-        // User should be created but not verified
-        $this->assertFalse($responseData['email_verified']);
-        $this->assertTrue($responseData['email_sent']); // Assuming email config works
+            // User should be created but not verified
+            $this->assertFalse($responseData['email_verified']);
+            $this->assertTrue($responseData['email_sent']); // Assuming email config works
 
             $user = User::where('email', "test-{$authDriver}@example.com")->first();
-        $this->assertNotNull($user);
-        $this->assertNull($user->email_verified_at);
+            $this->assertNotNull($user);
+            $this->assertNull($user->email_verified_at);
 
-        // Verification email should be sent
-        Notification::assertSentTo($user, VerifyEmail::class);
+            // Verification email should be sent
+            Notification::assertSentTo($user, VerifyEmail::class);
 
-        // Check that verification message was provided
-        $this->assertStringContainsString('verification email', $responseData['message']);
+            // Check that verification message was provided
+            $this->assertStringContainsString('verification email', $responseData['message']);
 
-        // Step 2: User tries to access protected route - should be blocked
-        $token = $responseData['access_token'];
+            // Step 2: User tries to access protected route - should be blocked
+            $token = $responseData['access_token'];
 
-        $response = $this->withHeaders([
-            'Authorization' => 'Bearer '.$token,
-        ])->getJson('/api/users/me');
+            $response = $this->withHeaders([
+                'Authorization' => 'Bearer '.$token,
+            ])->getJson('/api/users/me');
 
-        $response->assertStatus(403)
-            ->assertJson([
-                'message' => 'Your email address is not verified. Please check your email for a verification link.',
-                'email_verified' => false,
-            ]);
+            $response->assertStatus(403)
+                ->assertJson([
+                    'message' => 'Your email address is not verified. Please check your email for a verification link.',
+                    'email_verified' => false,
+                ]);
 
-        // Step 3: User can still access verification routes
-        $response = $this->withHeaders([
-            'Authorization' => 'Bearer '.$token,
-        ])->getJson('/api/email/verification-status');
+            // Step 3: User can still access verification routes
+            $response = $this->withHeaders([
+                'Authorization' => 'Bearer '.$token,
+            ])->getJson('/api/email/verification-status');
 
-        $response->assertStatus(200)
+            $response->assertStatus(200)
                 ->assertJson([
                     'data' => [
                         'verified' => false,
@@ -99,33 +99,9 @@ class EmailVerificationFlowTest extends TestCase
                     ],
                 ]);
 
-        // Step 4: User verifies email
-        $verificationUrl = URL::temporarySignedRoute(
-            'verification.verify',
-            now()->addMinutes(60),
-            [
-                'id' => $user->id,
-                'hash' => sha1($user->email),
-            ]
-        );
-
-        // Unauthenticated user hitting verification URL may be logged in already from registration; check and branch
-        if (! auth()->check()) {
-            $response = $this->get($verificationUrl);
-            $response->assertRedirect(route('login', absolute: false));
-        }
-
-        // Clear intended to ensure successful post-verification redirect to dashboard
-        session()->forget('url.intended');
-        // After login, visiting the link verifies and redirects to dashboard (prefer web flow)
-        $response = $this->actingAs($user, 'web')->get($verificationUrl);
-        if ($response->getStatusCode() === 302) {
-            $location = $response->headers->get('Location');
-            $locationPath = $location ? parse_url($location, PHP_URL_PATH) : null;
-            if ($locationPath === route('login', absolute: false)) {
-            // Fallback: verify via API endpoint using Sanctum token if web guard isn't active in this test context
-            $apiVerificationUrl = URL::temporarySignedRoute(
-                'api.verification.verify',
+            // Step 4: User verifies email
+            $verificationUrl = URL::temporarySignedRoute(
+                'verification.verify',
                 now()->addMinutes(60),
                 [
                     'id' => $user->id,
@@ -133,48 +109,70 @@ class EmailVerificationFlowTest extends TestCase
                 ]
             );
 
+            // Unauthenticated user hitting verification URL may be logged in already from registration; check and branch
+            if (! auth()->check()) {
+                $response = $this->get($verificationUrl);
+                $response->assertRedirect(route('login', absolute: false));
+            }
+
+            // Clear intended to ensure successful post-verification redirect to dashboard
+            session()->forget('url.intended');
+            // After login, visiting the link verifies and redirects to dashboard (prefer web flow)
+            $response = $this->actingAs($user, 'web')->get($verificationUrl);
+            if ($response->getStatusCode() === 302) {
+                $location = $response->headers->get('Location');
+                $locationPath = $location ? parse_url($location, PHP_URL_PATH) : null;
+                if ($locationPath === route('login', absolute: false)) {
+                    // Fallback: verify via API endpoint using Sanctum token if web guard isn't active in this test context
+                    $apiVerificationUrl = URL::temporarySignedRoute(
+                        'api.verification.verify',
+                        now()->addMinutes(60),
+                        [
+                            'id' => $user->id,
+                            'hash' => sha1($user->email),
+                        ]
+                    );
+
+                    $response = $this->withHeaders([
+                        'Authorization' => 'Bearer '.$token,
+                    ])->getJson(parse_url($apiVerificationUrl, PHP_URL_PATH).'?'.parse_url($apiVerificationUrl, PHP_URL_QUERY));
+
+                    $response->assertStatus(200)
+                        ->assertJson([
+                            'data' => [
+                                'verified' => true,
+                            ],
+                        ]);
+                } else {
+                    $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
+                }
+            }
+
+            // Step 5: User can now access protected routes
+            $user->refresh(); // Refresh user to get updated email_verified_at
+
+            $this->assertTrue($user->hasVerifiedEmail(), 'User should be verified after verification');
+
+            // Check database directly
+            $dbUser = \App\Models\User::find($user->id);
+            $this->assertNotNull($dbUser->email_verified_at, 'User should be verified in database');
+
+            // Delete the old token and create a new one to ensure fresh user resolution
+            $user->tokens()->delete();
+            $newToken = $user->createToken('auth_token')->plainTextToken;
+
             $response = $this->withHeaders([
-                'Authorization' => 'Bearer '.$token,
-            ])->getJson(parse_url($apiVerificationUrl, PHP_URL_PATH).'?'.parse_url($apiVerificationUrl, PHP_URL_QUERY));
+                'Authorization' => 'Bearer '.$newToken,
+            ])->getJson('/api/users/me');
 
             $response->assertStatus(200)
-                     ->assertJson([
-                         'data' => [
-                             'verified' => true,
-                         ],
-                     ]);
-            } else {
-            $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
-            }
-        }
-
-        // Step 5: User can now access protected routes
-        $user->refresh(); // Refresh user to get updated email_verified_at
-        
-
-        
-        $this->assertTrue($user->hasVerifiedEmail(), 'User should be verified after verification');
-        
-        // Check database directly
-        $dbUser = \App\Models\User::find($user->id);
-        $this->assertNotNull($dbUser->email_verified_at, 'User should be verified in database');
-        
-        // Delete the old token and create a new one to ensure fresh user resolution
-        $user->tokens()->delete();
-        $newToken = $user->createToken('auth_token')->plainTextToken;
-        
-        $response = $this->withHeaders([
-            'Authorization' => 'Bearer '.$newToken,
-        ])->getJson('/api/users/me');
-
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'data' => [
-                    'id',
-                    'name',
-                    'email',
-                ],
-            ]);
+                ->assertJsonStructure([
+                    'data' => [
+                        'id',
+                        'name',
+                        'email',
+                    ],
+                ]);
 
             // Test passes - user can access protected routes after verification
         });

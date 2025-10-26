@@ -36,7 +36,7 @@ class InviteSystemAuthTest extends TestCase
         // Test with jetstream auth driver
         putenv('AUTH_DRIVER=jetstream');
         $testCallback('jetstream');
-        
+
         // Reset to default
         putenv('AUTH_DRIVER=custom');
     }
@@ -46,7 +46,7 @@ class InviteSystemAuthTest extends TestCase
         $this->runInvitationTestWithBothDrivers(function ($authDriver) {
             Settings::set('invite_only_enabled', 'false');
 
-            $response = $this->postJson('/api/register', [
+            $response = $this->postJson('/register', [
                 'name' => 'Test User',
                 'email' => "test-{$authDriver}@example.com",
                 'password' => 'password',
@@ -56,8 +56,9 @@ class InviteSystemAuthTest extends TestCase
             $response->assertStatus(201)
                 ->assertJsonStructure([
                     'data' => [
-                        'access_token',
-                        'token_type',
+                        'user' => ['id', 'name', 'email'],
+                        'email_verified',
+                        'requires_verification',
                     ],
                 ]);
 
@@ -72,7 +73,7 @@ class InviteSystemAuthTest extends TestCase
         $this->runInvitationTestWithBothDrivers(function ($authDriver) {
             Settings::set('invite_only_enabled', 'true');
 
-            $response = $this->postJson('/api/register', [
+            $response = $this->postJson('/register', [
                 'name' => 'Test User',
                 'email' => "test-{$authDriver}@example.com",
                 'password' => 'password',
@@ -100,7 +101,7 @@ class InviteSystemAuthTest extends TestCase
                 'expires_at' => null,
             ]);
 
-            $response = $this->postJson('/api/register', [
+            $response = $this->postJson('/register', [
                 'name' => 'Test User',
                 'email' => "test-{$authDriver}@example.com",
                 'password' => 'password',
@@ -111,8 +112,9 @@ class InviteSystemAuthTest extends TestCase
             $response->assertStatus(201)
                 ->assertJsonStructure([
                     'data' => [
-                        'access_token',
-                        'token_type',
+                        'user' => ['id', 'name', 'email'],
+                        'email_verified',
+                        'requires_verification',
                     ],
                 ]);
 
@@ -132,7 +134,7 @@ class InviteSystemAuthTest extends TestCase
         $this->runInvitationTestWithBothDrivers(function ($authDriver) {
             Settings::set('invite_only_enabled', 'true');
 
-            $response = $this->postJson('/api/register', [
+            $response = $this->postJson('/register', [
                 'name' => 'Test User',
                 'email' => "test-{$authDriver}@example.com",
                 'password' => 'password',
@@ -160,7 +162,7 @@ class InviteSystemAuthTest extends TestCase
             'expires_at' => now()->subDay(),
         ]);
 
-        $response = $this->postJson('/api/register', [
+        $response = $this->postJson('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => 'password',
@@ -188,7 +190,7 @@ class InviteSystemAuthTest extends TestCase
             'recipient_user_id' => $recipient->id,
         ]);
 
-        $response = $this->postJson('/api/register', [
+        $response = $this->postJson('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => 'password',
@@ -214,7 +216,7 @@ class InviteSystemAuthTest extends TestCase
             'status' => 'revoked',
         ]);
 
-        $response = $this->postJson('/api/register', [
+        $response = $this->postJson('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => 'password',
@@ -241,7 +243,7 @@ class InviteSystemAuthTest extends TestCase
         ]);
 
         // Should work without invitation code
-        $response = $this->postJson('/api/register', [
+        $response = $this->postJson('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => 'password',
@@ -270,7 +272,7 @@ class InviteSystemAuthTest extends TestCase
         ]);
 
         // Should work with invitation code even when not required
-        $response = $this->postJson('/api/register', [
+        $response = $this->postJson('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => 'password',
@@ -294,7 +296,7 @@ class InviteSystemAuthTest extends TestCase
         // Start with invite-only disabled
         Settings::set('invite_only_enabled', 'false');
 
-        $response1 = $this->postJson('/api/register', [
+        $response1 = $this->postJson('/register', [
             'name' => 'User One',
             'email' => 'user1@example.com',
             'password' => 'password',
@@ -306,7 +308,7 @@ class InviteSystemAuthTest extends TestCase
         // Switch to invite-only enabled
         Settings::set('invite_only_enabled', 'true');
 
-        $response2 = $this->postJson('/api/register', [
+        $response2 = $this->postJson('/register', [
             'name' => 'User Two',
             'email' => 'user2@example.com',
             'password' => 'password',
@@ -323,7 +325,7 @@ class InviteSystemAuthTest extends TestCase
             'status' => 'pending',
         ]);
 
-        $response3 = $this->postJson('/api/register', [
+        $response3 = $this->postJson('/register', [
             'name' => 'User Three',
             'email' => 'user3@example.com',
             'password' => 'password',
@@ -349,7 +351,7 @@ class InviteSystemAuthTest extends TestCase
         ]);
 
         // Missing required fields
-        $response = $this->postJson('/api/register', [
+        $response = $this->postJson('/register', [
             'invitation_code' => $invitation->code,
         ]);
 
@@ -357,7 +359,7 @@ class InviteSystemAuthTest extends TestCase
             ->assertJsonValidationErrors(['name', 'email', 'password']);
 
         // Invalid email format
-        $response2 = $this->postJson('/api/register', [
+        $response2 = $this->postJson('/register', [
             'name' => 'Test User',
             'email' => 'invalid-email',
             'password' => 'password',

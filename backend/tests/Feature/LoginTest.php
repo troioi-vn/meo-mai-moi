@@ -28,7 +28,7 @@ class LoginTest extends TestCase
         // Test with jetstream auth driver
         putenv('AUTH_DRIVER=jetstream');
         $testCallback('jetstream');
-        
+
         // Reset to default
         putenv('AUTH_DRIVER=custom');
     }
@@ -36,44 +36,45 @@ class LoginTest extends TestCase
     #[Test]
     public function test_user_can_login_with_valid_credentials()
     {
-        $this->runLoginTestWithBothDrivers(function ($authDriver) {
-            $user = User::factory()->create([
-                'email' => "test-{$authDriver}@example.com",
-                'password' => Hash::make('password'),
+        $user = User::factory()->create([
+            'email' => 'test@example.com',
+            'password' => Hash::make('password'),
+        ]);
+
+        $response = $this->withoutMiddleware([
+            \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+        ])->postJson('/login', [
+            'email' => 'test@example.com',
+            'password' => 'password',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'user',
+                    'two_factor',
+                ],
             ]);
 
-            $response = $this->postJson('/api/login', [
-                'email' => "test-{$authDriver}@example.com",
-                'password' => 'password',
-            ]);
-
-            $response->assertStatus(200)
-                ->assertJsonStructure([
-                    'data' => [
-                        'access_token',
-                        'token_type',
-                    ],
-                ]);
-        });
+        // Verify user is authenticated via session
+        $this->assertAuthenticated();
     }
 
     #[Test]
     public function test_user_cannot_login_with_invalid_credentials()
     {
-        $this->runLoginTestWithBothDrivers(function ($authDriver) {
-            $user = User::factory()->create([
-                'email' => "test-{$authDriver}@example.com",
-                'password' => Hash::make('password'),
-            ]);
+        $user = User::factory()->create([
+            'email' => 'test@example.com',
+            'password' => Hash::make('password'),
+        ]);
 
-            $response = $this->postJson('/api/login', [
-                'email' => "test-{$authDriver}@example.com",
-                'password' => 'wrong-password',
-            ]);
+        $response = $this->postJson('/login', [
+            'email' => 'test@example.com',
+            'password' => 'wrong-password',
+        ]);
 
-            $response->assertStatus(422)
-                ->assertJsonValidationErrors(['email']);
-        });
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['email']);
     }
 
     #[Test]

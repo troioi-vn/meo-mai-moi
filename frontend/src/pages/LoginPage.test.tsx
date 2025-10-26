@@ -18,6 +18,16 @@ vi.mock('react-router-dom', async () => {
 describe('LoginPage', () => {
   beforeEach(() => {
     mockNavigate = vi.fn()
+    // Mock email check endpoint
+    server.use(
+      http.post('http://localhost:3000/api/check-email', () => {
+        return HttpResponse.json({
+          data: {
+            exists: true,
+          },
+        })
+      })
+    )
   })
 
   it('renders the login page correctly', async () => {
@@ -28,17 +38,24 @@ describe('LoginPage', () => {
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /login/i })).toBeInTheDocument()
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
-      expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /next/i })).toBeInTheDocument()
     })
+    // Password field should not be visible initially
+    expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument()
   })
 
   it('logs in the user and navigates to /account/pets on success', async () => {
     server.use(
-      http.post('http://localhost:8000/api/login', async ({ request }) => {
+      http.post('http://localhost:8000/login', async ({ request }) => {
         const body = (await request.json()) as { email?: string; password?: string }
         if (body.email === 'test@example.com' && body.password === 'password123') {
-          return HttpResponse.json({ data: { access_token: 'mock-token' } })
+          return HttpResponse.json({
+            data: {
+              access_token: 'mock-token',
+              token_type: 'Bearer',
+              email_verified: true,
+            },
+          })
         }
         return HttpResponse.json({ message: 'Invalid credentials' }, { status: 401 })
       })
@@ -56,12 +73,23 @@ describe('LoginPage', () => {
     renderWithRouter(<LoginPage />, {
       initialAuthState: { user: null, isLoading: false, isAuthenticated: false },
     })
+
+    // Step 1: Enter email and click Next
     const emailInput = screen.getByLabelText(/email/i)
+    await userEvent.type(emailInput, 'test@example.com')
+    await userEvent.click(screen.getByRole('button', { name: /next/i }))
+
+    // Wait for password field to appear
+    await waitFor(() => {
+      expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
+    })
+
+    // Step 2: Enter password and click Login
     const passwordInput = screen.getByLabelText(/password/i)
     const loginButton = screen.getByRole('button', { name: /login/i })
-    await userEvent.type(emailInput, 'test@example.com')
     await userEvent.type(passwordInput, 'password123')
     await userEvent.click(loginButton)
+
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/account/pets')
     })
@@ -87,16 +115,27 @@ describe('LoginPage', () => {
       /* empty */
     })
     server.use(
-      http.post('http://localhost:3000/api/login', () => {
+      http.post('http://localhost:3000/login', () => {
         return HttpResponse.json({ message: 'Invalid credentials' }, { status: 401 })
       })
     )
     renderWithRouter(<LoginPage />, {
       initialAuthState: { user: null, isLoading: false, isAuthenticated: false },
     })
+
+    // Step 1: Enter email and click Next
     await userEvent.type(screen.getByLabelText(/email/i), 'fail@example.com')
+    await userEvent.click(screen.getByRole('button', { name: /next/i }))
+
+    // Wait for password field
+    await waitFor(() => {
+      expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
+    })
+
+    // Step 2: Enter password and submit
     await userEvent.type(screen.getByLabelText(/password/i), 'wrongpassword')
     await userEvent.click(screen.getByRole('button', { name: /login/i }))
+
     await waitFor(async () => {
       expect(await screen.findByTestId('login-error-message')).toHaveTextContent(
         'Failed to login. Please check your credentials.'

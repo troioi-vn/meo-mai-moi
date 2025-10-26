@@ -17,11 +17,12 @@ interface RegisterFormProps {
   onSuccess?: (response: RegisterResponse, email: string) => void
   invitationCode?: string | null
   inviterName?: string | null
+  initialEmail?: string
 }
 
-const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, invitationCode, inviterName }) => {
+const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, invitationCode, inviterName, initialEmail }) => {
   const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(initialEmail ?? '')
   const [password, setPassword] = useState('')
   const [passwordConfirmation, setPasswordConfirmation] = useState('')
   const [error, setError] = useState<string | null>(null)

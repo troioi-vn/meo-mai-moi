@@ -31,7 +31,7 @@ class EnsureEmailIsVerified
         }
 
         $user = $request->user();
-        
+
         if (! $user) {
             return response()->json([
                 'message' => 'Your email address is not verified. Please check your email for a verification link.',
@@ -58,7 +58,7 @@ class EnsureEmailIsVerified
             // Always do a fresh database lookup to avoid stale cache issues with Sanctum tokens
             // This ensures we get the most up-to-date verification status
             $userToCheck = \App\Models\User::find($effectiveUser->id);
-                
+
             if ($userToCheck && ! $userToCheck->hasVerifiedEmail()) {
                 return response()->json([
                     'message' => 'Your email address is not verified. Please check your email for a verification link.',

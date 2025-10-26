@@ -57,7 +57,7 @@ class InviteSystemIntegrationTest extends TestCase
         $this->assertEquals('invited', $waitlistEntry->status);
 
         // Step 4: User registers with invitation code
-        $registrationResponse = $this->postJson('/api/register', [
+        $registrationResponse = $this->postJson('/register', [
             'name' => 'Waitlist User',
             'email' => $email,
             'password' => 'password',
@@ -97,7 +97,7 @@ class InviteSystemIntegrationTest extends TestCase
         $this->assertNotNull($invitation);
 
         // Step 2: Recipient registers with invitation code
-        $registrationResponse = $this->postJson('/api/register', [
+        $registrationResponse = $this->postJson('/register', [
             'name' => 'Direct User',
             'email' => $email,
             'password' => 'password',
@@ -146,7 +146,7 @@ class InviteSystemIntegrationTest extends TestCase
 
         // Try to use revoked invitation
         Settings::set('invite_only_enabled', 'true');
-        $registrationResponse = $this->postJson('/api/register', [
+        $registrationResponse = $this->postJson('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => 'password',
@@ -169,7 +169,7 @@ class InviteSystemIntegrationTest extends TestCase
             ->assertJson(['data' => ['invite_only_enabled' => false]]);
 
         // User can register without invitation
-        $openRegResponse = $this->postJson('/api/register', [
+        $openRegResponse = $this->postJson('/register', [
             'name' => 'Open User',
             'email' => 'open@example.com',
             'password' => 'password',
@@ -188,7 +188,7 @@ class InviteSystemIntegrationTest extends TestCase
             ->assertJson(['data' => ['invite_only_enabled' => true]]);
 
         // User cannot register without invitation
-        $closedRegResponse = $this->postJson('/api/register', [
+        $closedRegResponse = $this->postJson('/register', [
             'name' => 'Closed User',
             'email' => 'closed@example.com',
             'password' => 'password',
@@ -243,7 +243,7 @@ class InviteSystemIntegrationTest extends TestCase
         // Test consistent error responses across endpoints
         $endpoints = [
             ['POST', '/api/waitlist', ['email' => 'invalid-email']],
-            ['POST', '/api/register', ['email' => 'invalid-email']],
+            ['POST', '/register', ['email' => 'invalid-email']],
         ];
 
         foreach ($endpoints as [$method, $url, $data]) {
@@ -271,7 +271,7 @@ class InviteSystemIntegrationTest extends TestCase
         // Simulate concurrent acceptance attempts
         Settings::set('invite_only_enabled', 'true');
 
-        $response1 = $this->postJson('/api/register', [
+        $response1 = $this->postJson('/register', [
             'name' => 'User One',
             'email' => 'user1@example.com',
             'password' => 'password',
@@ -279,7 +279,7 @@ class InviteSystemIntegrationTest extends TestCase
             'invitation_code' => $invitation->code,
         ]);
 
-        $response2 = $this->postJson('/api/register', [
+        $response2 = $this->postJson('/register', [
             'name' => 'User Two',
             'email' => 'user2@example.com',
             'password' => 'password',

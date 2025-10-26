@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react'
@@ -28,11 +28,11 @@ export default function EmailVerificationPage() {
           setMessage('Your email has been successfully verified!')
           
           // Reload user data
-          await loadUser()
+          void loadUser()
           
           // Redirect to dashboard after a short delay
           setTimeout(() => {
-            navigate('/account/pets')
+            void navigate('/account/pets')
           }, 2000)
         } else if (statusParam === 'already_verified') {
           setStatus('success')
@@ -40,7 +40,7 @@ export default function EmailVerificationPage() {
           
           // Redirect to dashboard after a short delay
           setTimeout(() => {
-            navigate('/account/pets')
+            void navigate('/account/pets')
           }, 2000)
         } else if (errorParam === 'invalid_link') {
           setStatus('error')
@@ -71,40 +71,45 @@ export default function EmailVerificationPage() {
         }
 
         // Call the verification endpoint
-        const response = await api.get(`/email/verify/${id}/${hash}?expires=${expires}&signature=${signature}`)
+        const response = await api.get<{ data: { message: string } }>(`/email/verify/${id}/${hash}?expires=${expires}&signature=${signature}`)
         
         setStatus('success')
-        setMessage(response.data.data.message || 'Email verified successfully!')
+        setMessage(response.data.data.message)
         
         // Reload user data
-        await loadUser()
+        void loadUser()
         
         // Redirect to dashboard after a short delay
         setTimeout(() => {
-          navigate('/account/pets')
+          void navigate('/account/pets')
         }, 2000)
         
-      } catch (error: any) {
+      } catch (error: unknown) {
         setStatus('error')
-        if (error.response?.status === 400) {
-          setMessage('Email address already verified.')
-        } else if (error.response?.status === 403) {
-          setMessage('Invalid or expired verification link.')
+        if (error instanceof Error && 'response' in error) {
+          const axiosError = error as { response?: { status?: number } }
+          if (axiosError.response?.status === 400) {
+            setMessage('Email address already verified.')
+          } else if (axiosError.response?.status === 403) {
+            setMessage('Invalid or expired verification link.')
+          } else {
+            setMessage('Failed to verify email. Please try again.')
+          }
         } else {
           setMessage('Failed to verify email. Please try again.')
         }
       }
     }
 
-    handleVerificationResult()
+    void handleVerificationResult()
   }, [id, hash, searchParams, loadUser, navigate])
 
   const handleGoToDashboard = () => {
-    navigate('/account/pets')
+    void navigate('/account/pets')
   }
 
   const handleGoToLogin = () => {
-    navigate('/login')
+    void navigate('/login')
   }
 
   return (
@@ -158,7 +163,7 @@ export default function EmailVerificationPage() {
               <Button onClick={handleGoToLogin} className="w-full">
                 Go to Login
               </Button>
-              <Button onClick={() => navigate('/register')} variant="outline" className="w-full">
+              <Button onClick={() => { void navigate('/register'); }} variant="outline" className="w-full">
                 Register Again
               </Button>
             </div>

@@ -10,27 +10,16 @@ use App\Models\User;
 use App\Services\InvitationService;
 use App\Services\SettingsService;
 use App\Traits\ApiResponseTrait;
-use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
     use ApiResponseTrait;
 
-    private SettingsService $settingsService;
 
-    private InvitationService $invitationService;
-
-    public function __construct(SettingsService $settingsService, InvitationService $invitationService)
-    {
-        $this->settingsService = $settingsService;
-        $this->invitationService = $invitationService;
-    }
 
     // Legacy custom auth removed; this controller now delegates to Fortify/Jetstream flows exclusively.
 
@@ -119,6 +108,51 @@ class AuthController extends Controller
 
     /**
      * @OA\Post(
+     *     path="/api/check-email",
+     *     summary="Check if email exists",
+     *     description="Check if an email address is registered in the system.",
+     *     tags={"Authentication"},
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Email to check",
+     *
+     *         @OA\JsonContent(
+     *             required={"email"},
+     *
+     *             @OA\Property(property="email", type="string", format="email", example="user@example.com")
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="Email check result",
+     *
+     *         @OA\JsonContent(
+     *
+     *             @OA\Property(property="exists", type="boolean", example=true)
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     )
+     * )
+     */
+    public function checkEmail(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|string|email',
+        ]);
+
+        $exists = User::where('email', $request->email)->exists();
+
+        return response()->json(['data' => ['exists' => $exists]]);
+    }
+
+    /**
+     * @OA\Post(
      *     path="/api/login",
      *     summary="Log in a user",
      *     description="Logs in a user and returns an authentication token.",
@@ -183,6 +217,7 @@ class AuthController extends Controller
 
             // Return response using Fortify response class
             $loginResponse = app(LoginResponse::class);
+
             return $loginResponse->toResponse($request);
         }
 
@@ -241,6 +276,7 @@ class AuthController extends Controller
 
         // Return response using Fortify response class
         $logoutResponse = app(LogoutResponse::class);
+
         return $logoutResponse->toResponse($request);
     }
 

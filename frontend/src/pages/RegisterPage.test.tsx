@@ -2,10 +2,8 @@ import { screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderWithRouter, userEvent } from '@/test-utils'
 import RegisterPage from './RegisterPage'
-import { toast } from 'sonner'
 import { server } from '@/mocks/server'
 import { HttpResponse, http } from 'msw'
-import { mockUser } from '@/mocks/data/user'
 
 const navigate = vi.fn()
 

@@ -17,7 +17,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements FilamentUser, MustVerifyEmail, HasMedia
+class User extends Authenticatable implements FilamentUser, HasMedia, MustVerifyEmail
 {
     use HasApiTokens;
 
@@ -174,20 +174,16 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Has
     {
         $this->addMediaConversion('avatar_thumb')
             ->fit(\Spatie\Image\Enums\Fit::Crop, 128, 128)
-            ->nonQueued()
             ->performOnCollections('avatar');
 
         $this->addMediaConversion('avatar_256')
             ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256)
-            ->nonQueued()
             ->performOnCollections('avatar');
 
         $this->addMediaConversion('avatar_webp')
             ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256)
             ->format('webp')
-            ->nonQueued()
             ->performOnCollections('avatar');
-
 
     }
 

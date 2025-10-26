@@ -10,14 +10,14 @@ class LogoutResponse implements LogoutResponseContract
 {
     /**
      * Create an HTTP response that represents the object.
+     * 
+     * For SPA: return success message with redirect info
      */
     public function toResponse($request): JsonResponse
     {
-        // Preserve existing JSON response format
         return response()->json([
-            'data' => [
-                'message' => 'Logged out successfully'
-            ]
+            'message' => 'Logged out successfully',
+            'redirect' => '/login',
         ]);
     }
 }

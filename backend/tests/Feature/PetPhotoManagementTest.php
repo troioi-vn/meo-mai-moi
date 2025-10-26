@@ -7,8 +7,6 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\ImageManager;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -65,7 +63,7 @@ class PetPhotoManagementTest extends TestCase
     public function uploading_multiple_photos_adds_to_collection(): void
     {
         $this->actingAs($this->owner);
-        
+
         // Upload first photo
         $oldFile = UploadedFile::fake()->image('old_photo.jpg');
         $this->postJson('/api/pets/'.$this->pet->id.'/photos', ['photo' => $oldFile]);
@@ -120,7 +118,7 @@ class PetPhotoManagementTest extends TestCase
         $this->actingAs($this->owner);
         $file = UploadedFile::fake()->image('photo.jpg');
         $this->postJson('/api/pets/'.$this->pet->id.'/photos', ['photo' => $file]);
-        
+
         $this->pet->refresh();
         $media = $this->pet->getMedia('photos')->first();
 
@@ -135,7 +133,7 @@ class PetPhotoManagementTest extends TestCase
         $this->actingAs($this->owner);
         $file = UploadedFile::fake()->image('photo.jpg');
         $this->postJson('/api/pets/'.$this->pet->id.'/photos', ['photo' => $file]);
-        
+
         $this->pet->refresh();
         $media = $this->pet->getMedia('photos')->first();
 

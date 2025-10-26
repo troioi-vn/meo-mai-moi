@@ -30,7 +30,7 @@ class JetstreamEmailFlowTest extends TestCase
         // Test with jetstream auth driver
         putenv('AUTH_DRIVER=jetstream');
         $jetstreamResult = $testCallback('jetstream');
-        
+
         // Reset to default
         putenv('AUTH_DRIVER=custom');
 
@@ -151,10 +151,10 @@ class JetstreamEmailFlowTest extends TestCase
                 'Authorization' => 'Bearer '.$token,
                 'Accept' => 'application/json',
             ])->get($invalidApiUrl);
-            
+
             // Should return 403 error
             $response->assertStatus(403);
-            
+
             // Check the response has an error message
             $response->assertJsonStructure(['error']);
 
@@ -164,8 +164,8 @@ class JetstreamEmailFlowTest extends TestCase
 
             return [
                 'status' => $response->status(),
-                'has_error_message' => !empty($response->json('error')),
-                'user_still_unverified' => !$user->hasVerifiedEmail(),
+                'has_error_message' => ! empty($response->json('error')),
+                'user_still_unverified' => ! $user->hasVerifiedEmail(),
             ];
         });
     }
@@ -174,7 +174,7 @@ class JetstreamEmailFlowTest extends TestCase
     public function password_reset_email_sending_is_consistent()
     {
         Notification::fake();
-        
+
         $this->runEmailFlowTestWithBothDrivers(function ($authDriver) {
             // Create user
             $user = User::factory()->create([
@@ -199,7 +199,7 @@ class JetstreamEmailFlowTest extends TestCase
 
             return [
                 'status' => $response->status(),
-                'has_message' => !empty($response->json('data.message')),
+                'has_message' => ! empty($response->json('data.message')),
             ];
         });
     }
@@ -218,7 +218,7 @@ class JetstreamEmailFlowTest extends TestCase
             $token = app('auth.password.broker')->createToken($user);
 
             // Test token validation endpoint
-            $response = $this->getJson("/api/password/reset/{$token}?email=" . urlencode($user->email));
+            $response = $this->getJson("/api/password/reset/{$token}?email=".urlencode($user->email));
 
             $response->assertStatus(200);
             $response->assertJsonStructure([
@@ -274,7 +274,7 @@ class JetstreamEmailFlowTest extends TestCase
 
             return [
                 'status' => $response->status(),
-                'has_message' => !empty($response->json('data.message')),
+                'has_message' => ! empty($response->json('data.message')),
                 'password_changed' => Hash::check('new-password', $user->password),
             ];
         });
@@ -318,8 +318,8 @@ class JetstreamEmailFlowTest extends TestCase
             // Verify URLs contain correct parameters
             $this->assertStringContainsString("/email/verify/{$user->id}/", $webUrl);
             $this->assertStringContainsString("/email/verify/{$user->id}/", $apiUrl);
-            $this->assertStringContainsString('/' . sha1($user->email), $webUrl);
-            $this->assertStringContainsString('/' . sha1($user->email), $apiUrl);
+            $this->assertStringContainsString('/'.sha1($user->email), $webUrl);
+            $this->assertStringContainsString('/'.sha1($user->email), $apiUrl);
 
             return [
                 'web_url_signed' => str_contains($webUrl, 'signature='),

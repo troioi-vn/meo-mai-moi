@@ -6,11 +6,9 @@ use App\Services\EmailConfigurationService;
 use App\Models\User;
 use App\Services\SettingsService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Fortify\Contracts\RegisterResponse as RegisterResponseContract;
-use Laravel\Fortify\Http\Responses\RegisterResponse as FortifyDefaultRegisterResponse;
 
 class RegisterResponse implements RegisterResponseContract
 {
@@ -25,13 +23,16 @@ class RegisterResponse implements RegisterResponseContract
 
     /**
      * Create an HTTP response that represents the object.
+     * 
+     * For SPA with cookie-based auth: user is already authenticated via session,
+     * return success confirmation with user data
      */
     public function toResponse($request)
     {
         /** @var \App\Models\User|null $user */
         $user = $request->user();
 
-    // Fortify should have logged the user in already; if not, attempt a defensive login
+        // Fortify should have logged the user in already; if not, attempt a defensive login
         if (! $user) {
             $email = $request->input('email');
             if ($email) {
@@ -43,8 +44,6 @@ class RegisterResponse implements RegisterResponseContract
                 }
             }
         }
-
-        // Ensure response format aligns with client expectations
         
         // Check if email verification is required
         $emailVerificationRequired = $this->settingsService->isEmailVerificationRequired();
@@ -78,19 +77,16 @@ class RegisterResponse implements RegisterResponseContract
             $emailMessage = 'Registration completed successfully. You can now access your account.';
         }
 
-        // If the client expects HTML, redirect into the SPA instead of Jetstream dashboard
+        // If the client expects HTML, redirect into the SPA
         if (! $request->expectsJson() && ! $request->wantsJson()) {
             $frontend = config('app.frontend_url', env('FRONTEND_URL', 'http://localhost:5173'));
             return redirect()->to($frontend);
         }
 
-        // Otherwise, return the API-friendly JSON shape and include a fresh token
-        $token = $user->createToken('auth_token')->plainTextToken;
-
+        // For SPA: return user data (authentication is via cookie, no tokens)
         return response()->json([
             'data' => [
-                'access_token' => $token,
-                'token_type' => 'Bearer',
+                'user' => $user,
                 'email_verified' => $user->hasVerifiedEmail(),
                 'email_sent' => $emailSent,
                 'requires_verification' => $emailVerificationRequired && !$user->hasVerifiedEmail(),

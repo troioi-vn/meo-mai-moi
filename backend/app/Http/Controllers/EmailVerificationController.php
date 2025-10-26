@@ -92,6 +92,7 @@ class EmailVerificationController extends Controller
             if ($this->expectsHtml($request) && $request->user()) {
                 return redirect(route('dashboard', absolute: false).'?verified=0');
             }
+
             return $this->sendError('Invalid verification link.', 403);
         }
 
@@ -100,6 +101,7 @@ class EmailVerificationController extends Controller
             if ($this->expectsHtml($request) && $request->user()) {
                 return redirect(route('dashboard', absolute: false).'?verified=0');
             }
+
             return $this->sendError('Invalid verification link.', 403);
         }
 
@@ -108,6 +110,7 @@ class EmailVerificationController extends Controller
             if ($this->expectsHtml($request) && $request->user()) {
                 return redirect(route('dashboard', absolute: false).'?verified=0');
             }
+
             return $this->sendError('Invalid or expired verification link.', 403);
         }
 
@@ -115,6 +118,7 @@ class EmailVerificationController extends Controller
             if ($this->expectsHtml($request) && $request->user()) {
                 return redirect(route('dashboard', absolute: false).'?verified=1');
             }
+
             return $this->sendSuccess([
                 'message' => 'Email address already verified.',
                 'verified' => true,
@@ -150,7 +154,7 @@ class EmailVerificationController extends Controller
         // Find the user by ID
         $user = \App\Models\User::find($id);
 
-        $frontend = config('app.frontend_url', env('FRONTEND_URL', 'http://localhost:5173'));
+        $frontend = config('app.frontend_url');
         if (! $user) {
             return redirect($frontend.'/email/verify?error=invalid_link');
         }
@@ -173,7 +177,7 @@ class EmailVerificationController extends Controller
             event(new Verified($user));
         }
 
-    return redirect($frontend.'/email/verify?status=success');
+        return redirect($frontend.'/email/verify?status=success');
     }
 
     /**

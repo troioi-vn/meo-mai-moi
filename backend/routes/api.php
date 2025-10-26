@@ -2,11 +2,11 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EmailConfigurationStatusController;
-use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\FosterAssignmentController;
 use App\Http\Controllers\FosterReturnHandoverController;
 use App\Http\Controllers\HelperProfileController;
+use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\MedicalNoteController;
 use App\Http\Controllers\NotificationController;
@@ -38,11 +38,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->name('api.verification.verify');
 });
 
-// Password reset routes (guest only)
-Route::post('/password/email', [App\Http\Controllers\PasswordResetController::class, 'sendResetLinkEmail'])
-    ->name('password.email');
-Route::post('/password/reset', [App\Http\Controllers\PasswordResetController::class, 'reset'])
-    ->name('password.update');
+// Password reset routes - Fortify registers these at root level:
+// POST /forgot-password and POST /reset-password
+// We add API-prefixed aliases for compatibility with existing tests
+Route::post('/password/email', function (\Illuminate\Http\Request $request) {
+    return app(\Laravel\Fortify\Http\Controllers\PasswordResetLinkController::class)($request);
+});
+
+Route::post('/password/reset', function (\Illuminate\Http\Request $request) {
+    return app(\Laravel\Fortify\Http\Controllers\NewPasswordController::class)($request);
+});
+
+// Token validation endpoint for the frontend
 Route::get('/password/reset/{token}', [App\Http\Controllers\PasswordResetController::class, 'validateToken'])
     ->name('password.reset.validate');
 
@@ -63,7 +70,7 @@ Route::post('/unsubscribe', [UnsubscribeController::class, 'unsubscribe']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/email/verification-notification', [EmailVerificationController::class, 'resend'])
         ->middleware('throttle:6,1')
-        ->name('verification.send');
+        ->name('api.verification.send');
     Route::get('/email/verification-status', [EmailVerificationController::class, 'status']);
     Route::get('/email/configuration-status', [EmailConfigurationStatusController::class, 'status']);
 });
@@ -80,11 +87,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/notification-preferences', [NotificationPreferenceController::class, 'update']);
 });
 
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
-Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
-Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+// Auth routes - only checkEmail is custom, rest handled by Fortify
+Route::post('/check-email', [AuthController::class, 'checkEmail']);
 
 // Impersonation routes
 Route::middleware('auth:sanctum')->group(function () {

@@ -50,9 +50,14 @@ export default function ResetPasswordPage() {
       try {
         await api.get(`/password/reset/${token}?email=${encodeURIComponent(emailParam)}`)
         setIsValid(true)
-      } catch (error: any) {
-        if (error.response?.status === 422) {
-          setError('Invalid or expired reset token.')
+      } catch (error: unknown) {
+        if (error instanceof Error && 'response' in error) {
+          const axiosError = error as { response?: { status?: number } }
+          if (axiosError.response?.status === 422) {
+            setError('Invalid or expired reset token.')
+          } else {
+            setError('Failed to validate reset token. Please try again.')
+          }
         } else {
           setError('Failed to validate reset token. Please try again.')
         }
@@ -61,7 +66,7 @@ export default function ResetPasswordPage() {
       }
     }
 
-    validateToken()
+    void validateToken()
   }, [token, searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -81,7 +86,7 @@ export default function ResetPasswordPage() {
     setError('')
 
     try {
-      const response = await api.post('/password/reset', {
+      const response = await api.post<{ data: { reset: boolean } }>('/password/reset', {
         token,
         email,
         password,
@@ -94,18 +99,23 @@ export default function ResetPasswordPage() {
 
         // Redirect to login after a short delay
         redirectTimer.current = window.setTimeout(() => {
-          navigate('/login')
+          void navigate('/login')
         }, 2000)
       }
-    } catch (error: any) {
-      if (error.response?.status === 422) {
-        const message = error.response.data.message
-        if (message.includes('token')) {
-          setError('Invalid or expired reset token.')
-        } else if (message.includes('password')) {
-          setError('Password must be at least 8 characters long.')
+    } catch (error: unknown) {
+      if (error instanceof Error && 'response' in error) {
+        const axiosError = error as { response?: { status?: number; data?: { message?: string } } }
+        if (axiosError.response?.status === 422) {
+          const message = axiosError.response.data?.message ?? ''
+          if (message.includes('token')) {
+            setError('Invalid or expired reset token.')
+          } else if (message.includes('password')) {
+            setError('Password must be at least 8 characters long.')
+          } else {
+            setError(message)
+          }
         } else {
-          setError(message)
+          setError('Failed to reset password. Please try again.')
         }
       } else {
         setError('Failed to reset password. Please try again.')
@@ -213,7 +223,7 @@ export default function ResetPasswordPage() {
           <CardDescription>Enter your new password below.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form noValidate onSubmit={handleSubmit} className="space-y-4">
+          <form noValidate onSubmit={(e) => { void handleSubmit(e); }} className="space-y-4">
             {error && (
               <Alert className="border-red-200 bg-red-50">
                 <AlertDescription className="text-red-800">{error}</AlertDescription>
@@ -233,7 +243,7 @@ export default function ResetPasswordPage() {
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter new password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => { setPassword(e.target.value) }}
                   required
                   minLength={8}
                   disabled={isLoading}
@@ -243,7 +253,7 @@ export default function ResetPasswordPage() {
                   variant="ghost"
                   size="sm"
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => { setShowPassword(!showPassword) }}
                   disabled={isLoading}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -259,7 +269,7 @@ export default function ResetPasswordPage() {
                   type={showPasswordConfirmation ? 'text' : 'password'}
                   placeholder="Confirm password"
                   value={passwordConfirmation}
-                  onChange={(e) => setPasswordConfirmation(e.target.value)}
+                  onChange={(e) => { setPasswordConfirmation(e.target.value) }}
                   required
                   minLength={8}
                   disabled={isLoading}
@@ -269,7 +279,7 @@ export default function ResetPasswordPage() {
                   variant="ghost"
                   size="sm"
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowPasswordConfirmation(!showPasswordConfirmation)}
+                  onClick={() => { setShowPasswordConfirmation(!showPasswordConfirmation) }}
                   disabled={isLoading}
                 >
                   {showPasswordConfirmation ? (

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { api, csrf } from '@/api/axios'
+import { api, authApi, csrf } from '@/api/axios'
 import type { User } from '@/types/user'
 import type { RegisterPayload, RegisterResponse, LoginPayload, LoginResponse } from '@/types/auth'
 import { AuthContext } from './auth-context'
@@ -34,40 +34,36 @@ export function AuthProvider({
     }
   }, [])
 
-  const register = useCallback(
-    async (payload: RegisterPayload): Promise<RegisterResponse> => {
-      await csrf()
-      const { data } = await api.post<{ data: RegisterResponse }>('/register', payload)
-      
-      // Don't automatically load user if verification is required
-      // The user will be loaded after email verification
-      if (data.data.email_verified) {
-        await loadUser()
-      }
-      
-      return data.data
-    },
-    [loadUser]
-  )
+  const register = useCallback(async (payload: RegisterPayload): Promise<RegisterResponse> => {
+    await csrf()
+    const { data } = await authApi.post<{ data: RegisterResponse }>('/register', payload)
 
-  const login = useCallback(
-    async (payload: LoginPayload): Promise<LoginResponse> => {
-      await csrf()
-      const { data } = await api.post<{ data: LoginResponse }>('/login', payload)
-      
-      // Only load user if email is verified
-      if (data.data.email_verified) {
-        await loadUser()
-      }
-      
-      return data.data
-    },
-    [loadUser]
-  )
+    // Set user immediately from response if email is verified
+    if (data.data.email_verified) {
+      setUser(data.data.user)
+    }
+
+    return data.data
+  }, [])
+
+  const login = useCallback(async (payload: LoginPayload): Promise<LoginResponse> => {
+    await csrf()
+    const { data } = await authApi.post<{ data: LoginResponse }>('/login', payload)
+
+    // Set user immediately from response
+    setUser(data.data.user)
+
+    return data.data
+  }, [])
 
   const logout = useCallback(async () => {
-    await api.post('/logout')
+    await authApi.post('/logout')
     setUser(null)
+  }, [])
+
+  const checkEmail = useCallback(async (email: string): Promise<boolean> => {
+    const { data } = await api.post<{ data: { exists: boolean } }>('/check-email', { email })
+    return data.data.exists
   }, [])
 
   const changePassword = useCallback(
@@ -84,7 +80,6 @@ export function AuthProvider({
   const deleteAccount = useCallback(async (password: string) => {
     await api.delete('/users/me', { data: { password } })
     setUser(null)
-    localStorage.removeItem('access_token')
   }, [])
 
   useEffect(() => {
@@ -106,6 +101,7 @@ export function AuthProvider({
       loadUser,
       changePassword,
       deleteAccount,
+      checkEmail,
     }),
     [
       user,
@@ -117,6 +113,7 @@ export function AuthProvider({
       loadUser,
       changePassword,
       deleteAccount,
+      checkEmail,
     ]
   )
 

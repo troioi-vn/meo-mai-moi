@@ -5,17 +5,21 @@ import EmailVerificationPrompt from '@/components/EmailVerificationPrompt'
 import { useInviteSystem } from '@/hooks/use-invite-system'
 import { useAuth } from '@/hooks/use-auth'
 import { toast } from 'sonner'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Loader2, Lock, Globe } from 'lucide-react'
 import type { RegisterResponse } from '@/types/auth'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
   const { loadUser } = useAuth()
+  const [searchParams] = useSearchParams()
   const { mode, isLoading, invitationCode, invitationValidation, error, clearError } =
     useInviteSystem()
   const [registrationResponse, setRegistrationResponse] = useState<RegisterResponse | null>(null)
   const [registeredEmail, setRegisteredEmail] = useState<string>('')
+  
+  // Get email from query parameters (e.g., from login redirect)
+  const initialEmail = searchParams.get('email') ?? undefined
 
   const handleRegistrationSuccess = (response: RegisterResponse, email: string) => {
     if (response.requires_verification) {
@@ -48,7 +52,7 @@ export default function RegisterPage() {
           email={registeredEmail}
           message={registrationResponse.message}
           emailSent={registrationResponse.email_sent}
-          onVerificationComplete={handleVerificationComplete}
+          onVerificationComplete={() => { void handleVerificationComplete(); }}
         />
       </div>
     )
@@ -135,6 +139,7 @@ export default function RegisterPage() {
             onSuccess={handleRegistrationSuccess}
             invitationCode={invitationCode}
             inviterName={invitationValidation?.inviter.name}
+            initialEmail={initialEmail}
           />
         )}
       </div>

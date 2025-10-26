@@ -7,11 +7,9 @@ use App\Http\Responses\Auth\PasswordResetResponse;
 use App\Http\Responses\Auth\SuccessfulPasswordResetLinkRequestResponse;
 use App\Models\User;
 use App\Traits\ApiResponseTrait;
-use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 
 class PasswordResetController extends Controller
@@ -217,6 +215,7 @@ class PasswordResetController extends Controller
 
             // Return response using Fortify response class
             $response = app(SuccessfulPasswordResetLinkRequestResponse::class);
+
             return $response->toResponse($request);
         } catch (\Exception $e) {
             \Log::warning('Password reset email failed during Jetstream flow', [
@@ -254,6 +253,7 @@ class PasswordResetController extends Controller
         if ($status === Password::PASSWORD_RESET) {
             // Return response using Fortify response class
             $response = app(PasswordResetResponse::class);
+
             return $response->toResponse($request);
         }
 

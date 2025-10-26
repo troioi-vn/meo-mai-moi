@@ -30,16 +30,16 @@ class EmailLinksTest extends TestCase
         Notification::assertSentTo($user, VerifyEmail::class, function ($notification) use ($user) {
             // Get the verification URL from the notification
             $verificationUrl = $notification->toNotificationEmail($user)['data']['verificationUrl'];
-            
+
             // Assert the URL points to the backend web route (which redirects to frontend)
             $this->assertStringContainsString('/email/verify/', $verificationUrl);
-            
+
             // The URL should NOT contain /api/
             $this->assertStringNotContainsString('/api/', $verificationUrl);
-            
+
             // Should contain the backend base URL (localhost in tests)
             $this->assertStringStartsWith('http://localhost', $verificationUrl);
-            
+
             return true;
         });
     }
@@ -62,10 +62,10 @@ class EmailLinksTest extends TestCase
         Notification::assertSentTo($user, CustomPasswordReset::class, function ($notification) {
             // Get the token from the notification
             $resetToken = $notification->getToken();
-            
+
             // Verify token exists
             $this->assertNotEmpty($resetToken);
-            
+
             return true;
         });
     }
@@ -90,8 +90,8 @@ class EmailLinksTest extends TestCase
         // Make request to the verification URL
         $response = $this->get($url);
 
-    // Standard Fortify behavior: unauthenticated users are redirected to login
-    $response->assertRedirect(route('login', absolute: false));
+        // Standard Fortify behavior: unauthenticated users are redirected to login
+        $response->assertRedirect(route('login', absolute: false));
     }
 
     public function test_password_reset_web_route_redirects_to_frontend()
@@ -100,18 +100,18 @@ class EmailLinksTest extends TestCase
         $email = 'test@example.com';
 
         // Make request to the password reset URL
-        $response = $this->get("/reset-password/{$token}?email=" . urlencode($email));
+        $response = $this->get("/reset-password/{$token}?email=".urlencode($email));
 
         // Should redirect to frontend
         $response->assertRedirect();
         $redirectUrl = $response->headers->get('Location');
-        
+
         // Assert redirect points to frontend
         $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
         $this->assertStringStartsWith($frontendUrl, $redirectUrl);
         $this->assertStringContainsString('/password/reset/', $redirectUrl);
         $this->assertStringContainsString($token, $redirectUrl);
-        $this->assertStringContainsString('email=' . urlencode($email), $redirectUrl);
+        $this->assertStringContainsString('email='.urlencode($email), $redirectUrl);
     }
 
     public function test_email_verification_web_route_handles_invalid_user()
@@ -128,8 +128,8 @@ class EmailLinksTest extends TestCase
 
         $response = $this->get($url);
 
-    // Standard Fortify behavior: unauthenticated users are redirected to login
-    $response->assertRedirect(route('login', absolute: false));
+        // Standard Fortify behavior: unauthenticated users are redirected to login
+        $response->assertRedirect(route('login', absolute: false));
     }
 
     public function test_password_reset_web_route_handles_missing_email()
@@ -142,7 +142,7 @@ class EmailLinksTest extends TestCase
         // Should redirect to frontend with error
         $response->assertRedirect();
         $redirectUrl = $response->headers->get('Location');
-        
+
         $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
         $this->assertStringStartsWith($frontendUrl, $redirectUrl);
         $this->assertStringContainsString('error=missing_email', $redirectUrl);
@@ -168,7 +168,7 @@ class EmailLinksTest extends TestCase
         // Make request to the verification URL
         $response = $this->get($url);
 
-    // Standard Fortify behavior: unauthenticated users are redirected to login
-    $response->assertRedirect(route('login', absolute: false));
+        // Standard Fortify behavior: unauthenticated users are redirected to login
+        $response->assertRedirect(route('login', absolute: false));
     }
 }

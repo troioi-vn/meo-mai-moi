@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Mail, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react'
 import { api } from '@/api/axios'
@@ -39,10 +39,10 @@ export default function EmailVerificationPrompt({
       setResendMessage(data.data.message)
       setLastResendSuccess(data.data.email_sent)
     } catch (error) {
-      if (error instanceof AxiosError) {
-        setResendError(error.response?.data?.message || 'Failed to resend verification email')
+      if (error instanceof AxiosError && error.response?.data?.message) {
+        setResendError((error as AxiosError<{ message: string }>).response.data.message)
       } else {
-        setResendError('An unexpected error occurred')
+        setResendError('Failed to resend verification email')
       }
       setLastResendSuccess(false)
     } finally {
@@ -99,7 +99,9 @@ export default function EmailVerificationPrompt({
 
         <div className="space-y-3">
           <Button
-            onClick={handleResendEmail}
+            onClick={() => {
+              void handleResendEmail()
+            }}
             disabled={isResending}
             variant="outline"
             className="w-full"
@@ -118,7 +120,9 @@ export default function EmailVerificationPrompt({
           </Button>
 
           <Button
-            onClick={handleCheckVerification}
+            onClick={() => {
+              void handleCheckVerification()
+            }}
             variant="default"
             className="w-full"
           >
@@ -131,7 +135,10 @@ export default function EmailVerificationPrompt({
           <p>
             Can't find the email? Check your spam folder or{' '}
             <button
-              onClick={handleResendEmail}
+              type="button"
+              onClick={() => {
+                void handleResendEmail()
+              }}
               className="text-primary hover:underline"
               disabled={isResending}
             >

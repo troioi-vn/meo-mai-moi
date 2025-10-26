@@ -6,6 +6,20 @@ import { helperProfileHandlers } from './data/helper-profiles'
 import type { AppNotification } from '@/types/notification'
 
 const userHandlers = [
+  // Check if email exists (custom endpoint, still on /api)
+  http.post('http://localhost:3000/api/check-email', async ({ request }) => {
+    const { email } = (await request.json()) as { email: string }
+    // Mock: return true for existing test emails, false for others
+    const existingEmails = [
+      'admin@catarchy.space',
+      'user1@catarchy.space',
+      'test@example.com',
+      'existing@example.com',
+    ]
+    const exists = existingEmails.includes(email)
+    return HttpResponse.json({ data: { exists } })
+  }),
+
   // Get authenticated user's profile
   http.get('http://localhost:3000/api/users/me', () => {
     return HttpResponse.json({ data: mockUser })
@@ -85,8 +99,8 @@ const userHandlers = [
   http.delete('http://localhost:3000/api/users/me/avatar', () => {
     return HttpResponse.json({ message: 'Avatar deleted successfully.' })
   }),
-  // Register endpoint
-  http.post('http://localhost:3000/api/register', async ({ request }) => {
+  // Register endpoint (Fortify route - no /api prefix)
+  http.post('http://localhost:3000/register', async ({ request }) => {
     const raw = await request.json()
     const body = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
     if (body.email === 'fail@example.com') {
@@ -110,53 +124,64 @@ const userHandlers = [
         { status: 422 }
       )
     }
-    
+
     // Simulate email verification flow
     const emailSent = body.email !== 'no-email@example.com' // Simulate email send failure
     return HttpResponse.json(
       {
         data: {
-          access_token: 'mock-token-registered',
-          token_type: 'Bearer',
+          user: {
+            id: Date.now(),
+            name: String(body.name),
+            email: String(body.email),
+            email_verified_at: null,
+          },
           email_verified: false,
           email_sent: emailSent,
           requires_verification: true,
-          message: emailSent 
+          message: emailSent
             ? 'We have sent you verification email, please check your inbox and click the link to verify your email address. If you did not receive the email, check your spam folder.'
             : 'We are unable to send verification email at the moment. But hopefully admins are working on it and you will receive it soon.',
-        }
+        },
       },
       { status: 201 }
     )
   }),
 
-  // Login endpoint
-  http.post('http://localhost:3000/api/login', async ({ request }) => {
+  // Login endpoint (Fortify route - no /api prefix)
+  http.post('http://localhost:3000/login', async ({ request }) => {
     const raw = await request.json()
     const body =
       raw && typeof raw === 'object' ? (raw as { email?: string; password?: string }) : {}
     if (body.email === 'fail@example.com') {
       return HttpResponse.json({ message: 'Invalid credentials' }, { status: 401 })
     }
-    
+
     // Simulate unverified user
     const emailVerified = body.email !== 'unverified@example.com'
-    
+
     return HttpResponse.json(
       {
         data: {
-          access_token: 'mock-token-logged-in',
-          token_type: 'Bearer',
-          email_verified: emailVerified,
-        }
+          user: {
+            id: 1,
+            name: 'Test User',
+            email: body.email ?? 'test@example.com',
+            email_verified_at: emailVerified ? new Date().toISOString() : null,
+          },
+          two_factor: false,
+        },
       },
       { status: 200 }
     )
   }),
 
-  // Logout endpoint
-  http.post('http://localhost:3000/api/logout', () => {
-    return HttpResponse.json({ message: 'Logged out successfully' })
+  // Logout endpoint (Fortify route - no /api prefix)
+  http.post('http://localhost:3000/logout', () => {
+    return HttpResponse.json({
+      message: 'Logged out successfully',
+      redirect: '/login',
+    })
   }),
 
   // Forgot password endpoint
@@ -183,30 +208,34 @@ const userHandlers = [
     const url = new URL(request.url)
     const expires = url.searchParams.get('expires')
     const signature = url.searchParams.get('signature')
-    
+
     if (!expires || !signature) {
       return HttpResponse.json({ message: 'Invalid verification link.' }, { status: 403 })
     }
-    
+
     // Simulate expired link
     if (params.hash === 'expired-hash') {
-      return HttpResponse.json({ message: 'Invalid or expired verification link.' }, { status: 403 })
+      return HttpResponse.json(
+        { message: 'Invalid or expired verification link.' },
+        { status: 403 }
+      )
     }
-    
+
     return HttpResponse.json({
       data: {
         message: 'Email verified successfully.',
         verified: true,
-      }
+      },
     })
   }),
 
   http.post('http://localhost:3000/api/email/verification-notification', () => {
     return HttpResponse.json({
       data: {
-        message: 'We have sent you verification email, please check your inbox and click the link to verify your email address. If you did not receive the email, check your spam folder.',
+        message:
+          'We have sent you verification email, please check your inbox and click the link to verify your email address. If you did not receive the email, check your spam folder.',
         email_sent: true,
-      }
+      },
     })
   }),
 
@@ -215,7 +244,7 @@ const userHandlers = [
       data: {
         verified: false,
         email: 'test@example.com',
-      }
+      },
     })
   }),
 

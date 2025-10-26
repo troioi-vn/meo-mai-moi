@@ -6,6 +6,56 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **🔥 HIGH IMPACT: Session-Based Authentication Migration**:
+  - Migrated from token-based (Sanctum) to cookie-based session authentication for SPA
+  - **Two-Step Login Flow**: Email verification first, then password entry (prevents account enumeration)
+  - **Email Existence Check**: New `/api/check-email` endpoint and auto-redirect to registration
+  - **Improved Auth API**: Separate `authApi` instance for Fortify routes (no `/api` prefix)
+  - **Enhanced Test Coverage**: Updated all auth-related tests for new flow (96+ test updates)
+  - **Better UX**: Back button, pre-filled email, clearer error states in login form
+  - **Auth Response Changes**: Login/register now return user object instead of tokens
+  - **Simplified Context**: Removed token management, direct user state from auth responses
+  - **Breaking**: `access_token` and `token_type` removed from login/register responses
+- **Filament Admin Policies**: Created 6 policy classes for proper authorization:
+  - `EmailConfigurationPolicy`, `EmailLogPolicy`, `InvitationPolicy`
+  - `NotificationPolicy`, `NotificationTemplatePolicy`, `PetTypePolicy`, `WaitlistEntryPolicy`
+  - All policies use Shield permission checks or admin role verification
+- **Deployment Infrastructure**:
+  - **Enhanced Backup Script**: Silent tar output, summary statistics, file counts
+  - **Database Safety Documentation**: Migration strategy guide in `docs/deploy.md`
+  - **Troubleshooting Guide**: Database corruption prevention in `docs/troubleshooting.md`
+    - **Migration Control**: Explicit `RUN_MIGRATIONS=false` in docker-compose to prevent race conditions
+
+### Changed
+
+- **Frontend Code Quality Overhaul** (140+ ESLint auto-fixes):
+  - Fixed all void expression violations (proper async handling with `void` keyword)
+  - Eliminated unsafe `any` types across components, pages, and tests
+  - Consistent nullish coalescing (`??`) instead of logical OR for defaults
+  - Proper type assertions and casting (removed `as unknown as` patterns)
+  - Function type consistency (arrow functions, proper event handlers)
+  - Improved test utilities and mock typing
+- **Test Suite Updates** (Session Auth Migration):
+  - Updated 96+ test files for cookie-based authentication
+  - Removed token-based auth mocks, added session-based flows
+  - Fixed test helpers to use `web` guard instead of Sanctum
+  - Updated MSW handlers for new auth endpoints (no `/api` prefix for Fortify)
+  - Enhanced test reliability with proper async handling
+- **Backend Test Improvements**:
+  - Fixed code style violations (spacing, indentation, trailing newlines)
+  - Improved test reliability with proper guards and auth setup
+  - Added `Settings::set('email_verification_required', 'false')` to TestCase
+  - Configured Sanctum stateful domains for test environment
+- **Auth UX Enhancements**:
+  - Login page: Wider max-width container (better mobile UX)
+  - Register page: Pre-fill email from query params (seamless redirect from login)
+  - Verification prompt: Proper async handling for button actions
+  - Improved loading states and error messages
+
+### Changed
+
+### Added
+
 - Fortify + Jetstream backend auth foundation for SPA-only flow:
   - Custom Fortify response classes for login/register/logout/password reset with SPA-friendly JSON and non-JSON redirects to FRONTEND_URL
   - Fortify actions for creating users, updating profile info and password, and resetting passwords

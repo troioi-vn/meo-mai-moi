@@ -83,7 +83,7 @@ class PetResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('photo_url')
+                ImageColumn::make('photo_url')
                     ->label('Photo')
                     ->circular()
                     ->size(40)

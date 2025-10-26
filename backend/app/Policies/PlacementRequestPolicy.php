@@ -10,132 +10,80 @@ class PlacementRequestPolicy
 {
     use HandlesAuthorization;
 
-    /**
-     * Determine whether the user can view any models.
-     */
+    private function isAdmin(User $user): bool
+    {
+        return method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
+    }
+
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_placement::request');
+        return true;
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
     public function view(User $user, PlacementRequest $placementRequest): bool
     {
-        return $user->can('view_placement::request');
+        return $this->isAdmin($user) || $placementRequest->user_id === $user->id;
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
     public function create(User $user): bool
     {
-        return $user->can('create_placement::request');
+        return true;
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
     public function update(User $user, PlacementRequest $placementRequest): bool
     {
-        return $user->can('update_placement::request');
+        return $this->isAdmin($user) || $placementRequest->user_id === $user->id;
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
     public function delete(User $user, PlacementRequest $placementRequest): bool
     {
-        $ownerId = optional($placementRequest->pet)->user_id ?? $placementRequest->user_id;
-        if ($user->id === $ownerId) {
-            return true;
-        }
-
-        return $user->can('delete_placement::request');
+        return $this->isAdmin($user) || $placementRequest->user_id === $user->id;
     }
 
-    /**
-     * Determine whether the user can bulk delete.
-     */
-    public function deleteAny(User $user): bool
-    {
-        return $user->can('delete_any_placement::request');
-    }
-
-    /**
-     * Determine whether the user can permanently delete.
-     */
-    public function forceDelete(User $user, PlacementRequest $placementRequest): bool
-    {
-        return $user->can('force_delete_placement::request');
-    }
-
-    /**
-     * Determine whether the user can permanently bulk delete.
-     */
-    public function forceDeleteAny(User $user): bool
-    {
-        return $user->can('force_delete_any_placement::request');
-    }
-
-    /**
-     * Determine whether the user can restore.
-     */
-    public function restore(User $user, PlacementRequest $placementRequest): bool
-    {
-        return $user->can('restore_placement::request');
-    }
-
-    /**
-     * Determine whether the user can bulk restore.
-     */
-    public function restoreAny(User $user): bool
-    {
-        return $user->can('restore_any_placement::request');
-    }
-
-    /**
-     * Determine whether the user can replicate.
-     */
-    public function replicate(User $user, PlacementRequest $placementRequest): bool
-    {
-        return $user->can('replicate_placement::request');
-    }
-
-    /**
-     * Determine whether the user can reorder.
-     */
-    public function reorder(User $user): bool
-    {
-        return $user->can('reorder_placement::request');
-    }
-
-    /**
-     * Confirm a placement request.
-     */
+    // Custom abilities for owner actions
     public function confirm(User $user, PlacementRequest $placementRequest): bool
     {
-        // Pet owner can always confirm their own placement request
-        $ownerId = optional($placementRequest->pet)->user_id ?? $placementRequest->user_id;
-        if ($user->id === $ownerId) {
-            return true;
-        }
-
-        return $user->can('confirm_placement::request');
+        return $this->isAdmin($user) || $placementRequest->user_id === $user->id;
     }
 
-    /**
-     * Reject a placement request.
-     */
     public function reject(User $user, PlacementRequest $placementRequest): bool
     {
-        // Pet owner can always reject their own placement request
-        $ownerId = optional($placementRequest->pet)->user_id ?? $placementRequest->user_id;
-        if ($user->id === $ownerId) {
-            return true;
-        }
+        return $this->isAdmin($user) || $placementRequest->user_id === $user->id;
+    }
 
-        return $user->can('reject_placement::request');
+    // Admin-only for bulk/advanced actions
+    public function deleteAny(User $user): bool
+    {
+        return $this->isAdmin($user);
+    }
+
+    public function forceDelete(User $user, PlacementRequest $placementRequest): bool
+    {
+        return $this->isAdmin($user);
+    }
+
+    public function forceDeleteAny(User $user): bool
+    {
+        return $this->isAdmin($user);
+    }
+
+    public function restore(User $user, PlacementRequest $placementRequest): bool
+    {
+        return $this->isAdmin($user);
+    }
+
+    public function restoreAny(User $user): bool
+    {
+        return $this->isAdmin($user);
+    }
+
+    public function replicate(User $user, PlacementRequest $placementRequest): bool
+    {
+        return $this->isAdmin($user);
+    }
+
+    public function reorder(User $user): bool
+    {
+        return $this->isAdmin($user);
     }
 }

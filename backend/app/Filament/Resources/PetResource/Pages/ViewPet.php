@@ -10,6 +10,9 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Pages\ViewRecord;
 
+/**
+ * @property \App\Models\Pet $record
+ */
 class ViewPet extends ViewRecord
 {
     protected static string $resource = PetResource::class;
@@ -32,26 +35,26 @@ class ViewPet extends ViewRecord
                 ])
                 ->action(function (array $data) {
                     $pet = $this->record;
-                    
+
                     // Get the uploaded file path
-                    $filePath = storage_path('app/public/' . $data['photo']);
-                    
+                    $filePath = storage_path('app/public/'.$data['photo']);
+
                     // Add new photo from uploaded file
                     if (file_exists($filePath)) {
                         $pet->addMedia($filePath)
                             ->toMediaCollection('photos');
                     }
-                    
+
                     // Refresh the page to show the new photo
                     $this->redirect(request()->header('Referer'));
                 }),
-            
+
             Actions\Action::make('manage_photos')
                 ->label('Manage Photos')
                 ->icon('heroicon-o-photo')
                 ->visible(fn () => $this->record->getMedia('photos')->count() > 0)
                 ->url(fn () => static::getResource()::getUrl('photos', ['record' => $this->record])),
-            
+
             Actions\EditAction::make(),
         ];
     }
@@ -68,7 +71,7 @@ class ViewPet extends ViewRecord
                             ->width(200)
                             ->extraAttributes(['class' => 'rounded-lg'])
                             ->columnSpan(1),
-                        
+
                         Section::make()
                             ->schema([
                                 TextEntry::make('name')
@@ -81,9 +84,12 @@ class ViewPet extends ViewRecord
                                 TextEntry::make('birthday')
                                     ->date()
                                     ->formatStateUsing(function ($state) {
-                                        if (!$state) return '-';
+                                        if (! $state) {
+                                            return '-';
+                                        }
                                         $age = now()->diffInYears($state);
-                                        return $state->format('M j, Y') . " ({$age}y)";
+
+                                        return $state->format('M j, Y')." ({$age}y)";
                                     }),
                                 TextEntry::make('location'),
                                 TextEntry::make('status')
@@ -101,7 +107,7 @@ class ViewPet extends ViewRecord
                             ->columnSpan(2),
                     ])
                     ->columns(3),
-                
+
                 Section::make('Description')
                     ->schema([
                         TextEntry::make('description')
@@ -109,7 +115,7 @@ class ViewPet extends ViewRecord
                             ->hiddenLabel(),
                     ])
                     ->collapsible()
-                    ->visible(fn ($record) => !empty($record->description)),
+                    ->visible(fn ($record) => ! empty($record->description)),
             ]);
     }
 }

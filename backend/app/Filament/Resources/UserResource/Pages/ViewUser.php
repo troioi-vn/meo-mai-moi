@@ -10,6 +10,9 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Pages\ViewRecord;
 
+/**
+ * @property \App\Models\User $record
+ */
 class ViewUser extends ViewRecord
 {
     protected static string $resource = UserResource::class;
@@ -32,21 +35,21 @@ class ViewUser extends ViewRecord
                 ])
                 ->action(function (array $data) {
                     $user = $this->record;
-                    
+
                     // Clear existing avatar
                     $user->clearMediaCollection('avatar');
-                    
+
                     // Handle the uploaded file - Filament stores it in storage/app/public
                     $uploadedFile = $data['avatar'];
                     if ($uploadedFile) {
                         // Get the full path to the uploaded file
-                        $filePath = storage_path('app/public/' . $uploadedFile);
-                        
+                        $filePath = storage_path('app/public/'.$uploadedFile);
+
                         if (file_exists($filePath)) {
                             // Add the file to MediaLibrary
                             $user->addMedia($filePath)
                                 ->toMediaCollection('avatar');
-                            
+
                             \Filament\Notifications\Notification::make()
                                 ->title('Avatar updated successfully')
                                 ->success()
@@ -58,11 +61,11 @@ class ViewUser extends ViewRecord
                                 ->send();
                         }
                     }
-                    
+
                     // Refresh the page to show the new avatar
                     return redirect()->to(request()->header('Referer'));
                 }),
-            
+
             Actions\Action::make('delete_avatar')
                 ->label('Delete Avatar')
                 ->icon('heroicon-o-trash')
@@ -71,11 +74,11 @@ class ViewUser extends ViewRecord
                 ->visible(fn () => $this->record->getMedia('avatar')->count() > 0)
                 ->action(function () {
                     $this->record->clearMediaCollection('avatar');
-                    
+
                     // Refresh the page to show the change
                     $this->redirect(request()->header('Referer'));
                 }),
-            
+
             Actions\EditAction::make(),
         ];
     }
@@ -92,7 +95,7 @@ class ViewUser extends ViewRecord
                             ->width(150)
                             ->circular()
                             ->columnSpan(1),
-                        
+
                         Section::make()
                             ->schema([
                                 TextEntry::make('name')
@@ -117,7 +120,7 @@ class ViewUser extends ViewRecord
                             ->columnSpan(2),
                     ])
                     ->columns(3),
-                
+
                 Section::make('Statistics')
                     ->schema([
                         TextEntry::make('pets_count')

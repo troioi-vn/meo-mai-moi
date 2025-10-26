@@ -49,7 +49,7 @@ class EmailConfigurationStatusController extends Controller
 
         $status = [
             'enabled' => $isEnabled,
-            'provider' => $activeConfig?->provider ?? null,
+            'provider' => $activeConfig?->provider,
             'from_address' => $activeConfig?->config['from_address'] ?? null,
             'status' => $activeConfig?->status->value ?? 'not_configured',
         ];

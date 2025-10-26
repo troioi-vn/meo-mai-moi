@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\DeleteAccountRequest;
 use App\Http\Requests\UpdatePasswordRequest;
-
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -85,15 +84,15 @@ class UserProfileController extends Controller
     {
         $user = $request->user();
         $user->load('roles'); // Load roles relationship
-        
+
         // Add computed properties for easier frontend access
         $userData = $user->toArray();
         $userData['can_access_admin'] = $user->hasRole(['admin', 'super_admin']);
         $userData['roles'] = $user->roles->pluck('name')->toArray();
-        
+
         // Ensure avatar_url is included (it should be from the accessor, but let's be explicit)
         $userData['avatar_url'] = $user->avatar_url;
-        
+
         return $this->sendSuccess($userData);
     }
 
@@ -327,7 +326,7 @@ class UserProfileController extends Controller
         ]);
 
         $user = $request->user();
-        
+
         \Log::info('Avatar upload validation passed', [
             'user_id' => $user->id,
             'file_info' => $request->file('avatar') ? [
@@ -336,10 +335,10 @@ class UserProfileController extends Controller
                 'mime' => $request->file('avatar')->getMimeType(),
             ] : null,
         ]);
-        
+
         // Clear existing avatar
         $user->clearMediaCollection('avatar');
-        
+
         // Add new avatar to MediaLibrary
         $media = $user->addMediaFromRequest('avatar')
             ->toMediaCollection('avatar');

@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\FosterAssignment;
+use App\Models\PetType;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class FosterAssignmentPolicy
+class PetTypePolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class FosterAssignmentPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_foster::assignment');
+        return $user->can('view_any_pet::type');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, FosterAssignment $fosterAssignment): bool
+    public function view(User $user, PetType $petType): bool
     {
-        return $user->can('view_foster::assignment');
+        return $user->can('view_pet::type');
     }
 
     /**
@@ -31,23 +31,23 @@ class FosterAssignmentPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_foster::assignment');
+        return $user->can('create_pet::type');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, FosterAssignment $fosterAssignment): bool
+    public function update(User $user, PetType $petType): bool
     {
-        return $user->can('update_foster::assignment');
+        return $user->can('update_pet::type');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, FosterAssignment $fosterAssignment): bool
+    public function delete(User $user, PetType $petType): bool
     {
-        return $user->can('delete_foster::assignment');
+        return $user->can('delete_pet::type');
     }
 
     /**
@@ -55,15 +55,15 @@ class FosterAssignmentPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_foster::assignment');
+        return $user->can('delete_any_pet::type');
     }
 
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, FosterAssignment $fosterAssignment): bool
+    public function forceDelete(User $user, PetType $petType): bool
     {
-        return $user->can('force_delete_foster::assignment');
+        return $user->can('force_delete_pet::type');
     }
 
     /**
@@ -71,15 +71,15 @@ class FosterAssignmentPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_foster::assignment');
+        return $user->can('force_delete_any_pet::type');
     }
 
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, FosterAssignment $fosterAssignment): bool
+    public function restore(User $user, PetType $petType): bool
     {
-        return $user->can('restore_foster::assignment');
+        return $user->can('restore_pet::type');
     }
 
     /**
@@ -87,15 +87,15 @@ class FosterAssignmentPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_foster::assignment');
+        return $user->can('restore_any_pet::type');
     }
 
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, FosterAssignment $fosterAssignment): bool
+    public function replicate(User $user, PetType $petType): bool
     {
-        return $user->can('replicate_foster::assignment');
+        return $user->can('replicate_pet::type');
     }
 
     /**
@@ -103,6 +103,6 @@ class FosterAssignmentPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_foster::assignment');
+        return $user->can('reorder_pet::type');
     }
 }

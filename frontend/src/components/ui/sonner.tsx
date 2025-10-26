@@ -7,8 +7,7 @@ import * as SonnerModule from 'sonner'
 import { useTheme } from '@/hooks/use-theme'
 
 // Use the real Toaster if available, otherwise a no-op component
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SonnerToaster: any = (SonnerModule as any)?.Toaster ?? (() => null)
+const SonnerToaster = (SonnerModule as { Toaster: React.ComponentType<unknown> }).Toaster ?? (() => null)
 
 type ToasterProps = React.ComponentProps<typeof SonnerToaster>
 

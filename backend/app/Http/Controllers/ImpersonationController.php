@@ -10,8 +10,8 @@ class ImpersonationController extends Controller
     public function status(Request $request)
     {
         $manager = app(ImpersonateManager::class);
-        
-        if (!$manager->isImpersonating()) {
+
+        if (! $manager->isImpersonating()) {
             return response()->json([
                 'is_impersonating' => false,
                 'impersonator' => null,
@@ -40,8 +40,8 @@ class ImpersonationController extends Controller
     public function leave(Request $request)
     {
         $manager = app(ImpersonateManager::class);
-        
-        if (!$manager->isImpersonating()) {
+
+        if (! $manager->isImpersonating()) {
             return response()->json(['message' => 'Not impersonating'], 400);
         }
 

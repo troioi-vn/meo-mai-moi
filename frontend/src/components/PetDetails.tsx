@@ -54,7 +54,7 @@ const PetDetails: React.FC<PetDetailsProps> = ({
       <div className="relative">
         <PetPhoto
           pet={pet}
-          onPhotoUpdate={onPetUpdate || (() => {})}
+          onPhotoUpdate={onPetUpdate ?? (() => { /* no-op */ })}
           showUploadControls={false} // No upload controls on view page
           className={`w-full h-64 object-cover ${isDeceased ? 'grayscale' : ''}`}
         />

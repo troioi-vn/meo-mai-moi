@@ -3,6 +3,7 @@ tmp/
 .kiro/
 backups/
 .venv/
+.deploy.log
 
 # Laravel
 /bootstrap/cache/*.php

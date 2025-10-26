@@ -16,12 +16,12 @@ export function AdminPanelLink() {
   const { data: userData } = useQuery<{ data: UserData }>({
     queryKey: ['users', 'me'],
     queryFn: async () => {
-      const response = await api.get('/users/me')
+      const response = await api.get<{ data: UserData }>('/users/me')
       return response.data
     },
   })
 
-  if (!userData?.data?.can_access_admin) {
+  if (!userData?.data.can_access_admin) {
     return null
   }
 

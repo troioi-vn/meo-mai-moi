@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Models\Pet;
-
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
@@ -30,7 +29,7 @@ class BackfillMediaLibrary extends Command
     public function handle()
     {
         $dryRun = $this->option('dry-run');
-        
+
         if ($dryRun) {
             $this->info('DRY RUN MODE - No changes will be made');
         }
@@ -60,6 +59,7 @@ class BackfillMediaLibrary extends Command
             // Skip if already has media
             if ($user->getMedia('avatar')->count() > 0) {
                 $skipped++;
+
                 continue;
             }
 
@@ -67,18 +67,19 @@ class BackfillMediaLibrary extends Command
             $avatarUrl = $user->avatar_url;
             $relativePath = $this->extractRelativePath($avatarUrl);
 
-            if (!$relativePath || !Storage::disk('public')->exists($relativePath)) {
+            if (! $relativePath || ! Storage::disk('public')->exists($relativePath)) {
                 $this->warn("File not found for user {$user->id}: {$relativePath}");
+
                 continue;
             }
 
-            if (!$dryRun) {
+            if (! $dryRun) {
                 try {
                     $fullPath = Storage::disk('public')->path($relativePath);
                     $user->addMedia($fullPath)
                         ->preservingOriginal()
                         ->toMediaCollection('avatar');
-                    
+
                     $migrated++;
                     $this->line("✓ Migrated avatar for user {$user->id}");
                 } catch (\Exception $e) {
@@ -100,14 +101,15 @@ class BackfillMediaLibrary extends Command
         $this->info('Pet photos: 0 migrated, 0 skipped');
     }
 
-    private function extractRelativePath(string $url): ?string
+    private function extractRelativePath(string $url): string
     {
         // Handle both full URLs and relative paths
         if (str_starts_with($url, 'http')) {
             $path = parse_url($url, PHP_URL_PATH);
+
             return str_replace('/storage/', '', $path);
         }
-        
+
         return str_replace('/storage/', '', $url);
     }
 }

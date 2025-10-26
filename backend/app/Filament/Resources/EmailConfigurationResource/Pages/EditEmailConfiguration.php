@@ -56,7 +56,7 @@ class EditEmailConfiguration extends EditRecord
 
                         if ($testResult['success']) {
                             $title = 'Test Email Sent Successfully';
-                            
+
                             // Determine where the email was actually sent
                             $actualRecipient = $testEmailAddress ?? $currentConfig['from_address'] ?? 'the configured address';
                             $body = 'Test email was sent successfully to '.$actualRecipient.'.';

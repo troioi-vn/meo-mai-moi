@@ -45,7 +45,7 @@ export function PetPhoto({ pet, onPhotoUpdate, showUploadControls = false, class
       const formData = new FormData()
       formData.append('photo', file)
 
-      const response = await api.post(`/pets/${pet.id}/photos`, formData, {
+      const response = await api.post<{ data: Pet }>(`/pets/${String(pet.id)}/photos`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -77,7 +77,7 @@ export function PetPhoto({ pet, onPhotoUpdate, showUploadControls = false, class
     setIsDeleting(true)
 
     try {
-      await api.delete(`/pets/${pet.id}/photos/current`)
+      await api.delete(`/pets/${String(pet.id)}/photos/current`)
       toast.success('Photo deleted successfully')
       
       // Create updated pet object with photo_url removed
@@ -122,7 +122,7 @@ export function PetPhoto({ pet, onPhotoUpdate, showUploadControls = false, class
 
           {pet.photo_url && (
             <Button 
-              onClick={handleDeletePhoto} 
+              onClick={() => { void handleDeletePhoto(); }} 
               disabled={isDeleting} 
               size="sm" 
               variant="outline"

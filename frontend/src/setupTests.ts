@@ -86,7 +86,7 @@ Object.defineProperty(window, 'matchMedia', {
 })
 
 // Polyfill ProgressEvent for MSW XHR in Node test environment
-if (!(globalThis as any).ProgressEvent) {
+if (!(globalThis as { ProgressEvent?: unknown }).ProgressEvent) {
   class PolyfillProgressEvent extends Event {
     lengthComputable = false
     loaded = 0
@@ -103,7 +103,7 @@ if (!(globalThis as any).ProgressEvent) {
       }
     }
   }
-  ;(globalThis as any).ProgressEvent = PolyfillProgressEvent as any
+  ;(globalThis as { ProgressEvent?: unknown }).ProgressEvent = PolyfillProgressEvent
 }
 
 // Mock Navigator APIs - but allow tests to override

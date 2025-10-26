@@ -106,7 +106,7 @@ describe('PetPhoto', () => {
     await user.click(fileInput)
     
     // Find the hidden file input and upload file
-    const hiddenInput = document.querySelector('input[type="file"]') as HTMLInputElement
+    const hiddenInput = document.querySelector('input[type="file"]')!
     await user.upload(hiddenInput, file)
 
     await waitFor(() => {
@@ -162,7 +162,7 @@ describe('PetPhoto', () => {
     
     await user.click(fileInput)
     
-    const hiddenInput = document.querySelector('input[type="file"]') as HTMLInputElement
+    const hiddenInput = document.querySelector('input[type="file"]')!
     await user.upload(hiddenInput, file)
 
     await waitFor(() => {
@@ -189,7 +189,7 @@ describe('PetPhoto', () => {
     
     await user.click(fileInput)
     
-    const hiddenInput = document.querySelector('input[type="file"]') as HTMLInputElement
+    const hiddenInput = document.querySelector('input[type="file"]')!
     await user.upload(hiddenInput, file)
 
     // API should not be called for invalid file type
@@ -214,7 +214,7 @@ describe('PetPhoto', () => {
     
     await user.click(fileInput)
     
-    const hiddenInput = document.querySelector('input[type="file"]') as HTMLInputElement
+    const hiddenInput = document.querySelector('input[type="file"]')!
     await user.upload(hiddenInput, largeFile)
 
     // API should not be called for oversized file

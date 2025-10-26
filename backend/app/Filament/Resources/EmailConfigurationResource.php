@@ -331,7 +331,7 @@ class EmailConfigurationResource extends Resource
                         try {
                             // Get test email address if provided
                             $testEmailAddress = $record->config['test_email_address'] ?? null;
-                            
+
                             // For SMTP, require test email address
                             if ($record->provider === 'smtp' && ! $testEmailAddress) {
                                 Notification::make()
@@ -347,7 +347,7 @@ class EmailConfigurationResource extends Resource
 
                             if ($testResult['success']) {
                                 $title = 'Test Email Sent Successfully';
-                                
+
                                 // Determine where the email was actually sent
                                 $actualRecipient = $testEmailAddress ?? $record->config['from_address'] ?? 'the configured address';
                                 $body = 'Test email was sent successfully to '.$actualRecipient.'.';
@@ -411,7 +411,11 @@ class EmailConfigurationResource extends Resource
                     ->label('Activate')
                     ->icon('heroicon-o-power')
                     ->color('success')
-                    ->visible(fn (EmailConfiguration $record): bool => ! $record->isActive() && $record->isValid())
+                    ->visible(function ($record) {
+                        assert($record instanceof \App\Models\EmailConfiguration);
+
+                        return ! $record->isActive() && $record->isValid();
+                    })
                     ->action(function (EmailConfiguration $record): void {
                         try {
                             // Validate configuration before activation
@@ -478,7 +482,11 @@ class EmailConfigurationResource extends Resource
                     ->label('Deactivate')
                     ->icon('heroicon-o-power')
                     ->color('warning')
-                    ->visible(fn (EmailConfiguration $record): bool => $record->isActive())
+                    ->visible(function ($record) {
+                        assert($record instanceof \App\Models\EmailConfiguration);
+
+                        return $record->isActive();
+                    })
                     ->action(function (EmailConfiguration $record): void {
                         try {
                             $record->deactivate();
@@ -553,7 +561,10 @@ class EmailConfigurationResource extends Resource
                         ->modalDescription('This will permanently delete the selected configurations (active ones cannot be deleted). This action cannot be undone.')
                         ->action(function (Collection $records): void {
                             // Prevent deletion of active configurations
-                            $activeRecords = $records->filter(fn ($record) => $record->isActive());
+                            $activeRecords = $records->filter(function ($record) {
+                                /** @var \App\Models\EmailConfiguration $record */
+                                return $record->isActive();
+                            });
 
                             if ($activeRecords->isNotEmpty()) {
                                 Notification::make()

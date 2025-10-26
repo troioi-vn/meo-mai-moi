@@ -9,7 +9,6 @@ use App\Traits\HandlesAuthentication;
 use App\Traits\HandlesPetResources;
 use App\Traits\HandlesValidation;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class PetPhotoController extends Controller
 {
@@ -190,7 +189,7 @@ class PetPhotoController extends Controller
             // Find the media that belongs to this pet's photos collection
             $media = $pet->getMedia('photos')->firstWhere('id', (int) $photo);
         }
-        
+
         if (! $media) {
             return $this->sendError('Photo not found.', 404);
         }

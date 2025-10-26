@@ -43,16 +43,17 @@ class ManagePhotos extends ManageRelatedRecords
                         ->required(),
                 ])
                 ->action(function (array $data) {
+                    /** @var \App\Models\Pet $pet */
                     $pet = $this->getOwnerRecord();
-                    
+
                     // Get the uploaded file path
-                    $filePath = storage_path('app/public/' . $data['photo']);
-                    
+                    $filePath = storage_path('app/public/'.$data['photo']);
+
                     // Add new photo from uploaded file
                     if (file_exists($filePath)) {
                         $pet->addMedia($filePath)
                             ->toMediaCollection('photos');
-                        
+
                         \Filament\Notifications\Notification::make()
                             ->title('Photo uploaded successfully')
                             ->success()

@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\FosterAssignment;
+use App\Models\EmailLog;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class FosterAssignmentPolicy
+class EmailLogPolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class FosterAssignmentPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_foster::assignment');
+        return $user->can('view_any_email::log');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, FosterAssignment $fosterAssignment): bool
+    public function view(User $user, EmailLog $emailLog): bool
     {
-        return $user->can('view_foster::assignment');
+        return $user->can('view_email::log');
     }
 
     /**
@@ -31,23 +31,23 @@ class FosterAssignmentPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_foster::assignment');
+        return $user->can('create_email::log');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, FosterAssignment $fosterAssignment): bool
+    public function update(User $user, EmailLog $emailLog): bool
     {
-        return $user->can('update_foster::assignment');
+        return $user->can('update_email::log');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, FosterAssignment $fosterAssignment): bool
+    public function delete(User $user, EmailLog $emailLog): bool
     {
-        return $user->can('delete_foster::assignment');
+        return $user->can('delete_email::log');
     }
 
     /**
@@ -55,15 +55,15 @@ class FosterAssignmentPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_foster::assignment');
+        return $user->can('delete_any_email::log');
     }
 
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, FosterAssignment $fosterAssignment): bool
+    public function forceDelete(User $user, EmailLog $emailLog): bool
     {
-        return $user->can('force_delete_foster::assignment');
+        return $user->can('force_delete_email::log');
     }
 
     /**
@@ -71,15 +71,15 @@ class FosterAssignmentPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_foster::assignment');
+        return $user->can('force_delete_any_email::log');
     }
 
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, FosterAssignment $fosterAssignment): bool
+    public function restore(User $user, EmailLog $emailLog): bool
     {
-        return $user->can('restore_foster::assignment');
+        return $user->can('restore_email::log');
     }
 
     /**
@@ -87,15 +87,15 @@ class FosterAssignmentPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_foster::assignment');
+        return $user->can('restore_any_email::log');
     }
 
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, FosterAssignment $fosterAssignment): bool
+    public function replicate(User $user, EmailLog $emailLog): bool
     {
-        return $user->can('replicate_foster::assignment');
+        return $user->can('replicate_email::log');
     }
 
     /**
@@ -103,6 +103,6 @@ class FosterAssignmentPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_foster::assignment');
+        return $user->can('reorder_email::log');
     }
 }

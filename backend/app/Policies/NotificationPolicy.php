@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\HelperProfile;
+use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class HelperProfilePolicy
+class NotificationPolicy
 {
     use HandlesAuthorization;
 
@@ -17,41 +17,35 @@ class HelperProfilePolicy
 
     public function viewAny(User $user): bool
     {
-        return true;
+        return $this->isAdmin($user);
     }
 
-    public function view(User $user, HelperProfile $helperProfile): bool
+    public function view(User $user, Notification $notification): bool
     {
-        if ($this->isAdmin($user)) {
-            return true;
-        }
-
-        // Owner can always view; otherwise public-only
-        return $helperProfile->is_public || $helperProfile->user_id === $user->id;
+        return $this->isAdmin($user);
     }
 
     public function create(User $user): bool
     {
-        return true;
+        return $this->isAdmin($user);
     }
 
-    public function update(User $user, HelperProfile $helperProfile): bool
+    public function update(User $user, Notification $notification): bool
     {
-        return $this->isAdmin($user) || $helperProfile->user_id === $user->id;
+        return $this->isAdmin($user);
     }
 
-    public function delete(User $user, HelperProfile $helperProfile): bool
+    public function delete(User $user, Notification $notification): bool
     {
-        return $this->isAdmin($user) || $helperProfile->user_id === $user->id;
+        return $this->isAdmin($user);
     }
 
-    // Admin-only for bulk/advanced actions
     public function deleteAny(User $user): bool
     {
         return $this->isAdmin($user);
     }
 
-    public function forceDelete(User $user, HelperProfile $helperProfile): bool
+    public function forceDelete(User $user, Notification $notification): bool
     {
         return $this->isAdmin($user);
     }
@@ -61,7 +55,7 @@ class HelperProfilePolicy
         return $this->isAdmin($user);
     }
 
-    public function restore(User $user, HelperProfile $helperProfile): bool
+    public function restore(User $user, Notification $notification): bool
     {
         return $this->isAdmin($user);
     }
@@ -71,7 +65,7 @@ class HelperProfilePolicy
         return $this->isAdmin($user);
     }
 
-    public function replicate(User $user, HelperProfile $helperProfile): bool
+    public function replicate(User $user, Notification $notification): bool
     {
         return $this->isAdmin($user);
     }

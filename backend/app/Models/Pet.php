@@ -84,8 +84,6 @@ class Pet extends Model implements HasMedia
         return $this->belongsTo(User::class);
     }
 
-
-
     /**
      * Get photo URL attribute - returns URL from MediaLibrary.
      */
@@ -191,22 +189,17 @@ class Pet extends Model implements HasMedia
     {
         $this->addMediaConversion('thumb')
             ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256)
-            ->nonQueued()
             ->performOnCollections('photos');
 
         $this->addMediaConversion('medium')
             ->width(1024)
             ->height(1024)
-            ->keepOriginalImageFormat()
-            ->nonQueued()
             ->performOnCollections('photos');
 
         $this->addMediaConversion('webp')
             ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256)
             ->format('webp')
-            ->nonQueued()
             ->performOnCollections('photos');
-
 
     }
 }

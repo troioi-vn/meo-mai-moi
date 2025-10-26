@@ -24,7 +24,7 @@ export function ImpersonationIndicator() {
   const { data: status } = useQuery<ImpersonationStatus>({
     queryKey: ['impersonation-status'],
     queryFn: async () => {
-      const response = await api.get('/impersonation/status')
+      const response = await api.get<ImpersonationStatus>('/impersonation/status')
       return response.data
     },
     refetchInterval: 30000, // Check every 30 seconds
@@ -35,8 +35,8 @@ export function ImpersonationIndicator() {
       await api.post('/impersonation/leave')
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['impersonation-status'] })
-      queryClient.invalidateQueries({ queryKey: ['users', 'me'] })
+      void queryClient.invalidateQueries({ queryKey: ['impersonation-status'] })
+      void queryClient.invalidateQueries({ queryKey: ['users', 'me'] })
       toast.success('Impersonation ended')
       // Reload the page to refresh all user-specific data
       window.location.reload()
@@ -57,11 +57,11 @@ export function ImpersonationIndicator() {
         <span className="text-sm font-medium hidden md:inline">
           Impersonating{' '}
           <span className="font-semibold">
-            {status.impersonated_user?.name || 'User'}
+            {status.impersonated_user?.name ?? 'User'}
           </span>
         </span>
         <span className="text-sm font-medium md:hidden">
-          {status.impersonated_user?.name || 'User'}
+          {status.impersonated_user?.name ?? 'User'}
         </span>
       </div>
       
@@ -83,7 +83,7 @@ export function ImpersonationIndicator() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => leaveMutation.mutate()}
+          onClick={() => { leaveMutation.mutate(); }}
           disabled={leaveMutation.isPending}
           className="h-8 px-2 text-xs border-yellow-300 text-yellow-700 hover:bg-yellow-50"
         >

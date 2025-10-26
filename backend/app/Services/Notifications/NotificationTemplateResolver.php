@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 class NotificationTemplateResolver
 {
     public function __construct(
-        private NotificationLocaleResolver $localeResolver = new NotificationLocaleResolver()
+        private NotificationLocaleResolver $localeResolver = new NotificationLocaleResolver
     ) {}
 
     /**

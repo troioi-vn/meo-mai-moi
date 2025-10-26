@@ -14,6 +14,12 @@ class NotificationEmailChannel
     public function send($notifiable, LaravelNotification $notification)
     {
         // Get the notification data from the notification class
+        if (! method_exists($notification, 'toNotificationEmail')) {
+            // This notification is not designed for the notification_email channel.
+            // You can log an error here if you want.
+            // For example: \Log::error('Notification of class '.get_class($notification).' is not emailable.');
+            return;
+        }
         $notificationData = $notification->toNotificationEmail($notifiable);
 
         // Clean the data to avoid storing complex objects that cause admin panel issues

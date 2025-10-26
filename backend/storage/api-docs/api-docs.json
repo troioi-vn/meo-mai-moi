@@ -111,6 +111,58 @@
                 }
             }
         },
+        "/api/check-email": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Check if email exists",
+                "description": "Check if an email address is registered in the system.",
+                "operationId": "ff64cff5e21b2a67efda6e48a362b304",
+                "requestBody": {
+                    "description": "Email to check",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Email check result",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "exists": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
         "/api/login": {
             "post": {
                 "tags": [

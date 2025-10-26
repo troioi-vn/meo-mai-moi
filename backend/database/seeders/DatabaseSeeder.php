@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Pet;
-
 use App\Models\PetType;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;

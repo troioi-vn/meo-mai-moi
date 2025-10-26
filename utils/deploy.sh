@@ -1,6 +1,39 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# --- Configuration ---
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+ENV_FILE="$PROJECT_ROOT/backend/.env.docker"
+ENV_EXAMPLE="$PROJECT_ROOT/backend/.env.docker.example"
+DEPLOY_LOG="$PROJECT_ROOT/.deploy.log"
+
+# Start logging
+exec > >(tee -a "$DEPLOY_LOG") 2>&1
+echo "=========================================="
+echo "Deployment started at $(date)"
+echo "=========================================="
+
+# Ensure .env.docker exists before proceeding
+if [ ! -f "$ENV_FILE" ] && [ -f "$ENV_EXAMPLE" ]; then
+    echo "ℹ️  'backend/.env.docker' not found. Copying from example..."
+    cp "$ENV_EXAMPLE" "$ENV_FILE"
+fi
+
+# Validate required tools
+for cmd in docker psql; do
+    if ! command -v "$cmd" &> /dev/null; then
+        echo "✗ Required command '$cmd' not found. Please install it first." >&2
+        exit 1
+    fi
+done
+
+# Trap errors for better debugging
+trap 'echo "✗ Deployment failed at line $LINENO. Check $DEPLOY_LOG for details." >&2' ERR
+
+# --- Helper Functions ---
+
+# Function to print help message
 print_help() {
     cat <<'EOF'
 Usage: ./utils/deploy.sh [--fresh] [--seed] [--no-cache] [--no-interactive]
@@ -32,6 +65,67 @@ IMPORTANT: Data Preservation
 EOF
 }
 
+# Function to get database stats (table and row counts)
+get_db_stats() {
+    local env_file="${1:-backend/.env.docker}"
+    
+    if [ ! -f "$env_file" ]; then
+        echo "0 0"
+        return
+    fi
+
+    (
+        set -o allexport
+        # shellcheck source=/dev/null
+        source "$env_file"
+        set +o allexport
+        export PGPASSWORD="$DB_PASSWORD"
+
+        if ! pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME" -d "$DB_DATABASE" -q 2>/dev/null; then
+            echo "0 0"
+            return
+        fi
+
+        local table_count
+        table_count=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME" -d "$DB_DATABASE" -t -c \
+            "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';" 2>/dev/null | xargs || echo "0")
+
+        if [ "$table_count" -gt 0 ]; then
+            local row_count
+            row_count=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME" -d "$DB_DATABASE" -t -c \
+                "SELECT SUM((xpath('/row/c/text()', query_to_xml(format('select count(*) as c from %I.%I', table_schema, table_name), false, true, '')))[1]::text::bigint)
+                 FROM information_schema.tables WHERE table_schema = 'public';" 2>/dev/null | xargs || echo "0")
+            echo "$table_count ${row_count:-0}"
+        else
+            echo "0 0"
+        fi
+    )
+}
+
+# Function to check database connectivity
+check_db_connection() {
+    local env_file="${1:-backend/.env.docker}"
+    
+    if [ ! -f "$env_file" ]; then
+        return 1
+    fi
+
+    (
+        set -o allexport
+        # shellcheck source=/dev/null
+        source "$env_file"
+        set +o allexport
+        export PGPASSWORD="$DB_PASSWORD"
+        
+        pg_isready -h "${DB_HOST:-127.0.0.1}" -p "${DB_PORT:-5432}" \
+                   -U "${DB_USERNAME:-user}" -d "${DB_DATABASE:-meo_mai_moi}" -q 2>/dev/null
+    )
+}
+
+
+# --- Main Script ---
+
+# Parse command-line arguments
 MIGRATE_COMMAND="migrate"
 SEED="false"
 NO_CACHE="false"
@@ -65,130 +159,167 @@ for arg in "$@"; do
     esac
 done
 
+# --- Pre-deployment Checks and Stats ---
+BEFORE_TABLE_COUNT=0
+BEFORE_ROW_COUNT=0
+
+# Only check DB stats if we're doing a normal deploy (not fresh, not seeding)
+if [ "$FRESH" = "false" ]; then
+    echo "Checking database status..."
+    
+    if ! check_db_connection "$ENV_FILE"; then
+        echo "⚠️  Database connection failed."
+        if [ "$NO_INTERACTIVE" = "false" ]; then
+            read -r -p "Would you like to start the database container? (Y/n): " start_db
+            if [[ ! "$start_db" =~ ^[nN]([oO])?$ ]]; then
+                echo "Starting database container..."
+                docker compose up -d db
+                sleep 5
+                
+                if ! check_db_connection "$ENV_FILE"; then
+                    echo "✗ Database is still not reachable. Continuing anyway..." >&2
+                fi
+            fi
+        fi
+    fi
+    
+    # Get current DB stats for comparison
+    read -r BEFORE_TABLE_COUNT BEFORE_ROW_COUNT < <(get_db_stats "$ENV_FILE")
+    
+    if [ "$BEFORE_TABLE_COUNT" -gt 0 ]; then
+        echo "📊 Database status: $BEFORE_TABLE_COUNT tables, $BEFORE_ROW_COUNT total rows"
+        
+        # Offer backup for non-empty databases
+        if [ "$NO_INTERACTIVE" = "false" ]; then
+            read -r -p "Would you like to backup the database first? (y/N): " do_backup
+            if [[ "$do_backup" =~ ^[yY]([eE][sS])?$ ]]; then
+                echo "Creating backup..."
+                if [ -f "$SCRIPT_DIR/backup.sh" ]; then
+                    "$SCRIPT_DIR/backup.sh"
+                    echo "✓ Backup complete"
+                else
+                    echo "⚠️  Backup script not found at $SCRIPT_DIR/backup.sh"
+                fi
+            fi
+        fi
+    else
+        echo "📊 Database is empty (fresh install)"
+    fi
+fi
+
+# --- Container Management ---
 if [ "$FRESH" = "true" ]; then
-    echo "⚠️  FRESH deploy requested: stopping and removing containers and volumes..."
-    echo "⚠️  WARNING: All database data and volumes will be DELETED"
+    echo ""
+    echo "⚠️  FRESH deployment: All data and volumes will be DELETED"
     
     if [ "$NO_INTERACTIVE" = "false" ]; then
-        echo ""
-        read -p "Are you sure you want to DELETE all database data and volumes? (yes/no): " confirmation
+        read -r -p "Type 'yes' to confirm deletion of all data: " confirmation
         if [ "$confirmation" != "yes" ]; then
-            echo "❌ Deployment cancelled."
+            echo "❌ Deployment cancelled"
             exit 1
         fi
     fi
     
-    # Best-effort stop; ignore errors if not running
-    docker compose down -v || true
+    echo "Removing containers and volumes..."
+    docker compose down -v --remove-orphans || {
+        echo "⚠️  docker compose down returned non-zero (containers may not have been running)"
+    }
+    echo "✓ Cleanup complete"
 else
-    echo "ℹ️  Normal deploy (data preservation mode)"
-    echo "ℹ️  Existing database data will be PRESERVED"
-    echo "ℹ️  Only new migrations will be applied"
-    # Do NOT call docker compose down - keep containers alive to preserve database
-    # Just stop the services
-    docker compose stop || true
+    echo ""
+    echo "ℹ️  Standard deployment (data preservation mode)"
+    echo "Stopping containers..."
+    docker compose stop 2>/dev/null || true
 fi
 
 echo ""
-echo "Building and starting Docker containers..."
+echo "Building and starting containers..."
+BUILD_ARGS=()
 if [ "$NO_CACHE" = "true" ]; then
+    echo "Building without cache..."
     docker compose build --no-cache
-    docker compose up -d
+    BUILD_ARGS+=(-d)
 else
-    docker compose up -d --build
+    BUILD_ARGS+=(--build -d)
 fi
 
-echo "Waiting for backend container to be ready..."
+docker compose up "${BUILD_ARGS[@]}"
+
+# --- Wait for Backend Health ---
+echo "Waiting for backend to become healthy..."
 WAIT_TIMEOUT=300
 WAIT_INTERVAL=5
-time_spent=0
-while [ "$time_spent" -lt "$WAIT_TIMEOUT" ]; do
-    status_line=$(docker compose ps backend 2>/dev/null || true)
-    if echo "$status_line" | grep -q '(healthy)'; then
-        echo "✓ Backend container is healthy."
+elapsed=0
+
+while [ "$elapsed" -lt "$WAIT_TIMEOUT" ]; do
+    if docker compose ps backend 2>/dev/null | grep -q '(healthy)'; then
+        echo "✓ Backend is healthy"
         break
     fi
-    echo "  Backend container not healthy yet, waiting... ($time_spent/$WAIT_TIMEOUT seconds)"
+    
+    printf "⏳ Waiting... (%d/%ds)\r" "$elapsed" "$WAIT_TIMEOUT"
     sleep "$WAIT_INTERVAL"
-    time_spent=$((time_spent + WAIT_INTERVAL))
+    elapsed=$((elapsed + WAIT_INTERVAL))
 done
 
-if [ "$time_spent" -ge "$WAIT_TIMEOUT" ]; then
-    echo "✗ Timed out waiting for backend container to become healthy." >&2
-    docker compose logs backend || true
+if [ "$elapsed" -ge "$WAIT_TIMEOUT" ]; then
+    echo ""
+    echo "✗ Backend failed to become healthy within ${WAIT_TIMEOUT}s" >&2
+    echo "Recent logs:" >&2
+    docker compose logs --tail=20 backend >&2
     exit 1
 fi
+echo ""
 
 echo ""
 echo "Running database $MIGRATE_COMMAND..."
+# NOTE: Migrations are intentionally run HERE (not in container entrypoint) to:
+# 1. Prevent race conditions when multiple containers start
+# 2. Allow explicit control and verification of schema changes
+# 3. Enable pre-migration checks (backups, data verification)
+# 4. Support zero-downtime deployments with controlled migration timing
 docker compose exec backend php artisan "$MIGRATE_COMMAND" --force
 
-# Check if we need to seed (if PetType records are missing, seed required data)
+# --- Seeding Strategy ---
 if [ "$MIGRATE_COMMAND" = "migrate:fresh" ]; then
-    # Always seed after migrate:fresh
+    # Always seed after migrate:fresh to ensure all required data exists
     echo "Seeding database after fresh migration..."
     docker compose exec backend php artisan db:seed --force
+    echo "✓ Database seeded successfully"
 elif [ "$SEED" = "true" ]; then
+    # Explicit --seed flag: run full seeder
     echo "Seeding database..."
     docker compose exec backend php artisan db:seed --force
-else
-    # Check if essential seed data exists
-    PET_TYPE_COUNT=$(docker compose exec -T db psql -U user -d meo_mai_moi -c "SELECT COUNT(*) FROM pet_types;" 2>/dev/null | grep -oE '^[[:space:]]*[0-9]+' | tr -d ' ' || echo "0")
-    EMAIL_CONFIG_COUNT=$(docker compose exec -T db psql -U user -d meo_mai_moi -c "SELECT COUNT(*) FROM email_configurations;" 2>/dev/null | grep -oE '^[[:space:]]*[0-9]+' | tr -d ' ' || echo "0")
-    
-    if [ "$PET_TYPE_COUNT" = "0" ]; then
-        echo "⚠️  Database is missing required seed data (pet types)."
-        echo "⚠️  Running PetTypeSeeder..."
-        docker compose exec backend php artisan db:seed --class=PetTypeSeeder --force
-    fi
-    
-    if [ "$EMAIL_CONFIG_COUNT" = "0" ]; then
-        echo "⚠️  Database is missing email configurations."
-        echo "⚠️  Running EmailConfigurationSeeder..."
-        docker compose exec backend php artisan db:seed --class=EmailConfigurationSeeder --force
-    fi
+    echo "✓ Database seeded successfully"
 fi
 
-echo "Verifying admin authentication..."
-docker compose exec backend php artisan tinker --execute="
-\$user = App\Models\User::where('email', 'admin@catarchy.space')->first();
-if (!\$user) {
-    echo 'FIXING: Admin user missing, running minimal seeders...';
-    // Only run essential seeders to create admin user
-    Artisan::call('db:seed', ['--class' => 'RolesAndPermissionsSeeder', '--force' => true]);
-    
-    // Create admin user directly without running full UserSeeder
-    \$superAdminRole = Spatie\Permission\Models\Role::where('name', 'super_admin')->first();
-    \$admin = App\Models\User::firstOrCreate(
-        ['email' => 'admin@catarchy.space'],
-        [
-            'name' => 'Super Admin',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-        ]
-    );
-    if (\$superAdminRole) {
-        \$admin->assignRole(\$superAdminRole);
-    }
-    echo 'Admin user created successfully';
-} elseif (!Hash::check('password', \$user->password)) {
-    echo 'FIXING: Admin password corrupted, resetting...';
-    \$user->password = Hash::make('password');
-    \$user->save();
-    echo 'Admin password reset successfully';
-} else {
-    echo 'Admin authentication verified';
-}
-"
-
+# --- Post-Migration Setup ---
 echo ""
 echo "Generating Filament Shield resources..."
-docker compose exec backend php artisan shield:generate --all --panel=admin
+docker compose exec backend php artisan shield:generate --all --panel=admin --minimal
+
+echo "Optimizing application..."
+docker compose exec backend php artisan optimize
+
+# --- Post-deployment Summary ---
+if [ "$BEFORE_TABLE_COUNT" -gt 0 ]; then
+    read -r AFTER_TABLE_COUNT AFTER_ROW_COUNT < <(get_db_stats "$ENV_FILE")
+    
+    echo ""
+    echo "📊 Database Summary:"
+    echo "   Before: $BEFORE_TABLE_COUNT tables, $BEFORE_ROW_COUNT rows"
+    echo "   After:  $AFTER_TABLE_COUNT tables, $AFTER_ROW_COUNT rows"
+    
+    if [ "$BEFORE_TABLE_COUNT" -eq "$AFTER_TABLE_COUNT" ] && \
+       [ "$BEFORE_ROW_COUNT" -eq "$AFTER_ROW_COUNT" ]; then
+        echo "   Status: ✓ No data changes"
+    else
+        echo "   Status: ℹ️  Data modified during deployment"
+    fi
+fi
 
 echo ""
 echo "✓ Deployment complete!"
-if [ "$FRESH" = "false" ]; then
-    echo "✓ Database data has been preserved"
-fi
-
-echo "Deployment script finished successfully!"
+[ "$FRESH" = "false" ] && echo "✓ Existing data preserved"
+echo ""
+echo "📝 Full deployment log: $DEPLOY_LOG"

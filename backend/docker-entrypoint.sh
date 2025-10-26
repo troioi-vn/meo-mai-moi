@@ -85,12 +85,17 @@ if [ -n "$APP_KEY_FROM_DOTENV" ] && [ "$APP_KEY_FROM_DOTENV" != "$APP_KEY_FROM_E
     echo "Exported APP_KEY from .env for runtime."
 fi
 
-if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
+# --- MIGRATION CONTROL ---
+# By default, migrations are DISABLED in the entrypoint (RUN_MIGRATIONS=false).
+# This prevents race conditions when multiple containers start simultaneously
+# or when containers restart. Migrations should be run explicitly via deploy.sh
+# after the container is healthy. Set RUN_MIGRATIONS=true only for dev/testing.
+if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
     echo "[Step 5] Running Migrations..."
     su -s /bin/sh -c "php artisan migrate --force" www-data
     echo "Migrations executed."
 else
-    echo "[Step 5] Skipped migrations (RUN_MIGRATIONS=false)."
+    echo "[Step 5] Skipped migrations (RUN_MIGRATIONS=false - migrations should be run via deploy.sh)."
 fi
 
 echo "[Step 6] Linking storage..."

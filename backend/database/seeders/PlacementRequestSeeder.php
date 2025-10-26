@@ -17,11 +17,11 @@ class PlacementRequestSeeder extends Seeder
     {
         // Get any regular user (not admin or super admin)
         $user = User::whereNotIn('email', ['admin@catarchy.space', 'user1@catarchy.space'])->first();
-        
+
         if ($user) {
             // Use one of the user's existing pets
             $pet = Pet::where('user_id', $user->id)->first();
-            
+
             if ($pet) {
                 PlacementRequest::create([
                     'user_id' => $user->id,

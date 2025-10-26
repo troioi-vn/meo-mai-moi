@@ -17,7 +17,6 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
-            \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
 
@@ -59,9 +58,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        // Always render JSON for API routes
+        // Render JSON for API routes AND for requests expecting JSON (includes Fortify routes)
         $exceptions->shouldRenderJsonWhen(function (Request $request, Throwable $e) {
-            return $request->is('api/*');
+            return $request->is('api/*') || $request->expectsJson();
         });
 
         // Ensure API requests return 401 JSON instead of redirecting to a non-existent login route

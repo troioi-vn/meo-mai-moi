@@ -13,9 +13,10 @@ class ReviewSeeder extends Seeder
     {
         // Use existing users for reviews
         $users = \App\Models\User::all();
-        
+
         if ($users->count() < 2) {
             $this->command->info('Not enough users to create reviews');
+
             return;
         }
 

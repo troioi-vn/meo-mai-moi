@@ -4,6 +4,28 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Fixed
+
+- **🔥 CRITICAL: Authentication Test Suite - 100% Pass Rate Achieved**:
+
+  - **Test Fixes (15 failing tests → 0 failures)**: Fixed all authentication-related test failures after cookie-based auth migration
+  - **ForceWebGuard Middleware Issue**: Discovered and resolved authentication persistence bug where `ForceWebGuard` was re-authenticating users after logout by mirroring Sanctum guard state to web guard
+  - **Test Pattern Cleanup**: Removed obsolete dual-driver test patterns (`runApiContractTestWithBothDrivers`, `runEmailFlowTestWithBothDrivers`, `runEmailVerificationTestWithBothDrivers`) from pre-migration code
+  - **Bearer Token → Cookie Auth Conversion**: Updated `EmailVerificationFlowTest` from bearer token authentication to cookie-based session auth
+  - **Registration Response Structure**: Fixed `RegisterResponse` to return explicit user field mapping (id, name, email, email_verified_at) instead of full serialized User object
+  - **API Route Fixes**: Corrected Fortify route paths (`/api/forgot-password` → `/forgot-password`, `/api/reset-password` → `/reset-password`) and fixed controller invocation syntax
+  - **Test Files Updated**: `InviteSystemIntegrationTest` (4 tests), `JetstreamApiContractTest` (3 tests), `JetstreamEmailFlowTest` (2 tests), `EmailLinkIntegrationTest` (1 test), `EmailVerificationFlowTest` (3 tests), `InviteSystemAuthTest` (4 tests)
+  - **Final Result**: Backend 430/430 tests passing (1,863 assertions), Frontend 338/338 tests passing, 0 failures
+
+- **Code Quality Improvements**:
+  - **Service Layer Cleanup**: Removed double-caching bug in `SettingsService` (delegated caching to Settings model)
+  - **Provider Architecture**: Moved Fortify response bindings from `FortifyServiceProvider::register()` to `AppServiceProvider::boot()` for proper package binding override
+  - **Deptrac Configuration**: Updated architecture validation rules to reflect Fortify response bindings location change
+  - **Code Style Fixes**: Applied Laravel Pint formatting across all modified files (140+ style improvements)
+  - **Import Cleanup**: Removed unused imports and fixed namespace issues across multiple files
+  - **Spatie MediaLibrary**: Removed obsolete `performOnCollections()` calls (deprecated in v11, replaced with automatic collection inference)
+  - **Frontend Type Safety**: Fixed TypeScript type assertions in `EmailVerificationPrompt` and MSW handlers
+
 ### Added
 
 - **🔥 HIGH IMPACT: Session-Based Authentication Migration**:

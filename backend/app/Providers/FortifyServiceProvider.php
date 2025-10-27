@@ -21,12 +21,7 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Bind custom responses for SPA cookie-based authentication
-        $this->app->singleton(\Laravel\Fortify\Contracts\LoginResponse::class, \App\Http\Responses\Auth\LoginResponse::class);
-        $this->app->singleton(\Laravel\Fortify\Contracts\RegisterResponse::class, \App\Http\Responses\Auth\RegisterResponse::class);
-        $this->app->singleton(\Laravel\Fortify\Contracts\LogoutResponse::class, \App\Http\Responses\Auth\LogoutResponse::class);
-        $this->app->singleton(\Laravel\Fortify\Contracts\PasswordResetResponse::class, \App\Http\Responses\Auth\PasswordResetResponse::class);
-        $this->app->singleton(\Laravel\Fortify\Contracts\SuccessfulPasswordResetLinkRequestResponse::class, \App\Http\Responses\Auth\SuccessfulPasswordResetLinkRequestResponse::class);
+        // Response bindings moved to AppServiceProvider::boot()
     }
 
     /**
@@ -81,4 +76,3 @@ class FortifyServiceProvider extends ServiceProvider
         });
     }
 }
-

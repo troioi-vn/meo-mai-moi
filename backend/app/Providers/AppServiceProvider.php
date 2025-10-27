@@ -26,6 +26,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Override Fortify response classes for cookie-based SPA authentication
+        // Must be done in boot() to override package bindings
+        $this->app->bind(\Laravel\Fortify\Contracts\LoginResponse::class, \App\Http\Responses\Auth\LoginResponse::class);
+        $this->app->bind(\Laravel\Fortify\Contracts\RegisterResponse::class, \App\Http\Responses\Auth\RegisterResponse::class);
+        $this->app->bind(\Laravel\Fortify\Contracts\LogoutResponse::class, \App\Http\Responses\Auth\LogoutResponse::class);
+        $this->app->bind(\Laravel\Fortify\Contracts\PasswordResetResponse::class, \App\Http\Responses\Auth\PasswordResetResponse::class);
+        $this->app->bind(\Laravel\Fortify\Contracts\SuccessfulPasswordResetLinkRequestResponse::class, \App\Http\Responses\Auth\SuccessfulPasswordResetLinkRequestResponse::class);
+
         Event::listen(
             HelperProfileStatusUpdated::class,
             CreateHelperProfileNotification::class

@@ -7,8 +7,6 @@ use App\Http\Responses\Auth\LoginResponse;
 use App\Http\Responses\Auth\LogoutResponse;
 use App\Http\Responses\Auth\RegisterResponse;
 use App\Models\User;
-use App\Services\InvitationService;
-use App\Services\SettingsService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,8 +16,6 @@ use Illuminate\Validation\ValidationException;
 class AuthController extends Controller
 {
     use ApiResponseTrait;
-
-
 
     // Legacy custom auth removed; this controller now delegates to Fortify/Jetstream flows exclusively.
 

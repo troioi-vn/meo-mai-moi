@@ -16,6 +16,7 @@ Route::get('/login', function () {
     if (app()->environment('testing')) {
         return response('Login (SPA testing stub)', 200);
     }
+
     return redirect(frontend_url().'/login');
 })->name('login');
 
@@ -23,6 +24,7 @@ Route::get('/register', function () {
     if (app()->environment('testing')) {
         return response('Register (SPA testing stub)', 200);
     }
+
     return redirect(frontend_url().'/register');
 });
 
@@ -30,6 +32,7 @@ Route::get('/email/verify', function () {
     if (app()->environment('testing')) {
         return response('Email Verify (SPA testing stub)', 200);
     }
+
     return redirect(frontend_url().'/verify-email');
 });
 
@@ -37,6 +40,7 @@ Route::get('/forgot-password', function () {
     if (app()->environment('testing')) {
         return response('Forgot Password (SPA testing stub)', 200);
     }
+
     return redirect(frontend_url().'/forgot-password');
 });
 
@@ -44,6 +48,7 @@ Route::get('/user/confirm-password', function () {
     if (app()->environment('testing')) {
         return response('Confirm Password (SPA testing stub)', 200);
     }
+
     return redirect(frontend_url().'/confirm-password');
 });
 

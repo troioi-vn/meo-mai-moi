@@ -173,17 +173,14 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
     public function registerMediaConversions(?Media $media = null): void
     {
         $this->addMediaConversion('avatar_thumb')
-            ->fit(\Spatie\Image\Enums\Fit::Crop, 128, 128)
-            ->performOnCollections('avatar');
+            ->fit(\Spatie\Image\Enums\Fit::Crop, 128, 128);
 
         $this->addMediaConversion('avatar_256')
-            ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256)
-            ->performOnCollections('avatar');
+            ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256);
 
         $this->addMediaConversion('avatar_webp')
             ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256)
-            ->format('webp')
-            ->performOnCollections('avatar');
+            ->format('webp');
 
     }
 

@@ -61,7 +61,7 @@ class PasswordResetMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            to: $this->user->email,
+            to: [$this->user->email],
             subject: 'Reset Your Password - '.config('app.name'),
         );
     }

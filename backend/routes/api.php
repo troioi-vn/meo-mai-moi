@@ -42,11 +42,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
 // POST /forgot-password and POST /reset-password
 // We add API-prefixed aliases for compatibility with existing tests
 Route::post('/password/email', function (\Illuminate\Http\Request $request) {
-    return app(\Laravel\Fortify\Http\Controllers\PasswordResetLinkController::class)($request);
+    return app(\Laravel\Fortify\Http\Controllers\PasswordResetLinkController::class)->store($request);
 });
 
 Route::post('/password/reset', function (\Illuminate\Http\Request $request) {
-    return app(\Laravel\Fortify\Http\Controllers\NewPasswordController::class)($request);
+    return app(\Laravel\Fortify\Http\Controllers\NewPasswordController::class)->store($request);
 });
 
 // Token validation endpoint for the frontend

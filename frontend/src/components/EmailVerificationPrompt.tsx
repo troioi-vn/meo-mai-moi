@@ -39,8 +39,8 @@ export default function EmailVerificationPrompt({
       setResendMessage(data.data.message)
       setLastResendSuccess(data.data.email_sent)
     } catch (error) {
-      if (error instanceof AxiosError && error.response?.data?.message) {
-        setResendError((error as AxiosError<{ message: string }>).response.data.message)
+      if (error instanceof AxiosError && error.response?.data && typeof error.response.data.message === 'string') {
+        setResendError(error.response.data.message)
       } else {
         setResendError('Failed to resend verification email')
       }

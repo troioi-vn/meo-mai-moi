@@ -65,8 +65,6 @@ class EnsureEmailIsVerified
                     'email_verified' => false,
                 ], 403);
             }
-        } else {
-            // If user does not implement MustVerifyEmail, allow through
         }
 
         return $next($request);

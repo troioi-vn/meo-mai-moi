@@ -132,8 +132,8 @@ const userHandlers = [
         data: {
           user: {
             id: Date.now(),
-            name: String(body.name),
-            email: String(body.email),
+            name: typeof body.name === 'string' ? body.name : '',
+            email: typeof body.email === 'string' ? body.email : '',
             email_verified_at: null,
           },
           email_verified: false,

@@ -188,18 +188,15 @@ class Pet extends Model implements HasMedia
     public function registerMediaConversions(?Media $media = null): void
     {
         $this->addMediaConversion('thumb')
-            ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256)
-            ->performOnCollections('photos');
+            ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256);
 
         $this->addMediaConversion('medium')
             ->width(1024)
-            ->height(1024)
-            ->performOnCollections('photos');
+            ->height(1024);
 
         $this->addMediaConversion('webp')
             ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256)
-            ->format('webp')
-            ->performOnCollections('photos');
+            ->format('webp');
 
     }
 }

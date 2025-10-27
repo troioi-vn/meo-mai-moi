@@ -8,6 +8,7 @@ use App\Notifications\InvitationToEmail;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class InvitationService
 {
@@ -43,7 +44,7 @@ class InvitationService
                 InvitationToEmail::sendToEmail($email, $invitation, $inviter);
             } catch (\Exception $e) {
                 // Log the error but don't fail the invitation creation
-                \Log::warning('Failed to send invitation email', [
+                Log::warning('Failed to send invitation email', [
                     'invitation_id' => $invitation->id,
                     'email' => $email,
                     'error' => $e->getMessage(),

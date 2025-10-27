@@ -27,7 +27,7 @@ class NotificationLocaleResolver
         // Normalize
         $candidate = substr((string) $candidate, 0, 5);
 
-        return $candidate ?? 'en';
+        return $candidate ?: 'en';
     }
 
     public function fallbackChain(string $primary): array

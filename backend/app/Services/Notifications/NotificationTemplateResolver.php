@@ -115,7 +115,7 @@ class NotificationTemplateResolver
             // Expect Markdown file under resources/templates/notifications/bell/{locale}/{slug}.md
             $path = resource_path("templates/notifications/bell/{$locale}/{$slug}.md");
             if (is_file($path)) {
-                $body = file_get_contents($path) ?? '';
+                $body = file_get_contents($path) ?: '';
 
                 return [
                     'source' => 'file',
@@ -133,8 +133,4 @@ class NotificationTemplateResolver
         return null;
     }
 
-    private function defaultEngineFor(string $channel): string
-    {
-        return config("notification_templates.channels.{$channel}.engine", 'blade');
-    }
 }

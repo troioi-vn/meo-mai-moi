@@ -43,29 +43,27 @@ class InviteSystemAuthTest extends TestCase
 
     public function test_user_can_register_when_invite_only_is_disabled()
     {
-        $this->runInvitationTestWithBothDrivers(function ($authDriver) {
-            Settings::set('invite_only_enabled', 'false');
+        Settings::set('invite_only_enabled', 'false');
 
-            $response = $this->postJson('/register', [
-                'name' => 'Test User',
-                'email' => "test-{$authDriver}@example.com",
-                'password' => 'password',
-                'password_confirmation' => 'password',
+        $response = $this->postJson('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonStructure([
+                'data' => [
+                    'user' => ['id', 'name', 'email'],
+                    'email_verified',
+                    'requires_verification',
+                ],
             ]);
 
-            $response->assertStatus(201)
-                ->assertJsonStructure([
-                    'data' => [
-                        'user' => ['id', 'name', 'email'],
-                        'email_verified',
-                        'requires_verification',
-                    ],
-                ]);
-
-            $this->assertDatabaseHas('users', [
-                'email' => "test-{$authDriver}@example.com",
-            ]);
-        });
+        $this->assertDatabaseHas('users', [
+            'email' => 'test@example.com',
+        ]);
     }
 
     public function test_user_cannot_register_when_invite_only_is_enabled_without_code()
@@ -91,42 +89,40 @@ class InviteSystemAuthTest extends TestCase
 
     public function test_user_can_register_with_valid_invitation_code()
     {
-        $this->runInvitationTestWithBothDrivers(function ($authDriver) {
-            Settings::set('invite_only_enabled', 'true');
+        Settings::set('invite_only_enabled', 'true');
 
-            $inviter = User::factory()->create();
-            $invitation = Invitation::factory()->create([
-                'inviter_user_id' => $inviter->id,
-                'status' => 'pending',
-                'expires_at' => null,
+        $inviter = User::factory()->create();
+        $invitation = Invitation::factory()->create([
+            'inviter_user_id' => $inviter->id,
+            'status' => 'pending',
+            'expires_at' => null,
+        ]);
+
+        $response = $this->postJson('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'invitation_code' => $invitation->code,
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonStructure([
+                'data' => [
+                    'user' => ['id', 'name', 'email'],
+                    'email_verified',
+                    'requires_verification',
+                ],
             ]);
 
-            $response = $this->postJson('/register', [
-                'name' => 'Test User',
-                'email' => "test-{$authDriver}@example.com",
-                'password' => 'password',
-                'password_confirmation' => 'password',
-                'invitation_code' => $invitation->code,
-            ]);
+        $this->assertDatabaseHas('users', [
+            'email' => 'test@example.com',
+        ]);
 
-            $response->assertStatus(201)
-                ->assertJsonStructure([
-                    'data' => [
-                        'user' => ['id', 'name', 'email'],
-                        'email_verified',
-                        'requires_verification',
-                    ],
-                ]);
-
-            $this->assertDatabaseHas('users', [
-                'email' => "test-{$authDriver}@example.com",
-            ]);
-
-            // Invitation should be marked as accepted
-            $invitation->refresh();
-            $this->assertEquals('accepted', $invitation->status);
-            $this->assertNotNull($invitation->recipient_user_id);
-        });
+        // Invitation should be marked as accepted
+        $invitation->refresh();
+        $this->assertEquals('accepted', $invitation->status);
+        $this->assertNotNull($invitation->recipient_user_id);
     }
 
     public function test_user_cannot_register_with_invalid_invitation_code()
@@ -291,41 +287,49 @@ class InviteSystemAuthTest extends TestCase
         $this->assertEquals('accepted', $invitation->status);
     }
 
-    public function test_registration_works_correctly_when_switching_invite_modes()
+    public function test_registration_allows_users_when_invite_only_is_disabled()
     {
-        // Start with invite-only disabled
         Settings::set('invite_only_enabled', 'false');
 
-        $response1 = $this->postJson('/register', [
+        $response = $this->postJson('/register', [
             'name' => 'User One',
             'email' => 'user1@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);
 
-        $response1->assertStatus(201);
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('users', ['email' => 'user1@example.com']);
+    }
 
-        // Switch to invite-only enabled
+    public function test_registration_requires_invitation_when_invite_only_is_enabled()
+    {
         Settings::set('invite_only_enabled', 'true');
 
-        $response2 = $this->postJson('/register', [
+        $response = $this->postJson('/register', [
             'name' => 'User Two',
             'email' => 'user2@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);
 
-        $response2->assertStatus(422)
+        $response->assertStatus(422)
             ->assertJsonValidationErrors(['invitation_code']);
 
-        // Create valid invitation and try again
+        $this->assertDatabaseMissing('users', ['email' => 'user2@example.com']);
+    }
+
+    public function test_registration_succeeds_with_valid_invitation_when_invite_only_is_enabled()
+    {
+        Settings::set('invite_only_enabled', 'true');
+
         $inviter = User::factory()->create();
         $invitation = Invitation::factory()->create([
             'inviter_user_id' => $inviter->id,
             'status' => 'pending',
         ]);
 
-        $response3 = $this->postJson('/register', [
+        $response = $this->postJson('/register', [
             'name' => 'User Three',
             'email' => 'user3@example.com',
             'password' => 'password',
@@ -333,10 +337,7 @@ class InviteSystemAuthTest extends TestCase
             'invitation_code' => $invitation->code,
         ]);
 
-        $response3->assertStatus(201);
-
-        $this->assertDatabaseHas('users', ['email' => 'user1@example.com']);
-        $this->assertDatabaseMissing('users', ['email' => 'user2@example.com']);
+        $response->assertStatus(201);
         $this->assertDatabaseHas('users', ['email' => 'user3@example.com']);
     }
 

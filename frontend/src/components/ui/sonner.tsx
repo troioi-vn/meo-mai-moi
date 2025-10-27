@@ -7,7 +7,7 @@ import * as SonnerModule from 'sonner'
 import { useTheme } from '@/hooks/use-theme'
 
 // Use the real Toaster if available, otherwise a no-op component
-const SonnerToaster = (SonnerModule as { Toaster: React.ComponentType<unknown> }).Toaster ?? (() => null)
+const SonnerToaster = (SonnerModule as { Toaster?: React.ComponentType<unknown> }).Toaster ?? (() => null)
 
 type ToasterProps = React.ComponentProps<typeof SonnerToaster>
 

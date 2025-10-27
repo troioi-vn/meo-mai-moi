@@ -7,10 +7,6 @@ use Illuminate\Support\Facades\Cache;
 
 class SettingsService
 {
-    private const CACHE_TTL = 3600; // 1 hour
-
-    private const CACHE_PREFIX = 'settings.';
-
     /**
      * Check if invite-only mode is enabled
      */
@@ -74,38 +70,30 @@ class SettingsService
     }
 
     /**
-     * Clear all settings cache
+     * Clear all settings cache (delegates to Settings model)
      */
     public function clearCache(): void
     {
         $keys = ['invite_only_enabled', 'email_verification_required'];
 
         foreach ($keys as $key) {
-            Cache::forget(self::CACHE_PREFIX.$key);
+            Cache::forget("settings.{$key}");
         }
     }
 
     /**
-     * Get a setting value with caching
+     * Get a setting value (Settings model handles caching)
      */
     private function getCachedSetting(string $key, $default = null)
     {
-        $cacheKey = self::CACHE_PREFIX.$key;
-
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($key, $default) {
-            return Settings::get($key, $default);
-        });
+        return Settings::get($key, $default);
     }
 
     /**
-     * Update a setting value and refresh cache
+     * Update a setting value (Settings model handles cache clearing)
      */
     private function updateCachedSetting(string $key, $value): void
     {
         Settings::set($key, $value);
-
-        // Update cache immediately
-        $cacheKey = self::CACHE_PREFIX.$key;
-        Cache::put($cacheKey, $value, self::CACHE_TTL);
     }
 }

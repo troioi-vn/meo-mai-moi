@@ -3,7 +3,6 @@
 namespace App\Http\Responses\Auth;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Laravel\Fortify\Contracts\PasswordResetResponse as PasswordResetResponseContract;
 
 class PasswordResetResponse implements PasswordResetResponseContract
@@ -16,8 +15,8 @@ class PasswordResetResponse implements PasswordResetResponseContract
         // Preserve existing JSON response format
         return response()->json([
             'data' => [
-                'message' => __('Password reset successfully.')
-            ]
+                'message' => __('Password reset successfully.'),
+            ],
         ]);
     }
 }

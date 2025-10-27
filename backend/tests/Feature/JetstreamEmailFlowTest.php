@@ -175,33 +175,26 @@ class JetstreamEmailFlowTest extends TestCase
     {
         Notification::fake();
 
-        $this->runEmailFlowTestWithBothDrivers(function ($authDriver) {
-            // Create user
-            $user = User::factory()->create([
-                'email' => "reset-{$authDriver}@example.com",
-                'password' => Hash::make('old-password'),
-            ]);
+        // Create user
+        $user = User::factory()->create([
+            'email' => 'reset@example.com',
+            'password' => Hash::make('old-password'),
+        ]);
 
-            // Request password reset
-            $response = $this->postJson('/api/forgot-password', [
-                'email' => "reset-{$authDriver}@example.com",
-            ]);
+        // Request password reset
+        $response = $this->postJson('/forgot-password', [
+            'email' => 'reset@example.com',
+        ]);
 
-            $response->assertStatus(200);
-            $response->assertJsonStructure([
-                'data' => [
-                    'message',
-                ],
-            ]);
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data' => [
+                'message',
+            ],
+        ]);
 
-            // Verify notification was sent
-            Notification::assertSentTo($user, \App\Notifications\CustomPasswordReset::class);
-
-            return [
-                'status' => $response->status(),
-                'has_message' => ! empty($response->json('data.message')),
-            ];
-        });
+        // Verify notification was sent
+        Notification::assertSentTo($user, \App\Notifications\CustomPasswordReset::class);
     }
 
     #[Test]
@@ -243,41 +236,33 @@ class JetstreamEmailFlowTest extends TestCase
     #[Test]
     public function password_reset_completion_is_consistent()
     {
-        $this->runEmailFlowTestWithBothDrivers(function ($authDriver) {
-            // Create user
-            $user = User::factory()->create([
-                'email' => "complete-{$authDriver}@example.com",
-                'password' => Hash::make('old-password'),
-            ]);
+        // Create user
+        $user = User::factory()->create([
+            'email' => 'complete@example.com',
+            'password' => Hash::make('old-password'),
+        ]);
 
-            // Generate a password reset token
-            $token = app('auth.password.broker')->createToken($user);
+        // Generate a password reset token
+        $token = app('auth.password.broker')->createToken($user);
 
-            // Reset password
-            $response = $this->postJson('/api/reset-password', [
-                'token' => $token,
-                'email' => $user->email,
-                'password' => 'new-password',
-                'password_confirmation' => 'new-password',
-            ]);
+        // Reset password
+        $response = $this->postJson('/reset-password', [
+            'token' => $token,
+            'email' => $user->email,
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ]);
 
-            $response->assertStatus(200);
-            $response->assertJsonStructure([
-                'data' => [
-                    'message',
-                ],
-            ]);
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data' => [
+                'message',
+            ],
+        ]);
 
-            // Verify password was changed
-            $user->refresh();
-            $this->assertTrue(Hash::check('new-password', $user->password));
-
-            return [
-                'status' => $response->status(),
-                'has_message' => ! empty($response->json('data.message')),
-                'password_changed' => Hash::check('new-password', $user->password),
-            ];
-        });
+        // Verify password was changed
+        $user->refresh();
+        $this->assertTrue(Hash::check('new-password', $user->password));
     }
 
     #[Test]

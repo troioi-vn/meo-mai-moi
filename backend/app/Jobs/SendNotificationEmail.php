@@ -93,27 +93,24 @@ class SendNotificationEmail implements ShouldQueue
             // Validate email configuration before logging/sending, but allow sending without an active record
             $emailService = app(\App\Services\EmailConfigurationService::class);
             if (! $emailService->isEmailEnabled()) {
-                if (app()->environment('testing')) {
-                    // In tests, gracefully skip sending when email isn't configured
-                    Log::warning('Email system not configured; skipping send during tests', [
-                        'notification_id' => $this->notificationId,
-                        'user_id' => $this->user->id,
-                        'type' => $this->type,
-                    ]);
+                // Gracefully skip sending when email isn't configured in any environment
+                Log::warning('Email system not configured; skipping send', [
+                    'notification_id' => $this->notificationId,
+                    'user_id' => $this->user->id,
+                    'type' => $this->type,
+                    'env' => app()->environment(),
+                ]);
 
-                    // Mark notification as failed and create a fallback in-app notification
-                    $notification->update([
-                        'failed_at' => now(),
-                        'failure_reason' => 'Email not configured (skipped in tests)',
-                        'delivered_at' => null,
-                    ]);
+                // Mark notification as failed and create a fallback in-app notification
+                $notification->update([
+                    'failed_at' => now(),
+                    'failure_reason' => 'Email not configured',
+                    'delivered_at' => null,
+                ]);
 
-                    $this->createFallbackNotification(new \RuntimeException('Email not configured (skipped in tests)'));
+                $this->createFallbackNotification(new \RuntimeException('Email not configured'));
 
-                    return;
-                }
-
-                throw new \RuntimeException('Email system is not properly configured');
+                return;
             }
             $activeConfig = $emailService->getActiveConfiguration();
             $activeConfigId = $activeConfig?->id; // may be null in tests
@@ -128,6 +125,26 @@ class SendNotificationEmail implements ShouldQueue
                 'body' => $this->extractEmailBody($mail),
                 'status' => 'pending',
             ]);
+
+            // Attach correlation metadata for Mailgun webhooks
+            try {
+                $emailLogId = $this->emailLog->id;
+                $notificationId = $this->notificationId;
+                $mail->withSymfonyMessage(function ($message) use ($emailLogId, $notificationId) {
+                    $headers = $message->getHeaders();
+                    $variables = json_encode([
+                        'email_log_id' => $emailLogId,
+                        'notification_id' => $notificationId,
+                    ]);
+                    // Mailgun recognizes this header and echoes it back in webhooks
+                    $headers->addTextHeader('X-Mailgun-Variables', $variables);
+                });
+            } catch (\Throwable $e) {
+                Log::warning('Failed to attach Mailgun variables to email', [
+                    'email_log_id' => $this->emailLog?->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
 
             // Send the email
             Mail::to($this->user->email)->send($mail);

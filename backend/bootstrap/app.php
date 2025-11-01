@@ -29,7 +29,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'optional.auth' => OptionalAuth::class,
             'validate.invitation' => \App\Http\Middleware\ValidateInvitationRequest::class,
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
-            'custom.verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
         ]);
 
         // Note: Avoid trusting all proxies by default, which can trigger null IP edge cases
@@ -50,7 +49,6 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Cookie\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
-            \App\Http\Middleware\ForceWebGuard::class,
             \Laravel\Sanctum\Http\Middleware\AuthenticateSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,

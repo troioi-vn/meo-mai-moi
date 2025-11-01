@@ -109,10 +109,7 @@ class CreateNewUser implements CreatesNewUsers
             }
         }
 
-        // Only create a web session for already-verified users
-        if ($user->hasVerifiedEmail()) {
-            Auth::guard(config('fortify.guard', 'web'))->login($user);
-        }
+        // Session login handled by Fortify; do not force login here
 
         return $user;
     }

@@ -22,6 +22,7 @@ use App\Http\Controllers\UnsubscribeController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\VaccinationRecordController;
 use App\Http\Controllers\VersionController;
+use App\Http\Controllers\MailgunWebhookController;
 use App\Http\Controllers\WaitlistController;
 use App\Http\Controllers\WeightHistoryController;
 use Illuminate\Http\Request;
@@ -29,14 +30,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/version', [VersionController::class, 'show']);
 
-// Email verification routes
-// Standard web verification is handled by Fortify. Additionally, expose an API verification endpoint
-// that accepts Sanctum auth to support SPA/token-based verification flows and test environments.
-Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
-        ->middleware(['signed', 'throttle:6,1'])
-        ->name('api.verification.verify');
-});
+// Mailgun Webhook (public, signature-verified)
+Route::post('/webhooks/mailgun', [MailgunWebhookController::class, 'handle']);
+
+// Email verification handled by Fortify web routes; provide API alias for tests / JSON clients
+Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+    ->middleware(['signed', 'throttle:6,1'])
+    ->name('api.verification.verify');
 
 // Password reset routes - Fortify registers these at root level:
 // POST /forgot-password and POST /reset-password
@@ -88,7 +88,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // Auth routes - only checkEmail is custom, rest handled by Fortify
-Route::post('/check-email', [AuthController::class, 'checkEmail']);
+Route::post('/check-email', [AuthController::class, 'checkEmail'])->middleware('throttle:20,1');
 
 // Impersonation routes
 Route::middleware('auth:sanctum')->group(function () {

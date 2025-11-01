@@ -2,10 +2,8 @@
 
 namespace App\Http\Responses\Auth;
 
-use App\Models\User;
 use App\Services\EmailConfigurationService;
 use App\Services\SettingsService;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Laravel\Fortify\Contracts\RegisterResponse as RegisterResponseContract;
 
@@ -32,18 +30,6 @@ class RegisterResponse implements RegisterResponseContract
         /** @var \App\Models\User|null $user */
         $user = $request->user();
 
-        // Fortify should have logged the user in already; if not, attempt a defensive login
-        if (! $user) {
-            $email = $request->input('email');
-            if ($email) {
-                /** @var User|null $found */
-                $found = User::where('email', $email)->first();
-                if ($found) {
-                    Auth::guard(config('fortify.guard', 'web'))->login($found);
-                    $user = $found;
-                }
-            }
-        }
 
         // Check if email verification is required
         $emailVerificationRequired = $this->settingsService->isEmailVerificationRequired();

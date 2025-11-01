@@ -273,17 +273,6 @@ class EmailVerificationController extends Controller
     public function status(Request $request)
     {
         $user = $request->user();
-        $authHeader = $request->header('Authorization');
-        if ($authHeader && preg_match('/Bearer\s+(\d+)\|/i', $authHeader, $m)) {
-            $tokenId = (int) $m[1];
-            $pat = \Laravel\Sanctum\PersonalAccessToken::find($tokenId);
-            if ($pat && $pat->tokenable_type === \App\Models\User::class) {
-                $tokenUser = \App\Models\User::find($pat->tokenable_id);
-                if ($tokenUser) {
-                    $user = $tokenUser;
-                }
-            }
-        }
 
         return $this->sendSuccess([
             'verified' => $user->hasVerifiedEmail(),

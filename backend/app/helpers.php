@@ -6,6 +6,12 @@ if (! function_exists('frontend_url')) {
      */
     function frontend_url(): string
     {
-        return config('app.frontend_url');
+        $url = config('app.frontend_url');
+        if (empty($url)) {
+            $envUrl = env('FRONTEND_URL');
+            $url = empty($envUrl) ? 'http://localhost:5173' : $envUrl;
+        }
+
+        return rtrim($url, '/');
     }
 }

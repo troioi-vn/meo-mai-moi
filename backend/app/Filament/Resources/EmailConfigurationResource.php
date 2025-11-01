@@ -176,6 +176,15 @@ class EmailConfigurationResource extends Resource
                             ->minLength(10)
                             ->maxLength(255),
 
+                        Forms\Components\TextInput::make('config.webhook_signing_key')
+                            ->label('Webhook Signing Key')
+                            ->password()
+                            ->revealable()
+                            ->placeholder('your-mailgun-webhook-signing-key')
+                            ->helperText('Used to verify Mailgun webhooks (from Mailgun dashboard → Webhooks → Signing key).')
+                            ->minLength(10)
+                            ->maxLength(255),
+
                         Forms\Components\TextInput::make('config.endpoint')
                             ->label('API Endpoint (Optional)')
                             ->placeholder('api.mailgun.net')

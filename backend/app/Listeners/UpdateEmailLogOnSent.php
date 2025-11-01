@@ -32,6 +32,27 @@ class UpdateEmailLogOnSent
                 ->first();
 
             if ($emailLog) {
+                // Persist select headers for later correlation (e.g., Message-ID)
+                try {
+                    $headers = $event->message->getHeaders();
+                    $messageId = $headers->get('Message-ID')?->getBodyAsString();
+                    $xMailgunVars = $headers->get('X-Mailgun-Variables')?->getBodyAsString();
+                    $existing = $emailLog->headers ?? [];
+                    if ($messageId) {
+                        $existing['message-id'] = $messageId;
+                    }
+                    if ($xMailgunVars) {
+                        // Store as decoded JSON if possible
+                        $decoded = json_decode($xMailgunVars, true);
+                        $existing['mailgun_user_variables'] = is_array($decoded) ? $decoded : $xMailgunVars;
+                    }
+                    if (! empty($existing)) {
+                        $emailLog->update(['headers' => $existing]);
+                    }
+                } catch (\Throwable $e) {
+                    // Non-fatal
+                }
+
                 $emailLog->markAsSent('Email sent successfully via Laravel Mail system');
 
                 Log::info('EmailLog updated after successful email sending', [

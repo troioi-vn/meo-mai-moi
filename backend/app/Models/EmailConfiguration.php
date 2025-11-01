@@ -165,6 +165,7 @@ class EmailConfiguration extends Model
                         // Preserve or default the scheme to https so Symfony Mailgun transport
                         // uses a secure connection when our dynamic config overrides base config.
                         'scheme' => config('services.mailgun.scheme', 'https'),
+                        'webhook_signing_key' => $config['webhook_signing_key'] ?? config('services.mailgun.webhook_signing_key'),
                     ],
                 ],
                 'from' => [
@@ -186,6 +187,9 @@ class EmailConfiguration extends Model
             $result['domain'] = $config['domain'];
             $result['secret'] = $config['api_key'];
             $result['endpoint'] = $config['endpoint'] ?? 'api.mailgun.net';
+            if (! empty($config['webhook_signing_key'])) {
+                $result['webhook_signing_key'] = $config['webhook_signing_key'];
+            }
         }
 
         return $result;
@@ -335,6 +339,10 @@ class EmailConfiguration extends Model
             if (! preg_match('/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', $config['endpoint'])) {
                 $errors[] = 'Mailgun endpoint must be a valid hostname';
             }
+        }
+
+        if (! empty($config['webhook_signing_key']) && strlen($config['webhook_signing_key']) < 10) {
+            $errors[] = 'Webhook signing key appears to be too short';
         }
 
         return $errors;

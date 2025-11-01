@@ -45,9 +45,10 @@ class EmailConfigurationSeeder extends Seeder
                 'description' => 'Mailgun API configuration for dev.meo-mai-moi.com',
                 'status' => EmailConfigurationStatus::INACTIVE,
                 'config' => [
-                    'domain' => 'dev.meo-mai-moi.com',
-                    'api_key' => 'key-your-mailgun-api-key-here',
-                    'endpoint' => 'api.mailgun.net',
+                    'domain' => env('MAILGUN_DOMAIN', 'dev.meo-mai-moi.com'),
+                    'api_key' => env('MAILGUN_SECRET', 'key-your-mailgun-api-key-here'),
+                    'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
+                    'webhook_signing_key' => env('MAILGUN_WEBHOOK_SIGNING_KEY'),
                     'from_address' => 'mail@meo-mai-moi.com',
                     'from_name' => 'Meo Mai Moi',
                     'test_email_address' => 'pavel@catarchy.space',

@@ -244,7 +244,7 @@ class EmailConfigurationService
                 'name' => 'Mailgun',
                 'description' => 'Send emails using Mailgun API',
                 'required_fields' => ['domain', 'api_key', 'from_address'],
-                'optional_fields' => ['endpoint', 'from_name', 'test_email_address'],
+                'optional_fields' => ['endpoint', 'from_name', 'test_email_address', 'webhook_signing_key'],
             ],
         ];
     }

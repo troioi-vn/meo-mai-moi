@@ -66,6 +66,7 @@ EOF
 }
 
 # Function to get database stats (table and row counts)
+# Note: Uses 127.0.0.1 instead of DB_HOST because this script runs on the host machine
 get_db_stats() {
     local env_file="${1:-backend/.env.docker}"
     
@@ -81,18 +82,19 @@ get_db_stats() {
         set +o allexport
         export PGPASSWORD="$DB_PASSWORD"
 
-        if ! pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME" -d "$DB_DATABASE" -q 2>/dev/null; then
+        # Always use 127.0.0.1 for host checks since the script runs outside Docker
+        if ! pg_isready -h "127.0.0.1" -p "$DB_PORT" -U "$DB_USERNAME" -d "$DB_DATABASE" -q 2>/dev/null; then
             echo "0 0"
             return
         fi
 
         local table_count
-        table_count=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME" -d "$DB_DATABASE" -t -c \
+        table_count=$(psql -h "127.0.0.1" -p "$DB_PORT" -U "$DB_USERNAME" -d "$DB_DATABASE" -t -c \
             "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';" 2>/dev/null | xargs || echo "0")
 
         if [ "$table_count" -gt 0 ]; then
             local row_count
-            row_count=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME" -d "$DB_DATABASE" -t -c \
+            row_count=$(psql -h "127.0.0.1" -p "$DB_PORT" -U "$DB_USERNAME" -d "$DB_DATABASE" -t -c \
                 "SELECT SUM((xpath('/row/c/text()', query_to_xml(format('select count(*) as c from %I.%I', table_schema, table_name), false, true, '')))[1]::text::bigint)
                  FROM information_schema.tables WHERE table_schema = 'public';" 2>/dev/null | xargs || echo "0")
             echo "$table_count ${row_count:-0}"
@@ -103,6 +105,8 @@ get_db_stats() {
 }
 
 # Function to check database connectivity
+# Note: Uses 127.0.0.1 instead of DB_HOST because this script runs on the host machine
+# where Docker container names (like "db") are not resolvable, but the port is exposed to localhost
 check_db_connection() {
     local env_file="${1:-backend/.env.docker}"
     
@@ -117,7 +121,9 @@ check_db_connection() {
         set +o allexport
         export PGPASSWORD="$DB_PASSWORD"
         
-        pg_isready -h "${DB_HOST:-127.0.0.1}" -p "${DB_PORT:-5432}" \
+        # Always use 127.0.0.1 for host checks since the script runs outside Docker
+        # The DB_HOST in .env.docker is "db" (container name) which only works inside Docker network
+        pg_isready -h "127.0.0.1" -p "${DB_PORT:-5432}" \
                    -U "${DB_USERNAME:-user}" -d "${DB_DATABASE:-meo_mai_moi}" -q 2>/dev/null
     )
 }

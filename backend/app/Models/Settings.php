@@ -35,6 +35,8 @@ class Settings extends Model
 
         // Clear cache for this setting
         Cache::forget("settings.{$key}");
+        // Write-through cache so subsequent reads don't hit DB
+        Cache::put("settings.{$key}", $value, 3600);
     }
 
     /**

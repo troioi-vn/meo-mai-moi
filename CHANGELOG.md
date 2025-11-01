@@ -4,6 +4,19 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Fixed (auth/spa)
+
+- Avoid redirect loops on `/login` and `/register`: when `FRONTEND_URL` is same-origin as the backend, serve the SPA index so the React router handles the route; otherwise 302 redirect to the frontend.
+- Password reset web route now consistently redirects to the SPA and builds URLs using `FRONTEND_URL` with a robust fallback to `env('FRONTEND_URL')` (or `http://localhost:5173` in dev).
+- `/api/check-email` consistently returns `{ exists: boolean }` and is throttled+audit-logged.
+
+### Changed
+
+- Fortify registration/login hardening: removed manual session login in `CreateNewUser`; simplified `RegisterResponse` to SPA-friendly JSON only.
+- Verified flow: retained custom `verified` alias to preserve JSON error structure; added lean API verification alias for JSON clients/tests.
+- Email pipeline resilience: `SendNotificationEmail` no longer throws when email isn’t configured; it logs, marks the notification failed, and creates an in-app fallback instead (prevents 500s during registration).
+- Settings cache: `Settings::set()` performs a write-through cache update per key for immediate reads.
+
 ### Fixed
 
 - **🔥 CRITICAL: Authentication Test Suite - 100% Pass Rate Achieved**:

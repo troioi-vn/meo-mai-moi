@@ -65,8 +65,7 @@ Notes:
 
   - For API routes that require verified users, this middleware checks the bearer token or sanctum session user and returns 403 JSON if unverified.
 
-- ForceWebGuard (Web):
-  - Ensures the web guard is consistently used on web routes. If a user is authenticated by Sanctum/token, mirrors to web guard for consistent behavior.
+// ForceWebGuard previously ensured the web guard on web routes; with SPA-only UI and Fortify, it is not required for core flows.
 
 ## Email Verification Behavior
 
@@ -90,3 +89,14 @@ Notes:
 - Tests run against PostgreSQL; SQLite is not supported
 - Email verification tests use the API verify route (api.verification.verify) for stable JSON responses
 - For SPA-style tests, ensure sanctum/csrf-cookie is requested prior to login to establish CSRF state
+
+## Environment and SPA routing
+
+- `FRONTEND_URL` must point to your SPA origin (e.g., `https://app.example.com` or `http://localhost:5173`).
+- `SANCTUM_STATEFUL_DOMAINS` must include the SPA host (no scheme, include port for non-443), e.g., `localhost:5173,localhost` or `app.example.com,app.example.com:443`.
+- `SESSION_DOMAIN` should be the parent domain (e.g., `.example.com`) when sharing cookies across subdomains; set `SESSION_SECURE_COOKIE=true` in HTTPS environments.
+- SPA entry routes:
+  - When `FRONTEND_URL` is same-origin as the backend, GET `/login` and `/register` serve the SPA index so the React router renders those pages.
+  - When `FRONTEND_URL` is different-origin, those paths 302 redirect to the SPA.
+- Password reset web route (`/reset-password/{token}?email=...`) always redirects to `${FRONTEND_URL}/password/reset/...` with a robust fallback to `env('FRONTEND_URL')` (or `http://localhost:5173` in dev).
+- Email pre-check endpoint: `POST /api/check-email` returns `{ exists: boolean }` and is throttled and audit-logged.

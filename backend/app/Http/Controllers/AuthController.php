@@ -142,7 +142,14 @@ class AuthController extends Controller
             'email' => 'required|string|email',
         ]);
 
+        // Compute existence
         $exists = User::where('email', $request->email)->exists();
+
+        // Audit log without leaking existence
+        \Log::info('Auth email pre-check', [
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return response()->json(['data' => ['exists' => $exists]]);
     }

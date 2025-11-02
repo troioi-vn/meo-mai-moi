@@ -4,6 +4,20 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Added
+
+- SPA catch‑all web route: serve the React app for all non‑API/non‑admin paths, preserving path and query. When same‑origin, return `welcome` directly; otherwise, external redirect to `FRONTEND_URL`.
+
+### Fixed
+
+- Email verification flow now completes entirely via the link: user is auto‑logged in and redirected to the SPA at `/account/pets?verified=1` (uses external redirects to the frontend to avoid backend 404s on SPA routes).
+- SPA 404 after verification redirect resolved by the catch‑all route and using `redirect()->away(...)` for verification redirects.
+- Email Logs show a readable plain‑text body for verification emails (includes greeting, link, and expiry) instead of raw HTML. Other emails continue logging rendered HTML.
+
+### Changed
+
+- Removed the “Verify your email” reminder from the bell notifications (filtered out `email_verification` type in notifications API).
+
 ### Fixed (auth/spa)
 
 - Avoid redirect loops on `/login` and `/register`: when `FRONTEND_URL` is same-origin as the backend, serve the SPA index so the React router handles the route; otherwise 302 redirect to the frontend.
@@ -16,6 +30,10 @@ All notable changes to this project are documented here, following the [Keep a C
 - Verified flow: retained custom `verified` alias to preserve JSON error structure; added lean API verification alias for JSON clients/tests.
 - Email pipeline resilience: `SendNotificationEmail` no longer throws when email isn’t configured; it logs, marks the notification failed, and creates an in-app fallback instead (prevents 500s during registration).
 - Settings cache: `Settings::set()` performs a write-through cache update per key for immediate reads.
+- Deployment safety & observability improvements:
+  - `utils/deploy.sh` now supports a quiet mode that still streams long-running Docker and Artisan output, plus pre/post DB snapshots that log total users and the status of the watched admin account.
+  - Added interactive prompts to rebuild core users via `UserSeeder` when the admin account is missing, and automatic logging of the Postgres volume creation timestamp to detect unexpected resets.
+  - Backup prompt restored with resilience fixes; targeted seeder, snapshot, and volume details are captured in both console and `.deploy.log` for easier incident investigation.
 
 ### Fixed
 

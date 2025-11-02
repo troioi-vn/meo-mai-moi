@@ -12,8 +12,12 @@ export default function EmailVerificationPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { loadUser } = useAuth()
+  const { logout } = useAuth()
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [message, setMessage] = useState('')
+  const [isResending, setIsResending] = useState(false)
+  const [resendMessage, setResendMessage] = useState<string | null>(null)
+  const [resendError, setResendError] = useState<string | null>(null)
 
   useEffect(() => {
     const handleVerificationResult = async () => {
@@ -44,10 +48,10 @@ export default function EmailVerificationPage() {
           }, 2000)
         } else if (errorParam === 'invalid_link') {
           setStatus('error')
-          setMessage('Invalid verification link.')
+          setMessage('Your verification link is invalid. You can request a new email below.')
         } else if (errorParam === 'expired_link') {
           setStatus('error')
-          setMessage('Invalid or expired verification link.')
+          setMessage('Your verification link has expired. You can request a new email below.')
         }
         return
       }
@@ -55,7 +59,7 @@ export default function EmailVerificationPage() {
       // Fallback: Handle old-style API verification (for backward compatibility)
       if (!id || !hash) {
         setStatus('error')
-        setMessage('Invalid verification link.')
+        setMessage('Your verification link is invalid. You can request a new email below.')
         return
       }
 
@@ -91,7 +95,7 @@ export default function EmailVerificationPage() {
           if (axiosError.response?.status === 400) {
             setMessage('Email address already verified.')
           } else if (axiosError.response?.status === 403) {
-            setMessage('Invalid or expired verification link.')
+            setMessage('Your verification link is invalid or expired. You can request a new email below.')
           } else {
             setMessage('Failed to verify email. Please try again.')
           }
@@ -108,8 +112,28 @@ export default function EmailVerificationPage() {
     void navigate('/account/pets')
   }
 
-  const handleGoToLogin = () => {
-    void navigate('/login')
+  const handleResendEmail = async () => {
+    setIsResending(true)
+    setResendMessage(null)
+    setResendError(null)
+    try {
+      const { data } = await api.post<{ data: { message: string; email_sent: boolean } }>(
+        '/email/verification-notification'
+      )
+      setResendMessage(data.data.message)
+    } catch (e) {
+      setResendError('Failed to resend verification email')
+    } finally {
+      setIsResending(false)
+    }
+  }
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } finally {
+      void navigate('/login')
+    }
   }
 
   return (
@@ -160,11 +184,21 @@ export default function EmailVerificationPage() {
 
           {status === 'error' && (
             <div className="space-y-2">
-              <Button onClick={handleGoToLogin} className="w-full">
-                Go to Login
+              {resendMessage && (
+                <Alert className="border-blue-200 bg-blue-50">
+                  <AlertDescription className="text-blue-800">{resendMessage}</AlertDescription>
+                </Alert>
+              )}
+              {resendError && (
+                <Alert className="border-red-200 bg-red-50">
+                  <AlertDescription className="text-red-800">{resendError}</AlertDescription>
+                </Alert>
+              )}
+              <Button onClick={() => { void handleResendEmail() }} disabled={isResending} className="w-full">
+                {isResending ? 'Sending…' : 'Send Verification Email Again'}
               </Button>
-              <Button onClick={() => { void navigate('/register'); }} variant="outline" className="w-full">
-                Register Again
+              <Button onClick={() => { void handleLogout() }} variant="outline" className="w-full">
+                Log out
               </Button>
             </div>
           )}

@@ -9,7 +9,7 @@ import { ImpersonationIndicator } from '@/components/ImpersonationBanner'
 import { AdminPanelLink } from '@/components/AdminPanelLink'
 
 const MainNav: React.FC = () => {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading, user, logout } = useAuth()
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b p-2">
@@ -29,12 +29,25 @@ const MainNav: React.FC = () => {
           {isLoading ? (
             <Skeleton className="h-9 w-24" />
           ) : isAuthenticated ? (
-            <>
-              <ImpersonationIndicator />
-              <AdminPanelLink />
-              <NotificationBell />
-              <UserMenu />
-            </>
+            user && user.email_verified_at ? (
+              <>
+                <ImpersonationIndicator />
+                <AdminPanelLink />
+                <NotificationBell />
+                <UserMenu />
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    void logout()
+                  }}
+                >
+                  Log Out
+                </Button>
+              </>
+            )
           ) : (
             <>
               <Link to="/login">

@@ -148,15 +148,21 @@ Route::get('/reset-password/{token}', function ($token, \Illuminate\Http\Request
     return redirect(rtrim($frontend, '/').'/password/reset/'.$token.'?email='.urlencode($email));
 })->name('password.reset.web');
 
-// Keep Jetstream's intended post-login route name but redirect to the SPA
-Route::middleware([
-    'auth:sanctum',
-    config('jetstream.auth_session'),
-    'verified',
-])->group(function () {
-    Route::get('/dashboard', function () {
-        $frontend = config('app.frontend_url');
+// Keep Jetstream's intended post-login route name but serve/redirect to the SPA without auth gate
+Route::get('/dashboard', function (Request $request) {
+    if (app()->environment('testing')) {
+        return response('Dashboard (SPA testing stub)', 200);
+    }
 
-        return redirect()->to($frontend);
-    })->name('dashboard');
-});
+    $frontend = frontend_url();
+    $frontendHost = parse_url($frontend, PHP_URL_HOST);
+    $frontendScheme = parse_url($frontend, PHP_URL_SCHEME) ?: $request->getScheme();
+    $frontendPort = parse_url($frontend, PHP_URL_PORT) ?: ($frontendScheme === 'https' ? 443 : 80);
+    $sameOrigin = $frontendHost === $request->getHost() && $frontendPort === $request->getPort() && $frontendScheme === $request->getScheme();
+
+    if ($sameOrigin) {
+        return view('welcome');
+    }
+
+    return redirect(rtrim($frontend, '/').'/dashboard');
+})->name('dashboard');

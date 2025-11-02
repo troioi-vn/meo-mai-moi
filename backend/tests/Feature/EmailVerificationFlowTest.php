@@ -82,42 +82,9 @@ class EmailVerificationFlowTest extends TestCase
                 ]
             );
 
-            // Unauthenticated user hitting verification URL may be logged in already from registration; check and branch
-            if (! auth()->check()) {
-                $response = $this->get($verificationUrl);
-                $response->assertRedirect(route('login', absolute: false));
-            }
-
-            // Clear intended to ensure successful post-verification redirect to dashboard
-            session()->forget('url.intended');
-            // After login, visiting the link verifies and redirects to dashboard (prefer web flow)
-            $response = $this->actingAs($user, 'web')->get($verificationUrl);
-            if ($response->getStatusCode() === 302) {
-                $location = $response->headers->get('Location');
-                $locationPath = $location ? parse_url($location, PHP_URL_PATH) : null;
-                if ($locationPath === route('login', absolute: false)) {
-                    // Fallback: verify via API endpoint using cookie-based session auth
-                    $apiVerificationUrl = URL::temporarySignedRoute(
-                        'api.verification.verify',
-                        now()->addMinutes(60),
-                        [
-                            'id' => $user->id,
-                            'hash' => sha1($user->email),
-                        ]
-                    );
-
-                    $response = $this->getJson(parse_url($apiVerificationUrl, PHP_URL_PATH).'?'.parse_url($apiVerificationUrl, PHP_URL_QUERY));
-
-                    $response->assertStatus(200)
-                        ->assertJson([
-                            'data' => [
-                                'verified' => true,
-                            ],
-                        ]);
-                } else {
-                    $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
-                }
-            }
+            // Visit the verification URL; expect redirect to SPA after verification
+            $response = $this->get($verificationUrl);
+            $response->assertRedirect(rtrim(config('app.frontend_url'), '/').'/account/pets?verified=1');
 
             // Step 5: User can now access protected routes
             $user->refresh(); // Refresh user to get updated email_verified_at

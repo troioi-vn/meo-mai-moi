@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use App\Http\Controllers\EmailVerificationController;
 
 // Inertia is not used (SPA-only UI)
 
@@ -124,7 +125,10 @@ Route::get('/user/confirm-password', function (Request $request) {
     return redirect(rtrim($frontend, '/').'/confirm-password');
 });
 
-// Email verification routes are provided by Fortify/Jetstream (standard)
+// Override email verification web route to allow verification without prior login
+Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verifyWeb'])
+    ->middleware(['signed', 'throttle:6,1'])
+    ->name('verification.verify');
 
 // Unsubscribe route (required by tests and email links)
 Route::get('/unsubscribe', [\App\Http\Controllers\UnsubscribeController::class, 'show'])->name('unsubscribe');
@@ -149,3 +153,23 @@ Route::get('/reset-password/{token}', function ($token, \Illuminate\Http\Request
 })->name('password.reset.web');
 
 // No dashboard route needed; SPA handles post-login navigation client-side
+
+// Catch-all route for SPA (serve frontend for non-API, non-admin paths)
+Route::get('/{any}', function (Request $request) {
+    if (app()->environment('testing')) {
+        return response('SPA Catch-all (testing stub)', 200);
+    }
+
+    $frontend = frontend_url();
+    $frontendHost = parse_url($frontend, PHP_URL_HOST);
+    $frontendScheme = parse_url($frontend, PHP_URL_SCHEME) ?: $request->getScheme();
+    $frontendPort = parse_url($frontend, PHP_URL_PORT) ?: ($frontendScheme === 'https' ? 443 : 80);
+    $sameOrigin = $frontendHost === $request->getHost() && $frontendPort === $request->getPort() && $frontendScheme === $request->getScheme();
+
+    if ($sameOrigin) {
+        return view('welcome');
+    }
+
+    // Preserve path and query string when redirecting to external frontend
+    return redirect()->away(rtrim($frontend, '/').$request->getRequestUri());
+})->where('any', '^(?!api(?:\/|$)|admin(?:\/|$)).*');

@@ -12,7 +12,8 @@ class EmailVerificationController extends Controller
 
     public function __construct()
     {
-        $this->middleware('auth:sanctum')->except('verify');
+        // Only protect APIs that require an authenticated user
+        $this->middleware('auth:sanctum')->only('resend', 'status');
         $this->middleware('signed')->only('verify');
         $this->middleware('throttle:6,1')->only('verify', 'resend');
     }
@@ -89,8 +90,8 @@ class EmailVerificationController extends Controller
 
         if (! $user) {
             // If HTML expectation and authenticated, behave like Fortify (redirect)
-            if ($this->expectsHtml($request) && $request->user()) {
-                return redirect(route('dashboard', absolute: false).'?verified=0');
+            if ($this->expectsHtml($request)) {
+                return redirect(rtrim((string) config('app.frontend_url'), '/').'/email/verify?error=invalid_link');
             }
 
             return $this->sendError('Invalid verification link.', 403);
@@ -98,8 +99,8 @@ class EmailVerificationController extends Controller
 
         // Verify the hash matches the user's email
         if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
-            if ($this->expectsHtml($request) && $request->user()) {
-                return redirect(route('dashboard', absolute: false).'?verified=0');
+            if ($this->expectsHtml($request)) {
+                return redirect(rtrim((string) config('app.frontend_url'), '/').'/email/verify?error=invalid_link');
             }
 
             return $this->sendError('Invalid verification link.', 403);
@@ -107,16 +108,16 @@ class EmailVerificationController extends Controller
 
         // Check if the URL is properly signed and not expired
         if (! $request->hasValidSignature()) {
-            if ($this->expectsHtml($request) && $request->user()) {
-                return redirect(route('dashboard', absolute: false).'?verified=0');
+            if ($this->expectsHtml($request)) {
+                return redirect(rtrim((string) config('app.frontend_url'), '/').'/email/verify?error=expired_link');
             }
 
             return $this->sendError('Invalid or expired verification link.', 403);
         }
 
         if ($user->hasVerifiedEmail()) {
-            if ($this->expectsHtml($request) && $request->user()) {
-                return redirect(route('dashboard', absolute: false).'?verified=1');
+            if ($this->expectsHtml($request)) {
+                return redirect(rtrim((string) config('app.frontend_url'), '/').'/email/verify?status=already_verified');
             }
 
             return $this->sendSuccess([
@@ -130,8 +131,8 @@ class EmailVerificationController extends Controller
         }
 
         // Content negotiation: HTML + authenticated -> redirect like Fortify
-        if ($this->expectsHtml($request) && $request->user()) {
-            return redirect(route('dashboard', absolute: false).'?verified=1');
+        if ($this->expectsHtml($request)) {
+            return redirect(rtrim((string) config('app.frontend_url'), '/').'/email/verify?status=success');
         }
 
         return $this->sendSuccess([
@@ -154,30 +155,38 @@ class EmailVerificationController extends Controller
         // Find the user by ID
         $user = \App\Models\User::find($id);
 
-        $frontend = config('app.frontend_url');
+        $frontend = (string) config('app.frontend_url');
+        if (empty($frontend)) {
+            $envUrl = env('FRONTEND_URL');
+            $frontend = empty($envUrl) ? 'http://localhost:5173' : $envUrl;
+        }
         if (! $user) {
-            return redirect($frontend.'/email/verify?error=invalid_link');
+            return redirect()->away(rtrim($frontend, '/').'/email/verify?error=invalid_link');
         }
 
         // Verify the hash matches the user's email
         if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
-            return redirect($frontend.'/email/verify?error=invalid_link');
+            return redirect()->away(rtrim($frontend, '/').'/email/verify?error=invalid_link');
         }
 
         // Check if the URL is properly signed and not expired
         if (! $request->hasValidSignature()) {
-            return redirect($frontend.'/email/verify?error=expired_link');
+            return redirect()->away(rtrim($frontend, '/').'/email/verify?error=expired_link');
         }
 
         if ($user->hasVerifiedEmail()) {
-            return redirect($frontend.'/email/verify?status=already_verified');
+            // Ensure user gets logged into a session for SPA when visiting via email link
+            \Auth::guard(config('fortify.guard', 'web'))->login($user);
+            return redirect()->away(rtrim($frontend, '/').'/account/pets?verified=1');
         }
 
         if ($user->markEmailAsVerified()) {
             event(new Verified($user));
         }
+        // Log the user in to create SPA session
+        \Auth::guard(config('fortify.guard', 'web'))->login($user);
 
-        return redirect($frontend.'/email/verify?status=success');
+        return redirect()->away(rtrim($frontend, '/').'/account/pets?verified=1');
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\NotificationType;
 use App\Models\Notification;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
@@ -47,6 +48,11 @@ class NotificationController extends Controller
     {
         $status = $request->query('status', 'all');
         $query = Notification::where('user_id', Auth::id())
+            // Hide email verification reminders from the bell menu
+            ->where(function ($q) {
+                $q->whereNull('type')
+                  ->orWhere('type', '!=', NotificationType::EMAIL_VERIFICATION->value);
+            })
             ->when($status === 'unread', function ($q) {
                 $q->unread();
             })

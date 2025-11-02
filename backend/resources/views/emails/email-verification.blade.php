@@ -1,4 +1,26 @@
 @component('mail::message')
+
+# Verify Your Email Address
+
+Hi {{ $user->name ?? 'there' }},
+
+Thanks for registering with {{ $appName }}. Please confirm your email address by clicking the button below:
+
+@component('mail::button', ['url' => $verificationUrl])
+Verify Email
+@endcomponent
+
+If the button doesn't work, copy and paste this link into your browser:
+
+{{ $verificationUrl }}
+
+This link will expire in 60 minutes for your security.
+
+Thanks,
+The {{ $appName }} Team
+
+@endcomponent
+@component('mail::message')
 # Welcome to {{ $appName }}!
 
 Hi {{ $user->name }},

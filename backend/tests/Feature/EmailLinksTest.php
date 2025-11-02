@@ -90,8 +90,8 @@ class EmailLinksTest extends TestCase
         // Make request to the verification URL
         $response = $this->get($url);
 
-        // Standard Fortify behavior: unauthenticated users are redirected to login
-        $response->assertRedirect(route('login', absolute: false));
+        // New behavior: user is verified and redirected to SPA
+        $response->assertRedirect(rtrim(config('app.frontend_url'), '/').'/account/pets?verified=1');
     }
 
     public function test_password_reset_web_route_redirects_to_frontend()
@@ -107,7 +107,7 @@ class EmailLinksTest extends TestCase
         $redirectUrl = $response->headers->get('Location');
 
         // Assert redirect points to frontend
-        $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
+        $frontendUrl = config('app.frontend_url');
         $this->assertStringStartsWith($frontendUrl, $redirectUrl);
         $this->assertStringContainsString('/password/reset/', $redirectUrl);
         $this->assertStringContainsString($token, $redirectUrl);
@@ -128,8 +128,8 @@ class EmailLinksTest extends TestCase
 
         $response = $this->get($url);
 
-        // Standard Fortify behavior: unauthenticated users are redirected to login
-        $response->assertRedirect(route('login', absolute: false));
+        // New behavior: invalid link redirects to SPA verify page with error
+        $response->assertRedirect(rtrim(config('app.frontend_url'), '/').'/email/verify?error=invalid_link');
     }
 
     public function test_password_reset_web_route_handles_missing_email()
@@ -168,7 +168,7 @@ class EmailLinksTest extends TestCase
         // Make request to the verification URL
         $response = $this->get($url);
 
-        // Standard Fortify behavior: unauthenticated users are redirected to login
-        $response->assertRedirect(route('login', absolute: false));
+        // Already verified users are redirected to SPA
+        $response->assertRedirect(rtrim(config('app.frontend_url'), '/').'/account/pets?verified=1');
     }
 }

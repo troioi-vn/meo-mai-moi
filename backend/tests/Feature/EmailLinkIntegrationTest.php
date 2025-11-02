@@ -52,21 +52,11 @@ class EmailLinkIntegrationTest extends TestCase
             ]
         );
 
-        // User clicks the verification link
+        // User clicks the verification link (now verifies and logs in without prior auth)
         $response = $this->get($verificationUrl);
+        $response->assertRedirect(rtrim(config('app.frontend_url'), '/').'/account/pets?verified=1');
 
-        // Standard Fortify behavior: unauthenticated users are redirected to login
-        $response->assertRedirect(route('login', absolute: false));
-
-        // Not verified yet (must be logged in to verify)
-        $user->refresh();
-        $this->assertFalse($user->hasVerifiedEmail());
-
-        // Clear intended URL set by previous redirect to login
-        session()->forget('url.intended');
-        // After login, visiting the link verifies and redirects to dashboard
-        $response = $this->actingAs($user)->get($verificationUrl);
-        $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
+        // User should now be verified
         $user->refresh();
         $this->assertTrue($user->hasVerifiedEmail());
     }
@@ -97,7 +87,7 @@ class EmailLinkIntegrationTest extends TestCase
             $resetLinkResponse->assertRedirect();
             $redirectUrl = $resetLinkResponse->headers->get('Location');
 
-            $this->assertStringStartsWith('http://localhost:5173', $redirectUrl);
+            $this->assertStringStartsWith(rtrim(config('app.frontend_url'), '/'), $redirectUrl);
             $this->assertStringContainsString('/password/reset/', $redirectUrl);
             $this->assertStringContainsString($token, $redirectUrl);
 
@@ -136,8 +126,8 @@ class EmailLinkIntegrationTest extends TestCase
         );
 
         $response = $this->get($verificationUrl);
-        // Standard Fortify behavior: unauthenticated users are redirected to login
-        $response->assertRedirect(route('login', absolute: false));
+        // Now redirects directly to the frontend app after verification
+        $response->assertRedirect('https://example.com/account/pets?verified=1');
 
         // Test password reset redirect
         $token = 'test-token';

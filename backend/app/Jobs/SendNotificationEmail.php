@@ -230,13 +230,24 @@ class SendNotificationEmail implements ShouldQueue
     private function extractEmailBody($mail): string
     {
         try {
-            // Try to get the email content by rendering it
-            $view = $mail->content();
-            if ($view && method_exists($view, 'render')) {
-                return $view->render();
+            // For verification emails, provide a readable summary with the link
+            if ($this->type === NotificationType::EMAIL_VERIFICATION->value) {
+                $link = $this->data['verificationUrl'] ?? ($mail->verificationUrl ?? null);
+                $userName = $this->user->name ?? 'there';
+                $appName = config('app.name');
+                
+                if ($link) {
+                    return "Hi {$userName},\n\nThanks for registering with {$appName}. Please confirm your email address by clicking the link below:\n\n{$link}\n\nThis link will expire in 60 minutes for your security.\n\nThanks,\nThe {$appName} Team";
+                }
+                
+                return 'Email verification - link unavailable';
             }
 
-            // Fallback to a basic representation
+            // For other email types, try to render as HTML
+            if (method_exists($mail, 'render')) {
+                return (string) $mail->render();
+            }
+
             return 'Email content (notification type: '.$this->type.')';
         } catch (\Exception $e) {
             return 'Email body could not be extracted: '.$e->getMessage();

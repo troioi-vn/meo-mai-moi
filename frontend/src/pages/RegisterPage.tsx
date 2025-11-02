@@ -29,7 +29,7 @@ export default function RegisterPage() {
     } else {
       // User is already verified, can proceed
       toast.success('Registration successful! Welcome!')
-      void navigate('/dashboard')
+      void navigate('/account/pets')
     }
   }
 
@@ -37,7 +37,7 @@ export default function RegisterPage() {
     // Reload user data and redirect to dashboard
     await loadUser()
     toast.success('Email verified successfully! Welcome!')
-    void navigate('/dashboard')
+    void navigate('/account/pets')
   }
 
   const handleWaitlistSuccess = () => {

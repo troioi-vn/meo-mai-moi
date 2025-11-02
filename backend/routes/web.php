@@ -148,21 +148,4 @@ Route::get('/reset-password/{token}', function ($token, \Illuminate\Http\Request
     return redirect(rtrim($frontend, '/').'/password/reset/'.$token.'?email='.urlencode($email));
 })->name('password.reset.web');
 
-// Keep Jetstream's intended post-login route name but serve/redirect to the SPA without auth gate
-Route::get('/dashboard', function (Request $request) {
-    if (app()->environment('testing')) {
-        return response('Dashboard (SPA testing stub)', 200);
-    }
-
-    $frontend = frontend_url();
-    $frontendHost = parse_url($frontend, PHP_URL_HOST);
-    $frontendScheme = parse_url($frontend, PHP_URL_SCHEME) ?: $request->getScheme();
-    $frontendPort = parse_url($frontend, PHP_URL_PORT) ?: ($frontendScheme === 'https' ? 443 : 80);
-    $sameOrigin = $frontendHost === $request->getHost() && $frontendPort === $request->getPort() && $frontendScheme === $request->getScheme();
-
-    if ($sameOrigin) {
-        return view('welcome');
-    }
-
-    return redirect(rtrim($frontend, '/').'/dashboard');
-})->name('dashboard');
+// No dashboard route needed; SPA handles post-login navigation client-side

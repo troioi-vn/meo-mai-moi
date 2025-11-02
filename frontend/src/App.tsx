@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useParams } from 'react-router-dom'
+import { Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 
 import MainPage from './pages/MainPage'
@@ -21,6 +21,7 @@ import HelperProfileViewPage from './pages/helper/HelperProfileViewPage'
 import NotFoundPage from './pages/NotFoundPage'
 import RequestsPage from './pages/RequestsPage'
 import { Toaster } from '@/components/ui/sonner'
+import { toast } from 'sonner'
 import MainNav from '@/components/MainNav'
 import './App.css'
 
@@ -163,6 +164,20 @@ export function AppRoutes() {
 }
 
 export default function App() {
+  const location = useLocation()
+  // Show a toast if redirected with verified=1
+  if (typeof window !== 'undefined') {
+    const params = new URLSearchParams(location.search)
+    if (params.get('verified') === '1') {
+      // Clear the param quickly to avoid double toasts on re-render
+      params.delete('verified')
+      const hash = location.hash || ''
+      const newUrl = `${location.pathname}${params.toString() ? `?${params.toString()}` : ''}${hash}`
+      window.history.replaceState({}, '', newUrl)
+      toast.success('Email verified successfully!')
+    }
+  }
+
   return (
     <>
       <MainNav />

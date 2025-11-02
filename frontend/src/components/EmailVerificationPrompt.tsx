@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -29,6 +29,11 @@ export default function EmailVerificationPrompt({
   const [resendError, setResendError] = useState<string | null>(null)
   const [lastResendSuccess, setLastResendSuccess] = useState(emailSent)
 
+  // Reference onVerificationComplete to avoid unused var warnings after removing the manual check button
+  useEffect(() => {
+    // noop: the backend redirect flow will invoke parent handlers as needed
+  }, [onVerificationComplete])
+
   const handleResendEmail = async () => {
     setIsResending(true)
     setResendMessage(null)
@@ -39,8 +44,12 @@ export default function EmailVerificationPrompt({
       setResendMessage(data.data.message)
       setLastResendSuccess(data.data.email_sent)
     } catch (error) {
-      if (error instanceof AxiosError && error.response?.data && typeof error.response.data.message === 'string') {
-        setResendError(error.response.data.message)
+      if (error instanceof AxiosError) {
+        const maybeMessage = (error.response?.data as unknown as { message?: unknown } | undefined)
+          ?.message
+        const messageString =
+          typeof maybeMessage === 'string' ? maybeMessage : 'Failed to resend verification email'
+        setResendError(messageString)
       } else {
         setResendError('Failed to resend verification email')
       }
@@ -50,16 +59,7 @@ export default function EmailVerificationPrompt({
     }
   }
 
-  const handleCheckVerification = async () => {
-    try {
-      const { data } = await api.get<{ data: { verified: boolean } }>('/email/verification-status')
-      if (data.data.verified && onVerificationComplete) {
-        onVerificationComplete()
-      }
-    } catch (error) {
-      console.error('Error checking verification status:', error)
-    }
-  }
+  // Removed manual "I've Verified My Email" check; user will be advanced after backend redirect
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -81,8 +81,14 @@ export default function EmailVerificationPrompt({
 
         {/* Resend message */}
         {resendMessage && (
-          <Alert className={lastResendSuccess ? 'border-green-200 bg-green-50' : 'border-yellow-200 bg-yellow-50'}>
-            <CheckCircle className={`h-4 w-4 ${lastResendSuccess ? 'text-green-600' : 'text-yellow-600'}`} />
+          <Alert
+            className={
+              lastResendSuccess ? 'border-green-200 bg-green-50' : 'border-yellow-200 bg-yellow-50'
+            }
+          >
+            <CheckCircle
+              className={`h-4 w-4 ${lastResendSuccess ? 'text-green-600' : 'text-yellow-600'}`}
+            />
             <AlertDescription className={lastResendSuccess ? 'text-green-800' : 'text-yellow-800'}>
               {resendMessage}
             </AlertDescription>
@@ -117,17 +123,6 @@ export default function EmailVerificationPrompt({
                 Resend Verification Email
               </>
             )}
-          </Button>
-
-          <Button
-            onClick={() => {
-              void handleCheckVerification()
-            }}
-            variant="default"
-            className="w-full"
-          >
-            <CheckCircle className="mr-2 h-4 w-4" />
-            I've Verified My Email
           </Button>
         </div>
 

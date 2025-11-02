@@ -24,16 +24,16 @@ export default function EmailVerificationPage() {
       // Check if we have query parameters from the backend redirect
       const statusParam = searchParams.get('status')
       const errorParam = searchParams.get('error')
-      
+
       if (statusParam || errorParam) {
         // Handle backend redirect with status/error parameters
         if (statusParam === 'success') {
           setStatus('success')
           setMessage('Your email has been successfully verified!')
-          
+
           // Reload user data
           void loadUser()
-          
+
           // Redirect to dashboard after a short delay
           setTimeout(() => {
             void navigate('/account/pets')
@@ -41,7 +41,7 @@ export default function EmailVerificationPage() {
         } else if (statusParam === 'already_verified') {
           setStatus('success')
           setMessage('Your email address is already verified.')
-          
+
           // Redirect to dashboard after a short delay
           setTimeout(() => {
             void navigate('/account/pets')
@@ -67,7 +67,7 @@ export default function EmailVerificationPage() {
         // Get the expires and signature from URL params
         const expires = searchParams.get('expires')
         const signature = searchParams.get('signature')
-        
+
         if (!expires || !signature) {
           setStatus('error')
           setMessage('Invalid verification link.')
@@ -75,19 +75,20 @@ export default function EmailVerificationPage() {
         }
 
         // Call the verification endpoint
-        const response = await api.get<{ data: { message: string } }>(`/email/verify/${id}/${hash}?expires=${expires}&signature=${signature}`)
-        
+        const response = await api.get<{ data: { message: string } }>(
+          `/email/verify/${id}/${hash}?expires=${expires}&signature=${signature}`
+        )
+
         setStatus('success')
         setMessage(response.data.data.message)
-        
+
         // Reload user data
         void loadUser()
-        
+
         // Redirect to dashboard after a short delay
         setTimeout(() => {
           void navigate('/account/pets')
         }, 2000)
-        
       } catch (error: unknown) {
         setStatus('error')
         if (error instanceof Error && 'response' in error) {
@@ -95,7 +96,9 @@ export default function EmailVerificationPage() {
           if (axiosError.response?.status === 400) {
             setMessage('Email address already verified.')
           } else if (axiosError.response?.status === 403) {
-            setMessage('Your verification link is invalid or expired. You can request a new email below.')
+            setMessage(
+              'Your verification link is invalid or expired. You can request a new email below.'
+            )
           } else {
             setMessage('Failed to verify email. Please try again.')
           }
@@ -157,16 +160,24 @@ export default function EmailVerificationPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Alert className={
-            status === 'success' ? 'border-green-200 bg-green-50' :
-            status === 'error' ? 'border-red-200 bg-red-50' :
-            'border-blue-200 bg-blue-50'
-          }>
-            <AlertDescription className={
-              status === 'success' ? 'text-green-800' :
-              status === 'error' ? 'text-red-800' :
-              'text-blue-800'
-            }>
+          <Alert
+            className={
+              status === 'success'
+                ? 'border-green-200 bg-green-50'
+                : status === 'error'
+                  ? 'border-red-200 bg-red-50'
+                  : 'border-blue-200 bg-blue-50'
+            }
+          >
+            <AlertDescription
+              className={
+                status === 'success'
+                  ? 'text-green-800'
+                  : status === 'error'
+                    ? 'text-red-800'
+                    : 'text-blue-800'
+              }
+            >
               {message}
             </AlertDescription>
           </Alert>
@@ -194,10 +205,22 @@ export default function EmailVerificationPage() {
                   <AlertDescription className="text-red-800">{resendError}</AlertDescription>
                 </Alert>
               )}
-              <Button onClick={() => { void handleResendEmail() }} disabled={isResending} className="w-full">
+              <Button
+                onClick={() => {
+                  void handleResendEmail()
+                }}
+                disabled={isResending}
+                className="w-full"
+              >
                 {isResending ? 'Sending…' : 'Send Verification Email Again'}
               </Button>
-              <Button onClick={() => { void handleLogout() }} variant="outline" className="w-full">
+              <Button
+                onClick={() => {
+                  void handleLogout()
+                }}
+                variant="outline"
+                className="w-full"
+              >
                 Log out
               </Button>
             </div>

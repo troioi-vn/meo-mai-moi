@@ -17,7 +17,7 @@ export default function RegisterPage() {
     useInviteSystem()
   const [registrationResponse, setRegistrationResponse] = useState<RegisterResponse | null>(null)
   const [registeredEmail, setRegisteredEmail] = useState<string>('')
-  
+
   // Get email from query parameters (e.g., from login redirect)
   const initialEmail = searchParams.get('email') ?? undefined
 
@@ -52,7 +52,9 @@ export default function RegisterPage() {
           email={registeredEmail}
           message={registrationResponse.message}
           emailSent={registrationResponse.email_sent}
-          onVerificationComplete={() => { void handleVerificationComplete(); }}
+          onVerificationComplete={() => {
+            void handleVerificationComplete()
+          }}
         />
       </div>
     )

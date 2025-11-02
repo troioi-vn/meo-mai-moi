@@ -101,6 +101,27 @@ class SendNotificationEmail implements ShouldQueue
                     'env' => app()->environment(),
                 ]);
 
+                // Optionally create an EmailLog entry to surface in the admin panel
+                try {
+                    $this->emailLog = \App\Models\EmailLog::create([
+                        'user_id' => $this->user->id,
+                        'notification_id' => $this->notificationId,
+                        'email_configuration_id' => null,
+                        'recipient_email' => $this->user->email,
+                        'subject' => method_exists($mail, 'envelope') ? ($mail->envelope()->subject ?? 'Notification Email') : 'Notification Email',
+                        'body' => $this->extractEmailBody($mail),
+                        'status' => 'failed',
+                        'error_message' => 'Email not configured',
+                        'failed_at' => now(),
+                    ]);
+                } catch (\Throwable $logErr) {
+                    Log::warning('Failed to create EmailLog for not-configured email', [
+                        'notification_id' => $this->notificationId,
+                        'user_id' => $this->user->id,
+                        'error' => $logErr->getMessage(),
+                    ]);
+                }
+
                 // Mark notification as failed and create a fallback in-app notification
                 $notification->update([
                     'failed_at' => now(),

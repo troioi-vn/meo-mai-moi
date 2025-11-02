@@ -50,6 +50,26 @@ Route::get('/register', function (Request $request) {
     return redirect(rtrim($frontend, '/').'/register');
 });
 
+// Provide a GET wrapper for logout to avoid 405 when visiting directly
+Route::get('/logout', function (Request $request) {
+    if (app()->environment('testing')) {
+        return response('Logout (SPA testing stub)', 200);
+    }
+
+    $frontend = frontend_url();
+    $frontendHost = parse_url($frontend, PHP_URL_HOST);
+    $frontendScheme = parse_url($frontend, PHP_URL_SCHEME) ?: $request->getScheme();
+    $frontendPort = parse_url($frontend, PHP_URL_PORT) ?: ($frontendScheme === 'https' ? 443 : 80);
+    $sameOrigin = $frontendHost === $request->getHost() && $frontendPort === $request->getPort() && $frontendScheme === $request->getScheme();
+
+    if ($sameOrigin) {
+        // Serve SPA index so frontend router can call POST /logout
+        return view('welcome');
+    }
+
+    return redirect(rtrim($frontend, '/').'/logout');
+});
+
 Route::get('/email/verify', function (Request $request) {
     if (app()->environment('testing')) {
         return response('Email Verify (SPA testing stub)', 200);

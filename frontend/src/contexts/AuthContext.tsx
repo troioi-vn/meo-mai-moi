@@ -38,10 +38,8 @@ export function AuthProvider({
     await csrf()
     const { data } = await authApi.post<{ data: RegisterResponse }>('/register', payload)
 
-    // Set user immediately from response if email is verified
-    if (data.data.email_verified) {
-      setUser(data.data.user)
-    }
+    // Set user immediately (even if not yet verified) so header can show logout
+    setUser(data.data.user)
 
     return data.data
   }, [])

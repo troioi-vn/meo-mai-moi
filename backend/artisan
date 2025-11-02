@@ -6,6 +6,21 @@ use Symfony\Component\Console\Input\ArgvInput;
 
 define('LARAVEL_START', microtime(true));
 
+// Auto-create .env from .env.docker.example if it doesn't exist
+$envPath = __DIR__.'/.env';
+$envExample = __DIR__.'/.env.docker.example';
+
+if (!file_exists($envPath) && file_exists($envExample)) {
+    if (copy($envExample, $envPath)) {
+        echo "\033[33m✓ Created .env from .env.docker.example\033[0m\n";
+        echo "\033[33m⚠ Please update .env with your configuration (especially APP_KEY)\033[0m\n";
+        echo "\033[33m  Run: php artisan key:generate\033[0m\n\n";
+    } else {
+        echo "\033[31m✗ Failed to create .env file. Please copy .env.docker.example to .env manually.\033[0m\n";
+        exit(1);
+    }
+}
+
 // Register the Composer autoloader...
 require __DIR__.'/vendor/autoload.php';
 

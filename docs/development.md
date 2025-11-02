@@ -7,21 +7,26 @@ This guide provides a comprehensive overview of how to get started with developm
 **New to the repo?** Follow these steps to get running:
 
 1.  **Run the app**
+
     ```bash
     ./utils/deploy.sh
     ```
 
+    > **Note**: The backend automatically creates `.env` from `.env.docker.example` when you run any `php artisan` command if it doesn't exist. You'll see a helpful message to run `php artisan key:generate`.
+
 2.  **Access the app**
-    *   **Main App**: http://localhost:8000
-    *   **Admin Panel**: http://localhost:8000/admin (admin@catarchy.space / password)
-    *   **API Docs**: http://localhost:8000/api/documentation
+    - **Main App**: http://localhost:8000
+    - **Admin Panel**: http://localhost:8000/admin (admin@catarchy.space / password)
+    - **API Docs**: http://localhost:8000/api/documentation
 
 **Test Users (Seeded Data)**
+
 - **Super Admin**: admin@catarchy.space / password
-- **Admin**: user1@catarchy.space / password  
+- **Admin**: user1@catarchy.space / password
 - **Regular Users**: 3 users with factory-generated names/emails / password
 
 **Admin Features**
+
 - **User Impersonation**: Click 👤 icon in Users table to impersonate any user
 - **Stop Impersonating**: Use navbar indicator or admin panel to return
 
@@ -38,6 +43,21 @@ docker compose exec backend php artisan test
 # Run specific test suites
 docker compose exec backend php artisan test --testsuite=Feature
 docker compose exec backend php artisan test --testsuite=Unit
+```
+
+**Running tests locally (outside Docker):**
+
+If you need to run tests on your local machine:
+
+```bash
+cd backend
+
+# First time only - .env will be auto-created from .env.docker.example
+composer install
+php artisan key:generate
+
+# Configure your local database settings in .env, then run tests
+php artisan test
 ```
 
 ### Frontend (Vitest)
@@ -79,6 +99,7 @@ npm run e2e:report     # open last HTML report
 PHPStan enforces type safety and catches bugs at write-time using static analysis. Currently configured at **Level 5**.
 
 **Run analysis:**
+
 ```bash
 cd backend
 composer phpstan
@@ -89,6 +110,7 @@ composer phpstan
 Deptrac prevents architectural violations by enforcing allowed dependencies between layers.
 
 **Run analysis:**
+
 ```bash
 cd backend
 composer deptrac

@@ -3,6 +3,7 @@ import React, { createContext, useCallback, use, useEffect, useMemo, useRef, use
 import { toast } from 'sonner'
 import { getNotifications, markAllRead, markRead } from '@/api/notifications'
 import type { AppNotification, NotificationLevel } from '@/types/notification'
+import { useAuth } from '@/hooks/use-auth'
 
 interface NotificationContextValue {
   notifications: AppNotification[]
@@ -57,6 +58,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
   const seenIdsRef = useRef<Set<string>>(new Set())
   const isDropdownOpenRef = useRef(false)
   const visible = useVisibility()
+  const { user, isAuthenticated } = useAuth()
 
   const unreadCount = useMemo(() => notifications.filter((n) => !n.read_at).length, [notifications])
 
@@ -106,6 +108,16 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
   useEffect(() => {
     void refresh()
   }, [refresh])
+
+  // Reset and refetch when the authenticated user changes
+  useEffect(() => {
+    // Clear local state to avoid showing previous user's notifications
+    setNotifications([])
+    seenIdsRef.current.clear()
+    if (isAuthenticated && user) {
+      void refresh()
+    }
+  }, [isAuthenticated, user?.id, refresh])
 
   // Mark all read when dropdown opens
   const setDropdownOpen = useCallback(

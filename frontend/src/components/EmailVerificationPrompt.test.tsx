@@ -26,12 +26,13 @@ describe('EmailVerificationPrompt', () => {
       expect(screen.getByRole('heading', { name: /verify your email/i })).toBeInTheDocument()
       expect(screen.getByText(/test@example.com/)).toBeInTheDocument()
       expect(screen.getByText(/please verify your email address/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /resend verification email/i })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /i've verified my email/i })).toBeInTheDocument()
+      // New UI: no big resend button nor manual verification button
+      expect(screen.getByRole('button', { name: /use another email/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /try resending it/i })).toBeInTheDocument()
     })
   })
 
-  it('allows user to resend verification email', async () => {
+  it('allows user to resend verification email (with confirm)', async () => {
     renderWithRouter(
       <EmailVerificationPrompt
         email="test@example.com"
@@ -41,14 +42,17 @@ describe('EmailVerificationPrompt', () => {
       />
     )
 
-    await user.click(screen.getByRole('button', { name: /resend verification email/i }))
+    // Open confirm dialog via the link
+    await user.click(screen.getByRole('button', { name: /try resending it/i }))
+    // Confirm resend
+    await user.click(screen.getByRole('button', { name: /resend email/i }))
 
     await waitFor(() => {
       expect(screen.getByText(/we have sent you verification email/i)).toBeInTheDocument()
     })
   })
 
-  it('handles resend email failure gracefully', async () => {
+  it('handles resend email failure gracefully (with confirm)', async () => {
     server.use(
       http.post('http://localhost:3000/api/email/verification-notification', () => {
         return HttpResponse.json(
@@ -67,68 +71,13 @@ describe('EmailVerificationPrompt', () => {
       />
     )
 
-    await user.click(screen.getByRole('button', { name: /resend verification email/i }))
+    await user.click(screen.getByRole('button', { name: /try resending it/i }))
+    await user.click(screen.getByRole('button', { name: /resend email/i }))
 
     await waitFor(() => {
       expect(screen.getByText(/email service is currently unavailable/i)).toBeInTheDocument()
     })
   })
 
-  it('calls onVerificationComplete when user clicks verification check button', async () => {
-    server.use(
-      http.get('http://localhost:3000/api/email/verification-status', () => {
-        return HttpResponse.json({
-          data: {
-            verified: true,
-            email: 'test@example.com',
-          }
-        })
-      })
-    )
-
-    const onVerificationComplete = vi.fn()
-    renderWithRouter(
-      <EmailVerificationPrompt
-        email="test@example.com"
-        message="Please verify your email address."
-        emailSent={true}
-        onVerificationComplete={onVerificationComplete}
-      />
-    )
-
-    await user.click(screen.getByRole('button', { name: /i've verified my email/i }))
-
-    await waitFor(() => {
-      expect(onVerificationComplete).toHaveBeenCalled()
-    })
-  })
-
-  it('does not call onVerificationComplete if user is still unverified', async () => {
-    server.use(
-      http.get('http://localhost:3000/api/email/verification-status', () => {
-        return HttpResponse.json({
-          data: {
-            verified: false,
-            email: 'test@example.com',
-          }
-        })
-      })
-    )
-
-    const onVerificationComplete = vi.fn()
-    renderWithRouter(
-      <EmailVerificationPrompt
-        email="test@example.com"
-        message="Please verify your email address."
-        emailSent={true}
-        onVerificationComplete={onVerificationComplete}
-      />
-    )
-
-    await user.click(screen.getByRole('button', { name: /i've verified my email/i }))
-
-    await waitFor(() => {
-      expect(onVerificationComplete).not.toHaveBeenCalled()
-    })
-  })
+  // Manual verification check button removed from UI; related tests removed.
 })

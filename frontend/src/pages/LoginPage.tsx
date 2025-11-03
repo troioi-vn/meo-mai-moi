@@ -9,11 +9,17 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (auth && !auth.isLoading && auth.isAuthenticated) {
-      void navigate('/account/pets')
+      interface MaybeVerifiedUser {
+        email_verified_at?: string | null
+      }
+      const verifiedAt = (auth.user as MaybeVerifiedUser | null)?.email_verified_at
+      if (verifiedAt !== null) {
+        void navigate('/account/pets')
+      }
     }
   }, [auth, navigate])
 
-  if (!auth || auth.isLoading || auth.isAuthenticated) {
+  if (!auth || auth.isLoading) {
     return null
   }
 

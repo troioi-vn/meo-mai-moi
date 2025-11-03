@@ -30,7 +30,7 @@ describe('MainNav', () => {
     renderWithRouter(<MainNav />, {
       initialAuthState: {
         isAuthenticated: true,
-        user: { id: 1, name: 'Test User', email: 'test@example.com' },
+        user: { id: 1, name: 'Test User', email: 'test@example.com', email_verified_at: new Date().toISOString() },
         isLoading: false
       }
     })

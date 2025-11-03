@@ -29,17 +29,6 @@ class EmailSystemAlertsWidget extends Widget
     {
         $alerts = [];
 
-        // Check for inactive email configurations
-        $inactiveConfigs = EmailConfiguration::inactive()->count();
-        if ($inactiveConfigs > 0) {
-            $alerts[] = [
-                'type' => 'warning',
-                'title' => 'Inactive Email Configurations',
-                'message' => "You have {$inactiveConfigs} inactive email configuration(s). This may affect email delivery.",
-                'action' => 'View Email Configurations',
-                'action_url' => route('filament.admin.resources.email-configurations.index'),
-            ];
-        }
 
         // Check for no active email configurations
         $activeConfigs = EmailConfiguration::active()->count();
@@ -49,7 +38,7 @@ class EmailSystemAlertsWidget extends Widget
                 'title' => 'No Active Email Configuration',
                 'message' => 'No email configurations are currently active. Email delivery is disabled.',
                 'action' => 'Configure Email',
-                'action_url' => route('filament.admin.resources.email-configurations.create'),
+                'action_url' => route('filament.admin.resources.email-configurations.index'),
             ];
         }
 

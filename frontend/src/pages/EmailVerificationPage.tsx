@@ -6,6 +6,17 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react'
 import { api } from '@/api/axios'
 import { useAuth } from '@/hooks/use-auth'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 
 export default function EmailVerificationPage() {
   const { id, hash } = useParams<{ id: string; hash: string }>()
@@ -18,6 +29,11 @@ export default function EmailVerificationPage() {
   const [isResending, setIsResending] = useState(false)
   const [resendMessage, setResendMessage] = useState<string | null>(null)
   const [resendError, setResendError] = useState<string | null>(null)
+  const RESEND_COOLDOWN_SEC = 60
+  const RESEND_MAX_ATTEMPTS = 3
+  const storageKey = 'emailResend:global'
+  const [resendAttempts, setResendAttempts] = useState(0)
+  const [cooldownRemaining, setCooldownRemaining] = useState(0)
 
   useEffect(() => {
     const handleVerificationResult = async () => {
@@ -96,9 +112,7 @@ export default function EmailVerificationPage() {
           if (axiosError.response?.status === 400) {
             setMessage('Email address already verified.')
           } else if (axiosError.response?.status === 403) {
-            setMessage(
-              'Your verification link is invalid or expired. You can request a new email below.'
-            )
+            setMessage('Invalid or expired verification link. You can request a new email below.')
           } else {
             setMessage('Failed to verify email. Please try again.')
           }
@@ -116,6 +130,14 @@ export default function EmailVerificationPage() {
   }
 
   const handleResendEmail = async () => {
+    if (resendAttempts >= RESEND_MAX_ATTEMPTS) {
+      setResendError('You have reached the maximum number of resend attempts.')
+      return
+    }
+    if (cooldownRemaining > 0) {
+      setResendError(`Please wait ${cooldownRemaining}s before resending.`)
+      return
+    }
     setIsResending(true)
     setResendMessage(null)
     setResendError(null)
@@ -128,6 +150,13 @@ export default function EmailVerificationPage() {
       setResendError('Failed to resend verification email')
     } finally {
       setIsResending(false)
+      const nextAttempts = resendAttempts + 1
+      setResendAttempts(nextAttempts)
+      const until = Date.now() + RESEND_COOLDOWN_SEC * 1000
+      setCooldownRemaining(RESEND_COOLDOWN_SEC)
+      try {
+        localStorage.setItem(storageKey, JSON.stringify({ attempts: nextAttempts, cooldownUntil: until }))
+      } catch {}
     }
   }
 
@@ -138,6 +167,50 @@ export default function EmailVerificationPage() {
       void navigate('/login')
     }
   }
+
+  const handleUseAnotherEmail = async () => {
+    try {
+      await logout()
+    } finally {
+      void navigate('/register')
+    }
+  }
+
+  // Initialize resend state from storage and tick down cooldown
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey)
+      if (raw) {
+        const parsed = JSON.parse(raw) as { attempts?: number; cooldownUntil?: number }
+        if (typeof parsed.attempts === 'number') setResendAttempts(parsed.attempts)
+        if (typeof parsed.cooldownUntil === 'number') {
+          const remaining = Math.max(0, Math.ceil((parsed.cooldownUntil - Date.now()) / 1000))
+          setCooldownRemaining(remaining)
+        }
+      }
+    } catch {}
+  }, [])
+
+  useEffect(() => {
+    if (cooldownRemaining <= 0) return
+    const id = setInterval(() => {
+      setCooldownRemaining((prev) => {
+        if (prev <= 1) {
+          try {
+            const raw = localStorage.getItem(storageKey)
+            const parsed = raw ? (JSON.parse(raw) as { attempts?: number; cooldownUntil?: number }) : {}
+            localStorage.setItem(
+              storageKey,
+              JSON.stringify({ attempts: parsed.attempts ?? resendAttempts, cooldownUntil: null })
+            )
+          } catch {}
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+    return () => clearInterval(id)
+  }, [cooldownRemaining, resendAttempts])
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
@@ -195,6 +268,25 @@ export default function EmailVerificationPage() {
 
           {status === 'error' && (
             <div className="space-y-2">
+              <div className="flex flex-col gap-2">
+                <Button
+                  onClick={() => {
+                    void navigate('/login')
+                  }}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Go to Login
+                </Button>
+                <Button
+                  onClick={() => {
+                    void navigate('/register')
+                  }}
+                  className="w-full"
+                >
+                  Register Again
+                </Button>
+              </div>
               {resendMessage && (
                 <Alert className="border-blue-200 bg-blue-50">
                   <AlertDescription className="text-blue-800">{resendMessage}</AlertDescription>
@@ -209,20 +301,39 @@ export default function EmailVerificationPage() {
                 onClick={() => {
                   void handleResendEmail()
                 }}
-                disabled={isResending}
+                disabled={isResending || cooldownRemaining > 0 || resendAttempts >= RESEND_MAX_ATTEMPTS}
                 className="w-full"
               >
-                {isResending ? 'Sending…' : 'Send Verification Email Again'}
+                {resendAttempts >= RESEND_MAX_ATTEMPTS
+                  ? 'Resend limit reached'
+                  : isResending
+                    ? 'Sending…'
+                    : cooldownRemaining > 0
+                      ? `Send again in ${cooldownRemaining}s`
+                      : 'Send Verification Email Again'}
               </Button>
-              <Button
-                onClick={() => {
-                  void handleLogout()
-                }}
-                variant="outline"
-                className="w-full"
-              >
-                Log out
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" className="w-full">
+                    Use another email
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Use another email address?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to use another email address? This will create a new
+                      user account and you will need to verify it again.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => void handleUseAnotherEmail()}>
+                      Use another email
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           )}
         </CardContent>

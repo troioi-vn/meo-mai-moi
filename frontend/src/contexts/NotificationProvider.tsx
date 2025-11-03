@@ -58,7 +58,17 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
   const seenIdsRef = useRef<Set<string>>(new Set())
   const isDropdownOpenRef = useRef(false)
   const visible = useVisibility()
-  const { user, isAuthenticated } = useAuth()
+  let user: ReturnType<typeof useAuth>['user'] | null = null
+  let isAuthenticated = false
+  try {
+    const auth = useAuth()
+    user = auth.user
+    isAuthenticated = auth.isAuthenticated
+  } catch {
+    // Allow usage without AuthProvider (tests)
+    user = null
+    isAuthenticated = false
+  }
 
   const unreadCount = useMemo(() => notifications.filter((n) => !n.read_at).length, [notifications])
 

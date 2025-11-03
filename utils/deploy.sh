@@ -39,7 +39,7 @@ trap 'echo "✗ Deployment failed at line $LINENO. Check $DEPLOY_LOG for details
 # Function to print help message
 print_help() {
     cat <<'EOF'
-Usage: ./utils/deploy.sh [--fresh] [--seed] [--no-cache] [--no-interactive] [--quiet]
+Usage: ./utils/deploy.sh [--fresh] [--seed] [--no-cache] [--no-interactive] [--quiet] [--allow-empty-db]
 
 Flags:
     --fresh          Drop and recreate database, re-run all migrations; also clears volumes/containers.
@@ -47,6 +47,7 @@ Flags:
     --no-cache       Build Docker images without using cache.
     --no-interactive Skip confirmation prompts (useful for automated scripts/CI).
     --quiet          Reduce console output; full logs go to .deploy.log.
+    --allow-empty-db Allow deployment to proceed even if database appears empty (non-fresh).
 
 Default behavior (no flags):
     - Build and start containers (preserves existing database data)
@@ -66,6 +67,7 @@ IMPORTANT: Data Preservation
     - The pgdata Docker volume is NOT removed (only containers stop)
     - Only NEW migrations are applied
     - Use --fresh ONLY if you want a clean slate with no old data
+    - Deploy will BLOCK if DB appears empty (unless --allow-empty-db or --seed)
 EOF
 }
 
@@ -81,6 +83,7 @@ NO_CACHE="false"
 FRESH="false"
 NO_INTERACTIVE="false"
 QUIET="false"
+ALLOW_EMPTY_DB="false"
 
 for arg in "$@"; do
     case "$arg" in
@@ -99,6 +102,9 @@ for arg in "$@"; do
             ;;
         --quiet)
             QUIET="true"
+            ;;
+        --allow-empty-db)
+            ALLOW_EMPTY_DB="true"
             ;;
         -h|--help)
             print_help
@@ -133,19 +139,31 @@ run_cmd_with_console() {
     fi
 }
 
-ADMIN_EMAIL_TO_WATCH=${ADMIN_EMAIL_TO_WATCH:-admin@catarchy.space}
+DEFAULT_ADMIN_EMAIL="admin@catarchy.space"
+ADMIN_EMAIL_TO_WATCH=${ADMIN_EMAIL_TO_WATCH:-}
 
 if [ -f "$ENV_FILE" ]; then
     DB_USERNAME_ENV=$(grep -E '^DB_USERNAME=' "$ENV_FILE" | tail -n1 | cut -d '=' -f2-)
     DB_DATABASE_ENV=$(grep -E '^DB_DATABASE=' "$ENV_FILE" | tail -n1 | cut -d '=' -f2-)
+    ADMIN_EMAIL_ENV=$(grep -E '^SEED_ADMIN_EMAIL=' "$ENV_FILE" | tail -n1 | cut -d '=' -f2-)
 else
     DB_USERNAME_ENV=""
     DB_DATABASE_ENV=""
+    ADMIN_EMAIL_ENV=""
+fi
+
+if [ -z "$ADMIN_EMAIL_TO_WATCH" ]; then
+    if [ -n "$ADMIN_EMAIL_ENV" ]; then
+        ADMIN_EMAIL_TO_WATCH="$ADMIN_EMAIL_ENV"
+    else
+        ADMIN_EMAIL_TO_WATCH="$DEFAULT_ADMIN_EMAIL"
+    fi
 fi
 
 DB_USERNAME_ENV=${DB_USERNAME_ENV:-user}
 DB_DATABASE_ENV=${DB_DATABASE_ENV:-meo_mai_moi}
 DB_VOLUME_NAME=${DB_VOLUME_NAME:-$(basename "$PROJECT_ROOT")_pgdata}
+DB_FINGERPRINT_FILE="$PROJECT_ROOT/.db_volume_fingerprint"
 
 db_query() {
     local query="$1"
@@ -173,8 +191,10 @@ db_snapshot() {
     total_users=$(db_query "SELECT COUNT(*) FROM users;") || total_users="unavailable"
     [ -z "$total_users" ] && total_users="unavailable"
 
-    local admin_present="unknown"
+    local admin_present="not_tracked"
+    local include_admin="false"
     if [ -n "$ADMIN_EMAIL_TO_WATCH" ] && [ "$ADMIN_EMAIL_TO_WATCH" != "ignore" ]; then
+        include_admin="true"
         local admin_count
         admin_count=$(db_query "SELECT COUNT(*) FROM users WHERE email = '$ADMIN_EMAIL_TO_WATCH';") || admin_count="unavailable"
         if [ "$admin_count" = "__ERROR__" ] || [ "$admin_count" = "unavailable" ]; then
@@ -184,9 +204,14 @@ db_snapshot() {
         fi
     fi
 
-    note "DB snapshot ($stage): users=${total_users} admin@catarchy.space=${admin_present}"
+    local admin_summary=""
+    if [ "$include_admin" = "true" ]; then
+        admin_summary=" admin(${ADMIN_EMAIL_TO_WATCH})=${admin_present}"
+    fi
 
-    if [ "$admin_present" = "missing" ]; then
+    note "DB snapshot ($stage): users=${total_users}${admin_summary}"
+
+    if [ "$include_admin" = "true" ] && [ "$admin_present" = "missing" ]; then
         local recent_users
         recent_users=$(db_query "SELECT id || ':' || email FROM users ORDER BY created_at DESC LIMIT 5;") || recent_users=""
         if [ -n "$recent_users" ] && [ "$recent_users" != "__ERROR__" ]; then
@@ -200,7 +225,11 @@ EOF
     fi
     DB_SNAPSHOT_STAGE="$stage"
     DB_SNAPSHOT_USERS="$total_users"
-    DB_SNAPSHOT_ADMIN="$admin_present"
+    if [ "$include_admin" = "true" ]; then
+        DB_SNAPSHOT_ADMIN="$admin_present"
+    else
+        DB_SNAPSHOT_ADMIN="not_tracked"
+    fi
 }
 
 if [ "$QUIET" = "true" ]; then
@@ -245,7 +274,20 @@ fi
 
 db_snapshot "before-stop"
 
-if [ "$DB_SNAPSHOT_ADMIN" = "missing" ]; then
+EMPTY_DB_DETECTED="false"
+if [ "$DB_SNAPSHOT_USERS" = "0" ]; then
+    EMPTY_DB_DETECTED="true"
+fi
+
+if [ "$FRESH" = "false" ] && [ "$EMPTY_DB_DETECTED" = "true" ] && [ "$ALLOW_EMPTY_DB" = "false" ] && [ "$SEED" = "false" ]; then
+    echo ""
+    echo "✗ Empty database detected before deployment."
+    echo "  Use --seed to populate essential data, or --allow-empty-db to proceed anyway."
+    echo "  To quickly recreate the admin: docker compose exec backend php artisan db:seed --class=UserSeeder --force"
+    exit 1
+fi
+
+if [ "$SEED" = "false" ] && [ "$DB_SNAPSHOT_ADMIN" = "missing" ] && [ -n "$ADMIN_EMAIL_TO_WATCH" ] && [ "$ADMIN_EMAIL_TO_WATCH" != "ignore" ]; then
     note "⚠️  Admin user $ADMIN_EMAIL_TO_WATCH missing before deployment."
     if [ "$NO_INTERACTIVE" = "false" ]; then
         read -r -p "Run UserSeeder to recreate core users now? (Y/n): " seed_admin
@@ -259,12 +301,26 @@ if [ "$DB_SNAPSHOT_ADMIN" = "missing" ]; then
     fi
 fi
 
+VOLUME_CREATED_AT=""
+VOLUME_FINGERPRINT_CHANGED="false"
 if docker volume inspect "$DB_VOLUME_NAME" >/dev/null 2>&1; then
-    local_volume_created_at=$(docker volume inspect "$DB_VOLUME_NAME" --format '{{ .CreatedAt }}')
-    note "ℹ️  Volume $DB_VOLUME_NAME created at $local_volume_created_at"
+    VOLUME_CREATED_AT=$(docker volume inspect "$DB_VOLUME_NAME" --format '{{ .CreatedAt }}')
+    note "ℹ️  Volume $DB_VOLUME_NAME created at $VOLUME_CREATED_AT"
+    if [ -f "$DB_FINGERPRINT_FILE" ]; then
+        PREV_FINGERPRINT=$(cat "$DB_FINGERPRINT_FILE" 2>/dev/null || true)
+        if [ -n "$PREV_FINGERPRINT" ] && [ "$PREV_FINGERPRINT" != "$VOLUME_CREATED_AT" ]; then
+            VOLUME_FINGERPRINT_CHANGED="true"
+            echo "⚠️  DB volume fingerprint changed. Previous: $PREV_FINGERPRINT | Current: $VOLUME_CREATED_AT"
+        fi
+    fi
+    # Persist current fingerprint for future runs
+    echo "$VOLUME_CREATED_AT" > "$DB_FINGERPRINT_FILE"
 else
     note "⚠️  Database volume $DB_VOLUME_NAME not found."
 fi
+
+# (moved) Postgres cluster initialization detection will run AFTER containers are up,
+# scoped to the current db container start time to avoid stale warnings
 
 # --- Container Management ---
 if [ "$FRESH" = "true" ]; then
@@ -330,6 +386,28 @@ if [ "$elapsed" -ge "$WAIT_TIMEOUT" ]; then
     exit 1
 fi
 echo ""
+
+## Detect Postgres initdb only for current DB container lifetime
+DB_CONTAINER_ID=$(docker compose ps -q db 2>/dev/null || true)
+if [ -n "$DB_CONTAINER_ID" ]; then
+    DB_STARTED_AT=$(docker inspect -f '{{.State.StartedAt}}' "$DB_CONTAINER_ID" 2>/dev/null || true)
+    if [ -n "$DB_STARTED_AT" ]; then
+        if docker logs --since "$DB_STARTED_AT" "$DB_CONTAINER_ID" 2>/dev/null | grep -q "The database cluster will be initialized"; then
+            echo "⚠️  Postgres cluster initialization detected for current container start (fresh data directory)."
+        fi
+    fi
+fi
+
+# After a --fresh reset, update the stored DB volume fingerprint to the NEW CreatedAt
+if [ "$FRESH" = "true" ]; then
+    if docker volume inspect "$DB_VOLUME_NAME" >/dev/null 2>&1; then
+        NEW_CREATED_AT=$(docker volume inspect "$DB_VOLUME_NAME" --format '{{ .CreatedAt }}' 2>/dev/null || true)
+        if [ -n "$NEW_CREATED_AT" ]; then
+            echo "$NEW_CREATED_AT" > "$DB_FINGERPRINT_FILE"
+            note "ℹ️  Updated DB volume fingerprint after fresh reset: $NEW_CREATED_AT"
+        fi
+    fi
+fi
 
 db_snapshot "after-up"
 

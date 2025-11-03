@@ -10,6 +10,7 @@
 ./utils/deploy.sh --fresh                  # Reset everything (asks for confirmation)
 ./utils/deploy.sh --fresh --seed           # Fresh start with sample data (asks for confirmation)
 ./utils/deploy.sh --fresh --no-interactive # Fresh deploy without prompts (for CI/automation)
+./utils/deploy.sh --allow-empty-db        # Allow deploy even if DB is empty (non-fresh)
 ```
 
 See `./utils/deploy.sh --help` for full options.
@@ -19,13 +20,26 @@ See `./utils/deploy.sh --help` for full options.
 - **Confirmation prompts** for `--fresh` deployments (asks before deleting data)
 - **`--no-interactive` flag** to skip confirmations for automated scripts/CI pipelines
 - **Data preservation** by default - normal deploys never delete existing data
+- **Empty DB guard** — blocks deploy when the database appears empty unless `--allow-empty-db` or `--seed` is passed
+- **DB snapshots** — logs users count and watched admin presence before/after
+- **Volume fingerprint** — detects if the Postgres volume was re-initialized and logs CreatedAt changes
 
 ## 🛠️ Other Utility Scripts
 
 - **backup.sh** - Create timestamped backups of database and uploads
 - **restore.sh** - Interactive restore from backup files
-- **ensure-docker-env.sh** - Verify Docker environment setup
-- **debug-db-volume.sh** - Diagnose database volume issues
+
+## 🔑 Seeder Overrides
+
+Configure the initial Super Admin credentials via environment variables in `backend/.env*`:
+
+```
+SEED_ADMIN_EMAIL=admin@catarchy.space
+SEED_ADMIN_PASSWORD=password
+# Optional: SEED_ADMIN_NAME="Super Admin"
+```
+
+`DatabaseSeeder` and `deploy.sh` will honor these values when seeding and when checking for the admin user during deployments.
 
 ## ⚠️ Important Notes
 

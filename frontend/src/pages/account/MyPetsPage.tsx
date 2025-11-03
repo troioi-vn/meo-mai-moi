@@ -138,7 +138,9 @@ export default function MyPetsPage() {
             return (
               !hasVisiblePets && (
                 <div className="text-center py-12">
-                  <p className="text-muted-foreground mb-4">You don't have any pets yet.</p>
+                  <p className="text-muted-foreground mb-4">
+                    No pets yet — add your first pet to get started!
+                  </p>
                   <Button onClick={() => void navigate('/account/pets/create')}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Add Your First Pet

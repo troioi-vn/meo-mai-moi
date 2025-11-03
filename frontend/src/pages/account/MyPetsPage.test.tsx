@@ -174,7 +174,9 @@ describe('MyPetsPage', () => {
     renderWithProviders(<MyPetsPage />)
 
     await waitFor(() => {
-      expect(screen.getByText("You don't have any pets yet.")).toBeInTheDocument()
+      expect(
+        screen.getByText('No pets yet — add your first pet to get started!')
+      ).toBeInTheDocument()
       expect(screen.getByRole('button', { name: 'Add Your First Pet' })).toBeInTheDocument()
     })
   })

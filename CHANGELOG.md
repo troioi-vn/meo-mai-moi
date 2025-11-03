@@ -7,16 +7,22 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Added
 
 - SPA catch‑all web route: serve the React app for all non‑API/non‑admin paths, preserving path and query. When same‑origin, return `welcome` directly; otherwise, external redirect to `FRONTEND_URL`.
+- Email verification UX: confirmation modal before resending; 60s cooldown and 3‑attempt total limit for resend actions (state persisted in `localStorage`).
+- "Use another email" flow with confirmation dialog that logs out and redirects to registration.
 
 ### Fixed
 
 - Email verification flow now completes entirely via the link: user is auto‑logged in and redirected to the SPA at `/account/pets?verified=1` (uses external redirects to the frontend to avoid backend 404s on SPA routes).
 - SPA 404 after verification redirect resolved by the catch‑all route and using `redirect()->away(...)` for verification redirects.
 - Email Logs show a readable plain‑text body for verification emails (includes greeting, link, and expiry) instead of raw HTML. Other emails continue logging rendered HTML.
+- Duplicate "We've sent …" message on verification prompt after a second resend has been eliminated.
 
 ### Changed
 
 - Removed the “Verify your email” reminder from the bell notifications (filtered out `email_verification` type in notifications API).
+- Email verification prompt UI: removed manual "I've verified my email" button; removed the large "Resend Verification Email" button in favor of a link with confirmation; added a neutral (outline) "Use another email" trigger instead of destructive styling.
+- Email verification page: aligned with the prompt — added resend cooldown/limit and neutral "Use another email" confirm.
+- Navigation: when a logged‑in user is unverified, hide app navigation (Requests/Admin/Notifications). Only theme switcher and logout remain accessible.
 
 ### Fixed (auth/spa)
 
@@ -34,6 +40,7 @@ All notable changes to this project are documented here, following the [Keep a C
   - `utils/deploy.sh` now supports a quiet mode that still streams long-running Docker and Artisan output, plus pre/post DB snapshots that log total users and the status of the watched admin account.
   - Added interactive prompts to rebuild core users via `UserSeeder` when the admin account is missing, and automatic logging of the Postgres volume creation timestamp to detect unexpected resets.
   - Backup prompt restored with resilience fixes; targeted seeder, snapshot, and volume details are captured in both console and `.deploy.log` for easier incident investigation.
+  - `UserSeeder` picks up `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, and optional `SEED_ADMIN_NAME` from the environment so deployments can override default credentials without code changes; `deploy.sh` watches the same email when reporting DB snapshots.
 
 ### Fixed
 

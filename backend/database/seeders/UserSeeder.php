@@ -18,16 +18,42 @@ class UserSeeder extends Seeder
         $adminRole = Role::where('name', 'admin')->first();
         $viewerRole = Role::where('name', 'viewer')->first();
 
-        // Create super admin
+        $adminEmail = env('SEED_ADMIN_EMAIL', 'admin@catarchy.space');
+        $adminPassword = env('SEED_ADMIN_PASSWORD', 'password');
+        $adminName = env('SEED_ADMIN_NAME', 'Super Admin');
+
+        // Create or update super admin
         $admin = User::firstOrCreate(
-            ['email' => 'admin@catarchy.space'],
+            ['email' => $adminEmail],
             [
-                'name' => 'Super Admin',
-                'password' => Hash::make('password'),
+                'name' => $adminName,
+                'password' => Hash::make($adminPassword),
                 'email_verified_at' => now(),
             ]
         );
-        $admin->assignRole($superAdminRole);
+
+        $adminUpdates = [];
+
+        if ($admin->name !== $adminName) {
+            $adminUpdates['name'] = $adminName;
+        }
+
+        if (! Hash::check($adminPassword, $admin->password)) {
+            $adminUpdates['password'] = Hash::make($adminPassword);
+        }
+
+        if (is_null($admin->email_verified_at)) {
+            $adminUpdates['email_verified_at'] = now();
+        }
+
+        if (! empty($adminUpdates)) {
+            $admin->fill($adminUpdates);
+            $admin->save();
+        }
+
+        if ($superAdminRole && ! $admin->hasRole($superAdminRole)) {
+            $admin->assignRole($superAdminRole);
+        }
 
         // Create admin user
         $user1 = User::firstOrCreate(

@@ -20,6 +20,7 @@ export function UserMenu() {
   const { user, logout, isLoading } = useAuth()
   const { theme, setTheme } = useTheme()
   const navigate = useNavigate()
+  const isVerified = Boolean(user?.email_verified_at)
 
   if (isLoading) {
     return <Skeleton className="h-9 w-9 rounded-full" />
@@ -50,19 +51,23 @@ export function UserMenu() {
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link to="/account">Profile</Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link to="/account/pets">My Pets</Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link to="/invitations">Invitations</Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link to="/helper">Helper Profiles</Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
+        {isVerified && (
+          <>
+            <DropdownMenuItem className="cursor-pointer" asChild>
+              <Link to="/account">Profile</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" asChild>
+              <Link to="/account/pets">My Pets</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" asChild>
+              <Link to="/invitations">Invitations</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" asChild>
+              <Link to="/helper">Helper Profiles</Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuLabel>Theme</DropdownMenuLabel>
         <DropdownMenuRadioGroup
           value={theme}

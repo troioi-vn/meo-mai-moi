@@ -32,7 +32,7 @@ export function AdminPanelLink() {
       asChild
       className="h-8 px-2 text-xs border-blue-300 text-blue-700 hover:bg-blue-50"
     >
-      <a href="/admin" target="_blank" rel="noopener noreferrer">
+      <a href="/admin" rel="noopener noreferrer">
         <Settings className="h-3 w-3 mr-1" />
         <span className="hidden sm:inline">Admin</span>
       </a>

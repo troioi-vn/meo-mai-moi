@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import { useAuth } from '@/hooks/use-auth'
 
 import MainPage from './pages/MainPage'
@@ -165,18 +166,18 @@ export function AppRoutes() {
 
 export default function App() {
   const location = useLocation()
-  // Show a toast if redirected with verified=1
-  if (typeof window !== 'undefined') {
+  // Show a toast if redirected with verified=1 (run after mount so Toaster is present)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
     const params = new URLSearchParams(location.search)
     if (params.get('verified') === '1') {
-      // Clear the param quickly to avoid double toasts on re-render
+      toast.success('Email verified successfully!')
       params.delete('verified')
       const hash = location.hash || ''
       const newUrl = `${location.pathname}${params.toString() ? `?${params.toString()}` : ''}${hash}`
       window.history.replaceState({}, '', newUrl)
-      toast.success('Email verified successfully!')
     }
-  }
+  }, [location.pathname, location.search, location.hash])
 
   return (
     <>

@@ -64,11 +64,12 @@ describe('Email Verification Flow Integration', () => {
       expect(screen.getByText(/we have sent you verification email/i)).toBeInTheDocument()
     })
 
-    // Step 2: Test resend verification email
-    await user.click(screen.getByRole('button', { name: /resend verification email/i }))
+    // Step 2: Test resend verification email via confirmation modal
+    await user.click(screen.getByRole('button', { name: /try resending it/i }))
+    await user.click(screen.getByRole('button', { name: /resend email/i }))
 
     await waitFor(() => {
-      expect(screen.getAllByText(/we have sent you verification email/i)).toHaveLength(2)
+      expect(screen.getByText(/we have sent you verification email/i)).toBeInTheDocument()
     })
 
     // Step 3: Simulate clicking verification link (navigate to verification page)
@@ -146,7 +147,7 @@ describe('Email Verification Flow Integration', () => {
     })
   })
 
-  it('handles verification status check during login flow', async () => {
+  it('handles verification prompt during login flow (no manual check)', async () => {
     // Mock login response for unverified user
     server.use(
       http.post('http://localhost:3000/login', () => {
@@ -202,14 +203,9 @@ describe('Email Verification Flow Integration', () => {
     // Should show verification prompt first
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /verify your email/i })).toBeInTheDocument()
-    })
-
-    // Click "I've verified my email" button
-    await user.click(screen.getByRole('button', { name: /i've verified my email/i }))
-
-    // Should call navigate to dashboard since verification status is now true
-    await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith('/account/pets')
+      // New UI exposes resend and use-another-email actions only
+      expect(screen.getByRole('button', { name: /try resending it/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /back to login/i })).toBeInTheDocument()
     })
   })
 

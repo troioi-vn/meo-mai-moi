@@ -10,6 +10,8 @@ describe('EmailVerificationPrompt', () => {
 
   beforeEach(() => {
     user = userEvent.setup()
+    // Ensure resend cooldown/attempt state does not leak across tests
+    localStorage.clear()
   })
 
   it('renders the email verification prompt correctly', async () => {

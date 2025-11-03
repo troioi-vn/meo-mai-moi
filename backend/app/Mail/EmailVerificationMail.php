@@ -5,7 +5,6 @@ namespace App\Mail;
 use App\Enums\NotificationType;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -14,9 +13,9 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
 
-class EmailVerificationMail extends Mailable implements ShouldQueue
+class EmailVerificationMail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use SerializesModels;
 
     public string $verificationUrl;
 

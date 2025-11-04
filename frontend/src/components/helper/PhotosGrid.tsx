@@ -19,7 +19,7 @@ export const PhotosGrid: React.FC<Props> = ({ photos, onDelete, deleting = false
       {photos.map((photo) => (
         <div key={photo.id} className="relative">
           <img
-            src={'http://localhost:8000/storage/' + photo.path}
+            src={'/storage/' + photo.path}
             alt="Helper profile photo"
             className="w-full h-full object-cover"
           />

@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderWithRouter, userEvent } from '@/test-utils'
 import InvitationsPage from './InvitationsPage'
@@ -6,6 +6,7 @@ import { server } from '@/mocks/server'
 import { HttpResponse, http } from 'msw'
 import { toast } from 'sonner'
 import type { User } from '@/types/user'
+import * as inviteSystemApi from '@/api/invite-system'
 
 vi.mock('sonner', async () => {
   const actual = await vi.importActual('sonner')
@@ -258,6 +259,71 @@ describe('InvitationsPage', () => {
       expect(screen.getByText(/failed to load invitations/i)).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument()
     })
+  })
+
+  it('refreshes invitations data periodically', async () => {
+    const intervalSpy = vi.spyOn(window, 'setInterval')
+    const getUserInvitationsMock = vi.spyOn(inviteSystemApi, 'getUserInvitations')
+    const getInvitationStatsMock = vi.spyOn(inviteSystemApi, 'getInvitationStats')
+
+    const refreshedInvitations = [
+      ...mockInvitations,
+      {
+        id: 4,
+        code: 'newrefresh',
+        status: 'pending',
+        expires_at: null,
+        created_at: '2024-01-04T00:00:00Z',
+        invitation_url: 'http://localhost:3000/register?invitation_code=newrefresh',
+        recipient: null,
+      },
+    ]
+
+    const refreshedStats = { total: 4, pending: 2, accepted: 1, expired: 1, revoked: 0 }
+
+    getUserInvitationsMock.mockResolvedValueOnce(mockInvitations)
+    getUserInvitationsMock.mockResolvedValue(refreshedInvitations)
+    getInvitationStatsMock.mockResolvedValueOnce({
+      total: 3,
+      pending: 1,
+      accepted: 1,
+      expired: 1,
+      revoked: 0,
+    })
+    getInvitationStatsMock.mockResolvedValue(refreshedStats)
+
+    try {
+      renderInvitationsPage()
+
+      await waitFor(() => {
+        expect(screen.getByText(/abc123xy/)).toBeInTheDocument()
+      })
+
+      expect(intervalSpy).toHaveBeenCalled()
+
+      const intervalCall = intervalSpy.mock.calls.find(([, delay]) => delay === 30_000)
+      expect(intervalCall).toBeDefined()
+
+      const intervalCallback = intervalCall?.[0] as (() => void) | undefined
+      expect(intervalCallback).toBeDefined()
+
+      act(() => {
+        intervalCallback?.()
+      })
+
+      await waitFor(() => {
+        expect(getUserInvitationsMock).toHaveBeenCalledTimes(2)
+        expect(getInvitationStatsMock).toHaveBeenCalledTimes(2)
+      })
+
+      await waitFor(() => {
+        expect(screen.getByText(/newrefre/)).toBeInTheDocument()
+      })
+    } finally {
+      intervalSpy.mockRestore()
+      getUserInvitationsMock.mockRestore()
+      getInvitationStatsMock.mockRestore()
+    }
   })
 
   it('copies invitation link to clipboard', async () => {

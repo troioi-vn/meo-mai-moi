@@ -81,5 +81,25 @@ describe('EmailVerificationPrompt', () => {
     })
   })
 
+  it('disables the change email option when configured', async () => {
+    renderWithRouter(
+      <EmailVerificationPrompt
+        email="invitee@example.com"
+        message="Please verify your email address."
+        emailSent={true}
+        disableEmailChange
+        emailChangeDisabledReason="Invited accounts must use the original email."
+      />
+    )
+
+    await waitFor(() => {
+      const disabledButton = screen.getByRole('button', { name: /use another email/i })
+      expect(disabledButton).toBeDisabled()
+      expect(
+        screen.getByText(/invited accounts must use the original email/i)
+      ).toBeInTheDocument()
+    })
+  })
+
   // Manual verification check button removed from UI; related tests removed.
 })

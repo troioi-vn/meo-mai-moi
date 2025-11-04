@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -28,34 +28,63 @@ import { format } from 'date-fns'
 import InvitationQRCode from '@/components/InvitationQRCode'
 import InvitationShare from '@/components/InvitationShare'
 
+const REFRESH_INTERVAL_MS = 30_000
+
 export default function InvitationsPage() {
   const [invitations, setInvitations] = useState<Invitation[]>([])
   const [stats, setStats] = useState<InvitationStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const isRefreshingRef = useRef(false)
 
-  const loadData = async () => {
-    try {
-      setIsLoading(true)
-      setError(null)
-      const [invitationsData, statsData] = await Promise.all([
-        getUserInvitations(),
-        getInvitationStats(),
-      ])
-      setInvitations(invitationsData)
-      setStats(statsData)
-    } catch (err) {
-      console.error('Failed to load invitations:', err)
-      setError('Failed to load invitations. Please try again.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const loadData = useCallback(
+    async ({ showLoading = true }: { showLoading?: boolean } = {}) => {
+      if (isRefreshingRef.current) {
+        return
+      }
+
+      if (showLoading) {
+        setIsLoading(true)
+        setError(null)
+      }
+
+      isRefreshingRef.current = true
+
+      try {
+        const [invitationsData, statsData] = await Promise.all([
+          getUserInvitations(),
+          getInvitationStats(),
+        ])
+        setInvitations(invitationsData)
+        setStats(statsData)
+        setError(null)
+      } catch (err) {
+        console.error('Failed to load invitations:', err)
+        if (showLoading) {
+          setError('Failed to load invitations. Please try again.')
+        }
+      } finally {
+        isRefreshingRef.current = false
+        if (showLoading) {
+          setIsLoading(false)
+        }
+      }
+    },
+    []
+  )
 
   useEffect(() => {
     void loadData()
-  }, [])
+
+    const intervalId = window.setInterval(() => {
+      void loadData({ showLoading: false })
+    }, REFRESH_INTERVAL_MS)
+
+    return () => {
+      window.clearInterval(intervalId)
+    }
+  }, [loadData])
 
   const handleGenerateInvitation = async () => {
     try {

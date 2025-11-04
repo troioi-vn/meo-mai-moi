@@ -46,6 +46,7 @@ export default function RegisterPage() {
 
   // Show email verification prompt if registration requires verification
   if (registrationResponse?.requires_verification) {
+    const disableEmailChange = mode === 'invite-only-with-code'
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <EmailVerificationPrompt
@@ -55,6 +56,12 @@ export default function RegisterPage() {
           onVerificationComplete={() => {
             void handleVerificationComplete()
           }}
+          disableEmailChange={disableEmailChange}
+          emailChangeDisabledReason={
+            disableEmailChange
+              ? 'Invited accounts must keep the email that received the invitation. Ask your inviter to send a new link if you need to switch addresses.'
+              : undefined
+          }
         />
       </div>
     )

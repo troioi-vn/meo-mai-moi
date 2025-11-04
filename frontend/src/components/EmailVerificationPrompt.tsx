@@ -24,6 +24,8 @@ interface EmailVerificationPromptProps {
   message: string
   emailSent: boolean
   onVerificationComplete?: () => void
+  disableEmailChange?: boolean
+  emailChangeDisabledReason?: string
 }
 
 interface ResendResponse {
@@ -36,6 +38,8 @@ export default function EmailVerificationPrompt({
   message,
   emailSent,
   onVerificationComplete,
+  disableEmailChange = false,
+  emailChangeDisabledReason,
 }: EmailVerificationPromptProps) {
   const [isResending, setIsResending] = useState(false)
   const [resendMessage, setResendMessage] = useState<string | null>(null)
@@ -201,28 +205,41 @@ export default function EmailVerificationPrompt({
         )}
 
         <div className="space-y-3">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="outline" className="w-full">
+          {disableEmailChange ? (
+            <div className="space-y-2">
+              <Button variant="outline" className="w-full" disabled aria-disabled>
                 Use another email
               </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Use another email address?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to use another email address? This will create a new user
-                  account and you will need to verify it again.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => void handleUseAnotherEmail()}>
+              {emailChangeDisabledReason && (
+                <p className="text-xs text-muted-foreground text-center">
+                  {emailChangeDisabledReason}
+                </p>
+              )}
+            </div>
+          ) : (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="w-full">
                   Use another email
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Use another email address?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to use another email address? This will create a new user
+                    account and you will need to verify it again.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => void handleUseAnotherEmail()}>
+                    Use another email
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </div>
 
         <div className="text-center text-sm text-muted-foreground">

@@ -4,6 +4,14 @@ tmp/
 backups/
 .venv/
 .deploy.log
+.deploy.log.json
+.deploy.log.notifications
+.rollback/
+.db_volume_fingerprint
+deploy.lock
+
+# Local dev certificates (self-signed, should never be committed)
+backend/certs/
 
 # Laravel
 /bootstrap/cache/*.php

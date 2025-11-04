@@ -53,7 +53,12 @@ chmod -R 775 /var/www/storage/app/public
 # /var/www/public (host files). Just ensure it exists and is writable so storage:link works.
 echo "[Step 3.1] Ensuring permissions for public directory (for storage:link)..."
 mkdir -p /var/www/public
-chmod -R 777 /var/www/public
+# Only ensure the top-level public directory is writable for creating symlinks
+# Avoid recursively chmod'ing mounted subpaths like /var/www/public/docs which may be read-only
+chmod 777 /var/www/public || true
+
+# HTTPS for local development is handled by the dedicated https-proxy service in docker-compose.
+# The backend container serves HTTP on port 80 only to avoid duplication and confusion.
 
 echo "[Step 4] Preparing environment file and APP_KEY..."
 # Ensure an application .env exists inside the container

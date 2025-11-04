@@ -3,73 +3,19 @@ set -euo pipefail
 
 # --- Configuration ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-ENV_FILE="$PROJECT_ROOT/backend/.env.docker"
-ENV_EXAMPLE="$PROJECT_ROOT/backend/.env.docker.example"
-DEPLOY_LOG="$PROJECT_ROOT/.deploy.log"
 
-# Preserve original stdout/stderr so we can write concise messages even in quiet mode
-exec 3>&1 4>&2
+# shellcheck source=./setup.sh
+source "$SCRIPT_DIR/setup.sh"
+# shellcheck source=./deploy_db.sh
+source "$SCRIPT_DIR/deploy_db.sh"
+# shellcheck source=./deploy_docker.sh
+source "$SCRIPT_DIR/deploy_docker.sh"
+# shellcheck source=./deploy_notify.sh
+source "$SCRIPT_DIR/deploy_notify.sh"
+# shellcheck source=./deploy_post.sh
+source "$SCRIPT_DIR/deploy_post.sh"
 
-# Start logging (default: mirror to console + log). If --quiet is passed later, we'll reconfigure.
-exec > >(tee -a "$DEPLOY_LOG") 2>&1
-echo "=========================================="
-echo "Deployment started at $(date)"
-echo "=========================================="
-
-# Ensure .env.docker exists before proceeding
-if [ ! -f "$ENV_FILE" ] && [ -f "$ENV_EXAMPLE" ]; then
-    echo "ℹ️  'backend/.env.docker' not found. Copying from example..."
-    cp "$ENV_EXAMPLE" "$ENV_FILE"
-fi
-
-# Validate required tools
-for cmd in docker; do
-    if ! command -v "$cmd" &> /dev/null; then
-        echo "✗ Required command '$cmd' not found. Please install it first." >&2
-        exit 1
-    fi
-done
-
-# Trap errors for better debugging
-trap 'echo "✗ Deployment failed at line $LINENO. Check $DEPLOY_LOG for details." >&2' ERR
-
-# --- Helper Functions ---
-
-# Function to print help message
-print_help() {
-    cat <<'EOF'
-Usage: ./utils/deploy.sh [--fresh] [--seed] [--no-cache] [--no-interactive] [--quiet] [--allow-empty-db]
-
-Flags:
-    --fresh          Drop and recreate database, re-run all migrations; also clears volumes/containers.
-    --seed           Seed the database after running migrations (or migrate:fresh).
-    --no-cache       Build Docker images without using cache.
-    --no-interactive Skip confirmation prompts (useful for automated scripts/CI).
-    --quiet          Reduce console output; full logs go to .deploy.log.
-    --allow-empty-db Allow deployment to proceed even if database appears empty (non-fresh).
-
-Default behavior (no flags):
-    - Build and start containers (preserves existing database data)
-    - Wait for backend to be healthy
-    - Run database migrations only (no seeding, no data loss)
-
-Examples:
-    ./utils/deploy.sh                          # normal deploy (migrate only, preserves data)
-    ./utils/deploy.sh --seed                   # migrate + seed
-    ./utils/deploy.sh --fresh                  # reset DB/volumes (asks for confirmation)
-    ./utils/deploy.sh --fresh --seed           # fresh + seed (asks for confirmation)
-    ./utils/deploy.sh --fresh --no-interactive # fresh without prompts (for CI/automation)
-    ./utils/deploy.sh --no-cache               # rebuild images without cache
-
-IMPORTANT: Data Preservation
-    - Without --fresh: All existing database data is PRESERVED
-    - The pgdata Docker volume is NOT removed (only containers stop)
-    - Only NEW migrations are applied
-    - Use --fresh ONLY if you want a clean slate with no old data
-    - Deploy will BLOCK if DB appears empty (unless --allow-empty-db or --seed)
-EOF
-}
+setup_initialize
 
 ## (Removed) get_db_stats and check_db_connection helpers to simplify deployment flow
 
@@ -84,6 +30,7 @@ FRESH="false"
 NO_INTERACTIVE="false"
 QUIET="false"
 ALLOW_EMPTY_DB="false"
+TEST_NOTIFY="false"
 
 for arg in "$@"; do
     case "$arg" in
@@ -105,6 +52,9 @@ for arg in "$@"; do
             ;;
         --allow-empty-db)
             ALLOW_EMPTY_DB="true"
+            ;;
+        --test-notify)
+            TEST_NOTIFY="true"
             ;;
         -h|--help)
             print_help
@@ -139,98 +89,177 @@ run_cmd_with_console() {
     fi
 }
 
-DEFAULT_ADMIN_EMAIL="admin@catarchy.space"
-ADMIN_EMAIL_TO_WATCH=${ADMIN_EMAIL_TO_WATCH:-}
+deploy_notify_initialize
 
-if [ -f "$ENV_FILE" ]; then
-    DB_USERNAME_ENV=$(grep -E '^DB_USERNAME=' "$ENV_FILE" | tail -n1 | cut -d '=' -f2-)
-    DB_DATABASE_ENV=$(grep -E '^DB_DATABASE=' "$ENV_FILE" | tail -n1 | cut -d '=' -f2-)
-    ADMIN_EMAIL_ENV=$(grep -E '^SEED_ADMIN_EMAIL=' "$ENV_FILE" | tail -n1 | cut -d '=' -f2-)
-else
-    DB_USERNAME_ENV=""
-    DB_DATABASE_ENV=""
-    ADMIN_EMAIL_ENV=""
-fi
-
-if [ -z "$ADMIN_EMAIL_TO_WATCH" ]; then
-    if [ -n "$ADMIN_EMAIL_ENV" ]; then
-        ADMIN_EMAIL_TO_WATCH="$ADMIN_EMAIL_ENV"
+# Handle --test-notify flag
+if [ "$TEST_NOTIFY" = "true" ]; then
+    if [ "$DEPLOY_NOTIFY_ENABLED" = "true" ]; then
+        echo "✓ Telegram notifications are configured"
+        echo "  Token: ${DEPLOY_NOTIFY_BOT_TOKEN:0:10}..."
+        echo "  Chat ID: $DEPLOY_NOTIFY_CHAT_ID"
+        echo "  Prefix: $DEPLOY_NOTIFY_PREFIX"
+        echo ""
+        echo "Sending test notification..."
+        deploy_notify_send "Test notification sent at $(deploy_notify_now)."
+        echo "✓ Test notification sent successfully"
+        exit 0
     else
-        ADMIN_EMAIL_TO_WATCH="$DEFAULT_ADMIN_EMAIL"
+        echo "✗ Telegram notifications are not configured"
+        echo "  Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in backend/.env.docker"
+        exit 1
     fi
 fi
 
-DB_USERNAME_ENV=${DB_USERNAME_ENV:-user}
-DB_DATABASE_ENV=${DB_DATABASE_ENV:-meo_mai_moi}
-DB_VOLUME_NAME=${DB_VOLUME_NAME:-$(basename "$PROJECT_ROOT")_pgdata}
-DB_FINGERPRINT_FILE="$PROJECT_ROOT/.db_volume_fingerprint"
+deploy_notify_register_traps
+deploy_notify_send_start
 
-db_query() {
-    local query="$1"
-    local result
-    if ! result=$(docker compose exec -T db psql -U "$DB_USERNAME_ENV" -d "$DB_DATABASE_ENV" -At -c "$query" 2>/dev/null); then
-        echo "__ERROR__"
-        return 1
+# Rollback support
+ROLLBACK_SNAPSHOT=""
+ROLLBACK_DIR="$PROJECT_ROOT/.rollback"
+
+create_rollback_point() {
+    ROLLBACK_SNAPSHOT="rollback-$(date +%s)"
+    mkdir -p "$ROLLBACK_DIR"
+    
+    note "Creating rollback point: $ROLLBACK_SNAPSHOT"
+    log_info "Creating rollback point" "snapshot=$ROLLBACK_SNAPSHOT"
+    
+    # Tag current git commit
+    if git -C "$PROJECT_ROOT" tag -f "$ROLLBACK_SNAPSHOT" HEAD 2>/dev/null; then
+        note "✓ Git tag created: $ROLLBACK_SNAPSHOT"
+    else
+        note "⚠️  Could not create git tag for rollback"
+        log_warn "Git tag creation failed" "snapshot=$ROLLBACK_SNAPSHOT"
     fi
-    echo "$result" | tr -d '\r' | sed 's/[[:space:]]*$//'
-    return 0
+    
+    # Save current commit hash
+    local current_commit
+    current_commit=$(git -C "$PROJECT_ROOT" rev-parse HEAD 2>/dev/null || echo "unknown")
+    echo "$current_commit" > "$ROLLBACK_DIR/$ROLLBACK_SNAPSHOT.commit"
+    
+    # Save docker compose config state
+    docker compose config > "$ROLLBACK_DIR/$ROLLBACK_SNAPSHOT.compose.yml" 2>/dev/null || true
+    
+    # Save image IDs
+    docker compose images --quiet > "$ROLLBACK_DIR/$ROLLBACK_SNAPSHOT.images" 2>/dev/null || true
+    
+    note "✓ Rollback point created"
+    note "  To rollback: ./utils/rollback.sh $ROLLBACK_SNAPSHOT"
+    log_success "Rollback point created" "snapshot=$ROLLBACK_SNAPSHOT commit=$current_commit"
 }
 
-db_snapshot() {
-    local stage="$1"
+sync_repository_with_remote() {
+    local env="$1"
+    local branch_override="${DEPLOY_BRANCH_OVERRIDE:-}"
+    local target_branch
 
-    if ! docker compose ps --status=running 2>/dev/null | grep -q " db "; then
-        note "DB snapshot ($stage): db container not running"
-        DB_SNAPSHOT_STAGE="$stage"
-        DB_SNAPSHOT_USERS="unavailable"
-        DB_SNAPSHOT_ADMIN="unavailable"
+    if [ -n "$branch_override" ]; then
+        target_branch="$branch_override"
+    else
+        target_branch=$(determine_deploy_branch "$env")
+    fi
+
+    if [ -z "$target_branch" ]; then
+        note "⚠️  Unable to determine target git branch for environment '$env'. Skipping repository sync."
+        log_warn "Repository sync skipped - no target branch for env: $env"
         return
     fi
 
-    local total_users
-    total_users=$(db_query "SELECT COUNT(*) FROM users;") || total_users="unavailable"
-    [ -z "$total_users" ] && total_users="unavailable"
+    local current_branch
+    current_branch=$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD || echo "")
 
-    local admin_present="not_tracked"
-    local include_admin="false"
-    if [ -n "$ADMIN_EMAIL_TO_WATCH" ] && [ "$ADMIN_EMAIL_TO_WATCH" != "ignore" ]; then
-        include_admin="true"
-        local admin_count
-        admin_count=$(db_query "SELECT COUNT(*) FROM users WHERE email = '$ADMIN_EMAIL_TO_WATCH';") || admin_count="unavailable"
-        if [ "$admin_count" = "__ERROR__" ] || [ "$admin_count" = "unavailable" ]; then
-            admin_present="unavailable"
+    if [ -z "$current_branch" ]; then
+        echo "✗ Unable to identify current git branch. Aborting deployment." >&2
+        log_error "Unable to identify current git branch"
+        exit 1
+    fi
+
+    if [ "$current_branch" != "$target_branch" ]; then
+        if [ -z "$branch_override" ]; then
+            echo "✗ Current branch ($current_branch) does not match target deployment branch ($target_branch)." >&2
+            echo "  Switch branches or set DEPLOY_BRANCH_OVERRIDE before rerunning this script." >&2
+            log_error "Branch mismatch" "current=$current_branch target=$target_branch"
+            exit 1
         else
-            admin_present=$([ "$admin_count" = "1" ] && echo "present" || echo "missing")
+            note "⚠️  Working tree on branch '$current_branch' but DEPLOY_BRANCH_OVERRIDE='$branch_override'. Proceeding with repository sync."
+            log_warn "Branch override active" "current=$current_branch override=$branch_override"
         fi
     fi
 
-    local admin_summary=""
-    if [ "$include_admin" = "true" ]; then
-        admin_summary=" admin(${ADMIN_EMAIL_TO_WATCH})=${admin_present}"
+    local git_status
+    git_status=$(git -C "$PROJECT_ROOT" status --porcelain || true)
+    if [ -n "$git_status" ]; then
+        note "⚠️  Uncommitted changes detected; this may affect git sync."
+        log_warn "Uncommitted changes detected"
     fi
 
-    note "DB snapshot ($stage): users=${total_users}${admin_summary}"
-
-    if [ "$include_admin" = "true" ] && [ "$admin_present" = "missing" ]; then
-        local recent_users
-        recent_users=$(db_query "SELECT id || ':' || email FROM users ORDER BY created_at DESC LIMIT 5;") || recent_users=""
-        if [ -n "$recent_users" ] && [ "$recent_users" != "__ERROR__" ]; then
-            note "Recent users ($stage):"
-            while IFS= read -r line; do
-                [ -n "$line" ] && note "  - $line"
-            done <<EOF
-$recent_users
-EOF
-        fi
+    note "ℹ️  Fetching latest changes from origin/$target_branch..."
+    log_info "Fetching from remote" "branch=$target_branch"
+    git -C "$PROJECT_ROOT" fetch origin "$target_branch" || {
+        echo "✗ Failed to fetch from remote" >&2
+        log_error "Git fetch failed" "branch=$target_branch"
+        exit 1
+    }
+    
+    local local_commit remote_commit
+    local_commit=$(git -C "$PROJECT_ROOT" rev-parse HEAD 2>/dev/null || echo "")
+    remote_commit=$(git -C "$PROJECT_ROOT" rev-parse "origin/$target_branch" 2>/dev/null || echo "")
+    
+    if [ "$local_commit" = "$remote_commit" ]; then
+        note "✓ Already up to date"
+        log_info "Repository already up to date" "commit=$local_commit"
+        return
     fi
-    DB_SNAPSHOT_STAGE="$stage"
-    DB_SNAPSHOT_USERS="$total_users"
-    if [ "$include_admin" = "true" ]; then
-        DB_SNAPSHOT_ADMIN="$admin_present"
+    
+    # Check if we can fast-forward
+    if git -C "$PROJECT_ROOT" merge-base --is-ancestor HEAD "origin/$target_branch" 2>/dev/null; then
+        note "Fast-forwarding to origin/$target_branch..."
+        log_info "Fast-forwarding to remote" "from=$local_commit to=$remote_commit"
+        git -C "$PROJECT_ROOT" merge --ff-only "origin/$target_branch" || {
+            echo "✗ Fast-forward merge failed" >&2
+            log_error "Fast-forward merge failed"
+            exit 1
+        }
+        note "✓ Repository updated successfully"
+        log_success "Repository updated" "commit=$remote_commit"
     else
-        DB_SNAPSHOT_ADMIN="not_tracked"
+        # Branches have diverged
+        echo "⚠️  Local branch has diverged from origin/$target_branch" >&2
+        echo "  Local commit:  $local_commit" >&2
+        echo "  Remote commit: $remote_commit" >&2
+        log_warn "Branch divergence detected" "local=$local_commit remote=$remote_commit"
+        
+        if [ "${DEPLOY_FORCE_RESET:-false}" = "true" ]; then
+            note "DEPLOY_FORCE_RESET=true: Resetting to origin/$target_branch..."
+            log_warn "Force reset to remote" "target=$remote_commit"
+            git -C "$PROJECT_ROOT" reset --hard "origin/$target_branch"
+            note "✓ Repository reset to remote state"
+            log_success "Repository reset to remote" "commit=$remote_commit"
+        elif [ "$NO_INTERACTIVE" = "false" ]; then
+            read -r -p "Reset local branch to match origin/$target_branch? (y/N): " reset_confirm
+            if [[ "$reset_confirm" =~ ^[yY]$ ]]; then
+                note "Resetting to origin/$target_branch..."
+                log_info "User confirmed reset to remote" "target=$remote_commit"
+                git -C "$PROJECT_ROOT" reset --hard "origin/$target_branch"
+                note "✓ Repository reset to remote state"
+                log_success "Repository reset to remote" "commit=$remote_commit"
+            else
+                echo "✗ Cannot continue with diverged branches" >&2
+                log_error "User declined reset - branches diverged"
+                exit 1
+            fi
+        else
+            echo "✗ Cannot proceed with diverged branches in non-interactive mode" >&2
+            echo "  Set DEPLOY_FORCE_RESET=true to auto-reset, or run interactively" >&2
+            log_error "Branch divergence in non-interactive mode"
+            exit 1
+        fi
     fi
 }
+
+sync_repository_with_remote "$APP_ENV_CURRENT"
+
+deploy_db_initialize
 
 if [ "$QUIET" = "true" ]; then
     # Reduce console noise: route stdout/stderr to log file, keep fd 3 for concise messages
@@ -273,6 +302,11 @@ if [ "$FRESH" = "false" ] && [ "$NO_INTERACTIVE" = "false" ]; then
 fi
 
 db_snapshot "before-stop"
+
+# Create rollback point before making changes (unless doing a fresh deployment)
+if [ "$FRESH" = "false" ]; then
+    create_rollback_point
+fi
 
 EMPTY_DB_DETECTED="false"
 if [ "$DB_SNAPSHOT_USERS" = "0" ]; then
@@ -349,40 +383,16 @@ else
 fi
 
 echo ""
-note "Building and starting containers..."
-BUILD_ARGS=()
-if [ "$NO_CACHE" = "true" ]; then
-    echo "Building without cache..."
-    run_cmd_with_console docker compose build --no-cache
-    BUILD_ARGS+=(-d)
-else
-    BUILD_ARGS+=(--build -d)
+deploy_docker_start "$NO_CACHE"
+if ! deploy_docker_wait_for_backend 300 5; then
+    exit 1
 fi
+echo ""
 
-run_cmd_with_console docker compose up "${BUILD_ARGS[@]}"
-
-# --- Wait for Backend Health ---
-note "Waiting for backend to become healthy..."
-WAIT_TIMEOUT=300
-WAIT_INTERVAL=5
-elapsed=0
-
-while [ "$elapsed" -lt "$WAIT_TIMEOUT" ]; do
-    if docker compose ps backend 2>/dev/null | grep -q '(healthy)'; then
-        note "✓ Backend is healthy"
-        break
-    fi
-    
-    printf "⏳ Waiting... (%d/%ds)\r" "$elapsed" "$WAIT_TIMEOUT"
-    sleep "$WAIT_INTERVAL"
-    elapsed=$((elapsed + WAIT_INTERVAL))
-done
-
-if [ "$elapsed" -ge "$WAIT_TIMEOUT" ]; then
-    echo ""
-    echo "✗ Backend failed to become healthy within ${WAIT_TIMEOUT}s" >&2
-    echo "Recent logs:" >&2
-    docker compose logs --tail=20 backend >&2
+# Verify application is working properly
+if ! deploy_docker_verify_application; then
+    echo "✗ Application verification failed. Check logs for details." >&2
+    log_error "Application verification failed - aborting deployment"
     exit 1
 fi
 echo ""
@@ -414,34 +424,10 @@ db_snapshot "after-up"
 ## (Removed) post-start DB stats re-check
 
 echo ""
-note "Running database $MIGRATE_COMMAND..."
-# NOTE: Migrations are intentionally run HERE (not in container entrypoint) to:
-# 1. Prevent race conditions when multiple containers start
-# 2. Allow explicit control and verification of schema changes
-# 3. Enable pre-migration checks (backups, data verification)
-# 4. Support zero-downtime deployments with controlled migration timing
-run_cmd_with_console docker compose exec backend php artisan "$MIGRATE_COMMAND" --force
+deploy_post_run_migrations "$MIGRATE_COMMAND" "$SEED"
 
-# --- Seeding Strategy ---
-if [ "$MIGRATE_COMMAND" = "migrate:fresh" ]; then
-    # Always seed after migrate:fresh to ensure all required data exists
-    echo "Seeding database after fresh migration..."
-    run_cmd_with_console docker compose exec backend php artisan db:seed --force
-    echo "✓ Database seeded successfully"
-elif [ "$SEED" = "true" ]; then
-    # Explicit --seed flag: run full seeder
-    echo "Seeding database..."
-    run_cmd_with_console docker compose exec backend php artisan db:seed --force
-    echo "✓ Database seeded successfully"
-fi
-
-# --- Post-Migration Setup ---
 echo ""
-note "Generating Filament Shield resources..."
-run_cmd_with_console docker compose exec backend php artisan shield:generate --all --panel=admin --minimal
-
-note "Optimizing application..."
-run_cmd_with_console docker compose exec backend php artisan optimize
+deploy_post_finalize
 
 db_snapshot "after-migrate"
 
@@ -450,5 +436,15 @@ db_snapshot "after-migrate"
 echo ""
 note "✓ Deployment complete!"
 [ "$FRESH" = "false" ] && note "✓ Existing data preserved"
+
+# Calculate and report deployment duration
+if [ -n "$DEPLOY_START_TIME" ]; then
+    DEPLOY_END_TIME=$(date +%s)
+    DEPLOY_DURATION=$((DEPLOY_END_TIME - DEPLOY_START_TIME))
+    note "⏱️  Deployment completed in ${DEPLOY_DURATION}s"
+    log_success "Deployment completed" "duration=${DEPLOY_DURATION}s"
+fi
+
 echo ""
 note "📝 Full deployment log: $DEPLOY_LOG"
+note "📊 JSON log: $DEPLOY_LOG_JSON"

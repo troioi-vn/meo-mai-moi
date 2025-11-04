@@ -1,0 +1,4 @@
+{"deployment_started":"2025-11-04T20:57:58Z"}
+{"timestamp":"2025-11-04T20:57:58Z","level":"INFO","message":"Deployment initialization started"}
+{"timestamp":"2025-11-04T20:57:58Z","level":"INFO","message":"Deployment lock acquired","extra":"pid=1845604"}
+{"timestamp":"2025-11-04T20:57:58Z","level":"ERROR","message":"Branch mismatch","extra":"current=main target=dev"}

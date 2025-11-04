@@ -22,6 +22,11 @@ services:
     volumes:
       - uploads_data:/var/www/storage/app/public
       - logs_data:/var/www/storage/logs
+      # Mount built docs into public path to serve at /docs
+      - ./docs/.vitepress/dist:/var/www/public/docs:ro
+      # Mount certificates directory (optional). If ENABLE_HTTPS=true and certs exist,
+      # entrypoint will enable HTTPS using these files. Safe to mount even if empty.
+      - ./backend/certs:/etc/nginx/certs:ro
     healthcheck:
       test:
         - CMD
@@ -32,6 +37,21 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+    restart: unless-stopped
+
+  https-proxy:
+    image: nginx:alpine
+    profiles:
+      - https
+    depends_on:
+      - backend
+    ports:
+      - "443:443"
+    volumes:
+      - ./backend/certs:/etc/nginx/certs:ro
+      - ./backend/nginx-https-proxy.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - meo-mai-moi-network
     restart: unless-stopped
 
   db:

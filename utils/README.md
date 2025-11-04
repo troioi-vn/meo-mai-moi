@@ -15,6 +15,12 @@
 
 See `./utils/deploy.sh --help` for full options.
 
+Logs:
+
+- Per-run logs are written to `.deploy/deploy-YYYYMMDD-HHMMSS.log` and `.json`.
+- Convenience symlinks to the latest run: `.deploy.log` and `.deploy.log.json` at repo root.
+- Logs older than 30 days are automatically removed.
+
 ## 🔐 Safety Features
 
 - **Confirmation prompts** for `--fresh` deployments (asks before deleting data)
@@ -26,7 +32,7 @@ See `./utils/deploy.sh --help` for full options.
 
 ## 🛠️ Other Utility Scripts
 
-- **backup.sh** - Create timestamped backups of database and uploads
+- **backup.sh** - Create timestamped database backups as `.sql.gz`
 - **restore.sh** - Interactive restore from backup files
 
 ## 🔑 Seeder Overrides
@@ -40,6 +46,11 @@ SEED_ADMIN_PASSWORD=password
 ```
 
 `DatabaseSeeder` and `deploy.sh` will honor these values when seeding and when checking for the admin user during deployments.
+
+## 🔁 Backup & Restore Formats
+
+- Database backups are created as gzip-compressed files: `backups/backup-YYYY-MM-DD_HH-MM-SS.sql.gz`
+- The restore tool supports both the new `.sql.gz` files and legacy `db_backup_*.sql` files.
 
 ## ⚠️ Important Notes
 

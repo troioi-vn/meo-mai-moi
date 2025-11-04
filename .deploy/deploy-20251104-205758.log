@@ -1,0 +1,6 @@
+==========================================
+Deployment started at Wed Nov  5 03:57:58 AM +07 2025
+==========================================
+ℹ️  Deployment lock acquired at /home/edward/Documents/meo-mai-moi/deploy.lock
+✗ Current branch (main) does not match target deployment branch (dev).
+  Switch branches or set DEPLOY_BRANCH_OVERRIDE before rerunning this script.

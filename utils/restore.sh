@@ -28,25 +28,44 @@ DOCKER_VOLUME_NAME="$(basename "$PROJECT_ROOT")_uploads_data"
 restore_db() {
     echo "Please select a database backup file to restore:"
     # Use a subshell to change directory for file selection
-    (cd "$BACKUP_DIR" && select DB_BACKUP_FILE in db_backup_*.sql; do
-        if [ -n "$DB_BACKUP_FILE" ]; then
-            read -p "Are you sure you want to restore '$DB_BACKUP_FILE'? This will overwrite the current database. (y/n) " -n 1 -r
-            echo
-            if [[ $REPLY =~ ^[Yy]$ ]]; then
-                echo "Restoring database '$DB_NAME' as user '$DB_USER'..."
-                docker compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T db psql -U "$DB_USER" -d postgres -c "DROP DATABASE IF EXISTS \"$DB_NAME\";"
-                docker compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T db psql -U "$DB_USER" -d postgres -c "CREATE DATABASE \"$DB_NAME\";"
-                cat "$BACKUP_DIR/$DB_BACKUP_FILE" | docker compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T db psql -U "$DB_USER" -d "$DB_NAME"
-                echo "Database restoration complete."
-            else
-                echo "Restore cancelled."
-            fi
-            break
-        else
-            echo "Invalid selection. No backup files found or selection out of range."
-            break
+    (
+        shopt -s nullglob
+        cd "$BACKUP_DIR"
+        local options=(backup-*.sql.gz db_backup_*.sql)
+        # Flatten globs into actual files
+        local files=()
+        local f
+        for f in ${options[@]}; do
+            files+=("$f")
+        done
+        if [ ${#files[@]} -eq 0 ]; then
+            echo "No database backup files found in $BACKUP_DIR"
+            return
         fi
-    done)
+        select DB_BACKUP_FILE in "${files[@]}"; do
+            if [ -n "$DB_BACKUP_FILE" ]; then
+                read -p "Are you sure you want to restore '$DB_BACKUP_FILE'? This will overwrite the current database. (y/n) " -n 1 -r
+                echo
+                if [[ $REPLY =~ ^[Yy]$ ]]; then
+                    echo "Restoring database '$DB_NAME' as user '$DB_USER'..."
+                    docker compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T db psql -U "$DB_USER" -d postgres -c "DROP DATABASE IF EXISTS \"$DB_NAME\";"
+                    docker compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T db psql -U "$DB_USER" -d postgres -c "CREATE DATABASE \"$DB_NAME\";"
+                    if [[ "$DB_BACKUP_FILE" == *.gz ]]; then
+                        gunzip -c "$BACKUP_DIR/$DB_BACKUP_FILE" | docker compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T db psql -U "$DB_USER" -d "$DB_NAME"
+                    else
+                        cat "$BACKUP_DIR/$DB_BACKUP_FILE" | docker compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T db psql -U "$DB_USER" -d "$DB_NAME"
+                    fi
+                    echo "Database restoration complete."
+                else
+                    echo "Restore cancelled."
+                fi
+                break
+            else
+                echo "Invalid selection. No backup files found or selection out of range."
+                break
+            fi
+        done
+    )
 }
 
 # Function to restore user uploads

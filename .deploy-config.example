@@ -1,0 +1,10 @@
+# Deployment branch configuration overrides
+# Copy to .deploy-config and adjust as needed
+
+# Explicit branches per environment
+#DEPLOY_BRANCH_PRODUCTION=main
+#DEPLOY_BRANCH_STAGING=staging
+#DEPLOY_BRANCH_DEVELOPMENT=dev
+
+# Alternatively, you can use the environment-specific uppercase variable name directly
+# e.g., DEPLOY_BRANCH_PRODUCTION will be picked up by the deploy script.

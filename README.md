@@ -34,8 +34,29 @@ cd meo-mai-moi
 
 Access:
 
-- App: http://localhost:8000
-- Admin: http://localhost:8000/admin (admin@catarchy.space / password) (local dev)
+- App: http://localhost:8000 (or https://localhost when ENABLE_HTTPS=true)
+- Admin: http://localhost:8000/admin (or https://localhost/admin with HTTPS) (admin@catarchy.space / password)
+- Docs: http://localhost:8000/docs (or https://localhost/docs with HTTPS)
+
+**Optional: Enable HTTPS for local dev (via compose https-proxy profile)**
+
+```bash
+# 1) Ensure backend/.env.docker exists (deploy script can create it)
+# 2) Set in backend/.env.docker
+#    APP_ENV=development
+#    ENABLE_HTTPS=true
+
+# 3) Generate self-signed certificates (one-time)
+# Note: script will NOT overwrite existing certs; use --force to regenerate
+./utils/generate-dev-certs.sh
+
+# 4) Deploy (single entry point)
+./utils/deploy.sh
+
+# Access via HTTPS (browser will warn about self-signed cert - expected)
+# https://localhost
+# https://localhost/docs
+```
 
 ## Documentation
 
@@ -53,11 +74,7 @@ We welcome contributions of all sizes — features, fixes, tests, and docs.
 ```bash
 git clone https://github.com/troioi-vn/meo-mai-moi.git
 cd meo-mai-moi
-./utils/ensure-docker-env.sh
-docker compose up -d --build
-docker compose exec backend php artisan migrate:fresh --seed
-docker compose exec backend php artisan shield:generate --all
-docker compose exec backend php artisan storage:link
+./utils/deploy.sh --seed
 ```
 
 2. Read the Development Guide

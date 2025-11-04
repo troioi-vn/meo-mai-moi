@@ -43,4 +43,5 @@ Meo Mai Moi is a comprehensive cat care management platform that helps cat owner
 - Authentication details: [Authentication (Fortify + Jetstream)](./authentication.md)
 - Inertia coexistence plan: [Inertia Rollout](./inertia_rollout.md)
 - Deployment steps: [Production Deployment](./deploy.md)
+- HTTPS configuration: [HTTPS Setup (Dev & Production)](./https-setup.md)
 - Troubleshooting: [Troubleshooting Guide](./troubleshooting.md)

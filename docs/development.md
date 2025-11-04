@@ -15,9 +15,39 @@ This guide provides a comprehensive overview of how to get started with developm
     > **Note**: The backend automatically creates `.env` from `.env.docker.example` when you run any `php artisan` command if it doesn't exist. You'll see a helpful message to run `php artisan key:generate`.
 
 2.  **Access the app**
+
     - **Main App**: http://localhost:8000
     - **Admin Panel**: http://localhost:8000/admin (admin@catarchy.space / password)
     - **API Docs**: http://localhost:8000/api/documentation
+    - **Project Docs**: http://localhost:8000/docs (VitePress)
+
+3.  **Optional: Enable HTTPS for local dev (single compose)**
+
+    ```bash
+    # Set in backend/.env.docker
+    APP_ENV=development
+    ENABLE_HTTPS=true
+
+    # Generate self-signed certificates (one-time setup)
+    # Note: script will NOT overwrite existing certs; use --force to regenerate
+    ./utils/generate-dev-certs.sh
+
+    # Deploy using the single entry point
+    ./utils/deploy.sh
+
+    # Access via HTTPS
+    # https://localhost (browser will show security warning - click "Advanced" → "Proceed")
+    # https://localhost/admin
+    # https://localhost/docs
+    ```
+
+    **Why HTTPS in dev?**
+
+    - Test features requiring secure context (Service Workers, Web Crypto API, etc.)
+    - Match production behavior more closely
+    - Test HTTPS-specific security headers
+
+    **Production note**: Production deployments use `docker-compose.yml` only (no dev override). HTTPS is handled by reverse proxy (nginx/caddy/traefik) with proper certificates.
 
 **Test Users (Seeded Data)**
 

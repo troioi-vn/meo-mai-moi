@@ -6,12 +6,24 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Local HTTPS Development Support (single compose, env-driven)**
+  - `utils/generate-dev-certs.sh` script to generate localhost certificates
+  - Single `docker-compose.yml` used for all environments; HTTPS toggled via `ENABLE_HTTPS` in `backend/.env.docker`
+  - Nginx configuration remains HTTP by default; entrypoint dynamically enables HTTPS when `ENABLE_HTTPS=true` and certificates are present
+  - `deploy.sh` auto-generates certificates when `APP_ENV=development` and `ENABLE_HTTPS=true`
+  - Production deployments unaffected - typically handled by a reverse proxy with valid certificates
+- **VitePress Documentation Integration**: Project documentation now served at `/docs` route
+  - VitePress docs build integrated into deploy workflow
+  - Docs accessible at http://localhost:8000/docs (or https://localhost/docs with dev certs)
+  - Root npm scripts added for docs management: `docs:dev`, `docs:build`, `docs:preview`
 - SPA catch‑all web route: serve the React app for all non‑API/non‑admin paths, preserving path and query. When same‑origin, return `welcome` directly; otherwise, external redirect to `FRONTEND_URL`.
 - Email verification UX: confirmation modal before resending; 60s cooldown and 3‑attempt total limit for resend actions (state persisted in `localStorage`).
 - "Use another email" flow with confirmation dialog that logs out and redirects to registration.
 
 ### Fixed
 
+- **Frontend**: PhotosGrid component now uses relative URLs (`/storage/`) instead of hardcoded `http://localhost:8000/storage/` for proper protocol-agnostic asset loading
+- **Docker Entrypoint**: Fixed permission errors on read-only bind mounts (docs) by only setting permissions on top-level `/var/www/public` directory, not recursively
 - Email verification flow now completes entirely via the link: user is auto‑logged in and redirected to the SPA at `/account/pets?verified=1` (uses external redirects to the frontend to avoid backend 404s on SPA routes).
 - SPA 404 after verification redirect resolved by the catch‑all route and using `redirect()->away(...)` for verification redirects.
 - Email Logs show a readable plain‑text body for verification emails (includes greeting, link, and expiry) instead of raw HTML. Other emails continue logging rendered HTML.

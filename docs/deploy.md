@@ -1,132 +1,157 @@
-# Production Deployment Guide
+# Deployment Guide (All Environments)
 
-This guide provides detailed instructions for deploying the Meo Mai Moi application to a production environment.
+This is the authoritative guide for deploying Meo Mai Moi in development, staging, and production.
+
+The single entrypoint for all deployments is:
+
+```bash
+./utils/deploy.sh [--seed] [--fresh] [--no-cache] [--no-interactive] [--quiet]
+```
+
+See `./utils/deploy.sh --help` for full options.
 
 ## Prerequisites
 
-- Docker and Docker Compose installed on the server.
-- Git installed and configured.
-- A PostgreSQL database server, either running on the same machine or accessible over the network.
+- Docker and Docker Compose installed
+- Git installed and configured on the server
+- Production: HTTPS terminated at your reverse proxy (nginx/caddy/traefik/Cloudflare)
 
-## Environment Configuration
+## Environment configuration
 
-1.  **Create the environment file**:
+The deploy script uses `backend/.env.docker`. If it doesn’t exist, the script will create it interactively (or non‑interactively with defaults when `--no-interactive` is used).
 
-    **Option A - Automatic (recommended):**
+Important variables:
 
-    ```bash
-    cd backend
-    # The .env file will be auto-created from .env.docker.example when you run artisan
-    php artisan --version
-    # You'll see: ✓ Created .env from .env.docker.example
-    ```
+- `APP_ENV` (development|staging|production)
+- `APP_URL` (e.g., https://example.com or https://localhost)
+- `DB_*` (DB host, name, user, password)
+- Optional: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` for deploy notifications
+- Optional: `DEPLOY_HOST_PORT` to override the default host port (8000) used by deployment verification
 
-    **Option B - Manual:**
+## Deployments
 
-    ```bash
-    cp backend/.env.docker.example backend/.env
-    ```
+### Development
 
-2.  **Configure the environment variables**: Edit `backend/.env` and set the following variables:
-    - `APP_URL`: The public URL of your application.
-    - `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`: Connection details for your PostgreSQL database.
-    - `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_ENCRYPTION`: Configuration for your email sending service.
-
-## Deployment Steps
-
-1.  **Clone the repository**:
-
-    ```bash
-    git clone https://github.com/troioi-vn/meo-mai-moi.git
-    cd meo-mai-moi
-    ```
-
-2.  **Configure environment** (see Environment Configuration section above):
-
-    ```bash
-    cd backend
-    php artisan --version  # Auto-creates .env from .env.docker.example
-    # Edit backend/.env with your production settings
-    cd ..
-    ```
-
-3.  **Build and start the containers**:
-
-    ```bash
-    docker compose up -d --build
-    ```
-
-4.  **Run database migrations**:
-
-    ```bash
-    docker compose exec backend php artisan migrate --force
-    ```
-
-5.  **Seed the database** (optional, for a fresh installation with sample data):
-
-    ```bash
-    docker compose exec backend php artisan db:seed
-    ```
-
-6.  **Generate the application key**:
-
-    ```bash
-    docker compose exec backend php artisan key:generate
-    ```
-
-7.  **Create the storage link**:
-
-    ```bash
-    docker compose exec backend php artisan storage:link
-    ```
-
-8.  **Set up the admin user**:
-    ```bash
-    docker compose exec backend php artisan shield:super-admin
-    ```
-
-## Updating the Application
-
-To update the application to the latest version, follow these steps:
-
-1.  **Pull the latest changes**:
-
-    ```bash
-    git pull origin main
-    ```
-
-2.  **Rebuild and restart the containers**:
-
-    ```bash
-    docker compose up -d --build
-    ```
-
-3.  **Run database migrations**:
-
-    ```bash
-    docker compose exec backend php artisan migrate --force
-    ```
-
-4.  **Clear the cache**:
-    ```bash
-    docker compose exec backend php artisan optimize:clear
-    ```
-
-## Important Notes
-
-### Migration Strategy
-
-- Migrations run **only via deploy script**, not during container startup
-- This prevents race conditions when multiple containers start or restart
-- The `RUN_MIGRATIONS=false` environment variable in docker-compose.yml enforces this
-- For production: Always backup before migrations (`./utils/backup.sh`)
-
-### Zero-Downtime Deployments
-
-1. Run migrations first (they should be backward-compatible)
-2. Deploy new containers
-3. Run post-deployment verification
-
+```bash
+./utils/deploy.sh          # migrate only, preserves data
+./utils/deploy.sh --seed   # migrate + seed sample data
 ```
 
+HTTPS in development is handled by the `https-proxy` service (compose profile `https`).
+
+To enable HTTPS locally:
+
+1. Set in `backend/.env.docker`:
+
 ```
+APP_ENV=development
+ENABLE_HTTPS=true
+```
+
+2. Generate self‑signed certificates (one time):
+
+```bash
+./utils/generate-dev-certs.sh
+```
+
+3. Deploy:
+
+```bash
+./utils/deploy.sh
+```
+
+Access:
+
+- App: http://localhost:8000 or https://localhost
+- Admin: http(s)://localhost/admin
+- Docs: http(s)://localhost/docs
+
+### Staging / Production
+
+Use the same command on the server:
+
+```bash
+./utils/deploy.sh --no-interactive --quiet
+```
+
+Notes:
+
+- The backend container serves HTTP on port 80. In production, terminate HTTPS at your reverse proxy and forward to port 8000 on the host.
+- Migrations run via the deploy script only (the container’s entrypoint has `RUN_MIGRATIONS=false` to avoid race conditions).
+- Consider running `./utils/backup.sh` before deployments to production.
+
+## Branch strategy
+
+Deployment target branch is determined by environment and can be customized:
+
+1. Defaults:
+
+- production → `main`
+- staging → `staging`
+- development → `dev`
+
+2. Project‑level overrides: create a `.deploy-config` file in the repo root or base on the example:
+
+```
+# .deploy-config.example
+DEPLOY_BRANCH_PRODUCTION=main
+DEPLOY_BRANCH_STAGING=staging
+DEPLOY_BRANCH_DEVELOPMENT=dev
+```
+
+3. One‑off override: set `DEPLOY_BRANCH_OVERRIDE` env var when invoking the script.
+
+## Webhook / CI automation
+
+Two common ways to automate deployments:
+
+- GitHub Actions (or any CI) SSH into the server and run:
+
+```bash
+DEPLOY_FORCE_RESET=true ./utils/deploy.sh --no-interactive --quiet
+```
+
+You may pass `DEPLOY_BRANCH_OVERRIDE` from the CI workflow branch if needed.
+
+- A webhook receiver on the server (already installed in your environment), which validates the payload signature and triggers the same command above. Ensure the deploy user has the repository checked out with proper permissions.
+
+## Logs and retention
+
+- Per‑run logs are written to `.deploy/deploy-YYYYMMDD-HHMMSS.log` and `.deploy/deploy-YYYYMMDD-HHMMSS.json`.
+- Convenience symlinks: `.deploy.log` and `.deploy.log.json` point to the latest run.
+- Logs older than 30 days are cleaned up automatically.
+
+## Backups
+
+Create a database backup:
+
+```bash
+./utils/backup.sh
+```
+
+This produces gzip‑compressed files like `backups/backup-YYYY-MM-DD_HH-MM-SS.sql.gz`.
+
+Restore interactively:
+
+```bash
+./utils/restore.sh
+```
+
+The restore tool supports both the new `.sql.gz` files and legacy `db_backup_*.sql`.
+
+## Production HTTPS
+
+Terminate HTTPS at your reverse proxy (nginx/caddy/traefik/Cloudflare) and forward to the backend’s HTTP port.
+
+Set headers:
+
+- `X-Forwarded-Proto`
+- `X-Forwarded-For`
+- `X-Forwarded-Host`
+
+Do not use self‑signed certificates in production.
+
+## Migration strategy
+
+- Migrations are run explicitly by the deploy script after the container is healthy.
+- This prevents startup races and ensures orderly seeding and verification.

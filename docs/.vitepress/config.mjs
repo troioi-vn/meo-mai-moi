@@ -1,36 +1,39 @@
-import { defineConfig } from 'vitepress'
+import { defineConfig } from "vitepress";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: "Meo Mai Moi",
   description: "Community-driven cat rescue and rehoming.",
+  // Serve docs under /docs when hosted behind the main app
+  // This ensures generated links and assets resolve correctly
+  base: "/docs/",
   ignoreDeadLinks: [
     // Localhost URLs are expected to be dead during build
     /^http:\/\/localhost/,
     // API endpoints that don't exist during static build
-    './api',
+    "./api",
     // External files outside docs directory - match various patterns
-    /\.\.\/.*GEMINI/
+    /\.\.\/.*GEMINI/,
   ],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
-      { text: 'Home', link: '/' },
-      { text: 'Examples', link: '/markdown-examples' }
+      { text: "Home", link: "/" },
+      { text: "Examples", link: "/markdown-examples" },
     ],
 
     sidebar: [
       {
-        text: 'Examples',
+        text: "Examples",
         items: [
-          { text: 'Markdown Examples', link: '/markdown-examples' },
-          { text: 'Runtime API Examples', link: '/api-examples' }
-        ]
-      }
+          { text: "Markdown Examples", link: "/markdown-examples" },
+          { text: "Runtime API Examples", link: "/api-examples" },
+        ],
+      },
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
-    ]
-  }
-})
+      { icon: "github", link: "https://github.com/vuejs/vitepress" },
+    ],
+  },
+});

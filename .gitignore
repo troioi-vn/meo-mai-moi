@@ -9,6 +9,7 @@ backups/
 .rollback/
 .db_volume_fingerprint
 deploy.lock
+.deploy/
 
 # Local dev certificates (self-signed, should never be committed)
 backend/certs/
@@ -53,3 +54,4 @@ Thumbs.db
 gha-creds-*.json
 
 .github/
+.db_volume_fingerprint

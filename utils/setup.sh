@@ -235,12 +235,12 @@ setup_initialize() {
             echo "MAILGUN_SECRET=${MAILGUN_SECRET_INPUT}" >> "$ENV_FILE"
         fi
 
-        # ENABLE_HTTPS default: true for development, false otherwise
+        # ENABLE_HTTPS default: false (opt-in) to avoid dev port conflicts and proxy issues
         if [ "$APP_ENV_INPUT" = "development" ]; then
             if grep -q '^ENABLE_HTTPS=' "$ENV_FILE"; then
-                sed -i "s|^ENABLE_HTTPS=.*|ENABLE_HTTPS=true|" "$ENV_FILE"
+                sed -i "s|^ENABLE_HTTPS=.*|ENABLE_HTTPS=false|" "$ENV_FILE"
             else
-                echo "ENABLE_HTTPS=true" >> "$ENV_FILE"
+                echo "ENABLE_HTTPS=false" >> "$ENV_FILE"
             fi
         else
             if grep -q '^ENABLE_HTTPS=' "$ENV_FILE"; then
@@ -256,6 +256,35 @@ setup_initialize() {
         echo "   - APP_URL=$APP_URL_INPUT"
         echo "   - SEED_ADMIN_EMAIL=$SEED_ADMIN_EMAIL_INPUT"
         echo "   - FRONTEND_URL=$FRONTEND_URL_INPUT"
+
+        # Generate APP_KEY if empty
+        echo ""
+        echo "Generating APP_KEY for backend/.env.docker..."
+        CURRENT_APP_KEY=$(grep -E '^APP_KEY=' "$ENV_FILE" | tail -n1 | cut -d '=' -f2- | tr -d '\r')
+        if [ -z "$CURRENT_APP_KEY" ]; then
+            NEW_APP_KEY=""
+            if command -v php >/dev/null 2>&1; then
+                # Prefer PHP's random_bytes for high-quality randomness
+                NEW_APP_KEY=$(php -r 'echo "base64:".base64_encode(random_bytes(32));' 2>/dev/null || true)
+            fi
+            if [ -z "$NEW_APP_KEY" ] && command -v openssl >/dev/null 2>&1; then
+                NEW_APP_KEY="base64:$(openssl rand -base64 32 2>/dev/null || true)"
+            fi
+            if [ -z "$NEW_APP_KEY" ] && command -v base64 >/dev/null 2>&1; then
+                NEW_APP_KEY="base64:$(head -c 32 /dev/urandom | base64 2>/dev/null || true)"
+            fi
+            if [ -n "$NEW_APP_KEY" ]; then
+                sed -i "s|^APP_KEY=.*|APP_KEY=${NEW_APP_KEY}|" "$ENV_FILE"
+                echo "✓ APP_KEY generated"
+                log_success "APP_KEY generated for backend/.env.docker"
+            else
+                echo "✗ Failed to generate APP_KEY automatically. Please run: docker compose run --rm backend php artisan key:generate --show and update backend/.env.docker"
+                log_error "Failed to generate APP_KEY automatically"
+            fi
+        else
+            echo "APP_KEY already present in backend/.env.docker"
+            log_info "APP_KEY already present in env file"
+        fi
     fi
 
     APP_ENV_CURRENT=""

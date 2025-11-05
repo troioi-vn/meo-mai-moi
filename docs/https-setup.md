@@ -99,7 +99,7 @@ Internet → Reverse Proxy (HTTPS:443) → Container (HTTP:80)
 
 Create `Caddyfile`:
 
-```caddy
+```txt
 example.com {
     reverse_proxy localhost:8000
 
@@ -203,7 +203,7 @@ sudo systemctl enable certbot.timer
 
 Update `backend/.env` for production:
 
-```env
+```dotenv
 APP_URL=https://example.com
 FRONTEND_URL=https://example.com
 

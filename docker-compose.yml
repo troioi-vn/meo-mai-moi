@@ -14,6 +14,7 @@ services:
       # to prevent race conditions and ensure proper sequencing with seeding/verification
       - RUN_MIGRATIONS=false
       - IGNORE_OPTIMIZE_CLEAR_FAILURE=true
+      - DB_HOST=host.docker.internal
     networks:
       - meo-mai-moi-network
     depends_on:
@@ -27,6 +28,8 @@ services:
       # Mount certificates directory (optional). If ENABLE_HTTPS=true and certs exist,
       # entrypoint will enable HTTPS using these files. Safe to mount even if empty.
       - ./backend/certs:/etc/nginx/certs:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     healthcheck:
       test:
         - CMD
@@ -46,6 +49,7 @@ services:
     depends_on:
       - backend
     ports:
+      - "80:80"
       - "443:443"
     volumes:
       - ./backend/certs:/etc/nginx/certs:ro

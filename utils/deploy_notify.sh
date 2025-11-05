@@ -27,26 +27,35 @@ deploy_notify_env_value() {
         return 0
     fi
 
-    if [ ! -f "$ENV_FILE" ]; then
-        return 0
+    # Try to read from known env files, in priority order
+    local files_to_check=()
+    if [ -f "$ENV_FILE" ]; then
+        files_to_check+=("$ENV_FILE")
+    fi
+    if [ -f "$PROJECT_ROOT/.docker.env" ]; then
+        files_to_check+=("$PROJECT_ROOT/.docker.env")
     fi
 
-    local line
-    line=$(grep -E "^${key}=" "$ENV_FILE" | tail -n1 || true)
-    if [ -z "$line" ]; then
+    local file
+    for file in "${files_to_check[@]}"; do
+        local line
+        line=$(grep -E "^${key}=" "$file" | tail -n1 || true)
+        if [ -z "$line" ]; then
+            continue
+        fi
+
+        line=${line%%#*}
+        line=${line#${key}=}
+        line=${line%$'\r'}
+        line=${line%\"}
+        line=${line#\"}
+        line=${line%\'}
+        line=${line#\'}
+        line=$(printf "%s" "$line" | sed 's/[[:space:]]*$//')
+
+        printf "%s" "$line"
         return 0
-    fi
-
-    line=${line%%#*}
-    line=${line#${key}=}
-    line=${line%$'\r'}
-    line=${line%\"}
-    line=${line#\"}
-    line=${line%\'}
-    line=${line#\'}
-    line=$(printf "%s" "$line" | sed 's/[[:space:]]*$//')
-
-    printf "%s" "$line"
+    done
 }
 
 deploy_notify_now() {
@@ -166,8 +175,15 @@ deploy_notify_initialize() {
     fi
 
     local token chat app_url host
-    token=$(deploy_notify_env_value TELEGRAM_BOT_TOKEN)
-    chat=$(deploy_notify_env_value TELEGRAM_CHAT_ID)
+    # Priority: DEPLOY_* overrides TELEGRAM_*; both can be set via env or env files
+    token=$(deploy_notify_env_value DEPLOY_NOTIFY_BOT_TOKEN)
+    if [ -z "$token" ]; then
+        token=$(deploy_notify_env_value TELEGRAM_BOT_TOKEN)
+    fi
+    chat=$(deploy_notify_env_value DEPLOY_NOTIFY_CHAT_ID)
+    if [ -z "$chat" ]; then
+        chat=$(deploy_notify_env_value TELEGRAM_CHAT_ID)
+    fi
 
     if [ -z "$token" ] || [ -z "$chat" ]; then
         DEPLOY_NOTIFY_STATUS="inactive"

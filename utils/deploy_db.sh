@@ -36,6 +36,15 @@ deploy_db_initialize() {
     DB_FINGERPRINT_FILE="$PROJECT_ROOT/.db_volume_fingerprint"
 }
 
+sql_quote_literal() {
+    # Outputs a safely single-quoted SQL literal by doubling single quotes
+    # Usage: sql_quote_literal "value" -> 'va''lue'
+    local input="$1"
+    local escaped
+    escaped=$(printf %s "$input" | sed "s/'/''/g")
+    printf "'%s'" "$escaped"
+}
+
 db_query() {
     local query="$1"
     shift  # Remaining args are variable assignments for psql
@@ -91,8 +100,10 @@ db_snapshot() {
             # If we already know there's no users table or it's empty, mark admin as missing
             admin_present="missing"
         else
-            # Use parameterized query to prevent SQL injection
-            admin_count=$(db_query "SELECT COUNT(*) FROM users WHERE email = :'admin_email';" "admin_email=$ADMIN_EMAIL_TO_WATCH") || admin_count="unavailable"
+            # Use safe literal quoting to avoid SQL injection and psql variable pitfalls
+            local admin_email_sql
+            admin_email_sql=$(sql_quote_literal "$ADMIN_EMAIL_TO_WATCH")
+            admin_count=$(db_query "SELECT COUNT(*) FROM users WHERE email = ${admin_email_sql};") || admin_count="unavailable"
             if [ "$admin_count" = "__ERROR__" ] || [ "$admin_count" = "unavailable" ]; then
                 admin_present="unavailable"
             else

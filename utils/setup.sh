@@ -196,7 +196,7 @@ setup_initialize() {
 
         APP_NAME_INPUT=$(prompt_with_default "APP_NAME" "Meo Mai Moi")
         APP_ENV_INPUT=$(prompt_with_default "APP_ENV" "development")
-        APP_URL_INPUT=$(prompt_with_default "APP_URL" "https://localhost")
+        APP_URL_INPUT=$(prompt_with_default "APP_URL" "http://localhost:8000")
         FRONTEND_URL_INPUT=$(prompt_with_default "FRONTEND_URL" "$APP_URL_INPUT")
         SEED_ADMIN_EMAIL_INPUT=$(prompt_with_default "SEED_ADMIN_EMAIL" "admin@catarchy.space")
         SEED_ADMIN_PASSWORD_INPUT=$(prompt_with_default "SEED_ADMIN_PASSWORD" "password")

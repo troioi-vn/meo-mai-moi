@@ -175,16 +175,10 @@ deploy_notify_initialize() {
     fi
 
     local token chat app_url host
-    # Priority: DEPLOY_* overrides TELEGRAM_*; both can be set via env or env files
-    token=$(deploy_notify_env_value DEPLOY_NOTIFY_BOT_TOKEN)
-    if [ -z "$token" ]; then
-        token=$(deploy_notify_env_value TELEGRAM_BOT_TOKEN)
-    fi
-    chat=$(deploy_notify_env_value DEPLOY_NOTIFY_CHAT_ID)
-    if [ -z "$chat" ]; then
-        chat=$(deploy_notify_env_value TELEGRAM_CHAT_ID)
-    fi
-
+    # Priority: DEPLOY_* > TELEGRAM_* > CHAT_ID; all can be set via env or env files
+    token=$(deploy_notify_env_value TELEGRAM_BOT_TOKEN)
+    chat=$(deploy_notify_env_value CHAT_ID)
+    
     if [ -z "$token" ] || [ -z "$chat" ]; then
         DEPLOY_NOTIFY_STATUS="inactive"
         return 0

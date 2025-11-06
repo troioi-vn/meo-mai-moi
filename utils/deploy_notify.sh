@@ -10,8 +10,8 @@ MEO_DEPLOY_NOTIFY_LOADED="true"
 
 DEPLOY_NOTIFY_ENABLED="false"
 DEPLOY_NOTIFY_STATUS="disabled"
-DEPLOY_NOTIFY_BOT_TOKEN=""
-DEPLOY_NOTIFY_CHAT_ID=""
+TELEGRAM_BOT_TOKEN=""
+CHAT_ID=""
 DEPLOY_NOTIFY_PREFIX=""
 DEPLOY_NOTIFY_STARTED_AT=""
 DEPLOY_NOTIFY_TRAPS_INSTALLED="false"
@@ -75,9 +75,9 @@ deploy_notify_send() {
     local curl_exit_code=0
 
     if ! curl_output=$(curl --silent --show-error --max-time 10 --retry 2 --retry-delay 2 \
-        --data-urlencode "chat_id=$DEPLOY_NOTIFY_CHAT_ID" \
+        --data-urlencode "chat_id=$CHAT_ID" \
         --data-urlencode "text=$text" \
-        "https://api.telegram.org/bot${DEPLOY_NOTIFY_BOT_TOKEN}/sendMessage" 2>&1); then
+        "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" 2>&1); then
         curl_exit_code=$?
         note "WARNING: Failed to send Telegram notification (exit code: $curl_exit_code)"
         
@@ -175,10 +175,10 @@ deploy_notify_initialize() {
     fi
 
     local token chat app_url host
-    # Priority: DEPLOY_* > TELEGRAM_* > CHAT_ID; all can be set via env or env files
+    # Read TELEGRAM_BOT_TOKEN and CHAT_ID from env or env files
     token=$(deploy_notify_env_value TELEGRAM_BOT_TOKEN)
     chat=$(deploy_notify_env_value CHAT_ID)
-    
+
     if [ -z "$token" ] || [ -z "$chat" ]; then
         DEPLOY_NOTIFY_STATUS="inactive"
         return 0
@@ -199,8 +199,8 @@ deploy_notify_initialize() {
         host="${APP_ENV_CURRENT:-$(basename "$PROJECT_ROOT")}" 
     fi
 
-    DEPLOY_NOTIFY_BOT_TOKEN="$token"
-    DEPLOY_NOTIFY_CHAT_ID="$chat"
+    TELEGRAM_BOT_TOKEN="$token"
+    CHAT_ID="$chat"
     DEPLOY_NOTIFY_PREFIX="${host:-$(basename "$PROJECT_ROOT")}" 
     DEPLOY_NOTIFY_ENABLED="true"
     DEPLOY_NOTIFY_STATUS="pending"

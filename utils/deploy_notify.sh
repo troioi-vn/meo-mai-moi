@@ -32,9 +32,6 @@ deploy_notify_env_value() {
     if [ -f "$ENV_FILE" ]; then
         files_to_check+=("$ENV_FILE")
     fi
-    if [ -f "$PROJECT_ROOT/.docker.env" ]; then
-        files_to_check+=("$PROJECT_ROOT/.docker.env")
-    fi
 
     local file
     for file in "${files_to_check[@]}"; do

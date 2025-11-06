@@ -17,8 +17,10 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
-# Set default ENV_FILE
-ENV_FILE="${ENV_FILE:-$PROJECT_ROOT/.env}"
+# Set default ENV_FILE, restricted to backend/.env.docker (can be overridden by pre-setting ENV_FILE)
+if [ -z "${ENV_FILE:-}" ]; then
+    ENV_FILE="$PROJECT_ROOT/backend/.env.docker"
+fi
 
 # Colors for output
 RED='\033[0;31m'
@@ -41,7 +43,7 @@ fi
 source "$SCRIPT_DIR/deploy_notify.sh"
 
 # Initialize the notification system
-echo -e "${YELLOW}Initializing notification system...${NC}"
+echo -e "${YELLOW}Initializing notification system...${NC} (env file: $ENV_FILE)"
 deploy_notify_initialize
 
 # Check if notifications are enabled

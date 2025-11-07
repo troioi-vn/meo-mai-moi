@@ -55,6 +55,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ]);
+
+        // Append noindex headers for non-production / dev subdomains to reduce risk of Safe Browsing flags
+        $middleware->web(append: [\App\Http\Middleware\NoIndexDev::class]);
+        $middleware->api(append: [\App\Http\Middleware\NoIndexDev::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Render JSON for API routes AND for requests expecting JSON (includes Fortify routes)

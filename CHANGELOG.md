@@ -4,6 +4,60 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Email Delivery & Verification Refactor (Pending Release)
+
+#### Summary
+
+Comprehensive overhaul of the email delivery pipeline and verification experience with a focus on correctness, idempotency, observability, and future extensibility.
+
+#### Added
+
+- Email event tracking migration adding: `opened_at`, `clicked_at`, `unsubscribed_at`, `complained_at`, `permanent_fail_at` plus supporting indexes.
+- Mailgun webhook handler now processes full lifecycle events: `accepted`, `delivered`, `opened`, `clicked`, `unsubscribed`, `complained`, `failed` (permanent) and temporary failures (kept pending).
+- New status lifecycle: `pending → accepted → delivered` (with auxiliary events above). Legacy `sent` renamed to `accepted` for semantic clarity (provider accepted for delivery vs user mailbox delivered).
+- New model helpers on `EmailLog`: `markAsAccepted()`, `markAsOpened()`, `markAsClicked()`, `markAsUnsubscribed()`, `markAsComplained()`, `markAsPermanentFail()`.
+- Idempotency configuration (`config/notifications.php`) with `EMAIL_VERIFICATION_IDEMPOTENCY_SECONDS` (default 30s) applied in three layers:
+  1. Custom notification email channel
+  2. `RegisterResponse` (initial send)
+  3. Verification resend controller endpoint
+- Feature tests: `RegistrationEmailVerificationTest`, `EmailVerificationIdempotencyTest`, and expanded `MailgunWebhookTest` for all tracked events.
+- Frontend UX wrappers for async resend / alternate email actions on `EmailVerificationPage` with resilient localStorage state handling & cooldown UI.
+
+#### Changed
+
+- Renamed all uses of status `sent` → `accepted` across admin resources, model display helpers, logs, and queue/job code.
+- `SendNotificationEmail` now marks logs as `accepted` instead of `sent` immediately after the mail is handed to the framework / provider.
+- Webhook failure handling distinguishes permanent vs temporary failures (`markAsPermanentFail` vs leaving `pending`).
+- Registration flow no longer dispatches email verification inside `CreateNewUser`; unified in `RegisterResponse` to prevent duplicate emails & race conditions.
+- Email verification resend endpoint returns a friendly message instead of silently doing nothing when inside idempotency window.
+- Updated `EmailVerificationMail` & test mail classes for constructor signature consistency and reduced unnecessary public properties.
+- Documentation (`docs/email_configuration.md`) expanded with lifecycle diagram, status definitions, and idempotency explanation.
+
+#### Removed
+
+- Duplicate verification email trigger in `CreateNewUser` (eliminates sporadic double sends under load).
+
+#### Internal / Quality
+
+- Helper profile status event encapsulated (`private` + getter) and listener updated with explicit user type narrowing.
+- More precise logging (debug-level context for non-fatal paths & idempotent skips).
+- Added parentheses to fluent instantiations (`new Class()`) for consistency and stricter static analysis happiness.
+
+#### Migration Notes
+
+The migration renames existing `email_logs.status = sent` to `accepted`. No data loss. Rollback restores previous value. Ensure any external analytics relying on the old value are adjusted.
+
+#### Operational Impact
+
+- Mailgun webhooks must be configured to POST to `/api/webhooks/mailgun` including all new events for full observability.
+- Set `EMAIL_VERIFICATION_IDEMPOTENCY_SECONDS` in production if a window other than 30s is desired.
+
+#### Follow-ups (Not Included In This Commit Series)
+
+- Consider aggregation dashboard for engagement metrics (open/click rates) in admin.
+- Soft-delete or archival strategy for very large `email_logs` tables.
+- Rate limiting resend endpoint beyond simple time gate (per-IP + per-user counters).
+
 ### Added
 
 - **Local HTTPS Development Support (single compose, env-driven)**
@@ -28,6 +82,7 @@ All notable changes to this project are documented here, following the [Keep a C
 - SPA 404 after verification redirect resolved by the catch‑all route and using `redirect()->away(...)` for verification redirects.
 - Email Logs show a readable plain‑text body for verification emails (includes greeting, link, and expiry) instead of raw HTML. Other emails continue logging rendered HTML.
 - Duplicate "We've sent …" message on verification prompt after a second resend has been eliminated.
+- Prevent duplicate email verification emails on registration (removed duplicate trigger in `CreateNewUser` and added 30s idempotency guard in `RegisterResponse` & channel).
 
 ### Changed
 
@@ -45,6 +100,7 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Changed
 
 - Fortify registration/login hardening: removed manual session login in `CreateNewUser`; simplified `RegisterResponse` to SPA-friendly JSON only.
+- Centralized verification email sending logic in `RegisterResponse` (no longer dispatched during user creation) to avoid multi-send race.
 - Verified flow: retained custom `verified` alias to preserve JSON error structure; added lean API verification alias for JSON clients/tests.
 - Email pipeline resilience: `SendNotificationEmail` no longer throws when email isn’t configured; it logs, marks the notification failed, and creates an in-app fallback instead (prevents 500s during registration).
 - Settings cache: `Settings::set()` performs a write-through cache update per key for immediate reads.

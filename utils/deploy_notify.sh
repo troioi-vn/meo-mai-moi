@@ -106,7 +106,7 @@ deploy_notify_send_start() {
     DEPLOY_NOTIFY_STATUS="running"
     DEPLOY_NOTIFY_STARTED_AT=$(deploy_notify_now)
     DEPLOY_NOTIFY_START_SENT="true"
-    deploy_notify_send "Deployment started at ${DEPLOY_NOTIFY_STARTED_AT}."
+    deploy_notify_send "🚀 Deployment started at ${DEPLOY_NOTIFY_STARTED_AT}."
 }
 
 deploy_notify_send_success() {
@@ -116,7 +116,8 @@ deploy_notify_send_success() {
 
     DEPLOY_NOTIFY_STATUS="completed"
     DEPLOY_NOTIFY_SUCCESS_SENT="true"
-    deploy_notify_send "Deployment finished at $(deploy_notify_now)."
+    DEPLOY_TOTAL_TIME=$(( $(date +%s) - $(date -d "$DEPLOY_NOTIFY_STARTED_AT" +%s) ))
+    deploy_notify_send("✅ Deployment finished at $(deploy_notify_now()). Total time: ${DEPLOY_TOTAL_TIME} seconds.")
 }
 
 deploy_notify_send_failure() {

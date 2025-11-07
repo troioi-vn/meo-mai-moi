@@ -14,7 +14,7 @@ class HelperProfileStatusUpdated
     use InteractsWithSockets;
     use SerializesModels;
 
-    public $helperProfile;
+    private HelperProfile $helperProfile;
 
     /**
      * Create a new event instance.
@@ -22,6 +22,11 @@ class HelperProfileStatusUpdated
     public function __construct(HelperProfile $helperProfile)
     {
         $this->helperProfile = $helperProfile;
+    }
+
+    public function getHelperProfile(): HelperProfile
+    {
+        return $this->helperProfile;
     }
 
     /**

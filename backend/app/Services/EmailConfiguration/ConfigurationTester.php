@@ -146,8 +146,8 @@ class ConfigurationTester
                     ->subject($subject);
             });
 
-            // Update the log entry to mark as sent
-            $emailLog->markAsSent('Test email sent successfully');
+            // Update the log entry to mark as accepted
+            $emailLog->markAsAccepted('Test email accepted successfully');
         } catch (\Exception $e) {
             // Update the log entry to mark as failed
             $emailLog->markAsFailed('Test email failed: '.$e->getMessage());

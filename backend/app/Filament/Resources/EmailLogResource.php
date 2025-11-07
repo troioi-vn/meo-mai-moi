@@ -56,7 +56,7 @@ class EmailLogResource extends Resource
                             ->label('Status')
                             ->options([
                                 'pending' => 'Pending',
-                                'sent' => 'Sent',
+                                'accepted' => 'Accepted',
                                 'delivered' => 'Delivered',
                                 'failed' => 'Failed',
                                 'bounced' => 'Bounced',
@@ -111,13 +111,25 @@ class EmailLogResource extends Resource
                             ->label('Created At')
                             ->disabled(),
                         Forms\Components\DateTimePicker::make('sent_at')
-                            ->label('Sent At')
+                            ->label('Accepted At')
                             ->disabled(),
                         Forms\Components\DateTimePicker::make('delivered_at')
                             ->label('Delivered At')
                             ->disabled(),
                         Forms\Components\DateTimePicker::make('failed_at')
                             ->label('Failed At')
+                            ->disabled(),
+                        Forms\Components\DateTimePicker::make('opened_at')
+                            ->label('Opened At')
+                            ->disabled(),
+                        Forms\Components\DateTimePicker::make('clicked_at')
+                            ->label('Clicked At')
+                            ->disabled(),
+                        Forms\Components\DateTimePicker::make('unsubscribed_at')
+                            ->label('Unsubscribed At')
+                            ->disabled(),
+                        Forms\Components\DateTimePicker::make('complained_at')
+                            ->label('Complained At')
                             ->disabled(),
                     ])
                     ->columns(2),
@@ -153,8 +165,8 @@ class EmailLogResource extends Resource
                 Tables\Columns\BadgeColumn::make('status')
                     ->label('Status')
                     ->colors([
-                        'warning' => 'pending',
-                        'success' => fn ($state) => in_array($state, ['sent', 'delivered']),
+                        'warning' => fn ($state) => in_array($state, ['pending', 'accepted']),
+                        'success' => 'delivered',
                         'danger' => fn ($state) => in_array($state, ['failed', 'bounced']),
                     ])
                     ->formatStateUsing(fn (EmailLog $record) => $record->getStatusDisplayName()),
@@ -183,18 +195,42 @@ class EmailLogResource extends Resource
                     ->since(),
 
                 Tables\Columns\TextColumn::make('sent_at')
-                    ->label('Sent At')
+                    ->label('Accepted At')
                     ->dateTime()
                     ->sortable()
-                    ->placeholder('Not sent')
+                    ->placeholder('Not accepted')
                     ->since()
                     ->toggleable(),
+
+                Tables\Columns\TextColumn::make('delivered_at')
+                    ->label('Delivered At')
+                    ->dateTime()
+                    ->sortable()
+                    ->placeholder('Not delivered')
+                    ->since()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('opened_at')
+                    ->label('Opened At')
+                    ->dateTime()
+                    ->sortable()
+                    ->placeholder('Not opened')
+                    ->since()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('clicked_at')
+                    ->label('Clicked At')
+                    ->dateTime()
+                    ->sortable()
+                    ->placeholder('Not clicked')
+                    ->since()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
                         'pending' => 'Pending',
-                        'sent' => 'Sent',
+                        'accepted' => 'Accepted',
                         'delivered' => 'Delivered',
                         'failed' => 'Failed',
                         'bounced' => 'Bounced',

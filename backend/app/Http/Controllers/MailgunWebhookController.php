@@ -64,18 +64,45 @@ class MailgunWebhookController extends Controller
         // Map Mailgun events to our statuses
         $eventNormalized = is_string($event) ? strtolower($event) : null;
 
-        if (in_array($eventNormalized, ['delivered'])) {
+        if (in_array($eventNormalized, ['accepted'])) {
+            // Mailgun accepted the email for delivery
+            $emailLog->markAsAccepted($reason);
+        } elseif (in_array($eventNormalized, ['delivered'])) {
+            // Email was successfully delivered
             $emailLog->markAsDelivered();
             $this->updateNotificationOnDelivered($emailLog);
+        } elseif (in_array($eventNormalized, ['opened'])) {
+            // Recipient opened the email
+            $emailLog->markAsOpened();
+        } elseif (in_array($eventNormalized, ['clicked'])) {
+            // Recipient clicked a link
+            $emailLog->markAsClicked();
+        } elseif (in_array($eventNormalized, ['unsubscribed'])) {
+            // Recipient unsubscribed
+            $emailLog->markAsUnsubscribed();
+        } elseif (in_array($eventNormalized, ['complained'])) {
+            // Recipient marked as spam
+            $emailLog->markAsComplained();
         } elseif (
-            in_array($eventNormalized, ['failed', 'rejected', 'bounced', 'complained']) ||
+            in_array($eventNormalized, ['failed', 'rejected', 'bounced']) ||
             ($eventNormalized === 'delivery-failure') ||
             ($severity === 'permanent')
         ) {
-            $emailLog->markAsFailed($reason);
+            // Permanent failure
+            $emailLog->markAsPermanentFail($reason);
             $this->updateNotificationOnFailed($emailLog, $reason);
+        } elseif ($eventNormalized === 'temporary_fail' || $severity === 'temporary') {
+            // Temporary failure - keep as pending for retry
+            Log::info('Temporary email delivery failure, keeping pending for retry', [
+                'email_log_id' => $emailLog->id,
+                'reason' => $reason,
+            ]);
         } else {
-            // For opened/clicked/etc., acknowledge without changing status
+            // Unknown event, just log it
+            Log::info('Unknown Mailgun event received', [
+                'email_log_id' => $emailLog->id,
+                'event' => $eventNormalized,
+            ]);
         }
 
         return response()->json(['message' => 'ok']);
@@ -83,7 +110,7 @@ class MailgunWebhookController extends Controller
 
     private function isValidSignature(array $payload): bool
     {
-        $signingKey = config('services.mailgun.webhook_signing_key') ?? env('MAILGUN_WEBHOOK_SIGNING_KEY');
+        $signingKey = config('services.mailgun.webhook_signing_key');
         if (! $signingKey) {
             // If not configured, reject to avoid spoofing
             return false;
@@ -138,6 +165,3 @@ class MailgunWebhookController extends Controller
         }
     }
 }
-
-
-

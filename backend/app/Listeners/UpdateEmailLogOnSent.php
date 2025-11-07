@@ -50,10 +50,13 @@ class UpdateEmailLogOnSent
                         $emailLog->update(['headers' => $existing]);
                     }
                 } catch (\Throwable $e) {
-                    // Non-fatal
+                    // Non-fatal: capture minimal context for troubleshooting
+                    Log::debug('Non-fatal error persisting email headers', [
+                        'error' => $e->getMessage(),
+                    ]);
                 }
 
-                $emailLog->markAsSent('Email sent successfully via Laravel Mail system');
+                $emailLog->markAsAccepted('Email accepted by Laravel Mail system');
 
                 Log::info('EmailLog updated after successful email sending', [
                     'email_log_id' => $emailLog->id,

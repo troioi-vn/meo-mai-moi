@@ -24,6 +24,11 @@ class EmailLog extends Model
         'sent_at',
         'delivered_at',
         'failed_at',
+        'opened_at',
+        'clicked_at',
+        'unsubscribed_at',
+        'complained_at',
+        'permanent_fail_at',
         'retry_count',
         'next_retry_at',
     ];
@@ -33,6 +38,11 @@ class EmailLog extends Model
         'sent_at' => 'datetime',
         'delivered_at' => 'datetime',
         'failed_at' => 'datetime',
+        'opened_at' => 'datetime',
+        'clicked_at' => 'datetime',
+        'unsubscribed_at' => 'datetime',
+        'complained_at' => 'datetime',
+        'permanent_fail_at' => 'datetime',
         'next_retry_at' => 'datetime',
     ];
 
@@ -66,7 +76,8 @@ class EmailLog extends Model
     public function getStatusColor(): string
     {
         return match ($this->status) {
-            'sent', 'delivered' => 'success',
+            'delivered' => 'success',
+            'accepted' => 'warning',
             'failed', 'bounced' => 'danger',
             'pending' => 'warning',
             default => 'gray',
@@ -80,7 +91,7 @@ class EmailLog extends Model
     {
         return match ($this->status) {
             'pending' => 'Pending',
-            'sent' => 'Sent',
+            'accepted' => 'Accepted',
             'delivered' => 'Delivered',
             'failed' => 'Failed',
             'bounced' => 'Bounced',
@@ -97,12 +108,12 @@ class EmailLog extends Model
     }
 
     /**
-     * Mark as sent with SMTP response.
+     * Mark as accepted (Mailgun accepted for delivery).
      */
-    public function markAsSent(?string $smtpResponse = null): void
+    public function markAsAccepted(?string $smtpResponse = null): void
     {
         $this->update([
-            'status' => 'sent',
+            'status' => 'accepted',
             'smtp_response' => $smtpResponse,
             'sent_at' => now(),
             'error_message' => null,
@@ -130,6 +141,60 @@ class EmailLog extends Model
         $this->update([
             'status' => 'delivered',
             'delivered_at' => now(),
+        ]);
+    }
+
+    /**
+     * Mark as opened (when recipient opens the email).
+     */
+    public function markAsOpened(): void
+    {
+        $this->update([
+            'opened_at' => now(),
+        ]);
+    }
+
+    /**
+     * Mark as clicked (when recipient clicks a link).
+     */
+    public function markAsClicked(): void
+    {
+        $this->update([
+            'clicked_at' => now(),
+        ]);
+    }
+
+    /**
+     * Mark as unsubscribed (when recipient unsubscribes).
+     */
+    public function markAsUnsubscribed(): void
+    {
+        $this->update([
+            'unsubscribed_at' => now(),
+        ]);
+    }
+
+    /**
+     * Mark as complained (when recipient marks as spam).
+     */
+    public function markAsComplained(): void
+    {
+        $this->update([
+            'complained_at' => now(),
+        ]);
+    }
+
+    /**
+     * Mark as permanent failure.
+     */
+    public function markAsPermanentFail(string $reason): void
+    {
+        $this->update([
+            'status' => 'failed',
+            'error_message' => $reason,
+            'failed_at' => now(),
+            'permanent_fail_at' => now(),
+            'retry_count' => $this->retry_count + 1,
         ]);
     }
 }

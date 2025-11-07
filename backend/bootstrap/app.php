@@ -35,7 +35,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // in Symfony's IpUtils when REMOTE_ADDR is missing. If needed in production behind
         // a real proxy/load balancer, set concrete IPs/CIDRs here. For local/container use,
         // it's safe to trust the local nginx reverse proxy so Laravel reads X-Forwarded-* headers.
-        $middleware->trustProxies(at: ['127.0.0.1', '::1']);
+        // Trust Docker network and common proxy IPs (172.x.x.x is Docker's default bridge network)
+        $middleware->trustProxies(at: ['127.0.0.1', '::1', '172.16.0.0/12', '192.168.0.0/16', '10.0.0.0/8']);
 
         $middleware->api(append: [
             Illuminate\Http\Middleware\HandleCors::class,

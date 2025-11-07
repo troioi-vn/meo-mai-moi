@@ -7,7 +7,6 @@ use App\Models\Settings;
 use App\Models\User;
 use App\Models\WaitlistEntry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
@@ -69,12 +68,12 @@ class InviteSystemIntegrationTest extends TestCase
         $registrationResponse = $this->withoutMiddleware(\App\Http\Middleware\ForceWebGuard::class)
             ->withSession(['_token' => csrf_token()])
             ->postJson('/register', [
-            'name' => 'Waitlist User',
-            'email' => $email,
-            'password' => 'password',
-            'password_confirmation' => 'password',
-            'invitation_code' => $invitation->code,
-        ]);
+                'name' => 'Waitlist User',
+                'email' => $email,
+                'password' => 'password',
+                'password_confirmation' => 'password',
+                'invitation_code' => $invitation->code,
+            ]);
 
         // Registration succeeds - Laravel 12 + Fortify may return 201 JSON or 302 redirect
         // depending on middleware/session state, so we verify the user was created instead
@@ -116,12 +115,12 @@ class InviteSystemIntegrationTest extends TestCase
         // User registers with invitation code
         $registrationResponse = $this->withoutMiddleware(\App\Http\Middleware\ForceWebGuard::class)
             ->postJson('/register', [
-            'name' => 'Direct User',
-            'email' => $email,
-            'password' => 'password',
-            'password_confirmation' => 'password',
-            'invitation_code' => $invitation->code,
-        ]);
+                'name' => 'Direct User',
+                'email' => $email,
+                'password' => 'password',
+                'password_confirmation' => 'password',
+                'invitation_code' => $invitation->code,
+            ]);
 
         // Registration succeeds - Laravel 12 + Fortify may return 201 JSON or 302 redirect
         $this->assertContains($registrationResponse->status(), [201, 302]);
@@ -171,12 +170,12 @@ class InviteSystemIntegrationTest extends TestCase
         Settings::set('invite_only_enabled', 'true');
         $registrationResponse = $this->withoutMiddleware(\App\Http\Middleware\ForceWebGuard::class)
             ->postJson('/register', [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-            'invitation_code' => $invitation->code,
-        ]);
+                'name' => 'Test User',
+                'email' => 'test@example.com',
+                'password' => 'password',
+                'password_confirmation' => 'password',
+                'invitation_code' => $invitation->code,
+            ]);
 
         $registrationResponse->assertStatus(422)
             ->assertJsonValidationErrors(['invitation_code']);
@@ -305,21 +304,21 @@ class InviteSystemIntegrationTest extends TestCase
 
         $response1 = $this->withoutMiddleware(\App\Http\Middleware\ForceWebGuard::class)
             ->postJson('/register', [
-            'name' => 'User One',
-            'email' => 'user1@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-            'invitation_code' => $invitation->code,
-        ]);
+                'name' => 'User One',
+                'email' => 'user1@example.com',
+                'password' => 'password',
+                'password_confirmation' => 'password',
+                'invitation_code' => $invitation->code,
+            ]);
 
         $response2 = $this->withoutMiddleware(\App\Http\Middleware\ForceWebGuard::class)
             ->postJson('/register', [
-            'name' => 'User Two',
-            'email' => 'user2@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-            'invitation_code' => $invitation->code,
-        ]);
+                'name' => 'User Two',
+                'email' => 'user2@example.com',
+                'password' => 'password',
+                'password_confirmation' => 'password',
+                'invitation_code' => $invitation->code,
+            ]);
 
         // Only one should succeed (may be 201 JSON or 302 redirect)
         $successCount = 0;

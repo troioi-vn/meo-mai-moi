@@ -32,7 +32,10 @@ class OptionalAuth
                         $user = Auth::guard('sanctum')->user();
                     }
                 } catch (\Throwable $e) {
-                    // Ignore and continue to session-based auth fallback
+                    // Ignore and continue to session-based auth fallback; log at debug level
+                    \Log::debug('OptionalAuth Sanctum token parsing failed', [
+                        'error' => $e->getMessage(),
+                    ]);
                 }
             }
 
@@ -48,7 +51,10 @@ class OptionalAuth
                 });
             }
         } catch (\Exception $e) {
-            // Ignore auth errors for optional auth
+            // Ignore auth errors for optional auth; log at debug level
+            \Log::debug('OptionalAuth middleware suppressed auth exception', [
+                'error' => $e->getMessage(),
+            ]);
         }
 
         return $next($request);

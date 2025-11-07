@@ -324,7 +324,11 @@ class TransferRequestController extends Controller
                             );
                         }
                     } catch (\Throwable $e) {
-                        // non-fatal
+                        // non-fatal; log at debug level for auditability
+                        \Log::debug('Failed to notify rejected helper', [
+                            'transfer_request_id' => $rejectedRequest->id,
+                            'error' => $e->getMessage(),
+                        ]);
                     }
                 }
             }
@@ -361,7 +365,11 @@ class TransferRequestController extends Controller
                 }
             }
         } catch (\Throwable $e) {
-            // non-fatal
+            // non-fatal; log at debug level for auditability
+            \Log::debug('Failed to notify helper on acceptance', [
+                'transfer_request_id' => $transferRequest->id,
+                'error' => $e->getMessage(),
+            ]);
         }
 
         return $this->sendSuccess($transferRequest->fresh(['placementRequest']));

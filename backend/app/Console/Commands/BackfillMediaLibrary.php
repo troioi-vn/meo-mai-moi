@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Pet;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;

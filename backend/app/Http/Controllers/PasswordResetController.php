@@ -209,7 +209,7 @@ class PasswordResetController extends Controller
         try {
             // We'll send the link regardless of whether the email exists
             // This prevents email enumeration attacks
-            $status = Password::sendResetLink(
+            Password::sendResetLink(
                 $request->only('email')
             );
 

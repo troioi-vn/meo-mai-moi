@@ -51,7 +51,7 @@ class NotificationController extends Controller
             // Hide email verification reminders from the bell menu
             ->where(function ($q) {
                 $q->whereNull('type')
-                  ->orWhere('type', '!=', NotificationType::EMAIL_VERIFICATION->value);
+                    ->orWhere('type', '!=', NotificationType::EMAIL_VERIFICATION->value);
             })
             ->when($status === 'unread', function ($q) {
                 $q->unread();

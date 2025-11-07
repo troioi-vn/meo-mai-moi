@@ -48,7 +48,7 @@ class AppServiceProvider extends ServiceProvider
         // Register custom notification channel for email verification
         $this->app->make('Illuminate\Notifications\ChannelManager')
             ->extend('notification_email', function () {
-                return new \App\Channels\NotificationEmailChannel;
+                 return new \App\Channels\NotificationEmailChannel();
             });
 
         // Update mail configuration on application boot if there's an active email configuration
@@ -57,7 +57,10 @@ class AppServiceProvider extends ServiceProvider
             $emailConfigService->updateMailConfig();
         } catch (\Exception $e) {
             // Silently fail during boot to prevent application startup issues
-            // The error will be logged by the service
+            // The error will be logged by the service; add trace at debug level for development
+            \Log::debug('EmailConfigurationService bootstrap suppressed error', [
+                'error' => $e->getMessage(),
+            ]);
         }
 
         // If APP_URL is configured with https, force URL generation to use https as well.

@@ -21,17 +21,17 @@ class InAppNotificationChannel implements NotificationChannelInterface
             $processedData = $this->isFallback ? $this->prepareFallbackData($data) : $data;
 
             // If message missing, try templated rendering
-            if (empty($processedData['message'])) {
+            if (! isset($processedData['message']) || $processedData['message'] === '') {
                 $resolved = app(NotificationTemplateResolver::class)->resolve($type, 'in_app');
                 if ($resolved) {
-                    $render = app(NotificationTemplateRenderer::class)->render($resolved, $this->buildTemplateData($user, $type, $processedData), 'in_app');
-                    if (! empty($render['message'])) {
+                    $render = app(NotificationTemplateRenderer::class)->render($resolved, $this->buildTemplateData($user, $processedData), 'in_app');
+                    if (isset($render['message']) && $render['message'] !== '') {
                         $processedData['message'] = $render['message'];
                     }
-                    if (! empty($render['title'])) {
+                    if (isset($render['title']) && $render['title'] !== '') {
                         $processedData['title'] = $render['title'];
                     }
-                    if (! empty($render['link'])) {
+                    if (isset($render['link']) && $render['link'] !== '') {
                         $processedData['link'] = $render['link'];
                     }
                     // Attach template metadata for observability
@@ -81,7 +81,7 @@ class InAppNotificationChannel implements NotificationChannelInterface
         ]);
     }
 
-    private function buildTemplateData(User $user, string $type, array $data): array
+    private function buildTemplateData(User $user, array $data): array
     {
         // Reuse NotificationMail data builder conventions for consistency
         // At minimum include user and actionUrl when available

@@ -26,8 +26,8 @@ class NotificationService
     ) {
         $emailConfigService = $emailConfigurationService ?? app(EmailConfigurationService::class);
 
-        $this->emailChannel = $emailChannel ?? new EmailNotificationChannel;
-        $this->inAppChannel = $inAppChannel ?? new InAppNotificationChannel;
+    $this->emailChannel = $emailChannel ?? new EmailNotificationChannel();
+    $this->inAppChannel = $inAppChannel ?? new InAppNotificationChannel();
         $this->fallbackChannel = new InAppNotificationChannel(true);
         $this->configStatusBuilder = new EmailConfigurationStatusBuilder($emailConfigService);
     }

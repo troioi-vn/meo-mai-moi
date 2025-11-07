@@ -10,7 +10,6 @@ use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller

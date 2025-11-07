@@ -12,7 +12,7 @@ class NotificationTemplateRenderer
         private ?CommonMarkConverter $markdown = null
     ) {
         if ($this->markdown === null && class_exists(CommonMarkConverter::class)) {
-            $this->markdown = new CommonMarkConverter;
+            $this->markdown = new CommonMarkConverter();
         }
     }
 
@@ -74,7 +74,9 @@ class NotificationTemplateRenderer
             try {
                 return $this->markdown->convert($interpolated)->getContent();
             } catch (\Throwable $e) {
-                // fall through
+                Log::debug('Markdown conversion failed; returning escaped content', [
+                    'error' => $e->getMessage(),
+                ]);
             }
         }
 

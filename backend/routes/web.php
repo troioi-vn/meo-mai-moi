@@ -21,12 +21,11 @@ Route::get('/login', function (Request $request) {
 
     $frontend = frontend_url();
     $frontendHost = parse_url($frontend, PHP_URL_HOST);
-    $frontendScheme = parse_url($frontend, PHP_URL_SCHEME) ?: $request->getScheme();
-    $frontendPort = parse_url($frontend, PHP_URL_PORT) ?: ($frontendScheme === 'https' ? 443 : 80);
-    $sameOrigin = $frontendHost === $request->getHost() && $frontendPort === $request->getPort() && $frontendScheme === $request->getScheme();
+    $requestHost = $request->getHost();
 
-    if ($sameOrigin) {
-        // Serve SPA index so frontend router handles /login without redirect loop
+    // Relax same-origin detection to host-only to avoid HTTPS proxy scheme/port mismatches
+    // that trigger redirect loops when the frontend and backend share a domain.
+    if ($frontendHost === $requestHost) {
         return view('welcome');
     }
 
@@ -40,11 +39,11 @@ Route::get('/register', function (Request $request) {
 
     $frontend = frontend_url();
     $frontendHost = parse_url($frontend, PHP_URL_HOST);
-    $frontendScheme = parse_url($frontend, PHP_URL_SCHEME) ?: $request->getScheme();
-    $frontendPort = parse_url($frontend, PHP_URL_PORT) ?: ($frontendScheme === 'https' ? 443 : 80);
-    $sameOrigin = $frontendHost === $request->getHost() && $frontendPort === $request->getPort() && $frontendScheme === $request->getScheme();
+    $requestHost = $request->getHost();
 
-    if ($sameOrigin) {
+    // Same reasoning as /login: rely on host match only to prevent infinite redirects
+    // when proxy headers cause scheme/port differences.
+    if ($frontendHost === $requestHost) {
         return view('welcome');
     }
 
@@ -59,12 +58,9 @@ Route::get('/logout', function (Request $request) {
 
     $frontend = frontend_url();
     $frontendHost = parse_url($frontend, PHP_URL_HOST);
-    $frontendScheme = parse_url($frontend, PHP_URL_SCHEME) ?: $request->getScheme();
-    $frontendPort = parse_url($frontend, PHP_URL_PORT) ?: ($frontendScheme === 'https' ? 443 : 80);
-    $sameOrigin = $frontendHost === $request->getHost() && $frontendPort === $request->getPort() && $frontendScheme === $request->getScheme();
+    $requestHost = $request->getHost();
 
-    if ($sameOrigin) {
-        // Serve SPA index so frontend router can call POST /logout
+    if ($frontendHost === $requestHost) {
         return view('welcome');
     }
 
@@ -78,11 +74,9 @@ Route::get('/email/verify', function (Request $request) {
 
     $frontend = frontend_url();
     $frontendHost = parse_url($frontend, PHP_URL_HOST);
-    $frontendScheme = parse_url($frontend, PHP_URL_SCHEME) ?: $request->getScheme();
-    $frontendPort = parse_url($frontend, PHP_URL_PORT) ?: ($frontendScheme === 'https' ? 443 : 80);
-    $sameOrigin = $frontendHost === $request->getHost() && $frontendPort === $request->getPort() && $frontendScheme === $request->getScheme();
+    $requestHost = $request->getHost();
 
-    if ($sameOrigin) {
+    if ($frontendHost === $requestHost) {
         return view('welcome');
     }
 
@@ -96,11 +90,9 @@ Route::get('/forgot-password', function (Request $request) {
 
     $frontend = frontend_url();
     $frontendHost = parse_url($frontend, PHP_URL_HOST);
-    $frontendScheme = parse_url($frontend, PHP_URL_SCHEME) ?: $request->getScheme();
-    $frontendPort = parse_url($frontend, PHP_URL_PORT) ?: ($frontendScheme === 'https' ? 443 : 80);
-    $sameOrigin = $frontendHost === $request->getHost() && $frontendPort === $request->getPort() && $frontendScheme === $request->getScheme();
+    $requestHost = $request->getHost();
 
-    if ($sameOrigin) {
+    if ($frontendHost === $requestHost) {
         return view('welcome');
     }
 
@@ -114,11 +106,9 @@ Route::get('/user/confirm-password', function (Request $request) {
 
     $frontend = frontend_url();
     $frontendHost = parse_url($frontend, PHP_URL_HOST);
-    $frontendScheme = parse_url($frontend, PHP_URL_SCHEME) ?: $request->getScheme();
-    $frontendPort = parse_url($frontend, PHP_URL_PORT) ?: ($frontendScheme === 'https' ? 443 : 80);
-    $sameOrigin = $frontendHost === $request->getHost() && $frontendPort === $request->getPort() && $frontendScheme === $request->getScheme();
+    $requestHost = $request->getHost();
 
-    if ($sameOrigin) {
+    if ($frontendHost === $requestHost) {
         return view('welcome');
     }
 
@@ -154,11 +144,9 @@ Route::get('/{any}', function (Request $request) {
 
     $frontend = frontend_url();
     $frontendHost = parse_url($frontend, PHP_URL_HOST);
-    $frontendScheme = parse_url($frontend, PHP_URL_SCHEME) ?: $request->getScheme();
-    $frontendPort = parse_url($frontend, PHP_URL_PORT) ?: ($frontendScheme === 'https' ? 443 : 80);
-    $sameOrigin = $frontendHost === $request->getHost() && $frontendPort === $request->getPort() && $frontendScheme === $request->getScheme();
+    $requestHost = $request->getHost();
 
-    if ($sameOrigin) {
+    if ($frontendHost === $requestHost) {
         return view('welcome');
     }
 

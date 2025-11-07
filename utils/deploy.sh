@@ -31,6 +31,7 @@ NO_INTERACTIVE="false"
 QUIET="false"
 ALLOW_EMPTY_DB="false"
 TEST_NOTIFY="false"
+SKIP_GIT_SYNC="false"
 
 for arg in "$@"; do
     case "$arg" in
@@ -55,6 +56,9 @@ for arg in "$@"; do
             ;;
         --test-notify)
             TEST_NOTIFY="true"
+            ;;
+        --skip-git-sync)
+            SKIP_GIT_SYNC="true"
             ;;
         -h|--help)
             print_help
@@ -288,7 +292,12 @@ sync_repository_with_remote() {
     fi
 }
 
-sync_repository_with_remote "$APP_ENV_CURRENT"
+if [ "$SKIP_GIT_SYNC" = "true" ]; then
+    note "⚠️  Skipping git repository sync (--skip-git-sync flag set)"
+    log_warn "Git sync skipped by user flag"
+else
+    sync_repository_with_remote "$APP_ENV_CURRENT"
+fi
 
 deploy_db_initialize
 

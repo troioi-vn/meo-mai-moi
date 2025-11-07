@@ -313,7 +313,7 @@ setup_initialize() {
 
 print_help() {
     cat <<'EOF'
-Usage: ./utils/deploy.sh [--fresh] [--seed] [--no-cache] [--no-interactive] [--quiet] [--allow-empty-db] [--test-notify]
+Usage: ./utils/deploy.sh [--fresh] [--seed] [--no-cache] [--no-interactive] [--quiet] [--allow-empty-db] [--test-notify] [--skip-git-sync]
 
 Flags:
     --fresh          Drop and recreate database, re-run all migrations; also clears volumes/containers.
@@ -323,8 +323,10 @@ Flags:
     --quiet          Reduce console output; full logs go to .deploy.log.
     --allow-empty-db Allow deployment to proceed even if database appears empty (non-fresh).
     --test-notify    Test Telegram notifications and exit (requires TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID).
+    --skip-git-sync  Skip git repository synchronization (useful for deploying local uncommitted changes).
 
 Default behavior (no flags):
+    - Sync with remote git repository (fetch and merge/reset)
     - Build and start containers (preserves existing database data)
     - Wait for backend to be healthy
     - Run database migrations only (no seeding, no data loss)
@@ -337,6 +339,7 @@ Examples:
     ./utils/deploy.sh --fresh --no-interactive # fresh without prompts (for CI/automation)
     ./utils/deploy.sh --no-cache               # rebuild images without cache
     ./utils/deploy.sh --test-notify            # test Telegram notifications
+    ./utils/deploy.sh --skip-git-sync          # deploy local changes without git pull
 
 IMPORTANT: Data Preservation
     - Without --fresh: All existing database data is PRESERVED
@@ -344,6 +347,12 @@ IMPORTANT: Data Preservation
     - Only NEW migrations are applied
     - Use --fresh ONLY if you want a clean slate with no old data
     - Deploy will BLOCK if DB appears empty (unless --allow-empty-db or --seed)
+
+Git Repository Sync:
+    - By default, deploy syncs with remote (fetch + fast-forward/reset)
+    - Use --skip-git-sync to deploy local uncommitted changes
+    - Configure DEPLOY_GIT_FETCH_DELAY (default: 3s) to handle rapid commits
+    - Set DEPLOY_FORCE_RESET=true to auto-reset on branch divergence
 
 Telegram Notifications:
     - Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in backend/.env.docker to enable

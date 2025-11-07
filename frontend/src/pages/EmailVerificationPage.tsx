@@ -135,7 +135,7 @@ export default function EmailVerificationPage() {
       return
     }
     if (cooldownRemaining > 0) {
-      setResendError(`Please wait ${cooldownRemaining}s before resending.`)
+      setResendError(`Please wait ${String(cooldownRemaining)}s before resending.`)
       return
     }
     setIsResending(true)
@@ -146,7 +146,8 @@ export default function EmailVerificationPage() {
         '/email/verification-notification'
       )
       setResendMessage(data.data.message)
-    } catch (e) {
+    } catch (error) {
+      console.error('Failed to resend email:', error)
       setResendError('Failed to resend verification email')
     } finally {
       setIsResending(false)
@@ -155,16 +156,13 @@ export default function EmailVerificationPage() {
       const until = Date.now() + RESEND_COOLDOWN_SEC * 1000
       setCooldownRemaining(RESEND_COOLDOWN_SEC)
       try {
-        localStorage.setItem(storageKey, JSON.stringify({ attempts: nextAttempts, cooldownUntil: until }))
-      } catch {}
-    }
-  }
-
-  const handleLogout = async () => {
-    try {
-      await logout()
-    } finally {
-      void navigate('/login')
+        localStorage.setItem(
+          storageKey,
+          JSON.stringify({ attempts: nextAttempts, cooldownUntil: until })
+        )
+      } catch (error) {
+        console.error('Failed to save resend state to localStorage:', error)
+      }
     }
   }
 
@@ -188,7 +186,9 @@ export default function EmailVerificationPage() {
           setCooldownRemaining(remaining)
         }
       }
-    } catch {}
+    } catch (error) {
+      console.error('Failed to initialize resend state from localStorage:', error)
+    }
   }, [])
 
   useEffect(() => {
@@ -198,19 +198,56 @@ export default function EmailVerificationPage() {
         if (prev <= 1) {
           try {
             const raw = localStorage.getItem(storageKey)
-            const parsed = raw ? (JSON.parse(raw) as { attempts?: number; cooldownUntil?: number }) : {}
+            const parsed = raw
+              ? (JSON.parse(raw) as { attempts?: number; cooldownUntil?: number })
+              : {}
             localStorage.setItem(
               storageKey,
               JSON.stringify({ attempts: parsed.attempts ?? resendAttempts, cooldownUntil: null })
             )
-          } catch {}
+          } catch (error) {
+            console.error('Failed to update resend state in localStorage:', error)
+          }
           return 0
         }
         return prev - 1
       })
     }, 1000)
-    return () => clearInterval(id)
+    return () => {
+      clearInterval(id)
+    }
   }, [cooldownRemaining, resendAttempts])
+
+  const handleLoginClick = () => {
+    void navigate('/login')
+  }
+
+  const handleRegisterClick = () => {
+    void navigate('/register')
+  }
+
+  // Wrapper functions for onClick handlers
+  const onResendClick = () => {
+    const promise = (async () => {
+      try {
+        await handleResendEmail()
+      } catch (error: unknown) {
+        console.error('Resend failed:', error)
+      }
+    })()
+    void promise
+  }
+
+  const onUseAnotherEmailClick = () => {
+    const promise = (async () => {
+      try {
+        await handleUseAnotherEmail()
+      } catch (error: unknown) {
+        console.error('Logout/redirect failed:', error)
+      }
+    })()
+    void promise
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
@@ -269,21 +306,10 @@ export default function EmailVerificationPage() {
           {status === 'error' && (
             <div className="space-y-2">
               <div className="flex flex-col gap-2">
-                <Button
-                  onClick={() => {
-                    void navigate('/login')
-                  }}
-                  variant="outline"
-                  className="w-full"
-                >
+                <Button variant="outline" className="w-full" onClick={handleLoginClick}>
                   Go to Login
                 </Button>
-                <Button
-                  onClick={() => {
-                    void navigate('/register')
-                  }}
-                  className="w-full"
-                >
+                <Button className="w-full" onClick={handleRegisterClick}>
                   Register Again
                 </Button>
               </div>
@@ -298,10 +324,10 @@ export default function EmailVerificationPage() {
                 </Alert>
               )}
               <Button
-                onClick={() => {
-                  void handleResendEmail()
-                }}
-                disabled={isResending || cooldownRemaining > 0 || resendAttempts >= RESEND_MAX_ATTEMPTS}
+                onClick={onResendClick}
+                disabled={
+                  isResending || cooldownRemaining > 0 || resendAttempts >= RESEND_MAX_ATTEMPTS
+                }
                 className="w-full"
               >
                 {resendAttempts >= RESEND_MAX_ATTEMPTS
@@ -309,7 +335,7 @@ export default function EmailVerificationPage() {
                   : isResending
                     ? 'Sending…'
                     : cooldownRemaining > 0
-                      ? `Send again in ${cooldownRemaining}s`
+                      ? `Send again in ${String(cooldownRemaining)}s`
                       : 'Send Verification Email Again'}
               </Button>
               <AlertDialog>
@@ -328,7 +354,7 @@ export default function EmailVerificationPage() {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => void handleUseAnotherEmail()}>
+                    <AlertDialogAction onClick={onUseAnotherEmailClick}>
                       Use another email
                     </AlertDialogAction>
                   </AlertDialogFooter>

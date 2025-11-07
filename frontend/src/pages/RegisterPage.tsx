@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import RegisterForm from '@/components/RegisterForm'
 import WaitlistForm from '@/components/WaitlistForm'
 import EmailVerificationPrompt from '@/components/EmailVerificationPrompt'
@@ -11,7 +11,7 @@ import type { RegisterResponse } from '@/types/auth'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
-  const { loadUser } = useAuth()
+  const { loadUser, user } = useAuth()
   const [searchParams] = useSearchParams()
   const { mode, isLoading, invitationCode, invitationValidation, error, clearError } =
     useInviteSystem()
@@ -20,6 +20,14 @@ export default function RegisterPage() {
 
   // Get email from query parameters (e.g., from login redirect)
   const initialEmail = searchParams.get('email') ?? undefined
+
+  // Clear registration state when user logs out (e.g., via "Use another email" button)
+  useEffect(() => {
+    if (user === null) {
+      setRegistrationResponse(null)
+      setRegisteredEmail('')
+    }
+  }, [user])
 
   const handleRegistrationSuccess = (response: RegisterResponse, email: string) => {
     if (response.requires_verification) {

@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderWithRouter, userEvent } from '@/test-utils'
 import RegisterPage from './RegisterPage'
@@ -206,6 +206,51 @@ describe('RegisterPage', () => {
     await waitFor(() => {
       expect(screen.getByText(/failed to load registration settings/i)).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument()
+    })
+  })
+
+  it('clears verification prompt and shows registration form when "Use another email" is clicked', async () => {
+    renderWithRouter(<RegisterPage />, { route: '/register' })
+    const user = userEvent.setup()
+
+    // Wait for the page to load
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /create an account/i })).toBeInTheDocument()
+    })
+
+    // Register a user
+    await user.type(screen.getByLabelText(/name/i), 'Test User')
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com')
+    await user.type(screen.getByLabelText(/^Password$/i), 'password123')
+    await user.type(screen.getByLabelText(/confirm password/i), 'password123')
+    await user.click(screen.getByRole('button', { name: /register/i }))
+
+    // Should show email verification prompt
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /verify your email/i })).toBeInTheDocument()
+    })
+
+    // Click "Use another email" button to open the confirmation dialog
+    const triggerButton = screen.getByRole('button', { name: /use another email/i })
+    fireEvent.click(triggerButton)
+
+    // Wait for alertdialog to appear
+    await waitFor(() => {
+      expect(screen.getByRole('alertdialog')).toBeInTheDocument()
+    })
+
+    // Click the action button inside the dialog
+    const actionButton = screen.getByRole('button', { name: /use another email/i })
+    fireEvent.click(actionButton)
+
+    // Should navigate back to register page and show registration form
+    // The logout will set user to null, which triggers the useEffect to clear registrationResponse
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /create an account/i })).toBeInTheDocument()
+      expect(screen.getByLabelText(/name/i)).toBeInTheDocument()
+      expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
+      // Verification prompt should be gone
+      expect(screen.queryByRole('heading', { name: /verify your email/i })).not.toBeInTheDocument()
     })
   })
 })

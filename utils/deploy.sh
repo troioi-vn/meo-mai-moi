@@ -193,13 +193,44 @@ sync_repository_with_remote() {
         log_warn "Uncommitted changes detected"
     fi
 
-    note "ℹ️  Fetching latest changes from origin/$target_branch..."
-    log_info "Fetching from remote" "branch=$target_branch"
-    git -C "$PROJECT_ROOT" fetch origin "$target_branch" || {
-        echo "✗ Failed to fetch from remote" >&2
-        log_error "Git fetch failed" "branch=$target_branch"
+    # Add configurable delay to handle rapid commits (default: 3 seconds)
+    local fetch_delay="${DEPLOY_GIT_FETCH_DELAY:-3}"
+    if [ "$fetch_delay" -gt 0 ]; then
+        note "ℹ️  Waiting ${fetch_delay}s to allow rapid commits to settle on remote..."
+        log_info "Git fetch delay" "seconds=$fetch_delay"
+        sleep "$fetch_delay"
+    fi
+
+    # Retry fetch up to 3 times to handle temporary network issues or pending pushes
+    local fetch_attempts=0
+    local fetch_max_attempts=3
+    local fetch_succeeded=false
+    
+    while [ $fetch_attempts -lt $fetch_max_attempts ]; do
+        fetch_attempts=$((fetch_attempts + 1))
+        
+        if [ $fetch_attempts -gt 1 ]; then
+            note "ℹ️  Retry attempt $fetch_attempts of $fetch_max_attempts..."
+            sleep 2
+        fi
+        
+        note "ℹ️  Fetching latest changes from origin/$target_branch..."
+        log_info "Fetching from remote" "branch=$target_branch attempt=$fetch_attempts"
+        
+        if git -C "$PROJECT_ROOT" fetch origin "$target_branch"; then
+            fetch_succeeded=true
+            break
+        else
+            note "⚠️  Fetch attempt $fetch_attempts failed"
+            log_warn "Git fetch failed" "branch=$target_branch attempt=$fetch_attempts"
+        fi
+    done
+    
+    if [ "$fetch_succeeded" != "true" ]; then
+        echo "✗ Failed to fetch from remote after $fetch_max_attempts attempts" >&2
+        log_error "Git fetch failed after retries" "branch=$target_branch attempts=$fetch_max_attempts"
         exit 1
-    }
+    fi
     
     local local_commit remote_commit
     local_commit=$(git -C "$PROJECT_ROOT" rev-parse HEAD 2>/dev/null || echo "")

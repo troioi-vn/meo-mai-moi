@@ -6,6 +6,7 @@ backups/
 .deploy.log
 .deploy.log.json
 .deploy.log.notifications
+deploy.log.notifications
 .rollback/
 .db_volume_fingerprint
 deploy.lock

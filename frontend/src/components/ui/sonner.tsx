@@ -9,7 +9,7 @@ import { useTheme } from '@/hooks/use-theme'
 // Use the real Toaster if available, otherwise a no-op component
 const SonnerToaster = (SonnerModule as { Toaster?: React.ComponentType<unknown> }).Toaster ?? (() => null)
 
-type ToasterProps = React.ComponentProps<typeof SonnerToaster>
+type ToasterProps = React.ComponentProps<typeof SonnerModule.Toaster>
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = 'system' } = useTheme()

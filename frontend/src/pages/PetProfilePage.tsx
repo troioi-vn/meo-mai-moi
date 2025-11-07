@@ -386,7 +386,7 @@ const PetProfilePage: React.FC = () => {
         {(() => {
           const entries = Object.values(existingHandoverByTransfer)
           const anyHandover: TransferHandoverDto | null =
-            myHandover ?? (entries.length > 0 ? entries[0] : null)
+            myHandover ?? (entries.length > 0 ? (entries[0] ?? null) : null)
           if (!anyHandover) return null
           if (!(anyHandover.status === 'confirmed' || anyHandover.status === 'pending')) return null
           return (

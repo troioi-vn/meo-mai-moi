@@ -76,12 +76,12 @@ const ChangePasswordForm: React.FC = () => {
         const axiosError = error as AxiosError<ApiError>
         errorMessage = axiosError.response?.data.message ?? axiosError.message
         if (axiosError.response?.data.errors) {
-          const errors = axiosError.response.data.errors
-          for (const key in errors) {
-            if (Object.prototype.hasOwnProperty.call(errors, key)) {
+          const serverErrors = axiosError.response.data.errors
+          for (const key in serverErrors) {
+            if (Object.prototype.hasOwnProperty.call(serverErrors, key)) {
               form.setError(key as keyof PasswordChangeFormValues, {
                 type: 'server',
-                message: errors[key][0],
+                message: serverErrors[key]?.[0] ?? '',
               })
             }
           }

@@ -127,7 +127,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
     if (isAuthenticated && user) {
       void refresh()
     }
-  }, [isAuthenticated, user?.id, refresh])
+  }, [isAuthenticated, user?.id, refresh, user])
 
   // Mark all read when dropdown opens
   const setDropdownOpen = useCallback(

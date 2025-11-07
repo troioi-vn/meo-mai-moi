@@ -14,8 +14,8 @@ export const MedicalNoteForm: React.FC<{
   serverError?: string | null
 }> = ({ initial, onSubmit, onCancel, submitting, serverError }) => {
   const [note, setNote] = useState<string>(initial?.note ?? '')
-  const [date, setDate] = useState<string>(
-    initial?.record_date ?? new Date().toISOString().split('T')[0]
+  const [date, setDate] = useState<string>(() =>
+    initial?.record_date ?? new Date().toISOString().split('T')[0] ?? ''
   )
   const [errors, setErrors] = useState<{ note?: string; record_date?: string }>({})
 

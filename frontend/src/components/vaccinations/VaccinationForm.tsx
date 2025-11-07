@@ -16,16 +16,16 @@ export const VaccinationForm: React.FC<{
   serverError?: string | null
 }> = ({ initial, onSubmit, onCancel, submitting, serverError }) => {
   const [vaccineName, setVaccineName] = useState<string>(initial?.vaccine_name ?? '')
-  const [administeredAt, setAdministeredAt] = useState<string>(
-    initial?.administered_at ?? new Date().toISOString().split('T')[0]
+  const [administeredAt, setAdministeredAt] = useState<string>(() =>
+    initial?.administered_at ?? new Date().toISOString().split('T')[0] ?? ''
   )
-  const [dueAt, setDueAt] = useState<string>(
+  const [dueAt, setDueAt] = useState<string>(() =>
     initial?.due_at ??
       (() => {
         const nextYear = new Date()
         nextYear.setFullYear(nextYear.getFullYear() + 1)
         return nextYear.toISOString().split('T')[0]
-      })()
+      })() ?? ''
   )
   const [notes, setNotes] = useState<string>(initial?.notes ?? '')
   const [errors, setErrors] = useState<{

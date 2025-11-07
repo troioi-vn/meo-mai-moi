@@ -14,8 +14,8 @@ export const WeightForm: React.FC<{
   serverError?: string | null
 }> = ({ initial, onSubmit, onCancel, submitting, serverError }) => {
   const [weight, setWeight] = useState<number | ''>(initial?.weight_kg ?? '')
-  const [date, setDate] = useState<string>(
-    initial?.record_date ?? new Date().toISOString().split('T')[0]
+  const [date, setDate] = useState<string>(() =>
+    initial?.record_date ?? new Date().toISOString().split('T')[0] ?? ''
   )
   const [errors, setErrors] = useState<{ weight_kg?: string; record_date?: string }>({})
 

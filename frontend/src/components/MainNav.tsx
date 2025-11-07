@@ -9,7 +9,7 @@ import { ImpersonationIndicator } from '@/components/ImpersonationBanner'
 import { AdminPanelLink } from '@/components/AdminPanelLink'
 
 const MainNav: React.FC = () => {
-  const { isAuthenticated, isLoading, user, logout } = useAuth()
+  const { isAuthenticated, isLoading, user } = useAuth()
   const isVerified = Boolean(user?.email_verified_at)
 
   return (

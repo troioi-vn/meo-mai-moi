@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
 use App\Http\Controllers\EmailVerificationController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 // Inertia is not used (SPA-only UI)
 
@@ -137,14 +137,6 @@ Route::get('/unsubscribe', [\App\Http\Controllers\UnsubscribeController::class, 
 Route::get('/reset-password/{token}', function ($token, \Illuminate\Http\Request $request) {
     $email = $request->query('email');
     $frontend = config('app.frontend_url');
-    if (empty($frontend)) {
-        $envUrl = env('FRONTEND_URL');
-        $frontend = empty($envUrl) ? 'http://localhost:5173' : $envUrl;
-    }
-    if (empty($frontend)) {
-        $envUrl = env('FRONTEND_URL');
-        $frontend = empty($envUrl) ? 'http://localhost:5173' : $envUrl;
-    }
     if (! $email) {
         return redirect(rtrim($frontend, '/').'/password/reset?error=missing_email');
     }

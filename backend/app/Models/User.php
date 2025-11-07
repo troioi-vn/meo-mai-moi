@@ -154,7 +154,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
      */
     public function sendEmailVerificationNotification()
     {
-        $this->notify(new \App\Notifications\VerifyEmail);
+        $this->notify(new \App\Notifications\VerifyEmail());
     }
 
     /**
@@ -181,7 +181,6 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         $this->addMediaConversion('avatar_webp')
             ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256)
             ->format('webp');
-
     }
 
     /**

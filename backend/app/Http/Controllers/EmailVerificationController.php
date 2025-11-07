@@ -155,11 +155,8 @@ class EmailVerificationController extends Controller
         // Find the user by ID
         $user = \App\Models\User::find($id);
 
-        $frontend = (string) config('app.frontend_url');
-        if (empty($frontend)) {
-            $envUrl = env('FRONTEND_URL');
-            $frontend = empty($envUrl) ? 'http://localhost:5173' : $envUrl;
-        }
+        $frontend = config('app.frontend_url');
+
         if (! $user) {
             return redirect()->away(rtrim($frontend, '/').'/email/verify?error=invalid_link');
         }
@@ -177,6 +174,7 @@ class EmailVerificationController extends Controller
         if ($user->hasVerifiedEmail()) {
             // Ensure user gets logged into a session for SPA when visiting via email link
             \Auth::guard(config('fortify.guard', 'web'))->login($user);
+
             return redirect()->away(rtrim($frontend, '/').'/account/pets?verified=1');
         }
 
@@ -225,6 +223,19 @@ class EmailVerificationController extends Controller
             return response()->json([
                 'message' => 'Email address already verified.',
             ], 400);
+        }
+
+        // Idempotency window: avoid duplicate resend spam inside 30 seconds
+        $window = (int) config('notifications.email_verification_idempotency_seconds', 30);
+        $recent = $request->user()->notifications()
+            ->where('type', 'email_verification')
+            ->where('created_at', '>=', now()->subSeconds($window))
+            ->exists();
+        if ($recent) {
+            return $this->sendSuccess([
+                'message' => 'A verification email was just sent. Please wait a moment before requesting another.',
+                'email_sent' => false,
+            ]);
         }
 
         try {

@@ -5,9 +5,7 @@ namespace App\Actions\Fortify;
 use App\Models\User;
 use App\Services\InvitationService;
 use App\Services\SettingsService;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
@@ -82,32 +80,10 @@ class CreateNewUser implements CreatesNewUsers
             $this->invitationService->acceptInvitation($input['invitation_code'], $user);
         }
 
-        // Send email verification notification only if required
-        if ($emailVerificationRequired) {
-            // Check if email is configured before attempting to send
-            $emailService = app(\App\Services\EmailConfigurationService::class);
-            if (! $emailService->isEmailEnabled()) {
-                Log::info('Email verification not sent - email not configured', [
-                    'user_id' => $user->id,
-                    'email' => $user->email,
-                ]);
-            } else {
-                try {
-                    $user->sendEmailVerificationNotification();
-                    Log::info('Email verification sent successfully', [
-                        'user_id' => $user->id,
-                        'email' => $user->email,
-                    ]);
-                } catch (\Exception $e) {
-                    // Log the error but don't fail registration
-                    Log::warning('Email verification could not be sent during registration', [
-                        'user_id' => $user->id,
-                        'email' => $user->email,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
-            }
-        }
+        // NOTE: Do not send the email verification here.
+        // RegisterResponse handles sending the verification email and
+        // provides appropriate feedback to the client. Sending here as well
+        // can cause duplicate emails.
 
         // Session login handled by Fortify; do not force login here
 

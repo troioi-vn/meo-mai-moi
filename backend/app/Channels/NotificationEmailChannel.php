@@ -22,6 +22,24 @@ class NotificationEmailChannel
         }
         $notificationData = $notification->toNotificationEmail($notifiable);
 
+        // Idempotency: prevent duplicate email verification notifications in a short window
+        if (($notificationData['type'] ?? null) === 'email_verification') {
+            $window = (int) config('notifications.email_verification_idempotency_seconds', 30);
+            $recent = \App\Models\Notification::query()
+                ->where('user_id', $notifiable->id)
+                ->where('type', 'email_verification')
+                ->whereNull('failed_at')
+                ->where('created_at', '>=', now()->subSeconds($window))
+                ->exists();
+            if ($recent) {
+                \Log::info('Skipped duplicate email verification notification (idempotency window)', [
+                    'user_id' => $notifiable->id,
+                ]);
+
+                return;
+            }
+        }
+
         // Clean the data to avoid storing complex objects that cause admin panel issues
         $cleanData = [
             'channel' => 'email',

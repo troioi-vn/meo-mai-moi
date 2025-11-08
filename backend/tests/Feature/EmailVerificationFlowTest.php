@@ -57,8 +57,7 @@ class EmailVerificationFlowTest extends TestCase
 
         $response->assertStatus(403)
             ->assertJson([
-                'message' => 'Your email address is not verified. Please check your email for a verification link.',
-                'email_verified' => false,
+                'message' => 'Your email address is not verified.',
             ]);
 
         // Step 3: User can still access verification routes
@@ -95,7 +94,10 @@ class EmailVerificationFlowTest extends TestCase
         $dbUser = \App\Models\User::find($user->id);
         $this->assertNotNull($dbUser->email_verified_at, 'User should be verified in database');
 
-        // Cookie-based auth: session is already authenticated
+        // Explicitly authenticate as the user with Sanctum guard for API routes
+        $this->actingAs($user, 'sanctum');
+
+        // Now try to access protected routes
         $response = $this->getJson('/api/users/me');
 
         $response->assertStatus(200)

@@ -295,6 +295,11 @@ sync_repository_with_remote() {
 if [ "$SKIP_GIT_SYNC" = "true" ]; then
     note "⚠️  Skipping git repository sync (--skip-git-sync flag set)"
     log_warn "Git sync skipped by user flag"
+    # When skipping git sync (local changes), force rebuild to pick up file changes
+    if [ "$NO_CACHE" = "false" ]; then
+        note "ℹ️  Enabling --no-cache automatically (recommended with --skip-git-sync)"
+        NO_CACHE="true"
+    fi
 else
     sync_repository_with_remote "$APP_ENV_CURRENT"
 fi

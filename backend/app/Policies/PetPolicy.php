@@ -36,6 +36,7 @@ class PetPolicy
         $hasActivePlacement = $pet->placementRequests()
             ->where('status', \App\Enums\PlacementRequestStatus::OPEN)
             ->exists();
+        
         if (! $user) {
             return $hasActivePlacement;
         }

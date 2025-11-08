@@ -478,3 +478,4 @@ The migration renames existing `email_logs.status = sent` to `accepted`. No data
   - Real-time invitation statistics and status tracking
   - Automatic invitation validation during registration
   - Settings caching for optimal performance
+```

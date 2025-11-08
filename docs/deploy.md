@@ -120,6 +120,57 @@ You may pass `DEPLOY_BRANCH_OVERRIDE` from the CI workflow branch if needed.
 - Per‑run logs are written to `.deploy/deploy-YYYYMMDD-HHMMSS.log` and `.deploy/deploy-YYYYMMDD-HHMMSS.json`.
 - Convenience symlinks: `.deploy.log` and `.deploy.log.json` point to the latest run.
 - Logs older than 30 days are cleaned up automatically.
+- Volume deletion events are logged to `.deploy/volume-deletions.log` for audit trail.
+
+## Volume safety and debugging
+
+### Database volume protection
+
+The deploy script includes several safeguards against accidental data loss:
+
+1. **Empty database detection**: Deployment fails if the database is empty (unless `--allow-empty-db` or `--seed` is specified)
+2. **Volume fingerprinting**: Tracks the database volume creation timestamp in `.db_volume_fingerprint` to detect unexpected volume recreation
+3. **Volume deletion logging**: All `--fresh` deployments log volume deletion events to `.deploy/volume-deletions.log`
+
+### Investigating data loss
+
+If you encounter unexpected database emptiness or data loss, use these tools:
+
+**Check volume creation time vs fingerprint:**
+
+```bash
+docker volume inspect meo-mai-moi_pgdata --format '{{ .CreatedAt }}'
+cat .db_volume_fingerprint
+```
+
+If these don't match, the volume was recreated outside of tracked deployments.
+
+**Check volume deletion history:**
+
+```bash
+cat .deploy/volume-deletions.log
+```
+
+**Monitor volume events in real-time** (run in separate terminal):
+
+```bash
+docker events --filter 'type=volume' --format '{{.Time}} {{.Action}} {{.Actor.Attributes.name}}'
+```
+
+**Review historical volume events:**
+
+```bash
+./utils/check-volume-events.sh [days-back]  # Check last N days (default: 7)
+```
+
+Note: Docker event logs are ephemeral and may be cleared/rotated. For persistent tracking, rely on `.deploy/volume-deletions.log`.
+
+### Common causes of volume deletion
+
+- Running `docker compose down -v` (the `-v` flag deletes volumes)
+- Running `docker system prune -a --volumes`
+- Using `./utils/deploy.sh --fresh` (intentional, but logged)
+- External tools or scripts that manage Docker resources
 
 ## Backups
 

@@ -311,8 +311,8 @@ fi
 # Optional backup before making changes (recommended for production)
 if [ "$FRESH" = "false" ] && [ "$NO_INTERACTIVE" = "false" ]; then
     echo ""
-    read -r -p "Would you like to backup the database first? (y/N): " do_backup
-    if [[ "$do_backup" =~ ^[yY]([eE][sS])?$ ]]; then
+    read -r -p "Would you like to backup the database first? (Y/n): " do_backup
+    if [[ ! "$do_backup" =~ ^[nN]([oO])?$ ]]; then
         note "Preparing to run backup..."
         # Ensure DB container is running for backup script
         if ! docker compose ps --status=running 2>/dev/null | grep -q " db "; then
@@ -409,11 +409,34 @@ if [ "$FRESH" = "true" ]; then
         fi
     fi
     
+    # Log volume deletion event before destroying
+    VOLUME_DELETE_LOG="$PROJECT_ROOT/.deploy/volume-deletions.log"
+    mkdir -p "$(dirname "$VOLUME_DELETE_LOG")"
+    {
+        echo "=== VOLUME DELETION EVENT ==="
+        echo "Timestamp: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+        echo "Local time: $(date '+%Y-%m-%d %H:%M:%S %Z')"
+        echo "User: $(whoami)"
+        echo "Command: deploy.sh --fresh"
+        echo "Reason: Fresh deployment requested"
+        echo "Volumes to be deleted:"
+        docker volume ls --filter "name=$(basename "$PROJECT_ROOT")" --format "  - {{.Name}}" 2>/dev/null || echo "  (could not list volumes)"
+        echo ""
+    } >> "$VOLUME_DELETE_LOG"
+    log_info "Volume deletion logged" "log=$VOLUME_DELETE_LOG"
+    
     echo "Removing containers and volumes..."
     docker compose down -v --remove-orphans || {
         echo "⚠️  docker compose down returned non-zero (containers may not have been running)"
     }
     echo "✓ Cleanup complete"
+    
+    # Log completion
+    {
+        echo "Status: Completed at $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+    } >> "$VOLUME_DELETE_LOG"
 else
     echo ""
     note "ℹ️  Standard deployment (data preservation mode)"

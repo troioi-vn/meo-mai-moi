@@ -65,7 +65,7 @@ deploy_notify_env_value() {
 }
 
 deploy_notify_now() {
-    date '+%Y-%m-%d %H:%M:%S %Z'
+    date '+%H:%M:%S %Z'
 }
 
 deploy_notify_send() {
@@ -75,7 +75,7 @@ deploy_notify_send() {
 
     local body="$1"
     local text
-    text=$(printf "%s:\n%s" "$DEPLOY_NOTIFY_PREFIX" "$body")
+    text=$(printf "%s\n%s" "$DEPLOY_NOTIFY_PREFIX" "$body")
     
     local curl_output
     local curl_exit_code=0

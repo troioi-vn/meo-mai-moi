@@ -4,6 +4,10 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Fixed
+
+- **Array offset warning**: Fixed "Trying to access array offset on value of type null" warning in `EmailConfigurationService::updateMailConfig()` when accessing `$mailConfig['from']['address']` with proper null coalescing operators
+
 ### Icons & Branding Assets
 
 #### Summary

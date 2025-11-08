@@ -14,7 +14,6 @@ services:
       # to prevent race conditions and ensure proper sequencing with seeding/verification
       - RUN_MIGRATIONS=false
       - IGNORE_OPTIMIZE_CLEAR_FAILURE=true
-      - DB_HOST=host.docker.internal
     networks:
       - meo-mai-moi-network
     depends_on:

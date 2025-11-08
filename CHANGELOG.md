@@ -4,6 +4,20 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Icons & Branding Assets
+
+#### Summary
+
+Standardized app favicon and PWA icons across backend and frontend entry points, and automated future updates.
+
+#### Added
+
+- `utils/update_icon.sh` script to regenerate favicon bundles, Apple touch icon, and web manifest from a single source image.
+
+#### Changed
+
+- Updated frontend and backend entry HTML to reference the shared icon bundle and manifest for consistent browser presentation.
+
 ### Authentication & Password Reset UX Improvements
 
 #### Summary

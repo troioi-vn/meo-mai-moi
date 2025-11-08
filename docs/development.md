@@ -147,3 +147,15 @@ Deptrac prevents architectural violations by enforcing allowed dependencies betw
 cd backend
 composer deptrac
 ```
+
+## Asset Management
+
+### Updating Icons
+
+Use `utils/update_icon.sh` to regenerate the favicon, PWA icons, and manifest whenever the branding icon changes.
+
+```bash
+./utils/update_icon.sh /absolute/path/to/new/icon.png
+```
+
+The script requires ImageMagick (`convert`) and updates both `frontend/public` and `backend/public` assets so backend and SPA entry points stay in sync.

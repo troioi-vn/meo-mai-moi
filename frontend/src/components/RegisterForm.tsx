@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AxiosError } from 'axios'
 import { useNavigate } from 'react-router-dom'
-import { UserCheck } from 'lucide-react'
+import { UserCheck, Eye, EyeOff } from 'lucide-react'
 import type { RegisterResponse } from '@/types/auth'
 
 interface ApiError {
@@ -20,11 +20,18 @@ interface RegisterFormProps {
   initialEmail?: string
 }
 
-const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, invitationCode, inviterName, initialEmail }) => {
+const RegisterForm: React.FC<RegisterFormProps> = ({
+  onSuccess,
+  invitationCode,
+  inviterName,
+  initialEmail,
+}) => {
   const [name, setName] = useState('')
   const [email, setEmail] = useState(initialEmail ?? '')
   const [password, setPassword] = useState('')
   const [passwordConfirmation, setPasswordConfirmation] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { register } = useAuth()
   const navigate = useNavigate()
@@ -120,27 +127,57 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, invitationCode, 
         </div>
         <div className="mb-4">
           <Label htmlFor="password">Password</Label>
-          <Input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value)
-            }}
-            required
-          />
+          <div className="relative">
+            <Input
+              type={showPassword ? 'text' : 'password'}
+              id="password"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value)
+              }}
+              required
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+              onClick={() => {
+                setShowPassword(!showPassword)
+              }}
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
         <div className="mb-6">
           <Label htmlFor="passwordConfirmation">Confirm Password</Label>
-          <Input
-            type="password"
-            id="passwordConfirmation"
-            value={passwordConfirmation}
-            onChange={(e) => {
-              setPasswordConfirmation(e.target.value)
-            }}
-            required
-          />
+          <div className="relative">
+            <Input
+              type={showPasswordConfirmation ? 'text' : 'password'}
+              id="passwordConfirmation"
+              value={passwordConfirmation}
+              onChange={(e) => {
+                setPasswordConfirmation(e.target.value)
+              }}
+              required
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+              onClick={() => {
+                setShowPasswordConfirmation(!showPasswordConfirmation)
+              }}
+            >
+              {showPasswordConfirmation ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
         </div>
         <Button type="submit" className="w-full">
           Register

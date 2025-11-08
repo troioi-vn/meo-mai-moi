@@ -47,7 +47,7 @@ describe('RegisterForm', () => {
     renderWithRouter(<RegisterForm initialEmail="prefilled@example.com" />)
 
     await waitFor(() => {
-      const emailInput = screen.getByLabelText(/email/i)
+      const emailInput = screen.getByLabelText(/email/i) as HTMLInputElement
       expect(emailInput.value).toBe('prefilled@example.com')
     })
   })
@@ -77,5 +77,47 @@ describe('RegisterForm', () => {
         'success@example.com'
       )
     })
+  })
+
+  it('toggles password visibility', async () => {
+    renderWithRouter(<RegisterForm />)
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/^Password$/i)).toBeInTheDocument()
+    })
+
+    const passwordInput = screen.getByLabelText(/^Password$/i)
+    const toggleButton = passwordInput.parentElement?.querySelector('button[type="button"]')
+
+    expect(passwordInput).toHaveAttribute('type', 'password')
+
+    if (toggleButton) {
+      await user.click(toggleButton)
+      expect(passwordInput).toHaveAttribute('type', 'text')
+
+      await user.click(toggleButton)
+      expect(passwordInput).toHaveAttribute('type', 'password')
+    }
+  })
+
+  it('toggles password confirmation visibility', async () => {
+    renderWithRouter(<RegisterForm />)
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument()
+    })
+
+    const passwordConfirmInput = screen.getByLabelText(/confirm password/i)
+    const toggleButton = passwordConfirmInput.parentElement?.querySelector('button[type="button"]')
+
+    expect(passwordConfirmInput).toHaveAttribute('type', 'password')
+
+    if (toggleButton) {
+      await user.click(toggleButton)
+      expect(passwordConfirmInput).toHaveAttribute('type', 'text')
+
+      await user.click(toggleButton)
+      expect(passwordConfirmInput).toHaveAttribute('type', 'password')
+    }
   })
 })

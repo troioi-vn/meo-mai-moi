@@ -9,11 +9,12 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import EmailVerificationPrompt from './EmailVerificationPrompt'
 import type { LoginResponse } from '@/types/auth'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
@@ -151,6 +152,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                       setEmail(e.target.value)
                     }}
                     required
+                    autoFocus
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
@@ -201,22 +203,36 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                       Back
                     </Button>
                   </div>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value)
-                    }}
-                    required
-                    autoFocus
-                  />
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value)
+                      }}
+                      required
+                      autoFocus
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => {
+                        setShowPassword(!showPassword)
+                      }}
+                      disabled={isLoading}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
                   <a
                     href="#"
                     className="text-sm underline-offset-4 hover:underline text-right"
                     onClick={(e) => {
                       e.preventDefault()
-                      void navigate('/forgot-password')
+                      void navigate(`/forgot-password?email=${encodeURIComponent(email)}`)
                     }}
                   >
                     Forgot your password?

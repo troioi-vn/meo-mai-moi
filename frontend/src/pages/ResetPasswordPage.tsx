@@ -86,22 +86,20 @@ export default function ResetPasswordPage() {
     setError('')
 
     try {
-      const response = await api.post<{ data: { reset: boolean } }>('/password/reset', {
+      await api.post('/password/reset', {
         token,
         email,
         password,
         password_confirmation: passwordConfirmation,
       })
 
-      if (response.data.data.reset) {
-        setSuccess(true)
-        toast.success('Password reset successfully!')
+      setSuccess(true)
+      toast.success('Password reset successfully!')
 
-        // Redirect to login after a short delay
-        redirectTimer.current = window.setTimeout(() => {
-          void navigate('/login')
-        }, 2000)
-      }
+      // Redirect to login after a short delay
+      redirectTimer.current = window.setTimeout(() => {
+        navigate('/login')
+      }, 2000)
     } catch (error: unknown) {
       if (error instanceof Error && 'response' in error) {
         const axiosError = error as { response?: { status?: number; data?: { message?: string } } }
@@ -223,7 +221,13 @@ export default function ResetPasswordPage() {
           <CardDescription>Enter your new password below.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form noValidate onSubmit={(e) => { void handleSubmit(e); }} className="space-y-4">
+          <form
+            noValidate
+            onSubmit={(e) => {
+              void handleSubmit(e)
+            }}
+            className="space-y-4"
+          >
             {error && (
               <Alert className="border-red-200 bg-red-50">
                 <AlertDescription className="text-red-800">{error}</AlertDescription>
@@ -243,7 +247,9 @@ export default function ResetPasswordPage() {
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter new password"
                   value={password}
-                  onChange={(e) => { setPassword(e.target.value) }}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                  }}
                   required
                   minLength={8}
                   disabled={isLoading}
@@ -253,7 +259,9 @@ export default function ResetPasswordPage() {
                   variant="ghost"
                   size="sm"
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => { setShowPassword(!showPassword) }}
+                  onClick={() => {
+                    setShowPassword(!showPassword)
+                  }}
                   disabled={isLoading}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -269,7 +277,9 @@ export default function ResetPasswordPage() {
                   type={showPasswordConfirmation ? 'text' : 'password'}
                   placeholder="Confirm password"
                   value={passwordConfirmation}
-                  onChange={(e) => { setPasswordConfirmation(e.target.value) }}
+                  onChange={(e) => {
+                    setPasswordConfirmation(e.target.value)
+                  }}
                   required
                   minLength={8}
                   disabled={isLoading}
@@ -279,7 +289,9 @@ export default function ResetPasswordPage() {
                   variant="ghost"
                   size="sm"
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => { setShowPasswordConfirmation(!showPasswordConfirmation) }}
+                  onClick={() => {
+                    setShowPasswordConfirmation(!showPasswordConfirmation)
+                  }}
                   disabled={isLoading}
                 >
                   {showPasswordConfirmation ? (

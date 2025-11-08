@@ -72,6 +72,42 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json(['message' => 'Unauthenticated.'], 401);
             }
         });
+
+        // Handle email transport exceptions gracefully
+        $exceptions->render(function (Throwable $e, Request $request) {
+            // Check if it's a mail transport exception (check the whole exception chain)
+            $currentException = $e;
+            $isMailException = false;
+            
+            // Walk through exception chain to find mail-related exceptions
+            do {
+                if ($currentException instanceof \Swift_TransportException || 
+                    $currentException instanceof \Symfony\Component\Mailer\Exception\TransportExceptionInterface ||
+                    str_contains($currentException->getMessage(), 'Connection could not be established') ||
+                    str_contains($currentException->getMessage(), 'stream_socket_client()') ||
+                    str_contains(get_class($currentException), 'Swift') ||
+                    str_contains(get_class($currentException), 'Mailer')) {
+                    $isMailException = true;
+                    break;
+                }
+                $currentException = $currentException->getPrevious();
+            } while ($currentException !== null);
+            
+            if ($isMailException) {
+                \Log::error('Email transport error', [
+                    'url' => $request->fullUrl(),
+                    'error' => $e->getMessage(),
+                    'class' => get_class($e),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+
+                if ($request->is('api/*') || $request->expectsJson()) {
+                    return response()->json([
+                        'message' => 'We are unable to send email at the moment. Please try again later.',
+                    ], 500);
+                }
+            }
+        });
     })
     ->withProviders([
         App\Providers\ImageServiceProvider::class,

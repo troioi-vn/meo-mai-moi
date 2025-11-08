@@ -119,7 +119,6 @@ describe('ResetPasswordPage', () => {
         return HttpResponse.json({
           data: {
             message: 'Password reset successfully',
-            reset: true,
           },
         })
       })

@@ -265,4 +265,30 @@ describe('LoginForm', () => {
       expect(screen.getByRole('button', { name: /back to login/i })).toBeInTheDocument()
     })
   })
+
+  it('toggles password visibility', async () => {
+    renderWithRouter(<LoginForm />)
+
+    // Step 1: Enter email and proceed
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com')
+    await user.click(screen.getByRole('button', { name: /next/i }))
+
+    // Wait for password field
+    await waitFor(() => {
+      expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
+    })
+
+    const passwordInput = screen.getByLabelText(/password/i)
+    const toggleButton = passwordInput.parentElement?.querySelector('button[type="button"]')
+
+    expect(passwordInput).toHaveAttribute('type', 'password')
+
+    if (toggleButton) {
+      await user.click(toggleButton)
+      expect(passwordInput).toHaveAttribute('type', 'text')
+
+      await user.click(toggleButton)
+      expect(passwordInput).toHaveAttribute('type', 'password')
+    }
+  })
 })

@@ -4,6 +4,62 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Authentication & Password Reset UX Improvements
+
+#### Summary
+
+Significant improvements to the authentication flows with focus on user experience, error handling, and accessibility. Fixed password reset redirect, improved forgot password workflow, and added password visibility toggles.
+
+#### Added
+
+- **Password visibility toggle**: Eye/EyeOff icons added to toggle password visibility on:
+  - Login page (password field)
+  - Register page (password and password confirmation fields)
+  - Reset password page (already existed)
+- **Auto-focus fields**: Automatic focus on form load for better UX:
+  - Email field auto-focuses on login page
+  - Password field auto-focuses when proceeding to password step
+- **Email prefill**: Email from login form is automatically prefilled in forgot password form when accessed from login
+- **Global mail exception handler**: Added comprehensive exception handling in `bootstrap/app.php` for mail transport errors
+  - Catches `Swift_TransportException` and `Symfony\Component\Mailer\Exception\TransportExceptionInterface`
+  - Walks through exception chain to detect wrapped mail exceptions
+  - Returns user-friendly JSON error messages for both password reset and email verification flows
+- **Enhanced test coverage**: Added tests for:
+  - Password visibility toggle functionality (LoginForm, RegisterForm)
+  - Email prefill from URL parameters (ForgotPasswordPage)
+
+#### Changed
+
+- **Password reset redirect**: Fixed redirect logic to properly redirect users to login page after successful password reset
+- **Forgot password success state**: Now displays "Check Your Email" confirmation screen instead of remaining on the form
+- **Password reset response handling**: Fixed response parsing to detect success (was checking for non-existent boolean field)
+- **Forgot password response handling**: Fixed response parsing to properly trigger success state
+- **Input focus ring styling**: Reduced focus ring thickness from 3px to 1.5px for all input fields (both light and dark modes)
+- **PasswordResetController**: Simplified to only handle token validation endpoint; removed redundant custom password reset logic (Fortify handles all password operations)
+- **Error messages**: Both password reset and email verification flows now show user-friendly error messages when email service is unavailable
+
+#### Removed
+
+- **Custom password reset handlers**: Removed `handleJetstreamPasswordResetLinkRequest` and `handleJetstreamPasswordReset` methods from PasswordResetController
+- **Redundant error handling**: Removed try-catch blocks from PasswordResetController (now handled globally in bootstrap/app.php)
+
+#### Bug Fixes
+
+- Fixed password reset not redirecting after successful reset
+- Fixed forgot password form not showing success state after sending email
+- Fixed thick/prominent focus rings on input fields making UI appear heavy
+- Fixed password reset and forgot password flows not showing user-friendly error messages when mail service fails
+
+#### Tests
+
+- Updated mock API responses to match actual backend responses in:
+  - ResetPasswordPage tests
+  - ForgotPasswordPage tests
+- Added password visibility toggle tests for LoginForm and RegisterForm
+- Added email prefill test for ForgotPasswordPage
+- Fixed pre-existing TypeScript type error in RegisterForm test
+- All 343 tests passing
+
 ### Email Delivery & Verification Refactor (Pending Release)
 
 #### Summary
@@ -48,6 +104,8 @@ Comprehensive overhaul of the email delivery pipeline and verification experienc
 The migration renames existing `email_logs.status = sent` to `accepted`. No data loss. Rollback restores previous value. Ensure any external analytics relying on the old value are adjusted.
 
 #### Operational Impact
+
+```
 
 - Mailgun webhooks must be configured to POST to `/api/webhooks/mailgun` including all new events for full observability.
 - Set `EMAIL_VERIFICATION_IDEMPOTENCY_SECONDS` in production if a window other than 30s is desired.

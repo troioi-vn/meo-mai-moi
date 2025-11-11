@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\PlacementRequestStatus;
 use App\Models\Pet;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
@@ -34,9 +35,9 @@ class PetPolicy
     {
         // Guests may view when there is an active placement request for the pet
         $hasActivePlacement = $pet->placementRequests()
-            ->where('status', \App\Enums\PlacementRequestStatus::OPEN)
+            ->where('status', PlacementRequestStatus::OPEN)
             ->exists();
-        
+
         if (! $user) {
             return $hasActivePlacement;
         }

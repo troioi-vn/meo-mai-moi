@@ -4,9 +4,15 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Changed
+
+- **Git Repository Cleanup**: Removed `.deploy/` directory from version control (already in `.gitignore`, now untracked from repository history)
+- **Deploy workflow**: Skip Filament Shield regeneration by default during `deploy.sh`; re-enable with `SHIELD_GENERATE=true` when permission scaffolding needs to be refreshed, preventing unintended overwrites of customized policies
+
 ### Fixed
 
 - **Array offset warning**: Fixed "Trying to access array offset on value of type null" warning in `EmailConfigurationService::updateMailConfig()` when accessing `$mailConfig['from']['address']` with proper null coalescing operators
+- **Pet detail access**: Ensured regular owners and admins can view pet profiles by retaining ownership-aware policy logic even when Filament Shield assets are regenerated
 
 ### Icons & Branding Assets
 

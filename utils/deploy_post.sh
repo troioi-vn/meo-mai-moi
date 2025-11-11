@@ -24,8 +24,15 @@ deploy_post_run_migrations() {
 }
 
 deploy_post_finalize() {
-    note "Generating Filament Shield resources..."
-    run_cmd_with_console docker compose exec backend php artisan shield:generate --all --panel=admin --minimal
+    # Optional: Generate Filament Shield resources.
+    # By default, we DO NOT regenerate policies to avoid overwriting customized policy logic (e.g., PetPolicy).
+    # To force regeneration on demand, run deploy with: SHIELD_GENERATE=true ./utils/deploy.sh
+    if [ "${SHIELD_GENERATE:-false}" = "true" ]; then
+        note "Generating Filament Shield resources..."
+        run_cmd_with_console docker compose exec backend php artisan shield:generate --all --panel=admin --minimal
+    else
+        note "Skipping Filament Shield generation (SHIELD_GENERATE=false)."
+    fi
 
     note "Optimizing application..."
     run_cmd_with_console docker compose exec backend php artisan optimize

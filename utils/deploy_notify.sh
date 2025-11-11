@@ -117,7 +117,32 @@ deploy_notify_send_start() {
     DEPLOY_NOTIFY_STATUS="running"
     DEPLOY_NOTIFY_STARTED_AT=$(deploy_notify_now)
     DEPLOY_NOTIFY_START_SENT="true"
-    deploy_notify_send "🚀 Deployment started at ${DEPLOY_NOTIFY_STARTED_AT}."
+    
+    # Build deployment flags message
+    local flags_msg=""
+    local flags=()
+    
+    if [ "${DEPLOY_FLAG_FRESH:-false}" = "true" ]; then
+        flags+=("--fresh")
+    fi
+    if [ "${DEPLOY_FLAG_NO_CACHE:-false}" = "true" ]; then
+        flags+=("--no-cache")
+    fi
+    if [ "${DEPLOY_FLAG_SEED:-false}" = "true" ]; then
+        flags+=("--seed")
+    fi
+    if [ "${DEPLOY_FLAG_NO_INTERACTIVE:-false}" = "true" ]; then
+        flags+=("--no-interactive")
+    fi
+    if [ "${DEPLOY_FLAG_SKIP_GIT_SYNC:-false}" = "true" ]; then
+        flags+=("--skip-git-sync")
+    fi
+    
+    if [ ${#flags[@]} -gt 0 ]; then
+        flags_msg=" with flags: ${flags[*]}"
+    fi
+    
+    deploy_notify_send "🚀 Deployment started at ${DEPLOY_NOTIFY_STARTED_AT}${flags_msg}."
 }
 
 deploy_notify_send_success() {

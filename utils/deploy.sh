@@ -115,6 +115,14 @@ if [ "$TEST_NOTIFY" = "true" ]; then
 fi
 
 deploy_notify_register_traps
+
+# Export deployment flags for notification messages
+export DEPLOY_FLAG_FRESH="$FRESH"
+export DEPLOY_FLAG_NO_CACHE="$NO_CACHE"
+export DEPLOY_FLAG_SEED="$SEED"
+export DEPLOY_FLAG_NO_INTERACTIVE="$NO_INTERACTIVE"
+export DEPLOY_FLAG_SKIP_GIT_SYNC="$SKIP_GIT_SYNC"
+
 deploy_notify_send_start
 
 # Rollback support

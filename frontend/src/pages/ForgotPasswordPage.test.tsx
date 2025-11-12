@@ -148,7 +148,7 @@ describe('ForgotPasswordPage', () => {
       routes: [{ path: '/forgot-password', element: <ForgotPasswordPage /> }],
     })
 
-    const emailInput = screen.getByLabelText(/email address/i) as HTMLInputElement
+    const emailInput = screen.getByLabelText<HTMLInputElement>(/email address/i)
     expect(emailInput.value).toBe('prefilled@example.com')
   })
 })

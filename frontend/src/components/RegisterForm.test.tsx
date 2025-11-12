@@ -47,7 +47,7 @@ describe('RegisterForm', () => {
     renderWithRouter(<RegisterForm initialEmail="prefilled@example.com" />)
 
     await waitFor(() => {
-      const emailInput = screen.getByLabelText(/email/i) as HTMLInputElement
+      const emailInput = screen.getByLabelText<HTMLInputElement>(/email/i)
       expect(emailInput.value).toBe('prefilled@example.com')
     })
   })

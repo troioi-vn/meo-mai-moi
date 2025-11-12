@@ -98,7 +98,7 @@ export default function ResetPasswordPage() {
 
       // Redirect to login after a short delay
       redirectTimer.current = window.setTimeout(() => {
-        navigate('/login')
+        void navigate('/login')
       }, 2000)
     } catch (error: unknown) {
       if (error instanceof Error && 'response' in error) {

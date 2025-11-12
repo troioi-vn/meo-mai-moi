@@ -6,6 +6,11 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Tooltip Component**: Added Radix UI tooltip component (`@radix-ui/react-tooltip`) for better UX
+
+  - Created reusable tooltip component at `frontend/src/components/ui/tooltip.tsx`
+  - Used for "Show all" filter to explain it includes deceased pets
+
 - **Progressive Web App (PWA)**: Full PWA implementation with:
   - Service worker for offline support and app shell caching
   - Web app manifest with light/dark theme variants
@@ -18,6 +23,23 @@ All notable changes to this project are documented here, following the [Keep a C
   - `vite-plugin-pwa` integration with manual registration
 
 ### Changed
+
+- **My Pets Page UI Improvements** (`/account/pets`):
+
+  - Changed page header from "My Pets" to "Pets" for cleaner, more concise title
+  - Removed "Owned" section header (pets shown without redundant header)
+  - Moved deceased pet filter from top of page to below pet list for better context
+  - Changed filter label from "Show all (including deceased)" to "Show all" with tooltip
+  - Filter now automatically hidden when user has no deceased pets
+  - Improved overall page layout and information hierarchy
+
+- **PetCard Component Simplification**:
+
+  - Removed pet type badge display (no longer shows "Cat", "Dog", etc.)
+  - Removed breed information from card
+  - Removed location field from card
+  - Streamlined card to show only essential information: name, age, status badges, and actions
+  - Cleaner, more focused card design
 
 - **Git Repository Cleanup**: Removed `.deploy/` directory from version control (already in `.gitignore`, now untracked from repository history)
 - **Deploy workflow**: Skip Filament Shield regeneration by default during `deploy.sh`; re-enable with `SHIELD_GENERATE=true` when permission scaffolding needs to be refreshed, preventing unintended overwrites of customized policies

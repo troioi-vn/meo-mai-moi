@@ -72,12 +72,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
       </Link>
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-primary">{pet.name}</CardTitle>
-        <CardDescription className="text-muted-foreground">
-          {pet.breed} - {formatPetAge(pet)}
-          <span className="ml-2 inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-            {pet.pet_type.name}
-          </span>
-        </CardDescription>
+        <CardDescription className="text-muted-foreground">{formatPetAge(pet)}</CardDescription>
         <div className="mt-2 flex flex-wrap gap-2">
           {hasFulfilledPlacement && (
             <span className="inline-block bg-emerald-600 text-white px-2 py-1 rounded-full text-xs font-semibold">
@@ -103,7 +98,6 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
         </div>
       </CardHeader>
       <CardContent className="flex flex-grow flex-col justify-between p-4">
-        <p className="text-sm text-gray-600">Location: {pet.location}</p>
         <div className="mt-4">
           {isAuthenticated &&
             user?.id !== pet.user_id &&

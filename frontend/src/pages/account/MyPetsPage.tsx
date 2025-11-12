@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useNavigate } from 'react-router-dom'
 import { PetCard } from '@/components/PetCard'
 import { PlusCircle } from 'lucide-react'
@@ -60,24 +61,11 @@ export default function MyPetsPage() {
   return (
     <div className="container mx-auto px-4 py-8 bg-background min-h-screen">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-foreground">My Pets</h1>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Switch
-              id="show-all"
-              checked={showAll}
-              onCheckedChange={setShowAll}
-              className="scale-75"
-            />
-            <label htmlFor="show-all" className="text-xs font-medium cursor-pointer">
-              Show all (including deceased)
-            </label>
-          </div>
-          <Button onClick={() => void navigate('/account/pets/create')}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            New Pet
-          </Button>
-        </div>
+        <h1 className="text-3xl font-bold text-foreground">Pets</h1>
+        <Button onClick={() => void navigate('/account/pets/create')}>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          New Pet
+        </Button>
       </div>
 
       {loading && <p className="text-muted-foreground">Loading your pets...</p>}
@@ -85,16 +73,44 @@ export default function MyPetsPage() {
 
       {!loading && !error && (
         <div className="space-y-10">
-          {/* Owned */}
+          {/* Owned - no header shown */}
           {(() => {
             const ownedPets = showAll
               ? sections.owned
               : sections.owned.filter((p) => p.status !== 'deceased')
+            const hasDeceasedPets = sections.owned.some((p) => p.status === 'deceased')
             return (
               ownedPets.length > 0 && (
                 <section>
-                  <h2 className="text-2xl font-semibold mb-3">Owned</h2>
                   <SectionGrid pets={ownedPets} />
+                  {/* Filter moved below the pet list - only show if there are deceased pets */}
+                  {hasDeceasedPets && (
+                    <div className="mt-4 flex items-center gap-2">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex items-center gap-2">
+                              <Switch
+                                id="show-all"
+                                checked={showAll}
+                                onCheckedChange={setShowAll}
+                                className="scale-75"
+                              />
+                              <label
+                                htmlFor="show-all"
+                                className="text-xs font-medium cursor-pointer"
+                              >
+                                Show all
+                              </label>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Includes deceased pets</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  )}
                 </section>
               )
             )

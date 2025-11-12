@@ -132,9 +132,7 @@ describe('PetCard', () => {
     renderWithProviders(<PetCard pet={mockCat} />)
 
     expect(screen.getByText('Fluffy')).toBeInTheDocument()
-    expect(screen.getByText(/Persian - \d+ years old/)).toBeInTheDocument()
-    expect(screen.getByText('Cat')).toBeInTheDocument()
-    expect(screen.getByText('Location: Hanoi')).toBeInTheDocument()
+    expect(screen.getByText(/\d+ years old/)).toBeInTheDocument()
     expect(screen.getByText('ADOPTION')).toBeInTheDocument()
   })
 
@@ -142,9 +140,7 @@ describe('PetCard', () => {
     renderWithProviders(<PetCard pet={mockDog} />)
 
     expect(screen.getByText('Buddy')).toBeInTheDocument()
-    expect(screen.getByText(/Golden Retriever - \d+ years old/)).toBeInTheDocument()
-    expect(screen.getByText('Dog')).toBeInTheDocument()
-    expect(screen.getByText('Location: Ho Chi Minh City')).toBeInTheDocument()
+    expect(screen.getByText(/\d+ years old/)).toBeInTheDocument()
   })
 
   it('shows respond button for cats with active placement requests when user is authenticated', () => {

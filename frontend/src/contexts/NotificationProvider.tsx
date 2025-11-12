@@ -72,15 +72,62 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
 
   const unreadCount = useMemo(() => notifications.filter((n) => !n.read_at).length, [notifications])
 
-  const emitToastsForNew = useCallback((incoming: AppNotification[]) => {
-    for (const n of incoming) {
-      if (!n.read_at && !seenIdsRef.current.has(n.id)) {
-        seenIdsRef.current.add(n.id)
-        const fn = LEVEL_TO_TOAST[n.level]
-        fn(n.title, { description: n.body ?? undefined })
+  const showNativeNotification = useCallback((notification: AppNotification) => {
+    if (typeof window === 'undefined' || !('Notification' in window)) return
+    if (Notification.permission !== 'granted') return
+    if (typeof document !== 'undefined' && document.visibilityState !== 'hidden') return
+
+    const options: NotificationOptions = {
+      body: notification.body ?? undefined,
+      tag: notification.id,
+      data: notification.url ? { url: notification.url } : undefined,
+    }
+
+    const showWithWindowContext = () => {
+      const fallback = new Notification(notification.title, options)
+      fallback.onclick = () => {
+        if (typeof window !== 'undefined') {
+          window.focus()
+          if (notification.url) {
+            window.location.assign(notification.url)
+          }
+        }
       }
+      return fallback
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .getRegistration()
+        .then((registration) => {
+          if (registration) {
+            return registration.showNotification(notification.title, options)
+          }
+          // Fall back to Notification constructor if no registration available
+          return showWithWindowContext()
+        })
+        .catch(() => {
+          // On failure, try direct notification constructor as a last resort
+          showWithWindowContext()
+        })
+    } else {
+      showWithWindowContext()
     }
   }, [])
+
+  const emitToastsForNew = useCallback(
+    (incoming: AppNotification[]) => {
+      for (const n of incoming) {
+        if (!n.read_at && !seenIdsRef.current.has(n.id)) {
+          seenIdsRef.current.add(n.id)
+          const fn = LEVEL_TO_TOAST[n.level]
+          fn(n.title, { description: n.body ?? undefined })
+          showNativeNotification(n)
+        }
+      }
+    },
+    [showNativeNotification]
+  )
 
   const refresh = useCallback(async () => {
     setLoading(true)

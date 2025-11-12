@@ -29,6 +29,7 @@ export default defineConfig(({ mode }) => ({
       ],
       manifest: false,
       workbox: {
+        importScripts: ['sw-notification-listeners.js'],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,webmanifest}'],
         navigateFallback: '/offline.html',
         navigateFallbackDenylist: [/^\/api\//, /^\/sanctum\//, /^\/storage\//, /^\/requests\//],

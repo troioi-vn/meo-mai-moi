@@ -11,6 +11,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CheckCircle, AlertCircle } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import {
   getNotificationPreferences,
   updateNotificationPreferences,
@@ -34,10 +35,18 @@ export function NotificationPreferences() {
     updating: false,
     updateSuccess: false,
   })
+  const [permission, setPermission] = useState<'unsupported' | NotificationPermission>('default')
+  const [requestingPermission, setRequestingPermission] = useState(false)
 
   // Load preferences on component mount
   useEffect(() => {
     void loadPreferences()
+    if (typeof window === 'undefined') return
+    if (!('Notification' in window)) {
+      setPermission('unsupported')
+      return
+    }
+    setPermission(Notification.permission)
   }, [])
 
   const loadPreferences = async () => {
@@ -55,6 +64,22 @@ export function NotificationPreferences() {
         loading: false,
         error: error instanceof Error ? error.message : 'Failed to load notification preferences',
       }))
+    }
+  }
+
+  const handleRequestPermission = async () => {
+    if (typeof window === 'undefined' || !('Notification' in window)) {
+      setPermission('unsupported')
+      return
+    }
+    try {
+      setRequestingPermission(true)
+      const result = await Notification.requestPermission()
+      setPermission(result)
+    } catch {
+      setPermission('denied')
+    } finally {
+      setRequestingPermission(false)
     }
   }
 
@@ -177,6 +202,43 @@ export function NotificationPreferences() {
         <p className="text-sm text-muted-foreground">
           Control how you receive notifications for different events.
         </p>
+      </div>
+
+      <div className="space-y-3 rounded-lg border p-4">
+        <div className="space-y-1">
+          <h4 className="text-sm font-medium text-foreground">Device notifications</h4>
+          <p className="text-sm text-muted-foreground">
+            Enable native OS alerts for in-app activity on this device.
+          </p>
+        </div>
+        {permission === 'unsupported' ? (
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              This browser does not support push notifications. Try using a modern browser like
+              Chrome, Edge, or Firefox.
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-sm text-muted-foreground">
+              {permission === 'granted'
+                ? 'Device notifications are enabled.'
+                : permission === 'denied'
+                  ? 'Notifications are blocked. Update your browser settings to allow them.'
+                  : 'Device notifications are disabled.'}
+            </span>
+            {permission !== 'granted' && (
+              <Button
+                size="sm"
+                onClick={() => void handleRequestPermission()}
+                disabled={requestingPermission}
+              >
+                {requestingPermission ? 'Requesting…' : 'Enable device notifications'}
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       {state.updateSuccess && (

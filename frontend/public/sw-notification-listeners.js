@@ -27,3 +27,42 @@ self.addEventListener('notificationclick', (event) => {
   )
 })
 
+self.addEventListener('push', (event) => {
+  let payload = {}
+  if (event.data) {
+    try {
+      payload = event.data.json()
+    } catch (error) {
+      console.warn('[sw] Failed to parse push payload as JSON', error)
+      payload = { title: event.data.text() }
+    }
+  }
+
+  const title = payload.title || 'Notification'
+  const options = {
+    body: payload.body,
+    tag: payload.tag,
+    data: payload.data,
+    icon: payload.icon || '/icon-192.png',
+    badge: payload.badge || '/icon-32.png',
+    actions: payload.actions,
+  }
+
+  event.waitUntil(self.registration.showNotification(title, options))
+})
+
+self.addEventListener('pushsubscriptionchange', (event) => {
+  event.waitUntil(
+    (async () => {
+      const clients = await self.clients.matchAll({
+        includeUncontrolled: true,
+        type: 'window',
+      })
+
+      for (const client of clients) {
+        client.postMessage({ type: 'pushsubscriptionchange' })
+      }
+    })()
+  )
+})
+

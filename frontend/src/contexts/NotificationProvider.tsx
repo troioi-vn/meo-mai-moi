@@ -75,7 +75,13 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
   const showNativeNotification = useCallback((notification: AppNotification) => {
     if (typeof window === 'undefined' || !('Notification' in window)) return
     if (Notification.permission !== 'granted') return
-    if (typeof document !== 'undefined' && document.visibilityState !== 'hidden') return
+    if (isDropdownOpenRef.current) return
+
+    if (typeof document !== 'undefined') {
+      const isVisible = document.visibilityState === 'visible'
+      const hasFocus = typeof document.hasFocus === 'function' ? document.hasFocus() : true
+      if (isVisible && hasFocus) return
+    }
 
     const options: NotificationOptions = {
       body: notification.body ?? undefined,
@@ -93,7 +99,6 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
           }
         }
       }
-      return fallback
     }
 
     if ('serviceWorker' in navigator) {
@@ -104,7 +109,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
             return registration.showNotification(notification.title, options)
           }
           // Fall back to Notification constructor if no registration available
-          return showWithWindowContext()
+          showWithWindowContext()
         })
         .catch(() => {
           // On failure, try direct notification constructor as a last resort

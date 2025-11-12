@@ -16,6 +16,7 @@ use App\Http\Controllers\PetController;
 use App\Http\Controllers\PetMicrochipController;
 use App\Http\Controllers\PetPhotoController;
 use App\Http\Controllers\PlacementRequestController;
+use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TransferHandoverController;
 use App\Http\Controllers\TransferRequestController;
@@ -81,6 +82,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead']); // legacy alias
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead']);
     Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
+
+    // Push subscriptions
+    Route::get('/push-subscriptions', [PushSubscriptionController::class, 'index']);
+    Route::post('/push-subscriptions', [PushSubscriptionController::class, 'store']);
+    Route::delete('/push-subscriptions', [PushSubscriptionController::class, 'destroy']);
 
     // Notification preferences
     Route::get('/notification-preferences', [NotificationPreferenceController::class, 'index']);

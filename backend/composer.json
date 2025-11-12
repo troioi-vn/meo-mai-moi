@@ -19,6 +19,7 @@
         "laravel/jetstream": "^5.3",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
+        "minishlink/web-push": "^9.0",
         "spatie/laravel-medialibrary": "^11",
         "stechstudio/filament-impersonate": "^3.16",
         "symfony/http-client": "^7.3",

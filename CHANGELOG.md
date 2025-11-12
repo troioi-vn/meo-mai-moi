@@ -21,6 +21,11 @@ All notable changes to this project are documented here, following the [Keep a C
   - Root-scoped service worker for full app coverage
   - Automatic manifest swapping when theme changes
   - `vite-plugin-pwa` integration with manual registration
+- **Web Push Notifications**: Native OS notifications for in-app alerts with:
+  - Push subscription API (`POST/DELETE /api/push-subscriptions`) and persistence
+  - Background dispatcher using VAPID-authenticated Web Push to deliver notification payloads
+  - Updated notification settings UI to request permission, manage device state, and surface errors
+  - Service worker listeners for push delivery, subscription refresh, and click-through deep linking
 
 ### Changed
 

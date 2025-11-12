@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Events\HelperProfileStatusUpdated;
+use App\Models\Notification;
+use App\Observers\NotificationObserver;
 use App\Listeners\CreateHelperProfileNotification;
 use App\Listeners\UpdateEmailLogOnSent;
 use Illuminate\Mail\Events\MessageSent;
@@ -19,6 +21,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(\App\Services\EmailConfigurationService::class);
+        $this->app->singleton(\App\Services\Notifications\WebPushDispatcher::class);
     }
 
     /**
@@ -44,6 +47,8 @@ class AppServiceProvider extends ServiceProvider
             MessageSent::class,
             UpdateEmailLogOnSent::class
         );
+
+        Notification::observe(NotificationObserver::class);
 
         // Register custom notification channel for email verification
         $this->app->make('Illuminate\Notifications\ChannelManager')

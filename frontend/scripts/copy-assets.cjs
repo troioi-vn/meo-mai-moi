@@ -19,6 +19,8 @@ try {
   // Copy PWA root assets (manifest, offline page, icons) to Laravel public root
   const rootAssets = [
     'site.webmanifest',
+    'site-light.webmanifest',
+    'site-dark.webmanifest',
     'offline.html',
     'apple-touch-icon.png',
     'icon-16.png',

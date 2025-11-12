@@ -24,10 +24,12 @@ export default defineConfig(({ mode }) => ({
         'icon-192.png',
         'icon-512.png',
         'vite.svg',
+        'site-light.webmanifest',
+        'site-dark.webmanifest',
       ],
       manifest: false,
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,webmanifest}'],
         navigateFallback: '/offline.html',
         navigateFallbackDenylist: [/^\/api\//, /^\/sanctum\//, /^\/storage\//, /^\/requests\//],
         runtimeCaching: [

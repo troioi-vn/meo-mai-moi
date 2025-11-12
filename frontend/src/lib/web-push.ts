@@ -27,9 +27,23 @@ export async function getServiceWorkerRegistration(): Promise<ServiceWorkerRegis
   }
 
   try {
-    return await navigator.serviceWorker.ready
+    const readyPromise = navigator.serviceWorker.ready
+    const timeoutPromise = new Promise<ServiceWorkerRegistration | null>((resolve) => {
+      setTimeout(() => {
+        resolve(null)
+      }, 1500)
+    })
+    const registration = await Promise.race([readyPromise, timeoutPromise])
+    if (registration) {
+      return registration
+    }
+    return (await navigator.serviceWorker.getRegistration()) ?? null
   } catch {
-    return null
+    try {
+      return (await navigator.serviceWorker.getRegistration()) ?? null
+    } catch {
+      return null
+    }
   }
 }
 

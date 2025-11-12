@@ -39,12 +39,22 @@ self.addEventListener('push', (event) => {
   }
 
   const title = payload.title || 'Notification'
+  const resolveAsset = (value, fallbackPath) => {
+    if (value && typeof value === 'string') {
+      return value
+    }
+    try {
+      return new URL(fallbackPath, self.location.origin).href
+    } catch {
+      return fallbackPath
+    }
+  }
   const options = {
     body: payload.body,
     tag: payload.tag,
     data: payload.data,
-    icon: payload.icon || '/icon-192.png',
-    badge: payload.badge || '/icon-32.png',
+    icon: resolveAsset(payload.icon, '/icon-192.png'),
+    badge: resolveAsset(payload.badge, '/icon-32.png'),
     actions: payload.actions,
   }
 

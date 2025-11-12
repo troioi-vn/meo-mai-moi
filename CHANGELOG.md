@@ -4,10 +4,26 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Added
+
+- **Progressive Web App (PWA)**: Full PWA implementation with:
+  - Service worker for offline support and app shell caching
+  - Web app manifest with light/dark theme variants
+  - Offline fallback page
+  - Runtime caching strategies (NetworkFirst for API, CacheFirst for images)
+  - Maskable icons for adaptive display across devices
+  - Dynamic theme-color switching based on user preference (light/dark mode)
+  - Root-scoped service worker for full app coverage
+  - Automatic manifest swapping when theme changes
+  - `vite-plugin-pwa` integration with manual registration
+
 ### Changed
 
 - **Git Repository Cleanup**: Removed `.deploy/` directory from version control (already in `.gitignore`, now untracked from repository history)
 - **Deploy workflow**: Skip Filament Shield regeneration by default during `deploy.sh`; re-enable with `SHIELD_GENERATE=true` when permission scaffolding needs to be refreshed, preventing unintended overwrites of customized policies
+- **Dependencies**: Updated Vite to ^7.2.2 and added vite-plugin-pwa ^1.1.0 for PWA support
+- **Build process**: Extended `copy-assets.cjs` to copy PWA assets (manifests, offline page, icons, service worker) to Laravel public root
+- **Blade template**: Added dynamic manifest swap script and theme-color meta tag to `welcome.blade.php`
 
 ### Fixed
 

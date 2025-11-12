@@ -41,14 +41,23 @@ export function ThemeProvider({
 
     root.classList.remove('light', 'dark')
 
+    let effectiveTheme: 'dark' | 'light'
     if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+      effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
         ? 'dark'
         : 'light'
 
-      root.classList.add(systemTheme)
+      root.classList.add(effectiveTheme)
     } else {
+      effectiveTheme = theme
       root.classList.add(theme)
+    }
+
+    // Update theme-color meta tag dynamically
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]')
+    if (themeColorMeta) {
+      const themeColor = effectiveTheme === 'dark' ? '#111827' : '#ffffff'
+      themeColorMeta.setAttribute('content', themeColor)
     }
 
     // Update manifest when theme changes

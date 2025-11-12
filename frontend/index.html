@@ -7,12 +7,12 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/icon-16.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" id="app-manifest" href="/site-light.webmanifest" />
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#111827" />
+    <meta name="theme-color" content="#ffffff" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script>
       ;(function () {
         const manifestEl = document.getElementById('app-manifest')
+        const themeColorMeta = document.querySelector('meta[name="theme-color"]')
         const mq = matchMedia('(prefers-color-scheme: dark)')
 
         function updateManifest() {
@@ -30,6 +30,11 @@
           }
 
           manifestEl.href = isDark ? '/site-dark.webmanifest' : '/site-light.webmanifest'
+          
+          // Update theme-color meta tag
+          if (themeColorMeta) {
+            themeColorMeta.setAttribute('content', isDark ? '#111827' : '#ffffff')
+          }
         }
 
         // Listen for OS theme changes

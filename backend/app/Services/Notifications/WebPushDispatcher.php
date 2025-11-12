@@ -41,13 +41,24 @@ class WebPushDispatcher
     public function dispatch(User $user, Notification $notification): void
     {
         if (! $this->isConfigured || $this->webPush === null) {
+            Log::debug('Web push not configured, skipping dispatch');
             return;
         }
 
         $subscriptions = $user->pushSubscriptions()->get();
         if ($subscriptions->isEmpty()) {
+            Log::debug('No push subscriptions found for user', [
+                'user_id' => $user->id,
+                'notification_id' => $notification->id,
+            ]);
             return;
         }
+
+        Log::info('Dispatching web push notification', [
+            'user_id' => $user->id,
+            'notification_id' => $notification->id,
+            'subscription_count' => $subscriptions->count(),
+        ]);
 
         $payload = $this->buildPayload($notification);
 
@@ -60,18 +71,31 @@ class WebPushDispatcher
         $data = $notification->data ?? [];
 
         $title = $data['title'] ?? $data['subject'] ?? ($data['message'] ?? $notification->message ?? 'Notification');
+        
+        // Ensure title is never too long (web push has limits)
+        $title = mb_substr($title, 0, 100);
 
         $body = $data['body'] ?? $data['message'] ?? $notification->message ?? null;
+        
+        // Limit body length for push notifications
+        if ($body !== null) {
+            $body = mb_substr($body, 0, 200);
+        }
+        
         $url = $data['url'] ?? $notification->link ?? $data['actionUrl'] ?? null;
 
         $payload = [
             'title' => $title,
             'body' => $body,
+            'icon' => $data['icon'] ?? '/icon-192.png',
+            'badge' => $data['badge'] ?? '/icon-32.png',
             'tag' => (string) $notification->id,
+            'requireInteraction' => $data['requireInteraction'] ?? false,
             'data' => array_filter([
                 'url' => $url,
                 'notification_id' => (string) $notification->id,
                 'type' => $notification->type,
+                'timestamp' => $notification->created_at?->timestamp ?? time(),
             ]),
         ];
 
@@ -125,14 +149,24 @@ class WebPushDispatcher
             }
 
             $reason = $report->getReason() ?? 'Unknown error';
+            $statusCode = method_exists($report, 'getResponse') 
+                ? $report->getResponse()?->getStatusCode() 
+                : null;
+            
             Log::warning('Web push delivery failed', [
-                'endpoint' => $endpoint,
+                'endpoint' => substr($endpoint, 0, 100) . '...',
                 'reason' => $reason,
+                'status_code' => $statusCode,
             ]);
 
+            // Handle different error cases
             if ($report->isSubscriptionExpired()) {
                 $this->expireSubscription($subscriptions, $endpoint);
+            } elseif ($statusCode === 410 || $statusCode === 404) {
+                // Gone or Not Found - subscription no longer valid
+                $this->expireSubscription($subscriptions, $endpoint);
             }
+            // For other errors (like 429 rate limiting), we keep the subscription
         }
     }
 

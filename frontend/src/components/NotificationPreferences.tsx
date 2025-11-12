@@ -160,10 +160,23 @@ export function NotificationPreferences() {
           if (!vapidPublicKey) {
             throw new Error('Push notifications are not configured for this environment.')
           }
-          subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-          })
+          
+          try {
+            subscription = await registration.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as BufferSource,
+            })
+          } catch (subscribeError) {
+            // Handle specific subscription errors
+            if (subscribeError instanceof Error) {
+              if (subscribeError.name === 'NotAllowedError') {
+                throw new Error('Permission to show notifications was denied.')
+              } else if (subscribeError.name === 'AbortError') {
+                throw new Error('Subscription was aborted. Please try again.')
+              }
+            }
+            throw subscribeError
+          }
         }
 
         const payload = normaliseSubscriptionJSON(subscription)
@@ -175,12 +188,17 @@ export function NotificationPreferences() {
           throw new Error('Push subscription keys are incomplete.')
         }
 
-        await upsertPushSubscription({
-          endpoint: payload.endpoint,
-          keys: payload.keys,
-          expirationTime: payload.expirationTime ?? undefined,
-          contentEncoding: 'aes128gcm',
-        })
+        try {
+          await upsertPushSubscription({
+            endpoint: payload.endpoint,
+            keys: payload.keys,
+            expirationTime: payload.expirationTime ?? undefined,
+            contentEncoding: 'aes128gcm',
+          })
+        } catch (apiError) {
+          console.error('[notifications] Failed to save subscription to backend:', apiError)
+          throw new Error('Failed to register push subscription with the server.')
+        }
 
         setPushStatus('enabled')
         setPushError(null)
@@ -237,13 +255,27 @@ export function NotificationPreferences() {
 
       const subscription = await registration.pushManager.getSubscription()
       if (subscription) {
-        await deletePushSubscription(subscription.endpoint)
-        const unsubscribed = await subscription.unsubscribe()
-        if (!unsubscribed) {
-          console.warn('[notifications] PushManager.unsubscribe() returned false')
+        // Delete from backend first
+        try {
+          await deletePushSubscription(subscription.endpoint)
+        } catch (apiError) {
+          console.warn('[notifications] Failed to delete subscription from backend:', apiError)
+          // Continue with local unsubscribe even if backend fails
+        }
+        
+        // Then unsubscribe locally
+        try {
+          const unsubscribed = await subscription.unsubscribe()
+          if (!unsubscribed) {
+            console.warn('[notifications] PushManager.unsubscribe() returned false')
+          }
+        } catch (unsubError) {
+          console.error('[notifications] Failed to unsubscribe:', unsubError)
+          throw new Error('Failed to remove push subscription from browser.')
         }
       }
       setPushStatus('disabled')
+      setPushError(null)
     } catch (error) {
       setPushError(
         error instanceof Error ? error.message : 'Failed to disable device notifications.'

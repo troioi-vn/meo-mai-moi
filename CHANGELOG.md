@@ -27,6 +27,11 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Fixed
 
+- **PWA theme color**: Fixed PWA top bar color showing old orange color instead of respecting current theme (light/dark/system)
+  - Updated `site.webmanifest` to use white theme color instead of orange
+  - Enhanced theme provider to dynamically update theme-color meta tag when theme changes
+  - Updated HTML templates (frontend and backend) to properly initialize and update theme-color based on user preference
+  - Theme-color now correctly switches between white (#ffffff) for light mode and dark gray (#111827) for dark mode
 - **Array offset warning**: Fixed "Trying to access array offset on value of type null" warning in `EmailConfigurationService::updateMailConfig()` when accessing `$mailConfig['from']['address']` with proper null coalescing operators
 - **Pet detail access**: Ensured regular owners and admins can view pet profiles by retaining ownership-aware policy logic even when Filament Shield assets are regenerated
 

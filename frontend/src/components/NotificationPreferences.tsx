@@ -151,7 +151,9 @@ export function NotificationPreferences() {
       try {
         const registration = await getServiceWorkerRegistration()
         if (!registration) {
-          throw new Error('Service worker is not ready yet. Please reload the page and try again.')
+          throw new Error(
+            'Service worker is not ready yet. Please reload the page or install the app before enabling device notifications.'
+          )
         }
 
         let subscription = await registration.pushManager.getSubscription()
@@ -160,7 +162,7 @@ export function NotificationPreferences() {
           if (!vapidPublicKey) {
             throw new Error('Push notifications are not configured for this environment.')
           }
-          
+
           try {
             subscription = await registration.pushManager.subscribe({
               userVisibleOnly: true,
@@ -262,7 +264,7 @@ export function NotificationPreferences() {
           console.warn('[notifications] Failed to delete subscription from backend:', apiError)
           // Continue with local unsubscribe even if backend fails
         }
-        
+
         // Then unsubscribe locally
         try {
           const unsubscribed = await subscription.unsubscribe()

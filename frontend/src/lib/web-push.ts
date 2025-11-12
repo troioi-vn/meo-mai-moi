@@ -26,24 +26,46 @@ export async function getServiceWorkerRegistration(): Promise<ServiceWorkerRegis
     return null
   }
 
+  const bases: string[] = []
+  try {
+    const base = import.meta.env.BASE_URL
+    if (typeof base === 'string' && base !== '/' && base !== '.') {
+      const normalized = base.endsWith('/') ? base : `${base}/`
+      bases.push(normalized)
+    }
+  } catch {
+    // ignore
+  }
+
+  const candidateScopes = ['/', ...bases]
+
   try {
     const readyPromise = navigator.serviceWorker.ready
     const timeoutPromise = new Promise<ServiceWorkerRegistration | null>((resolve) => {
       setTimeout(() => {
         resolve(null)
-      }, 1500)
+      }, 4000)
     })
     const registration = await Promise.race([readyPromise, timeoutPromise])
     if (registration) {
       return registration
     }
-    return (await navigator.serviceWorker.getRegistration()) ?? null
-  } catch {
-    try {
-      return (await navigator.serviceWorker.getRegistration()) ?? null
-    } catch {
-      return null
+
+    for (const scope of candidateScopes) {
+      const reg = await navigator.serviceWorker.getRegistration(scope === '/' ? undefined : scope)
+      if (reg) return reg
     }
+    return null
+  } catch {
+    for (const scope of candidateScopes) {
+      try {
+        const reg = await navigator.serviceWorker.getRegistration(scope === '/' ? undefined : scope)
+        if (reg) return reg
+      } catch {
+        // ignore
+      }
+    }
+    return null
   }
 }
 

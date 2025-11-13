@@ -56,7 +56,7 @@ The application supports browser-based push notifications using the Web Push Pro
 
 ### Environment Variables
 
-Backend (`.env`):
+Backend (`backend/.env.docker`):
 
 ```bash
 # Generate with: npx web-push generate-vapid-keys
@@ -65,7 +65,13 @@ VAPID_PRIVATE_KEY=your_private_key
 VAPID_SUBJECT=mailto:your-email@example.com
 ```
 
-Docker builds automatically forward `VAPID_PUBLIC_KEY` into the frontend build as `VITE_VAPID_PUBLIC_KEY`, so setting the backend value is sufficient. Ensure the key is present before running `docker compose build backend`.
+Docker builds automatically forward `VAPID_PUBLIC_KEY` into the frontend build as `VITE_VAPID_PUBLIC_KEY`, so setting the backend value is sufficient.
+
+**Important**: The deploy scripts automatically pass `--env-file backend/.env.docker` to Docker Compose. If building manually, ensure you include this flag:
+
+```bash
+docker compose --env-file backend/.env.docker build
+```
 
 ### Generating VAPID Keys
 

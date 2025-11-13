@@ -35,7 +35,14 @@ All notable changes to this project are documented here, following the [Keep a C
   - Background dispatcher using VAPID-authenticated Web Push to deliver notification payloads
   - Updated notification settings UI to request permission, manage device state, and surface errors
   - Service worker listeners for push delivery, subscription refresh, and click-through deep linking
-- **Web Push Build Configuration**: Docker builds now forward the backend `VAPID_PUBLIC_KEY` into the frontend bundle automatically (no duplicate env vars), and documentation/environment templates reflect the single-source configuration.
+- **Web Push Build Configuration**: Fixed push notifications failing with "Push notifications are not configured" error
+  - Root cause: `VITE_VAPID_PUBLIC_KEY` was not available during Docker image build, resulting in frontend bundle with undefined value
+  - Solution: Pass `VAPID_PUBLIC_KEY` as Docker build arg and set `VITE_VAPID_PUBLIC_KEY` in Dockerfile before frontend build
+  - Configuration simplified to single source of truth: only `VAPID_PUBLIC_KEY` needs to be set in `backend/.env.docker`
+  - Updated `docker-compose.yml` to forward `VAPID_PUBLIC_KEY` as build arg
+  - Updated `backend/Dockerfile` to export both `VAPID_PUBLIC_KEY` and `VITE_VAPID_PUBLIC_KEY` from the same build arg
+  - Updated `utils/deploy_docker.sh` to pass `--env-file backend/.env.docker` to all `docker compose` commands ensuring build args are populated
+  - Push subscription flow now works correctly in all environments
 
 ### Changed
 

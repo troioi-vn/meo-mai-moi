@@ -60,7 +60,7 @@ deploy_docker_start() {
     local build_args=()
     if [ "$no_cache" = "true" ]; then
         echo "Building without cache..."
-        run_cmd_with_console docker compose build --no-cache
+        run_cmd_with_console docker compose --env-file "$ENV_FILE" build --no-cache
         build_args+=(-d)
     else
         build_args+=(--build -d)
@@ -78,9 +78,9 @@ deploy_docker_start() {
     fi
 
     if [ -n "$compose_profiles_val" ]; then
-        COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose up "${build_args[@]}"
+        COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose --env-file "$ENV_FILE" up "${build_args[@]}"
     else
-        run_cmd_with_console docker compose up "${build_args[@]}"
+        run_cmd_with_console docker compose --env-file "$ENV_FILE" up "${build_args[@]}"
     fi
 }
 

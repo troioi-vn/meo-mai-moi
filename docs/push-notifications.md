@@ -67,10 +67,11 @@ VAPID_SUBJECT=mailto:your-email@example.com
 
 Docker builds automatically forward `VAPID_PUBLIC_KEY` into the frontend build as `VITE_VAPID_PUBLIC_KEY`, so setting the backend value is sufficient.
 
-**Important**: The deploy scripts automatically pass `--env-file backend/.env.docker` to Docker Compose. If building manually, ensure you include this flag:
+**Important**: The deploy scripts automatically export `VAPID_PUBLIC_KEY` from the env file before building. If building manually, ensure you export the key first:
 
 ```bash
-docker compose --env-file backend/.env.docker build
+export VAPID_PUBLIC_KEY=$(grep -E '^VAPID_PUBLIC_KEY=' backend/.env.docker | cut -d '=' -f2-)
+docker compose build
 ```
 
 ### Generating VAPID Keys

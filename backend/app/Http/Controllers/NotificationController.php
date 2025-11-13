@@ -62,12 +62,17 @@ class NotificationController extends Controller
 
         // Map to frontend contract without altering DB schema yet
         $data = $items->map(function (Notification $n) {
+            // Extract title and body from data JSON if available
+            $title = $n->data['title'] ?? $n->message;
+            $body = $n->data['body'] ?? null;
+            $level = $n->data['level'] ?? 'info';
+
             return [
                 'id' => (string) $n->id,
-                'level' => property_exists($n, 'level') && $n->level ? $n->level : 'info',
-                'title' => property_exists($n, 'title') && $n->title ? $n->title : $n->message,
-                'body' => property_exists($n, 'body') ? $n->body : null,
-                'url' => property_exists($n, 'url') && $n->url ? $n->url : $n->link,
+                'level' => $level,
+                'title' => $title,
+                'body' => $body,
+                'url' => $n->link,
                 'created_at' => optional($n->created_at)->toISOString(),
                 'read_at' => optional($n->read_at)->toISOString(),
             ];

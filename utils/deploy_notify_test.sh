@@ -6,7 +6,7 @@
 # Usage:
 #   ./utils/deploy_notify_test.sh [message]
 #
-# Environment variables required in .env or .env.docker:
+# Environment variables required in backend/.env:
 #   TELEGRAM_BOT_TOKEN
 #   CHAT_ID
 #   APP_URL (optional, for display prefix)
@@ -17,9 +17,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
-# Set default ENV_FILE, restricted to backend/.env.docker (can be overridden by pre-setting ENV_FILE)
+# Set default ENV_FILE (can be overridden by pre-setting ENV_FILE)
 if [ -z "${ENV_FILE:-}" ]; then
-    ENV_FILE="$PROJECT_ROOT/backend/.env.docker"
+    ENV_FILE="$PROJECT_ROOT/backend/.env"
 fi
 
 # Colors for output
@@ -57,7 +57,7 @@ if [ "$DEPLOY_NOTIFY_ENABLED" != "true" ]; then
         echo "  - TELEGRAM_BOT_TOKEN"
         echo "  - CHAT_ID"
         echo ""
-        echo "Add these to your .env.docker file:"
+        echo "Add these to your backend/.env file:"
         echo "  TELEGRAM_BOT_TOKEN=your_bot_token_here"
         echo "  CHAT_ID=your_chat_id_here"
         exit 1

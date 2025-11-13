@@ -2,11 +2,11 @@
 
 ## Environment Configuration
 
-This project uses `.env.docker.example` as the primary environment template (not `.env.example`).
+This project uses `.env.example` as the environment template.
 
 ### Automatic .env Creation
 
-When you run any `php artisan` command, if `.env` doesn't exist, it will be **automatically created** from `.env.docker.example`.
+When you run any `php artisan` command, if `.env` doesn't exist, it will be **automatically created** from `.env.example`.
 
 **Example:**
 
@@ -16,7 +16,7 @@ composer install
 php artisan test
 
 # Output:
-# ✓ Created .env from .env.docker.example
+# ✓ Created .env from .env.example
 # ⚠ Please update .env with your configuration (especially APP_KEY)
 #   Run: php artisan key:generate
 ```
@@ -44,7 +44,7 @@ If you prefer manual setup:
 
 ```bash
 # Copy the example file
-cp .env.docker.example .env
+cp .env.example .env
 
 # Generate application key
 php artisan key:generate
@@ -55,8 +55,8 @@ nano .env
 
 ### Docker vs Local Development
 
--   **Docker**: Use `.env.docker` or `.env.docker.example` as template
--   **Local**: Use `.env.docker.example` and adjust `DB_HOST=localhost` and other local settings
+-   **Docker**: Environment managed by dual-file system (root `.env` for Docker Compose, `backend/.env` for Laravel)
+-   **Local**: Use `.env.example` as template and adjust `DB_HOST=localhost` and other local settings
 
 ## Running Tests
 

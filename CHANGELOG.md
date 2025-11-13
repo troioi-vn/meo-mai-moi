@@ -9,6 +9,25 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Tooltip Component**: Added Radix UI tooltip component (`@radix-ui/react-tooltip`) for better UX
   - Created reusable tooltip component at `frontend/src/components/ui/tooltip.tsx`
   - Used for "Show all" filter to explain it includes deceased pets
+- **Interactive Telegram Setup**: Added interactive prompts in `setup.sh` for configuring Telegram bot notifications
+  - Prompts for `TELEGRAM_BOT_TOKEN` and `CHAT_ID` during first-time setup
+  - Includes helpful instructions for creating a bot via @BotFather
+  - Optional feature - can be skipped or configured later
+- **In-App Deployment Notifications**: Added ability to notify superadmin user in-app when deployments complete
+  - New `NOTIFY_SUPERADMIN_ON_DEPLOY` environment variable (true/false)
+  - Interactive setup prompt during first-time configuration
+  - Created `app:notify-superadmin` artisan command for sending notifications
+  - Uses existing `Notification` model for seamless integration with notification system
+  - Automatically sends notification with deployment details (environment, commit hash, timestamp)
+  - Integrates with existing notification center and push notification system
+
+### Changed
+
+- **Test Notifications**: Enhanced `--test-notify` flag to test both Telegram and in-app notifications
+  - Previously only tested Telegram notifications
+  - Now tests both notification systems and reports their configuration status
+  - Shows clear feedback for enabled/disabled notification types
+  - Usage: `./utils/deploy.sh --test-notify`
 
 ### Fixed
 
@@ -38,13 +57,44 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Web Push Build Configuration**: Fixed push notifications failing with "Push notifications are not configured" error
   - Root cause: `VITE_VAPID_PUBLIC_KEY` was not available during Docker image build, resulting in frontend bundle with undefined value
   - Solution: Export `VAPID_PUBLIC_KEY` from env file before running `docker compose build`
-  - Configuration simplified to single source of truth: only `VAPID_PUBLIC_KEY` needs to be set in `backend/.env.docker`
+  - Configuration simplified to single source of truth via dual-file approach (root `.env` and `backend/.env`)
   - Updated `docker-compose.yml` to forward `VAPID_PUBLIC_KEY` as build arg
   - Updated `backend/Dockerfile` to export both `VAPID_PUBLIC_KEY` and `VITE_VAPID_PUBLIC_KEY` from the same build arg
   - Updated `utils/deploy_docker.sh` to read and export `VAPID_PUBLIC_KEY` from env file before builds
   - Push subscription flow now works correctly in all environments
+- **Notification Toast**: Fixed duplicate toast notifications appearing on ctrl+refresh
+  - Removed redundant initial fetch effect in `NotificationProvider` that conflicted with user change effect
+  - Toasts now appear only once per notification
+- **Deployment Script**: Fixed deployment exiting prematurely when Telegram notifications are misconfigured
+  - Root cause: `curl` failures in command substitutions were triggering ERR trap despite exit code being captured
+  - Solution: Use temporary file for curl output to avoid subshell ERR trap issues
+  - Deployment now continues successfully even if Telegram notifications fail (logs warning instead of exiting)
+  - Fixed incorrect variable names in `--test-notify` flag handler (`DEPLOY_NOTIFY_BOT_TOKEN` → `TELEGRAM_BOT_TOKEN`)
+- **In-App Deployment Notifications**: Fixed database constraint violation and missing notification body
+  - Root cause: Custom `notifications` table schema requires `message` field (NOT NULL), but Laravel's standard notification system only populates `data` (JSON)
+  - Solution: Changed from Laravel's notification system to direct `Notification` model creation
+  - Notification now properly populates all required fields including `message`, `type`, `data`, and `delivered_at`
+  - **API Fix**: Updated `NotificationController` to properly extract `title` and `body` from the `data` JSON field instead of looking for non-existent model properties
+  - Deployment notifications now display with full title and body text in the frontend notification bell
 
 ### Changed
+
+- **Environment Configuration**: Migrated to dual-file approach for better separation of concerns
+  - **Root `.env`**: Docker Compose variables (build args like `VAPID_PUBLIC_KEY`, database credentials)
+  - **`backend/.env`**: Laravel runtime configuration (APP_KEY, mail settings, etc.)
+  - Replaced `backend/.env.docker` with cleaner `backend/.env` naming
+  - Automatic legacy migration: deploy script detects old `backend/.env.docker` and migrates to new structure
+  - Updated all deployment scripts (`utils/setup.sh`, `utils/deploy_docker.sh`) to use dual-file approach
+  - Docker Compose now automatically reads root `.env` file (no manual exports needed)
+  - Simplified VAPID key management - Docker Compose handles build args automatically
+  - **Automatic VAPID key generation**: Setup script now offers to generate VAPID keys using `npx web-push generate-vapid-keys`
+    - Interactive prompt during first-time setup with clear warnings about key regeneration
+    - Automatic sync of VAPID keys from root `.env` to `backend/.env`
+    - Skipped in non-interactive mode for safety in CI/CD environments
+    - Checks for Node.js/npx availability before attempting generation
+  - Updated documentation (README.md, docs/deploy.md, docs/push-notifications.md) to reflect new structure
+  - Created `.env.example` template for root Docker Compose variables
+  - Created `backend/.env.example` template for Laravel runtime variables
 
 - **My Pets Page UI Improvements** (`/account/pets`):
 

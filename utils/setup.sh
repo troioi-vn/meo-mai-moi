@@ -8,8 +8,15 @@ MEO_DEPLOY_SETUP_LOADED="true"
 : "${SCRIPT_DIR:?SCRIPT_DIR must be set before sourcing setup.sh}"
 
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-ENV_FILE="$PROJECT_ROOT/backend/.env.docker"
-ENV_EXAMPLE="$PROJECT_ROOT/backend/.env.docker.example"
+# Dual env file approach:
+# - Root .env: Docker Compose variables (build args, VAPID keys, etc.)
+# - backend/.env: Laravel runtime configuration
+ROOT_ENV_FILE="$PROJECT_ROOT/.env"
+ROOT_ENV_EXAMPLE="$PROJECT_ROOT/.env.example"
+ENV_FILE="$PROJECT_ROOT/backend/.env"
+ENV_EXAMPLE="$PROJECT_ROOT/backend/.env.example"
+# Legacy support for old deployments
+LEGACY_ENV_FILE="$PROJECT_ROOT/backend/.env.docker"
 # Per-run logs under .deploy/ with 30-day retention; symlinks at repo root for latest
 DEPLOY_LOG_DIR="$PROJECT_ROOT/.deploy"
 RUN_ID=""
@@ -85,6 +92,105 @@ prompt_with_default() {
     fi
 
     printf "%s" "$var"
+}
+
+# Generate VAPID keys using npx web-push
+generate_vapid_keys() {
+    echo "Checking for Node.js/npx..."
+    
+    if ! command -v npx >/dev/null 2>&1; then
+        echo "✗ npx not found. Please install Node.js first."
+        echo "  Visit: https://nodejs.org/"
+        log_error "npx not available for VAPID key generation"
+        return 1
+    fi
+    
+    echo "Generating VAPID keys..."
+    local output
+    if ! output=$(npx --yes web-push generate-vapid-keys 2>&1); then
+        echo "✗ Failed to generate VAPID keys"
+        echo "$output"
+        log_error "VAPID key generation failed" "output=$output"
+        return 1
+    fi
+    
+    # Parse the output
+    # Expected format:
+    # =======================================
+    # Public Key:
+    # <public_key>
+    # Private Key:
+    # <private_key>
+    # =======================================
+    
+    local public_key
+    local private_key
+    
+    public_key=$(echo "$output" | grep -A 1 "Public Key:" | tail -n 1 | tr -d '\r\n ')
+    private_key=$(echo "$output" | grep -A 1 "Private Key:" | tail -n 1 | tr -d '\r\n ')
+    
+    if [ -z "$public_key" ] || [ -z "$private_key" ]; then
+        echo "✗ Failed to parse VAPID keys from output"
+        log_error "Failed to parse VAPID keys"
+        return 1
+    fi
+    
+    # Export for caller
+    GENERATED_VAPID_PUBLIC_KEY="$public_key"
+    GENERATED_VAPID_PRIVATE_KEY="$private_key"
+    
+    echo "✓ VAPID keys generated successfully"
+    log_success "VAPID keys generated"
+    return 0
+}
+
+# Check if VAPID keys are present in a file
+check_vapid_keys() {
+    local file="$1"
+    local pub priv
+    
+    if [ ! -f "$file" ]; then
+        return 1
+    fi
+    
+    pub=$(grep -E '^VAPID_PUBLIC_KEY=' "$file" 2>/dev/null | cut -d '=' -f2- | tr -d '"' | tr -d "'" | tr -d ' ' || echo "")
+    priv=$(grep -E '^VAPID_PRIVATE_KEY=' "$file" 2>/dev/null | cut -d '=' -f2- | tr -d '"' | tr -d "'" | tr -d ' ' || echo "")
+    
+    if [ -n "$pub" ] && [ -n "$priv" ]; then
+        return 0  # Keys exist
+    else
+        return 1  # Keys missing or empty
+    fi
+}
+
+# Update VAPID keys in an env file
+update_vapid_keys() {
+    local file="$1"
+    local public_key="$2"
+    local private_key="$3"
+    
+    if [ ! -f "$file" ]; then
+        echo "✗ File not found: $file"
+        return 1
+    fi
+    
+    # Update or add VAPID_PUBLIC_KEY
+    if grep -q '^VAPID_PUBLIC_KEY=' "$file"; then
+        sed -i "s|^VAPID_PUBLIC_KEY=.*|VAPID_PUBLIC_KEY=$public_key|" "$file"
+    else
+        echo "" >> "$file"
+        echo "# Web Push (VAPID) Configuration" >> "$file"
+        echo "VAPID_PUBLIC_KEY=$public_key" >> "$file"
+    fi
+    
+    # Update or add VAPID_PRIVATE_KEY
+    if grep -q '^VAPID_PRIVATE_KEY=' "$file"; then
+        sed -i "s|^VAPID_PRIVATE_KEY=.*|VAPID_PRIVATE_KEY=$private_key|" "$file"
+    else
+        echo "VAPID_PRIVATE_KEY=$private_key" >> "$file"
+    fi
+    
+    return 0
 }
 
 # Structured logging functions
@@ -175,24 +281,109 @@ setup_initialize() {
     find "$DEPLOY_LOG_DIR" -type f -name 'deploy-*.log' -mtime +30 -delete 2>/dev/null || true
     find "$DEPLOY_LOG_DIR" -type f -name 'deploy-*.json' -mtime +30 -delete 2>/dev/null || true
 
-    # Ensure .env.docker exists before proceeding (interactive scaffolding)
+    # Legacy migration: If old .env.docker exists but new .env doesn't, migrate
+    if [ -f "$LEGACY_ENV_FILE" ] && [ ! -f "$ENV_FILE" ]; then
+        echo "ℹ️  Migrating from legacy backend/.env.docker to backend/.env..."
+        cp "$LEGACY_ENV_FILE" "$ENV_FILE"
+        echo "✓ Migration complete. You can remove backend/.env.docker manually if desired."
+        log_info "Migrated legacy env file" "from=$LEGACY_ENV_FILE to=$ENV_FILE"
+    fi
+
+    # Ensure root .env exists
+    if [ ! -f "$ROOT_ENV_FILE" ] && [ -f "$ROOT_ENV_EXAMPLE" ]; then
+        echo ""
+        echo "ℹ️  Root '.env' not found. Creating from .env.example..."
+        cp "$ROOT_ENV_EXAMPLE" "$ROOT_ENV_FILE"
+        
+        # Try to populate VAPID keys from legacy or backup files
+        local vapid_source=""
+        if [ -f "$LEGACY_ENV_FILE" ]; then
+            vapid_source="$LEGACY_ENV_FILE"
+        elif [ -f "$PROJECT_ROOT/backend/.env.backup" ]; then
+            vapid_source="$PROJECT_ROOT/backend/.env.backup"
+        fi
+        
+        local keys_populated=false
+        if [ -n "$vapid_source" ]; then
+            local vapid_pub=$(grep -E '^VAPID_PUBLIC_KEY=' "$vapid_source" 2>/dev/null | cut -d '=' -f2- | tr -d '"' | tr -d "'" || echo "")
+            local vapid_priv=$(grep -E '^VAPID_PRIVATE_KEY=' "$vapid_source" 2>/dev/null | cut -d '=' -f2- | tr -d '"' | tr -d "'" || echo "")
+            
+            if [ -n "$vapid_pub" ] && [ -n "$vapid_priv" ]; then
+                sed -i "s|^VAPID_PUBLIC_KEY=.*|VAPID_PUBLIC_KEY=$vapid_pub|" "$ROOT_ENV_FILE"
+                sed -i "s|^VAPID_PRIVATE_KEY=.*|VAPID_PRIVATE_KEY=$vapid_priv|" "$ROOT_ENV_FILE"
+                echo "✓ Created .env with VAPID keys from existing configuration"
+                log_info "Populated root env with VAPID keys" "source=$vapid_source"
+                keys_populated=true
+            fi
+        fi
+        
+        if [ "$keys_populated" = "false" ]; then
+            echo "✓ Created .env (VAPID keys need to be configured)"
+            echo ""
+            echo "⚠️  VAPID keys are required for push notifications."
+            
+            if [ "$NO_INTERACTIVE" = "false" ]; then
+                echo ""
+                echo "Would you like to generate VAPID keys now?"
+                echo ""
+                echo "⚠️  WARNING: If you already have users with push subscriptions,"
+                echo "   generating new keys will invalidate all existing subscriptions."
+                echo "   Only generate new keys for fresh deployments or if you're certain"
+                echo "   no active push subscriptions exist."
+                echo ""
+                read -r -p "Generate new VAPID keys? (y/N): " REPLY_GENERATE
+                REPLY_GENERATE=${REPLY_GENERATE:-N}
+                
+                if [[ "$REPLY_GENERATE" =~ ^[yY]([eE][sS])?$ ]]; then
+                    if generate_vapid_keys; then
+                        update_vapid_keys "$ROOT_ENV_FILE" "$GENERATED_VAPID_PUBLIC_KEY" "$GENERATED_VAPID_PRIVATE_KEY"
+                        echo "✓ VAPID keys added to .env"
+                        log_success "Generated and saved VAPID keys to root env"
+                    else
+                        echo ""
+                        echo "⚠️  Failed to generate VAPID keys automatically."
+                        echo "   Please generate manually with: npx web-push generate-vapid-keys"
+                        echo "   Then add to both .env and backend/.env"
+                    fi
+                else
+                    echo ""
+                    echo "ℹ️  Skipped VAPID key generation."
+                    echo "   Generate manually with: npx web-push generate-vapid-keys"
+                    echo "   Then add to both .env and backend/.env"
+                fi
+            else
+                echo "   (Non-interactive mode: skipping auto-generation)"
+                echo "   Generate with: npx web-push generate-vapid-keys"
+                echo "   Then add to both .env and backend/.env"
+            fi
+            
+            echo ""
+            if [ "$NO_INTERACTIVE" = "false" ]; then
+                read -r -p "Press Enter to continue..." 
+            fi
+        fi
+        
+        log_info "Created root env file" "file=$ROOT_ENV_FILE"
+    fi
+
+    # Ensure backend/.env exists before proceeding (interactive scaffolding)
     if [ ! -f "$ENV_FILE" ] && [ -f "$ENV_EXAMPLE" ]; then
-        echo "ℹ️  'backend/.env.docker' not found."
+        echo "ℹ️  'backend/.env' not found."
         if [ "$NO_INTERACTIVE" = "true" ]; then
             REPLY_CREATE="y"
         else
-            read -r -p "Create one from .env.docker.example now? (Y/n): " REPLY_CREATE
+            read -r -p "Create one from backend/.env.example now? (Y/n): " REPLY_CREATE
         fi
         REPLY_CREATE=${REPLY_CREATE:-Y}
         if [[ ! "$REPLY_CREATE" =~ ^[yY]([eE][sS])?$ ]]; then
-            echo "✗ Cannot continue without backend/.env.docker. Aborting."
+            echo "✗ Cannot continue without backend/.env. Aborting."
             exit 1
         fi
 
         cp "$ENV_EXAMPLE" "$ENV_FILE"
 
         echo ""
-        echo "Let's set up a few basics for backend/.env.docker:"
+        echo "Let's set up a few basics for backend/.env:"
 
         APP_NAME_INPUT=$(prompt_with_default "APP_NAME" "Meo Mai Moi")
         APP_ENV_INPUT=$(prompt_with_default "APP_ENV" "development")
@@ -251,7 +442,7 @@ setup_initialize() {
         fi
 
         echo ""
-        echo "✓ backend/.env.docker created with your settings"
+        echo "✓ backend/.env created with your settings"
         echo "   - APP_ENV=$APP_ENV_INPUT"
         echo "   - APP_URL=$APP_URL_INPUT"
         echo "   - SEED_ADMIN_EMAIL=$SEED_ADMIN_EMAIL_INPUT"
@@ -259,7 +450,7 @@ setup_initialize() {
 
         # Generate APP_KEY if empty
         echo ""
-        echo "Generating APP_KEY for backend/.env.docker..."
+        echo "Generating APP_KEY for backend/.env..."
         CURRENT_APP_KEY=$(grep -E '^APP_KEY=' "$ENV_FILE" | tail -n1 | cut -d '=' -f2- | tr -d '\r')
         if [ -z "$CURRENT_APP_KEY" ]; then
             NEW_APP_KEY=""
@@ -276,15 +467,127 @@ setup_initialize() {
             if [ -n "$NEW_APP_KEY" ]; then
                 sed -i "s|^APP_KEY=.*|APP_KEY=${NEW_APP_KEY}|" "$ENV_FILE"
                 echo "✓ APP_KEY generated"
-                log_success "APP_KEY generated for backend/.env.docker"
+                log_success "APP_KEY generated for backend/.env"
             else
-                echo "✗ Failed to generate APP_KEY automatically. Please run: docker compose run --rm backend php artisan key:generate --show and update backend/.env.docker"
+                echo "✗ Failed to generate APP_KEY automatically. Please run: docker compose run --rm backend php artisan key:generate --show and update backend/.env"
                 log_error "Failed to generate APP_KEY automatically"
             fi
         else
-            echo "APP_KEY already present in backend/.env.docker"
+            echo "APP_KEY already present in backend/.env"
             log_info "APP_KEY already present in env file"
         fi
+        
+        # Sync VAPID keys from root .env to backend/.env
+        echo ""
+        if check_vapid_keys "$ROOT_ENV_FILE"; then
+            echo "Syncing VAPID keys from .env to backend/.env..."
+            local root_vapid_pub=$(grep -E '^VAPID_PUBLIC_KEY=' "$ROOT_ENV_FILE" 2>/dev/null | cut -d '=' -f2- | tr -d '"' | tr -d "'" || echo "")
+            local root_vapid_priv=$(grep -E '^VAPID_PRIVATE_KEY=' "$ROOT_ENV_FILE" 2>/dev/null | cut -d '=' -f2- | tr -d '"' | tr -d "'" || echo "")
+            
+            if update_vapid_keys "$ENV_FILE" "$root_vapid_pub" "$root_vapid_priv"; then
+                echo "✓ VAPID keys synced to backend/.env"
+                log_success "VAPID keys synced from root env to backend env"
+            else
+                echo "⚠️  Failed to sync VAPID keys to backend/.env"
+                log_warn "Failed to sync VAPID keys to backend env"
+            fi
+        else
+            echo "⚠️  No VAPID keys found in .env to sync"
+            echo "   Both .env and backend/.env need VAPID keys for push notifications"
+            echo "   Generate with: npx web-push generate-vapid-keys"
+            log_warn "No VAPID keys in root env to sync"
+        fi
+        
+        # Setup Telegram Bot notifications (optional)
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "📱 Telegram Deployment Notifications (Optional)"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+        echo "Get notified via Telegram when deployments start, succeed, or fail."
+        echo ""
+        if [ "$NO_INTERACTIVE" = "false" ]; then
+            read -r -p "Configure Telegram notifications now? (y/N): " REPLY_TELEGRAM
+            REPLY_TELEGRAM=${REPLY_TELEGRAM:-N}
+            
+            if [[ "$REPLY_TELEGRAM" =~ ^[yY]([eE][sS])?$ ]]; then
+                echo ""
+                echo "To set up Telegram notifications:"
+                echo "  1. Create a bot: message @BotFather on Telegram, send '/newbot'"
+                echo "  2. Get your chat ID: message @userinfobot on Telegram"
+                echo ""
+                
+                TELEGRAM_BOT_TOKEN_INPUT=$(prompt_with_default "TELEGRAM_BOT_TOKEN (from @BotFather)" "none")
+                TELEGRAM_CHAT_ID_INPUT=$(prompt_with_default "TELEGRAM_CHAT_ID (from @userinfobot)" "none")
+                
+                # Apply Telegram settings
+                if grep -q '^TELEGRAM_BOT_TOKEN=' "$ENV_FILE"; then
+                    sed -i "s|^TELEGRAM_BOT_TOKEN=.*|TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN_INPUT}|" "$ENV_FILE"
+                else
+                    echo "" >> "$ENV_FILE"
+                    echo "# Telegram Deployment Notifications" >> "$ENV_FILE"
+                    echo "TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN_INPUT}" >> "$ENV_FILE"
+                fi
+                
+                if grep -q '^CHAT_ID=' "$ENV_FILE"; then
+                    sed -i "s|^CHAT_ID=.*|CHAT_ID=${TELEGRAM_CHAT_ID_INPUT}|" "$ENV_FILE"
+                else
+                    echo "CHAT_ID=${TELEGRAM_CHAT_ID_INPUT}" >> "$ENV_FILE"
+                fi
+                
+                echo ""
+                if [ "$TELEGRAM_BOT_TOKEN_INPUT" != "none" ] && [ "$TELEGRAM_CHAT_ID_INPUT" != "none" ]; then
+                    echo "✓ Telegram notifications configured"
+                    log_success "Telegram notifications configured"
+                else
+                    echo "ℹ️  Telegram notifications skipped (you can configure later in backend/.env)"
+                    log_info "Telegram notifications skipped"
+                fi
+            else
+                echo "ℹ️  Skipped Telegram setup (you can configure later in backend/.env)"
+                log_info "Telegram notifications setup skipped"
+            fi
+        else
+            echo "ℹ️  Non-interactive mode: skipping Telegram setup"
+            log_info "Telegram setup skipped in non-interactive mode"
+        fi
+        
+        # Setup in-app admin notifications on deploy (optional)
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "🔔 In-App Admin Notifications (Optional)"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+        echo "Notify superadmin user in-app when deployments complete successfully."
+        echo ""
+        if [ "$NO_INTERACTIVE" = "false" ]; then
+            read -r -p "Enable in-app deployment notifications for superadmin? (y/N): " REPLY_ADMIN_NOTIFY
+            REPLY_ADMIN_NOTIFY=${REPLY_ADMIN_NOTIFY:-N}
+            
+            if [[ "$REPLY_ADMIN_NOTIFY" =~ ^[yY]([eE][sS])?$ ]]; then
+                NOTIFY_SUPERADMIN_INPUT="true"
+                echo "✓ In-app admin notifications enabled"
+                log_success "In-app admin notifications enabled"
+            else
+                NOTIFY_SUPERADMIN_INPUT="false"
+                echo "ℹ️  In-app admin notifications disabled"
+                log_info "In-app admin notifications disabled"
+            fi
+        else
+            NOTIFY_SUPERADMIN_INPUT="false"
+            echo "ℹ️  Non-interactive mode: in-app notifications disabled by default"
+            log_info "In-app admin notifications disabled in non-interactive mode"
+        fi
+        
+        # Apply in-app notification setting
+        if grep -q '^NOTIFY_SUPERADMIN_ON_DEPLOY=' "$ENV_FILE"; then
+            sed -i "s|^NOTIFY_SUPERADMIN_ON_DEPLOY=.*|NOTIFY_SUPERADMIN_ON_DEPLOY=${NOTIFY_SUPERADMIN_INPUT}|" "$ENV_FILE"
+        else
+            echo "" >> "$ENV_FILE"
+            echo "# In-app deployment notifications for superadmin" >> "$ENV_FILE"
+            echo "NOTIFY_SUPERADMIN_ON_DEPLOY=${NOTIFY_SUPERADMIN_INPUT}" >> "$ENV_FILE"
+        fi
+        echo ""
     fi
 
     APP_ENV_CURRENT=""
@@ -322,7 +625,7 @@ Flags:
     --no-interactive Skip confirmation prompts (useful for automated scripts/CI).
     --quiet          Reduce console output; full logs go to .deploy.log.
     --allow-empty-db Allow deployment to proceed even if database appears empty (non-fresh).
-    --test-notify    Test Telegram notifications and exit (requires TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID).
+    --test-notify    Test both Telegram and in-app notifications and exit.
     --skip-git-sync  Skip git repository synchronization (useful for deploying local uncommitted changes).
 
 Default behavior (no flags):
@@ -355,9 +658,14 @@ Git Repository Sync:
     - Set DEPLOY_FORCE_RESET=true to auto-reset on branch divergence
 
 Telegram Notifications:
-    - Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in backend/.env.docker to enable
+    - Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in backend/.env to enable
     - Notifications sent on deployment start, success, and failure
     - Use --test-notify to verify configuration
+
+Environment Files:
+    - Root .env: Docker Compose variables (VAPID keys, build args)
+    - backend/.env: Laravel runtime configuration
+    - Both files are gitignored and environment-specific
 EOF
 }
 

@@ -97,21 +97,61 @@ deploy_notify_initialize
 
 # Handle --test-notify flag
 if [ "$TEST_NOTIFY" = "true" ]; then
+    echo "Testing notification systems..."
+    echo ""
+    
+    # Test Telegram notifications
     if [ "$DEPLOY_NOTIFY_ENABLED" = "true" ]; then
         echo "✓ Telegram notifications are configured"
-        echo "  Token: ${DEPLOY_NOTIFY_BOT_TOKEN:0:10}..."
-        echo "  Chat ID: $DEPLOY_NOTIFY_CHAT_ID"
+        echo "  Token: ${TELEGRAM_BOT_TOKEN:0:10}..."
+        echo "  Chat ID: $CHAT_ID"
         echo "  Prefix: $DEPLOY_NOTIFY_PREFIX"
         echo ""
-        echo "Sending test notification..."
+        echo "Sending Telegram test notification..."
         deploy_notify_send "Test notification sent at $(deploy_notify_now)."
-        echo "✓ Test notification sent successfully"
-        exit 0
+        echo "✓ Telegram test notification sent successfully"
     else
         echo "✗ Telegram notifications are not configured"
-        echo "  Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in backend/.env.docker"
-        exit 1
+        echo "  Set TELEGRAM_BOT_TOKEN and CHAT_ID in backend/.env to enable"
     fi
+    
+    echo ""
+    
+    # Test in-app notifications
+    notify_enabled=$(grep -E '^NOTIFY_SUPERADMIN_ON_DEPLOY=' "$ENV_FILE" 2>/dev/null | cut -d '=' -f2- | tr -d '\r' | tr -d '"' | tr -d "'" || echo "false")
+    
+    if [ "$notify_enabled" = "true" ]; then
+        echo "✓ In-app notifications are enabled"
+        echo ""
+        echo "Sending in-app test notification..."
+        
+        # Ensure containers are running
+        if ! docker compose ps backend | grep -q "Up"; then
+            echo "Starting containers..."
+            docker compose up -d >/dev/null 2>&1
+            sleep 10
+        fi
+        
+        test_title="🧪 Test Notification"
+        test_body="This is a test notification sent via --test-notify flag at $(date '+%Y-%m-%d %H:%M:%S %z').
+
+This notification should appear in your notification bell with both title and body text."
+        
+        if docker compose exec -T backend php artisan app:notify-superadmin \
+            "$test_title" \
+            "$test_body" >/dev/null 2>&1; then
+            echo "✓ In-app test notification sent successfully"
+            echo "  Check your notification bell at http://localhost:8000"
+        else
+            echo "✗ Failed to send in-app test notification"
+            echo "  Make sure containers are running and database is accessible"
+        fi
+    else
+        echo "✗ In-app notifications are disabled"
+        echo "  Set NOTIFY_SUPERADMIN_ON_DEPLOY=true in backend/.env to enable"
+    fi
+    
+    exit 0
 fi
 
 deploy_notify_register_traps
@@ -390,6 +430,9 @@ fi
 
 VOLUME_CREATED_AT=""
 VOLUME_FINGERPRINT_CHANGED="false"
+VOLUME_DELETE_LOG="$PROJECT_ROOT/.deploy/volume-deletions.log"
+mkdir -p "$(dirname "$VOLUME_DELETE_LOG")"
+
 if docker volume inspect "$DB_VOLUME_NAME" >/dev/null 2>&1; then
     VOLUME_CREATED_AT=$(docker volume inspect "$DB_VOLUME_NAME" --format '{{ .CreatedAt }}')
     note "ℹ️  Volume $DB_VOLUME_NAME created at $VOLUME_CREATED_AT"
@@ -444,8 +487,6 @@ if [ "$FRESH" = "true" ]; then
     fi
     
     # Log volume deletion event before destroying
-    VOLUME_DELETE_LOG="$PROJECT_ROOT/.deploy/volume-deletions.log"
-    mkdir -p "$(dirname "$VOLUME_DELETE_LOG")"
     {
         echo "=== VOLUME DELETION EVENT ==="
         echo "Timestamp: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
@@ -533,6 +574,9 @@ db_snapshot "after-migrate"
 echo ""
 note "✓ Deployment complete!"
 [ "$FRESH" = "false" ] && note "✓ Existing data preserved"
+
+# Send in-app notification to superadmin if enabled
+deploy_post_notify_superadmin
 
 # Calculate and report deployment duration
 if [ -n "$DEPLOY_START_TIME" ]; then

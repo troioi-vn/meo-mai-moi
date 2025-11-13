@@ -9,7 +9,7 @@ For local HTTPS development (useful for testing features requiring secure contex
 ### Quick Setup
 
 ```bash
-# 1. Enable HTTPS in backend/.env.docker
+# 1. Enable HTTPS in backend/.env
 APP_ENV=development
 ENABLE_HTTPS=true
 
@@ -27,7 +27,7 @@ ENABLE_HTTPS=true
 
 ### What Happens
 
-- Single docker-compose flow: HTTPS is controlled by `ENABLE_HTTPS` in `backend/.env.docker`
+- Single docker-compose flow: HTTPS is controlled by `ENABLE_HTTPS` in `backend/.env`
 - When `ENABLE_HTTPS=true` and `APP_ENV=development`, the deploy script enables a Compose profile that runs a small HTTPS proxy (nginx) on port 443 which forwards to the backend
 - Nginx serves both HTTP (port 80) and HTTPS (port 443) when certificates are present
 - Self-signed certificates trigger browser security warnings (expected behavior)

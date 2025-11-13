@@ -56,31 +56,59 @@ The application supports browser-based push notifications using the Web Push Pro
 
 ### Environment Variables
 
-Backend (`backend/.env.docker`):
+**Root `.env` (Docker Compose variables):**
 
 ```bash
 # Generate with: npx web-push generate-vapid-keys
 VAPID_PUBLIC_KEY=your_public_key
 VAPID_PRIVATE_KEY=your_private_key
+```
+
+**Backend `backend/.env` (Laravel runtime):**
+
+```bash
+# These match the root .env values
+VAPID_PUBLIC_KEY=your_public_key
+VAPID_PRIVATE_KEY=your_private_key
 VAPID_SUBJECT=mailto:your-email@example.com
 ```
 
-Docker builds automatically forward `VAPID_PUBLIC_KEY` into the frontend build as `VITE_VAPID_PUBLIC_KEY`, so setting the backend value is sufficient.
+**How it works:**
 
-**Important**: The deploy scripts automatically export `VAPID_PUBLIC_KEY` from the env file before building. If building manually, ensure you export the key first:
+- The root `.env` file is read by Docker Compose, which passes `VAPID_PUBLIC_KEY` as a build argument to the Dockerfile
+- The Dockerfile sets both `VAPID_PUBLIC_KEY` and `VITE_VAPID_PUBLIC_KEY` environment variables during the frontend build
+- The frontend Vite build bakes `VITE_VAPID_PUBLIC_KEY` into the JavaScript bundle
+- At runtime, the backend reads VAPID keys from `backend/.env` via Laravel's config system
 
-```bash
-export VAPID_PUBLIC_KEY=$(grep -E '^VAPID_PUBLIC_KEY=' backend/.env.docker | cut -d '=' -f2-)
-docker compose build
-```
+**Deployment:** The deploy scripts handle this automatically - no manual exports needed!
 
 ### Generating VAPID Keys
+
+**Automatic Generation (Recommended):**
+
+The setup script (`utils/setup.sh`) will automatically offer to generate VAPID keys during first-time setup:
+
+```bash
+./utils/deploy.sh
+```
+
+When prompted, choose "yes" to generate keys automatically. The script will:
+- Check for Node.js/npx availability
+- Generate keys using `npx web-push generate-vapid-keys`
+- Add them to both `.env` and `backend/.env`
+- Sync them automatically
+
+**Manual Generation:**
+
+If you prefer to generate keys manually:
 
 ```bash
 npx web-push generate-vapid-keys
 ```
 
-Copy the generated keys to your `.env` file.
+Copy the generated keys to both `.env` and `backend/.env`.
+
+**⚠️ Important:** Never regenerate VAPID keys on an existing deployment with active users. Regenerating keys will invalidate all existing push subscriptions, and users will need to re-enable notifications.
 
 ## Features
 

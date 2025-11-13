@@ -63,14 +63,15 @@ chmod 777 /var/www/public || true
 echo "[Step 4] Preparing environment file and APP_KEY..."
 # Ensure an application .env exists inside the container
 if [ ! -f /var/www/.env ]; then
-    if [ -f /var/www/.env.docker ]; then
-        echo "No .env found, copying from .env.docker"
-        cp /var/www/.env.docker /var/www/.env
+    if [ -f /var/www/.env.example ]; then
+        echo "No .env found, copying from .env.example"
+        cp /var/www/.env.example /var/www/.env
     else
-        echo "No .env found, copying from .env.docker.example"
-        cp /var/www/.env.docker.example /var/www/.env
+        echo "Warning: No .env or .env.example found"
     fi
-    chown www-data:www-data /var/www/.env
+    if [ -f /var/www/.env ]; then
+        chown www-data:www-data /var/www/.env
+    fi
 fi
 
 # Generate the APP_KEY directly into .env if missing

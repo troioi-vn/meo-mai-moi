@@ -166,12 +166,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
     }
   }, [pollMs, refresh, visible])
 
-  // initial fetch to populate badge quickly
-  useEffect(() => {
-    void refresh()
-  }, [refresh])
-
   // Reset and refetch when the authenticated user changes
+  // This effect handles both initial load and user changes
   useEffect(() => {
     // Clear local state to avoid showing previous user's notifications
     setNotifications([])

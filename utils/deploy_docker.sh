@@ -56,16 +56,7 @@ deploy_docker_start() {
     local no_cache="${1:-false}"
 
     note "Building and starting containers..."
-
-    # Export VAPID_PUBLIC_KEY for build args (docker compose build needs it in environment)
-    if [ -f "$ENV_FILE" ]; then
-        local vapid_key
-        vapid_key=$(grep -E '^VAPID_PUBLIC_KEY=' "$ENV_FILE" | tail -n1 | cut -d '=' -f2- | tr -d '"' | tr -d "'" || echo "")
-        if [ -n "$vapid_key" ]; then
-            export VAPID_PUBLIC_KEY="$vapid_key"
-            note "ℹ️  Exported VAPID_PUBLIC_KEY for Docker build"
-        fi
-    fi
+    note "ℹ️  Using root .env for Docker Compose and backend/.env for Laravel runtime"
 
     local build_args=()
     if [ "$no_cache" = "true" ]; then
@@ -88,9 +79,9 @@ deploy_docker_start() {
     fi
 
     if [ -n "$compose_profiles_val" ]; then
-        COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose --env-file "$ENV_FILE" up "${build_args[@]}"
+        COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose up "${build_args[@]}"
     else
-        run_cmd_with_console docker compose --env-file "$ENV_FILE" up "${build_args[@]}"
+        run_cmd_with_console docker compose up "${build_args[@]}"
     fi
 }
 

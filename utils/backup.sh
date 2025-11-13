@@ -4,7 +4,7 @@ set -euo pipefail
 # --- Configuration ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-ENV_FILE="$PROJECT_ROOT/backend/.env.docker"
+ENV_FILE="$PROJECT_ROOT/backend/.env"
 BACKUP_DIR="$PROJECT_ROOT/backups"
 RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-30}"
 
@@ -25,8 +25,8 @@ Default behavior (no options):
 
 Environment Variables:
     BACKUP_RETENTION_DAYS    Number of days to keep backups (default: 30)
-    DB_USERNAME              Database username (from .env.docker if not set)
-    DB_DATABASE              Database name (from .env.docker if not set)
+    DB_USERNAME              Database username (from backend/.env if not set)
+    DB_DATABASE              Database name (from backend/.env if not set)
 
 Examples:
     ./utils/backup.sh                                    # Create new backup

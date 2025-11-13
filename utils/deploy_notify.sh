@@ -81,11 +81,16 @@ deploy_notify_send() {
     local curl_exit_code=0
 
     # Run curl and capture both output and exit code first
-    curl_output=$(curl --silent --show-error --max-time 10 --retry 2 --retry-delay 2 \
+    # Use a temporary file to avoid command substitution subshell ERR trap issues
+    local temp_output
+    temp_output=$(mktemp)
+    curl --silent --show-error --max-time 10 --retry 2 --retry-delay 2 \
         --data-urlencode "chat_id=$CHAT_ID" \
         --data-urlencode "text=$text" \
-        "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" 2>&1)
-    curl_exit_code=$?
+        "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+        > "$temp_output" 2>&1 || curl_exit_code=$?
+    curl_output=$(cat "$temp_output" 2>/dev/null || true)
+    rm -f "$temp_output"
     if [ $curl_exit_code -ne 0 ]; then
         note "WARNING: Failed to send Telegram notification (exit code: $curl_exit_code)"
         

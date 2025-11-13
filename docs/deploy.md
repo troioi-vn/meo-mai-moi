@@ -18,13 +18,23 @@ See `./utils/deploy.sh --help` for full options.
 
 ## Environment configuration
 
-The deploy script uses `backend/.env.docker`. If it doesn’t exist, the script will create it interactively (or non‑interactively with defaults when `--no-interactive` is used).
+The deploy script uses a **dual-file approach**:
 
-Important variables:
+- **Root `.env`**: Docker Compose variables (build args like `VAPID_PUBLIC_KEY`, database credentials for the container)
+- **`backend/.env`**: Laravel runtime configuration (APP_KEY, mail settings, etc.)
+
+If these files don't exist, the deploy script will create them interactively (or non‑interactively with defaults when `--no-interactive` is used).
+
+**Root `.env` important variables:**
+
+- `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` (for push notifications - generate with `npx web-push generate-vapid-keys`)
+- `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` (must match `backend/.env` DB_* values)
+
+**`backend/.env` important variables:**
 
 - `APP_ENV` (development|staging|production)
 - `APP_URL` (e.g., https://example.com or https://localhost)
-- `DB_*` (DB host, name, user, password)
+- `DB_*` (DB host, name, user, password - must match root `.env` POSTGRES_* values)
 - Optional: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` for deploy notifications
 - Optional: `DEPLOY_HOST_PORT` to override the default host port (8000) used by deployment verification
 
@@ -41,7 +51,7 @@ HTTPS in development is handled by the `https-proxy` service (compose profile `h
 
 To enable HTTPS locally:
 
-1. Set in `backend/.env.docker`:
+1. Set in `backend/.env`:
 
 ```
 APP_ENV=development

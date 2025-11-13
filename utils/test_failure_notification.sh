@@ -5,7 +5,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-ENV_FILE="$PROJECT_ROOT/backend/.env.docker"
+ENV_FILE="$PROJECT_ROOT/backend/.env"
 DEPLOY_LOG="/tmp/test_deploy_failure.log"
 
 # Create a fake log with some errors
@@ -28,7 +28,7 @@ echo ""
 deploy_notify_initialize
 
 if [ "$DEPLOY_NOTIFY_ENABLED" != "true" ]; then
-    echo "⚠️  Notifications not enabled. Set TELEGRAM_BOT_TOKEN and CHAT_ID in .env.docker"
+    echo "⚠️  Notifications not enabled. Set TELEGRAM_BOT_TOKEN and CHAT_ID in backend/.env"
     exit 1
 fi
 

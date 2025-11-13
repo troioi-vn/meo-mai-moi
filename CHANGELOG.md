@@ -13,6 +13,7 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Fixed
 
 - **Avatar Display Issue**: Fixed avatar images not displaying correctly on first load (showing placeholder instead)
+
   - **Root Cause**: Migration from direct `avatar_url` column to Spatie MediaLibrary caused timing issues where MediaLibrary conversions were not immediately available and Radix UI Avatar component would timeout before image loaded
   - **Backend Fix**: Modified `User::getAvatarUrlAttribute()` to fall back to original image if conversion is not ready yet
   - **Frontend Fix**: Added image preloading in `UserMenu` and `UserAvatar` components to ensure images are cached before rendering
@@ -34,6 +35,7 @@ All notable changes to this project are documented here, following the [Keep a C
   - Background dispatcher using VAPID-authenticated Web Push to deliver notification payloads
   - Updated notification settings UI to request permission, manage device state, and surface errors
   - Service worker listeners for push delivery, subscription refresh, and click-through deep linking
+- **Web Push Build Configuration**: Ensured Docker builds expose `VITE_VAPID_PUBLIC_KEY` so the frontend bundle can create subscriptions in non-local environments, and updated environment templates/documentation to require the literal public key value.
 
 ### Changed
 

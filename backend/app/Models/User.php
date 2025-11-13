@@ -190,10 +190,19 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
 
     /**
      * Get avatar URL attribute - returns URL from MediaLibrary.
+     * Falls back to original image if conversion is not ready.
      */
     public function getAvatarUrlAttribute()
     {
-        return $this->getFirstMediaUrl('avatar', 'avatar_256') ?: null;
+        // Try to get the converted image first
+        $convertedUrl = $this->getFirstMediaUrl('avatar', 'avatar_256');
+        
+        // If conversion doesn't exist yet, fall back to original
+        if (!$convertedUrl) {
+            $convertedUrl = $this->getFirstMediaUrl('avatar');
+        }
+        
+        return $convertedUrl ?: null;
     }
 
     /**

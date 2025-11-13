@@ -7,9 +7,17 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Added
 
 - **Tooltip Component**: Added Radix UI tooltip component (`@radix-ui/react-tooltip`) for better UX
-
   - Created reusable tooltip component at `frontend/src/components/ui/tooltip.tsx`
   - Used for "Show all" filter to explain it includes deceased pets
+
+### Fixed
+
+- **Avatar Display Issue**: Fixed avatar images not displaying correctly on first load (showing placeholder instead)
+  - **Root Cause**: Migration from direct `avatar_url` column to Spatie MediaLibrary caused timing issues where MediaLibrary conversions were not immediately available and Radix UI Avatar component would timeout before image loaded
+  - **Backend Fix**: Modified `User::getAvatarUrlAttribute()` to fall back to original image if conversion is not ready yet
+  - **Frontend Fix**: Added image preloading in `UserMenu` and `UserAvatar` components to ensure images are cached before rendering
+  - **UI Enhancement**: Added `referrerPolicy="no-referrer"` to `AvatarImage` component for better cross-origin support
+  - Avatar now displays correctly immediately after login without requiring page navigation
 
 - **Progressive Web App (PWA)**: Full PWA implementation with:
   - Service worker for offline support and app shell caching

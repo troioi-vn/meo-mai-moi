@@ -15,12 +15,30 @@ import { useTheme } from '@/hooks/use-theme'
 import { Moon, Sun } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import defaultAvatar from '@/assets/images/default-avatar.webp'
+import { useEffect, useState } from 'react'
 
 export function UserMenu() {
   const { user, logout, isLoading } = useAuth()
   const { theme, setTheme } = useTheme()
   const navigate = useNavigate()
   const isVerified = Boolean(user?.email_verified_at)
+  const [avatarSrc, setAvatarSrc] = useState<string>(defaultAvatar)
+
+  // Preload avatar image to ensure it's available
+  useEffect(() => {
+    if (user?.avatar_url && user.avatar_url.trim() !== '') {
+      const img = new Image()
+      img.onload = () => {
+        setAvatarSrc(user.avatar_url!)
+      }
+      img.onerror = () => {
+        setAvatarSrc(defaultAvatar)
+      }
+      img.src = user.avatar_url
+    } else {
+      setAvatarSrc(defaultAvatar)
+    }
+  }, [user?.avatar_url])
 
   if (isLoading) {
     return <Skeleton className="h-9 w-9 rounded-full" />
@@ -34,10 +52,7 @@ export function UserMenu() {
     <DropdownMenu data-testid="user-menu">
       <DropdownMenuTrigger asChild>
         <Avatar className="h-9 w-9 cursor-pointer">
-          <AvatarImage
-            src={user.avatar_url && user.avatar_url.trim() !== '' ? user.avatar_url : defaultAvatar}
-            alt={user.name}
-          />
+          <AvatarImage key={avatarSrc} src={avatarSrc} alt={user.name} />
           <AvatarFallback className="bg-blue-500 text-white font-medium text-sm">
             {user.name
               ? user.name

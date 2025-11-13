@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
@@ -25,6 +25,23 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [avatarSrc, setAvatarSrc] = useState<string>(defaultAvatar)
+
+  // Preload avatar image to ensure it's available
+  useEffect(() => {
+    if (user?.avatar_url && user.avatar_url.trim() !== '') {
+      const img = new Image()
+      img.onload = () => {
+        setAvatarSrc(user.avatar_url!)
+      }
+      img.onerror = () => {
+        setAvatarSrc(defaultAvatar)
+      }
+      img.src = user.avatar_url
+    } else {
+      setAvatarSrc(defaultAvatar)
+    }
+  }, [user?.avatar_url])
 
   const handleUploadClick = () => {
     fileInputRef.current?.click()
@@ -118,10 +135,7 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
   return (
     <div className="flex flex-col items-center space-y-4">
       <Avatar className={sizeClasses[size]}>
-        <AvatarImage
-          src={user.avatar_url && user.avatar_url.trim() !== '' ? user.avatar_url : defaultAvatar}
-          alt={`${user.name}'s avatar`}
-        />
+        <AvatarImage key={avatarSrc} src={avatarSrc} alt={`${user.name}'s avatar`} />
         <AvatarFallback>{initials || <UserIcon className="h-1/2 w-1/2" />}</AvatarFallback>
       </Avatar>
 

@@ -65,13 +65,7 @@ VAPID_PRIVATE_KEY=your_private_key
 VAPID_SUBJECT=mailto:your-email@example.com
 ```
 
-Frontend (Docker build-time environment):
-
-```bash
-VITE_VAPID_PUBLIC_KEY=your_public_key
-```
-
-> **Note:** `VITE_VAPID_PUBLIC_KEY` must contain the literal public key value because it is read during the Docker image build. `docker-compose.yml` forwards `VAPID_PUBLIC_KEY` as a build argument so both values stay in sync.
+Docker builds automatically forward `VAPID_PUBLIC_KEY` into the frontend build as `VITE_VAPID_PUBLIC_KEY`, so setting the backend value is sufficient. Ensure the key is present before running `docker compose build backend`.
 
 ### Generating VAPID Keys
 

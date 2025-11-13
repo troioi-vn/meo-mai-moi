@@ -35,7 +35,7 @@ All notable changes to this project are documented here, following the [Keep a C
   - Background dispatcher using VAPID-authenticated Web Push to deliver notification payloads
   - Updated notification settings UI to request permission, manage device state, and surface errors
   - Service worker listeners for push delivery, subscription refresh, and click-through deep linking
-- **Web Push Build Configuration**: Ensured Docker builds expose `VITE_VAPID_PUBLIC_KEY` so the frontend bundle can create subscriptions in non-local environments, and updated environment templates/documentation to require the literal public key value.
+- **Web Push Build Configuration**: Docker builds now forward the backend `VAPID_PUBLIC_KEY` into the frontend bundle automatically (no duplicate env vars), and documentation/environment templates reflect the single-source configuration.
 
 ### Changed
 

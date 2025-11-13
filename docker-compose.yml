@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: ./backend/Dockerfile
       args:
-        VITE_VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+        VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
     image: meomaimoi/backend
     ports:
       - "8000:80"

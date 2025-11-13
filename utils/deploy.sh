@@ -393,18 +393,39 @@ VOLUME_FINGERPRINT_CHANGED="false"
 if docker volume inspect "$DB_VOLUME_NAME" >/dev/null 2>&1; then
     VOLUME_CREATED_AT=$(docker volume inspect "$DB_VOLUME_NAME" --format '{{ .CreatedAt }}')
     note "ℹ️  Volume $DB_VOLUME_NAME created at $VOLUME_CREATED_AT"
+    log_info "DB volume found" "name=$DB_VOLUME_NAME created_at=$VOLUME_CREATED_AT"
+    
     if [ -f "$DB_FINGERPRINT_FILE" ]; then
         PREV_FINGERPRINT=$(cat "$DB_FINGERPRINT_FILE" 2>/dev/null || true)
         if [ -n "$PREV_FINGERPRINT" ] && [ "$PREV_FINGERPRINT" != "$VOLUME_CREATED_AT" ]; then
             VOLUME_FINGERPRINT_CHANGED="true"
             echo "⚠️  DB volume fingerprint changed. Previous: $PREV_FINGERPRINT | Current: $VOLUME_CREATED_AT"
+            log_warn "DB volume fingerprint changed - possible volume recreation" "previous=$PREV_FINGERPRINT current=$VOLUME_CREATED_AT"
+            
+            # Log volume deletion event if fingerprint changed
+            {
+                echo "=== VOLUME RECREATION DETECTED ==="
+                echo "Timestamp: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+                echo "Local time: $(date '+%Y-%m-%d %H:%M:%S %Z')"
+                echo "Previous fingerprint: $PREV_FINGERPRINT"
+                echo "Current fingerprint: $VOLUME_CREATED_AT"
+                echo "This suggests the volume was deleted and recreated outside of deploy.sh"
+                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                echo ""
+            } >> "$VOLUME_DELETE_LOG"
         fi
     fi
     # Persist current fingerprint for future runs
     echo "$VOLUME_CREATED_AT" > "$DB_FINGERPRINT_FILE"
+    log_info "DB volume fingerprint saved" "fingerprint=$VOLUME_CREATED_AT file=$DB_FINGERPRINT_FILE"
 else
     note "⚠️  Database volume $DB_VOLUME_NAME not found."
+    log_warn "DB volume not found" "name=$DB_VOLUME_NAME"
 fi
+
+# Enhanced logging: Check for volume mount issues
+DB_CONTAINER_MOUNTS=$(docker compose ps -q db 2>/dev/null | xargs -r docker inspect --format '{{range .Mounts}}{{.Type}}:{{.Source}}->{{.Destination}} {{end}}' 2>/dev/null || echo "unknown")
+log_info "DB container mounts" "mounts=$DB_CONTAINER_MOUNTS"
 
 # (moved) Postgres cluster initialization detection will run AFTER containers are up,
 # scoped to the current db container start time to avoid stale warnings

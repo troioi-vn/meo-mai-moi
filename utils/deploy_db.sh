@@ -67,13 +67,33 @@ db_query() {
 
 db_snapshot() {
     local stage="$1"
+    local snapshot_timestamp
+    snapshot_timestamp=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
 
     if ! docker compose ps --status=running 2>/dev/null | grep -q " db "; then
         note "DB snapshot ($stage): db container not running"
+        log_warn "DB snapshot failed - container not running" "stage=$stage"
         DB_SNAPSHOT_STAGE="$stage"
         DB_SNAPSHOT_USERS="unavailable"
         DB_SNAPSHOT_ADMIN="unavailable"
         return
+    fi
+
+    # Enhanced logging: capture container and volume state
+    local db_container_id
+    local db_container_uptime
+    local db_volume_mtime
+    db_container_id=$(docker compose ps -q db 2>/dev/null || echo "unknown")
+    if [ -n "$db_container_id" ] && [ "$db_container_id" != "unknown" ]; then
+        db_container_uptime=$(docker inspect -f '{{.State.StartedAt}}' "$db_container_id" 2>/dev/null || echo "unknown")
+        log_info "DB container state" "stage=$stage container_id=$db_container_id started_at=$db_container_uptime"
+    fi
+    
+    # Check volume last modification (requires root/sudo access, may fail gracefully)
+    if docker volume inspect "$DB_VOLUME_NAME" >/dev/null 2>&1; then
+        local volume_mountpoint
+        volume_mountpoint=$(docker volume inspect "$DB_VOLUME_NAME" --format '{{ .Mountpoint }}' 2>/dev/null || echo "unknown")
+        log_info "DB volume state" "stage=$stage volume=$DB_VOLUME_NAME mountpoint=$volume_mountpoint"
     fi
 
     local total_users
@@ -86,9 +106,20 @@ db_snapshot() {
     elif [ "$users_table_exists" = "f" ] || [ "$users_table_exists" = "false" ]; then
         # Treat missing users table as an empty database
         total_users="0"
+        log_warn "Users table does not exist" "stage=$stage"
     else
         # Any other error (e.g., connection), keep as unavailable so we don't misclassify
         total_users="unavailable"
+        log_warn "Cannot determine users table existence" "stage=$stage error=$users_table_exists"
+    fi
+
+    # Enhanced: capture additional table counts for better diagnostics
+    local pets_count roles_count permissions_count
+    if [ "$users_table_exists" = "t" ] || [ "$users_table_exists" = "true" ]; then
+        pets_count=$(db_query "SELECT COUNT(*) FROM pets;" 2>/dev/null || echo "?")
+        roles_count=$(db_query "SELECT COUNT(*) FROM roles;" 2>/dev/null || echo "?")
+        permissions_count=$(db_query "SELECT COUNT(*) FROM permissions;" 2>/dev/null || echo "?")
+        log_info "DB counts" "stage=$stage users=$total_users pets=$pets_count roles=$roles_count permissions=$permissions_count timestamp=$snapshot_timestamp"
     fi
 
     local admin_present="not_tracked"
@@ -99,6 +130,7 @@ db_snapshot() {
         if [ "$total_users" = "0" ]; then
             # If we already know there's no users table or it's empty, mark admin as missing
             admin_present="missing"
+            log_warn "Admin user missing - empty users table" "stage=$stage email=$ADMIN_EMAIL_TO_WATCH"
         else
             # Use safe literal quoting to avoid SQL injection and psql variable pitfalls
             local admin_email_sql
@@ -106,8 +138,12 @@ db_snapshot() {
             admin_count=$(db_query "SELECT COUNT(*) FROM users WHERE email = ${admin_email_sql};") || admin_count="unavailable"
             if [ "$admin_count" = "__ERROR__" ] || [ "$admin_count" = "unavailable" ]; then
                 admin_present="unavailable"
+                log_warn "Cannot check admin user" "stage=$stage email=$ADMIN_EMAIL_TO_WATCH"
             else
                 admin_present=$([ "$admin_count" = "1" ] && echo "present" || echo "missing")
+                if [ "$admin_present" = "missing" ]; then
+                    log_warn "Admin user not found" "stage=$stage email=$ADMIN_EMAIL_TO_WATCH total_users=$total_users"
+                fi
             fi
         fi
     fi
@@ -118,6 +154,20 @@ db_snapshot() {
     fi
 
     note "DB snapshot ($stage): users=${total_users}${admin_summary}"
+
+    # Enhanced: if database is unexpectedly empty, capture more diagnostics
+    if [ "$total_users" = "0" ] && [ "$stage" != "after-fresh" ] && [ "$stage" != "before-stop" ]; then
+        log_warn "Unexpected empty database detected" "stage=$stage"
+        
+        # Check for recent postgres initialization
+        if [ -n "$db_container_id" ] && [ "$db_container_id" != "unknown" ]; then
+            local initdb_check
+            initdb_check=$(docker logs --tail 200 "$db_container_id" 2>&1 | grep -c "database cluster will be initialized" || echo "0")
+            if [ "$initdb_check" -gt 0 ]; then
+                log_warn "Postgres cluster initialization detected in recent logs" "stage=$stage"
+            fi
+        fi
+    fi
 
     if [ "$include_admin" = "true" ] && [ "$admin_present" = "missing" ]; then
         local recent_users
@@ -131,6 +181,7 @@ $recent_users
 EOF
         fi
     fi
+    
     DB_SNAPSHOT_STAGE="$stage"
     DB_SNAPSHOT_USERS="$total_users"
     if [ "$include_admin" = "true" ]; then
@@ -138,6 +189,8 @@ EOF
     else
         DB_SNAPSHOT_ADMIN="not_tracked"
     fi
+    
+    log_success "DB snapshot completed" "stage=$stage users=$total_users admin=$admin_present"
 }
 
 

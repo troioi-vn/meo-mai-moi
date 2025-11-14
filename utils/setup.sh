@@ -401,6 +401,13 @@ setup_initialize() {
         else
             MAILGUN_SECRET_INPUT="$MAILGUN_SECRET_RAW"
         fi
+        MAILGUN_WEBHOOK_SIGNING_KEY_SHOW_DEFAULT="none"
+        MAILGUN_WEBHOOK_SIGNING_KEY_RAW=$(prompt_with_default "MAILGUN_WEBHOOK_SIGNING_KEY" "$MAILGUN_WEBHOOK_SIGNING_KEY_SHOW_DEFAULT")
+        if [ "$MAILGUN_WEBHOOK_SIGNING_KEY_RAW" = "none" ]; then
+            MAILGUN_WEBHOOK_SIGNING_KEY_INPUT=""
+        else
+            MAILGUN_WEBHOOK_SIGNING_KEY_INPUT="$MAILGUN_WEBHOOK_SIGNING_KEY_RAW"
+        fi
 
         # Apply values to the env file
         sed -i "s|^APP_NAME=.*|APP_NAME=\"${APP_NAME_INPUT}\"|" "$ENV_FILE"
@@ -424,6 +431,12 @@ setup_initialize() {
             sed -i "s|^MAILGUN_SECRET=.*|MAILGUN_SECRET=${MAILGUN_SECRET_INPUT}|" "$ENV_FILE"
         else
             echo "MAILGUN_SECRET=${MAILGUN_SECRET_INPUT}" >> "$ENV_FILE"
+        fi
+        # MAILGUN_WEBHOOK_SIGNING_KEY may be empty; preserve line even if blank
+        if grep -q '^MAILGUN_WEBHOOK_SIGNING_KEY=' "$ENV_FILE"; then
+            sed -i "s|^MAILGUN_WEBHOOK_SIGNING_KEY=.*|MAILGUN_WEBHOOK_SIGNING_KEY=${MAILGUN_WEBHOOK_SIGNING_KEY_INPUT}|" "$ENV_FILE"
+        else
+            echo "MAILGUN_WEBHOOK_SIGNING_KEY=${MAILGUN_WEBHOOK_SIGNING_KEY_INPUT}" >> "$ENV_FILE"
         fi
 
         # ENABLE_HTTPS default: false (opt-in) to avoid dev port conflicts and proxy issues

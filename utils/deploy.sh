@@ -37,12 +37,10 @@ load_root_env_file
 # shellcheck source=./setup.sh
 source "$SCRIPT_DIR/setup.sh"
 
-setup_initialize
-
-# After basic setup (logging, locks, env), ensure we are running latest version of this script
+# Self-update check BEFORE acquiring lock to avoid re-exec conflicts
 if [ "${SKIP_GIT_SELF_UPDATE:-false}" != "true" ]; then
     CURRENT_COMMIT="$(git -C "$PROJECT_ROOT" rev-parse HEAD 2>/dev/null || echo "")"
-    TARGET_BRANCH="$(determine_deploy_branch "$APP_ENV_CURRENT")"
+    TARGET_BRANCH="$(determine_deploy_branch "${APP_ENV_CURRENT:-development}")"
 
     if [ -n "$TARGET_BRANCH" ] && [ -n "$CURRENT_COMMIT" ]; then
         echo "ℹ️  Checking for newer deploy script on branch $TARGET_BRANCH..."
@@ -54,13 +52,16 @@ if [ "${SKIP_GIT_SELF_UPDATE:-false}" != "true" ]; then
 
             # Try a fast-forward; if it fails, fall back to existing sync logic later
             if git -C "$PROJECT_ROOT" merge --ff-only "origin/$TARGET_BRANCH" >/dev/null 2>&1; then
-                exec "$SCRIPT_DIR/$(basename "$SCRIPT_PATH")" "$@" SKIP_GIT_SELF_UPDATE=true
+                export SKIP_GIT_SELF_UPDATE=true
+                exec "$SCRIPT_DIR/$(basename "$SCRIPT_PATH")" "$@"
             else
                 echo "⚠️  Fast-forward of deploy script failed, continuing with current version."
             fi
         fi
     fi
 fi
+
+setup_initialize
 
 # shellcheck source=./deploy_db.sh
 source "$SCRIPT_DIR/deploy_db.sh"

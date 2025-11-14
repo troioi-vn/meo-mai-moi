@@ -68,9 +68,9 @@ class WebPushDispatcher
 
     private function buildPayload(Notification $notification): string
     {
-        $data = $notification->data ?? [];
+    $data = $notification->data ?? [];
 
-        $title = $data['title'] ?? $data['subject'] ?? ($data['message'] ?? $notification->message ?? 'Notification');
+    $title = $data['title'] ?? $data['subject'] ?? ($data['message'] ?? $notification->message ?? 'Notification');
         
         // Ensure title is never too long (web push has limits)
         $title = mb_substr($title, 0, 100);
@@ -83,12 +83,15 @@ class WebPushDispatcher
         }
         
         $url = $data['url'] ?? $notification->link ?? $data['actionUrl'] ?? null;
+        $appName = config('app.name', 'Meo Mai Moi');
+        $icon = $this->resolveAssetPath($data['icon'] ?? null, config('app.push_icon', '/icon-192.png'));
+        $badge = $this->resolveAssetPath($data['badge'] ?? null, config('app.push_badge', '/icon-32.png'));
 
         $payload = [
             'title' => $title,
             'body' => $body,
-            'icon' => $data['icon'] ?? '/icon-192.png',
-            'badge' => $data['badge'] ?? '/icon-32.png',
+            'icon' => $icon,
+            'badge' => $badge,
             'tag' => (string) $notification->id,
             'requireInteraction' => $data['requireInteraction'] ?? false,
             'data' => array_filter([
@@ -96,7 +99,12 @@ class WebPushDispatcher
                 'notification_id' => (string) $notification->id,
                 'type' => $notification->type,
                 'timestamp' => $notification->created_at?->timestamp ?? time(),
-            ]),
+                'app' => [
+                    'name' => $appName,
+                    'icon' => $icon,
+                    'badge' => $badge,
+                ],
+            ], static fn ($value) => $value !== null),
         ];
 
         try {
@@ -196,6 +204,21 @@ class WebPushDispatcher
         }
 
         $subscription->delete();
+    }
+
+    private function resolveAssetPath(?string $value, string $fallback): string
+    {
+        $path = $value ?: $fallback;
+
+        if (empty($path)) {
+            return $fallback;
+        }
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://') || str_starts_with($path, '/')) {
+            return $path;
+        }
+
+        return '/' . ltrim($path, '/');
     }
 }
 

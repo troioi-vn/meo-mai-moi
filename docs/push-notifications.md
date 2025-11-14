@@ -71,6 +71,9 @@ VAPID_PRIVATE_KEY=your_private_key
 VAPID_PUBLIC_KEY=your_public_key
 VAPID_PRIVATE_KEY=your_private_key
 VAPID_SUBJECT=mailto:your-email@example.com
+# Optional: override default icon assets used in push payloads
+APP_PUSH_ICON=/icon-192.png
+APP_PUSH_BADGE=/icon-32.png
 ```
 
 **How it works:**
@@ -93,6 +96,7 @@ The setup script (`utils/setup.sh`) will automatically offer to generate VAPID k
 ```
 
 When prompted, choose "yes" to generate keys automatically. The script will:
+
 - Check for Node.js/npx availability
 - Generate keys using `npx web-push generate-vapid-keys`
 - Add them to both `.env` and `backend/.env`
@@ -128,7 +132,12 @@ Push notifications support the following fields:
     "url": "/path/to/page",
     "notification_id": "uuid",
     "type": "notification_type",
-    "timestamp": 1234567890
+    "timestamp": 1234567890,
+    "app": {
+      "name": "Meo Mai Moi",
+      "icon": "/icon-192.png",
+      "badge": "/icon-32.png"
+    }
   }
 }
 ```

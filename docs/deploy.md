@@ -29,13 +29,13 @@ If these files don't exist, the deploy script will create them interactively (or
 
 - `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` (for push notifications - generate with `npx web-push generate-vapid-keys`)
 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` (must match `backend/.env` DB_* values)
+- **Optional**: `DEPLOY_NOTIFY_ENABLED=true`, `TELEGRAM_BOT_TOKEN`, `CHAT_ID` for deployment and monitoring notifications
 
 **`backend/.env` important variables:**
 
 - `APP_ENV` (development|staging|production)
 - `APP_URL` (e.g., https://example.com or https://localhost)
 - `DB_*` (DB host, name, user, password - must match root `.env` POSTGRES_* values)
-- Optional: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` for deploy notifications
 - Optional: `DEPLOY_HOST_PORT` to override the default host port (8000) used by deployment verification
 
 ## Deployments
@@ -181,6 +181,51 @@ Note: Docker event logs are ephemeral and may be cleared/rotated. For persistent
 - Running `docker system prune -a --volumes`
 - Using `./utils/deploy.sh --fresh` (intentional, but logged)
 - External tools or scripts that manage Docker resources
+
+## Telegram Notifications
+
+The system supports Telegram notifications for:
+- Deployment start/success/failure
+- Database monitoring alerts (empty database, query failures)
+
+### Setup
+
+1. **Create a Telegram bot** (one-time):
+   - Message [@BotFather](https://t.me/BotFather) on Telegram
+   - Send `/newbot` and follow instructions
+   - Copy the bot token (format: `123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11`)
+
+2. **Get your Chat ID**:
+   - Message [@userinfobot](https://t.me/userinfobot) on Telegram
+   - Copy your Chat ID (numeric, e.g., `127529747`)
+
+3. **Configure in root `.env`**:
+   ```bash
+   DEPLOY_NOTIFY_ENABLED=true
+   TELEGRAM_BOT_TOKEN=123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11
+   CHAT_ID=127529747
+   ```
+
+4. **Test notifications**:
+   ```bash
+   ./utils/deploy_notify_test.sh
+   ```
+
+5. **Rebuild backend** (required for monitoring alerts):
+   ```bash
+   docker compose up -d --build backend
+   ```
+
+### Database Monitoring
+
+A continuous monitoring script runs inside the backend container, checking every 60 seconds for:
+- Empty database (all data lost)
+- Database query failures
+
+Alerts are sent to Telegram with diagnostic information. Check logs:
+```bash
+docker compose exec backend tail -f /var/www/storage/logs/db-monitor.log
+```
 
 ## Backups
 

@@ -2,18 +2,17 @@
 # Database monitoring script - runs inside backend container
 # Checks user count every minute and sends Telegram alert if database goes empty
 
-set -e
+# NOTE: No set -e because we want to handle errors gracefully
 
 # Configuration
 CHECK_INTERVAL=${DB_MONITOR_INTERVAL:-60}
 LOG_FILE="/var/www/storage/logs/db-monitor.log"
 STATE_FILE="/var/www/storage/logs/db-monitor-state.txt"
 
-# Read Telegram config from .env
-if [ -f /var/www/.env ]; then
-    TELEGRAM_BOT_TOKEN=$(grep '^TELEGRAM_BOT_TOKEN=' /var/www/.env | cut -d '=' -f2-)
-    TELEGRAM_CHAT_ID=$(grep '^TELEGRAM_CHAT_ID=' /var/www/.env | cut -d '=' -f2-)
-fi
+# Read Telegram config from environment variables (passed via supervisord or docker)
+# These should be set in docker-compose.yml environment section
+TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+TELEGRAM_CHAT_ID=${CHAT_ID:-}
 
 log_message() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
@@ -30,12 +29,23 @@ send_telegram() {
 }
 
 get_db_stats() {
-    php artisan tinker --execute="
+    local result
+    result=$(php artisan tinker --execute="
         \$users = DB::table('users')->count();
         \$pets = DB::table('pets')->count();
         \$roles = DB::table('roles')->count();
         echo json_encode(['users' => \$users, 'pets' => \$pets, 'roles' => \$roles]);
-    " 2>/dev/null || echo '{"users":null,"pets":null,"roles":null}'
+    " 2>&1)
+    local exit_code=$?
+    
+    # Debug logging - append directly to file, don't use log_message which outputs to stdout
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - DEBUG: tinker exit_code=$exit_code, output=$result" >> "$LOG_FILE"
+    
+    if [ $exit_code -ne 0 ]; then
+        echo '{"users":null,"pets":null,"roles":null,"error":"query_failed"}'
+    else
+        echo "$result"
+    fi
 }
 
 log_message "=== DB Monitor Started ==="
@@ -61,6 +71,19 @@ while true; do
     if [ -z "$USER_COUNT" ] || [ "$USER_COUNT" = "null" ]; then
         log_message "WARNING: Cannot query database"
         STATE="error"
+        
+        # Send alert if state changed to error
+        if [ "$PREVIOUS_STATE" != "error" ]; then
+            MESSAGE="⚠️ <b>DATABASE QUERY ERROR</b>%0A%0A"
+            MESSAGE="${MESSAGE}Time: ${TIMESTAMP}%0A"
+            MESSAGE="${MESSAGE}Cannot execute database queries%0A"
+            MESSAGE="${MESSAGE}Previous state: ${PREVIOUS_STATE}%0A%0A"
+            MESSAGE="${MESSAGE}Container uptime: $(cat /proc/uptime | cut -d' ' -f1)s%0A"
+            MESSAGE="${MESSAGE}Host: $(hostname)"
+            
+            send_telegram "$MESSAGE"
+            log_message "Telegram alert sent for query error"
+        fi
     elif [ "$USER_COUNT" = "0" ] && [ "$ROLE_COUNT" = "0" ]; then
         log_message "ALERT: Database is EMPTY - users=$USER_COUNT, pets=$PET_COUNT, roles=$ROLE_COUNT"
         STATE="empty"

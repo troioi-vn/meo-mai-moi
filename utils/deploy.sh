@@ -327,9 +327,24 @@ sync_repository_with_remote() {
                 note "✓ Repository reset to remote state"
                 log_success "Repository reset to remote" "commit=$remote_commit"
             else
-                echo "✗ Cannot continue with diverged branches" >&2
-                log_error "User declined reset - branches diverged"
-                exit 1
+                echo "⚠️  Repository remains diverged." >&2
+                read -r -p "Continue without git sync (deploy current local state)? (y/N): " skip_confirm
+                if [[ "$skip_confirm" =~ ^[yY]$ ]]; then
+                    note "⚠️  Proceeding without git sync at user request."
+                    log_warn "User opted to skip git sync after divergence" "local=$local_commit remote=$remote_commit"
+                    SKIP_GIT_SYNC="true"
+                    DEPLOY_FLAG_SKIP_GIT_SYNC="$SKIP_GIT_SYNC"
+                    export DEPLOY_FLAG_SKIP_GIT_SYNC
+                    if [ "$NO_CACHE" = "false" ]; then
+                        note "ℹ️  Enabling --no-cache automatically (recommended when skipping git sync)"
+                        NO_CACHE="true"
+                    fi
+                    return
+                else
+                    echo "✗ Cannot continue with diverged branches" >&2
+                    log_error "User declined reset and skip - branches diverged"
+                    exit 1
+                fi
             fi
         else
             echo "✗ Cannot proceed with diverged branches in non-interactive mode" >&2

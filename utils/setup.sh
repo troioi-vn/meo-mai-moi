@@ -147,7 +147,8 @@ generate_vapid_keys() {
 # Check if VAPID keys are present in a file
 check_vapid_keys() {
     local file="$1"
-    local pub priv
+    local pub
+    local priv
     
     if [ ! -f "$file" ]; then
         return 1
@@ -178,16 +179,18 @@ update_vapid_keys() {
     if grep -q '^VAPID_PUBLIC_KEY=' "$file"; then
         sed -i "s|^VAPID_PUBLIC_KEY=.*|VAPID_PUBLIC_KEY=$public_key|" "$file"
     else
-        echo "" >> "$file"
-        echo "# Web Push (VAPID) Configuration" >> "$file"
-        echo "VAPID_PUBLIC_KEY=$public_key" >> "$file"
+        {
+            echo "" 
+            echo "# Web Push (VAPID) Configuration" 
+            echo "VAPID_PUBLIC_KEY=$public_key" 
+        } >> "$file"
     fi
     
     # Update or add VAPID_PRIVATE_KEY
     if grep -q '^VAPID_PRIVATE_KEY=' "$file"; then
         sed -i "s|^VAPID_PRIVATE_KEY=.*|VAPID_PRIVATE_KEY=$private_key|" "$file"
     else
-        echo "VAPID_PRIVATE_KEY=$private_key" >> "$file"
+    echo "VAPID_PRIVATE_KEY=$private_key" >> "$file"
     fi
     
     return 0
@@ -244,6 +247,7 @@ setup_initialize() {
     QUIET="${QUIET:-false}"
 
     # Record deployment start time
+    # shellcheck disable=SC2034 # consumed by deploy.sh to compute total deployment duration
     DEPLOY_START_TIME=$(date +%s)
     RUN_ID=$(date -u +"%Y%m%d-%H%M%S")
 
@@ -305,8 +309,10 @@ setup_initialize() {
         
         local keys_populated=false
         if [ -n "$vapid_source" ]; then
-            local vapid_pub=$(grep -E '^VAPID_PUBLIC_KEY=' "$vapid_source" 2>/dev/null | cut -d '=' -f2- | tr -d '"' | tr -d "'" || echo "")
-            local vapid_priv=$(grep -E '^VAPID_PRIVATE_KEY=' "$vapid_source" 2>/dev/null | cut -d '=' -f2- | tr -d '"' | tr -d "'" || echo "")
+            local vapid_pub
+            vapid_pub=$(grep -E '^VAPID_PUBLIC_KEY=' "$vapid_source" 2>/dev/null | cut -d '=' -f2- | tr -d '"' | tr -d "'" || echo "")
+            local vapid_priv
+            vapid_priv=$(grep -E '^VAPID_PRIVATE_KEY=' "$vapid_source" 2>/dev/null | cut -d '=' -f2- | tr -d '"' | tr -d "'" || echo "")
             
             if [ -n "$vapid_pub" ] && [ -n "$vapid_priv" ]; then
                 sed -i "s|^VAPID_PUBLIC_KEY=.*|VAPID_PUBLIC_KEY=$vapid_pub|" "$ROOT_ENV_FILE"
@@ -489,8 +495,10 @@ setup_initialize() {
         echo ""
         if check_vapid_keys "$ROOT_ENV_FILE"; then
             echo "Syncing VAPID keys from .env to backend/.env..."
-            local root_vapid_pub=$(grep -E '^VAPID_PUBLIC_KEY=' "$ROOT_ENV_FILE" 2>/dev/null | cut -d '=' -f2- | tr -d '"' | tr -d "'" || echo "")
-            local root_vapid_priv=$(grep -E '^VAPID_PRIVATE_KEY=' "$ROOT_ENV_FILE" 2>/dev/null | cut -d '=' -f2- | tr -d '"' | tr -d "'" || echo "")
+            local root_vapid_pub
+            root_vapid_pub=$(grep -E '^VAPID_PUBLIC_KEY=' "$ROOT_ENV_FILE" 2>/dev/null | cut -d '=' -f2- | tr -d '"' | tr -d "'" || echo "")
+            local root_vapid_priv
+            root_vapid_priv=$(grep -E '^VAPID_PRIVATE_KEY=' "$ROOT_ENV_FILE" 2>/dev/null | cut -d '=' -f2- | tr -d '"' | tr -d "'" || echo "")
             
             if update_vapid_keys "$ENV_FILE" "$root_vapid_pub" "$root_vapid_priv"; then
                 echo "✓ VAPID keys synced to backend/.env"
@@ -532,9 +540,11 @@ setup_initialize() {
                 if grep -q '^TELEGRAM_BOT_TOKEN=' "$ENV_FILE"; then
                     sed -i "s|^TELEGRAM_BOT_TOKEN=.*|TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN_INPUT}|" "$ENV_FILE"
                 else
-                    echo "" >> "$ENV_FILE"
-                    echo "# Telegram Deployment Notifications" >> "$ENV_FILE"
-                    echo "TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN_INPUT}" >> "$ENV_FILE"
+                    {
+                        echo ""
+                        echo "# Telegram Deployment Notifications"
+                        echo "TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN_INPUT}"
+                    } >> "$ENV_FILE"
                 fi
                 
                 if grep -q '^CHAT_ID=' "$ENV_FILE"; then
@@ -545,8 +555,23 @@ setup_initialize() {
                 
                 echo ""
                 if [ "$TELEGRAM_BOT_TOKEN_INPUT" != "none" ] && [ "$TELEGRAM_CHAT_ID_INPUT" != "none" ]; then
-                    echo "✓ Telegram notifications configured"
-                    log_success "Telegram notifications configured"
+                    echo "Testing Telegram notifications with a sample message..."
+                    # shellcheck source=./telegram_notify.sh
+                    if [ -f "$SCRIPT_DIR/telegram_notify.sh" ]; then
+                        # Ensure ENV_FILE is visible to helper
+                        ENV_FILE="$ENV_FILE" PROJECT_ROOT="$PROJECT_ROOT" \
+                            bash -c 'source "$0"; telegram_send "🧪 Test notification from deploy setup at $(date "+%Y-%m-%d %H:%M:%S %Z")"' "$SCRIPT_DIR/telegram_notify.sh" && TEST_OK=true || TEST_OK=false
+                    else
+                        TEST_OK=false
+                    fi
+
+                    if [ "${TEST_OK:-false}" = "true" ]; then
+                        echo "✓ Telegram notifications configured and test message sent"
+                        log_success "Telegram notifications configured and test message sent"
+                    else
+                        echo "⚠️  Telegram credentials saved but test message failed. Please verify token/chat id."
+                        log_warn "Telegram test notification failed during setup"
+                    fi
                 else
                     echo "ℹ️  Telegram notifications skipped (you can configure later in backend/.env)"
                     log_info "Telegram notifications skipped"
@@ -591,9 +616,11 @@ setup_initialize() {
         if grep -q '^NOTIFY_SUPERADMIN_ON_DEPLOY=' "$ENV_FILE"; then
             sed -i "s|^NOTIFY_SUPERADMIN_ON_DEPLOY=.*|NOTIFY_SUPERADMIN_ON_DEPLOY=${NOTIFY_SUPERADMIN_INPUT}|" "$ENV_FILE"
         else
-            echo "" >> "$ENV_FILE"
-            echo "# In-app deployment notifications for superadmin" >> "$ENV_FILE"
-            echo "NOTIFY_SUPERADMIN_ON_DEPLOY=${NOTIFY_SUPERADMIN_INPUT}" >> "$ENV_FILE"
+            {
+                echo ""
+                echo "# In-app deployment notifications for superadmin"
+                echo "NOTIFY_SUPERADMIN_ON_DEPLOY=${NOTIFY_SUPERADMIN_INPUT}"
+            } >> "$ENV_FILE"
         fi
         echo ""
     fi

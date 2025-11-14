@@ -9,23 +9,12 @@ CHECK_INTERVAL=${DB_MONITOR_INTERVAL:-60}
 LOG_FILE="/var/www/storage/logs/db-monitor.log"
 STATE_FILE="/var/www/storage/logs/db-monitor-state.txt"
 
-# Read Telegram config from environment variables (passed via supervisord or docker)
-# These should be set in docker-compose.yml environment section
-TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
-TELEGRAM_CHAT_ID=${CHAT_ID:-}
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+# shellcheck source=../../utils/telegram_notify.sh
+. "$SCRIPT_DIR/../../utils/telegram_notify.sh"
 
 log_message() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
-}
-
-send_telegram() {
-    local message="$1"
-    if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
-        curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-            -d "chat_id=${TELEGRAM_CHAT_ID}" \
-            -d "text=${message}" \
-            -d "parse_mode=HTML" > /dev/null 2>&1 || true
-    fi
 }
 
 get_db_stats() {

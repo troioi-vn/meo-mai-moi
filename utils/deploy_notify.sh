@@ -36,8 +36,11 @@ deploy_notify_env_value() {
         return 0
     fi
 
-    # Try to read from known env files, in priority order
+    # Try to read from known env files, in priority order: root .env then backend/.env
     local files_to_check=()
+    if [ -f "$PROJECT_ROOT/.env" ]; then
+        files_to_check+=("$PROJECT_ROOT/.env")
+    fi
     if [ -f "$ENV_FILE" ]; then
         files_to_check+=("$ENV_FILE")
     fi
@@ -51,7 +54,7 @@ deploy_notify_env_value() {
         fi
 
         line=${line%%#*}
-        line=${line#${key}=}
+        line=${line#"${key}"=}
         line=${line%$'\r'}
         line=${line%\"}
         line=${line#\"}
@@ -76,14 +79,21 @@ deploy_notify_send() {
     local body="$1"
     local text
     text=$(printf "%s\n%s" "$DEPLOY_NOTIFY_PREFIX" "$body")
-    
-    local curl_output
-    local curl_exit_code=0
 
-    # Run curl and capture both output and exit code first
-    # Use a temporary file to avoid command substitution subshell ERR trap issues
+    # Use shared telegram_send implementation for actual API call
+    if ! command -v telegram_send >/dev/null 2>&1; then
+        # shellcheck source=./telegram_notify.sh
+        source "$PROJECT_ROOT/utils/telegram_notify.sh"
+    fi
+
+    local curl_exit_code=0
+    local curl_output
     local temp_output
     temp_output=$(mktemp)
+
+    TELEGRAM_BOT_TOKEN=$(deploy_notify_env_value TELEGRAM_BOT_TOKEN)
+    CHAT_ID=$(deploy_notify_env_value CHAT_ID)
+
     curl --silent --show-error --max-time 10 --retry 2 --retry-delay 2 \
         --data-urlencode "chat_id=$CHAT_ID" \
         --data-urlencode "text=$text" \
@@ -91,10 +101,9 @@ deploy_notify_send() {
         > "$temp_output" 2>&1 || curl_exit_code=$?
     curl_output=$(cat "$temp_output" 2>/dev/null || true)
     rm -f "$temp_output"
+
     if [ $curl_exit_code -ne 0 ]; then
         note "WARNING: Failed to send Telegram notification (exit code: $curl_exit_code)"
-        
-        # Log failure details to separate notification log
         local notify_log="${DEPLOY_LOG}.notifications"
         local timestamp
         timestamp=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
@@ -106,8 +115,7 @@ deploy_notify_send() {
             echo "Response: $curl_output"
             echo ""
         } >> "$notify_log" 2>&1 || true
-        
-        # Also log to structured log if available
+
         if command -v log_warn >/dev/null 2>&1; then
             log_warn "Telegram notification failed" "exit_code=$curl_exit_code"
         fi
@@ -263,7 +271,7 @@ deploy_notify_initialize() {
     fi
 
     local token chat app_url host
-    # Read TELEGRAM_BOT_TOKEN and CHAT_ID from env or env files
+    # Read TELEGRAM_BOT_TOKEN and CHAT_ID from env or env files (env → .env → backend/.env)
     token=$(deploy_notify_env_value TELEGRAM_BOT_TOKEN)
     chat=$(deploy_notify_env_value CHAT_ID)
 

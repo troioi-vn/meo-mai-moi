@@ -61,7 +61,7 @@ echo ""
 DESTROY_TIME=""
 CREATE_TIME=""
 
-while IFS='|' read -r timestamp action driver; do
+while IFS='|' read -r timestamp action _driver; do
     timestamp=$(echo "$timestamp" | xargs)
     action=$(echo "$action" | xargs)
     

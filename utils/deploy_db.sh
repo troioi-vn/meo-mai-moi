@@ -33,6 +33,7 @@ deploy_db_initialize() {
     DB_USERNAME_ENV=${DB_USERNAME_ENV:-user}
     DB_DATABASE_ENV=${DB_DATABASE_ENV:-meo_mai_moi}
     DB_VOLUME_NAME=${DB_VOLUME_NAME:-$(basename "$PROJECT_ROOT")_pgdata}
+    # shellcheck disable=SC2034 # used by deploy.sh for volume fingerprint tracking
     DB_FINGERPRINT_FILE="$PROJECT_ROOT/.db_volume_fingerprint"
 }
 
@@ -82,7 +83,6 @@ db_snapshot() {
     # Enhanced logging: capture container and volume state
     local db_container_id
     local db_container_uptime
-    local db_volume_mtime
     db_container_id=$(docker compose ps -q db 2>/dev/null || echo "unknown")
     if [ -n "$db_container_id" ] && [ "$db_container_id" != "unknown" ]; then
         db_container_uptime=$(docker inspect -f '{{.State.StartedAt}}' "$db_container_id" 2>/dev/null || echo "unknown")
@@ -182,11 +182,15 @@ EOF
         fi
     fi
     
+    # shellcheck disable=SC2034 # exported for deploy.sh post-snapshot checks
     DB_SNAPSHOT_STAGE="$stage"
+    # shellcheck disable=SC2034 # exported for deploy.sh post-snapshot checks
     DB_SNAPSHOT_USERS="$total_users"
     if [ "$include_admin" = "true" ]; then
+        # shellcheck disable=SC2034 # exported for deploy.sh post-snapshot checks
         DB_SNAPSHOT_ADMIN="$admin_present"
     else
+        # shellcheck disable=SC2034 # exported for deploy.sh post-snapshot checks
         DB_SNAPSHOT_ADMIN="not_tracked"
     fi
     

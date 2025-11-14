@@ -2,10 +2,66 @@
 set -euo pipefail
 
 # --- Configuration ---
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_PATH="${BASH_SOURCE[0]:-$0}"
+SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+load_root_env_file() {
+    local env_file="$PROJECT_ROOT/.env"
+    [ -f "$env_file" ] || return 0
+
+    while IFS='=' read -r key value; do
+        # Skip comments and empty/whitespace-only lines
+        case "$key" in
+            ''|\#*) continue ;;
+        esac
+
+        # Strip inline comments and surrounding whitespace from value
+        value=${value%%#*}
+        value=$(printf '%s' "$value" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+
+        # Ignore lines without a key after trimming
+        if [ -z "$key" ]; then
+            continue
+        fi
+
+        # Only set if not already present in the environment
+        if [ -z "${!key+x}" ]; then
+            export "$key=$value"
+        fi
+    done < "$env_file"
+}
+
+load_root_env_file
 
 # shellcheck source=./setup.sh
 source "$SCRIPT_DIR/setup.sh"
+
+setup_initialize
+
+# After basic setup (logging, locks, env), ensure we are running latest version of this script
+if [ "${SKIP_GIT_SELF_UPDATE:-false}" != "true" ]; then
+    CURRENT_COMMIT="$(git -C "$PROJECT_ROOT" rev-parse HEAD 2>/dev/null || echo "")"
+    TARGET_BRANCH="$(determine_deploy_branch "$APP_ENV_CURRENT")"
+
+    if [ -n "$TARGET_BRANCH" ] && [ -n "$CURRENT_COMMIT" ]; then
+        echo "ℹ️  Checking for newer deploy script on branch $TARGET_BRANCH..."
+        git -C "$PROJECT_ROOT" fetch origin "$TARGET_BRANCH" >/dev/null 2>&1 || true
+        REMOTE_COMMIT="$(git -C "$PROJECT_ROOT" rev-parse "origin/$TARGET_BRANCH" 2>/dev/null || echo "")"
+
+        if [ -n "$REMOTE_COMMIT" ] && [ "$REMOTE_COMMIT" != "$CURRENT_COMMIT" ]; then
+            echo "ℹ️  New commit detected on origin/$TARGET_BRANCH. Updating and re-running deploy script..."
+
+            # Try a fast-forward; if it fails, fall back to existing sync logic later
+            if git -C "$PROJECT_ROOT" merge --ff-only "origin/$TARGET_BRANCH" >/dev/null 2>&1; then
+                exec "$SCRIPT_DIR/$(basename "$SCRIPT_PATH")" "$@" SKIP_GIT_SELF_UPDATE=true
+            else
+                echo "⚠️  Fast-forward of deploy script failed, continuing with current version."
+            fi
+        fi
+    fi
+fi
+
 # shellcheck source=./deploy_db.sh
 source "$SCRIPT_DIR/deploy_db.sh"
 # shellcheck source=./deploy_docker.sh
@@ -14,8 +70,6 @@ source "$SCRIPT_DIR/deploy_docker.sh"
 source "$SCRIPT_DIR/deploy_notify.sh"
 # shellcheck source=./deploy_post.sh
 source "$SCRIPT_DIR/deploy_post.sh"
-
-setup_initialize
 
 ## (Removed) get_db_stats and check_db_connection helpers to simplify deployment flow
 
@@ -118,6 +172,7 @@ if [ "$TEST_NOTIFY" = "true" ]; then
     echo ""
     
     # Test in-app notifications
+    # shellcheck disable=SC2153 # ENV_FILE is set by setup.sh before this point
     notify_enabled=$(grep -E '^NOTIFY_SUPERADMIN_ON_DEPLOY=' "$ENV_FILE" 2>/dev/null | cut -d '=' -f2- | tr -d '\r' | tr -d '"' | tr -d "'" || echo "false")
     
     if [ "$notify_enabled" = "true" ]; then
@@ -444,6 +499,7 @@ if [ "$SEED" = "false" ] && [ "$DB_SNAPSHOT_ADMIN" = "missing" ] && [ -n "$ADMIN
 fi
 
 VOLUME_CREATED_AT=""
+# shellcheck disable=SC2034 # exported for potential diagnostics and future use
 VOLUME_FINGERPRINT_CHANGED="false"
 VOLUME_DELETE_LOG="$PROJECT_ROOT/.deploy/volume-deletions.log"
 mkdir -p "$(dirname "$VOLUME_DELETE_LOG")"

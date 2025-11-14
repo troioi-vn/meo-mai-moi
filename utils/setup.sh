@@ -356,11 +356,6 @@ setup_initialize() {
                 echo "   Generate with: npx web-push generate-vapid-keys"
                 echo "   Then add to both .env and backend/.env"
             fi
-            
-            echo ""
-            if [ "$NO_INTERACTIVE" = "false" ]; then
-                read -r -p "Press Enter to continue..." 
-            fi
         fi
         
         log_info "Created root env file" "file=$ROOT_ENV_FILE"

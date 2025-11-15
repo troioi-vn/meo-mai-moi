@@ -1,17 +1,34 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # Database monitoring script - runs inside backend container
 # Checks user count every minute and sends Telegram alert if database goes empty
 
 # NOTE: No set -e because we want to handle errors gracefully
+set -o pipefail
 
 # Configuration
 CHECK_INTERVAL=${DB_MONITOR_INTERVAL:-60}
 LOG_FILE="/var/www/storage/logs/db-monitor.log"
 STATE_FILE="/var/www/storage/logs/db-monitor-state.txt"
+APP_URL_VALUE=${APP_URL:-http://localhost:8000}
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
-# shellcheck source=../../utils/telegram_notify.sh
-. "$SCRIPT_DIR/../../utils/telegram_notify.sh"
+mkdir -p "$(dirname "$LOG_FILE")"
+touch "$LOG_FILE"
+
+send_telegram() {
+    local message="$1"
+    local token="${TELEGRAM_BOT_TOKEN:-}"
+    local chat_id="${CHAT_ID:-}"
+
+    if [[ -z "$token" || -z "$chat_id" ]]; then
+        echo "$(date '+%Y-%m-%d %H:%M:%S') - DEBUG: Telegram credentials missing, skipping alert" >> "$LOG_FILE"
+        return 0
+    fi
+
+    curl -s -X POST "https://api.telegram.org/bot${token}/sendMessage" \
+        -d "chat_id=${chat_id}" \
+        -d "text=${message}" \
+        -d "parse_mode=HTML" >> "$LOG_FILE" 2>&1 || true
+}
 
 log_message() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
@@ -66,6 +83,7 @@ while true; do
             MESSAGE="⚠️ <b>DATABASE QUERY ERROR</b>%0A%0A"
             MESSAGE="${MESSAGE}Time: ${TIMESTAMP}%0A"
             MESSAGE="${MESSAGE}Cannot execute database queries%0A"
+            MESSAGE="${MESSAGE}App URL: ${APP_URL_VALUE}%0A"
             MESSAGE="${MESSAGE}Previous state: ${PREVIOUS_STATE}%0A%0A"
             MESSAGE="${MESSAGE}Container uptime: $(cat /proc/uptime | cut -d' ' -f1)s%0A"
             MESSAGE="${MESSAGE}Host: $(hostname)"
@@ -84,6 +102,7 @@ while true; do
             MESSAGE="${MESSAGE}Users: ${USER_COUNT}%0A"
             MESSAGE="${MESSAGE}Pets: ${PET_COUNT}%0A"
             MESSAGE="${MESSAGE}Roles: ${ROLE_COUNT}%0A%0A"
+            MESSAGE="${MESSAGE}App URL: ${APP_URL_VALUE}%0A"
             MESSAGE="${MESSAGE}Previous state: ${PREVIOUS_STATE}%0A%0A"
             MESSAGE="${MESSAGE}Container uptime: $(cat /proc/uptime | cut -d' ' -f1)s%0A"
             MESSAGE="${MESSAGE}Host: $(hostname)"
@@ -112,7 +131,8 @@ while true; do
             MESSAGE="${MESSAGE}Time: ${TIMESTAMP}%0A"
             MESSAGE="${MESSAGE}Users: ${USER_COUNT}%0A"
             MESSAGE="${MESSAGE}Pets: ${PET_COUNT}%0A"
-            MESSAGE="${MESSAGE}Roles: ${ROLE_COUNT}"
+            MESSAGE="${MESSAGE}Roles: ${ROLE_COUNT}%0A"
+            MESSAGE="${MESSAGE}App URL: ${APP_URL_VALUE}"
             
             send_telegram "$MESSAGE"
             log_message "Recovery notification sent"

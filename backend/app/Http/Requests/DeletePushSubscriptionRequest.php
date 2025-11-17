@@ -18,4 +18,3 @@ class DeletePushSubscriptionRequest extends FormRequest
         ];
     }
 }
-

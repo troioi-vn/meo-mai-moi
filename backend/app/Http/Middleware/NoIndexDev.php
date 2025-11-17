@@ -30,7 +30,7 @@ class NoIndexDev
     private function shouldDisallowRobots(Request $request): bool
     {
         // Allow enabling explicitly via env
-        if (filter_var((string) env('DISALLOW_ROBOTS', false), FILTER_VALIDATE_BOOL)) {
+        if (filter_var(config('app.disallow_robots', false), FILTER_VALIDATE_BOOL)) {
             return true;
         }
 

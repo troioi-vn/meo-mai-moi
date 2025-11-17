@@ -32,6 +32,7 @@ class Notification extends Model
         'delivered_at',
         'failed_at',
         'failure_reason',
+        'is_read',
     ];
 
     protected $casts = [

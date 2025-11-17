@@ -78,10 +78,10 @@ return Application::configure(basePath: dirname(__DIR__))
             // Check if it's a mail transport exception (check the whole exception chain)
             $currentException = $e;
             $isMailException = false;
-            
+
             // Walk through exception chain to find mail-related exceptions
             do {
-                if ($currentException instanceof \Swift_TransportException || 
+                if ($currentException instanceof \Swift_TransportException ||
                     $currentException instanceof \Symfony\Component\Mailer\Exception\TransportExceptionInterface ||
                     str_contains($currentException->getMessage(), 'Connection could not be established') ||
                     str_contains($currentException->getMessage(), 'stream_socket_client()') ||
@@ -92,7 +92,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 }
                 $currentException = $currentException->getPrevious();
             } while ($currentException !== null);
-            
+
             if ($isMailException) {
                 \Log::error('Email transport error', [
                     'url' => $request->fullUrl(),

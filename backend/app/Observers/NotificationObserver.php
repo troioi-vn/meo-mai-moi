@@ -11,17 +11,19 @@ class NotificationObserver
     public function created(Notification $notification): void
     {
         $channel = data_get($notification->data, 'channel');
-        
+
         // Only send push notifications for in-app channel notifications
         if ($channel && ! str_starts_with($channel, 'in_app')) {
             return;
         }
 
+        /** @var \App\Models\User|null $user */
         $user = $notification->relationLoaded('user') ? $notification->user : $notification->user()->first();
         if (! $user) {
             Log::warning('Notification created without user', [
                 'notification_id' => $notification->id,
             ]);
+
             return;
         }
 
@@ -37,4 +39,3 @@ class NotificationObserver
         }
     }
 }
-

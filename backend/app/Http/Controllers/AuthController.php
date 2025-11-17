@@ -10,6 +10,10 @@ use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -329,8 +333,17 @@ class AuthController extends Controller
      */
     public function forgotPassword(Request $request)
     {
-        // Delegate to Fortify/Jetstream-compatible flow (via response classes)
-        return app(\App\Http\Controllers\PasswordResetController::class)->sendResetLinkEmail($request);
+        $request->validate(['email' => 'required|email']);
+
+        $status = Password::sendResetLink($request->only('email'));
+
+        if ($status === Password::RESET_LINK_SENT) {
+            return response()->json(['message' => __($status)]);
+        }
+
+        throw ValidationException::withMessages([
+            'email' => [__($status)],
+        ]);
     }
 
     /**
@@ -378,7 +391,31 @@ class AuthController extends Controller
      */
     public function resetPassword(Request $request)
     {
-        // Delegate to Fortify/Jetstream-compatible flow (via response classes)
-        return app(\App\Http\Controllers\PasswordResetController::class)->reset($request);
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|confirmed',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password),
+                ])->setRememberToken(Str::random(60));
+
+                $user->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        if ($status === Password::PASSWORD_RESET) {
+            return response()->json(['message' => __($status)]);
+        }
+
+        throw ValidationException::withMessages([
+            'email' => [__($status)],
+        ]);
     }
 }

@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StorePushSubscriptionRequest;
 use App\Http\Requests\DeletePushSubscriptionRequest;
+use App\Http\Requests\StorePushSubscriptionRequest;
 use App\Models\PushSubscription;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class PushSubscriptionController extends Controller
 {
@@ -68,4 +67,3 @@ class PushSubscriptionController extends Controller
         return $this->sendSuccess(null, 204);
     }
 }
-

@@ -28,7 +28,7 @@ class WebPushDispatcherTest extends TestCase
         ]);
         $notification->setAttribute('created_at', now());
 
-    $dispatcher = (new ReflectionClass(WebPushDispatcher::class))->newInstanceWithoutConstructor();
+        $dispatcher = (new ReflectionClass(WebPushDispatcher::class))->newInstanceWithoutConstructor();
         $method = new ReflectionMethod(WebPushDispatcher::class, 'buildPayload');
         $method->setAccessible(true);
 

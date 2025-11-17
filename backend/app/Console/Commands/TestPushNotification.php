@@ -5,9 +5,9 @@ namespace App\Console\Commands;
 use App\Models\Notification;
 use App\Models\User;
 use App\Services\Notifications\WebPushDispatcher;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
-use Illuminate\Console\Command;
 
 class TestPushNotification extends Command
 {
@@ -37,7 +37,7 @@ class TestPushNotification extends Command
 
         // Create a test notification
         $notification = new Notification;
-        $notification->id = fake()->uuid();
+        $notification->id = fake()->randomNumber();
         $notification->user_id = $user->id;
         $notification->type = 'test';
         $notification->message = $this->option('message');

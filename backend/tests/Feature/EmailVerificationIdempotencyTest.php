@@ -10,8 +10,7 @@ class EmailVerificationIdempotencyTest extends TestCase
 {
     use RefreshDatabase;
 
-    #[test]
-    public function registration_creates_at_most_one_verification_notification_per_user_within_window(): void
+    public function test_registration_creates_at_most_one_verification_notification_per_user_within_window(): void
     {
         // Force setting: email verification required
         cache()->put('settings:email_verification_required', 'true', 300);

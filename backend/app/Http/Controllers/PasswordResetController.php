@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Hash;
 
 /**
  * Password Reset Token Validation Controller
- * 
+ *
  * This controller provides a token validation endpoint for the frontend.
  * The actual password reset functionality is handled by Laravel Fortify.
  */

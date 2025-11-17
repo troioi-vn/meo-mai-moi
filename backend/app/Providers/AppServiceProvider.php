@@ -3,10 +3,10 @@
 namespace App\Providers;
 
 use App\Events\HelperProfileStatusUpdated;
-use App\Models\Notification;
-use App\Observers\NotificationObserver;
 use App\Listeners\CreateHelperProfileNotification;
 use App\Listeners\UpdateEmailLogOnSent;
+use App\Models\Notification;
+use App\Observers\NotificationObserver;
 use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
@@ -53,7 +53,7 @@ class AppServiceProvider extends ServiceProvider
         // Register custom notification channel for email verification
         $this->app->make('Illuminate\Notifications\ChannelManager')
             ->extend('notification_email', function () {
-                 return new \App\Channels\NotificationEmailChannel();
+                return new \App\Channels\NotificationEmailChannel;
             });
 
         // Update mail configuration on application boot if there's an active email configuration

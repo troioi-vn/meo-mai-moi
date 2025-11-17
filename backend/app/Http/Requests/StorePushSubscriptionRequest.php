@@ -53,4 +53,3 @@ class StorePushSubscriptionRequest extends FormRequest
         }
     }
 }
-

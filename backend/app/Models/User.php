@@ -159,7 +159,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
      */
     public function sendEmailVerificationNotification()
     {
-        $this->notify(new \App\Notifications\VerifyEmail());
+        $this->notify(new \App\Notifications\VerifyEmail);
     }
 
     /**
@@ -196,12 +196,12 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
     {
         // Try to get the converted image first
         $convertedUrl = $this->getFirstMediaUrl('avatar', 'avatar_256');
-        
+
         // If conversion doesn't exist yet, fall back to original
-        if (!$convertedUrl) {
+        if (! $convertedUrl) {
             $convertedUrl = $this->getFirstMediaUrl('avatar');
         }
-        
+
         return $convertedUrl ?: null;
     }
 

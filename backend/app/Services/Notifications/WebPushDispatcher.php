@@ -14,6 +14,7 @@ use Minishlink\WebPush\WebPush;
 class WebPushDispatcher
 {
     private ?WebPush $webPush = null;
+
     private bool $isConfigured = false;
 
     public function __construct()
@@ -42,15 +43,18 @@ class WebPushDispatcher
     {
         if (! $this->isConfigured || $this->webPush === null) {
             Log::debug('Web push not configured, skipping dispatch');
+
             return;
         }
 
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\PushSubscription> $subscriptions */
         $subscriptions = $user->pushSubscriptions()->get();
         if ($subscriptions->isEmpty()) {
             Log::debug('No push subscriptions found for user', [
                 'user_id' => $user->id,
                 'notification_id' => $notification->id,
             ]);
+
             return;
         }
 
@@ -68,20 +72,20 @@ class WebPushDispatcher
 
     private function buildPayload(Notification $notification): string
     {
-    $data = $notification->data ?? [];
+        $data = $notification->data ?? [];
 
-    $title = $data['title'] ?? $data['subject'] ?? ($data['message'] ?? $notification->message ?? 'Notification');
-        
+        $title = $data['title'] ?? $data['subject'] ?? ($data['message'] ?? $notification->message ?? 'Notification');
+
         // Ensure title is never too long (web push has limits)
         $title = mb_substr($title, 0, 100);
 
         $body = $data['body'] ?? $data['message'] ?? $notification->message ?? null;
-        
+
         // Limit body length for push notifications
         if ($body !== null) {
             $body = mb_substr($body, 0, 200);
         }
-        
+
         $url = $data['url'] ?? $notification->link ?? $data['actionUrl'] ?? null;
         $appName = config('app.name', 'Meo Mai Moi');
         $icon = $this->resolveAssetPath($data['icon'] ?? null, config('app.push_icon', '/icon-192.png'));
@@ -98,6 +102,7 @@ class WebPushDispatcher
                 'url' => $url,
                 'notification_id' => (string) $notification->id,
                 'type' => $notification->type,
+                // @phpstan-ignore-next-line
                 'timestamp' => $notification->created_at?->timestamp ?? time(),
                 'app' => [
                     'name' => $appName,
@@ -153,16 +158,17 @@ class WebPushDispatcher
 
             if ($report->isSuccess()) {
                 $this->markSubscriptionAsSeen($subscriptions, $endpoint);
+
                 continue;
             }
 
             $reason = $report->getReason() ?? 'Unknown error';
-            $statusCode = method_exists($report, 'getResponse') 
-                ? $report->getResponse()?->getStatusCode() 
+            $statusCode = method_exists($report, 'getResponse')
+                ? $report->getResponse()?->getStatusCode()
                 : null;
-            
+
             Log::warning('Web push delivery failed', [
-                'endpoint' => substr($endpoint, 0, 100) . '...',
+                'endpoint' => substr($endpoint, 0, 100).'...',
                 'reason' => $reason,
                 'status_code' => $statusCode,
             ]);
@@ -218,7 +224,6 @@ class WebPushDispatcher
             return $path;
         }
 
-        return '/' . ltrim($path, '/');
+        return '/'.ltrim($path, '/');
     }
 }
-

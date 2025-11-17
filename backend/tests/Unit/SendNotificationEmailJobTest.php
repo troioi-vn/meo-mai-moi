@@ -45,6 +45,12 @@ class SendNotificationEmailJobTest extends TestCase
         $this->app->instance(\App\Services\EmailConfigurationService::class, $mockEmailService);
     }
 
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        \Mockery::close();
+    }
+
     public function test_job_sends_placement_request_response_email()
     {
         Mail::fake();
@@ -265,7 +271,9 @@ class SendNotificationEmailJobTest extends TestCase
             $this->notification->id
         );
 
-        $job->failed($exception);
+        Notification::withoutEvents(function () use ($job, $exception) {
+            $job->failed($exception);
+        });
 
         $this->notification->refresh();
         $this->assertNotNull($this->notification->failed_at);

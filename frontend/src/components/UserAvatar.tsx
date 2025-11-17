@@ -32,7 +32,7 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
     if (user?.avatar_url && user.avatar_url.trim() !== '') {
       const img = new Image()
       img.onload = () => {
-        setAvatarSrc(user.avatar_url!)
+        setAvatarSrc(user.avatar_url)
       }
       img.onerror = () => {
         setAvatarSrc(defaultAvatar)

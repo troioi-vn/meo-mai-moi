@@ -73,11 +73,15 @@ Notes:
 - SPA gets a clean JSON response with messaging and can show a “Verify your email” prompt
 - Resend endpoint is throttled and follows Fortify defaults
 
-## Password Reset
+## Password Reset & Change
 
 - Fortify’s forgot-password and reset-password endpoints are used
 - CustomPasswordReset mailable integrates with EmailConfiguration/EmailLog
 - Tests avoid logging to EmailLog when no active configuration is present
+- Logged-in users change their password from the React SPA via the **Settings → Account** tab
+  - The account tab shows a "Change password" button that opens a modal dialog
+  - The modal uses the same backend `changePassword` flow as the legacy account page
+  - On success, the user is logged out and redirected to `/login` for security
 
 ## Tokens (Programmatic Access)
 

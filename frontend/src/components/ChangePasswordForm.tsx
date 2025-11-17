@@ -36,7 +36,11 @@ const passwordChangeSchema = z
 
 type PasswordChangeFormValues = z.infer<typeof passwordChangeSchema>
 
-const ChangePasswordForm: React.FC = () => {
+interface ChangePasswordFormProps {
+  onSuccess?: () => void
+}
+
+const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({ onSuccess }) => {
   const { changePassword, logout } = useAuth()
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
@@ -63,6 +67,10 @@ const ChangePasswordForm: React.FC = () => {
         description: 'Your password has been updated successfully. Please log in again.',
       })
       form.reset()
+      // Call onSuccess callback if provided (e.g., to close a dialog)
+      if (onSuccess) {
+        onSuccess()
+      }
       // Security: force logout and redirect to login after password change
       try {
         await logout()

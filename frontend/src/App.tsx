@@ -1,6 +1,9 @@
 import { Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useAuth } from '@/hooks/use-auth'
+import { toast } from 'sonner'
+import { Toaster } from '@/components/ui/sonner'
+import MainNav from '@/components/MainNav'
 
 import MainPage from './pages/MainPage'
 import LoginPage from './pages/LoginPage'
@@ -8,22 +11,18 @@ import RegisterPage from './pages/RegisterPage'
 import EmailVerificationPage from './pages/EmailVerificationPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
-import ProfilePage from './pages/ProfilePage'
 import MyPetsPage from './pages/account/MyPetsPage'
 import CreatePetPage from './pages/account/CreatePetPage'
-import NotificationsPage from './pages/account/NotificationsPage'
 import PasswordPage from './pages/account/PasswordPage'
 import InvitationsPage from './pages/InvitationsPage'
 import PetProfilePage from './pages/PetProfilePage'
+import SettingsPage from './pages/SettingsPage'
 import HelperProfilePage from './pages/helper/HelperProfilePage'
 import HelperProfileEditPage from './pages/helper/HelperProfileEditPage'
 import CreateHelperProfilePage from './pages/helper/CreateHelperProfilePage'
 import HelperProfileViewPage from './pages/helper/HelperProfileViewPage'
 import NotFoundPage from './pages/NotFoundPage'
 import RequestsPage from './pages/RequestsPage'
-import { Toaster } from '@/components/ui/sonner'
-import { toast } from 'sonner'
-import MainNav from '@/components/MainNav'
 import './App.css'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -85,10 +84,10 @@ export function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/password/reset/:token" element={<ResetPasswordPage />} />
       <Route
-        path="/account"
+        path="/settings/*"
         element={
           <PrivateRoute>
-            <ProfilePage />
+            <SettingsPage />
           </PrivateRoute>
         }
       />
@@ -107,14 +106,6 @@ export function AppRoutes() {
         element={
           <PrivateRoute>
             <CreatePetPage />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/account/notifications"
-        element={
-          <PrivateRoute>
-            <NotificationsPage />
           </PrivateRoute>
         }
       />

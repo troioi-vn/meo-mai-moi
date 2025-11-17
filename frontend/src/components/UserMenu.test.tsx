@@ -38,6 +38,7 @@ describe('UserMenu', () => {
       loadUser: vi.fn(),
       changePassword: vi.fn(),
       deleteAccount: vi.fn(),
+      checkEmail: vi.fn(),
     })
   })
 
@@ -61,6 +62,7 @@ describe('UserMenu', () => {
       loadUser: vi.fn(),
       changePassword: vi.fn(),
       deleteAccount: vi.fn(),
+      checkEmail: vi.fn(),
     })
 
     renderWithRouter(<UserMenu />)
@@ -84,7 +86,7 @@ describe('UserMenu', () => {
     await user.click(avatar)
 
     // Check that menu items are visible after clicking
-    expect(screen.getByRole('menuitem', { name: 'Profile' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Settings' })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: 'My Pets' })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: 'Log Out' })).toBeInTheDocument()
   })
@@ -102,10 +104,10 @@ describe('UserMenu', () => {
 
     await user.click(avatar)
 
-    const profileLink = screen.getByRole('menuitem', { name: 'Profile' })
+    const profileLink = screen.getByRole('menuitem', { name: 'Settings' })
     const myPetsLink = screen.getByRole('menuitem', { name: 'My Pets' })
 
-    expect(profileLink).toHaveAttribute('href', '/account')
+    expect(profileLink).toHaveAttribute('href', '/settings/account')
     expect(myPetsLink).toHaveAttribute('href', '/account/pets')
   })
 
@@ -161,6 +163,7 @@ describe('UserMenu', () => {
       loadUser: vi.fn(),
       changePassword: vi.fn(),
       deleteAccount: vi.fn(),
+      checkEmail: vi.fn(),
     })
 
     renderWithRouter(<UserMenu />)

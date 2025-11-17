@@ -7,6 +7,12 @@ import { http, HttpResponse } from 'msw'
 import { mockPet, anotherMockCat } from '@/mocks/data/pets'
 import { mockUser } from '@/mocks/data/user'
 
+vi.mock('@/components/NotificationPreferences', () => ({
+  NotificationPreferences: () => (
+    <div data-testid="notification-preferences">Notification Preferences Component</div>
+  ),
+}))
+
 // Set up mock handlers for all the routes tested in this file
 beforeEach(() => {
   vi.clearAllMocks()
@@ -104,27 +110,21 @@ describe('App Routing', () => {
     })
   })
 
-  describe('Account routes', () => {
-    it('renders notifications page route correctly', async () => {
+  describe('Settings routes', () => {
+    it('renders notifications tab route correctly', async () => {
       renderWithRouter(<App />, {
-        route: '/account/notifications',
+        route: '/settings/notifications',
         initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
       })
 
       await waitFor(
         async () => {
-          expect(
-            await screen.findByRole('heading', { name: /notification settings/i })
-          ).toBeInTheDocument()
+          expect(await screen.findByText(/notification settings/i)).toBeInTheDocument()
         },
         { timeout: 5000 }
       )
 
-      // Verify breadcrumbs are present
-      expect(screen.getByText('Notifications')).toBeInTheDocument()
-
-      // Verify back button is present
-      expect(screen.getByRole('link', { name: /back to account/i })).toBeInTheDocument()
+      expect(screen.getByTestId('notification-preferences')).toBeInTheDocument()
     })
   })
 })

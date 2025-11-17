@@ -6,6 +6,10 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Settings Hub**: Introduced `/settings` route with shadcn tabs for Account, Notifications, and Contact sections
+  - Consolidated profile and session management cards inside the Account tab
+  - Added modal-based password change dialog instead of a full-page form
+  - Added placeholder Contact tab so future messaging/config work has a surfaced destination
 - **Tooltip Component**: Added Radix UI tooltip component (`@radix-ui/react-tooltip`) for better UX
   - Created reusable tooltip component at `frontend/src/components/ui/tooltip.tsx`
   - Used for "Show all" filter to explain it includes deceased pets
@@ -23,6 +27,11 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Changed
 
+- **Navigation & Routing Cleanup**: `/settings` now replaces the legacy `/account` and `/account/notifications` pages
+  - User menu links directly to `/settings/account` for profile and account actions
+  - My Pets, Invitations, and helper profile links remain separate under `/account/*` and `/helper*`
+  - Deprecated profile and notifications pages removed to prevent dead links and duplicated UI
+  - Settings tests (`SettingsPage.test.tsx`, routing smoke tests, nav/menu specs) updated for new paths
 - **Test Notifications**: Enhanced `--test-notify` flag to test both Telegram and in-app notifications
   - Previously only tested Telegram notifications
   - Now tests both notification systems and reports their configuration status
@@ -80,6 +89,7 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Changed
 
 - **Environment Configuration**: Migrated to dual-file approach for better separation of concerns
+
   - **Root `.env`**: Docker Compose variables (build args like `VAPID_PUBLIC_KEY`, database credentials)
   - **`backend/.env`**: Laravel runtime configuration (APP_KEY, mail settings, etc.)
   - Replaced `backend/.env.docker` with cleaner `backend/.env` naming

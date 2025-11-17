@@ -19,7 +19,7 @@ describe('PasswordPage', () => {
 
   it('renders breadcrumbs and header', () => {
     renderPage()
-    expect(screen.getByText('Account')).toBeInTheDocument()
+    expect(screen.getByText('Settings')).toBeInTheDocument()
     expect(screen.getByText('Password')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /change password/i })).toBeInTheDocument()
   })
@@ -29,9 +29,9 @@ describe('PasswordPage', () => {
     expect(screen.getByTestId('change-password-form')).toBeInTheDocument()
   })
 
-  it('has back to account link', () => {
+  it('has back to settings link', () => {
     renderPage()
-    const backLink = screen.getByRole('link', { name: /back to account/i })
-    expect(backLink).toHaveAttribute('href', '/account')
+    const backLink = screen.getByRole('link', { name: /back to settings/i })
+    expect(backLink).toHaveAttribute('href', '/settings/account')
   })
 })

@@ -29,7 +29,7 @@ export function UserMenu() {
     if (user?.avatar_url && user.avatar_url.trim() !== '') {
       const img = new Image()
       img.onload = () => {
-        setAvatarSrc(user.avatar_url!)
+        setAvatarSrc(user.avatar_url)
       }
       img.onerror = () => {
         setAvatarSrc(defaultAvatar)
@@ -69,7 +69,7 @@ export function UserMenu() {
         {isVerified && (
           <>
             <DropdownMenuItem className="cursor-pointer" asChild>
-              <Link to="/account">Profile</Link>
+              <Link to="/settings/account">Settings</Link>
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer" asChild>
               <Link to="/account/pets">My Pets</Link>

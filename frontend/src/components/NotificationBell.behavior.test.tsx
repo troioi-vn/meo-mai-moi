@@ -7,11 +7,20 @@ import { NotificationBell } from './NotificationBell'
 import { server } from '@/mocks/server'
 import { http, HttpResponse } from 'msw'
 import { toast } from 'sonner'
+import { TestAuthProvider } from '@/contexts/TestAuthProvider'
+
+const mockUser = {
+  id: 1,
+  name: 'Test User',
+  email: 'test@example.com',
+}
 
 function renderWithProviders(ui: React.ReactNode, { pollMs = 30_000 } = {}) {
   return render(
     <MemoryRouter>
-      <NotificationProvider pollMs={pollMs}>{ui}</NotificationProvider>
+      <TestAuthProvider mockValues={{ user: mockUser, isAuthenticated: true }}>
+        <NotificationProvider pollMs={pollMs}>{ui}</NotificationProvider>
+      </TestAuthProvider>
     </MemoryRouter>
   )
 }
@@ -49,7 +58,9 @@ describe('NotificationBell behavior', () => {
     renderWithProviders(<NotificationBell />)
 
     const btn = await screen.findByRole('button', { name: /open notifications/i })
-    expect(within(btn).getByText('2')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(within(btn).getByText('2')).toBeInTheDocument()
+    })
 
     // Open dropdown → optimistic mark-all → badge removed
     const user = userEvent.setup()

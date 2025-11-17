@@ -19,7 +19,7 @@ describe('MainNav', () => {
 
   it('renders login and register buttons when not authenticated', () => {
     renderWithRouter(<MainNav />, {
-      initialAuthState: { isAuthenticated: false, user: null, isLoading: false }
+      initialAuthState: { isAuthenticated: false, user: null, isLoading: false },
     })
 
     expect(screen.getByText('Login')).toBeInTheDocument()
@@ -30,9 +30,14 @@ describe('MainNav', () => {
     renderWithRouter(<MainNav />, {
       initialAuthState: {
         isAuthenticated: true,
-        user: { id: 1, name: 'Test User', email: 'test@example.com', email_verified_at: new Date().toISOString() },
-        isLoading: false
-      }
+        user: {
+          id: 1,
+          name: 'Test User',
+          email: 'test@example.com',
+          email_verified_at: new Date().toISOString(),
+        },
+        isLoading: false,
+      },
     })
 
     // Wait for notification bell to finish loading and check for its button

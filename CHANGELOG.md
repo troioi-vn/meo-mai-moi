@@ -6,6 +6,31 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Tailwind CSS v4 Migration**: Successfully migrated to Tailwind CSS v4 with modern configuration
+  - Migrated from Tailwind v3 to v4 using `@import 'tailwindcss'` syntax
+  - Implemented proper `@plugin 'tailwindcss-animate'` for animations
+  - Added `@custom-variant dark (&:is(.dark *))` for improved dark mode support
+  - Introduced `@theme inline` directive to expose CSS variables to Tailwind utilities
+  - Dual color system: HSL (backward compatibility) + OKLCH (modern Tailwind v4)
+  - All 24 shadcn-ui components reinstalled and verified working with new Tailwind setup
+  - Active tabs now properly highlighted with correct styling
+- **Enhanced Custom Form Components**: Improved accessibility and UX for custom form field components
+  - **CheckboxField**: Added `description` prop, proper error positioning, improved ARIA attributes
+  - **FileInput**: Added `accept`, `description`, and `required` props with better accessibility
+  - **FormField**: Added `email`, `number` types, `description`, and `disabled` props with enhanced ARIA support
+  - All form components now follow shadcn-ui design patterns consistently
+- **Modern Loading States**: Replaced basic "Loading..." text with professional skeleton components
+  - **LoadingState**: Now uses shadcn Skeleton component with 3 variants (`default`, `card`, `list`)
+  - Provides modern, professional loading experience matching contemporary UX standards
+  - Maintains backward compatibility with existing `message` prop
+- **Improved Error Handling**: Enhanced error state component with shadcn Alert
+  - **ErrorState**: Now uses shadcn Alert component with AlertCircle icon
+  - Two variants: `default` (full-screen) and `minimal` (inline)
+  - Better visual hierarchy with AlertTitle and AlertDescription
+  - More professional and accessible error presentation
+
+### Changed
+
 - **Settings Hub**: Introduced `/settings` route with shadcn tabs for Account, Notifications, and Contact sections
   - Consolidated profile and session management cards inside the Account tab
   - Added modal-based password change dialog instead of a full-page form
@@ -138,6 +163,18 @@ All notable changes to this project are documented here, following the [Keep a C
   - Theme-color now correctly switches between white (#ffffff) for light mode and dark gray (#111827) for dark mode
 - **Array offset warning**: Fixed "Trying to access array offset on value of type null" warning in `EmailConfigurationService::updateMailConfig()` when accessing `$mailConfig['from']['address']` with proper null coalescing operators
 - **Pet detail access**: Ensured regular owners and admins can view pet profiles by retaining ownership-aware policy logic even when Filament Shield assets are regenerated
+- **Tabs Component Styling**: Fixed active tab not being properly highlighted after Tailwind CSS v4 migration
+  - Root cause: Incorrect color structure in `tailwind.config.js` and missing CSS variable mappings
+  - Fixed by properly nesting color objects and implementing `@theme inline` directive
+  - All shadcn-ui components now render correctly with proper styles
+
+### Removed
+
+- **Orphaned Component Files**: Cleaned up unused and redundant component files
+  - Removed `calendar-icon.tsx` (redundant re-export of lucide-react Calendar icon)
+  - Removed `badge-variants.ts` (orphaned file not used by badge component)
+  - Removed `button-variants.ts` (orphaned file not used by button component)
+  - Components now import variants directly from their respective component files
 
 ### Icons & Branding Assets
 

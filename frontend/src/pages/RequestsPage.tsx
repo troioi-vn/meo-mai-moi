@@ -94,34 +94,40 @@ const RequestsPage = () => {
       {/* Filters */}
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
-          <Select
-            value={typeFilter}
-            onValueChange={(v) => {
-              setTypeFilter(v as 'all' | 'foster' | 'adoption')
-            }}
-          >
-            <SelectTrigger className="w-[220px]" aria-label="Type Filter">
-              <SelectValue placeholder="All Types" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Request Types</SelectItem>
-              <SelectItem value="foster">Foster</SelectItem>
-              <SelectItem value="adoption">Adoption</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={petTypeFilter} onValueChange={setPetTypeFilter}>
-            <SelectTrigger className="w-[220px]" aria-label="Pet Type Filter">
-              <SelectValue placeholder="All Pet Types" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Pet Types</SelectItem>
-              {petTypes.map((pt) => (
-                <SelectItem key={pt.id} value={pt.slug}>
-                  {pt.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex flex-col gap-2">
+            <span className="text-sm text-muted-foreground">Request Type</span>
+            <Select
+              value={typeFilter}
+              onValueChange={(v) => {
+                setTypeFilter(v as 'all' | 'foster' | 'adoption')
+              }}
+            >
+              <SelectTrigger className="w-[220px]" aria-label="Type Filter">
+                <SelectValue placeholder="All Types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Request Types</SelectItem>
+                <SelectItem value="foster">Foster</SelectItem>
+                <SelectItem value="adoption">Adoption</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-2">
+            <span className="text-sm text-muted-foreground">Pet Type</span>
+            <Select value={petTypeFilter} onValueChange={setPetTypeFilter}>
+              <SelectTrigger className="w-[220px]" aria-label="Pet Type Filter">
+                <SelectValue placeholder="All Pet Types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Pet Types</SelectItem>
+                {petTypes.map((pt) => (
+                  <SelectItem key={pt.id} value={pt.slug}>
+                    {pt.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex flex-col gap-2">

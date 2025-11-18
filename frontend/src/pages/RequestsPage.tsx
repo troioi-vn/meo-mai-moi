@@ -93,7 +93,7 @@ const RequestsPage = () => {
 
       {/* Filters */}
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <div className="flex flex-col gap-2">
             <span className="text-sm text-muted-foreground">Request Type</span>
             <Select
@@ -102,7 +102,7 @@ const RequestsPage = () => {
                 setTypeFilter(v as 'all' | 'foster' | 'adoption')
               }}
             >
-              <SelectTrigger className="w-[220px]" aria-label="Type Filter">
+              <SelectTrigger className="w-full sm:w-[220px]" aria-label="Type Filter">
                 <SelectValue placeholder="All Types" />
               </SelectTrigger>
               <SelectContent>
@@ -115,7 +115,7 @@ const RequestsPage = () => {
           <div className="flex flex-col gap-2">
             <span className="text-sm text-muted-foreground">Pet Type</span>
             <Select value={petTypeFilter} onValueChange={setPetTypeFilter}>
-              <SelectTrigger className="w-[220px]" aria-label="Pet Type Filter">
+              <SelectTrigger className="w-full sm:w-[220px]" aria-label="Pet Type Filter">
                 <SelectValue placeholder="All Pet Types" />
               </SelectTrigger>
               <SelectContent>
@@ -129,14 +129,14 @@ const RequestsPage = () => {
             </Select>
           </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
           <div className="flex flex-col gap-2">
             <span className="text-sm text-muted-foreground">Start Date</span>
-            <DatePicker date={startDate} setDate={setStartDate} />
+            <DatePicker date={startDate} setDate={setStartDate} className="w-full sm:w-[280px]" />
           </div>
           <div className="flex flex-col gap-2">
             <span className="text-sm text-muted-foreground">End Date</span>
-            <DatePicker date={endDate} setDate={setEndDate} />
+            <DatePicker date={endDate} setDate={setEndDate} className="w-full sm:w-[280px]" />
           </div>
         </div>
       </div>

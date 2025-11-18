@@ -116,7 +116,8 @@ export default defineConfig(({ mode }) => ({
   },
   resolve: {
     alias: {
-      '@radix-ui/number': path.resolve(__dirname, 'node_modules/@radix-ui/number/dist/index.mjs'),
+      /* '@radix-ui/number': path.resolve(__dirname, 'node_modules/@radix-ui/number/dist/index.mjs'), */
+      '@': path.resolve(__dirname, './src'),
     },
   },
 }))

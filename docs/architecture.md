@@ -5,7 +5,7 @@ This document outlines the architecture of the Meo Mai Moi application, includin
 ## Tech and architecture
 
 - **Backend**: Laravel 12 + PHP 8.4
-- **Frontend**: React + TypeScript + Vite + Tailwind + shadcn/ui
+- **Frontend**: React 19 + TypeScript + Vite 7 + Tailwind CSS v4 + shadcn/ui
 - **Database**: PostgreSQL only (all envs). SQLite is not supported.
 - **Build/Run**: Dockerized with multi-stage builds; frontend assets copied into backend image.
 - **API First**: OpenAPI documented with contract testing.
@@ -58,6 +58,26 @@ src/
 - **React Hook Form** for form state
 - **AuthProvider** for authentication context
 - Local state with `useState` for UI state
+
+**UI Component Library**:
+
+- **shadcn/ui**: All 24 components installed and configured for Tailwind v4
+  - Copy-paste component architecture (components owned by the project)
+  - Built on Radix UI primitives for accessibility
+  - Fully customizable with Tailwind CSS
+- **Tailwind CSS v4**: Modern utility-first CSS framework
+  - Uses `@import 'tailwindcss'` syntax (v4 style)
+  - Dual color system: HSL (backward compat) + OKLCH (modern)
+  - `@theme inline` directive for CSS variable exposure
+  - Custom dark mode with `@custom-variant dark (&:is(.dark *))`
+- **lucide-react**: Icon library for consistent iconography
+
+**Custom Form Components**:
+
+- `FormField`: Generic form field wrapper with validation display
+- `CheckboxField`: Checkbox with label and error handling
+- `FileInput`: File upload field with validation
+- All follow shadcn/ui design patterns with proper accessibility
 
 ### Security Patterns
 

@@ -22,7 +22,7 @@ function AccountTabContent() {
   const navigate = useNavigate()
 
   const navigateToLogin = useCallback(() => {
-    navigate('/login')
+    void navigate('/login')
   }, [navigate])
 
   const handleLogout = useCallback(() => {

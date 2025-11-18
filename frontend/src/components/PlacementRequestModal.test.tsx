@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { PlacementRequestModal } from './PlacementRequestModal'
 import { useCreatePlacementRequest } from '@/hooks/useCreatePlacementRequest'
 import type { PlacementRequestPayload } from '@/hooks/useCreatePlacementRequest'
@@ -12,6 +12,21 @@ import { format } from 'date-fns'
 
 // Mock the hook
 vi.mock('@/hooks/useCreatePlacementRequest')
+const MOCK_CALENDAR_DATE = new Date('2025-01-15T00:00:00.000Z')
+
+vi.mock('@/components/ui/calendar', () => ({
+  Calendar: ({ onSelect }: { onSelect?: (date?: Date) => void }) => (
+    <button
+      type="button"
+      data-testid="mock-calendar-day"
+      onClick={() => {
+        onSelect?.(MOCK_CALENDAR_DATE)
+      }}
+    >
+      Select mock date
+    </button>
+  ),
+}))
 
 describe('PlacementRequestModal', () => {
   const mockMutate = vi.fn()
@@ -77,12 +92,9 @@ describe('PlacementRequestModal', () => {
     // Select start date
     const startDateButton = screen.getByText('Pick a date')
     await user.click(startDateButton)
-    const today = new Date()
-    const todayDate = today.getDate().toString()
-    const startDateCell = await screen.findByText(todayDate, {
-      selector: 'button.rdp-day:not(.rdp-day_outside)',
-    })
-    await user.click(startDateCell)
+    const today = MOCK_CALENDAR_DATE
+    const mockDayButton = await screen.findByTestId('mock-calendar-day')
+    fireEvent.click(mockDayButton)
 
     // End date should not be visible
     expect(screen.queryByLabelText('End Date')).not.toBeInTheDocument()

@@ -79,6 +79,11 @@ All notable changes to this project are documented here, following the [Keep a C
   - Offline fallback page
   - Runtime caching strategies (NetworkFirst for API, CacheFirst for images)
   - Maskable icons for adaptive display across devices
+  - **Reliable update mechanism** with automatic cache cleanup (`cleanupOutdatedCaches`)
+  - **Update notifications**: Toast prompts users when new version is available
+  - **Periodic update checks**: Hourly checks for long-running sessions
+  - **iOS/Safari support**: Focus-based update checks for better mobile experience
+  - **Proper cache headers**: nginx configured to never cache service worker files
   - Dynamic theme-color switching based on user preference (light/dark mode)
   - Root-scoped service worker for full app coverage
   - Automatic manifest swapping when theme changes

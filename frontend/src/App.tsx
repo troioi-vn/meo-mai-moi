@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
 import MainNav from '@/components/MainNav'
+import { usePwaUpdate } from '@/hooks/use-pwa-update'
 
 import MainPage from './pages/MainPage'
 import LoginPage from './pages/LoginPage'
@@ -157,6 +158,10 @@ export function AppRoutes() {
 
 export default function App() {
   const location = useLocation()
+
+  // PWA update notification handler
+  usePwaUpdate()
+
   // Show a toast if redirected with verified=1 (run after mount so Toaster is present)
   useEffect(() => {
     if (typeof window === 'undefined') return

@@ -85,9 +85,9 @@ const PetProfilePage: React.FC = () => {
   const hasPlacementRequests = placementRequests.length > 0
 
   return (
-    <div className="min-h-screen bg-muted/50">
+    <div className="min-h-screen">
       {/* Custom Header */}
-      <header className="sticky top-0 z-40 bg-muted/50 backdrop-blur-sm px-4 py-3">
+      <header className="sticky top-0 z-40 backdrop-blur-sm px-4 py-3">
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <Button
             variant="ghost"
@@ -128,9 +128,7 @@ const PetProfilePage: React.FC = () => {
           </section>
 
           {/* Weight History */}
-          {supportsWeight && (
-            <WeightHistoryCard petId={pet.id} canEdit={canEdit} />
-          )}
+          {supportsWeight && <WeightHistoryCard petId={pet.id} canEdit={canEdit} />}
 
           {/* Upcoming Vaccinations */}
           {supportsVaccinations && (
@@ -153,11 +151,7 @@ const PetProfilePage: React.FC = () => {
               )}
 
               {canEdit && (
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => setIsModalOpen(true)}
-                >
+                <Button variant="outline" className="w-full" onClick={() => setIsModalOpen(true)}>
                   + Placement Requests
                 </Button>
               )}
@@ -184,11 +178,11 @@ export default PetProfilePage
 // Helper component to fetch vaccination status for a pet
 function PetVaccinationStatusBadge({ petId }: { petId: number }) {
   const { items, loading } = useVaccinations(petId)
-  
+
   if (loading) {
     return null
   }
-  
+
   const status = calculateVaccinationStatus(items)
   return <VaccinationStatusBadge status={status} />
 }

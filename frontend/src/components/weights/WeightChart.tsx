@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { CartesianGrid, Line, LineChart, XAxis, YAxis, LabelList } from 'recharts'
 import {
-  ChartConfig,
+  type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
@@ -62,12 +62,7 @@ export function WeightChart({ weights }: WeightChartProps) {
         }}
       >
         <CartesianGrid vertical={false} strokeDasharray="3 3" />
-        <XAxis
-          dataKey="month"
-          tickLine={false}
-          axisLine={false}
-          tickMargin={8}
-        />
+        <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
         <YAxis hide domain={['dataMin - 0.5', 'dataMax + 0.5']} />
         <ChartTooltip
           cursor={false}
@@ -103,4 +98,3 @@ export function WeightChart({ weights }: WeightChartProps) {
     </ChartContainer>
   )
 }
-

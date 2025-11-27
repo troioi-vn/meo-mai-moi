@@ -86,25 +86,25 @@ const PetProfilePage: React.FC = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Custom Header */}
-      <header className="sticky top-0 z-40 backdrop-blur-sm px-4 py-3">
+      {/* Navigation Buttons */}
+      <div className="px-4 py-3">
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <Button
             variant="ghost"
-            size="sm"
+            size="default"
             onClick={handleBack}
-            className="flex items-center gap-1 -ml-2"
+            className="flex items-center gap-1 -ml-2 text-base"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-6 w-6" />
             Back
           </Button>
           {canEdit && (
-            <Button variant="ghost" size="sm" onClick={handleEdit}>
+            <Button variant="ghost" size="default" onClick={handleEdit} className="text-base">
               Edit
             </Button>
           )}
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
       <main className="px-4 pb-8">

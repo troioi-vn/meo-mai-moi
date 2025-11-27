@@ -62,7 +62,7 @@ beforeEach(() => {
 
 describe('App Routing', () => {
   describe('Pet profile routes', () => {
-    it('hides main navigation on pet profile page', async () => {
+    it('shows main navigation and back button on pet profile page', async () => {
       renderWithRouter(<App />, { route: '/pets/1' })
 
       // Wait for pet data to load
@@ -70,10 +70,10 @@ describe('App Routing', () => {
         expect(await screen.findByText('Fluffy')).toBeInTheDocument()
       })
 
-      // MainNav should NOT be present (hidden for pet profile pages)
-      expect(screen.queryByRole('link', { name: 'Meo!' })).not.toBeInTheDocument()
+      // MainNav should be present
+      expect(screen.getByRole('link', { name: 'Meo!' })).toBeInTheDocument()
 
-      // Custom Back button should be present instead
+      // Back button should also be present
       expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument()
     })
 

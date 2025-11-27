@@ -39,22 +39,6 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   return user ? <>{children}</> : <Navigate to="/login" replace />
 }
 
-function CatToPetRedirect() {
-  const { id } = useParams<{ id: string }>()
-  if (!id) {
-    return <Navigate to="/pets" replace />
-  }
-  return <Navigate to={`/pets/${id}`} replace />
-}
-
-function CatToPetEditRedirect() {
-  const { id } = useParams<{ id: string }>()
-  if (!id) {
-    return <Navigate to="/pets" replace />
-  }
-  return <Navigate to={`/pets/${id}/edit`} replace />
-}
-
 export function AppRoutes() {
   return (
     <Routes>
@@ -71,12 +55,6 @@ export function AppRoutes() {
           </PrivateRoute>
         }
       />
-
-      {/* Legacy cat route redirects */}
-      <Route path="/cats/:id" element={<CatToPetRedirect />} />
-      <Route path="/cats/:id/edit" element={<CatToPetEditRedirect />} />
-      <Route path="/account/cats" element={<Navigate to="/account/pets" replace />} />
-      <Route path="/account/cats/create" element={<Navigate to="/account/pets/create" replace />} />
 
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />

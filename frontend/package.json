@@ -74,7 +74,7 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.6.0",
-    "@vitest/coverage-v8": "^4.0.10",
+    "@vitest/coverage-v8": "4.0.10",
     "autoprefixer": "^10.4.21",
     "dependency-cruiser": "^17.0.2",
     "dotenv": "^17.2.3",

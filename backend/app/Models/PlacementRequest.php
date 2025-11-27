@@ -9,6 +9,24 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @OA\Schema(
+ *     schema="PlacementRequest",
+ *     type="object",
+ *     title="PlacementRequest",
+ *     required={"id", "pet_id", "user_id", "request_type", "status"},
+ *
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="pet_id", type="integer", example=2),
+ *     @OA\Property(property="user_id", type="integer", example=5),
+ *     @OA\Property(property="request_type", type="string", example="adoption"),
+ *     @OA\Property(property="status", type="string", example="pending"),
+ *     @OA\Property(property="notes", type="string", example="Looking for a loving home."),
+ *     @OA\Property(property="expires_at", type="string", format="date", example="2025-08-01"),
+ *     @OA\Property(property="start_date", type="string", format="date", example="2025-08-05"),
+ *     @OA\Property(property="end_date", type="string", format="date", example="2025-08-20")
+ * )
+ */
 class PlacementRequest extends Model
 {
     // ...existing code...

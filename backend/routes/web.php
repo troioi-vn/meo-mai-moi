@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\EmailVerificationController;
+use App\Http\Controllers\EmailVerification\VerifyEmailWebController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -116,7 +116,7 @@ Route::get('/user/confirm-password', function (Request $request) {
 });
 
 // Override email verification web route to allow verification without prior login
-Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verifyWeb'])
+Route::get('/email/verify/{id}/{hash}', VerifyEmailWebController::class)
     ->middleware(['signed', 'throttle:6,1'])
     ->name('verification.verify');
 

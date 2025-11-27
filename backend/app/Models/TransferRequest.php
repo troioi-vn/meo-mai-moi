@@ -8,6 +8,26 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @OA\Schema(
+ *     schema="TransferRequest",
+ *     title="TransferRequest",
+ *     description="Transfer Request model",
+ *
+ *     @OA\Property(property="id", type="integer", format="int64", description="Transfer Request ID"),
+ *     @OA\Property(property="pet_id", type="integer", format="int64", description="ID of the pet being transferred"),
+ *     @OA\Property(property="initiator_user_id", type="integer", format="int64", description="ID of the user initiating the transfer"),
+ *     @OA\Property(property="recipient_user_id", type="integer", format="int64", description="ID of the user intended to receive the pet"),
+ *     @OA\Property(property="status", type="string", enum={"pending", "accepted", "rejected"}, description="Current status of the transfer request"),
+ *     @OA\Property(property="requested_relationship_type", type="string", enum={"fostering", "permanent_foster"}, description="Type of custodianship requested"),
+ *     @OA\Property(property="fostering_type", type="string", enum={"free", "paid"}, nullable=true, description="Type of fostering (free or paid)"),
+ *     @OA\Property(property="price", type="number", format="float", nullable=true, description="Price for paid fostering"),
+ *     @OA\Property(property="accepted_at", type="string", format="date-time", nullable=true, description="Timestamp when the request was accepted"),
+ *     @OA\Property(property="rejected_at", type="string", format="date-time", nullable=true, description="Timestamp when the request was rejected"),
+ *     @OA\Property(property="created_at", type="string", format="date-time", description="Timestamp of transfer request creation"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time", description="Timestamp of last transfer request update")
+ * )
+ */
 class TransferRequest extends Model
 {
     use HasFactory, SoftDeletes;

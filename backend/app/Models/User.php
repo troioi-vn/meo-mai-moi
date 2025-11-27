@@ -17,6 +17,20 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Permission\Traits\HasRoles;
 
+/**
+ * @OA\Schema(
+ *     schema="User",
+ *     title="User",
+ *     description="User model",
+ *
+ *     @OA\Property(property="id", type="integer", format="int64", description="User ID"),
+ *     @OA\Property(property="name", type="string", description="User's name"),
+ *     @OA\Property(property="email", type="string", format="email", description="User's email address"),
+ *     @OA\Property(property="avatar_url", type="string", nullable=true, description="URL to the user's avatar image"),
+ *     @OA\Property(property="created_at", type="string", format="date-time", description="Timestamp of user creation"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time", description="Timestamp of last user update")
+ * )
+ */
 class User extends Authenticatable implements FilamentUser, HasMedia, MustVerifyEmail
 {
     use HasApiTokens;

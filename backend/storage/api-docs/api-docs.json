@@ -13,6 +13,240 @@
         "version": "1.0.0"
     },
     "paths": {
+        "/api/check-email": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Check if email exists",
+                "description": "Check if an email address is registered in the system.",
+                "operationId": "beca7ff6a42c6b045b8f2770ddc393d2",
+                "requestBody": {
+                    "description": "Email to check",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Email check result",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "exists": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/forgot-password": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Request password reset",
+                "description": "Send password reset link to user's email address.",
+                "operationId": "ba55a60f99c28ed886193c33470ec1e4",
+                "requestBody": {
+                    "description": "Email address to send reset link to",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password reset link sent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Password reset link sent to your email address."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation Error"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": {
+                                                "email": [
+                                                    "The selected email is invalid."
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many password reset attempts"
+                    }
+                }
+            }
+        },
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Log in a user",
+                "description": "Logs in a user and returns an authentication token.",
+                "operationId": "2e9c317eea06b322356cd346eb0e29fb",
+                "requestBody": {
+                    "description": "User credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Logged in successfully"
+                                        },
+                                        "access_token": {
+                                            "type": "string",
+                                            "example": "1|aBcDeFgHiJkLmNoPqRsTuVwXyZ"
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        },
+                                        "email_verified": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error (e.g., invalid credentials)"
+                    }
+                }
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Log out the current user",
+                "description": "Logs out the current authenticated user by revoking their token.",
+                "operationId": "563bedfa982695d45a459257c9a8a36c",
+                "responses": {
+                    "200": {
+                        "description": "Logged out successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Logged out successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/register": {
             "post": {
                 "tags": [
@@ -20,7 +254,7 @@
                 ],
                 "summary": "Register a new user",
                 "description": "Registers a new user and returns an authentication token. May require invitation code when invite-only mode is active.",
-                "operationId": "8a56853624e025573120a09a4c75d468",
+                "operationId": "7d8c5938c0f8c4cee857ce8e9a12d028",
                 "requestBody": {
                     "description": "User registration details",
                     "required": true,
@@ -111,240 +345,6 @@
                 }
             }
         },
-        "/api/check-email": {
-            "post": {
-                "tags": [
-                    "Authentication"
-                ],
-                "summary": "Check if email exists",
-                "description": "Check if an email address is registered in the system.",
-                "operationId": "ff64cff5e21b2a67efda6e48a362b304",
-                "requestBody": {
-                    "description": "Email to check",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "email"
-                                ],
-                                "properties": {
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "user@example.com"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Email check result",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "exists": {
-                                            "type": "boolean",
-                                            "example": true
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error"
-                    }
-                }
-            }
-        },
-        "/api/login": {
-            "post": {
-                "tags": [
-                    "Authentication"
-                ],
-                "summary": "Log in a user",
-                "description": "Logs in a user and returns an authentication token.",
-                "operationId": "a3b306d14572d1f4bd6c064b3233e7b8",
-                "requestBody": {
-                    "description": "User credentials",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "email",
-                                    "password"
-                                ],
-                                "properties": {
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "user@example.com"
-                                    },
-                                    "password": {
-                                        "type": "string",
-                                        "format": "password",
-                                        "example": "password123"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Login successful",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Logged in successfully"
-                                        },
-                                        "access_token": {
-                                            "type": "string",
-                                            "example": "1|aBcDeFgHiJkLmNoPqRsTuVwXyZ"
-                                        },
-                                        "token_type": {
-                                            "type": "string",
-                                            "example": "Bearer"
-                                        },
-                                        "email_verified": {
-                                            "type": "boolean",
-                                            "example": true
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error (e.g., invalid credentials)"
-                    }
-                }
-            }
-        },
-        "/api/logout": {
-            "post": {
-                "tags": [
-                    "Authentication"
-                ],
-                "summary": "Log out the current user",
-                "description": "Logs out the current authenticated user by revoking their token.",
-                "operationId": "fe8f3429cd6979b3b4517e186505f9f9",
-                "responses": {
-                    "200": {
-                        "description": "Logged out successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Logged out successfully"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/forgot-password": {
-            "post": {
-                "tags": [
-                    "Authentication"
-                ],
-                "summary": "Request password reset",
-                "description": "Send password reset link to user's email address.",
-                "operationId": "7af8817e88ba5874543ff38f188248f1",
-                "requestBody": {
-                    "description": "Email address to send reset link to",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "email"
-                                ],
-                                "properties": {
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "user@example.com"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Password reset link sent successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Password reset link sent to your email address."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Validation Error"
-                                        },
-                                        "errors": {
-                                            "type": "object",
-                                            "example": {
-                                                "email": [
-                                                    "The selected email is invalid."
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "429": {
-                        "description": "Too many password reset attempts"
-                    }
-                }
-            }
-        },
         "/api/reset-password": {
             "post": {
                 "tags": [
@@ -352,7 +352,7 @@
                 ],
                 "summary": "Reset password with token",
                 "description": "Reset user's password using the token from reset email.",
-                "operationId": "00c0aad74830221c6da409a1355ec736",
+                "operationId": "185016942b467d40a0d27b68d3eb3b0f",
                 "requestBody": {
                     "description": "Password reset details",
                     "required": true,
@@ -480,6 +480,82 @@
                 ]
             }
         },
+        "/api/email/verification-status": {
+            "get": {
+                "tags": [
+                    "Email Verification"
+                ],
+                "summary": "Check email verification status",
+                "description": "Check if the authenticated user's email is verified.",
+                "operationId": "84d1b98a92487f09ab3ba695bc2fbe23",
+                "responses": {
+                    "200": {
+                        "description": "Verification status",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "verified": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "example": "user@example.com"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/email/verification-notification": {
+            "post": {
+                "tags": [
+                    "Email Verification"
+                ],
+                "summary": "Resend verification email",
+                "description": "Resend email verification notification to the authenticated user.",
+                "operationId": "00b0fd721498ca0ec877093c34170ee0",
+                "responses": {
+                    "200": {
+                        "description": "Verification email sent",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Verification email sent"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Email already verified"
+                    },
+                    "429": {
+                        "description": "Too many requests"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/email/verify/{id}/{hash}": {
             "get": {
                 "tags": [
@@ -487,7 +563,7 @@
                 ],
                 "summary": "Verify email address",
                 "description": "Verify user's email address using signed URL from verification email.",
-                "operationId": "4b03a3529aa306eb0ba78fa210f77bcd",
+                "operationId": "007cd3d5c6498af4e175e24329cae026",
                 "parameters": [
                     {
                         "name": "id",
@@ -552,125 +628,13 @@
                 }
             }
         },
-        "/api/email/verification-notification": {
-            "post": {
-                "tags": [
-                    "Email Verification"
-                ],
-                "summary": "Resend verification email",
-                "description": "Resend email verification notification to the authenticated user.",
-                "operationId": "76303230a8fd8f1fe4c46107efa9fbfd",
-                "responses": {
-                    "200": {
-                        "description": "Verification email sent",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Verification email sent"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Email already verified"
-                    },
-                    "429": {
-                        "description": "Too many requests"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/email/verification-status": {
-            "get": {
-                "tags": [
-                    "Email Verification"
-                ],
-                "summary": "Check email verification status",
-                "description": "Check if the authenticated user's email is verified.",
-                "operationId": "77eaaf01f21e7000b76013450996b1c4",
-                "responses": {
-                    "200": {
-                        "description": "Verification status",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "verified": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "email": {
-                                            "type": "string",
-                                            "example": "user@example.com"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/foster-assignments/{assignment}/complete": {
-            "post": {
-                "tags": [
-                    "Foster Assignments"
-                ],
-                "summary": "Complete a foster assignment",
-                "operationId": "aa41b19851b2762aa06f305e9c5137ec",
-                "parameters": [
-                    {
-                        "name": "assignment",
-                        "in": "path",
-                        "description": "ID of the foster assignment",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Foster assignment completed successfully"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Foster assignment not found"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
         "/api/foster-assignments/{assignment}/cancel": {
             "post": {
                 "tags": [
                     "Foster Assignments"
                 ],
                 "summary": "Cancel a foster assignment (early return)",
-                "operationId": "2b4133df581a299d49f1ec62a0881d0b",
+                "operationId": "879ed6322a25731c94525fb2cf184dd7",
                 "parameters": [
                     {
                         "name": "assignment",
@@ -716,13 +680,49 @@
                 ]
             }
         },
+        "/api/foster-assignments/{assignment}/complete": {
+            "post": {
+                "tags": [
+                    "Foster Assignments"
+                ],
+                "summary": "Complete a foster assignment",
+                "operationId": "a9e2cb77cb2663b67254a9616afca585",
+                "parameters": [
+                    {
+                        "name": "assignment",
+                        "in": "path",
+                        "description": "ID of the foster assignment",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Foster assignment completed successfully"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Foster assignment not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/foster-assignments/{assignment}/extend": {
             "post": {
                 "tags": [
                     "Foster Assignments"
                 ],
                 "summary": "Extend the end date of a foster assignment",
-                "operationId": "74d84adb29fc95437d4e31c7752274fa",
+                "operationId": "b5b68607605943101653b982d1915c63",
                 "parameters": [
                     {
                         "name": "assignment",
@@ -772,69 +772,13 @@
                 ]
             }
         },
-        "/helper-profiles": {
-            "get": {
-                "tags": [
-                    "Helper Profiles"
-                ],
-                "summary": "List helper profiles",
-                "operationId": "d3126a7bac52faff5bf4a44e6e3f8183",
-                "responses": {
-                    "200": {
-                        "description": "A list of helper profiles",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/HelperProfile"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "Helper Profiles"
-                ],
-                "summary": "Create a helper profile",
-                "operationId": "7f4a55bc955cbc6f808ae3499b4a7f2f",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/HelperProfile"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Helper profile created successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/HelperProfile"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error"
-                    }
-                }
-            }
-        },
         "/helper-profiles/{id}": {
             "get": {
                 "tags": [
                     "Helper Profiles"
                 ],
                 "summary": "Get a specific helper profile",
-                "operationId": "4de739226049376462c5cc13bfa066b5",
+                "operationId": "3fff3617c2915451e3e7c237bd331b06",
                 "parameters": [
                     {
                         "name": "id",
@@ -867,7 +811,7 @@
                     "Helper Profiles"
                 ],
                 "summary": "Update a helper profile",
-                "operationId": "4e09b23f1183359eb94f13fef454a27f",
+                "operationId": "809e264b7c665d8c88d5c485af9f3fe5",
                 "parameters": [
                     {
                         "name": "id",
@@ -914,7 +858,7 @@
                 ],
                 "summary": "Update a helper profile (DEPRECATED - use PUT instead)",
                 "description": "This endpoint is deprecated. Use PUT /helper-profiles/{id} instead. Kept for HTML form compatibility.",
-                "operationId": "2fd10c7ac3ae99a91dcfb8e9a5b36278",
+                "operationId": "f932788c0c3517bbe5ec4ba59c9cc574",
                 "parameters": [
                     {
                         "name": "id",
@@ -961,7 +905,7 @@
                     "Helper Profiles"
                 ],
                 "summary": "Delete a helper profile",
-                "operationId": "aa97ac4502128ab022046cea27713388",
+                "operationId": "945ba6975829c4c07247fd546121f396",
                 "parameters": [
                     {
                         "name": "id",
@@ -983,6 +927,125 @@
                 }
             }
         },
+        "/helper-profiles": {
+            "get": {
+                "tags": [
+                    "Helper Profiles"
+                ],
+                "summary": "List helper profiles",
+                "operationId": "e6bc0e5ce5d2ec41dea19f9573776808",
+                "responses": {
+                    "200": {
+                        "description": "A list of helper profiles",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/HelperProfile"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Helper Profiles"
+                ],
+                "summary": "Create a helper profile",
+                "operationId": "35055373cb0de7597f92662500e7a91e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/HelperProfile"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Helper profile created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HelperProfile"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/invitations/{id}": {
+            "delete": {
+                "tags": [
+                    "Invitations"
+                ],
+                "summary": "Revoke an invitation",
+                "description": "Revoke a pending invitation sent by the authenticated user.",
+                "operationId": "17338f8273b20707e13bc88f52328ae2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Invitation ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invitation revoked successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invitation revoked successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Invitation not found or cannot be revoked",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invitation not found or cannot be revoked"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/invitations": {
             "get": {
                 "tags": [
@@ -990,7 +1053,7 @@
                 ],
                 "summary": "Get user's sent invitations",
                 "description": "Retrieve all invitations sent by the authenticated user.",
-                "operationId": "a94cc0df468131403d2bcfdad701de8c",
+                "operationId": "d1dde73b3cddcef30899471105d9bc67",
                 "responses": {
                     "200": {
                         "description": "List of sent invitations",
@@ -1053,7 +1116,7 @@
                 ],
                 "summary": "Generate a new invitation",
                 "description": "Create a new invitation code for the authenticated user.",
-                "operationId": "076fa6ff111fccd8fe52389923ca58d3",
+                "operationId": "2eb9c68ec032782479236af3a4018dd4",
                 "requestBody": {
                     "description": "Optional invitation parameters",
                     "required": false,
@@ -1144,218 +1207,13 @@
                 ]
             }
         },
-        "/api/invitations/{id}": {
-            "delete": {
-                "tags": [
-                    "Invitations"
-                ],
-                "summary": "Revoke an invitation",
-                "description": "Revoke a pending invitation sent by the authenticated user.",
-                "operationId": "4315edc2c3ca27c7c3f4312cd0d0c1c0",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "Invitation ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Invitation revoked successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Invitation revoked successfully"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Invitation not found or cannot be revoked",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Invitation not found or cannot be revoked"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/pets/{pet}/medical-notes": {
-            "get": {
-                "tags": [
-                    "Pets"
-                ],
-                "summary": "List medical notes for a pet",
-                "operationId": "27b7f997f94c313fd5c2e89357cff803",
-                "parameters": [
-                    {
-                        "name": "pet",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "List of medical notes",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "properties": {
-                                                "data": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "$ref": "#/components/schemas/MedicalNote"
-                                                    }
-                                                },
-                                                "links": {
-                                                    "type": "object"
-                                                },
-                                                "meta": {
-                                                    "type": "object"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "Pets"
-                ],
-                "summary": "Create a medical note",
-                "operationId": "ea121f48244010b3c76fcb99ae70f11c",
-                "parameters": [
-                    {
-                        "name": "pet",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "note",
-                                    "record_date"
-                                ],
-                                "properties": {
-                                    "note": {
-                                        "type": "string",
-                                        "example": "Rabies vaccination"
-                                    },
-                                    "record_date": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2024-06-01"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/MedicalNote"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "422": {
-                        "description": "Validation error"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
         "/api/pets/{pet}/medical-notes/{note}": {
             "get": {
                 "tags": [
                     "Pets"
                 ],
                 "summary": "Get a single medical note",
-                "operationId": "da54fc88f502bc061e3094508a576ffc",
+                "operationId": "46fba447ad150fb0c57c6bd116aaf079",
                 "parameters": [
                     {
                         "name": "pet",
@@ -1411,7 +1269,7 @@
                     "Pets"
                 ],
                 "summary": "Update a medical note",
-                "operationId": "efcfcc1116ef04207cbbb1a771659c20",
+                "operationId": "16e095bc8363ec81a620bef1d0b994cd",
                 "parameters": [
                     {
                         "name": "pet",
@@ -1489,7 +1347,7 @@
                     "Pets"
                 ],
                 "summary": "Delete a medical note",
-                "operationId": "281dc16899d2916a1065b1ce3b06485b",
+                "operationId": "04ef299e7ffecfae85a31bf9520b6a39",
                 "parameters": [
                     {
                         "name": "pet",
@@ -1533,6 +1391,148 @@
                     },
                     "404": {
                         "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pets/{pet}/medical-notes": {
+            "get": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "List medical notes for a pet",
+                "operationId": "649cc97b72fa3eeb37673cd29ad3edc1",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of medical notes",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/MedicalNote"
+                                                    }
+                                                },
+                                                "links": {
+                                                    "type": "object"
+                                                },
+                                                "meta": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Create a medical note",
+                "operationId": "9814042df935010ae02bdabf10d2a355",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "note",
+                                    "record_date"
+                                ],
+                                "properties": {
+                                    "note": {
+                                        "type": "string",
+                                        "example": "Rabies vaccination"
+                                    },
+                                    "record_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-06-01"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/MedicalNote"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Validation error"
                     }
                 },
                 "security": [
@@ -1789,7 +1789,7 @@
                     "Notifications"
                 ],
                 "summary": "List current user's notifications.",
-                "operationId": "911565ad9aff9ba7eded3f189509e578",
+                "operationId": "effef8b71e4c61c811a06f307f7c25f2",
                 "parameters": [
                     {
                         "name": "status",
@@ -1871,12 +1871,33 @@
                     "Notifications"
                 ],
                 "summary": "Mark all unread notifications as read for the current user.",
-                "operationId": "8fcf2128bd45e8aeb4646ab2a2466eb8",
+                "operationId": "3f3211d9dd55750f2e5727538e7afaf4",
                 "responses": {
                     "204": {
                         "description": "No Content"
                     }
                 },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/notifications/mark-as-read": {
+            "post": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Mark all notifications as read (DEPRECATED)",
+                "description": "This endpoint is deprecated. Use POST /api/notifications/mark-all-read instead.",
+                "operationId": "a754221448a2435540bf9dd9b7124f61",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "deprecated": true,
                 "security": [
                     {
                         "sanctum": []
@@ -1890,7 +1911,7 @@
                     "Notifications"
                 ],
                 "summary": "Mark a single notification as read.",
-                "operationId": "a2058b5b36c8c007b5e45bf303c41656",
+                "operationId": "f9d11599a5d2d390750a370058fd5a66",
                 "parameters": [
                     {
                         "name": "id",
@@ -1916,34 +1937,13 @@
                 ]
             }
         },
-        "/api/notifications/mark-as-read": {
-            "post": {
-                "tags": [
-                    "Notifications"
-                ],
-                "summary": "Mark all notifications as read (DEPRECATED)",
-                "description": "This endpoint is deprecated. Use POST /api/notifications/mark-all-read instead.",
-                "operationId": "c263561c19978a12d6dad8e73311f19f",
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    }
-                },
-                "deprecated": true,
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
         "/api/notification-preferences": {
             "get": {
                 "tags": [
                     "Notification Preferences"
                 ],
                 "summary": "Get current user's notification preferences.",
-                "operationId": "38278ac7b31a8ba6683e441913cb49a9",
+                "operationId": "9f75afade0e3c91bd6a23245b00f66d8",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1992,7 +1992,7 @@
                     "Notification Preferences"
                 ],
                 "summary": "Update user's notification preferences.",
-                "operationId": "5c8cafe16aab7c2d955eb413cdb90703",
+                "operationId": "74eb8648603cb761543e8b618039b92c",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -2105,100 +2105,13 @@
                 }
             }
         },
-        "/api/my-pets": {
-            "get": {
-                "tags": [
-                    "Pets"
-                ],
-                "summary": "Get the pets of the authenticated user",
-                "operationId": "c8c296148d8d5b9b1f9f0e3b07ea8aac",
-                "responses": {
-                    "200": {
-                        "description": "A list of the user's pets",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Pet"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/my-pets/sections": {
-            "get": {
-                "tags": [
-                    "Pets"
-                ],
-                "summary": "Get the pets of the authenticated user, organized by section",
-                "operationId": "cf79075695ca42e8434083f0b978cd0b",
-                "responses": {
-                    "200": {
-                        "description": "A list of the user's pets, organized by section",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "owned": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Pet"
-                                            }
-                                        },
-                                        "fostering_active": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Pet"
-                                            }
-                                        },
-                                        "fostering_past": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Pet"
-                                            }
-                                        },
-                                        "transferred_away": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Pet"
-                                            }
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
         "/api/pets/{id}": {
             "get": {
                 "tags": [
                     "Pets"
                 ],
                 "summary": "Get a specific pet",
-                "operationId": "25e25b195a59c4b940a33f9961ad6eed",
+                "operationId": "4af61a73b2ea7e29946d82a150190383",
                 "parameters": [
                     {
                         "name": "id",
@@ -2231,7 +2144,7 @@
                     "Pets"
                 ],
                 "summary": "Update a pet",
-                "operationId": "652be7eab297dff87f093d849bdecb12",
+                "operationId": "28c68b985641a5df5e79c5fe4764a8a7",
                 "parameters": [
                     {
                         "name": "id",
@@ -2282,7 +2195,7 @@
                     "Pets"
                 ],
                 "summary": "Delete a pet",
-                "operationId": "dab25348cae9362e48ade0e7cf34c465",
+                "operationId": "e227ff1bb31763c325c895d895230cc0",
                 "parameters": [
                     {
                         "name": "id",
@@ -2338,7 +2251,7 @@
                     "Pets"
                 ],
                 "summary": "Get a list of featured pets",
-                "operationId": "cf1822cacc93a47c15acd8187b32b6bf",
+                "operationId": "118372a69e5ea81a3611b806aef2c617",
                 "responses": {
                     "200": {
                         "description": "A list of featured pets",
@@ -2356,13 +2269,142 @@
                 }
             }
         },
+        "/api/my-pets": {
+            "get": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Get the pets of the authenticated user",
+                "operationId": "5d73cb0d5ab28a208c953aff2602f02d",
+                "responses": {
+                    "200": {
+                        "description": "A list of the user's pets",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Pet"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/my-pets/sections": {
+            "get": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Get the pets of the authenticated user, organized by section",
+                "operationId": "a86fa548fa07bf71e7f9ea2323f05a9f",
+                "responses": {
+                    "200": {
+                        "description": "A list of the user's pets, organized by section",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "owned": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Pet"
+                                            }
+                                        },
+                                        "fostering_active": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Pet"
+                                            }
+                                        },
+                                        "fostering_past": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Pet"
+                                            }
+                                        },
+                                        "transferred_away": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Pet"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pet-types": {
+            "get": {
+                "tags": [
+                    "Pet Types"
+                ],
+                "summary": "Get all available pet types",
+                "operationId": "9f4497a9694d555f2185797a3d7464c0",
+                "responses": {
+                    "200": {
+                        "description": "A list of available pet types",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Cat"
+                                            },
+                                            "slug": {
+                                                "type": "string",
+                                                "example": "cat"
+                                            },
+                                            "description": {
+                                                "type": "string",
+                                                "example": "Feline companions"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/pets/placement-requests": {
             "get": {
                 "tags": [
                     "Pets"
                 ],
                 "summary": "Get a list of pets with open placement requests",
-                "operationId": "7ebe58677d20d6de2e88c0fc76d4f4cb",
+                "operationId": "19a49bb7448bec27aa9acce8adc4ccaf",
                 "responses": {
                     "200": {
                         "description": "A list of pets with open placement requests",
@@ -2386,7 +2428,7 @@
                     "Pets"
                 ],
                 "summary": "Create a new pet",
-                "operationId": "9523721805529edb47b46332d56f2826",
+                "operationId": "e68b3027a76360a35fa5e9b5d25c97f5",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -2425,7 +2467,7 @@
                     "Pets"
                 ],
                 "summary": "Update a pet's status",
-                "operationId": "211de041a6c02bf55af47da618b045e6",
+                "operationId": "a4e6178a49f13a304fd84c8992cde57b",
                 "parameters": [
                     {
                         "name": "id",
@@ -2493,210 +2535,13 @@
                 ]
             }
         },
-        "/api/pet-types": {
-            "get": {
-                "tags": [
-                    "Pet Types"
-                ],
-                "summary": "Get all available pet types",
-                "operationId": "bc57c6e05db57e95673f1c9f403a4dfd",
-                "responses": {
-                    "200": {
-                        "description": "A list of available pet types",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "properties": {
-                                            "id": {
-                                                "type": "integer",
-                                                "example": 1
-                                            },
-                                            "name": {
-                                                "type": "string",
-                                                "example": "Cat"
-                                            },
-                                            "slug": {
-                                                "type": "string",
-                                                "example": "cat"
-                                            },
-                                            "description": {
-                                                "type": "string",
-                                                "example": "Feline companions"
-                                            }
-                                        },
-                                        "type": "object"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/pets/{pet}/microchips": {
-            "get": {
-                "tags": [
-                    "Pets"
-                ],
-                "summary": "List microchips for a pet",
-                "operationId": "78a323f03a0f51bd81566f6fe687e682",
-                "parameters": [
-                    {
-                        "name": "pet",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "List of microchips",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "properties": {
-                                                "data": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "$ref": "#/components/schemas/PetMicrochip"
-                                                    }
-                                                },
-                                                "links": {
-                                                    "type": "object"
-                                                },
-                                                "meta": {
-                                                    "type": "object"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Not found"
-                    },
-                    "422": {
-                        "description": "Feature not available for this pet type"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "Pets"
-                ],
-                "summary": "Add a new microchip record for a pet",
-                "operationId": "65bc4641ac2390e20e4d43601f425ff0",
-                "parameters": [
-                    {
-                        "name": "pet",
-                        "in": "path",
-                        "description": "ID of the pet to add a microchip record for",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "chip_number"
-                                ],
-                                "properties": {
-                                    "chip_number": {
-                                        "type": "string",
-                                        "example": "982000123456789"
-                                    },
-                                    "issuer": {
-                                        "type": "string",
-                                        "example": "HomeAgain"
-                                    },
-                                    "implanted_at": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2024-01-15"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Microchip record created successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/PetMicrochip"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Not found"
-                    },
-                    "422": {
-                        "description": "Validation error"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
         "/api/pets/{pet}/microchips/{microchip}": {
             "get": {
                 "tags": [
                     "Pets"
                 ],
                 "summary": "Get a specific microchip record",
-                "operationId": "b69050f6addedd9adfc2f4df6ff27bd7",
+                "operationId": "edbc93eb86c33dbfc9bec1f7b19dfe52",
                 "parameters": [
                     {
                         "name": "pet",
@@ -2752,7 +2597,7 @@
                     "Pets"
                 ],
                 "summary": "Update a microchip record",
-                "operationId": "e9995b8618f4248b6c8ac5f1b9d66422",
+                "operationId": "5b354b3ae76180ca24880fd696828c5e",
                 "parameters": [
                     {
                         "name": "pet",
@@ -2833,7 +2678,7 @@
                     "Pets"
                 ],
                 "summary": "Delete a microchip record",
-                "operationId": "303a7a956f2b6e298f7ffb54b74ad368",
+                "operationId": "60bb51110dce648f8eddc0ae1cc786a7",
                 "parameters": [
                     {
                         "name": "pet",
@@ -2886,13 +2731,219 @@
                 ]
             }
         },
+        "/api/pets/{pet}/microchips": {
+            "get": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "List microchips for a pet",
+                "operationId": "801abc34089c13ac785d3fa149eea119",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of microchips",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/PetMicrochip"
+                                                    }
+                                                },
+                                                "links": {
+                                                    "type": "object"
+                                                },
+                                                "meta": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    },
+                    "422": {
+                        "description": "Feature not available for this pet type"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Add a new microchip record for a pet",
+                "operationId": "09d5c1b3cae1169508bafca7c40215ea",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "description": "ID of the pet to add a microchip record for",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "chip_number"
+                                ],
+                                "properties": {
+                                    "chip_number": {
+                                        "type": "string",
+                                        "example": "982000123456789"
+                                    },
+                                    "issuer": {
+                                        "type": "string",
+                                        "example": "HomeAgain"
+                                    },
+                                    "implanted_at": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-01-15"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Microchip record created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/PetMicrochip"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pets/{pet}/photos/{photo}": {
+            "delete": {
+                "tags": [
+                    "Pet Photos"
+                ],
+                "summary": "Delete a specific photo for a pet",
+                "operationId": "6e48055cfe6a75406b5946c52a5baaa1",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "description": "ID of the pet",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "photo",
+                        "in": "path",
+                        "description": "ID of the photo or 'current' to delete the current photo",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Photo deleted successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Photo not found"
+                    },
+                    "422": {
+                        "description": "Feature not available for pet type"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/pets/{pet}/photos": {
             "post": {
                 "tags": [
                     "Pet Photos"
                 ],
                 "summary": "Upload a photo for a specific pet",
-                "operationId": "f52732431d914cd098e65ce1df005ce4",
+                "operationId": "3e96f3cb6f347478baefb1a197efb605",
                 "parameters": [
                     {
                         "name": "pet",
@@ -2954,48 +3005,110 @@
                 ]
             }
         },
-        "/api/pets/{pet}/photos/{photo}": {
-            "delete": {
+        "/api/placement-requests/{id}/confirm": {
+            "post": {
                 "tags": [
-                    "Pet Photos"
+                    "Placement Requests"
                 ],
-                "summary": "Delete a specific photo for a pet",
-                "operationId": "224f4b97993f2cb368d848293bdd9f6f",
+                "summary": "Confirm a placement request",
+                "operationId": "bc68b2020eeeb6c1e5cf00a2bc84c770",
                 "parameters": [
                     {
-                        "name": "pet",
+                        "name": "id",
                         "in": "path",
-                        "description": "ID of the pet",
+                        "description": "ID of the placement request to confirm",
                         "required": true,
                         "schema": {
                             "type": "integer"
                         }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Placement request confirmed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlacementRequest"
+                                }
+                            }
+                        }
                     },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
                     {
-                        "name": "photo",
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/placement-requests/{id}": {
+            "delete": {
+                "tags": [
+                    "Placement Requests"
+                ],
+                "summary": "Delete a placement request",
+                "operationId": "e5e77cf38dc81153a2b2b1f8360c1693",
+                "parameters": [
+                    {
+                        "name": "id",
                         "in": "path",
-                        "description": "ID of the photo or 'current' to delete the current photo",
+                        "description": "ID of the placement request to delete",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "type": "integer"
                         }
                     }
                 ],
                 "responses": {
                     "204": {
-                        "description": "Photo deleted successfully"
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
+                        "description": "Placement request deleted successfully"
                     },
                     "403": {
-                        "description": "Unauthorized"
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/placement-requests/{id}/reject": {
+            "post": {
+                "tags": [
+                    "Placement Requests"
+                ],
+                "summary": "Reject a placement request",
+                "operationId": "d21da0f90ea506aedba52c085852c61c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the placement request to reject",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Placement request rejected successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlacementRequest"
+                                }
+                            }
+                        }
                     },
-                    "404": {
-                        "description": "Photo not found"
-                    },
-                    "422": {
-                        "description": "Feature not available for pet type"
+                    "403": {
+                        "description": "Forbidden"
                     }
                 },
                 "security": [
@@ -3011,7 +3124,7 @@
                     "Placement Requests"
                 ],
                 "summary": "Create a new placement request",
-                "operationId": "c2c370842aa5236ba1f5a8be5258d7eb",
+                "operationId": "2e43c6138d472dfaf23cdc1b0397a35f",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -3096,119 +3209,6 @@
                 ]
             }
         },
-        "/api/placement-requests/{id}": {
-            "delete": {
-                "tags": [
-                    "Placement Requests"
-                ],
-                "summary": "Delete a placement request",
-                "operationId": "48a5ddd255bee3a024cbbbd2ecb4fb67",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID of the placement request to delete",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "Placement request deleted successfully"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/placement-requests/{id}/confirm": {
-            "post": {
-                "tags": [
-                    "Placement Requests"
-                ],
-                "summary": "Confirm a placement request",
-                "operationId": "048f37d4d621221e26f5f2b4cabd8789",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID of the placement request to confirm",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Placement request confirmed successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PlacementRequest"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/placement-requests/{id}/reject": {
-            "post": {
-                "tags": [
-                    "Placement Requests"
-                ],
-                "summary": "Reject a placement request",
-                "operationId": "e577058803dd1d49c92a17d52e54fdac",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID of the placement request to reject",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Placement request rejected successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PlacementRequest"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
         "/api/settings/public": {
             "get": {
                 "tags": [
@@ -3216,7 +3216,7 @@
                 ],
                 "summary": "Get public settings",
                 "description": "Retrieve public settings that can be exposed to frontend, such as invite-only mode status.",
-                "operationId": "34f46cc281a95cb55c20b680c650371f",
+                "operationId": "08c112d41b0e2650c69ebfb8f5d50b36",
                 "responses": {
                     "200": {
                         "description": "Public settings retrieved successfully",
@@ -3258,13 +3258,13 @@
                 }
             }
         },
-        "/api/transfer-requests/{id}/handover": {
-            "get": {
+        "/api/transfer-handovers/{id}/cancel": {
+            "post": {
                 "tags": [
                     "Transfer Handover"
                 ],
-                "summary": "Get the latest handover for a transfer request (owner or helper)",
-                "operationId": "1a3ccca1e85d3857d44c9fe07c502a2a",
+                "summary": "Cancel a handover (owner or helper)",
+                "operationId": "84470aff87a4dd7f5b519236d26a9d64",
                 "parameters": [
                     {
                         "name": "id",
@@ -3297,13 +3297,15 @@
                         "sanctum": []
                     }
                 ]
-            },
+            }
+        },
+        "/api/transfer-handovers/{id}/complete": {
             "post": {
                 "tags": [
                     "Transfer Handover"
                 ],
-                "summary": "Initiate a handover for an accepted transfer request (owner only)",
-                "operationId": "a4861323f4d6fa46914101db9bd49106",
+                "summary": "Complete handover and finalize transfer effects",
+                "operationId": "cff24b5a38d7a2fb56b4d1beb520d46f",
                 "parameters": [
                     {
                         "name": "id",
@@ -3314,29 +3316,9 @@
                         }
                     }
                 ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "scheduled_at": {
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "nullable": true
-                                    },
-                                    "location": {
-                                        "type": "string",
-                                        "nullable": true
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
                 "responses": {
-                    "201": {
-                        "description": "Created",
+                    "200": {
+                        "description": "OK",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3364,7 +3346,7 @@
                     "Transfer Handover"
                 ],
                 "summary": "Helper confirms pet condition at handover",
-                "operationId": "c2f37a0eea5623c1a48e7d7f568e1944",
+                "operationId": "267036f1bc1934b602197fd7f6522348",
                 "parameters": [
                     {
                         "name": "id",
@@ -3420,13 +3402,13 @@
                 ]
             }
         },
-        "/api/transfer-handovers/{id}/complete": {
-            "post": {
+        "/api/transfer-requests/{id}/handover": {
+            "get": {
                 "tags": [
                     "Transfer Handover"
                 ],
-                "summary": "Complete handover and finalize transfer effects",
-                "operationId": "dfcb2cbfdf0a3b822fc0524439df07ed",
+                "summary": "Get the latest handover for a transfer request (owner or helper)",
+                "operationId": "ee646bcecb27cabfc08ae9e87b017600",
                 "parameters": [
                     {
                         "name": "id",
@@ -3459,15 +3441,13 @@
                         "sanctum": []
                     }
                 ]
-            }
-        },
-        "/api/transfer-handovers/{id}/cancel": {
+            },
             "post": {
                 "tags": [
                     "Transfer Handover"
                 ],
-                "summary": "Cancel a handover (owner or helper)",
-                "operationId": "0841abcd7c1a3b9740e764a0198aaa4f",
+                "summary": "Initiate a handover for an accepted transfer request (owner only)",
+                "operationId": "7774c147dbcfbc6919a8afba5a7866d4",
                 "parameters": [
                     {
                         "name": "id",
@@ -3478,9 +3458,29 @@
                         }
                     }
                 ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "scheduled_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "nullable": true
+                                    },
+                                    "location": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3493,6 +3493,146 @@
                                 }
                             }
                         }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/transfer-requests/{id}/accept": {
+            "post": {
+                "tags": [
+                    "Transfer Requests"
+                ],
+                "summary": "Accept a transfer request for a pet",
+                "operationId": "6db3c5fc1798fe2abc38302ab7f55446",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the transfer request to accept",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transfer request accepted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/TransferRequest"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Transfer request not found"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden: You are not the recipient of this request or the request is not pending."
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/transfer-requests/{id}/responder-profile": {
+            "get": {
+                "tags": [
+                    "Transfer Requests"
+                ],
+                "summary": "Get the responder's helper profile for a given pet transfer request",
+                "operationId": "88e2e69ac48d9fc82211bd0130731ce5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the transfer request",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The responder's helper profile",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HelperProfile"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Helper profile not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/transfer-requests/{id}/reject": {
+            "post": {
+                "tags": [
+                    "Transfer Requests"
+                ],
+                "summary": "Reject a transfer request for a pet",
+                "operationId": "ab2f855a1fd134e9adcf2e0fff4fbd46",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the transfer request to reject",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transfer request rejected successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TransferRequest"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Transfer request not found"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden: You are not the recipient of this request or the request is not pending."
                     }
                 },
                 "security": [
@@ -3508,7 +3648,7 @@
                     "Transfer Requests"
                 ],
                 "summary": "Initiate a transfer request for a pet (by a helper)",
-                "operationId": "e9fa0a38dc6eb14618f6dc40fb9b25c8",
+                "operationId": "7ee474c3692aced31f4bb5a5331368a4",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -3604,153 +3744,13 @@
                 ]
             }
         },
-        "/api/transfer-requests/{id}/accept": {
-            "post": {
-                "tags": [
-                    "Transfer Requests"
-                ],
-                "summary": "Accept a transfer request for a pet",
-                "operationId": "81b9877586172990705ab6c8a8bab8b5",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID of the transfer request to accept",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Transfer request accepted successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/TransferRequest"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Transfer request not found"
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "403": {
-                        "description": "Forbidden: You are not the recipient of this request or the request is not pending."
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/transfer-requests/{id}/reject": {
-            "post": {
-                "tags": [
-                    "Transfer Requests"
-                ],
-                "summary": "Reject a transfer request for a pet",
-                "operationId": "2c3e792b141a73744b9a5682ea82a97f",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID of the transfer request to reject",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Transfer request rejected successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/TransferRequest"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Transfer request not found"
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "403": {
-                        "description": "Forbidden: You are not the recipient of this request or the request is not pending."
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/transfer-requests/{id}/responder-profile": {
-            "get": {
-                "tags": [
-                    "Transfer Requests"
-                ],
-                "summary": "Get the responder's helper profile for a given pet transfer request",
-                "operationId": "ea3092fa72dccf484d9bad661294d69b",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID of the transfer request",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "The responder's helper profile",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/HelperProfile"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Helper profile not found"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
         "/api/users/me": {
             "get": {
                 "tags": [
                     "User Profile"
                 ],
                 "summary": "Get authenticated user's profile",
-                "operationId": "e56fce5bf4f1344be48cc8c542479090",
+                "operationId": "9a4f31b013890a829434fe068939dac0",
                 "responses": {
                     "200": {
                         "description": "Successful operation",
@@ -3782,7 +3782,7 @@
                     "User Profile"
                 ],
                 "summary": "Update authenticated user's profile",
-                "operationId": "833445586105733bdf11fd6839f9cd26",
+                "operationId": "0baf15ad1fa0865518329b01019ced02",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -3858,7 +3858,7 @@
                     "User Profile"
                 ],
                 "summary": "Delete authenticated user's account",
-                "operationId": "e27716e7d99219fb15707af676a94597",
+                "operationId": "c036d338ee53c36f3ab27354c01af5c2",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -3931,13 +3931,129 @@
                 ]
             }
         },
+        "/api/users/me/avatar": {
+            "post": {
+                "tags": [
+                    "User Profile"
+                ],
+                "summary": "Upload or update authenticated user's avatar",
+                "operationId": "ebfd3efbbab0414a4e2d0595a30458f7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "avatar": {
+                                        "description": "The avatar image file (max 2MB, jpeg, png, jpg, gif, svg)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Avatar uploaded successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Avatar uploaded successfully."
+                                        },
+                                        "avatar_url": {
+                                            "type": "string",
+                                            "example": "http://localhost:8000/storage/users/avatars/user_1_1678886400.png"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation Error"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": {
+                                                "avatar": [
+                                                    "The avatar must be an image."
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "User Profile"
+                ],
+                "summary": "Delete authenticated user's avatar",
+                "operationId": "e3e8bdd396169cfdd77ca25f889e386b",
+                "responses": {
+                    "200": {
+                        "description": "Avatar deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Avatar deleted successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "No avatar to delete"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/users/me/password": {
             "put": {
                 "tags": [
                     "User Profile"
                 ],
                 "summary": "Update authenticated user's password",
-                "operationId": "445a5c6a8f04633f4019c951c0af961a",
+                "operationId": "a0b9aeadaa322477911742c2671a039a",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -4022,280 +4138,13 @@
                 ]
             }
         },
-        "/api/users/me/avatar": {
-            "post": {
-                "tags": [
-                    "User Profile"
-                ],
-                "summary": "Upload or update authenticated user's avatar",
-                "operationId": "c1c511280801188df6fee8d34b191bd8",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "multipart/form-data": {
-                            "schema": {
-                                "properties": {
-                                    "avatar": {
-                                        "description": "The avatar image file (max 2MB, jpeg, png, jpg, gif, svg)",
-                                        "type": "string",
-                                        "format": "binary"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Avatar uploaded successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Avatar uploaded successfully."
-                                        },
-                                        "avatar_url": {
-                                            "type": "string",
-                                            "example": "http://localhost:8000/storage/users/avatars/user_1_1678886400.png"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Validation Error"
-                                        },
-                                        "errors": {
-                                            "type": "object",
-                                            "example": {
-                                                "avatar": [
-                                                    "The avatar must be an image."
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "User Profile"
-                ],
-                "summary": "Delete authenticated user's avatar",
-                "operationId": "c6034d9f214e9ddd7637a066a6119e5f",
-                "responses": {
-                    "200": {
-                        "description": "Avatar deleted successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Avatar deleted successfully."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "404": {
-                        "description": "No avatar to delete"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/pets/{pet}/vaccinations": {
-            "get": {
-                "tags": [
-                    "Pets"
-                ],
-                "summary": "List vaccination records for a pet",
-                "operationId": "c882ee81ccb8467f98bdfdb34b73a91f",
-                "parameters": [
-                    {
-                        "name": "pet",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "List of vaccination records",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "properties": {
-                                                "data": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "$ref": "#/components/schemas/VaccinationRecord"
-                                                    }
-                                                },
-                                                "links": {
-                                                    "type": "object"
-                                                },
-                                                "meta": {
-                                                    "type": "object"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "Pets"
-                ],
-                "summary": "Create a vaccination record",
-                "operationId": "e46907c67459c8d1bb8d3d804d01f63d",
-                "parameters": [
-                    {
-                        "name": "pet",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "vaccine_name",
-                                    "administered_at"
-                                ],
-                                "properties": {
-                                    "vaccine_name": {
-                                        "type": "string",
-                                        "example": "Rabies"
-                                    },
-                                    "administered_at": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2024-06-01"
-                                    },
-                                    "due_at": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2025-06-01"
-                                    },
-                                    "notes": {
-                                        "type": "string",
-                                        "example": "Booster due next year"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/VaccinationRecord"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "422": {
-                        "description": "Validation error"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
         "/api/pets/{pet}/vaccinations/{record}": {
             "get": {
                 "tags": [
                     "Pets"
                 ],
                 "summary": "Get a single vaccination record",
-                "operationId": "d829b531922efbd05d8134ddc600f54d",
+                "operationId": "fdf472b9299f3492317dd4570c5961cf",
                 "parameters": [
                     {
                         "name": "pet",
@@ -4351,7 +4200,7 @@
                     "Pets"
                 ],
                 "summary": "Update a vaccination record",
-                "operationId": "1a0c4f5886641c12b6dcb48415f36baf",
+                "operationId": "434146fbd2c0534abfd373323d0f4361",
                 "parameters": [
                     {
                         "name": "pet",
@@ -4436,7 +4285,7 @@
                     "Pets"
                 ],
                 "summary": "Delete a vaccination record",
-                "operationId": "1ae9bcad7bb2cc99608eefa565b24381",
+                "operationId": "0681a50c0a51c76832f25b3b500fa839",
                 "parameters": [
                     {
                         "name": "pet",
@@ -4489,6 +4338,157 @@
                 ]
             }
         },
+        "/api/pets/{pet}/vaccinations": {
+            "get": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "List vaccination records for a pet",
+                "operationId": "c6f635d1df0ab4be96614132f5c53156",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of vaccination records",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/VaccinationRecord"
+                                                    }
+                                                },
+                                                "links": {
+                                                    "type": "object"
+                                                },
+                                                "meta": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Create a vaccination record",
+                "operationId": "60f680ddfc90c63034d115fca5501950",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "vaccine_name",
+                                    "administered_at"
+                                ],
+                                "properties": {
+                                    "vaccine_name": {
+                                        "type": "string",
+                                        "example": "Rabies"
+                                    },
+                                    "administered_at": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-06-01"
+                                    },
+                                    "due_at": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-06-01"
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Booster due next year"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/VaccinationRecord"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/version": {
             "get": {
                 "tags": [
@@ -4523,7 +4523,7 @@
                 ],
                 "summary": "Join the waitlist",
                 "description": "Add an email address to the waitlist when invite-only mode is active.",
-                "operationId": "590d26f53e3cc3fa3aab06e7e10b5eec",
+                "operationId": "5173e24f42fdee6d656b0df8772b00df",
                 "requestBody": {
                     "description": "Email address to add to waitlist",
                     "required": true,
@@ -4615,6 +4615,365 @@
                         }
                     }
                 }
+            }
+        },
+        "/api/pets/{pet}/weights/{weight}": {
+            "get": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Get a single weight record",
+                "operationId": "6799c02fef29189c7375d601b94dcd22",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "weight",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/WeightHistory"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Update a weight record",
+                "operationId": "fcdb59692768ea71b2df381255db6d74",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "weight",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "weight_kg": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "record_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/WeightHistory"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Delete a weight record",
+                "operationId": "b324ed0ba282d0375dab6d46c7386375",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "weight",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pets/{pet}/weights": {
+            "get": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "List weight records for a pet",
+                "operationId": "048dbdfd57859c46b1d6d9cfb57c312f",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of weight records",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/WeightHistory"
+                                                    }
+                                                },
+                                                "links": {
+                                                    "type": "object"
+                                                },
+                                                "meta": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Add a new weight record for a pet",
+                "operationId": "0af4d386100ed5f62aa8da271319a258",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "description": "ID of the pet to add a weight record for",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "weight_kg",
+                                    "record_date"
+                                ],
+                                "properties": {
+                                    "weight_kg": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 5.2
+                                    },
+                                    "record_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-01-15"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Weight record created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/WeightHistory"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation Error"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": {
+                                                "weight_kg": [
+                                                    "The weight kg field is required."
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden: You are not authorized to add weight records for this pet."
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             }
         }
     },
@@ -4737,342 +5096,6 @@
                     }
                 ]
             },
-            "Pet": {
-                "title": "Pet",
-                "required": [
-                    "id",
-                    "name",
-                    "breed",
-                    "location",
-                    "description",
-                    "status",
-                    "user_id",
-                    "pet_type_id"
-                ],
-                "type": "object",
-                "allOf": [
-                    {
-                        "$ref": "#/components/schemas/Pagination"
-                    },
-                    {
-                        "properties": {
-                            "id": {
-                                "type": "integer",
-                                "example": 1
-                            },
-                            "name": {
-                                "type": "string",
-                                "example": "Whiskers"
-                            },
-                            "breed": {
-                                "type": "string",
-                                "example": "Siamese"
-                            },
-                            "birthday": {
-                                "description": "Exact birthday (present only when birthday_precision=day). Deprecated: prefer component fields.",
-                                "type": "string",
-                                "format": "date",
-                                "example": "2020-01-01",
-                                "nullable": true,
-                                "deprecated": true
-                            },
-                            "birthday_year": {
-                                "description": "Birth year when known (year/month/day precision).",
-                                "type": "integer",
-                                "example": 2020,
-                                "nullable": true
-                            },
-                            "birthday_month": {
-                                "description": "Birth month when known (month/day precision).",
-                                "type": "integer",
-                                "example": 5,
-                                "nullable": true
-                            },
-                            "birthday_day": {
-                                "description": "Birth day when known (day precision).",
-                                "type": "integer",
-                                "example": 12,
-                                "nullable": true
-                            },
-                            "birthday_precision": {
-                                "description": "Precision level for birthday components.",
-                                "type": "string",
-                                "enum": [
-                                    "day",
-                                    "month",
-                                    "year",
-                                    "unknown"
-                                ],
-                                "example": "month"
-                            },
-                            "location": {
-                                "type": "string",
-                                "example": "Hanoi"
-                            },
-                            "description": {
-                                "type": "string",
-                                "example": "A friendly pet."
-                            },
-                            "status": {
-                                "type": "string",
-                                "example": "active"
-                            },
-                            "user_id": {
-                                "type": "integer",
-                                "example": 5
-                            },
-                            "pet_type_id": {
-                                "type": "integer",
-                                "example": 1
-                            }
-                        },
-                        "type": "object"
-                    }
-                ]
-            },
-            "PetMicrochip": {
-                "title": "PetMicrochip",
-                "description": "Pet Microchip model",
-                "type": "object",
-                "allOf": [
-                    {
-                        "$ref": "#/components/schemas/Pagination"
-                    },
-                    {
-                        "properties": {
-                            "id": {
-                                "description": "Microchip ID",
-                                "type": "integer",
-                                "format": "int64"
-                            },
-                            "pet_id": {
-                                "description": "ID of the associated pet",
-                                "type": "integer",
-                                "format": "int64"
-                            },
-                            "chip_number": {
-                                "description": "Unique microchip number",
-                                "type": "string"
-                            },
-                            "issuer": {
-                                "description": "Microchip issuer/manufacturer",
-                                "type": "string",
-                                "nullable": true
-                            },
-                            "implanted_at": {
-                                "description": "Date the microchip was implanted",
-                                "type": "string",
-                                "format": "date",
-                                "nullable": true
-                            },
-                            "created_at": {
-                                "description": "Timestamp of microchip record creation",
-                                "type": "string",
-                                "format": "date-time"
-                            },
-                            "updated_at": {
-                                "description": "Timestamp of last microchip record update",
-                                "type": "string",
-                                "format": "date-time"
-                            }
-                        },
-                        "type": "object"
-                    }
-                ]
-            },
-            "PlacementRequest": {
-                "title": "PlacementRequest",
-                "required": [
-                    "id",
-                    "pet_id",
-                    "user_id",
-                    "request_type",
-                    "status"
-                ],
-                "type": "object",
-                "allOf": [
-                    {
-                        "$ref": "#/components/schemas/Pagination"
-                    },
-                    {
-                        "properties": {
-                            "id": {
-                                "type": "integer",
-                                "example": 1
-                            },
-                            "pet_id": {
-                                "type": "integer",
-                                "example": 2
-                            },
-                            "user_id": {
-                                "type": "integer",
-                                "example": 5
-                            },
-                            "request_type": {
-                                "type": "string",
-                                "example": "adoption"
-                            },
-                            "status": {
-                                "type": "string",
-                                "example": "pending"
-                            },
-                            "notes": {
-                                "type": "string",
-                                "example": "Looking for a loving home."
-                            },
-                            "expires_at": {
-                                "type": "string",
-                                "format": "date",
-                                "example": "2025-08-01"
-                            },
-                            "start_date": {
-                                "type": "string",
-                                "format": "date",
-                                "example": "2025-08-05"
-                            },
-                            "end_date": {
-                                "type": "string",
-                                "format": "date",
-                                "example": "2025-08-20"
-                            }
-                        },
-                        "type": "object"
-                    }
-                ]
-            },
-            "TransferRequest": {
-                "title": "TransferRequest",
-                "description": "Transfer Request model",
-                "type": "object",
-                "allOf": [
-                    {
-                        "$ref": "#/components/schemas/Pagination"
-                    },
-                    {
-                        "properties": {
-                            "id": {
-                                "description": "Transfer Request ID",
-                                "type": "integer",
-                                "format": "int64"
-                            },
-                            "pet_id": {
-                                "description": "ID of the pet being transferred",
-                                "type": "integer",
-                                "format": "int64"
-                            },
-                            "initiator_user_id": {
-                                "description": "ID of the user initiating the transfer",
-                                "type": "integer",
-                                "format": "int64"
-                            },
-                            "recipient_user_id": {
-                                "description": "ID of the user intended to receive the cat",
-                                "type": "integer",
-                                "format": "int64"
-                            },
-                            "status": {
-                                "description": "Current status of the transfer request",
-                                "type": "string",
-                                "enum": [
-                                    "pending",
-                                    "accepted",
-                                    "rejected"
-                                ]
-                            },
-                            "requested_relationship_type": {
-                                "description": "Type of custodianship requested",
-                                "type": "string",
-                                "enum": [
-                                    "fostering",
-                                    "permanent_foster"
-                                ]
-                            },
-                            "fostering_type": {
-                                "description": "Type of fostering (free or paid)",
-                                "type": "string",
-                                "enum": [
-                                    "free",
-                                    "paid"
-                                ],
-                                "nullable": true
-                            },
-                            "price": {
-                                "description": "Price for paid fostering",
-                                "type": "number",
-                                "format": "float",
-                                "nullable": true
-                            },
-                            "accepted_at": {
-                                "description": "Timestamp when the request was accepted",
-                                "type": "string",
-                                "format": "date-time",
-                                "nullable": true
-                            },
-                            "rejected_at": {
-                                "description": "Timestamp when the request was rejected",
-                                "type": "string",
-                                "format": "date-time",
-                                "nullable": true
-                            },
-                            "created_at": {
-                                "description": "Timestamp of transfer request creation",
-                                "type": "string",
-                                "format": "date-time"
-                            },
-                            "updated_at": {
-                                "description": "Timestamp of last transfer request update",
-                                "type": "string",
-                                "format": "date-time"
-                            }
-                        },
-                        "type": "object"
-                    }
-                ]
-            },
-            "User": {
-                "title": "User",
-                "description": "User model",
-                "type": "object",
-                "allOf": [
-                    {
-                        "$ref": "#/components/schemas/Pagination"
-                    },
-                    {
-                        "properties": {
-                            "id": {
-                                "description": "User ID",
-                                "type": "integer",
-                                "format": "int64"
-                            },
-                            "name": {
-                                "description": "User's name",
-                                "type": "string"
-                            },
-                            "email": {
-                                "description": "User's email address",
-                                "type": "string",
-                                "format": "email"
-                            },
-                            "avatar_url": {
-                                "description": "URL to the user's avatar image",
-                                "type": "string",
-                                "nullable": true
-                            },
-                            "created_at": {
-                                "description": "Timestamp of user creation",
-                                "type": "string",
-                                "format": "date-time"
-                            },
-                            "updated_at": {
-                                "description": "Timestamp of last user update",
-                                "type": "string",
-                                "format": "date-time"
-                            }
-                        },
-                        "type": "object"
-                    }
-                ]
-            },
             "HelperProfile": {
                 "title": "HelperProfile",
                 "description": "Helper Profile model",
@@ -5113,6 +5136,185 @@
                         "description": "Timestamp of last helper profile update",
                         "type": "string",
                         "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Pet": {
+                "title": "Pet",
+                "required": [
+                    "id",
+                    "name",
+                    "breed",
+                    "location",
+                    "description",
+                    "status",
+                    "user_id",
+                    "pet_type_id"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Whiskers"
+                    },
+                    "breed": {
+                        "type": "string",
+                        "example": "Siamese"
+                    },
+                    "birthday": {
+                        "description": "Exact birthday (present only when birthday_precision=day). Deprecated: prefer component fields.",
+                        "type": "string",
+                        "format": "date",
+                        "example": "2020-01-01",
+                        "nullable": true,
+                        "deprecated": true
+                    },
+                    "birthday_year": {
+                        "description": "Birth year when known (year/month/day precision).",
+                        "type": "integer",
+                        "example": 2020,
+                        "nullable": true
+                    },
+                    "birthday_month": {
+                        "description": "Birth month when known (month/day precision).",
+                        "type": "integer",
+                        "example": 5,
+                        "nullable": true
+                    },
+                    "birthday_day": {
+                        "description": "Birth day when known (day precision).",
+                        "type": "integer",
+                        "example": 12,
+                        "nullable": true
+                    },
+                    "birthday_precision": {
+                        "description": "Precision level for birthday components.",
+                        "type": "string",
+                        "enum": [
+                            "day",
+                            "month",
+                            "year",
+                            "unknown"
+                        ],
+                        "example": "month"
+                    },
+                    "location": {
+                        "type": "string",
+                        "example": "Hanoi"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "A friendly pet."
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "active"
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "pet_type_id": {
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "PetMicrochip": {
+                "title": "PetMicrochip",
+                "description": "Pet Microchip model",
+                "properties": {
+                    "id": {
+                        "description": "Microchip ID",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "pet_id": {
+                        "description": "ID of the associated pet",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "chip_number": {
+                        "description": "Unique microchip number",
+                        "type": "string"
+                    },
+                    "issuer": {
+                        "description": "Microchip issuer/manufacturer",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "implanted_at": {
+                        "description": "Date the microchip was implanted",
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "Timestamp of microchip record creation",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "description": "Timestamp of last microchip record update",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "PlacementRequest": {
+                "title": "PlacementRequest",
+                "required": [
+                    "id",
+                    "pet_id",
+                    "user_id",
+                    "request_type",
+                    "status"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "pet_id": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "request_type": {
+                        "type": "string",
+                        "example": "adoption"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "pending"
+                    },
+                    "notes": {
+                        "type": "string",
+                        "example": "Looking for a loving home."
+                    },
+                    "expires_at": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-08-01"
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-08-05"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-08-20"
                     }
                 },
                 "type": "object"
@@ -5183,6 +5385,160 @@
                         "format": "date-time"
                     },
                     "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "TransferRequest": {
+                "title": "TransferRequest",
+                "description": "Transfer Request model",
+                "properties": {
+                    "id": {
+                        "description": "Transfer Request ID",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "pet_id": {
+                        "description": "ID of the pet being transferred",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "initiator_user_id": {
+                        "description": "ID of the user initiating the transfer",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "recipient_user_id": {
+                        "description": "ID of the user intended to receive the pet",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "status": {
+                        "description": "Current status of the transfer request",
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "accepted",
+                            "rejected"
+                        ]
+                    },
+                    "requested_relationship_type": {
+                        "description": "Type of custodianship requested",
+                        "type": "string",
+                        "enum": [
+                            "fostering",
+                            "permanent_foster"
+                        ]
+                    },
+                    "fostering_type": {
+                        "description": "Type of fostering (free or paid)",
+                        "type": "string",
+                        "enum": [
+                            "free",
+                            "paid"
+                        ],
+                        "nullable": true
+                    },
+                    "price": {
+                        "description": "Price for paid fostering",
+                        "type": "number",
+                        "format": "float",
+                        "nullable": true
+                    },
+                    "accepted_at": {
+                        "description": "Timestamp when the request was accepted",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "rejected_at": {
+                        "description": "Timestamp when the request was rejected",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "Timestamp of transfer request creation",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "description": "Timestamp of last transfer request update",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "User": {
+                "title": "User",
+                "description": "User model",
+                "properties": {
+                    "id": {
+                        "description": "User ID",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "description": "User's name",
+                        "type": "string"
+                    },
+                    "email": {
+                        "description": "User's email address",
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "avatar_url": {
+                        "description": "URL to the user's avatar image",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "Timestamp of user creation",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "description": "Timestamp of last user update",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "WeightHistory": {
+                "title": "WeightHistory",
+                "description": "Weight History model",
+                "properties": {
+                    "id": {
+                        "description": "Weight History ID",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "pet_id": {
+                        "description": "ID of the associated pet",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "weight_kg": {
+                        "description": "Recorded weight in kilograms",
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "record_date": {
+                        "description": "Date the weight was recorded",
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "created_at": {
+                        "description": "Timestamp of weight record creation",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "description": "Timestamp of last weight record update",
                         "type": "string",
                         "format": "date-time"
                     }

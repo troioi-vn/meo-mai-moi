@@ -1,0 +1,99 @@
+<?php
+
+namespace App\Http\Controllers\EmailVerification;
+
+use App\Http\Controllers\Controller;
+use App\Traits\ApiResponseTrait;
+use Illuminate\Http\Request;
+
+/**
+ * Resend the email verification notification.
+ *
+ * @OA\Post(
+ *     path="/api/email/verification-notification",
+ *     summary="Resend verification email",
+ *     description="Resend email verification notification to the authenticated user.",
+ *     tags={"Email Verification"},
+ *     security={{"sanctum": {}}},
+ *
+ *     @OA\Response(
+ *         response=200,
+ *         description="Verification email sent",
+ *
+ *         @OA\JsonContent(
+ *
+ *             @OA\Property(property="message", type="string", example="Verification email sent")
+ *         )
+ *     ),
+ *
+ *     @OA\Response(
+ *         response=400,
+ *         description="Email already verified"
+ *     ),
+ *     @OA\Response(
+ *         response=429,
+ *         description="Too many requests"
+ *     )
+ * )
+ */
+class ResendVerificationEmailController extends Controller
+{
+    use ApiResponseTrait;
+
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum');
+        $this->middleware('throttle:6,1');
+    }
+
+    public function __invoke(Request $request)
+    {
+        if ($request->user()->hasVerifiedEmail()) {
+            return response()->json([
+                'message' => 'Email address already verified.',
+            ], 400);
+        }
+
+        // Idempotency window: avoid duplicate resend spam inside 30 seconds
+        $window = (int) config('notifications.email_verification_idempotency_seconds', 30);
+        $recent = $request->user()->notifications()
+            ->where('type', 'email_verification')
+            ->where('created_at', '>=', now()->subSeconds($window))
+            ->exists();
+        if ($recent) {
+            return $this->sendSuccess([
+                'message' => 'A verification email was just sent. Please wait a moment before requesting another.',
+                'email_sent' => false,
+            ]);
+        }
+
+        try {
+            $request->user()->sendEmailVerificationNotification();
+
+            return $this->sendSuccess([
+                'message' => 'We have sent you verification email, please check your inbox and click the link to verify your email address. If you did not receive the email, check your spam folder.',
+                'email_sent' => true,
+            ]);
+        } catch (\Exception $e) {
+            // Log the error for admin visibility
+            \Log::warning('Email verification resend failed', [
+                'user_id' => $request->user()->id,
+                'email' => $request->user()->email,
+                'error' => $e->getMessage(),
+            ]);
+
+            // Check if it's a mail configuration issue
+            $emailService = app(\App\Services\EmailConfigurationService::class);
+            if (! $emailService->isEmailEnabled()) {
+                return response()->json([
+                    'message' => 'We are unable to send verification email at the moment. But hopefully admins are working on it and you will receive it soon.',
+                ], 503);
+            }
+
+            // Generic error for other issues
+            return response()->json([
+                'message' => 'We are unable to send verification email at the moment. But hopefully admins are working on it and you will receive it soon.',
+            ], 500);
+        }
+    }
+}

@@ -4,6 +4,18 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Changed
+
+- **🔥 HIGH IMPACT: Invokable Controller Architecture Migration**: Refactored all multi-method API controllers into dedicated single-action (invokable) classes
+  - Migrated 21 controllers to invokable pattern following Single Responsibility Principle
+  - Each controller action is now a dedicated class with `__invoke()` method
+  - Controllers organized into domain-specific directories (Pet/, Notification/, TransferRequest/, etc.)
+  - OpenAPI schema definitions moved from controllers to Model files for better organization
+  - Updated routes in `api.php` and `web.php` to use new invokable controllers
+  - All 659 tests passing with zero breaking changes
+  - **Deleted Controllers**: AdminController, AuthController, EmailVerificationController, FosterAssignmentController, FosterReturnHandoverController, HelperProfileController, InvitationController, MedicalNoteController, NotificationController, NotificationPreferenceController, PetController, PetMicrochipController, PetPhotoController, PlacementRequestController, SettingsController, TransferHandoverController, TransferRequestController, UserProfileController, VaccinationRecordController, WaitlistController, WeightHistoryController
+  - **New Controller Directories**: Admin/, Auth/, EmailVerification/, FosterAssignment/, FosterReturnHandover/, HelperProfile/, Invitation/, MedicalNote/, Notification/, NotificationPreference/, Pet/, PetMicrochip/, PetPhoto/, PlacementRequest/, PushSubscription/, Settings/, TransferHandover/, TransferRequest/, Unsubscribe/, UserProfile/, VaccinationRecord/, Waitlist/, WeightHistory/
+
 ### Added
 
 - **Tailwind CSS v4 Migration**: Successfully migrated to Tailwind CSS v4 with modern configuration

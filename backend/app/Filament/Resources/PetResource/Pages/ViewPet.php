@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\PetResource\Pages;
 
+use App\Enums\PetStatus;
 use App\Filament\Resources\PetResource;
 use Filament\Actions;
 use Filament\Infolists\Components\ImageEntry;
@@ -94,12 +95,11 @@ class ViewPet extends ViewRecord
                                 TextEntry::make('location'),
                                 TextEntry::make('status')
                                     ->badge()
-                                    ->color(fn (string $state): string => match ($state) {
-                                        'active' => 'success',
-                                        'lost' => 'warning',
-                                        'deceased' => 'primary',
-                                        'deleted' => 'danger',
-                                        default => 'gray',
+                                    ->color(fn (PetStatus $state): string => match ($state) {
+                                        PetStatus::ACTIVE => 'success',
+                                        PetStatus::LOST => 'warning',
+                                        PetStatus::DECEASED => 'primary',
+                                        PetStatus::DELETED => 'danger',
                                     }),
                                 TextEntry::make('user.name')
                                     ->label('Owner'),

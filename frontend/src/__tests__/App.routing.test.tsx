@@ -61,7 +61,33 @@ beforeEach(() => {
 })
 
 describe('App Routing', () => {
-  describe('Cat profile routes', () => {
+  describe('Pet profile routes', () => {
+    it('hides main navigation on pet profile page', async () => {
+      renderWithRouter(<App />, { route: '/pets/1' })
+
+      // Wait for pet data to load
+      await waitFor(async () => {
+        expect(await screen.findByText('Fluffy')).toBeInTheDocument()
+      })
+
+      // MainNav should NOT be present (hidden for pet profile pages)
+      expect(screen.queryByRole('link', { name: 'Meo!' })).not.toBeInTheDocument()
+
+      // Custom Back button should be present instead
+      expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument()
+    })
+
+    it('shows main navigation on other pages', async () => {
+      renderWithRouter(<App />, { route: '/' })
+
+      // MainNav should be present
+      await waitFor(() => {
+        expect(screen.getByRole('link', { name: 'Meo!' })).toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('Cat profile routes (legacy redirect)', () => {
     it('renders CatProfilePage for /cats/:id route', async () => {
       renderWithRouter(<App />, { route: '/cats/1' })
 

@@ -156,8 +156,16 @@ export function AppRoutes() {
   )
 }
 
+// Routes where the main nav should be hidden (use custom headers instead)
+const HIDE_NAV_PATTERNS = [/^\/pets\/\d+$/]
+
+function shouldHideNav(pathname: string): boolean {
+  return HIDE_NAV_PATTERNS.some((pattern) => pattern.test(pathname))
+}
+
 export default function App() {
   const location = useLocation()
+  const hideNav = shouldHideNav(location.pathname)
 
   // PWA update notification handler
   usePwaUpdate()
@@ -177,8 +185,8 @@ export default function App() {
 
   return (
     <>
-      <MainNav />
-      <main className="pt-16">
+      {!hideNav && <MainNav />}
+      <main className={hideNav ? '' : 'pt-16'}>
         <AppRoutes />
       </main>
       <Toaster />

@@ -6,7 +6,59 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Changed
 
+- **Pet Profile Page Redesign**: Complete UI overhaul matching mobile-first design
+  - Custom header with Back/Edit buttons (hides global nav on this page)
+  - Circular pet photo with green border and vaccination status badge
+  - Weight History card with interactive line chart (Recharts)
+  - Upcoming Vaccinations section with due date display
+  - Simplified Placement Requests button at bottom
+  - Theme-aware styling (supports light/dark modes)
+  - Removed complex owner-only sections (medical notes, microchips moved to edit page)
+
+### Added
+
+- **Weight Chart Visualization**: New `WeightChart` component using Recharts library
+  - Line chart with date labels on X-axis
+  - Last point label showing current weight
+  - Interactive tooltips on hover
+  - Handles string-to-number conversion from API
+
+- **Vaccination Status System**: Calculate and display vaccination status
+  - `VaccinationStatusBadge`: Shows Up to date (green), Due soon (yellow), Overdue (red), No records (gray)
+  - `calculateVaccinationStatus()`: Determines status from vaccination records
+  - `getUpcomingVaccinations()`: Filters and sorts vaccinations by due date
+
+- **Conditional Navigation Hiding**: MainNav hidden on `/pets/:id` routes
+  - Pattern-based route matching in App.tsx
+  - Custom header renders within PetProfilePage instead
+
+- **New Test Suites**: Comprehensive test coverage for new components
+  - `vaccinationStatus.test.ts`: Unit tests for status calculation utilities
+  - `VaccinationStatusBadge.test.tsx`: Component rendering tests
+  - `WeightChart.test.tsx`: Chart rendering and data handling tests
+  - `WeightHistoryCard.test.tsx`: Integration tests with MSW mocks
+  - `UpcomingVaccinationsSection.test.tsx`: Integration tests with callback testing
+  - Updated `App.routing.test.tsx`: Tests for hidden nav on pet profile
+
+### Removed
+
+- **Legacy Components**: Cleaned up replaced components
+  - Removed `WeightHistorySection.tsx` (replaced by `WeightHistoryCard`)
+  - Removed `VaccinationsSection.tsx` (replaced by `UpcomingVaccinationsSection`)
+
+### Fixed
+
+- **Weight Chart Crash**: Fixed `weight_kg.toFixed is not a function` error
+  - API returns weight_kg as string, now converted with `parseFloat()`
+
+- **Vaccination Badge Not Updating**: Badge now refreshes after adding vaccinations
+  - Added version key to force re-render on vaccination changes
+  - `onVaccinationChange` callback passed from parent to section
+
+---
+
 - **🔥 HIGH IMPACT: Invokable Controller Architecture Migration**: Refactored all multi-method API controllers into dedicated single-action (invokable) classes
+
   - Migrated 21 controllers to invokable pattern following Single Responsibility Principle
   - Each controller action is now a dedicated class with `__invoke()` method
   - Controllers organized into domain-specific directories (Pet/, Notification/, TransferRequest/, etc.)
@@ -36,6 +88,7 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Added
 
 - **Frontend: Vaccination Tracking UI Components**
+
   - `VaccinationStatusBadge`: Shows vaccination status (Up to date, Due soon, Overdue, No records)
   - `UpcomingVaccinationsSection`: Lists upcoming vaccinations with due dates, color-coded for priority
   - `vaccinationStatus.ts` utility: Calculates overall status and filters upcoming vaccinations
@@ -43,6 +96,7 @@ All notable changes to this project are documented here, following the [Keep a C
   - Color-coded status indicators: green (up to date), yellow (due soon), red (overdue), gray (unknown)
 
 - **Frontend: Weight Tracking Visualization**
+
   - `WeightHistoryCard`: Card component displaying weight history with add/edit capability
   - `WeightChart`: Line chart visualization using Recharts library
   - Chart features: Interactive tooltips, date labels, last point emphasis
@@ -50,21 +104,25 @@ All notable changes to this project are documented here, following the [Keep a C
   - Shows weight trends over time with formatted display
 
 - **Dependencies: Recharts Library**
+
   - Added `recharts@^2.15.4` for professional chart visualizations
   - Includes all D3 charting dependencies for advanced data visualization capabilities
   - `recharts-scale`, `decimal.js-light`, and D3 modules for precise calculations
 
 - **Frontend: Chart UI Components**
+
   - `chart.tsx`: Shadcn-ui compatible charting component with ChartContainer, ChartTooltip, ChartLegend
   - Supports theme-aware color configuration (light/dark modes)
   - Responsive container with proper styling and accessibility
 
 - **Frontend: Card Component Enhancements**
+
   - New `CardAction` slot for action buttons in card headers
   - Updated card styling with flex layout and gap system
   - Improved container query support for responsive design
 
 - **Backend: Weight History Relation Manager**
+
   - `WeightHistoriesRelationManager` in PetResource for managing weight records
   - Table view with weight, date, and creation timestamp columns
   - Form to add/edit weight entries with validation (0.01-500 kg range)
@@ -72,6 +130,7 @@ All notable changes to this project are documented here, following the [Keep a C
   - Empty state with helpful message and icon
 
 - **Tailwind CSS v4 Migration**: Successfully migrated to Tailwind CSS v4 with modern configuration
+
   - Migrated from Tailwind v3 to v4 using `@import 'tailwindcss'` syntax
   - Implemented proper `@plugin 'tailwindcss-animate'` for animations
   - Added `@custom-variant dark (&:is(.dark *))` for improved dark mode support
@@ -81,12 +140,14 @@ All notable changes to this project are documented here, following the [Keep a C
   - Active tabs now properly highlighted with correct styling
 
 - **Enhanced Custom Form Components**: Improved accessibility and UX for custom form field components
+
   - **CheckboxField**: Added `description` prop, proper error positioning, improved ARIA attributes
   - **FileInput**: Added `accept`, `description`, and `required` props with better accessibility
   - **FormField**: Added `email`, `number` types, `description`, and `disabled` props with enhanced ARIA support
   - All form components now follow shadcn-ui design patterns consistently
 
 - **Modern Loading States**: Replaced basic "Loading..." text with professional skeleton components
+
   - **LoadingState**: Now uses shadcn Skeleton component with 3 variants (`default`, `card`, `list`)
   - Provides modern, professional loading experience matching contemporary UX standards
   - Maintains backward compatibility with existing `message` prop
@@ -100,6 +161,7 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Changed
 
 - **PetProfilePage Refactoring**: Simplified page layout and improved mobile responsiveness
+
   - Removed complex owner-only UI sections for better maintainability
   - New sticky header with back button and edit option
   - Clean card-based layout for pet information and related features
@@ -107,23 +169,28 @@ All notable changes to this project are documented here, following the [Keep a C
   - Responsive design optimized for mobile and tablet displays
 
 - **PetResource (Backend)**: Added WeightHistoriesRelationManager to relation managers
+
   - Enables managing weight records directly from pet detail view in Filament
 
 - **Settings Hub**: Introduced `/settings` route with shadcn tabs for Account, Notifications, and Contact sections
+
   - Consolidated profile and session management cards inside the Account tab
   - Added modal-based password change dialog instead of a full-page form
   - Added placeholder Contact tab so future messaging/config work has a surfaced destination
 
 - **Tooltip Component**: Added Radix UI tooltip component (`@radix-ui/react-tooltip`) for better UX
+
   - Created reusable tooltip component at `frontend/src/components/ui/tooltip.tsx`
   - Used for "Show all" filter to explain it includes deceased pets
 
 - **Interactive Telegram Setup**: Added interactive prompts in `setup.sh` for configuring Telegram bot notifications
+
   - Prompts for `TELEGRAM_BOT_TOKEN` and `CHAT_ID` during first-time setup
   - Includes helpful instructions for creating a bot via @BotFather
   - Optional feature - can be skipped or configured later
 
 - **In-App Deployment Notifications**: Added ability to notify superadmin user in-app when deployments complete
+
   - New `NOTIFY_SUPERADMIN_ON_DEPLOY` environment variable (true/false)
   - Interactive setup prompt during first-time configuration
   - Created `app:notify-superadmin` artisan command for sending notifications
@@ -132,6 +199,7 @@ All notable changes to this project are documented here, following the [Keep a C
   - Integrates with existing notification center and push notification system
 
 - **Navigation & Routing Cleanup**: `/settings` now replaces the legacy `/account` and `/account/notifications` pages
+
   - User menu links directly to `/settings/account` for profile and account actions
   - My Pets, Invitations, and helper profile links remain separate under `/account/*` and `/helper*`
   - Deprecated profile and notifications pages removed to prevent dead links and duplicated UI
@@ -146,6 +214,7 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Fixed
 
 - **Avatar Display Issue**: Fixed avatar images not displaying correctly on first load (showing placeholder instead)
+
   - **Root Cause**: Migration from direct `avatar_url` column to Spatie MediaLibrary caused timing issues where MediaLibrary conversions were not immediately available and Radix UI Avatar component would timeout before image loaded
   - **Backend Fix**: Modified `User::getAvatarUrlAttribute()` to fall back to original image if conversion is not ready yet
   - **Frontend Fix**: Added image preloading in `UserMenu` and `UserAvatar` components to ensure images are cached before rendering

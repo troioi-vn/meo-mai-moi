@@ -651,7 +651,7 @@ setup_initialize() {
 
 print_help() {
     cat <<'EOF'
-Usage: ./utils/deploy.sh [--fresh] [--seed] [--no-cache] [--no-interactive] [--quiet] [--allow-empty-db] [--test-notify] [--skip-git-sync]
+Usage: ./utils/deploy.sh [--fresh] [--seed] [--no-cache] [--no-interactive] [--quiet] [--allow-empty-db] [--test-notify] [--skip-git-sync] [--clean-up]
 
 Flags:
     --fresh          Drop and recreate database, re-run all migrations; also clears volumes/containers.
@@ -662,6 +662,7 @@ Flags:
     --allow-empty-db Allow deployment to proceed even if database appears empty (non-fresh).
     --test-notify    Test both Telegram and in-app notifications and exit.
     --skip-git-sync  Skip git repository synchronization (useful for deploying local uncommitted changes).
+    --clean-up       Clean up old Docker images, containers, and build cache after successful deployment.
 
 Default behavior (no flags):
     - Sync with remote git repository (fetch and merge/reset)

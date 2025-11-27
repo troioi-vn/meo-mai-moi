@@ -87,6 +87,7 @@ QUIET="false"
 ALLOW_EMPTY_DB="false"
 TEST_NOTIFY="false"
 SKIP_GIT_SYNC="false"
+CLEAN_UP="false"
 
 for arg in "$@"; do
     case "$arg" in
@@ -114,6 +115,9 @@ for arg in "$@"; do
             ;;
         --skip-git-sync)
             SKIP_GIT_SYNC="true"
+            ;;
+        --clean-up)
+            CLEAN_UP="true"
             ;;
         -h|--help)
             print_help
@@ -212,12 +216,53 @@ fi
 
 deploy_notify_register_traps
 
+# --- Disk Space Check ---
+DISK_SPACE_WARNING=""
+check_disk_space() {
+    local threshold="${DEPLOY_DISK_THRESHOLD:-10}"
+    local mount_point="/"
+    
+    # Get disk usage percentage (used space)
+    local usage_percent
+    usage_percent=$(df "$mount_point" | awk 'NR==2 {gsub(/%/,""); print $5}')
+    
+    if [ -z "$usage_percent" ]; then
+        note "⚠️  Could not determine disk usage"
+        log_warn "Disk space check failed - could not determine usage"
+        return 0
+    fi
+    
+    local free_percent=$((100 - usage_percent))
+    local total_size available_size
+    total_size=$(df -h "$mount_point" | awk 'NR==2 {print $2}')
+    available_size=$(df -h "$mount_point" | awk 'NR==2 {print $4}')
+    
+    if [ "$free_percent" -lt "$threshold" ]; then
+        DISK_SPACE_WARNING="⚠️ LOW DISK SPACE: ${free_percent}% free (${available_size} of ${total_size})"
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "$DISK_SPACE_WARNING"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+        log_warn "Low disk space detected" "free_percent=${free_percent} available=${available_size} total=${total_size}"
+        
+        # Export for notification inclusion
+        export DISK_SPACE_WARNING
+    else
+        note "ℹ️  Disk space: ${free_percent}% free (${available_size} of ${total_size})"
+        log_info "Disk space check passed" "free_percent=${free_percent} available=${available_size}"
+    fi
+}
+
+check_disk_space
+
 # Export deployment flags for notification messages
 export DEPLOY_FLAG_FRESH="$FRESH"
 export DEPLOY_FLAG_NO_CACHE="$NO_CACHE"
 export DEPLOY_FLAG_SEED="$SEED"
 export DEPLOY_FLAG_NO_INTERACTIVE="$NO_INTERACTIVE"
 export DEPLOY_FLAG_SKIP_GIT_SYNC="$SKIP_GIT_SYNC"
+export DEPLOY_FLAG_CLEAN_UP="$CLEAN_UP"
 
 deploy_notify_send_start
 
@@ -391,10 +436,6 @@ sync_repository_with_remote() {
                     SKIP_GIT_SYNC="true"
                     DEPLOY_FLAG_SKIP_GIT_SYNC="$SKIP_GIT_SYNC"
                     export DEPLOY_FLAG_SKIP_GIT_SYNC
-                    if [ "$NO_CACHE" = "false" ]; then
-                        note "ℹ️  Enabling --no-cache automatically (recommended when skipping git sync)"
-                        NO_CACHE="true"
-                    fi
                     return
                 else
                     echo "✗ Cannot continue with diverged branches" >&2
@@ -414,11 +455,6 @@ sync_repository_with_remote() {
 if [ "$SKIP_GIT_SYNC" = "true" ]; then
     note "⚠️  Skipping git repository sync (--skip-git-sync flag set)"
     log_warn "Git sync skipped by user flag"
-    # When skipping git sync (local changes), force rebuild to pick up file changes
-    if [ "$NO_CACHE" = "false" ]; then
-        note "ℹ️  Enabling --no-cache automatically (recommended with --skip-git-sync)"
-        NO_CACHE="true"
-    fi
 else
     sync_repository_with_remote "$APP_ENV_CURRENT"
 fi
@@ -479,10 +515,61 @@ fi
 
 if [ "$FRESH" = "false" ] && [ "$EMPTY_DB_DETECTED" = "true" ] && [ "$ALLOW_EMPTY_DB" = "false" ] && [ "$SEED" = "false" ]; then
     echo ""
-    echo "✗ Empty database detected before deployment."
-    echo "  Use --seed to populate essential data, or --allow-empty-db to proceed anyway."
-    echo "  To quickly recreate the admin: docker compose exec backend php artisan db:seed --class=UserSeeder --force"
-    exit 1
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "⚠️  Empty database detected before deployment."
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "Options:"
+    echo "  1. Seed the database (recommended for fresh setups)"
+    echo "  2. Proceed without seeding (not recommended - app may not function correctly)"
+    echo "  3. Cancel deployment"
+    echo ""
+    echo "Tip: You can also use --seed flag to auto-seed, or --allow-empty-db to skip this prompt."
+    echo ""
+    
+    if [ "$NO_INTERACTIVE" = "true" ]; then
+        echo "✗ Non-interactive mode: Cannot proceed with empty database."
+        echo "  Use --seed to populate essential data, or --allow-empty-db to proceed anyway."
+        log_error "Empty database detected in non-interactive mode without --seed or --allow-empty-db"
+        exit 1
+    fi
+    
+    while true; do
+        read -r -p "Choose an option (1/2/3): " empty_db_choice
+        case "$empty_db_choice" in
+            1)
+                note "ℹ️  Seeding database..."
+                log_info "User chose to seed empty database"
+                SEED="true"
+                DEPLOY_FLAG_SEED="$SEED"
+                export DEPLOY_FLAG_SEED
+                break
+                ;;
+            2)
+                echo ""
+                echo "⚠️  Proceeding without seeding is NOT RECOMMENDED."
+                echo "    The application may not function correctly without initial data."
+                read -r -p "Are you sure you want to continue without seeding? (yes/no): " confirm_empty
+                if [ "$confirm_empty" = "yes" ]; then
+                    note "⚠️  Proceeding without seeding (user confirmed)"
+                    log_warn "User confirmed proceeding with empty database without seeding"
+                    ALLOW_EMPTY_DB="true"
+                    break
+                else
+                    echo "Returning to options menu..."
+                    echo ""
+                fi
+                ;;
+            3)
+                echo "❌ Deployment cancelled by user."
+                log_info "Deployment cancelled by user due to empty database"
+                exit 0
+                ;;
+            *)
+                echo "Invalid option. Please enter 1, 2, or 3."
+                ;;
+        esac
+    done
 fi
 
 if [ "$SEED" = "false" ] && [ "$DB_SNAPSHOT_ADMIN" = "missing" ] && [ -n "$ADMIN_EMAIL_TO_WATCH" ] && [ "$ADMIN_EMAIL_TO_WATCH" != "ignore" ]; then
@@ -642,6 +729,79 @@ deploy_post_finalize
 db_snapshot "after-migrate"
 
 ## (Removed) post-deployment DB summary for simplicity
+
+# --- Docker Cleanup (if requested) ---
+deploy_cleanup_docker() {
+    note "🧹 Cleaning up old Docker images and containers..."
+    log_info "Starting Docker cleanup"
+    
+    local cleaned_images=0
+    local cleaned_containers=0
+    local freed_space="0B"
+    
+    # Remove stopped containers (except current project ones)
+    local stopped_containers
+    stopped_containers=$(docker ps -aq --filter "status=exited" 2>/dev/null || true)
+    if [ -n "$stopped_containers" ]; then
+        local count
+        count=$(echo "$stopped_containers" | wc -l)
+        if docker container prune -f >/dev/null 2>&1; then
+            cleaned_containers=$count
+            note "✓ Removed $cleaned_containers stopped containers"
+            log_info "Removed stopped containers" "count=$cleaned_containers"
+        fi
+    fi
+    
+    # Remove dangling images (untagged)
+    local dangling_images
+    dangling_images=$(docker images -q --filter "dangling=true" 2>/dev/null || true)
+    if [ -n "$dangling_images" ]; then
+        local img_count
+        img_count=$(echo "$dangling_images" | wc -l)
+        if docker image prune -f >/dev/null 2>&1; then
+            cleaned_images=$img_count
+            note "✓ Removed $cleaned_images dangling images"
+            log_info "Removed dangling images" "count=$cleaned_images"
+        fi
+    fi
+    
+    # Remove unused images not associated with any container (more aggressive)
+    # This is optional and can free significant space
+    local unused_count
+    unused_count=$(docker images --filter "dangling=false" --format '{{.ID}}' 2>/dev/null | wc -l || echo "0")
+    if [ "$unused_count" -gt 10 ]; then
+        note "ℹ️  Found $unused_count images. Removing unused ones..."
+        local before_size after_size
+        before_size=$(docker system df --format '{{.Size}}' 2>/dev/null | head -1 || echo "unknown")
+        
+        # Prune images not used by existing containers (keeps recent ones)
+        if docker image prune -a --filter "until=24h" -f >/dev/null 2>&1; then
+            after_size=$(docker system df --format '{{.Size}}' 2>/dev/null | head -1 || echo "unknown")
+            note "✓ Pruned old unused images (was: $before_size, now: $after_size)"
+            log_info "Pruned old unused images" "before=$before_size after=$after_size"
+        fi
+    fi
+    
+    # Clean build cache
+    if docker builder prune -f --filter "until=168h" >/dev/null 2>&1; then
+        note "✓ Cleaned build cache (older than 7 days)"
+        log_info "Cleaned Docker build cache"
+    fi
+    
+    # Report final disk usage
+    local docker_usage
+    docker_usage=$(docker system df 2>/dev/null || echo "Could not determine Docker disk usage")
+    note "📊 Docker disk usage after cleanup:"
+    while IFS= read -r line; do
+        echo "   $line"
+    done <<< "$docker_usage"
+    log_info "Docker cleanup completed"
+}
+
+if [ "$CLEAN_UP" = "true" ]; then
+    echo ""
+    deploy_cleanup_docker
+fi
 
 echo ""
 note "✓ Deployment complete!"

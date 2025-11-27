@@ -150,12 +150,21 @@ deploy_notify_send_start() {
     if [ "${DEPLOY_FLAG_SKIP_GIT_SYNC:-false}" = "true" ]; then
         flags+=("--skip-git-sync")
     fi
+    if [ "${DEPLOY_FLAG_CLEAN_UP:-false}" = "true" ]; then
+        flags+=("--clean-up")
+    fi
     
     if [ ${#flags[@]} -gt 0 ]; then
         flags_msg=" with flags: ${flags[*]}"
     fi
     
-    deploy_notify_send "🚀 Deployment started at ${DEPLOY_NOTIFY_STARTED_AT}${flags_msg}."
+    # Include disk space warning if present
+    local disk_warning=""
+    if [ -n "${DISK_SPACE_WARNING:-}" ]; then
+        disk_warning="\n\n${DISK_SPACE_WARNING}"
+    fi
+    
+    deploy_notify_send "🚀 Deployment started at ${DEPLOY_NOTIFY_STARTED_AT}${flags_msg}.${disk_warning}"
 }
 
 deploy_notify_send_success() {

@@ -16,7 +16,60 @@ All notable changes to this project are documented here, following the [Keep a C
   - **Deleted Controllers**: AdminController, AuthController, EmailVerificationController, FosterAssignmentController, FosterReturnHandoverController, HelperProfileController, InvitationController, MedicalNoteController, NotificationController, NotificationPreferenceController, PetController, PetMicrochipController, PetPhotoController, PlacementRequestController, SettingsController, TransferHandoverController, TransferRequestController, UserProfileController, VaccinationRecordController, WaitlistController, WeightHistoryController
   - **New Controller Directories**: Admin/, Auth/, EmailVerification/, FosterAssignment/, FosterReturnHandover/, HelperProfile/, Invitation/, MedicalNote/, Notification/, NotificationPreference/, Pet/, PetMicrochip/, PetPhoto/, PlacementRequest/, PushSubscription/, Settings/, TransferHandover/, TransferRequest/, Unsubscribe/, UserProfile/, VaccinationRecord/, Waitlist/, WeightHistory/
 
+- **Deployment Scripts**: Enhanced CI/CD pipeline with three major improvements:
+  - **Disk Space Monitoring**: Added automatic disk space check at deployment start with warning threshold (10% free space by default, configurable via `DEPLOY_DISK_THRESHOLD`)
+    - Shows prominent warning box if disk space is low
+    - Includes disk usage details in Telegram deployment notifications
+  - **Interactive Empty Database Handler**: Replaced hard exit with user-friendly interactive menu when empty database is detected before deployment
+    - Option 1: Seed the database (recommended for fresh setups)
+    - Option 2: Proceed without seeding (not recommended - requires explicit confirmation)
+    - Option 3: Cancel deployment gracefully
+    - Non-interactive mode (`--no-interactive`) still exits with helpful error message
+  - **Docker Cleanup Flag** (`--clean-up`): New optional flag to clean up old Docker images, containers, and build cache after successful deployment
+    - Removes stopped containers and dangling images
+    - Prunes unused images older than 24 hours
+    - Cleans build cache older than 7 days
+    - Reports final Docker disk usage summary
+    - Can significantly free disk space (tested: 4.5GB→1.3GB)
+  - **Removed Automatic Cache Forcing**: No longer automatically enables `--no-cache` when using `--skip-git-sync` flag; gives users full control over caching behavior
+
 ### Added
+
+- **Frontend: Vaccination Tracking UI Components**
+  - `VaccinationStatusBadge`: Shows vaccination status (Up to date, Due soon, Overdue, No records)
+  - `UpcomingVaccinationsSection`: Lists upcoming vaccinations with due dates, color-coded for priority
+  - `vaccinationStatus.ts` utility: Calculates overall status and filters upcoming vaccinations
+  - Integrated into pet profile page alongside weight tracking
+  - Color-coded status indicators: green (up to date), yellow (due soon), red (overdue), gray (unknown)
+
+- **Frontend: Weight Tracking Visualization**
+  - `WeightHistoryCard`: Card component displaying weight history with add/edit capability
+  - `WeightChart`: Line chart visualization using Recharts library
+  - Chart features: Interactive tooltips, date labels, last point emphasis
+  - `WeightHistoryCard`: Integrates weight form for adding new entries
+  - Shows weight trends over time with formatted display
+
+- **Dependencies: Recharts Library**
+  - Added `recharts@^2.15.4` for professional chart visualizations
+  - Includes all D3 charting dependencies for advanced data visualization capabilities
+  - `recharts-scale`, `decimal.js-light`, and D3 modules for precise calculations
+
+- **Frontend: Chart UI Components**
+  - `chart.tsx`: Shadcn-ui compatible charting component with ChartContainer, ChartTooltip, ChartLegend
+  - Supports theme-aware color configuration (light/dark modes)
+  - Responsive container with proper styling and accessibility
+
+- **Frontend: Card Component Enhancements**
+  - New `CardAction` slot for action buttons in card headers
+  - Updated card styling with flex layout and gap system
+  - Improved container query support for responsive design
+
+- **Backend: Weight History Relation Manager**
+  - `WeightHistoriesRelationManager` in PetResource for managing weight records
+  - Table view with weight, date, and creation timestamp columns
+  - Form to add/edit weight entries with validation (0.01-500 kg range)
+  - Default sort by date (newest first)
+  - Empty state with helpful message and icon
 
 - **Tailwind CSS v4 Migration**: Successfully migrated to Tailwind CSS v4 with modern configuration
   - Migrated from Tailwind v3 to v4 using `@import 'tailwindcss'` syntax
@@ -26,15 +79,18 @@ All notable changes to this project are documented here, following the [Keep a C
   - Dual color system: HSL (backward compatibility) + OKLCH (modern Tailwind v4)
   - All 24 shadcn-ui components reinstalled and verified working with new Tailwind setup
   - Active tabs now properly highlighted with correct styling
+
 - **Enhanced Custom Form Components**: Improved accessibility and UX for custom form field components
   - **CheckboxField**: Added `description` prop, proper error positioning, improved ARIA attributes
   - **FileInput**: Added `accept`, `description`, and `required` props with better accessibility
   - **FormField**: Added `email`, `number` types, `description`, and `disabled` props with enhanced ARIA support
   - All form components now follow shadcn-ui design patterns consistently
+
 - **Modern Loading States**: Replaced basic "Loading..." text with professional skeleton components
   - **LoadingState**: Now uses shadcn Skeleton component with 3 variants (`default`, `card`, `list`)
   - Provides modern, professional loading experience matching contemporary UX standards
   - Maintains backward compatibility with existing `message` prop
+
 - **Improved Error Handling**: Enhanced error state component with shadcn Alert
   - **ErrorState**: Now uses shadcn Alert component with AlertCircle icon
   - Two variants: `default` (full-screen) and `minimal` (inline)
@@ -43,17 +99,30 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Changed
 
+- **PetProfilePage Refactoring**: Simplified page layout and improved mobile responsiveness
+  - Removed complex owner-only UI sections for better maintainability
+  - New sticky header with back button and edit option
+  - Clean card-based layout for pet information and related features
+  - Integrated new weight history and vaccination tracking components
+  - Responsive design optimized for mobile and tablet displays
+
+- **PetResource (Backend)**: Added WeightHistoriesRelationManager to relation managers
+  - Enables managing weight records directly from pet detail view in Filament
+
 - **Settings Hub**: Introduced `/settings` route with shadcn tabs for Account, Notifications, and Contact sections
   - Consolidated profile and session management cards inside the Account tab
   - Added modal-based password change dialog instead of a full-page form
   - Added placeholder Contact tab so future messaging/config work has a surfaced destination
+
 - **Tooltip Component**: Added Radix UI tooltip component (`@radix-ui/react-tooltip`) for better UX
   - Created reusable tooltip component at `frontend/src/components/ui/tooltip.tsx`
   - Used for "Show all" filter to explain it includes deceased pets
+
 - **Interactive Telegram Setup**: Added interactive prompts in `setup.sh` for configuring Telegram bot notifications
   - Prompts for `TELEGRAM_BOT_TOKEN` and `CHAT_ID` during first-time setup
   - Includes helpful instructions for creating a bot via @BotFather
   - Optional feature - can be skipped or configured later
+
 - **In-App Deployment Notifications**: Added ability to notify superadmin user in-app when deployments complete
   - New `NOTIFY_SUPERADMIN_ON_DEPLOY` environment variable (true/false)
   - Interactive setup prompt during first-time configuration
@@ -62,13 +131,12 @@ All notable changes to this project are documented here, following the [Keep a C
   - Automatically sends notification with deployment details (environment, commit hash, timestamp)
   - Integrates with existing notification center and push notification system
 
-### Changed
-
 - **Navigation & Routing Cleanup**: `/settings` now replaces the legacy `/account` and `/account/notifications` pages
   - User menu links directly to `/settings/account` for profile and account actions
   - My Pets, Invitations, and helper profile links remain separate under `/account/*` and `/helper*`
   - Deprecated profile and notifications pages removed to prevent dead links and duplicated UI
   - Settings tests (`SettingsPage.test.tsx`, routing smoke tests, nav/menu specs) updated for new paths
+
 - **Test Notifications**: Enhanced `--test-notify` flag to test both Telegram and in-app notifications
   - Previously only tested Telegram notifications
   - Now tests both notification systems and reports their configuration status
@@ -78,7 +146,6 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Fixed
 
 - **Avatar Display Issue**: Fixed avatar images not displaying correctly on first load (showing placeholder instead)
-
   - **Root Cause**: Migration from direct `avatar_url` column to Spatie MediaLibrary caused timing issues where MediaLibrary conversions were not immediately available and Radix UI Avatar component would timeout before image loaded
   - **Backend Fix**: Modified `User::getAvatarUrlAttribute()` to fall back to original image if conversion is not ready yet
   - **Frontend Fix**: Added image preloading in `UserMenu` and `UserAvatar` components to ensure images are cached before rendering

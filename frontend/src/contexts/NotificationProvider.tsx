@@ -149,8 +149,13 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
     }
   }, [emitToastsForNew])
 
-  // polling
+  // polling - only poll when user is authenticated
   useEffect(() => {
+    // Don't start polling if user is not authenticated
+    if (!isAuthenticated || !user) {
+      return
+    }
+
     let timer: number | undefined
     const tick = () => {
       if (!visible) {
@@ -164,7 +169,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
     return () => {
       if (timer) window.clearTimeout(timer)
     }
-  }, [pollMs, refresh, visible])
+  }, [pollMs, refresh, visible, isAuthenticated, user])
 
   // Reset and refetch when the authenticated user changes
   // This effect handles both initial load and user changes

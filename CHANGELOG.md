@@ -6,6 +6,29 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Changed
 
+- **Frontend: Notifications API No Longer Polled for Unauthenticated Users**
+
+  - Added authentication check to notification polling effect in `NotificationProvider`
+  - Prevents unnecessary 401 errors on `/api/notifications` endpoint
+  - Reduces server load by avoiding polling requests from anonymous visitors
+
+- **Frontend: Pet Management UI Refactoring**
+
+  - Removed password requirement from pet status update endpoint (`updatePetStatus`)
+  - Updated `PetStatusControls` component to show confirmation dialog without password field
+  - Refactored `PetDangerZone` component with improved state management
+  - Added dedicated hooks for pet editing: `useEditPet`, `useEditPetActions`, `usePetForm`
+  - Created reusable `PetFormCard` component for consistent form presentation
+  - Separated edit page functionality into proper tabs (General, Health, Status)
+  - Simplified password-based operations (only pet deletion requires password confirmation)
+
+- **Backend: Pet Status Update REST Semantics**
+  - Removed password parameter from `PUT /api/pets/:id/status` endpoint
+  - Status update no longer requires password confirmation (non-destructive operation)
+  - Pet deletion (`DELETE /api/pets/:id`) still requires password for security
+
+### Changed
+
 - **Pet Profile Page Redesign**: Complete UI overhaul matching mobile-first design
   - Custom header with Back/Edit buttons (hides global nav on this page)
   - Circular pet photo with green border and vaccination status badge
@@ -18,17 +41,20 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Added
 
 - **Weight Chart Visualization**: New `WeightChart` component using Recharts library
+
   - Line chart with date labels on X-axis
   - Last point label showing current weight
   - Interactive tooltips on hover
   - Handles string-to-number conversion from API
 
 - **Vaccination Status System**: Calculate and display vaccination status
+
   - `VaccinationStatusBadge`: Shows Up to date (green), Due soon (yellow), Overdue (red), No records (gray)
   - `calculateVaccinationStatus()`: Determines status from vaccination records
   - `getUpcomingVaccinations()`: Filters and sorts vaccinations by due date
 
 - **Conditional Navigation Hiding**: MainNav hidden on `/pets/:id` routes
+
   - Pattern-based route matching in App.tsx
   - Custom header renders within PetProfilePage instead
 
@@ -49,6 +75,7 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Fixed
 
 - **Weight Chart Crash**: Fixed `weight_kg.toFixed is not a function` error
+
   - API returns weight_kg as string, now converted with `parseFloat()`
 
 - **Vaccination Badge Not Updating**: Badge now refreshes after adding vaccinations

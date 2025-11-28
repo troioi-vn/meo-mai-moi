@@ -15,3 +15,8 @@ Artisan::command('inspire', function () {
 Schedule::command('reminders:vaccinations')
     ->dailyAt('09:00')
     ->withoutOverlapping();
+
+// Schedule: birthday reminders once daily at 08:00 server time
+Schedule::command('reminders:birthdays')
+    ->dailyAt('08:00')
+    ->withoutOverlapping();

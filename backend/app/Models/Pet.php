@@ -197,6 +197,19 @@ class Pet extends Model implements HasMedia
     }
 
     /**
+     * Calculate the age of the pet in years.
+     * Returns the difference between current year and birthday year.
+     */
+    public function getAge(): int
+    {
+        if (!$this->birthday) {
+            return 0;
+        }
+
+        return now()->year - $this->birthday->year;
+    }
+
+    /**
      * Register media collections for this model.
      */
     public function registerMediaCollections(): void

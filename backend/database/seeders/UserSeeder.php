@@ -46,7 +46,7 @@ class UserSeeder extends Seeder
             $adminUpdates['email_verified_at'] = now();
         }
 
-        if (! empty($adminUpdates)) {
+        if (count($adminUpdates) > 0) {
             $admin->fill($adminUpdates);
             $admin->save();
         }

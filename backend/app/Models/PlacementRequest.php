@@ -101,7 +101,7 @@ class PlacementRequest extends Model
     {
         $bool = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
         if ($bool === null) {
-            $bool = ! empty($value);
+            $bool = ! $value;
         }
         $this->attributes['status'] = $bool
             ? PlacementRequestStatus::OPEN->value

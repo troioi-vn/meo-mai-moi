@@ -31,7 +31,7 @@ class ValidateInvitationRequest
         if ($request->is('api/invitations') && $request->isMethod('POST')) {
             // Check for suspicious patterns
             $userAgent = $request->userAgent();
-            if (empty($userAgent) || strlen($userAgent) < 10) {
+            if (! isset($userAgent) || $userAgent === '' || strlen($userAgent) < 10) {
                 Log::warning('Suspicious invitation request - invalid user agent', [
                     'ip' => $request->ip(),
                     'user_agent' => $userAgent,

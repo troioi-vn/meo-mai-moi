@@ -46,7 +46,7 @@ class UpdateEmailLogOnSent
                         $decoded = json_decode($xMailgunVars, true);
                         $existing['mailgun_user_variables'] = is_array($decoded) ? $decoded : $xMailgunVars;
                     }
-                    if (! empty($existing)) {
+                    if (count($existing) > 0) {
                         $emailLog->update(['headers' => $existing]);
                     }
                 } catch (\Throwable $e) {

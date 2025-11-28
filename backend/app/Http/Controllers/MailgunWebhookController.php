@@ -54,10 +54,10 @@ class MailgunWebhookController extends Controller
         if ($messageId && (! isset($headers['message-id']))) {
             $headers['message-id'] = $messageId;
         }
-        if (! empty($userVariables)) {
+        if (count($userVariables) > 0) {
             $headers['mailgun_user_variables'] = $userVariables;
         }
-        if (! empty($headers)) {
+        if (count($headers) > 0) {
             $emailLog->update(['headers' => $headers]);
         }
 

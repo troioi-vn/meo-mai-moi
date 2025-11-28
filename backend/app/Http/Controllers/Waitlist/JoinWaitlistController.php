@@ -86,7 +86,7 @@ class JoinWaitlistController extends Controller
             // Validate email comprehensively
             $validationErrors = $this->waitlistService->validateEmailForWaitlist($email);
 
-            if (! empty($validationErrors)) {
+            if (count($validationErrors) > 0) {
                 return $this->handleBusinessError(
                     implode(', ', $validationErrors),
                     409

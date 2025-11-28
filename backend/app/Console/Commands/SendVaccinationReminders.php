@@ -53,6 +53,10 @@ class SendVaccinationReminders extends Command
                 try {
                     PetCapabilityService::ensure($pet, 'vaccinations');
                 } catch (\Throwable $e) {
+                    Log::warning('Skipping vaccination reminder due to capability check failure', [
+                        'pet_id' => $pet->id,
+                        'error' => $e->getMessage(),
+                    ]);
                     continue;
                 }
 

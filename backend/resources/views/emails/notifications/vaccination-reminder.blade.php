@@ -20,7 +20,7 @@
         @endif
     </p>
 
-    @if(!empty($notes))
+    @if(isset($notes) && $notes !== '')
         <p><strong>Notes:</strong> {{ $notes }}</p>
     @endif
 

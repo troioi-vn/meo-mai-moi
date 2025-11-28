@@ -49,6 +49,8 @@ use Illuminate\Http\Request;
  *     )
  * )
  */
+use Illuminate\Support\Facades\Log;
+
 class RejectTransferRequestController extends Controller
 {
     use ApiResponseTrait;
@@ -90,7 +92,10 @@ class RejectTransferRequestController extends Controller
                 }
             }
         } catch (\Throwable $e) {
-            // non-fatal
+            Log::warning('Failed to send notification for transfer request rejection', [
+                'transfer_request_id' => $transferRequest->id,
+                'error' => $e->getMessage(),
+            ]);
         }
 
         return $this->sendSuccess($transferRequest);

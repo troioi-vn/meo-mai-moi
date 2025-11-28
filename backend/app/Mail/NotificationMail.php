@@ -62,7 +62,7 @@ abstract class NotificationMail extends Mailable
 
         if ($resolved) {
             // If resolved from file and we have a concrete view name, prefer returning the view
-            if (($resolved['source'] ?? null) === 'file' && ! empty($resolved['view'])) {
+            if (($resolved['source'] ?? null) === 'file' && isset($resolved['view']) && $resolved['view'] !== '') {
                 return new Content(
                     view: $resolved['view'],
                     with: $this->getTemplateData(),
@@ -71,7 +71,7 @@ abstract class NotificationMail extends Mailable
 
             // Otherwise, render inline HTML (DB overrides)
             $rendered = $renderer->render($resolved, $this->getTemplateData(), 'email');
-            if (! empty($rendered['subject'])) {
+            if (isset($rendered['subject']) && $rendered['subject'] !== '') {
                 $this->subject($rendered['subject']);
             }
 

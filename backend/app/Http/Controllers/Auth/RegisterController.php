@@ -8,6 +8,7 @@ use App\Http\Responses\Auth\RegisterResponse;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @OA\Post(
@@ -74,7 +75,11 @@ class RegisterController extends Controller
                 Auth::login($user);
                 $request->session()->regenerate();
             } catch (\Exception $e) {
-                // Ignore login errors in API context
+                Log::warning('Login failed after registration', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'error' => $e->getMessage(),
+                ]);
             }
         }
 

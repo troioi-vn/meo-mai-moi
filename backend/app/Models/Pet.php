@@ -76,17 +76,17 @@ class Pet extends Model implements HasMedia
 
     /**
      * Override delete to implement status-based soft delete for business logic.
-     * This maintains the DELETED status while also supporting Laravel's soft deletes.
+     * Sets status to DELETED and performs Laravel soft delete (sets deleted_at).
      */
     public function delete()
     {
+        // Set status to DELETED if not already
         if ($this->status !== PetStatus::DELETED) {
             $this->status = PetStatus::DELETED;
-
-            return $this->save();
+            $this->save();
         }
 
-        // If already marked as DELETED, perform actual soft delete
+        // Perform Laravel soft delete (sets deleted_at)
         return parent::delete();
     }
 

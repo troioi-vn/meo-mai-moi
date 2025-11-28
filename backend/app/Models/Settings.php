@@ -26,7 +26,7 @@ class Settings extends Model
     /**
      * Set a setting value by key
      */
-    public static function set(string $key, $value): void
+    public static function updateValue(string $key, $value): void
     {
         static::updateOrCreate(
             ['key' => $key],
@@ -40,6 +40,16 @@ class Settings extends Model
     }
 
     /**
+     * Alias for updateValue() to maintain backward compatibility
+     *
+     * @deprecated Use updateValue() instead
+     */
+    public static function set(string $key, $value): void
+    {
+        static::updateValue($key, $value);
+    }
+
+    /**
      * Toggle a boolean setting
      */
     public static function toggle(string $key): bool
@@ -47,7 +57,7 @@ class Settings extends Model
         $currentValue = static::get($key, false);
         $newValue = ! filter_var($currentValue, FILTER_VALIDATE_BOOLEAN);
 
-        static::set($key, $newValue ? 'true' : 'false');
+        static::updateValue($key, $newValue ? 'true' : 'false');
 
         return $newValue;
     }
@@ -65,6 +75,6 @@ class Settings extends Model
      */
     public static function setInviteOnlyEnabled(bool $enabled): void
     {
-        static::set('invite_only_enabled', $enabled ? 'true' : 'false');
+        static::updateValue('invite_only_enabled', $enabled ? 'true' : 'false');
     }
 }

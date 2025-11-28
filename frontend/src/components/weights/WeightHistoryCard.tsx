@@ -22,15 +22,20 @@ import { format, parseISO } from 'date-fns'
 interface WeightHistoryCardProps {
   petId: number
   canEdit: boolean
+  /** 'view' shows chart only (last 15 records), 'edit' shows records list only */
+  mode?: 'view' | 'edit'
 }
 
-export function WeightHistoryCard({ petId, canEdit }: WeightHistoryCardProps) {
+export function WeightHistoryCard({ petId, canEdit, mode = 'view' }: WeightHistoryCardProps) {
   const { items, loading, create, update, remove } = useWeights(petId)
   const [adding, setAdding] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [serverError, setServerError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [deletingId, setDeletingId] = useState<number | null>(null)
+
+  // For view mode, limit to last 15 records for the chart
+  const chartItems = mode === 'view' ? items.slice(0, 15) : items
 
   const handleCreate = async (values: { weight_kg: number; record_date: string }) => {
     setSubmitting(true)
@@ -119,12 +124,12 @@ export function WeightHistoryCard({ petId, canEdit }: WeightHistoryCardProps) {
           </div>
         ) : (
           <>
-            <WeightChart weights={items} />
+            {/* View mode: show chart only */}
+            {mode === 'view' && <WeightChart weights={chartItems} />}
 
-            {/* Weight Records List */}
-            {items.length > 0 && canEdit && (
-              <div className="mt-4 space-y-2">
-                <h4 className="text-sm font-medium text-muted-foreground">Records</h4>
+            {/* Edit mode: show records list only */}
+            {mode === 'edit' && items.length > 0 && canEdit && (
+              <div className="space-y-2">
                 <ul className="space-y-2">
                   {items.map((w) => (
                     <li key={w.id} className="rounded-lg border p-3 bg-muted/50">
@@ -197,7 +202,13 @@ export function WeightHistoryCard({ petId, canEdit }: WeightHistoryCardProps) {
               </div>
             )}
 
-            {canEdit && (
+            {/* Edit mode: show empty state if no records */}
+            {mode === 'edit' && items.length === 0 && (
+              <p className="text-sm text-muted-foreground py-2">No weight records yet.</p>
+            )}
+
+            {/* View mode with canEdit: show add button */}
+            {mode === 'view' && canEdit && (
               <Button variant="outline" className="w-full mt-4" onClick={() => setAdding(true)}>
                 + Add New Weight Entry
               </Button>

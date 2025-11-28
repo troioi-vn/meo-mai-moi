@@ -23,12 +23,15 @@ interface UpcomingVaccinationsSectionProps {
   petId: number
   canEdit: boolean
   onVaccinationChange?: () => void
+  /** 'view' shows upcoming vaccinations with add button, 'edit' shows all vaccinations without add button */
+  mode?: 'view' | 'edit'
 }
 
 export function UpcomingVaccinationsSection({
   petId,
   canEdit,
   onVaccinationChange,
+  mode = 'view',
 }: UpcomingVaccinationsSectionProps) {
   const { items, loading, create, update, remove } = useVaccinations(petId)
   const [adding, setAdding] = useState(false)
@@ -85,7 +88,9 @@ export function UpcomingVaccinationsSection({
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">Upcoming Vaccinations</CardTitle>
+          <CardTitle className="text-lg font-semibold">
+            {mode === 'edit' ? 'Vaccinations' : 'Upcoming Vaccinations'}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">Loading...</p>
@@ -94,10 +99,15 @@ export function UpcomingVaccinationsSection({
     )
   }
 
+  // In edit mode show all vaccinations, in view mode show only upcoming
+  const displayedVaccinations = mode === 'edit' ? items : upcomingVaccinations
+
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold">Upcoming Vaccinations</CardTitle>
+        <CardTitle className="text-lg font-semibold">
+          {mode === 'edit' ? 'Vaccinations' : 'Upcoming Vaccinations'}
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {adding ? (
@@ -114,13 +124,15 @@ export function UpcomingVaccinationsSection({
           </div>
         ) : (
           <>
-            {upcomingVaccinations.length === 0 ? (
+            {displayedVaccinations.length === 0 ? (
               <p className="text-sm text-muted-foreground py-2">
-                No upcoming vaccinations scheduled.
+                {mode === 'edit'
+                  ? 'No vaccinations recorded.'
+                  : 'No upcoming vaccinations scheduled.'}
               </p>
             ) : (
               <ul className="space-y-2">
-                {upcomingVaccinations.map((v) => {
+                {displayedVaccinations.map((v) => {
                   const dueDate = v.due_at ? parseISO(v.due_at) : null
                   const isPast = dueDate && dueDate < new Date()
 
@@ -211,7 +223,7 @@ export function UpcomingVaccinationsSection({
               </ul>
             )}
 
-            {canEdit && (
+            {canEdit && mode === 'view' && (
               <Button variant="outline" className="w-full mt-3" onClick={() => setAdding(true)}>
                 + Add New Vaccination Entry
               </Button>

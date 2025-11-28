@@ -115,7 +115,7 @@ const PetProfilePage: React.FC = () => {
               <img
                 src={imageUrl}
                 alt={pet.name}
-                className={`w-24 h-24 rounded-full object-cover border-4 border-green-200 dark:border-green-900 ${isDeceased ? 'grayscale' : ''}`}
+                className={`w-24 h-24 rounded-full object-cover border-4 border-gray-200 dark:border-gray-900 ${isDeceased ? 'grayscale' : ''}`}
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -128,7 +128,7 @@ const PetProfilePage: React.FC = () => {
           </section>
 
           {/* Weight History */}
-          {supportsWeight && <WeightHistoryCard petId={pet.id} canEdit={canEdit} />}
+          {supportsWeight && <WeightHistoryCard petId={pet.id} canEdit={canEdit} mode="view" />}
 
           {/* Upcoming Vaccinations */}
           {supportsVaccinations && (
@@ -136,6 +136,7 @@ const PetProfilePage: React.FC = () => {
               petId={pet.id}
               canEdit={canEdit}
               onVaccinationChange={handleVaccinationChange}
+              mode="view"
             />
           )}
 

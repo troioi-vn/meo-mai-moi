@@ -14,7 +14,7 @@ export default function LoginPage() {
       }
       const verifiedAt = (auth.user as MaybeVerifiedUser | null)?.email_verified_at
       if (verifiedAt !== null) {
-        void navigate('/account/pets')
+        void navigate('/')
       }
     }
   }, [auth, navigate])

@@ -100,7 +100,7 @@ const CreatePetPage: React.FC = () => {
       await deletePet(petId, password)
       toast.success('Pet removed')
       // Navigate to My Pets
-      void navigate('/account/pets', { replace: true })
+      void navigate('/', { replace: true })
     } catch {
       toast.error('Failed to remove pet')
     } finally {
@@ -120,11 +120,7 @@ const CreatePetPage: React.FC = () => {
   // Show error state if pet not found (edit mode only)
   if (isEditMode && loadError) {
     return (
-      <ErrorState
-        error={loadError}
-        onRetry={() => navigate('/account/pets')}
-        retryText="Back to My Pets"
-      />
+      <ErrorState error={loadError} onRetry={() => navigate('/')} retryText="Back to My Pets" />
     )
   }
 
@@ -315,10 +311,10 @@ const CreatePetPage: React.FC = () => {
           {supportsHealth && (
             <TabsContent value="health" className="space-y-6">
               {supportsVaccinations && loadedPet && (
-                <UpcomingVaccinationsSection petId={loadedPet.id} canEdit={true} />
+                <UpcomingVaccinationsSection petId={loadedPet.id} canEdit={true} mode="edit" />
               )}
               {supportsWeight && loadedPet && (
-                <WeightHistoryCard petId={loadedPet.id} canEdit={true} />
+                <WeightHistoryCard petId={loadedPet.id} canEdit={true} mode="edit" />
               )}
             </TabsContent>
           )}
@@ -339,10 +335,7 @@ const CreatePetPage: React.FC = () => {
             />
 
             {/* Danger Zone */}
-            <PetDangerZone
-              isDeleting={isDeleting}
-              onDelete={handleDeletePetClick}
-            />
+            <PetDangerZone isDeleting={isDeleting} onDelete={handleDeletePetClick} />
           </TabsContent>
         </Tabs>
       </div>

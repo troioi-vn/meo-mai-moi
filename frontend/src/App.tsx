@@ -39,10 +39,27 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   return user ? <>{children}</> : <Navigate to="/login" replace />
 }
 
+// Home page: shows MyPetsPage for authenticated users, MainPage for guests
+function HomePage() {
+  const auth = useAuth()
+  const isLoading = auth.isLoading
+  const isAuthenticated = Boolean(auth.user)
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    )
+  }
+
+  return isAuthenticated ? <MyPetsPage /> : <MainPage />
+}
+
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<MainPage />} />
+      <Route path="/" element={<HomePage />} />
       <Route path="/requests" element={<RequestsPage />} />
 
       {/* Pet routes */}
@@ -71,15 +88,8 @@ export function AppRoutes() {
         }
       />
 
-      {/* Pet routes */}
-      <Route
-        path="/account/pets"
-        element={
-          <PrivateRoute>
-            <MyPetsPage />
-          </PrivateRoute>
-        }
-      />
+      {/* Pet routes - redirect old /account/pets to / */}
+      <Route path="/account/pets" element={<Navigate to="/" replace />} />
       <Route
         path="/account/pets/create"
         element={

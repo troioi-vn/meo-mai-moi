@@ -83,7 +83,7 @@ class EmailVerificationFlowTest extends TestCase
 
         // Visit the verification URL; expect redirect to SPA after verification
         $response = $this->get($verificationUrl);
-        $response->assertRedirect(rtrim(config('app.frontend_url'), '/').'/account/pets?verified=1');
+        $response->assertRedirect(rtrim(config('app.frontend_url'), '/').'/?verified=1');
 
         // Step 5: User can now access protected routes
         $user->refresh(); // Refresh user to get updated email_verified_at

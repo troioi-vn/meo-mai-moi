@@ -6,6 +6,16 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Changed
 
+- **Home Page Now Shows My Pets for Authenticated Users**
+
+  - Moved `/pets` (My Pets page) functionality to `/` route for logged-in users
+  - Unauthenticated visitors still see the landing page at `/`
+  - Added redirect from `/account/pets` → `/` for backwards compatibility
+  - Updated all post-login redirects to go to `/` instead of `/account/pets`
+  - Updated email verification success redirects to `/?verified=1`
+  - Updated "My Pets" link in user menu to point to `/`
+  - This change makes the core functionality (managing pets) the primary experience
+
 - **Frontend: Inline Edit for Weight and Vaccination Records**
 
   - Added pencil (edit) icon button to each weight record in the Weight History card

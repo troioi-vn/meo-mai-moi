@@ -51,7 +51,7 @@ const ERROR_MESSAGES = {
 } as const
 
 const ROUTES = {
-  MY_PETS: '/account/pets',
+  MY_PETS: '/',
 } as const
 
 export const useCreatePetForm = (petId?: string) => {

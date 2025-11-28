@@ -52,7 +52,7 @@ export default function EmailVerificationPage() {
 
           // Redirect to dashboard after a short delay
           setTimeout(() => {
-            void navigate('/account/pets')
+            void navigate('/')
           }, 2000)
         } else if (statusParam === 'already_verified') {
           setStatus('success')
@@ -60,7 +60,7 @@ export default function EmailVerificationPage() {
 
           // Redirect to dashboard after a short delay
           setTimeout(() => {
-            void navigate('/account/pets')
+            void navigate('/')
           }, 2000)
         } else if (errorParam === 'invalid_link') {
           setStatus('error')
@@ -103,7 +103,7 @@ export default function EmailVerificationPage() {
 
         // Redirect to dashboard after a short delay
         setTimeout(() => {
-          void navigate('/account/pets')
+          void navigate('/')
         }, 2000)
       } catch (error: unknown) {
         setStatus('error')
@@ -126,7 +126,7 @@ export default function EmailVerificationPage() {
   }, [id, hash, searchParams, loadUser, navigate])
 
   const handleGoToDashboard = () => {
-    void navigate('/account/pets')
+    void navigate('/')
   }
 
   const handleResendEmail = async () => {

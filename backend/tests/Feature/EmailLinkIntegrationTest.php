@@ -54,7 +54,7 @@ class EmailLinkIntegrationTest extends TestCase
 
         // User clicks the verification link (now verifies and logs in without prior auth)
         $response = $this->get($verificationUrl);
-        $response->assertRedirect(rtrim(config('app.frontend_url'), '/').'/account/pets?verified=1');
+        $response->assertRedirect(rtrim(config('app.frontend_url'), '/').'/?verified=1');
 
         // User should now be verified
         $user->refresh();
@@ -127,7 +127,7 @@ class EmailLinkIntegrationTest extends TestCase
 
         $response = $this->get($verificationUrl);
         // Now redirects directly to the frontend app after verification
-        $response->assertRedirect('https://example.com/account/pets?verified=1');
+        $response->assertRedirect('https://example.com/?verified=1');
 
         // Test password reset redirect
         $token = 'test-token';

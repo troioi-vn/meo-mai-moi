@@ -108,7 +108,7 @@ describe('UserMenu', () => {
     const myPetsLink = screen.getByRole('menuitem', { name: 'My Pets' })
 
     expect(profileLink).toHaveAttribute('href', '/settings/account')
-    expect(myPetsLink).toHaveAttribute('href', '/account/pets')
+    expect(myPetsLink).toHaveAttribute('href', '/')
   })
 
   it('calls logout function when logout is clicked', async () => {

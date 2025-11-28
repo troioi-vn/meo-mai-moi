@@ -87,7 +87,7 @@ describe('Email Verification Flow Integration', () => {
     // Should auto-redirect to dashboard
     await waitFor(
       () => {
-        expect(navigate).toHaveBeenCalledWith('/account/pets')
+        expect(navigate).toHaveBeenCalledWith('/')
       },
       { timeout: 3000 }
     )

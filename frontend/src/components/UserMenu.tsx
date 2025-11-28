@@ -72,7 +72,7 @@ export function UserMenu() {
               <Link to="/settings/account">Settings</Link>
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer" asChild>
-              <Link to="/account/pets">My Pets</Link>
+              <Link to="/">My Pets</Link>
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer" asChild>
               <Link to="/invitations">Invitations</Link>

@@ -125,16 +125,16 @@ describe('LoginForm', () => {
     vi.restoreAllMocks()
   })
 
-  it('redirects to /account/pets on successful login by default', async () => {
+  it('redirects to / on successful login by default', async () => {
     renderWithRouter(<LoginForm />, {
       initialEntries: ['/login'],
-      routes: [{ path: '/account/pets', element: <TestComponent text="Pet Account Page" /> }],
+      routes: [{ path: '/', element: <TestComponent text="Home Page" /> }],
     })
 
     await fillAndSubmit()
 
     await waitFor(() => {
-      expect(screen.getByText('Pet Account Page')).toBeInTheDocument()
+      expect(screen.getByText('Home Page')).toBeInTheDocument()
     })
   })
 
@@ -154,26 +154,26 @@ describe('LoginForm', () => {
   it('redirects to default path if redirect param is an absolute URL', async () => {
     renderWithRouter(<LoginForm />, {
       initialEntries: ['/login?redirect=http://scam.com/malicious'],
-      routes: [{ path: '/account/pets', element: <TestComponent text="Pet Account Page" /> }],
+      routes: [{ path: '/', element: <TestComponent text="Home Page" /> }],
     })
 
     await fillAndSubmit()
 
     await waitFor(() => {
-      expect(screen.getByText('Pet Account Page')).toBeInTheDocument()
+      expect(screen.getByText('Home Page')).toBeInTheDocument()
     })
   })
 
   it('redirects to default path if redirect param starts with //', async () => {
     renderWithRouter(<LoginForm />, {
       initialEntries: ['/login?redirect=//scam.com/malicious'],
-      routes: [{ path: '/account/pets', element: <TestComponent text="Pet Account Page" /> }],
+      routes: [{ path: '/', element: <TestComponent text="Home Page" /> }],
     })
 
     await fillAndSubmit()
 
     await waitFor(() => {
-      expect(screen.getByText('Pet Account Page')).toBeInTheDocument()
+      expect(screen.getByText('Home Page')).toBeInTheDocument()
     })
   })
 

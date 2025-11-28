@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, type ReactNode } from 'react'
+import { toast } from 'sonner'
 import { Switch } from '@/components/ui/switch'
 import {
   Table,
@@ -10,7 +11,7 @@ import {
 } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { CheckCircle, AlertCircle } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   getNotificationPreferences,
@@ -30,7 +31,6 @@ interface NotificationPreferencesState {
   loading: boolean
   error: string | null
   updating: boolean
-  updateSuccess: boolean
 }
 
 type DevicePushStatus = 'checking' | 'enabled' | 'disabled' | 'error'
@@ -41,7 +41,6 @@ export function NotificationPreferences() {
     loading: true,
     error: null,
     updating: false,
-    updateSuccess: false,
   })
   const [permission, setPermission] = useState<'unsupported' | NotificationPermission>('default')
   const [requestingPermission, setRequestingPermission] = useState(false)
@@ -362,7 +361,7 @@ export function NotificationPreferences() {
     const previousPreferences = state.preferences
 
     try {
-      setState((prev) => ({ ...prev, updating: true, error: null, updateSuccess: false }))
+      setState((prev) => ({ ...prev, updating: true, error: null }))
 
       // Optimistically update the UI
       setState((prev) => ({
@@ -390,13 +389,9 @@ export function NotificationPreferences() {
       setState((prev) => ({
         ...prev,
         updating: false,
-        updateSuccess: true,
       }))
 
-      // Clear success message after 3 seconds
-      setTimeout(() => {
-        setState((prev) => ({ ...prev, updateSuccess: false }))
-      }, 3000)
+      toast.success('Settings saved')
     } catch (error) {
       // Revert the optimistic update on error and preserve the error message
       setState((prev) => ({
@@ -501,13 +496,6 @@ export function NotificationPreferences() {
           </>
         )}
       </div>
-
-      {state.updateSuccess && (
-        <Alert>
-          <CheckCircle className="h-4 w-4" />
-          <AlertDescription>Notification preferences updated successfully.</AlertDescription>
-        </Alert>
-      )}
 
       {state.error && (
         <Alert variant="destructive" data-testid="error-alert">

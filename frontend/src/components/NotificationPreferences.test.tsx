@@ -2,6 +2,15 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { NotificationPreferences } from './NotificationPreferences'
 import * as notificationPreferencesApi from '@/api/notification-preferences'
+import { toast } from 'sonner'
+
+// Mock sonner
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+}))
 
 // Mock the API module
 vi.mock('@/api/notification-preferences')
@@ -176,7 +185,7 @@ describe('NotificationPreferences', () => {
     fireEvent.click(emailSwitch)
 
     await waitFor(() => {
-      expect(screen.getByText('Notification preferences updated successfully.')).toBeInTheDocument()
+      expect(toast.success).toHaveBeenCalledWith('Settings saved')
     })
   })
 

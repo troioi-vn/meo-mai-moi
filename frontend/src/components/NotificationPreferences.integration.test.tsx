@@ -3,6 +3,15 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { NotificationPreferences } from './NotificationPreferences'
 import * as notificationPreferencesApi from '@/api/notification-preferences'
+import { toast } from 'sonner'
+
+// Mock sonner
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+}))
 
 // Mock the API module
 vi.mock('@/api/notification-preferences')
@@ -110,7 +119,7 @@ describe('NotificationPreferences Integration Tests', () => {
     })
 
     // Verify success message appears
-    expect(screen.getByText('Notification preferences updated successfully.')).toBeInTheDocument()
+    expect(toast.success).toHaveBeenCalledWith('Settings saved')
   })
 
   it('handles multiple rapid preference changes correctly', async () => {

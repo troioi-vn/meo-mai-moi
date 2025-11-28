@@ -16,6 +16,31 @@ This document outlines the architecture of the Meo Mai Moi application, includin
 - **Authentication**: Fortify + Jetstream (API features), session-based via Sanctum for SPA; email verification required by default
 - **File Storage**: Local storage under `storage/app/public`
 - **Quality Gates**: PHPStan Level 5, Deptrac architecture enforcement
+- **Background Jobs**: Laravel Scheduler + Database Queue (supervisor-managed)
+
+### Background Jobs & Scheduling
+
+The application uses Laravel's built-in queue and scheduler systems for background task processing:
+
+**Components**:
+
+- **Scheduler**: Runs every minute via supervisor, triggers scheduled commands (e.g., vaccination reminders at 09:00)
+- **Queue Worker**: Processes async jobs from the `jobs` database table (emails, push notifications)
+- **Queue Driver**: PostgreSQL database (`QUEUE_CONNECTION=database`)
+
+**Scheduled Tasks** (defined in `routes/console.php`):
+
+- Vaccination reminders: Daily at 09:00
+
+**Supervisor Programs** (in `supervisord.conf`):
+
+- `scheduler`: Infinite loop running `schedule:run` every 60 seconds
+- `queue-worker`: Processes queued jobs with retries and backoff
+
+**Local Development**:
+
+- Set `QUEUE_CONNECTION=sync` in `.env` for immediate job execution (no worker needed)
+- Or run `php artisan queue:work` manually to process queued jobs
 
 ### Backend Architecture (Laravel)
 

@@ -10,6 +10,13 @@ mkdir -p /var/run/php-fpm
 mkdir -p /var/www/storage/logs
 mkdir -p /var/www/storage/app/public
 mkdir -p /var/log
+
+# Create log files for scheduler and queue worker (supervisor needs them to exist)
+touch /var/www/storage/logs/scheduler.log
+touch /var/www/storage/logs/scheduler-stdout.log
+touch /var/www/storage/logs/scheduler-stderr.log
+touch /var/www/storage/logs/queue-worker-stdout.log
+touch /var/www/storage/logs/queue-worker-stderr.log
 echo "Directories created."
 
 echo "[Step 1.5] Waiting for database to be ready..."

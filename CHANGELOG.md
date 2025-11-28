@@ -4,6 +4,23 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Added
+
+- **Background Job Scheduling Infrastructure**: Implemented Laravel Scheduler + Database Queue for background task processing
+  - Added `scheduler` supervisor program running `schedule:run` every 60 seconds
+  - Added `queue-worker` supervisor program for async job processing with retries
+  - Updated `docker-entrypoint.sh` to create log files for scheduler and queue worker
+  - Updated `.env.example` with `QUEUE_CONNECTION=database` as default for production
+  - Documented background jobs architecture in `docs/architecture.md`
+
+- **Vaccination Reminder Notifications**: Automated daily reminders for upcoming pet vaccinations
+  - `SendVaccinationReminders` command sends reminders 3 days before vaccinations are due
+  - Groups multiple vaccinations per pet into a single notification (e.g., "Shaniya is due for Rabies, FVRCP, and FeLV")
+  - Respects user notification preferences (email/in-app toggles on `/settings/notifications`)
+  - Includes pet name and link to pet profile page for easy access
+  - Prevents duplicate reminders via `reminder_sent_at` tracking on vaccination records
+  - Scheduled daily at 09:00 server time via Laravel Scheduler
+
 ### Changed
 
 - **Home Page Now Shows My Pets for Authenticated Users**

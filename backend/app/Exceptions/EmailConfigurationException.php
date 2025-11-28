@@ -29,7 +29,7 @@ class EmailConfigurationException extends Exception
     {
         $message = $this->getMessage();
 
-        if (count($this->validationErrors) > 0) {
+        if (! empty($this->validationErrors)) {
             $message .= "\n\nValidation Errors:\n• ".implode("\n• ", $this->validationErrors);
         }
 
@@ -41,7 +41,7 @@ class EmailConfigurationException extends Exception
      */
     public function hasValidationErrors(): bool
     {
-        return count($this->validationErrors) > 0;
+        return ! empty($this->validationErrors);
     }
 
     /**

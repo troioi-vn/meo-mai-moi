@@ -154,13 +154,13 @@ class UpdatePetController extends Controller
         $precision = $data['birthday_precision'] ?? $pet->birthday_precision ?? 'unknown';
         $birthdayDate = $pet->birthday; // default retain
         if ($precision === 'day') {
-            if (isset($data['birthday']) && $data['birthday'] !== '') {
+            if (! empty($data['birthday'])) {
                 $birthdayDate = $data['birthday'];
                 $dt = Carbon::parse($birthdayDate);
                 $data['birthday_year'] = (int) $dt->year;
                 $data['birthday_month'] = (int) $dt->month;
                 $data['birthday_day'] = (int) $dt->day;
-            } elseif (isset($data['birthday_year']) && $data['birthday_year'] !== '' && isset($data['birthday_month']) && $data['birthday_month'] !== '' && isset($data['birthday_day']) && $data['birthday_day'] !== '') {
+            } elseif (! empty($data['birthday_year']) && ! empty($data['birthday_month']) && ! empty($data['birthday_day'])) {
                 $birthdayDate = sprintf('%04d-%02d-%02d', $data['birthday_year'], $data['birthday_month'], $data['birthday_day']);
             }
         } else {

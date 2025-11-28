@@ -152,7 +152,7 @@ class StorePetController extends Controller
         $precision = $data['birthday_precision'] ?? 'unknown';
         $birthdayDate = null;
         if ($precision === 'day') {
-            if (isset($data['birthday']) && $data['birthday'] !== '') {
+            if (! empty($data['birthday'])) {
                 $birthdayDate = $data['birthday'];
                 $dt = Carbon::parse($birthdayDate);
                 $data['birthday_year'] = (int) $dt->year;

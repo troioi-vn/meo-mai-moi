@@ -187,7 +187,7 @@ class EmailConfiguration extends Model
             $result['domain'] = $config['domain'];
             $result['secret'] = $config['api_key'];
             $result['endpoint'] = $config['endpoint'] ?? 'api.mailgun.net';
-            if (isset($config['webhook_signing_key']) && $config['webhook_signing_key'] !== '') {
+            if (! empty($config['webhook_signing_key'])) {
                 $result['webhook_signing_key'] = $config['webhook_signing_key'];
             }
         }
@@ -216,7 +216,7 @@ class EmailConfiguration extends Model
         $errors = [];
         $config = $this->config;
 
-        if (! isset($this->provider) || $this->provider === '') {
+        if (empty($this->provider)) {
             $errors[] = 'Email provider is required';
 
             return $errors;
@@ -255,13 +255,13 @@ class EmailConfiguration extends Model
         ];
 
         foreach ($required as $field => $message) {
-            if (! isset($config[$field]) || $config[$field] === '') {
+            if (empty($config[$field])) {
                 $errors[] = $message;
             }
         }
 
         // Specific field validations
-        if (isset($config['port']) && $config['port'] !== '') {
+        if (! empty($config['port'])) {
             $port = (int) $config['port'];
             if ($port < 1 || $port > 65535) {
                 $errors[] = 'SMTP port must be between 1 and 65535';
@@ -272,15 +272,15 @@ class EmailConfiguration extends Model
             $errors[] = "SMTP encryption must be 'tls', 'ssl', or empty";
         }
 
-        if (isset($config['from_address']) && $config['from_address'] !== '' && ! filter_var($config['from_address'], FILTER_VALIDATE_EMAIL)) {
+        if (! empty($config['from_address']) && ! filter_var($config['from_address'], FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'From email address must be a valid email format';
         }
 
-        if (isset($config['test_email_address']) && $config['test_email_address'] !== '' && ! filter_var($config['test_email_address'], FILTER_VALIDATE_EMAIL)) {
+        if (! empty($config['test_email_address']) && ! filter_var($config['test_email_address'], FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'Test email address must be a valid email format';
         }
 
-        if (isset($config['host']) && $config['host'] !== '') {
+        if (! empty($config['host'])) {
             // Basic hostname validation
             if (! preg_match('/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', $config['host']) &&
                 ! filter_var($config['host'], FILTER_VALIDATE_IP)) {
@@ -306,35 +306,35 @@ class EmailConfiguration extends Model
         ];
 
         foreach ($required as $field => $message) {
-            if (! isset($config[$field]) || $config[$field] === '') {
+            if (empty($config[$field])) {
                 $errors[] = $message;
             }
         }
 
         // Specific field validations
-        if (isset($config['from_address']) && $config['from_address'] !== '' && ! filter_var($config['from_address'], FILTER_VALIDATE_EMAIL)) {
+        if (! empty($config['from_address']) && ! filter_var($config['from_address'], FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'From email address must be a valid email format';
         }
 
-        if (isset($config['test_email_address']) && $config['test_email_address'] !== '' && ! filter_var($config['test_email_address'], FILTER_VALIDATE_EMAIL)) {
+        if (! empty($config['test_email_address']) && ! filter_var($config['test_email_address'], FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'Test email address must be a valid email format';
         }
 
-        if (isset($config['domain']) && $config['domain'] !== '') {
+        if (! empty($config['domain'])) {
             // Basic domain validation
             if (! preg_match('/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', $config['domain'])) {
                 $errors[] = 'Mailgun domain must be a valid domain format';
             }
         }
 
-        if (isset($config['api_key']) && $config['api_key'] !== '') {
+        if (! empty($config['api_key'])) {
             // Basic API key format validation - just check it's not empty and has reasonable length
             if (strlen($config['api_key']) < 10) {
                 $errors[] = 'Mailgun API key appears to be too short';
             }
         }
 
-        if (isset($config['endpoint']) && $config['endpoint'] !== '') {
+        if (! empty($config['endpoint'])) {
             // Validate endpoint format
             if (! preg_match('/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', $config['endpoint'])) {
                 $errors[] = 'Mailgun endpoint must be a valid hostname';

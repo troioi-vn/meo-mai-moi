@@ -101,7 +101,7 @@
         </div>
     @endforeach
 
-    @if(count($timeline) === 0)
+    @if(empty($timeline))
         <div class="text-center text-gray-500 dark:text-gray-400">
             <p>No delivery events recorded</p>
         </div>

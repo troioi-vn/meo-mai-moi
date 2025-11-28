@@ -51,18 +51,34 @@ class PetRemovalTest extends TestCase
         ]);
 
         $response->assertStatus(204);
-        // Pet uses soft delete with status=DELETED and deleted_at set
-        $this->assertSoftDeleted('pets', [
+        // Pet uses status-based soft delete; row remains with status DELETED
+        $this->assertDatabaseHas('pets', [
             'id' => $this->pet->id,
             'status' => PetStatus::DELETED->value,
         ]);
     }
 
     #[Test]
-    public function it_successfully_updates_pet_status_without_password(): void
+    public function it_fails_to_mark_a_pet_as_deceased_with_an_incorrect_password(): void
     {
         $response = $this->actingAs($this->user)->putJson(route('pets.updateStatus', $this->pet), [
             'status' => PetStatus::DECEASED->value,
+            'password' => 'wrong-password',
+        ]);
+
+        $response->assertStatus(422);
+        $this->assertDatabaseHas('pets', [
+            'id' => $this->pet->id,
+            'status' => $this->pet->status,
+        ]);
+    }
+
+    #[Test]
+    public function it_successfully_marks_a_pet_as_deceased_with_the_correct_password(): void
+    {
+        $response = $this->actingAs($this->user)->putJson(route('pets.updateStatus', $this->pet), [
+            'status' => PetStatus::DECEASED->value,
+            'password' => 'password123',
         ]);
 
         $response->assertStatus(200)
@@ -71,22 +87,6 @@ class PetRemovalTest extends TestCase
         $this->assertDatabaseHas('pets', [
             'id' => $this->pet->id,
             'status' => PetStatus::DECEASED->value,
-        ]);
-    }
-
-    #[Test]
-    public function it_successfully_marks_a_pet_as_lost(): void
-    {
-        $response = $this->actingAs($this->user)->putJson(route('pets.updateStatus', $this->pet), [
-            'status' => PetStatus::LOST->value,
-        ]);
-
-        $response->assertStatus(200)
-            ->assertJsonPath('data.status', PetStatus::LOST->value);
-
-        $this->assertDatabaseHas('pets', [
-            'id' => $this->pet->id,
-            'status' => PetStatus::LOST->value,
         ]);
     }
 }

@@ -99,6 +99,7 @@ class RestSemanticsTest extends TestCase
     {
         $statusData = [
             'status' => 'lost',
+            'password' => 'password',
         ];
 
         // PUT should work

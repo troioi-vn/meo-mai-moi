@@ -21,8 +21,8 @@ class WebPushDispatcher
     {
         $config = config('services.vapid');
         if (
-            ! $config['public_key']
-            || ! $config['private_key']
+            empty($config['public_key'])
+            || empty($config['private_key'])
         ) {
             return;
         }
@@ -216,7 +216,7 @@ class WebPushDispatcher
     {
         $path = $value ?: $fallback;
 
-        if (! $path) {
+        if (empty($path)) {
             return $fallback;
         }
 

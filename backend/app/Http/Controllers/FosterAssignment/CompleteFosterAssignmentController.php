@@ -39,8 +39,6 @@ use Illuminate\Http\Request;
  *     )
  * )
  */
-use Illuminate\Support\Facades\Log;
-
 class CompleteFosterAssignmentController extends Controller
 {
     use ApiResponseTrait;
@@ -91,10 +89,7 @@ class CompleteFosterAssignmentController extends Controller
                 );
             }
         } catch (\Throwable $e) {
-            Log::warning('Failed to send notification for foster assignment completion', [
-                'assignment_id' => $assignment->id,
-                'error' => $e->getMessage(),
-            ]);
+            // non-fatal
         }
 
         return $this->sendSuccess($assignment->fresh());

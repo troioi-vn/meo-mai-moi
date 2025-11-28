@@ -23,7 +23,7 @@ abstract class TestCase extends BaseTestCase
         // Unit tests should observe the real default (true) unless they override it explicitly.
         $isFeatureTest = str_starts_with(static::class, 'Tests\\Feature\\');
         if ($isFeatureTest) {
-            Settings::updateValue('email_verification_required', 'false');
+            Settings::set('email_verification_required', 'false');
         }
 
         // Ensure Sanctum treats our test host as stateful so session-based

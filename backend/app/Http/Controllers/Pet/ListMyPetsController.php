@@ -40,7 +40,7 @@ class ListMyPetsController extends Controller
     public function __invoke(Request $request)
     {
         if (! $request->user()) {
-            return $this->sendError('Unauthenticated.', 401);
+            return $this->handleUnauthorized();
         }
         $query = Pet::where('user_id', $request->user()->id)->with('petType');
 

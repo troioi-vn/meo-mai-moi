@@ -35,8 +35,8 @@ class SendNotificationEmail implements ShouldQueue
     protected array $backoffSchedule = [60, 300, 900];
 
     // Provide backwards-compatible public property expected by some tests
-    /** @var array<int> */
-    protected array $backoff = [60, 300, 900];
+    /** @var int[] */
+    public array $backoff = [60, 300, 900];
 
     private ?EmailLog $emailLog = null;
 

@@ -140,7 +140,7 @@ class EmailNotificationJobIntegrationTest extends TestCase
 
         // Verify retry configuration
         $this->assertEquals(3, $job->tries);
-        $this->assertEquals([60, 300, 900], $job->backoff());
+        $this->assertEquals([60, 300, 900], $job->backoff);
     }
 
     public function test_email_notification_job_with_all_notification_types()

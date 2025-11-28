@@ -64,10 +64,14 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-meo_mai_moi}
       POSTGRES_USER: ${POSTGRES_USER:-user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      # Create additional test database for PHPUnit tests to prevent wiping dev data
+      POSTGRES_TEST_DB: meo_mai_moi_test
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      # Init script to create test database
+      - ./backend/scripts/init-test-db.sh:/docker-entrypoint-initdb.d/init-test-db.sh:ro
     healthcheck:
       # Use container env vars (escaped $ -> $$) so expansion happens inside container, not by compose
       test:

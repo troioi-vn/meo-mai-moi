@@ -88,16 +88,18 @@ export function AppRoutes() {
         }
       />
 
-      {/* Pet routes - redirect old /account/pets to / */}
-      <Route path="/account/pets" element={<Navigate to="/" replace />} />
+      {/* Pet routes */}
       <Route
-        path="/account/pets/create"
+        path="/pets/create"
         element={
           <PrivateRoute>
             <CreatePetPage />
           </PrivateRoute>
         }
       />
+      {/* Redirect old /account/pets routes */}
+      <Route path="/account/pets" element={<Navigate to="/" replace />} />
+      <Route path="/account/pets/create" element={<Navigate to="/pets/create" replace />} />
       <Route
         path="/account/password"
         element={

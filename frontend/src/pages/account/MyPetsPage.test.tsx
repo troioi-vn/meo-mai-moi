@@ -321,7 +321,7 @@ describe('MyPetsPage', () => {
     const newPetButton = screen.getByRole('button', { name: 'New Pet' })
     fireEvent.click(newPetButton)
 
-    expect(mockNavigate).toHaveBeenCalledWith('/account/pets/create')
+    expect(mockNavigate).toHaveBeenCalledWith('/pets/create')
   })
 
   it('navigates to create pet page from empty state button', async () => {
@@ -341,7 +341,7 @@ describe('MyPetsPage', () => {
     const addFirstPetButton = screen.getByRole('button', { name: 'Add Your First Pet' })
     fireEvent.click(addFirstPetButton)
 
-    expect(mockNavigate).toHaveBeenCalledWith('/account/pets/create')
+    expect(mockNavigate).toHaveBeenCalledWith('/pets/create')
   })
 
   it('shows unauthenticated message when user is not logged in', () => {

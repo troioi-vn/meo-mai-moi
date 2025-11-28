@@ -62,7 +62,7 @@ export default function MyPetsPage() {
     <div className="container mx-auto px-4 py-8 bg-background min-h-screen">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-foreground">Pets</h1>
-        <Button onClick={() => void navigate('/account/pets/create')}>
+        <Button onClick={() => void navigate('/pets/create')}>
           <PlusCircle className="mr-2 h-4 w-4" />
           New Pet
         </Button>
@@ -157,7 +157,7 @@ export default function MyPetsPage() {
                   <p className="text-muted-foreground mb-4">
                     No pets yet — add your first pet to get started!
                   </p>
-                  <Button onClick={() => void navigate('/account/pets/create')}>
+                  <Button onClick={() => void navigate('/pets/create')}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Add Your First Pet
                   </Button>

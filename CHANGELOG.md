@@ -7,6 +7,7 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Added
 
 - **Background Job Scheduling Infrastructure**: Implemented Laravel Scheduler + Database Queue for background task processing
+
   - Added `scheduler` supervisor program running `schedule:run` every 60 seconds
   - Added `queue-worker` supervisor program for async job processing with retries
   - Updated `docker-entrypoint.sh` to create log files for scheduler and queue worker
@@ -22,6 +23,10 @@ All notable changes to this project are documented here, following the [Keep a C
   - Scheduled daily at 09:00 server time via Laravel Scheduler
 
 ### Changed
+
+- **Frontend: Pet Creation Route Updated**: Changed pet creation route from `/account/pets/create` to `/pets/create` for consistency with the new route structure. Old route redirects to new one for backward compatibility.
+
+- **Frontend: Notification Settings UX Improvement**: Replaced custom "Settings saved" alert with standard toast notification for better consistency and user experience.
 
 - **Home Page Now Shows My Pets for Authenticated Users**
 

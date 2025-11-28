@@ -107,12 +107,10 @@ export const deletePet = async (id: string, password: string): Promise<void> => 
 
 export const updatePetStatus = async (
   id: string,
-  status: string,
-  password: string
+  status: string
 ): Promise<Pet> => {
   const response = await api.put<{ data: Pet }>(`/pets/${id}/status`, {
     status,
-    password,
   })
   return response.data.data
 }

@@ -8,6 +8,16 @@ export interface VaccinationFormValues {
   notes?: string | null
 }
 
+// Normalize date string to YYYY-MM-DD format for HTML date input
+const normalizeDate = (dateStr: string | undefined | null, defaultDate?: string): string => {
+  if (!dateStr) return defaultDate ?? ''
+  // If already in YYYY-MM-DD format, return as-is
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr
+  // Otherwise parse and convert
+  const d = new Date(dateStr)
+  return d.toISOString().split('T')[0] ?? ''
+}
+
 export const VaccinationForm: React.FC<{
   initial?: Partial<VaccinationFormValues>
   onSubmit: (values: VaccinationFormValues) => Promise<void>
@@ -17,16 +27,14 @@ export const VaccinationForm: React.FC<{
 }> = ({ initial, onSubmit, onCancel, submitting, serverError }) => {
   const [vaccineName, setVaccineName] = useState<string>(initial?.vaccine_name ?? '')
   const [administeredAt, setAdministeredAt] = useState<string>(() =>
-    initial?.administered_at ?? new Date().toISOString().split('T')[0] ?? ''
+    normalizeDate(initial?.administered_at, new Date().toISOString().split('T')[0])
   )
-  const [dueAt, setDueAt] = useState<string>(() =>
-    initial?.due_at ??
-      (() => {
-        const nextYear = new Date()
-        nextYear.setFullYear(nextYear.getFullYear() + 1)
-        return nextYear.toISOString().split('T')[0]
-      })() ?? ''
-  )
+  const [dueAt, setDueAt] = useState<string>(() => {
+    if (initial?.due_at) return normalizeDate(initial.due_at)
+    const nextYear = new Date()
+    nextYear.setFullYear(nextYear.getFullYear() + 1)
+    return nextYear.toISOString().split('T')[0] ?? ''
+  })
   const [notes, setNotes] = useState<string>(initial?.notes ?? '')
   const [errors, setErrors] = useState<{
     vaccine_name?: string

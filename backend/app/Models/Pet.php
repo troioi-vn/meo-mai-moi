@@ -82,6 +82,7 @@ class Pet extends Model implements HasMedia
     {
         if ($this->status !== PetStatus::DELETED) {
             $this->status = PetStatus::DELETED;
+            $this->deleted_at = now();
 
             return $this->save();
         }

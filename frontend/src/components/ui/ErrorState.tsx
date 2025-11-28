@@ -14,7 +14,7 @@ interface ErrorStateProps {
 export const ErrorState: React.FC<ErrorStateProps> = ({
   error,
   onRetry,
-  retryText = 'Back to Cats',
+  retryText = 'Go Back',
   title = 'Error',
   variant = 'default',
 }) => {

@@ -6,6 +6,16 @@ export interface WeightFormValues {
   record_date: string
 }
 
+// Normalize date string to YYYY-MM-DD format for HTML date input
+const normalizeDate = (dateStr: string | undefined | null): string => {
+  if (!dateStr) return new Date().toISOString().split('T')[0] ?? ''
+  // If already in YYYY-MM-DD format, return as-is
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr
+  // Otherwise parse and convert
+  const d = new Date(dateStr)
+  return d.toISOString().split('T')[0] ?? ''
+}
+
 export const WeightForm: React.FC<{
   initial?: Partial<WeightFormValues>
   onSubmit: (values: { weight_kg: number; record_date: string }) => Promise<void>
@@ -14,9 +24,7 @@ export const WeightForm: React.FC<{
   serverError?: string | null
 }> = ({ initial, onSubmit, onCancel, submitting, serverError }) => {
   const [weight, setWeight] = useState<number | ''>(initial?.weight_kg ?? '')
-  const [date, setDate] = useState<string>(() =>
-    initial?.record_date ?? new Date().toISOString().split('T')[0] ?? ''
-  )
+  const [date, setDate] = useState<string>(() => normalizeDate(initial?.record_date))
   const [errors, setErrors] = useState<{ weight_kg?: string; record_date?: string }>({})
 
   const handleSubmit = async (e: React.FormEvent) => {

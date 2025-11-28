@@ -240,7 +240,8 @@ export const useCreatePetForm = (petId?: string) => {
       toast.success(successMessage)
 
       if (isEditMode && petId) {
-        void navigate(`/pets/${petId}`)
+        // Use replace: true to prevent back button returning to edit page
+        void navigate(`/pets/${petId}`, { replace: true })
       } else {
         void navigate(ROUTES.MY_PETS)
       }

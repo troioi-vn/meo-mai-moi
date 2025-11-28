@@ -1,10 +1,11 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { MockedFunction } from 'vitest'
 import CreatePetPage from './CreatePetPage'
-import { getPet, updatePetStatus, deletePet } from '@/api/pets'
+import { getPet, getPetTypes, updatePetStatus, deletePet } from '@/api/pets'
 import { AuthProvider } from '@/contexts/AuthContext'
 
 vi.mock('@/api/pets', async () => {
@@ -12,8 +13,9 @@ vi.mock('@/api/pets', async () => {
   return {
     ...actual,
     getPet: vi.fn() as unknown as MockedFunction<(id: string) => Promise<any>>,
+    getPetTypes: vi.fn() as unknown as MockedFunction<() => Promise<any[]>>,
     updatePetStatus: vi.fn() as unknown as MockedFunction<
-      (id: string, status: string, password: string) => Promise<any>
+      (id: string, status: string) => Promise<any>
     >,
     deletePet: vi.fn() as unknown as MockedFunction<
       (id: string, password: string) => Promise<void>
@@ -56,8 +58,9 @@ const renderEditPage = (petId = '1', initialUser = { id: 1, name: 'User', email:
 
 describe('CreatePetPage edit controls', () => {
   const mockGetPet = getPet as unknown as MockedFunction<(id: string) => Promise<any>>
+  const mockGetPetTypes = getPetTypes as unknown as MockedFunction<() => Promise<any[]>>
   const mockUpdatePetStatus = updatePetStatus as unknown as MockedFunction<
-    (id: string, status: string, password: string) => Promise<any>
+    (id: string, status: string) => Promise<any>
   >
   const mockDeletePet = deletePet as unknown as MockedFunction<
     (id: string, password: string) => Promise<void>
@@ -65,64 +68,86 @@ describe('CreatePetPage edit controls', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mockGetPet.mockResolvedValue({ id: 1, status: 'active' })
+    mockGetPet.mockResolvedValue({
+      id: 1,
+      name: 'Fluffy',
+      breed: 'Persian',
+      location: 'Hanoi',
+      description: 'A cat',
+      status: 'active',
+      pet_type: { id: 1, name: 'Cat', slug: 'cat' },
+    })
+    mockGetPetTypes.mockResolvedValue([
+      { id: 1, name: 'Cat', slug: 'cat', is_active: true, is_system: true, display_order: 1, placement_requests_allowed: true },
+    ])
   })
 
-  it('shows current status and allows updating with password', async () => {
+  it('shows current status and allows updating with confirmation dialog', async () => {
+    const user = userEvent.setup()
     mockUpdatePetStatus.mockResolvedValue({ id: 1, status: 'lost' })
 
     renderEditPage('1')
 
-    // Wait for current status to load
+    // Wait for page to load then navigate to Status tab
     await waitFor(() => {
-      expect(screen.getByText(/Current status:/i)).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /edit pet/i })).toBeInTheDocument()
     })
 
-    // Open status select and choose Lost (find the button combobox after Pet Type)
-    const comboButtons = screen
-      .getAllByRole('combobox')
-      .filter((el) => el.tagName.toLowerCase() === 'button')
-    // First button combobox is pet type. Assume second is status.
-    const statusCombo = comboButtons[1]
-    fireEvent.click(statusCombo)
-    const lost = await screen
-      .findByRole('option', { name: 'Lost' })
-      .catch(() => screen.findByText('Lost'))
-    fireEvent.click(await lost)
+    const statusTab = screen.getByRole('tab', { name: /status/i })
+    await user.click(statusTab)
 
-    // Type password
-    const pw = screen.getAllByPlaceholderText('Confirm with your password')[0] as HTMLInputElement
-    fireEvent.change(pw, { target: { value: 'secret' } })
+    // Wait for current status to load
+    await waitFor(() => {
+      expect(screen.getByText('Current status:')).toBeInTheDocument()
+    })
 
-    // Click update
+    // Open status select and choose Lost
+    const statusCombo = screen.getByRole('combobox')
+    await user.click(statusCombo)
+    const lost = await screen.findByRole('option', { name: 'Lost' })
+    await user.click(lost)
+
+    // Click update - opens confirmation dialog
     const btn = screen.getByRole('button', { name: /Update status/i })
-    fireEvent.click(btn)
+    await user.click(btn)
+
+    // Confirm in dialog
+    const confirmBtn = await screen.findByRole('button', { name: /confirm/i })
+    await user.click(confirmBtn)
 
     await waitFor(() => {
-      expect(mockUpdatePetStatus).toHaveBeenCalledWith('1', 'lost', 'secret')
+      expect(mockUpdatePetStatus).toHaveBeenCalledWith('1', 'lost')
     })
   })
 
-  it('requires password before updating status', async () => {
+  it('does not update status if dialog is cancelled', async () => {
+    const user = userEvent.setup()
     renderEditPage('1')
 
     await waitFor(() => {
-      expect(screen.getByText(/Current status:/i)).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /edit pet/i })).toBeInTheDocument()
     })
 
-    // Select Deceased but do not enter password
-    const comboButtons = screen
-      .getAllByRole('combobox')
-      .filter((el) => el.tagName.toLowerCase() === 'button')
-    const statusCombo = comboButtons[1]
-    fireEvent.click(statusCombo)
-    const deceased = await screen
-      .findByRole('option', { name: 'Deceased' })
-      .catch(() => screen.findByText('Deceased'))
-    fireEvent.click(await deceased)
+    const statusTab = screen.getByRole('tab', { name: /status/i })
+    await user.click(statusTab)
 
+    await waitFor(() => {
+      expect(screen.getByText('Current status:')).toBeInTheDocument()
+    })
+
+    // Select Deceased
+    const statusCombo = screen.getByRole('combobox')
+    await user.click(statusCombo)
+    const deceased = await screen.findByRole('option', { name: 'Deceased' })
+    await user.click(deceased)
+
+    // Click update - opens dialog
     const btn = screen.getByRole('button', { name: /Update status/i })
-    fireEvent.click(btn)
+    await user.click(btn)
+
+    // Cancel the dialog
+    const cancelBtn = await screen.findByRole('button', { name: /cancel/i })
+    await user.click(cancelBtn)
 
     // updatePetStatus should not be called
     await waitFor(() => {
@@ -130,97 +155,122 @@ describe('CreatePetPage edit controls', () => {
     })
   })
 
-  it('removes the pet when password is provided (after confirm)', async () => {
+  it('removes the pet when password is provided in modal', async () => {
+    const user = userEvent.setup()
     mockDeletePet.mockResolvedValue(undefined)
 
     renderEditPage('1')
 
     await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /edit pet/i })).toBeInTheDocument()
+    })
+
+    const statusTab = screen.getByRole('tab', { name: /status/i })
+    await user.click(statusTab)
+
+    await waitFor(() => {
       expect(screen.getByText(/Danger zone/i)).toBeInTheDocument()
     })
 
-    const pwFields = screen.getAllByPlaceholderText('Confirm with your password')
-    const delPw = pwFields[pwFields.length - 1]
-    fireEvent.change(delPw, { target: { value: 'secret' } })
-
+    // Click Remove pet - opens dialog with password field inside
     const removeBtn = screen.getByRole('button', { name: /Remove pet/i })
-    fireEvent.click(removeBtn)
+    await user.click(removeBtn)
 
-    const confirmBtn = await screen.findByRole('button', { name: /Confirm remove/i })
-    fireEvent.click(confirmBtn)
+    // Enter password in the modal
+    const pwField = await screen.findByPlaceholderText('Enter your password')
+    await user.type(pwField, 'secret')
+
+    // Click confirm
+    const confirmBtn = screen.getByRole('button', { name: /Confirm remove/i })
+    await user.click(confirmBtn)
 
     await waitFor(() => {
       expect(mockDeletePet).toHaveBeenCalledWith('1', 'secret')
     })
   })
 
-  it('does not remove the pet without password', async () => {
+  it('does not remove the pet without password in modal', async () => {
+    const user = userEvent.setup()
     renderEditPage('1')
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /edit pet/i })).toBeInTheDocument()
+    })
+
+    const statusTab = screen.getByRole('tab', { name: /status/i })
+    await user.click(statusTab)
 
     await waitFor(() => {
       expect(screen.getByText(/Danger zone/i)).toBeInTheDocument()
     })
 
+    // Click Remove pet - opens dialog
     const removeBtn = screen.getByRole('button', { name: /Remove pet/i })
-    fireEvent.click(removeBtn)
+    await user.click(removeBtn)
 
-    await waitFor(() => {
-      expect(mockDeletePet).not.toHaveBeenCalled()
-    })
+    // Try to confirm without entering password
+    const confirmBtn = await screen.findByRole('button', { name: /Confirm remove/i })
+    // Confirm button should be disabled without password
+    expect(confirmBtn).toBeDisabled()
+
+    // API should not be called
+    expect(mockDeletePet).not.toHaveBeenCalled()
   })
 
   it('asks for confirmation before removing the pet', async () => {
+    const user = userEvent.setup()
     mockDeletePet.mockResolvedValue(undefined)
 
     renderEditPage('1')
 
     await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /edit pet/i })).toBeInTheDocument()
+    })
+
+    const statusTab = screen.getByRole('tab', { name: /status/i })
+    await user.click(statusTab)
+
+    await waitFor(() => {
       expect(screen.getByText(/Danger zone/i)).toBeInTheDocument()
     })
 
-    // Enter password first
-    const pwFields = screen.getAllByPlaceholderText('Confirm with your password')
-    const delPw = pwFields[pwFields.length - 1]
-    fireEvent.change(delPw, { target: { value: 'secret' } })
-
-    // Click Remove pet (opens dialog)
+    // Click Remove pet - opens dialog
     const removeBtn = screen.getByRole('button', { name: /Remove pet/i })
-    fireEvent.click(removeBtn)
+    await user.click(removeBtn)
 
-    // Dialog appears with Confirm remove action
-    const confirmBtn = await screen.findByRole('button', { name: /Confirm remove/i })
-    expect(confirmBtn).toBeInTheDocument()
-
-    // Confirm
-    fireEvent.click(confirmBtn)
-
-    await waitFor(() => {
-      expect(mockDeletePet).toHaveBeenCalledWith('1', 'secret')
-    })
+    // Dialog should appear with password field and confirm button
+    expect(await screen.findByPlaceholderText('Enter your password')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Confirm remove/i })).toBeInTheDocument()
   })
 
   it('canceling the confirmation dialog does not remove the pet', async () => {
+    const user = userEvent.setup()
     renderEditPage('1')
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /edit pet/i })).toBeInTheDocument()
+    })
+
+    const statusTab = screen.getByRole('tab', { name: /status/i })
+    await user.click(statusTab)
 
     await waitFor(() => {
       expect(screen.getByText(/Danger zone/i)).toBeInTheDocument()
     })
 
-    // Provide password
-    const pwFields = screen.getAllByPlaceholderText('Confirm with your password')
-    const delPw = pwFields[pwFields.length - 1]
-    fireEvent.change(delPw, { target: { value: 'secret' } })
-
     // Open dialog
-    fireEvent.click(screen.getByRole('button', { name: /Remove pet/i }))
+    const removeBtn = screen.getByRole('button', { name: /Remove pet/i })
+    await user.click(removeBtn)
 
-    // Click Cancel
-    const cancelBtn = await screen.findByRole('button', { name: /Cancel/i })
-    fireEvent.click(cancelBtn)
+    // Enter password
+    const pwField = await screen.findByPlaceholderText('Enter your password')
+    await user.type(pwField, 'secret')
+
+    // Click Cancel instead
+    const cancelBtn = screen.getByRole('button', { name: /Cancel/i })
+    await user.click(cancelBtn)
 
     // Ensure API not called
-    await waitFor(() => {
-      expect(mockDeletePet).not.toHaveBeenCalled()
-    })
+    expect(mockDeletePet).not.toHaveBeenCalled()
   })
 })

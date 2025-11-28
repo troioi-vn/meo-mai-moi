@@ -25,10 +25,9 @@ use Illuminate\Validation\Rules\Enum;
  *         required=true,
  *
  *         @OA\JsonContent(
- *             required={"status", "password"},
+ *             required={"status"},
  *
- *             @OA\Property(property="status", type="string", enum=App\Enums\PetStatus::class, example="lost"),
- *             @OA\Property(property="password", type="string", format="password", description="User's current password for confirmation")
+ *             @OA\Property(property="status", type="string", enum=App\Enums\PetStatus::class, example="lost")
  *         )
  *     ),
  *
@@ -51,16 +50,11 @@ class UpdatePetStatusController extends Controller
 
     public function __invoke(Request $request, Pet $pet)
     {
-        $user = $this->authorizeUser($request, 'update', $pet);
+        $this->authorizeUser($request, 'update', $pet);
 
         $validated = $request->validate([
             'status' => ['required', 'string', new Enum(PetStatus::class)],
-            'password' => 'required|string',
         ]);
-
-        if (! Hash::check($validated['password'], $user->password)) {
-            return $this->handleBusinessError('The provided password does not match our records.', 422);
-        }
 
         $pet->status = $validated['status'];
         $pet->save();

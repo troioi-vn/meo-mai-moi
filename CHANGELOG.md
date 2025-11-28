@@ -6,6 +6,13 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Changed
 
+- **Frontend: Inline Edit for Weight and Vaccination Records**
+
+  - Added pencil (edit) icon button to each weight record in the Weight History card
+  - Added pencil (edit) icon button to each vaccination record in the Upcoming Vaccinations section
+  - Clicking edit shows inline form with current values for modification
+  - Improved UX with consistent icon placement alongside delete button
+
 - **Frontend: Notifications API No Longer Polled for Unauthenticated Users**
 
   - Added authentication check to notification polling effect in `NotificationProvider`

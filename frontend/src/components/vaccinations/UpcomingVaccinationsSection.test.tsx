@@ -1,13 +1,21 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { UpcomingVaccinationsSection } from './UpcomingVaccinationsSection'
 import { server } from '@/mocks/server'
 import { http, HttpResponse } from 'msw'
 
+// Mock sonner toast
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+}))
+
 // Mock current date to 2024-06-15
 beforeEach(() => {
-  vi.useFakeTimers()
+  vi.useFakeTimers({ shouldAdvanceTime: true })
   vi.setSystemTime(new Date('2024-06-15T12:00:00Z'))
 })
 
@@ -165,17 +173,14 @@ describe('UpcomingVaccinationsSection', () => {
 
     await user.click(screen.getByRole('button', { name: /add new vaccination entry/i }))
 
-    // Fill out form (assuming VaccinationForm has these fields)
+    // Fill out form - label is "Vaccine" not "Vaccine name"
     await waitFor(() => {
-      expect(screen.getByLabelText(/vaccine name/i)).toBeInTheDocument()
+      expect(screen.getByText('Vaccine')).toBeInTheDocument()
     })
 
-    await user.type(screen.getByLabelText(/vaccine name/i), 'New Vaccine')
-    
-    // Find and fill the administered date field
-    const administeredInput = screen.getByLabelText(/administered/i)
-    await user.clear(administeredInput)
-    await user.type(administeredInput, '2024-06-15')
+    const vaccineInput = screen.getByPlaceholderText('e.g., Rabies')
+    await user.clear(vaccineInput)
+    await user.type(vaccineInput, 'New Vaccine')
 
     // Submit the form
     await user.click(screen.getByRole('button', { name: /save/i }))

@@ -1,32 +1,40 @@
 import React, { useEffect, useState } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ChevronLeft } from 'lucide-react'
 
 import { useCreatePetForm } from '@/hooks/useCreatePetForm'
 import { deletePet, updatePetStatus, getPet } from '@/api/pets'
 import type { Pet } from '@/types/pet'
+import { petSupportsCapability } from '@/types/pet'
 import { toast } from 'sonner'
-// alert-dialog primitives used in PetDangerZone
 import { PetTypeSelect } from '@/components/pets/PetTypeSelect'
 import { PetFormFields } from '@/components/pets/PetFormFields'
 import { PetStatusControls } from '@/components/pets/PetStatusControls'
 import { PetDangerZone } from '@/components/pets/PetDangerZone'
-import { ArrowLeft } from 'lucide-react'
 import { PetPhoto } from '@/components/PetPhoto'
+import { LoadingState } from '@/components/ui/LoadingState'
+import { ErrorState } from '@/components/ui/ErrorState'
+import { WeightHistoryCard } from '@/components/weights/WeightHistoryCard'
+import { UpcomingVaccinationsSection } from '@/components/vaccinations/UpcomingVaccinationsSection'
+
+const TAB_VALUES = ['general', 'health', 'status'] as const
+type TabValue = (typeof TAB_VALUES)[number]
 
 const CreatePetPage: React.FC = () => {
   const { id: petId } = useParams<{ id: string }>()
   const isEditMode = !!petId
   const navigate = useNavigate()
+  const [activeTab, setActiveTab] = useState<TabValue>('general')
   const [currentStatus, setCurrentStatus] = useState<
     'active' | 'lost' | 'deceased' | 'deleted' | ''
   >('')
   const [newStatus, setNewStatus] = useState<'active' | 'lost' | 'deceased' | ''>('')
-  const [statusPassword, setStatusPassword] = useState('')
-  const [deletePassword, setDeletePassword] = useState('')
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [loadedPet, setLoadedPet] = useState<Pet | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   const {
     formData,
@@ -52,11 +60,11 @@ const CreatePetPage: React.FC = () => {
         setCurrentStatus(st)
         setNewStatus(st === 'deleted' ? 'active' : st)
       } catch {
-        /* ignore */
+        setLoadError('Pet not found')
       }
     }
     void loadPet().catch(() => {
-      // Ignore errors during pet loading
+      setLoadError('Failed to load pet')
     })
   }, [isEditMode, petId])
 
@@ -66,17 +74,14 @@ const CreatePetPage: React.FC = () => {
       toast.error('Please select a status')
       return
     }
-    if (!statusPassword.trim()) {
-      toast.error('Please enter your password to confirm')
-      return
-    }
     try {
       setIsUpdatingStatus(true)
-      const updated = await updatePetStatus(petId, newStatus, statusPassword)
+      // No password required - just confirmation dialog in component
+      const updated = await updatePetStatus(petId, newStatus)
       setCurrentStatus(updated.status)
       toast.success('Status updated')
       // Redirect to pet profile after status change
-      void navigate(`/pets/${petId}`)
+      void navigate(`/pets/${petId}`, { replace: true })
     } catch {
       toast.error('Failed to update status')
     } finally {
@@ -84,18 +89,18 @@ const CreatePetPage: React.FC = () => {
     }
   }
 
-  const handleDeletePetClick = async () => {
+  const handleDeletePetClick = async (password: string) => {
     if (!petId) return
-    if (!deletePassword.trim()) {
+    if (!password.trim()) {
       toast.error('Please enter your password to confirm')
       return
     }
     try {
       setIsDeleting(true)
-      await deletePet(petId, deletePassword)
+      await deletePet(petId, password)
       toast.success('Pet removed')
-      // Reuse cancel navigation to go back to My Pets
-      handleCancel()
+      // Navigate to My Pets
+      void navigate('/account/pets', { replace: true })
     } catch {
       toast.error('Failed to remove pet')
     } finally {
@@ -103,125 +108,243 @@ const CreatePetPage: React.FC = () => {
     }
   }
 
+  const handleBack = () => {
+    navigate(-1)
+  }
 
+  // Show loading state for edit mode
+  if (isEditMode && isLoadingPet) {
+    return <LoadingState message="Loading pet data..." />
+  }
 
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
-      <div className="w-full max-w-2xl p-8 space-y-8 bg-card rounded-lg shadow-lg border">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" asChild>
-              <Link
-                to={isEditMode ? `/pets/${petId}` : '/account/pets'}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                {isEditMode ? 'Back to Pet' : 'Back to My Pets'}
-              </Link>
+  // Show error state if pet not found (edit mode only)
+  if (isEditMode && loadError) {
+    return (
+      <ErrorState
+        error={loadError}
+        onRetry={() => navigate('/account/pets')}
+        retryText="Back to My Pets"
+      />
+    )
+  }
+
+  // Check capabilities for tabs
+  const petType = loadedPet?.pet_type
+  const supportsWeight = petType ? petSupportsCapability(petType, 'weight') : false
+  const supportsVaccinations = petType ? petSupportsCapability(petType, 'vaccinations') : false
+  const supportsHealth = supportsWeight || supportsVaccinations
+
+  // Create mode - simple form without tabs
+  if (!isEditMode) {
+    return (
+      <div className="min-h-screen bg-background">
+        {/* Navigation */}
+        <div className="px-4 py-3">
+          <div className="max-w-2xl mx-auto">
+            <Button
+              variant="ghost"
+              size="default"
+              onClick={handleBack}
+              className="flex items-center gap-1 -ml-2 text-base"
+            >
+              <ChevronLeft className="h-6 w-6" />
+              Back
             </Button>
           </div>
         </div>
-        <h1 className="text-3xl font-bold text-center text-card-foreground mb-2">
-          {isEditMode ? 'Edit Pet' : 'Add a New Pet'}
-        </h1>
-        {isEditMode && loadedPet && (
-          <div className="flex justify-center">
-            <PetPhoto
-              pet={loadedPet}
-              onPhotoUpdate={(updatedPet) => {
-                setLoadedPet(updatedPet)
-              }}
-              showUploadControls={true}
-              className="h-40 w-40 object-cover rounded-full border"
-            />
-          </div>
-        )}
-        {isLoadingPet ? (
-          <div className="flex items-center justify-center py-8">
-            <p className="text-muted-foreground">Loading pet data...</p>
-          </div>
-        ) : (
-          <form
-            onSubmit={(e) => {
-              void handleSubmit(e)
-            }}
-            className="space-y-6"
-            noValidate
+
+        <div className="w-full max-w-2xl mx-auto px-4 pb-8">
+          <h1 className="text-3xl font-bold text-center text-foreground mb-6">Add a New Pet</h1>
+
+          {isLoadingPet ? (
+            <div className="flex items-center justify-center py-8">
+              <p className="text-muted-foreground">Loading...</p>
+            </div>
+          ) : (
+            <div className="bg-card rounded-lg shadow-lg border p-6">
+              <form
+                onSubmit={(e) => {
+                  void handleSubmit(e)
+                }}
+                className="space-y-6"
+                noValidate
+              >
+                <PetTypeSelect
+                  petTypes={petTypes}
+                  loading={loadingPetTypes}
+                  value={formData.pet_type_id ?? ''}
+                  onChange={(id) => {
+                    updateField('pet_type_id')(id)
+                  }}
+                  error={errors.pet_type_id}
+                />
+
+                <PetFormFields formData={formData} errors={errors} updateField={updateField} />
+
+                {error && (
+                  <p className="text-destructive" data-testid="form-error">
+                    {error}
+                  </p>
+                )}
+
+                <div className="flex gap-4">
+                  <Button
+                    type="submit"
+                    aria-label="Create Pet"
+                    disabled={isSubmitting || loadingPetTypes}
+                  >
+                    {isSubmitting ? 'Creating...' : 'Create Pet'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      handleCancel()
+                    }}
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // Edit mode - with tabs
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Navigation */}
+      <div className="px-4 py-3">
+        <div className="max-w-2xl mx-auto">
+          <Button
+            variant="ghost"
+            size="default"
+            onClick={handleBack}
+            className="flex items-center gap-1 -ml-2 text-base"
           >
-            <PetTypeSelect
-              petTypes={petTypes}
-              loading={loadingPetTypes}
-              value={formData.pet_type_id ?? ''}
-              onChange={(id) => {
-                updateField('pet_type_id')(id)
-              }}
-              error={errors.pet_type_id}
-            />
+            <ChevronLeft className="h-6 w-6" />
+            Back
+          </Button>
+        </div>
+      </div>
 
-            <PetFormFields formData={formData} errors={errors} updateField={updateField} />
+      <div className="w-full max-w-2xl mx-auto px-4 pb-8">
+        <h1 className="text-3xl font-bold text-center text-foreground mb-6">Edit Pet</h1>
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => setActiveTab(value as TabValue)}
+          className="space-y-6"
+        >
+          <TabsList className={`grid w-full ${supportsHealth ? 'grid-cols-3' : 'grid-cols-2'}`}>
+            <TabsTrigger value="general">General</TabsTrigger>
+            {supportsHealth && <TabsTrigger value="health">Health</TabsTrigger>}
+            <TabsTrigger value="status">Status</TabsTrigger>
+          </TabsList>
 
-
-
-            {error && (
-              <p className="text-destructive" data-testid="form-error">
-                {error}
-              </p>
+          {/* General Tab */}
+          <TabsContent value="general" className="space-y-6">
+            {/* Pet Photo */}
+            {loadedPet && (
+              <div className="flex justify-center">
+                <PetPhoto
+                  pet={loadedPet}
+                  onPhotoUpdate={(updatedPet) => {
+                    setLoadedPet(updatedPet)
+                  }}
+                  showUploadControls={true}
+                  className="h-40 w-40 object-cover rounded-full border"
+                />
+              </div>
             )}
 
-            <div className="flex gap-4">
-              <Button
-                type="submit"
-                aria-label={isEditMode ? 'Update Pet' : 'Create Pet'}
-                disabled={isSubmitting || loadingPetTypes}
-              >
-                {isSubmitting
-                  ? isEditMode
-                    ? 'Updating...'
-                    : 'Creating...'
-                  : isEditMode
-                    ? 'Update Pet'
-                    : 'Create Pet'}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  handleCancel()
+            {/* Pet Form */}
+            <div className="bg-card rounded-lg shadow-lg border p-6">
+              <form
+                onSubmit={(e) => {
+                  void handleSubmit(e)
                 }}
-                disabled={isSubmitting}
+                className="space-y-6"
+                noValidate
               >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        )}
+                <PetTypeSelect
+                  petTypes={petTypes}
+                  loading={loadingPetTypes}
+                  value={formData.pet_type_id ?? ''}
+                  onChange={(id) => {
+                    updateField('pet_type_id')(id)
+                  }}
+                  error={errors.pet_type_id}
+                />
 
-        {isEditMode && (
-          <div className="mt-10 space-y-6">
+                <PetFormFields formData={formData} errors={errors} updateField={updateField} />
+
+                {error && (
+                  <p className="text-destructive" data-testid="form-error">
+                    {error}
+                  </p>
+                )}
+
+                <div className="flex gap-4">
+                  <Button
+                    type="submit"
+                    aria-label="Update Pet"
+                    disabled={isSubmitting || loadingPetTypes}
+                  >
+                    {isSubmitting ? 'Updating...' : 'Update Pet'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      handleCancel()
+                    }}
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </TabsContent>
+
+          {/* Health Tab */}
+          {supportsHealth && (
+            <TabsContent value="health" className="space-y-6">
+              {supportsVaccinations && loadedPet && (
+                <UpcomingVaccinationsSection petId={loadedPet.id} canEdit={true} />
+              )}
+              {supportsWeight && loadedPet && (
+                <WeightHistoryCard petId={loadedPet.id} canEdit={true} />
+              )}
+            </TabsContent>
+          )}
+
+          {/* Status Tab */}
+          <TabsContent value="status" className="space-y-6">
+            {/* Status Controls */}
             <PetStatusControls
               currentStatus={currentStatus || 'active'}
               newStatus={newStatus || 'active'}
               setNewStatus={(s) => {
                 setNewStatus(s)
               }}
-              statusPassword={statusPassword}
-              setStatusPassword={setStatusPassword}
               onUpdateStatus={() => {
                 void handleUpdateStatusClick()
               }}
               isUpdating={isUpdatingStatus}
             />
 
+            {/* Danger Zone */}
             <PetDangerZone
-              deletePassword={deletePassword}
-              setDeletePassword={setDeletePassword}
               isDeleting={isDeleting}
-              onDelete={() => {
-                void handleDeletePetClick()
-              }}
+              onDelete={handleDeletePetClick}
             />
-          </div>
-        )}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )

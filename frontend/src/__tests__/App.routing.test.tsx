@@ -87,52 +87,23 @@ describe('App Routing', () => {
     })
   })
 
-  describe('Cat profile routes (legacy redirect)', () => {
-    it('renders CatProfilePage for /cats/:id route', async () => {
+  describe('Legacy cat routes (no longer supported)', () => {
+    it('shows not found page for /cats/:id route (legacy routes removed)', async () => {
       renderWithRouter(<App />, { route: '/cats/1' })
 
-      // Should show loading initially
-      expect(screen.getByText(/loading/i)).toBeInTheDocument()
-
-      // Wait for cat data to load and verify we're on the cat profile page
+      // Legacy /cats routes are no longer supported and should show 404
       await waitFor(async () => {
-        expect(await screen.findByText('Fluffy')).toBeInTheDocument()
+        expect(await screen.findByText(/not found/i)).toBeInTheDocument()
       })
-
-      // Verify it's the profile page by checking for the cat's name
-      expect(screen.getByText('Fluffy')).toBeInTheDocument()
     })
 
-    it('handles cat profile route with invalid ID (redirects to pet route)', async () => {
-      // Suppress console.error for this test as we expect a 404 error
-      vi.spyOn(console, 'error').mockImplementation(() => {
-        /* empty */
-      })
+    it('shows not found page for /cats/:id/edit route (legacy routes removed)', async () => {
+      renderWithRouter(<App />, { route: '/cats/1/edit' })
 
-      renderWithRouter(<App />, { route: '/cats/999' })
-
+      // Legacy /cats routes are no longer supported and should show 404
       await waitFor(async () => {
-        expect(await screen.findByText(/pet not found/i)).toBeInTheDocument()
+        expect(await screen.findByText(/not found/i)).toBeInTheDocument()
       })
-
-      // Restore console.error after the test
-      vi.restoreAllMocks()
-    })
-  })
-
-  describe('Edit cat routes', () => {
-    it('renders edit cat route correctly (redirects to pet route)', async () => {
-      renderWithRouter(<App />, {
-        route: '/cats/1/edit',
-        initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
-      })
-
-      await waitFor(
-        async () => {
-          expect(await screen.findByRole('heading', { name: /edit pet/i })).toBeInTheDocument()
-        },
-        { timeout: 5000 }
-      )
     })
   })
 

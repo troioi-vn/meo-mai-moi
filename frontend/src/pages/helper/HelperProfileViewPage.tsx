@@ -39,7 +39,7 @@ export default function HelperProfileViewPage() {
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <table className="min-w-full border border-gray-300 rounded-md overflow-hidden">
+        <table className="min-w-full border border-border rounded-md overflow-hidden">
           <tbody>
             <tr className="border-b">
               <td className="font-semibold px-4 py-2">Country</td>

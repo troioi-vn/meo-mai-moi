@@ -161,8 +161,8 @@ export default function ResetPasswordPage() {
             <CardDescription>This password reset link is invalid or has expired.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Alert className="border-red-200 bg-red-50">
-              <AlertDescription className="text-red-800">{error}</AlertDescription>
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
             </Alert>
 
             <div className="space-y-2">
@@ -193,8 +193,8 @@ export default function ResetPasswordPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Alert className="border-green-200 bg-green-50">
-              <AlertDescription className="text-green-800">
+            <Alert variant="success">
+              <AlertDescription>
                 Password reset successfully. Please log in with your new password.
               </AlertDescription>
             </Alert>
@@ -229,8 +229,8 @@ export default function ResetPasswordPage() {
             className="space-y-4"
           >
             {error && (
-              <Alert className="border-red-200 bg-red-50">
-                <AlertDescription className="text-red-800">{error}</AlertDescription>
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 

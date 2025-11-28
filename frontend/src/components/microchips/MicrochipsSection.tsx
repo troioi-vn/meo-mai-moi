@@ -65,7 +65,9 @@ const MicrochipForm: React.FC<{
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
             placeholder="e.g., 982000123456789"
           />
-          {errors.chip_number && <p className="text-xs text-red-600 mt-1">{errors.chip_number}</p>}
+          {errors.chip_number && (
+            <p className="text-xs text-destructive mt-1">{errors.chip_number}</p>
+          )}
         </div>
         <div>
           <label className="block text-sm font-medium">Issuer (optional)</label>
@@ -91,7 +93,7 @@ const MicrochipForm: React.FC<{
           />
         </div>
       </div>
-      {serverError && <p className="text-sm text-red-600">{serverError}</p>}
+      {serverError && <p className="text-sm text-destructive">{serverError}</p>}
       <div className="flex gap-2">
         <Button type="submit" disabled={Boolean(submitting)}>
           {submitting ? 'Saving…' : 'Save'}
@@ -169,7 +171,7 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
   }
 
   if (loading) return <div>Loading microchips…</div>
-  if (error) return <div className="text-red-600">{error}</div>
+  if (error) return <div className="text-destructive">{error}</div>
 
   return (
     <section className="mt-8">

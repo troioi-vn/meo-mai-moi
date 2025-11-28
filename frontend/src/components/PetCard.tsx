@@ -4,6 +4,7 @@ import type { Pet } from '@/types/pet'
 import { PlacementResponseModal } from '@/components/PlacementResponseModal'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 // Using default avatar as placeholder for pets
 import placeholderCatImage from '@/assets/images/default-avatar.webp'
@@ -75,29 +76,26 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
         <CardDescription className="text-muted-foreground">{formatPetAge(pet)}</CardDescription>
         <div className="mt-2 flex flex-wrap gap-2">
           {hasFulfilledPlacement && (
-            <span className="inline-block bg-emerald-600 text-white px-2 py-1 rounded-full text-xs font-semibold">
+            <Badge variant="success" className="rounded-full">
               Fulfilled
-            </span>
+            </Badge>
           )}
           {pet.status === 'lost' && (
-            <span className="inline-block bg-red-600 text-white px-2 py-1 rounded-full text-xs font-semibold">
+            <Badge variant="destructive" className="rounded-full">
               Lost
-            </span>
+            </Badge>
           )}
           {pet.placement_requests?.map((request) => {
             const key = `${String(pet.id)}-${String(request.id)}-${request.expires_at ?? request.start_date ?? ''}`
             return (
-              <span
-                key={key}
-                className="inline-block bg-secondary text-secondary-foreground px-2 py-1 rounded-full text-xs font-medium"
-              >
+              <Badge key={key} variant="secondary" className="rounded-full">
                 {request.request_type.replace('_', ' ').toUpperCase()}
-              </span>
+              </Badge>
             )
           })}
         </div>
       </CardHeader>
-      <CardContent className="flex flex-grow flex-col justify-between p-4">
+      <CardContent className="flex grow flex-col justify-between p-4">
         <div className="mt-4">
           {isAuthenticated &&
             user?.id !== pet.user_id &&

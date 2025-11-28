@@ -14,8 +14,8 @@ export const MedicalNoteForm: React.FC<{
   serverError?: string | null
 }> = ({ initial, onSubmit, onCancel, submitting, serverError }) => {
   const [note, setNote] = useState<string>(initial?.note ?? '')
-  const [date, setDate] = useState<string>(() =>
-    initial?.record_date ?? new Date().toISOString().split('T')[0] ?? ''
+  const [date, setDate] = useState<string>(
+    () => initial?.record_date ?? new Date().toISOString().split('T')[0] ?? ''
   )
   const [errors, setErrors] = useState<{ note?: string; record_date?: string }>({})
 
@@ -53,7 +53,7 @@ export const MedicalNoteForm: React.FC<{
             placeholder="e.g., Vaccination: Rabies"
             rows={3}
           />
-          {errors.note && <p className="text-xs text-red-600 mt-1">{errors.note}</p>}
+          {errors.note && <p className="text-xs text-destructive mt-1">{errors.note}</p>}
         </div>
         <div>
           <label className="block text-sm font-medium">Date</label>
@@ -65,10 +65,12 @@ export const MedicalNoteForm: React.FC<{
             }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
           />
-          {errors.record_date && <p className="text-xs text-red-600 mt-1">{errors.record_date}</p>}
+          {errors.record_date && (
+            <p className="text-xs text-destructive mt-1">{errors.record_date}</p>
+          )}
         </div>
       </div>
-      {serverError && <p className="text-sm text-red-600">{serverError}</p>}
+      {serverError && <p className="text-sm text-destructive">{serverError}</p>}
       <div className="flex gap-2">
         <Button type="submit" disabled={Boolean(submitting)}>
           {submitting ? 'Saving…' : 'Save'}

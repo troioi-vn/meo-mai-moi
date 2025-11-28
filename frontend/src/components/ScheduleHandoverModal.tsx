@@ -8,6 +8,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { api } from '@/api/axios'
 import { toast } from 'sonner'
 
@@ -63,29 +65,35 @@ export const ScheduleHandoverModal: React.FC<ScheduleHandoverModalProps> = ({
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-2">
-          <label className="grid grid-cols-4 items-center gap-3">
-            <span className="text-right">Date & Time</span>
-            <input
+          <div className="grid grid-cols-4 items-center gap-3">
+            <Label htmlFor="scheduled-at" className="text-right">
+              Date & Time
+            </Label>
+            <Input
+              id="scheduled-at"
               type="datetime-local"
-              className="col-span-3 rounded-md border bg-background px-3 py-2"
+              className="col-span-3"
               value={scheduledAt}
               onChange={(e) => {
                 setScheduledAt(e.target.value)
               }}
             />
-          </label>
-          <label className="grid grid-cols-4 items-center gap-3">
-            <span className="text-right">Location</span>
-            <input
+          </div>
+          <div className="grid grid-cols-4 items-center gap-3">
+            <Label htmlFor="location" className="text-right">
+              Location
+            </Label>
+            <Input
+              id="location"
               type="text"
               placeholder="Cafe address or public spot"
-              className="col-span-3 rounded-md border bg-background px-3 py-2"
+              className="col-span-3"
               value={location}
               onChange={(e) => {
                 setLocation(e.target.value)
               }}
             />
-          </label>
+          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={submitting}>

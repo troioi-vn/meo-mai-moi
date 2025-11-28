@@ -103,8 +103,8 @@ const WaitlistForm: React.FC<WaitlistFormProps> = ({ onSuccess }) => {
         className="space-y-4"
       >
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-            <p className="text-red-800 text-sm">{error}</p>
+          <div className="bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-lg p-3">
+            <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
           </div>
         )}
 

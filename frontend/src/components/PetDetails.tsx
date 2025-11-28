@@ -54,7 +54,12 @@ const PetDetails: React.FC<PetDetailsProps> = ({
       <div className="relative">
         <PetPhoto
           pet={pet}
-          onPhotoUpdate={onPetUpdate ?? (() => { /* no-op */ })}
+          onPhotoUpdate={
+            onPetUpdate ??
+            (() => {
+              /* no-op */
+            })
+          }
           showUploadControls={false} // No upload controls on view page
           className={`w-full h-64 object-cover ${isDeceased ? 'grayscale' : ''}`}
         />
@@ -72,7 +77,7 @@ const PetDetails: React.FC<PetDetailsProps> = ({
               {pet.breed} • {ageDisplay}
             </p>
             <div className="flex items-center gap-2 mt-2">
-              <span className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm font-medium">
+              <span className="inline-block bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-1 rounded-full text-sm font-medium">
                 {pet.pet_type.name}
               </span>
             </div>

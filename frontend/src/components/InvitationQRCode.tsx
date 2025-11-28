@@ -115,7 +115,7 @@ const InvitationQRCode: React.FC<InvitationQRCodeProps> = ({ invitationUrl, invi
               {isLoading && (
                 <div className="absolute inset-0 border rounded-lg flex items-center justify-center bg-background z-10">
                   <div className="text-center space-y-2">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto"></div>
                     <p className="text-sm text-muted-foreground">Generating QR code...</p>
                   </div>
                 </div>
@@ -123,7 +123,7 @@ const InvitationQRCode: React.FC<InvitationQRCodeProps> = ({ invitationUrl, invi
               {error && (
                 <div className="absolute inset-0 border rounded-lg flex items-center justify-center bg-background z-10">
                   <div className="text-center space-y-2">
-                    <p className="text-sm text-red-600">{error}</p>
+                    <p className="text-sm text-destructive">{error}</p>
                     <Button
                       variant="outline"
                       size="sm"

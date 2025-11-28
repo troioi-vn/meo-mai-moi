@@ -75,8 +75,8 @@ export default function ForgotPasswordPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Alert className="border-green-200 bg-green-50">
-              <AlertDescription className="text-green-800">
+            <Alert variant="success">
+              <AlertDescription>
                 If an account with that email exists, we have sent you a password reset link. Please
                 check your inbox and spam folder.
               </AlertDescription>
@@ -121,8 +121,8 @@ export default function ForgotPasswordPage() {
             className="space-y-4"
           >
             {error && (
-              <Alert className="border-red-200 bg-red-50">
-                <AlertDescription className="text-red-800">{error}</AlertDescription>
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 

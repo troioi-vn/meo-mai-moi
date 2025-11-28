@@ -14,7 +14,12 @@ interface PetPhotoProps {
   className?: string
 }
 
-export function PetPhoto({ pet, onPhotoUpdate, showUploadControls = false, className = "w-full h-64 object-cover" }: PetPhotoProps) {
+export function PetPhoto({
+  pet,
+  onPhotoUpdate,
+  showUploadControls = false,
+  className = 'w-full h-64 object-cover',
+}: PetPhotoProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -79,7 +84,7 @@ export function PetPhoto({ pet, onPhotoUpdate, showUploadControls = false, class
     try {
       await api.delete(`/pets/${String(pet.id)}/photos/current`)
       toast.success('Photo deleted successfully')
-      
+
       // Create updated pet object with photo_url removed
       const updatedPet = { ...pet, photo_url: undefined }
       onPhotoUpdate(updatedPet)
@@ -101,32 +106,23 @@ export function PetPhoto({ pet, onPhotoUpdate, showUploadControls = false, class
 
   return (
     <div className="flex flex-col items-center space-y-4">
-      <img
-        src={imageUrl}
-        alt={pet.name}
-        className={className}
-      />
-      
+      <img src={imageUrl} alt={pet.name} className={className} />
+
       {showUploadControls && (
         <div className="flex space-x-2">
-          <Button 
-            onClick={handleUploadClick} 
-            disabled={isUploading} 
-            size="sm" 
-            variant="outline"
-            className="bg-white hover:bg-gray-50 text-gray-700 shadow-md"
-          >
+          <Button onClick={handleUploadClick} disabled={isUploading} size="sm" variant="outline">
             <Upload className="h-4 w-4 mr-2" />
             {isUploading ? 'Uploading...' : 'Upload'}
           </Button>
 
           {pet.photo_url && (
-            <Button 
-              onClick={() => { void handleDeletePhoto(); }} 
-              disabled={isDeleting} 
-              size="sm" 
-              variant="outline"
-              className="bg-white hover:bg-gray-50 text-red-600 shadow-md"
+            <Button
+              onClick={() => {
+                void handleDeletePhoto()
+              }}
+              disabled={isDeleting}
+              size="sm"
+              variant="destructive"
             >
               <Trash2 className="h-4 w-4 mr-2" />
               {isDeleting ? 'Deleting...' : 'Remove'}

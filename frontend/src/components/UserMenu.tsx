@@ -53,7 +53,7 @@ export function UserMenu() {
       <DropdownMenuTrigger asChild>
         <Avatar className="h-9 w-9 cursor-pointer">
           <AvatarImage key={avatarSrc} src={avatarSrc} alt={user.name} />
-          <AvatarFallback className="bg-blue-500 text-white font-medium text-sm">
+          <AvatarFallback className="bg-primary text-primary-foreground font-medium text-sm">
             {user.name
               ? user.name
                   .split(' ')

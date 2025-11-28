@@ -5,7 +5,7 @@ export function HeroSection() {
         <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl text-foreground">
           Find Your New Best Friend!
         </h1>
-        <p className="max-w-[600px] mt-4 md:text-xl text-gray-500 mx-auto">
+        <p className="max-w-[600px] mt-4 md:text-xl text-muted-foreground mx-auto">
           Connecting loving homes with cats in need. Meo Mai Moi helps you find, foster, or adopt a
           cat in your community.
         </p>

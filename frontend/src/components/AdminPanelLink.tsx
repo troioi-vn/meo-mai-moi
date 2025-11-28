@@ -25,12 +25,7 @@ export function AdminPanelLink() {
   }
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      asChild
-      className="h-8 px-2 text-xs border-blue-300 text-blue-700 hover:bg-blue-50"
-    >
+    <Button variant="outline" size="sm" asChild className="h-8 px-2 text-xs">
       <a href="/admin" rel="noopener noreferrer">
         <Settings className="h-3 w-3 mr-1" />
         <span className="hidden sm:inline">Admin</span>

@@ -115,7 +115,7 @@ const PetProfilePage: React.FC = () => {
               <img
                 src={imageUrl}
                 alt={pet.name}
-                className={`w-24 h-24 rounded-full object-cover border-4 border-gray-200 dark:border-gray-900 ${isDeceased ? 'grayscale' : ''}`}
+                className={`w-24 h-24 rounded-full object-cover border-4 border-border ${isDeceased ? 'grayscale' : ''}`}
               />
             </div>
             <div className="flex flex-col gap-1">

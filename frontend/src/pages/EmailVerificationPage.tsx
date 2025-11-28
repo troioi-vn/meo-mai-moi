@@ -271,25 +271,9 @@ export default function EmailVerificationPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <Alert
-            className={
-              status === 'success'
-                ? 'border-green-200 bg-green-50'
-                : status === 'error'
-                  ? 'border-red-200 bg-red-50'
-                  : 'border-blue-200 bg-blue-50'
-            }
+            variant={status === 'success' ? 'success' : status === 'error' ? 'destructive' : 'info'}
           >
-            <AlertDescription
-              className={
-                status === 'success'
-                  ? 'text-green-800'
-                  : status === 'error'
-                    ? 'text-red-800'
-                    : 'text-blue-800'
-              }
-            >
-              {message}
-            </AlertDescription>
+            <AlertDescription>{message}</AlertDescription>
           </Alert>
 
           {status === 'success' && (
@@ -314,13 +298,13 @@ export default function EmailVerificationPage() {
                 </Button>
               </div>
               {resendMessage && (
-                <Alert className="border-blue-200 bg-blue-50">
-                  <AlertDescription className="text-blue-800">{resendMessage}</AlertDescription>
+                <Alert variant="info">
+                  <AlertDescription>{resendMessage}</AlertDescription>
                 </Alert>
               )}
               {resendError && (
-                <Alert className="border-red-200 bg-red-50">
-                  <AlertDescription className="text-red-800">{resendError}</AlertDescription>
+                <Alert variant="destructive">
+                  <AlertDescription>{resendError}</AlertDescription>
                 </Alert>
               )}
               <Button

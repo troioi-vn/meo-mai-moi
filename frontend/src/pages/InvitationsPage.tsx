@@ -38,41 +38,38 @@ export default function InvitationsPage() {
   const [error, setError] = useState<string | null>(null)
   const isRefreshingRef = useRef(false)
 
-  const loadData = useCallback(
-    async ({ showLoading = true }: { showLoading?: boolean } = {}) => {
-      if (isRefreshingRef.current) {
-        return
-      }
+  const loadData = useCallback(async ({ showLoading = true }: { showLoading?: boolean } = {}) => {
+    if (isRefreshingRef.current) {
+      return
+    }
 
+    if (showLoading) {
+      setIsLoading(true)
+      setError(null)
+    }
+
+    isRefreshingRef.current = true
+
+    try {
+      const [invitationsData, statsData] = await Promise.all([
+        getUserInvitations(),
+        getInvitationStats(),
+      ])
+      setInvitations(invitationsData)
+      setStats(statsData)
+      setError(null)
+    } catch (err) {
+      console.error('Failed to load invitations:', err)
       if (showLoading) {
-        setIsLoading(true)
-        setError(null)
+        setError('Failed to load invitations. Please try again.')
       }
-
-      isRefreshingRef.current = true
-
-      try {
-        const [invitationsData, statsData] = await Promise.all([
-          getUserInvitations(),
-          getInvitationStats(),
-        ])
-        setInvitations(invitationsData)
-        setStats(statsData)
-        setError(null)
-      } catch (err) {
-        console.error('Failed to load invitations:', err)
-        if (showLoading) {
-          setError('Failed to load invitations. Please try again.')
-        }
-      } finally {
-        isRefreshingRef.current = false
-        if (showLoading) {
-          setIsLoading(false)
-        }
+    } finally {
+      isRefreshingRef.current = false
+      if (showLoading) {
+        setIsLoading(false)
       }
-    },
-    []
-  )
+    }
+  }, [])
 
   useEffect(() => {
     void loadData()
@@ -140,7 +137,7 @@ export default function InvitationsPage() {
       pending: { variant: 'secondary' as const, icon: Clock, color: 'text-yellow-600' },
       accepted: { variant: 'default' as const, icon: CheckCircle, color: 'text-green-600' },
       expired: { variant: 'destructive' as const, icon: XCircle, color: 'text-red-600' },
-      revoked: { variant: 'outline' as const, icon: XCircle, color: 'text-gray-600' },
+      revoked: { variant: 'outline' as const, icon: XCircle, color: 'text-muted-foreground' },
     }
 
     const { variant, icon: Icon, color } = variants[status]
@@ -170,8 +167,8 @@ export default function InvitationsPage() {
     return (
       <div className="container mx-auto py-8">
         <div className="text-center space-y-4">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-red-800">{error}</p>
+          <div className="bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-lg p-4">
+            <p className="text-red-800 dark:text-red-200">{error}</p>
           </div>
           <Button onClick={() => void loadData()} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
@@ -245,7 +242,7 @@ export default function InvitationsPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Revoked</CardTitle>
-              <XCircle className="h-4 w-4 text-gray-600" />
+              <XCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.revoked}</div>

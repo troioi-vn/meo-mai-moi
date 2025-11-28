@@ -98,7 +98,7 @@ export const MedicalNotesSection: React.FC<{
         )}
       </div>
       {loading && <p className="text-sm text-muted-foreground">Loading notes…</p>}
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-destructive">{error}</p>}
 
       {(adding || editing) && canEdit && (
         <div className="mb-4 rounded-md border p-3">

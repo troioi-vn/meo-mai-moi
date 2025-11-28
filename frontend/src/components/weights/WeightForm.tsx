@@ -64,7 +64,7 @@ export const WeightForm: React.FC<{
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
             placeholder="e.g., 4.20"
           />
-          {errors.weight_kg && <p className="text-xs text-red-600 mt-1">{errors.weight_kg}</p>}
+          {errors.weight_kg && <p className="text-xs text-destructive mt-1">{errors.weight_kg}</p>}
         </div>
         <div>
           <label className="block text-sm font-medium">Date</label>
@@ -76,10 +76,12 @@ export const WeightForm: React.FC<{
             }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
           />
-          {errors.record_date && <p className="text-xs text-red-600 mt-1">{errors.record_date}</p>}
+          {errors.record_date && (
+            <p className="text-xs text-destructive mt-1">{errors.record_date}</p>
+          )}
         </div>
       </div>
-      {serverError && <p className="text-sm text-red-600">{serverError}</p>}
+      {serverError && <p className="text-sm text-destructive">{serverError}</p>}
       <div className="flex gap-2">
         <Button type="submit" disabled={Boolean(submitting)}>
           {submitting ? 'Saving…' : 'Save'}

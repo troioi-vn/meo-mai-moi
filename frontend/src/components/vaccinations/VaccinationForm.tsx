@@ -82,7 +82,7 @@ export const VaccinationForm: React.FC<{
             placeholder="e.g., Rabies"
           />
           {errors.vaccine_name && (
-            <p className="text-xs text-red-600 mt-1">{errors.vaccine_name}</p>
+            <p className="text-xs text-destructive mt-1">{errors.vaccine_name}</p>
           )}
         </div>
         <div>
@@ -96,7 +96,7 @@ export const VaccinationForm: React.FC<{
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
           />
           {errors.administered_at && (
-            <p className="text-xs text-red-600 mt-1">{errors.administered_at}</p>
+            <p className="text-xs text-destructive mt-1">{errors.administered_at}</p>
           )}
         </div>
         <div>
@@ -109,7 +109,7 @@ export const VaccinationForm: React.FC<{
             }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
           />
-          {errors.due_at && <p className="text-xs text-red-600 mt-1">{errors.due_at}</p>}
+          {errors.due_at && <p className="text-xs text-destructive mt-1">{errors.due_at}</p>}
         </div>
         <div className="sm:col-span-2">
           <label className="block text-sm font-medium">Notes (optional)</label>
@@ -123,7 +123,7 @@ export const VaccinationForm: React.FC<{
           />
         </div>
       </div>
-      {serverError && <p className="text-sm text-red-600">{serverError}</p>}
+      {serverError && <p className="text-sm text-destructive">{serverError}</p>}
       <div className="flex gap-2">
         <Button type="submit" disabled={Boolean(submitting)}>
           {submitting ? 'Saving…' : 'Save'}

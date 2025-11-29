@@ -202,7 +202,7 @@ class Pet extends Model implements HasMedia
      */
     public function getAge(): int
     {
-        if (!$this->birthday) {
+        if (! $this->birthday) {
             return 0;
         }
 

@@ -798,6 +798,7 @@ The migration renames existing `email_logs.status = sent` to `accepted`. No data
 
 - SPA-only UI: Removed dependency on server-rendered Inertia pages and ensured all non-JSON auth responses redirect into the SPA
 - Web routes updated to redirect reset-password and email verification flows into SPA routes where applicable
+- **Notification Settings**: Removed "Email Verification Required" from the list of configurable notification types in user settings, as this is a mandatory system notification.
 - Backend configured as API-first for UI flows; Jetstream retained only for API features (tokens, 2FA) with views disabled
 - Frontend tests and setup streamlined: improved mocking for `sonner` and added reset password page tests
 

@@ -7,7 +7,7 @@ import { mockUser } from '@/mocks/data/user'
 import { useAuth } from '@/hooks/use-auth'
 
 vi.mock('@/hooks/use-auth')
-vi.mock('next-themes', () => ({
+vi.mock('@/hooks/use-theme', () => ({
   useTheme: () => ({
     setTheme: vi.fn(),
     theme: 'light',

@@ -6,6 +6,10 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Fixed
 
+- **Frontend: Toast (Sonner) Dark/Light Mode Switching**: Fixed toasts always showing in dark mode
+  - Changed sonner component to use project's custom `@/hooks/use-theme` instead of Next.js-specific `next-themes`
+  - Toasts now correctly respond to theme changes and respect user's dark/light mode preference
+
 - **Frontend: Date Picker Styling Reset**: Resolved date picker styling issues by removing react-day-picker default class names and implementing full Tailwind CSS styling
   - Simplified Calendar component to use only Tailwind classes without conflicting rdp-\* default classes
   - Set fixed cell dimensions (h-9 w-9 = 36px) for proper calendar grid layout
@@ -13,9 +17,14 @@ All notable changes to this project are documented here, following the [Keep a C
   - Improved weekday header and date cell rendering with consistent button styling
   - Now matches shadcn/ui demo appearance with proper spacing and cell sizes
 
+### Removed
+
+- **Frontend: Removed unused `next-themes` dependency**: Cleaned up unused package that was part of shadcn/ui sonner template but not used in this Vite project
+
 ### Added
 
 - **Vaccination Record Renewal System**: Complete refactor of vaccination record lifecycle management
+
   - Added `completed_at` timestamp to mark vaccination records as completed/renewed instead of deleting them
   - Completed records are archived and no longer trigger reminders
   - New endpoint `POST /api/pets/{pet}/vaccinations/{record}/renew` marks old record as completed and creates new one
@@ -25,6 +34,7 @@ All notable changes to this project are documented here, following the [Keep a C
   - Updated vaccination list endpoint with `status` parameter: `active` (default), `completed`, or `all`
 
 - **Frontend: Vaccination Renewal UI**
+
   - Added "Renew" button on each vaccination record (highlighted for overdue vaccinations)
   - Renew modal pre-fills form with today's date, same vaccine name, and auto-calculated next due date based on vaccination interval
   - Users can modify all fields before saving

@@ -30,9 +30,12 @@ If `API_VERSION` is unset, the default in `config/version.php` applies.
 ```bash
 git add -A
 git commit -m "chore(release): bump API version to v0.4.1 and update docs"
-git tag v0.4.1
-git push && git push --tags
+git tag -a v0.4.1 -m "v0.4.1 - Release description"
+git push
+git push origin v0.4.1  # Push ONLY the release tag, not all tags!
 ```
+
+> ⚠️ **Important**: Use `git push origin <tag>` instead of `git push --tags` to avoid pushing local rollback tags created by the deploy script.
 
 5) Verify locally (Docker)
 ```bash

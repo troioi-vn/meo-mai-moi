@@ -350,7 +350,7 @@ describe('CreatePetPage', () => {
     const cancelButton = screen.getByRole('button', { name: 'Cancel' })
     fireEvent.click(cancelButton)
 
-    expect(mockNavigate).toHaveBeenCalledWith('/account/pets')
+    expect(mockNavigate).toHaveBeenCalledWith('/')
   })
 
   it('disables submit button when pet types are loading', () => {

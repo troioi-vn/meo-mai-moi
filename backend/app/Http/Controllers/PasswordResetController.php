@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\Fortify\ResetUserPassword;
-use App\Http\Responses\Auth\PasswordResetResponse;
-use App\Http\Responses\Auth\SuccessfulPasswordResetLinkRequestResponse;
 use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Validation\Rules;
 
+/**
+ * Password Reset Token Validation Controller
+ *
+ * This controller provides a token validation endpoint for the frontend.
+ * The actual password reset functionality is handled by Laravel Fortify.
+ */
 class PasswordResetController extends Controller
 {
     use ApiResponseTrait;
@@ -20,95 +21,6 @@ class PasswordResetController extends Controller
     {
         $this->middleware('guest');
         $this->middleware('throttle:6,1');
-    }
-
-    // Legacy custom password reset paths removed; always use Fortify-compatible logic.
-
-    /**
-     * Send password reset link via email.
-     *
-     * @OA\Post(
-     *     path="/api/password/email",
-     *     summary="Send password reset email",
-     *     description="Send password reset link to user's email address.",
-     *     tags={"Password Reset"},
-     *
-     *     @OA\RequestBody(
-     *         required=true,
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="email", type="string", format="email", example="user@example.com")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=200,
-     *         description="Password reset email sent",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="message", type="string", example="Password reset link sent to your email")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validation error"
-     *     ),
-     *     @OA\Response(
-     *         response=429,
-     *         description="Too many requests"
-     *     )
-     * )
-     */
-    public function sendResetLinkEmail(Request $request)
-    {
-        // Always handle via Fortify-compatible logic
-        return $this->handleJetstreamPasswordResetLinkRequest($request);
-    }
-
-    /**
-     * Reset password using token from email.
-     *
-     * @OA\Post(
-     *     path="/api/password/reset",
-     *     summary="Reset password with token",
-     *     description="Reset user password using token from reset email.",
-     *     tags={"Password Reset"},
-     *
-     *     @OA\RequestBody(
-     *         required=true,
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="token", type="string", example="abc123..."),
-     *             @OA\Property(property="email", type="string", format="email", example="user@example.com"),
-     *             @OA\Property(property="password", type="string", example="newpassword123"),
-     *             @OA\Property(property="password_confirmation", type="string", example="newpassword123")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=200,
-     *         description="Password reset successful",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="message", type="string", example="Password reset successfully")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validation error or invalid token"
-     *     )
-     * )
-     */
-    public function reset(Request $request)
-    {
-        // Always handle via Fortify-compatible logic
-        return $this->handleJetstreamPasswordReset($request);
     }
 
     /**
@@ -195,74 +107,5 @@ class PasswordResetController extends Controller
             'valid' => true,
             'email' => $request->email,
         ]);
-    }
-
-    /**
-     * Handle password reset link request using Jetstream/Fortify logic
-     */
-    private function handleJetstreamPasswordResetLinkRequest(Request $request)
-    {
-        $request->validate([
-            'email' => ['required', 'email'],
-        ]);
-
-        try {
-            // We'll send the link regardless of whether the email exists
-            // This prevents email enumeration attacks
-            $status = Password::sendResetLink(
-                $request->only('email')
-            );
-
-            // Return response using Fortify response class
-            $response = app(SuccessfulPasswordResetLinkRequestResponse::class);
-
-            return $response->toResponse($request);
-        } catch (\Exception $e) {
-            \Log::warning('Password reset email failed during Jetstream flow', [
-                'email' => $request->email,
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json([
-                'message' => 'We are unable to send password reset email at the moment. Please try again later.',
-            ], 500);
-        }
-    }
-
-    /**
-     * Handle password reset using Jetstream/Fortify actions
-     */
-    private function handleJetstreamPasswordReset(Request $request)
-    {
-        $request->validate([
-            'token' => ['required'],
-            'email' => ['required', 'email'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
-
-        $resetUserPassword = app(ResetUserPassword::class);
-
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function (User $user, string $password) use ($resetUserPassword, $request) {
-                // Use Fortify action for password reset (includes events and security features)
-                $resetUserPassword->reset($user, $request->only('password', 'password_confirmation'));
-            }
-        );
-
-        if ($status === Password::PASSWORD_RESET) {
-            // Return response using Fortify response class
-            $response = app(PasswordResetResponse::class);
-
-            return $response->toResponse($request);
-        }
-
-        return response()->json([
-            'message' => match ($status) {
-                Password::INVALID_TOKEN => 'Invalid or expired reset token.',
-                Password::INVALID_USER => 'We cannot find a user with that email address.',
-                default => 'Unable to reset password. Please try again.',
-            },
-        ], 422);
     }
 }

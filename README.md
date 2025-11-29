@@ -41,8 +41,8 @@ Access:
 **Optional: Enable HTTPS for local dev (via compose https-proxy profile)**
 
 ```bash
-# 1) Ensure backend/.env.docker exists (deploy script can create it)
-# 2) Set in backend/.env.docker
+# 1) Ensure backend/.env exists (deploy script can create it)
+# 2) Set in backend/.env
 #    APP_ENV=development
 #    ENABLE_HTTPS=true
 

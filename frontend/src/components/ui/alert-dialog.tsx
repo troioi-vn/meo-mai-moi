@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
 
 import { cn } from '@/lib/utils'
-import { buttonVariants } from '@/components/ui/button-variants'
+import { buttonVariants } from '@/components/ui/button'
 
 const AlertDialog = AlertDialogPrimitive.Root
 
@@ -15,7 +15,7 @@ const AlertDialogOverlay = ({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Overlay> & {
-  ref?: React.RefObject<React.ComponentRef<typeof AlertDialogPrimitive.Overlay> | null>
+  ref?: React.RefObject<React.ElementRef<typeof AlertDialogPrimitive.Overlay> | null>
 }) => (
   <AlertDialogPrimitive.Overlay
     className={cn(
@@ -33,7 +33,7 @@ const AlertDialogContent = ({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content> & {
-  ref?: React.RefObject<React.ComponentRef<typeof AlertDialogPrimitive.Content> | null>
+  ref?: React.RefObject<React.ElementRef<typeof AlertDialogPrimitive.Content> | null>
 }) => (
   <AlertDialogPortal>
     <AlertDialogOverlay />
@@ -67,7 +67,7 @@ const AlertDialogTitle = ({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Title> & {
-  ref?: React.RefObject<React.ComponentRef<typeof AlertDialogPrimitive.Title> | null>
+  ref?: React.RefObject<React.ElementRef<typeof AlertDialogPrimitive.Title> | null>
 }) => (
   <AlertDialogPrimitive.Title
     ref={ref}
@@ -82,7 +82,7 @@ const AlertDialogDescription = ({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Description> & {
-  ref?: React.RefObject<React.ComponentRef<typeof AlertDialogPrimitive.Description> | null>
+  ref?: React.RefObject<React.ElementRef<typeof AlertDialogPrimitive.Description> | null>
 }) => (
   <AlertDialogPrimitive.Description
     ref={ref}
@@ -95,17 +95,11 @@ AlertDialogDescription.displayName = AlertDialogPrimitive.Description.displayNam
 const AlertDialogAction = ({
   ref,
   className,
-  variant,
   ...props
 }: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action> & {
-  ref?: React.RefObject<React.ComponentRef<typeof AlertDialogPrimitive.Action> | null>
-  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link' | null
+  ref?: React.RefObject<React.ElementRef<typeof AlertDialogPrimitive.Action> | null>
 }) => (
-  <AlertDialogPrimitive.Action
-    ref={ref}
-    className={cn(buttonVariants({ variant }), className)}
-    {...props}
-  />
+  <AlertDialogPrimitive.Action ref={ref} className={cn(buttonVariants(), className)} {...props} />
 )
 AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName
 
@@ -114,7 +108,7 @@ const AlertDialogCancel = ({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel> & {
-  ref?: React.RefObject<React.ComponentRef<typeof AlertDialogPrimitive.Cancel> | null>
+  ref?: React.RefObject<React.ElementRef<typeof AlertDialogPrimitive.Cancel> | null>
 }) => (
   <AlertDialogPrimitive.Cancel
     ref={ref}

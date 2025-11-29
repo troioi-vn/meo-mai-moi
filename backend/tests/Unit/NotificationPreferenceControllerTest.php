@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use App\Enums\NotificationType;
-use App\Http\Controllers\NotificationPreferenceController;
+use App\Http\Controllers\NotificationPreference\GetNotificationPreferencesController;
 use App\Models\NotificationPreference;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -14,21 +14,21 @@ class NotificationPreferenceControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    private NotificationPreferenceController $controller;
+    private GetNotificationPreferencesController $controller;
 
     private User $user;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->controller = new NotificationPreferenceController;
+        $this->controller = new GetNotificationPreferencesController;
         $this->user = User::factory()->create();
         Auth::login($this->user);
     }
 
     public function test_index_returns_all_notification_types_with_defaults()
     {
-        $response = $this->controller->index();
+        $response = $this->controller->__invoke();
 
         $this->assertEquals(200, $response->getStatusCode());
 
@@ -61,7 +61,7 @@ class NotificationPreferenceControllerTest extends TestCase
             'in_app_enabled' => true,
         ]);
 
-        $response = $this->controller->index();
+        $response = $this->controller->__invoke();
         $data = json_decode($response->getContent(), true)['data'];
 
         $placementRequestResponse = collect($data)->firstWhere('type', NotificationType::PLACEMENT_REQUEST_RESPONSE->value);
@@ -150,7 +150,7 @@ class NotificationPreferenceControllerTest extends TestCase
 
     public function test_notification_type_enum_integration()
     {
-        $response = $this->controller->index();
+        $response = $this->controller->__invoke();
         $data = json_decode($response->getContent(), true)['data'];
 
         foreach (NotificationType::cases() as $type) {

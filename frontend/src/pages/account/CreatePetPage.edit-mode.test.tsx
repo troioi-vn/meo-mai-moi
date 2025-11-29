@@ -1,4 +1,5 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -17,6 +18,7 @@ const mockPet: Partial<Pet> = {
   location: 'Hanoi',
   description: 'A lovely cat',
   status: 'active' as const,
+  photo_url: 'https://example.com/photo.jpg',
   pet_type: {
     id: 1,
     name: 'Cat',
@@ -29,8 +31,6 @@ const mockPet: Partial<Pet> = {
     created_at: '',
     updated_at: '',
   },
-  // Cast to any to include photos array used by deriveImageUrl utility
-  ...({ photos: [{ url: 'https://example.com/photo.jpg' }] } as any),
   viewer_permissions: { can_edit: true },
   user_id: 1,
 }
@@ -103,22 +103,42 @@ describe('CreatePetPage edit mode enhancements', () => {
       expect(screen.getByRole('heading', { name: /edit pet/i })).toBeInTheDocument()
     )
 
-    expect(screen.getByRole('link', { name: /back to pet/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument()
   })
 
   it('redirects to pet profile after status update', async () => {
+    const user = userEvent.setup()
     window.history.pushState({}, 'Edit Pet', '/pets/123/edit')
     renderEditPage()
     await waitFor(() =>
       expect(screen.getByRole('heading', { name: /edit pet/i })).toBeInTheDocument()
     )
 
-    // Fill status password and trigger update - pick the first of multiple password fields
-    const passwordInputs = screen.getAllByPlaceholderText(/confirm with your password/i)
-    const passwordInput = passwordInputs[0] as HTMLInputElement
-    fireEvent.change(passwordInput, { target: { value: 'secret123' } })
+    // Navigate to Status tab
+    const statusTab = screen.getByRole('tab', { name: /status/i })
+    await user.click(statusTab)
+
+    // Wait for status controls to be visible (case-sensitive match)
+    await waitFor(() => {
+      expect(screen.getByText('Current status:')).toBeInTheDocument()
+    })
+
+    // Change the status in the dropdown
+    const selectTrigger = screen.getByRole('combobox')
+    await user.click(selectTrigger)
+    const lostOption = screen.getByRole('option', { name: /lost/i })
+    await user.click(lostOption)
+
+    // Click update status button - this opens the confirmation dialog
     const updateBtn = screen.getByRole('button', { name: /update status/i })
-    fireEvent.click(updateBtn)
+    await user.click(updateBtn)
+
+    // Wait for the confirmation dialog and click confirm
+    await waitFor(() => {
+      expect(screen.getByRole('alertdialog')).toBeInTheDocument()
+    })
+    const confirmBtn = screen.getByRole('button', { name: /confirm/i })
+    await user.click(confirmBtn)
 
     await waitFor(() => expect(screen.getByText('Pet Profile Page')).toBeInTheDocument())
   })

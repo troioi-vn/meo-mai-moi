@@ -154,7 +154,7 @@ class EmailConfigurationService
 
             Log::info('Mail configuration updated successfully', [
                 'provider' => $activeConfig->provider,
-                'from_address' => $mailConfig['from']['address'] ?? 'not set',
+                'from_address' => $mailConfig['from']['address'] ?? $mailConfig['from'] ?? 'not set',
             ]);
         } catch (Exception $e) {
             Log::error('Failed to update mail configuration', [

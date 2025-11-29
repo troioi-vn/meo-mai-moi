@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import RegisterForm from '@/components/RegisterForm'
-import WaitlistForm from '@/components/WaitlistForm'
-import EmailVerificationPrompt from '@/components/EmailVerificationPrompt'
+import { useState, useEffect } from 'react'
+import RegisterForm from '@/components/auth/RegisterForm'
+import WaitlistForm from '@/components/layout/WaitlistForm'
+import EmailVerificationPrompt from '@/components/auth/EmailVerificationPrompt'
 import { useInviteSystem } from '@/hooks/use-invite-system'
 import { useAuth } from '@/hooks/use-auth'
 import { toast } from 'sonner'
@@ -11,7 +11,7 @@ import type { RegisterResponse } from '@/types/auth'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
-  const { loadUser } = useAuth()
+  const { loadUser, user } = useAuth()
   const [searchParams] = useSearchParams()
   const { mode, isLoading, invitationCode, invitationValidation, error, clearError } =
     useInviteSystem()
@@ -21,6 +21,14 @@ export default function RegisterPage() {
   // Get email from query parameters (e.g., from login redirect)
   const initialEmail = searchParams.get('email') ?? undefined
 
+  // Clear registration state when user logs out (e.g., via "Use another email" button)
+  useEffect(() => {
+    if (user === null) {
+      setRegistrationResponse(null)
+      setRegisteredEmail('')
+    }
+  }, [user])
+
   const handleRegistrationSuccess = (response: RegisterResponse, email: string) => {
     if (response.requires_verification) {
       // Stay on same page, show verification prompt
@@ -29,7 +37,7 @@ export default function RegisterPage() {
     } else {
       // User is already verified, can proceed
       toast.success('Registration successful! Welcome!')
-      void navigate('/account/pets')
+      void navigate('/')
     }
   }
 
@@ -37,7 +45,7 @@ export default function RegisterPage() {
     // Reload user data and redirect to dashboard
     await loadUser()
     toast.success('Email verified successfully! Welcome!')
-    void navigate('/account/pets')
+    void navigate('/')
   }
 
   const handleWaitlistSuccess = () => {
@@ -83,8 +91,8 @@ export default function RegisterPage() {
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="w-full max-w-md p-8 space-y-8 bg-card rounded-lg shadow-lg border">
           <div className="text-center space-y-4">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-800 text-sm">{error}</p>
+            <div className="bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
             </div>
             <button
               type="button"

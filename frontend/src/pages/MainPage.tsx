@@ -1,6 +1,6 @@
-import { HeroSection } from '@/components/HeroSection'
-import { ActivePlacementRequestsSection } from '@/components/ActivePlacementRequestsSection'
-import { Footer } from '@/components/Footer'
+import { HeroSection } from '@/components/layout/HeroSection'
+import { ActivePlacementRequestsSection } from '@/components/pets/ActivePlacementRequestsSection'
+import { Footer } from '@/components/layout/Footer'
 
 export default function MainPage() {
   return (

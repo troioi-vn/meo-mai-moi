@@ -17,6 +17,8 @@ interface Props {
 }
 
 export const PetTypeSelect: React.FC<Props> = ({ petTypes, loading, value, onChange, error }) => {
+  const stringValue = value === '' ? '' : String(value)
+
   return (
     <div className="space-y-2">
       <label htmlFor="pet_type_id" className="text-sm font-medium">
@@ -26,7 +28,8 @@ export const PetTypeSelect: React.FC<Props> = ({ petTypes, loading, value, onCha
         <div className="text-sm text-muted-foreground">Loading pet types...</div>
       ) : (
         <Select
-          value={value === '' ? '' : String(value)}
+          key={stringValue || 'empty'}
+          value={stringValue}
           onValueChange={(v) => {
             onChange(Number(v))
           }}

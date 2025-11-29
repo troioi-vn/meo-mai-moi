@@ -21,7 +21,7 @@ vi.mock('@/api/pets', () => ({
 }))
 
 // Mock the PetCard component
-vi.mock('@/components/PetCard', () => ({
+vi.mock('@/components/pets/PetCard', () => ({
   PetCard: ({ pet }: { pet: Pet }) => (
     <div data-testid={`pet-card-${String(pet.id)}`}>
       <h3>{pet.name}</h3>
@@ -49,6 +49,7 @@ const mockCatType: PetType = {
   is_active: true,
   is_system: true,
   display_order: 1,
+  placement_requests_allowed: true,
   created_at: '2023-01-01T00:00:00Z',
   updated_at: '2023-01-01T00:00:00Z',
 }
@@ -61,6 +62,7 @@ const mockDogType: PetType = {
   is_active: true,
   is_system: true,
   display_order: 2,
+  placement_requests_allowed: true,
   created_at: '2023-01-01T00:00:00Z',
   updated_at: '2023-01-01T00:00:00Z',
 }
@@ -96,7 +98,10 @@ const mockUser = {
   email: 'test@example.com',
 }
 
-const renderWithProviders = (component: React.ReactElement, user = mockUser) => {
+const renderWithProviders = (
+  component: React.ReactElement,
+  user: { id: number; name: string; email: string } | null = mockUser
+) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
@@ -139,7 +144,7 @@ describe('MyPetsPage', () => {
 
     renderWithProviders(<MyPetsPage />)
 
-    expect(screen.getByText('My Pets')).toBeInTheDocument()
+    expect(screen.getByText('Pets')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'New Pet' })).toBeInTheDocument()
   })
 
@@ -197,7 +202,8 @@ describe('MyPetsPage', () => {
     renderWithProviders(<MyPetsPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('Owned')).toBeInTheDocument()
+      // No more 'Owned' header displayed
+      expect(screen.queryByText('Owned')).not.toBeInTheDocument()
       expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
       expect(screen.getByTestId('pet-card-2')).toBeInTheDocument()
       expect(screen.getByText('Fluffy')).toBeInTheDocument()
@@ -315,7 +321,7 @@ describe('MyPetsPage', () => {
     const newPetButton = screen.getByRole('button', { name: 'New Pet' })
     fireEvent.click(newPetButton)
 
-    expect(mockNavigate).toHaveBeenCalledWith('/account/pets/create')
+    expect(mockNavigate).toHaveBeenCalledWith('/pets/create')
   })
 
   it('navigates to create pet page from empty state button', async () => {
@@ -335,7 +341,7 @@ describe('MyPetsPage', () => {
     const addFirstPetButton = screen.getByRole('button', { name: 'Add Your First Pet' })
     fireEvent.click(addFirstPetButton)
 
-    expect(mockNavigate).toHaveBeenCalledWith('/account/pets/create')
+    expect(mockNavigate).toHaveBeenCalledWith('/pets/create')
   })
 
   it('shows unauthenticated message when user is not logged in', () => {
@@ -345,8 +351,13 @@ describe('MyPetsPage', () => {
   })
 
   it('displays show all toggle with correct label', async () => {
+    const ownedPets = [
+      createMockPet(1, 'Active Pet', 'active'),
+      createMockPet(2, 'Deceased Pet', 'deceased'),
+    ]
+
     mockGetMyPetsSections.mockResolvedValue({
-      owned: [],
+      owned: ownedPets,
       fostering_active: [],
       fostering_past: [],
       transferred_away: [],
@@ -355,8 +366,27 @@ describe('MyPetsPage', () => {
     renderWithProviders(<MyPetsPage />)
 
     await waitFor(() => {
-      expect(screen.getByLabelText('Show all (including deceased)')).toBeInTheDocument()
+      expect(screen.getByLabelText('Show all')).toBeInTheDocument()
     })
+  })
+
+  it('hides show all toggle when there are no deceased pets', async () => {
+    const ownedPets = [createMockPet(1, 'Active Pet', 'active')]
+
+    mockGetMyPetsSections.mockResolvedValue({
+      owned: ownedPets,
+      fostering_active: [],
+      fostering_past: [],
+      transferred_away: [],
+    })
+
+    renderWithProviders(<MyPetsPage />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
+    })
+
+    expect(screen.queryByLabelText('Show all')).not.toBeInTheDocument()
   })
 
   it('applies proper grid layout to pet sections', async () => {

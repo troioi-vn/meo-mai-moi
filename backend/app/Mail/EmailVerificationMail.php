@@ -4,7 +4,6 @@ namespace App\Mail;
 
 use App\Enums\NotificationType;
 use App\Models\User;
-use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -17,18 +16,20 @@ class EmailVerificationMail extends Mailable
 {
     use SerializesModels;
 
-    public string $verificationUrl;
+    private string $verificationUrl;
 
-    public string $appName;
+    private string $appName;
 
     /**
      * Create a new message instance.
      */
     public function __construct(
-        public User $user,
-        public NotificationType $notificationType,
-        public array $data
+        private User $user,
+        NotificationType $notificationType,
+        array $data
     ) {
+        // Intentionally unused, kept for signature compatibility across mail classes
+        unset($notificationType, $data);
         $this->verificationUrl = $this->generateVerificationUrl($user);
         $this->appName = config('app.name');
     }

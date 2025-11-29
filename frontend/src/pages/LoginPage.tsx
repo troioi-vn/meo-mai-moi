@@ -1,6 +1,6 @@
 import { use, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { LoginForm } from '@/components/LoginForm'
+import { LoginForm } from '@/components/auth/LoginForm'
 import { AuthContext } from '@/contexts/AuthContext'
 
 export default function LoginPage() {
@@ -14,7 +14,7 @@ export default function LoginPage() {
       }
       const verifiedAt = (auth.user as MaybeVerifiedUser | null)?.email_verified_at
       if (verifiedAt !== null) {
-        void navigate('/account/pets')
+        void navigate('/')
       }
     }
   }, [auth, navigate])

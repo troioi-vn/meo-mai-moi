@@ -7,7 +7,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 CERT_DIR="$PROJECT_ROOT/backend/certs"
-ENV_FILE="$PROJECT_ROOT/backend/.env.docker"
+ENV_FILE="$PROJECT_ROOT/backend/.env"
 
 FORCE="false"
 for arg in "$@"; do
@@ -36,14 +36,14 @@ echo "⚠️  These certificates are for LOCAL DEVELOPMENT ONLY"
 echo "⚠️  Never use self-signed certs in production"
 echo ""
 
-# Check APP_ENV (from .env.docker if present) — default to development if unknown
+# Check APP_ENV (from backend/.env if present) — default to development if unknown
 APP_ENV_VAL="development"
 if [ -f "$ENV_FILE" ]; then
     APP_ENV_VAL=$(grep -E '^APP_ENV=' "$ENV_FILE" | tail -n1 | cut -d '=' -f2- || echo "development")
 fi
 if [ "$APP_ENV_VAL" != "development" ] && [ "$FORCE" != "true" ]; then
     echo "✗ APP_ENV=$APP_ENV_VAL — refusing to generate dev certificates."
-    echo "  Set APP_ENV=development in backend/.env.docker or run with --force if you know what you're doing."
+    echo "  Set APP_ENV=development in backend/.env or run with --force if you know what you're doing."
     exit 1
 fi
 
@@ -79,7 +79,7 @@ echo "  - Certificate: localhost.crt"
 echo "  - Private Key: localhost.key"
 echo ""
 echo "Next steps:"
-echo "  1. Enable HTTPS in backend/.env.docker:"
+echo "  1. Enable HTTPS in backend/.env:"
 echo "     APP_ENV=development"
 echo "     ENABLE_HTTPS=true"
 echo ""

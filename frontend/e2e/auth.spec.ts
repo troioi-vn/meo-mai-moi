@@ -100,7 +100,7 @@ test('auth flow: register → login → logout', async ({ page }) => {
   await login(page, { email: TEST_USER.email, password: TEST_USER.password })
 
   // Expect landing on default path after login
-  await expect(page).toHaveURL(/\/account\/pets/)
+  await expect(page).toHaveURL(/^https?:\/\/[^\/]+\/?$/)
 
   // Open user menu and logout
   await page.getByRole('img', { name: TEST_USER.name }).click()
@@ -163,17 +163,17 @@ async function login(
 // We implement login→logout; register page already exercises toast/navigate,
 // and can be added similarly by stubbing /api/register
 
-test('login redirects to account/pets and logout returns to login', async ({ page }) => {
+test('login redirects to home and logout returns to login', async ({ page }) => {
   await login(page)
 
-  // Expect redirect to /account/pets
-  await expect(page).toHaveURL(/\/account\/pets/)
+  // Expect redirect to /
+  await expect(page).toHaveURL(/^https?:\/\/[^\/]+\/?$/)
 
   // Stub logout API
   await page.route('**/api/logout', (route) => route.fulfill({ status: 204, body: '' }))
 
-  // Navigate to profile and click Logout (we go via nav)
-  await page.goto('/account')
+  // Navigate to settings and click Logout (we go via nav)
+  await page.goto('/settings')
   await page.getByRole('button', { name: /logout/i }).click()
 
   // After logout, app navigates to /login

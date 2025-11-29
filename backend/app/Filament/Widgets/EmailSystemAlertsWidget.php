@@ -29,7 +29,6 @@ class EmailSystemAlertsWidget extends Widget
     {
         $alerts = [];
 
-
         // Check for no active email configurations
         $activeConfigs = EmailConfiguration::active()->count();
         if ($activeConfigs === 0) {

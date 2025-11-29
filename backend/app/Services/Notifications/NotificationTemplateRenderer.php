@@ -74,7 +74,9 @@ class NotificationTemplateRenderer
             try {
                 return $this->markdown->convert($interpolated)->getContent();
             } catch (\Throwable $e) {
-                // fall through
+                Log::debug('Markdown conversion failed; returning escaped content', [
+                    'error' => $e->getMessage(),
+                ]);
             }
         }
 

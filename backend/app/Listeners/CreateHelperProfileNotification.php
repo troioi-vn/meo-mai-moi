@@ -24,7 +24,8 @@ class CreateHelperProfileNotification
      */
     public function handle(HelperProfileStatusUpdated $event): void
     {
-        $status = $event->helperProfile->approval_status;
+        $helperProfile = $event->getHelperProfile();
+        $status = $helperProfile->approval_status;
         $message = "Your helper profile has been {$status}.";
 
         // Determine notification type based on status
@@ -36,20 +37,23 @@ class CreateHelperProfileNotification
 
         // Send notification using NotificationService if we have a matching type
         if ($notificationType) {
-            $this->notificationService->send(
-                $event->helperProfile->user,
-                $notificationType,
-                [
-                    'message' => $message,
-                    'link' => '/account/helper-profile',
-                    'helper_profile_id' => $event->helperProfile->id,
-                    'status' => $status,
-                ]
-            );
+            $user = $helperProfile->user; // ensure concrete User instance (avoid Model|null type)
+            if ($user instanceof \App\Models\User) {
+                $this->notificationService->send(
+                    $user,
+                    $notificationType,
+                    [
+                        'message' => $message,
+                        'link' => '/account/helper-profile',
+                        'helper_profile_id' => $helperProfile->id,
+                        'status' => $status,
+                    ]
+                );
+            }
         } else {
             // Fallback to direct notification creation for other statuses
             Notification::create([
-                'user_id' => $event->helperProfile->user_id,
+                'user_id' => $helperProfile->user_id,
                 'message' => $message,
                 'link' => '/account/helper-profile',
             ]);

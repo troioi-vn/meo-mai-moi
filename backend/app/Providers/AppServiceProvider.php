@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Events\HelperProfileStatusUpdated;
 use App\Listeners\CreateHelperProfileNotification;
 use App\Listeners\UpdateEmailLogOnSent;
+use App\Models\Notification;
+use App\Observers\NotificationObserver;
 use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
@@ -19,6 +21,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(\App\Services\EmailConfigurationService::class);
+        $this->app->singleton(\App\Services\Notifications\WebPushDispatcher::class);
     }
 
     /**
@@ -45,6 +48,8 @@ class AppServiceProvider extends ServiceProvider
             UpdateEmailLogOnSent::class
         );
 
+        Notification::observe(NotificationObserver::class);
+
         // Register custom notification channel for email verification
         $this->app->make('Illuminate\Notifications\ChannelManager')
             ->extend('notification_email', function () {
@@ -57,7 +62,10 @@ class AppServiceProvider extends ServiceProvider
             $emailConfigService->updateMailConfig();
         } catch (\Exception $e) {
             // Silently fail during boot to prevent application startup issues
-            // The error will be logged by the service
+            // The error will be logged by the service; add trace at debug level for development
+            \Log::debug('EmailConfigurationService bootstrap suppressed error', [
+                'error' => $e->getMessage(),
+            ]);
         }
 
         // If APP_URL is configured with https, force URL generation to use https as well.

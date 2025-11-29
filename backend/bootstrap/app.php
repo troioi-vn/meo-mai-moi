@@ -28,14 +28,15 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => AdminMiddleware::class,
             'optional.auth' => OptionalAuth::class,
             'validate.invitation' => \App\Http\Middleware\ValidateInvitationRequest::class,
-            'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
+            'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         ]);
 
         // Note: Avoid trusting all proxies by default, which can trigger null IP edge cases
         // in Symfony's IpUtils when REMOTE_ADDR is missing. If needed in production behind
         // a real proxy/load balancer, set concrete IPs/CIDRs here. For local/container use,
         // it's safe to trust the local nginx reverse proxy so Laravel reads X-Forwarded-* headers.
-        $middleware->trustProxies(at: ['127.0.0.1', '::1']);
+        // Trust Docker network and common proxy IPs (172.x.x.x is Docker's default bridge network)
+        $middleware->trustProxies(at: ['127.0.0.1', '::1', '172.16.0.0/12', '192.168.0.0/16', '10.0.0.0/8']);
 
         $middleware->api(append: [
             Illuminate\Http\Middleware\HandleCors::class,
@@ -54,6 +55,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ]);
+
+        // Append noindex headers for non-production / dev subdomains to reduce risk of Safe Browsing flags
+        $middleware->web(append: [\App\Http\Middleware\NoIndexDev::class]);
+        $middleware->api(append: [\App\Http\Middleware\NoIndexDev::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Render JSON for API routes AND for requests expecting JSON (includes Fortify routes)
@@ -65,6 +70,42 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (AuthenticationException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json(['message' => 'Unauthenticated.'], 401);
+            }
+        });
+
+        // Handle email transport exceptions gracefully
+        $exceptions->render(function (Throwable $e, Request $request) {
+            // Check if it's a mail transport exception (check the whole exception chain)
+            $currentException = $e;
+            $isMailException = false;
+
+            // Walk through exception chain to find mail-related exceptions
+            do {
+                if ($currentException instanceof \Swift_TransportException ||
+                    $currentException instanceof \Symfony\Component\Mailer\Exception\TransportExceptionInterface ||
+                    str_contains($currentException->getMessage(), 'Connection could not be established') ||
+                    str_contains($currentException->getMessage(), 'stream_socket_client()') ||
+                    str_contains(get_class($currentException), 'Swift') ||
+                    str_contains(get_class($currentException), 'Mailer')) {
+                    $isMailException = true;
+                    break;
+                }
+                $currentException = $currentException->getPrevious();
+            } while ($currentException !== null);
+
+            if ($isMailException) {
+                \Log::error('Email transport error', [
+                    'url' => $request->fullUrl(),
+                    'error' => $e->getMessage(),
+                    'class' => get_class($e),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+
+                if ($request->is('api/*') || $request->expectsJson()) {
+                    return response()->json([
+                        'message' => 'We are unable to send email at the moment. Please try again later.',
+                    ], 500);
+                }
             }
         });
     })

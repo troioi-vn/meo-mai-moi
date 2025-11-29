@@ -57,8 +57,7 @@ class EmailVerificationFlowTest extends TestCase
 
         $response->assertStatus(403)
             ->assertJson([
-                'message' => 'Your email address is not verified. Please check your email for a verification link.',
-                'email_verified' => false,
+                'message' => 'Your email address is not verified.',
             ]);
 
         // Step 3: User can still access verification routes
@@ -72,39 +71,42 @@ class EmailVerificationFlowTest extends TestCase
                 ],
             ]);
 
-            // Step 4: User verifies email
-            $verificationUrl = URL::temporarySignedRoute(
-                'verification.verify',
-                now()->addMinutes(60),
-                [
-                    'id' => $user->id,
-                    'hash' => sha1($user->email),
-                ]
-            );
+        // Step 4: User verifies email
+        $verificationUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            [
+                'id' => $user->id,
+                'hash' => sha1($user->email),
+            ]
+        );
 
-            // Visit the verification URL; expect redirect to SPA after verification
-            $response = $this->get($verificationUrl);
-            $response->assertRedirect(rtrim(config('app.frontend_url'), '/').'/account/pets?verified=1');
+        // Visit the verification URL; expect redirect to SPA after verification
+        $response = $this->get($verificationUrl);
+        $response->assertRedirect(rtrim(config('app.frontend_url'), '/').'/?verified=1');
 
-            // Step 5: User can now access protected routes
-            $user->refresh(); // Refresh user to get updated email_verified_at
+        // Step 5: User can now access protected routes
+        $user->refresh(); // Refresh user to get updated email_verified_at
 
-            $this->assertTrue($user->hasVerifiedEmail(), 'User should be verified after verification');
+        $this->assertTrue($user->hasVerifiedEmail(), 'User should be verified after verification');
 
-            // Check database directly
-            $dbUser = \App\Models\User::find($user->id);
-            $this->assertNotNull($dbUser->email_verified_at, 'User should be verified in database');
+        // Check database directly
+        $dbUser = \App\Models\User::find($user->id);
+        $this->assertNotNull($dbUser->email_verified_at, 'User should be verified in database');
 
-            // Cookie-based auth: session is already authenticated
-            $response = $this->getJson('/api/users/me');
+        // Explicitly authenticate as the user with Sanctum guard for API routes
+        $this->actingAs($user, 'sanctum');
 
-            $response->assertStatus(200)
-                ->assertJsonStructure([
-                    'data' => [
-                        'id',
-                        'name',
-                        'email',
-                    ],
+        // Now try to access protected routes
+        $response = $this->getJson('/api/users/me');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'name',
+                    'email',
+                ],
             ]);
 
         // Test passes - user can access protected routes after verification

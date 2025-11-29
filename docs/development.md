@@ -12,7 +12,9 @@ This guide provides a comprehensive overview of how to get started with developm
     ./utils/deploy.sh
     ```
 
-    > **Note**: The backend automatically creates `.env` from `.env.docker.example` when you run any `php artisan` command if it doesn't exist. You'll see a helpful message to run `php artisan key:generate`.
+    > **Note**: The backend automatically creates `.env` from `.env.example` when you run any `php artisan` command if it doesn't exist. You'll see a helpful message to run `php artisan key:generate`.
+    
+    > **Tip**: Use `./utils/deploy.sh --skip-git-sync` to deploy local uncommitted changes without git pull. This is useful during development when you want to test changes before committing.
 
 2.  **Access the app**
 
@@ -24,7 +26,7 @@ This guide provides a comprehensive overview of how to get started with developm
 3.  **Optional: Enable HTTPS for local dev (single compose)**
 
     ```bash
-    # Set in backend/.env.docker
+    # Set in backend/.env
     APP_ENV=development
     ENABLE_HTTPS=true
 
@@ -82,7 +84,7 @@ If you need to run tests on your local machine:
 ```bash
 cd backend
 
-# First time only - .env will be auto-created from .env.docker.example
+# First time only - .env will be auto-created from .env.example
 composer install
 php artisan key:generate
 
@@ -145,3 +147,15 @@ Deptrac prevents architectural violations by enforcing allowed dependencies betw
 cd backend
 composer deptrac
 ```
+
+## Asset Management
+
+### Updating Icons
+
+Use `utils/update_icon.sh` to regenerate the favicon, PWA icons, and manifest whenever the branding icon changes.
+
+```bash
+./utils/update_icon.sh /absolute/path/to/new/icon.png
+```
+
+The script requires ImageMagick (`convert`) and updates both `frontend/public` and `backend/public` assets so backend and SPA entry points stay in sync.

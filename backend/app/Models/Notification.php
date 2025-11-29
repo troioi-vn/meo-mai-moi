@@ -32,6 +32,7 @@ class Notification extends Model
         'delivered_at',
         'failed_at',
         'failure_reason',
+        'is_read',
     ];
 
     protected $casts = [
@@ -65,6 +66,7 @@ class Notification extends Model
             'profile_approved' => 'Profile Approved',
             'profile_rejected' => 'Profile Rejected',
             'system_announcement' => 'System Announcement',
+            'deployment' => 'Deployment',
             default => ucfirst(str_replace('_', ' ', $this->type ?? 'notification')),
         };
     }

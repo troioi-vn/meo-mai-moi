@@ -1,30 +1,146 @@
 <?php
 
-use App\Http\Controllers\AuthController;
+// Single-action controllers
 use App\Http\Controllers\EmailConfigurationStatusController;
-use App\Http\Controllers\EmailVerificationController;
-use App\Http\Controllers\FosterAssignmentController;
-use App\Http\Controllers\FosterReturnHandoverController;
-use App\Http\Controllers\HelperProfileController;
-use App\Http\Controllers\ImpersonationController;
-use App\Http\Controllers\InvitationController;
-use App\Http\Controllers\MedicalNoteController;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\NotificationPreferenceController;
-use App\Http\Controllers\PetController;
-use App\Http\Controllers\PetMicrochipController;
-use App\Http\Controllers\PetPhotoController;
-use App\Http\Controllers\PlacementRequestController;
-use App\Http\Controllers\SettingsController;
-use App\Http\Controllers\TransferHandoverController;
-use App\Http\Controllers\TransferRequestController;
-use App\Http\Controllers\UnsubscribeController;
-use App\Http\Controllers\UserProfileController;
-use App\Http\Controllers\VaccinationRecordController;
-use App\Http\Controllers\VersionController;
 use App\Http\Controllers\MailgunWebhookController;
-use App\Http\Controllers\WaitlistController;
-use App\Http\Controllers\WeightHistoryController;
+use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\VersionController;
+
+// Auth controllers
+use App\Http\Controllers\Auth\CheckEmailController;
+
+// Email verification controllers
+use App\Http\Controllers\EmailVerification\VerifyEmailController;
+use App\Http\Controllers\EmailVerification\ResendVerificationEmailController;
+use App\Http\Controllers\EmailVerification\GetVerificationStatusController;
+
+// Settings controllers
+use App\Http\Controllers\Settings\GetPublicSettingsController;
+use App\Http\Controllers\Settings\GetInviteOnlyStatusController;
+
+// Waitlist controllers
+use App\Http\Controllers\Waitlist\JoinWaitlistController;
+use App\Http\Controllers\Waitlist\CheckWaitlistController;
+
+// Invitation controllers
+use App\Http\Controllers\Invitation\ListInvitationsController;
+use App\Http\Controllers\Invitation\StoreInvitationController;
+use App\Http\Controllers\Invitation\DeleteInvitationController;
+use App\Http\Controllers\Invitation\GetInvitationStatsController;
+use App\Http\Controllers\Invitation\ValidateInvitationCodeController;
+
+// Unsubscribe controllers
+use App\Http\Controllers\Unsubscribe\ProcessUnsubscribeController;
+
+// Notification controllers
+use App\Http\Controllers\Notification\ListNotificationsController;
+use App\Http\Controllers\Notification\MarkAllNotificationsReadController;
+use App\Http\Controllers\Notification\MarkNotificationReadController;
+use App\Http\Controllers\Notification\MarkAsReadLegacyController;
+
+// Push subscription controllers
+use App\Http\Controllers\PushSubscription\ListPushSubscriptionsController;
+use App\Http\Controllers\PushSubscription\StorePushSubscriptionController;
+use App\Http\Controllers\PushSubscription\DeletePushSubscriptionController;
+
+// Notification preference controllers
+use App\Http\Controllers\NotificationPreference\GetNotificationPreferencesController;
+use App\Http\Controllers\NotificationPreference\UpdateNotificationPreferencesController;
+
+// Impersonation controllers
+use App\Http\Controllers\Impersonation\GetImpersonationStatusController;
+use App\Http\Controllers\Impersonation\LeaveImpersonationController;
+
+// User profile controllers
+use App\Http\Controllers\UserProfile\ShowProfileController;
+use App\Http\Controllers\UserProfile\UpdateProfileController;
+use App\Http\Controllers\UserProfile\UpdatePasswordController;
+use App\Http\Controllers\UserProfile\DeleteAccountController;
+use App\Http\Controllers\UserProfile\UploadAvatarController;
+use App\Http\Controllers\UserProfile\DeleteAvatarController;
+
+// Pet controllers
+use App\Http\Controllers\Pet\ListMyPetsController;
+use App\Http\Controllers\Pet\ListMyPetsSectionsController;
+use App\Http\Controllers\Pet\ShowPetController;
+use App\Http\Controllers\Pet\ListFeaturedPetsController;
+use App\Http\Controllers\Pet\ListPetsWithPlacementRequestsController;
+use App\Http\Controllers\Pet\StorePetController;
+use App\Http\Controllers\Pet\UpdatePetController;
+use App\Http\Controllers\Pet\DeletePetController;
+use App\Http\Controllers\Pet\UpdatePetStatusController;
+use App\Http\Controllers\Pet\ListPetTypesController;
+
+// Pet photo controllers
+use App\Http\Controllers\PetPhoto\StorePetPhotoController;
+use App\Http\Controllers\PetPhoto\DeletePetPhotoController;
+
+// Placement request controllers
+use App\Http\Controllers\PlacementRequest\StorePlacementRequestController;
+use App\Http\Controllers\PlacementRequest\DeletePlacementRequestController;
+use App\Http\Controllers\PlacementRequest\ConfirmPlacementRequestController;
+use App\Http\Controllers\PlacementRequest\RejectPlacementRequestController;
+
+// Helper profile controllers
+use App\Http\Controllers\HelperProfile\ListHelperProfilesController;
+use App\Http\Controllers\HelperProfile\StoreHelperProfileController;
+use App\Http\Controllers\HelperProfile\ShowHelperProfileController;
+use App\Http\Controllers\HelperProfile\UpdateHelperProfileController;
+use App\Http\Controllers\HelperProfile\DeleteHelperProfileController;
+use App\Http\Controllers\HelperProfile\DeleteHelperProfilePhotoController;
+
+// Weight history controllers
+use App\Http\Controllers\WeightHistory\ListWeightHistoryController;
+use App\Http\Controllers\WeightHistory\StoreWeightController;
+use App\Http\Controllers\WeightHistory\ShowWeightController;
+use App\Http\Controllers\WeightHistory\UpdateWeightController;
+use App\Http\Controllers\WeightHistory\DeleteWeightController;
+
+// Medical note controllers
+use App\Http\Controllers\MedicalNote\ListMedicalNotesController;
+use App\Http\Controllers\MedicalNote\StoreMedicalNoteController;
+use App\Http\Controllers\MedicalNote\ShowMedicalNoteController;
+use App\Http\Controllers\MedicalNote\UpdateMedicalNoteController;
+use App\Http\Controllers\MedicalNote\DeleteMedicalNoteController;
+
+// Vaccination record controllers
+use App\Http\Controllers\VaccinationRecord\DeleteVaccinationRecordController;
+use App\Http\Controllers\VaccinationRecord\ListVaccinationRecordsController;
+use App\Http\Controllers\VaccinationRecord\RenewVaccinationRecordController;
+use App\Http\Controllers\VaccinationRecord\ShowVaccinationRecordController;
+use App\Http\Controllers\VaccinationRecord\StoreVaccinationRecordController;
+use App\Http\Controllers\VaccinationRecord\UpdateVaccinationRecordController;
+
+// Pet microchip controllers
+use App\Http\Controllers\PetMicrochip\ListPetMicrochipsController;
+use App\Http\Controllers\PetMicrochip\StorePetMicrochipController;
+use App\Http\Controllers\PetMicrochip\ShowPetMicrochipController;
+use App\Http\Controllers\PetMicrochip\UpdatePetMicrochipController;
+use App\Http\Controllers\PetMicrochip\DeletePetMicrochipController;
+
+// Transfer request controllers
+use App\Http\Controllers\TransferRequest\StoreTransferRequestController;
+use App\Http\Controllers\TransferRequest\AcceptTransferRequestController;
+use App\Http\Controllers\TransferRequest\RejectTransferRequestController;
+use App\Http\Controllers\TransferRequest\GetResponderProfileController;
+
+// Transfer handover controllers
+use App\Http\Controllers\TransferHandover\ShowHandoverForTransferController;
+use App\Http\Controllers\TransferHandover\StoreTransferHandoverController;
+use App\Http\Controllers\TransferHandover\HelperConfirmHandoverController;
+use App\Http\Controllers\TransferHandover\CompleteHandoverController;
+use App\Http\Controllers\TransferHandover\CancelHandoverController;
+
+// Foster assignment controllers
+use App\Http\Controllers\FosterAssignment\CompleteFosterAssignmentController;
+use App\Http\Controllers\FosterAssignment\CancelFosterAssignmentController;
+use App\Http\Controllers\FosterAssignment\ExtendFosterAssignmentController;
+
+// Foster return handover controllers
+use App\Http\Controllers\FosterReturnHandover\StoreFosterReturnHandoverController;
+use App\Http\Controllers\FosterReturnHandover\OwnerConfirmReturnController;
+use App\Http\Controllers\FosterReturnHandover\CompleteReturnHandoverController;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -34,7 +150,7 @@ Route::get('/version', [VersionController::class, 'show']);
 Route::post('/webhooks/mailgun', [MailgunWebhookController::class, 'handle']);
 
 // Email verification handled by Fortify web routes; provide API alias for tests / JSON clients
-Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
     ->middleware(['signed', 'throttle:6,1'])
     ->name('api.verification.verify');
 
@@ -50,50 +166,55 @@ Route::post('/password/reset', function (\Illuminate\Http\Request $request) {
 });
 
 // Token validation endpoint for the frontend
-Route::get('/password/reset/{token}', [App\Http\Controllers\PasswordResetController::class, 'validateToken'])
+Route::get('/password/reset/{token}', [PasswordResetController::class, 'validateToken'])
     ->name('password.reset.validate');
 
 // Public settings endpoints
-Route::get('/settings/public', [SettingsController::class, 'public']);
-Route::get('/settings/invite-only-status', [SettingsController::class, 'inviteOnlyStatus']);
+Route::get('/settings/public', GetPublicSettingsController::class);
+Route::get('/settings/invite-only-status', GetInviteOnlyStatusController::class);
 
 // Public waitlist endpoint (rate limited + validated)
-Route::post('/waitlist', [WaitlistController::class, 'store'])->middleware(['throttle:5,1', 'validate.invitation']); // 5 requests per minute
-Route::post('/waitlist/check', [WaitlistController::class, 'check'])->middleware(['throttle:10,1', 'validate.invitation']); // 10 requests per minute
+Route::post('/waitlist', JoinWaitlistController::class)->middleware(['throttle:5,1', 'validate.invitation']); // 5 requests per minute
+Route::post('/waitlist/check', CheckWaitlistController::class)->middleware(['throttle:10,1', 'validate.invitation']); // 10 requests per minute
 
 // Public invitation validation endpoint (rate limited + validated)
-Route::post('/invitations/validate', [InvitationController::class, 'validateCode'])->middleware(['throttle:20,1', 'validate.invitation']); // 20 requests per minute
+Route::post('/invitations/validate', ValidateInvitationCodeController::class)->middleware(['throttle:20,1', 'validate.invitation']); // 20 requests per minute
 
 // Unsubscribe endpoint (no auth required)
-Route::post('/unsubscribe', [UnsubscribeController::class, 'unsubscribe']);
+Route::post('/unsubscribe', ProcessUnsubscribeController::class);
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/email/verification-notification', [EmailVerificationController::class, 'resend'])
+    Route::post('/email/verification-notification', ResendVerificationEmailController::class)
         ->middleware('throttle:6,1')
         ->name('api.verification.send');
-    Route::get('/email/verification-status', [EmailVerificationController::class, 'status']);
+    Route::get('/email/verification-status', GetVerificationStatusController::class);
     Route::get('/email/configuration-status', [EmailConfigurationStatusController::class, 'status']);
 });
 
 // Routes that don't require email verification (notifications, email verification management)
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/notifications', [NotificationController::class, 'index']);
-    Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead']); // legacy alias
-    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead']);
-    Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
+    Route::get('/notifications', ListNotificationsController::class);
+    Route::post('/notifications/mark-as-read', MarkAsReadLegacyController::class); // legacy alias
+    Route::post('/notifications/mark-all-read', MarkAllNotificationsReadController::class);
+    Route::patch('/notifications/{notification}/read', MarkNotificationReadController::class);
+
+    // Push subscriptions
+    Route::get('/push-subscriptions', ListPushSubscriptionsController::class);
+    Route::post('/push-subscriptions', StorePushSubscriptionController::class);
+    Route::delete('/push-subscriptions', DeletePushSubscriptionController::class);
 
     // Notification preferences
-    Route::get('/notification-preferences', [NotificationPreferenceController::class, 'index']);
-    Route::put('/notification-preferences', [NotificationPreferenceController::class, 'update']);
+    Route::get('/notification-preferences', GetNotificationPreferencesController::class);
+    Route::put('/notification-preferences', UpdateNotificationPreferencesController::class);
 });
 
 // Auth routes - only checkEmail is custom, rest handled by Fortify
-Route::post('/check-email', [AuthController::class, 'checkEmail'])->middleware('throttle:20,1');
+Route::post('/check-email', CheckEmailController::class)->middleware('throttle:20,1');
 
 // Impersonation routes
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/impersonation/status', [ImpersonationController::class, 'status']);
-    Route::post('/impersonation/leave', [ImpersonationController::class, 'leave']);
+    Route::get('/impersonation/status', GetImpersonationStatusController::class);
+    Route::post('/impersonation/leave', LeaveImpersonationController::class);
 });
 
 // Main application routes that require email verification
@@ -103,85 +224,94 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     });
 
     // Invitation management routes (authenticated with rate limiting + validation)
-    Route::get('/invitations', [InvitationController::class, 'index']);
-    Route::post('/invitations', [InvitationController::class, 'store'])->middleware(['throttle:10,60', 'validate.invitation']); // 10 invitations per hour
-    Route::delete('/invitations/{id}', [InvitationController::class, 'destroy'])->middleware(['throttle:20,60', 'validate.invitation']); // 20 revocations per hour
-    Route::get('/invitations/stats', [InvitationController::class, 'stats']);
+    Route::get('/invitations', ListInvitationsController::class);
+    Route::post('/invitations', StoreInvitationController::class)->middleware(['throttle:10,60', 'validate.invitation']); // 10 invitations per hour
+    Route::delete('/invitations/{id}', DeleteInvitationController::class)->middleware(['throttle:20,60', 'validate.invitation']); // 20 revocations per hour
+    Route::get('/invitations/stats', GetInvitationStatsController::class);
 
-    Route::get('/users/me', [UserProfileController::class, 'show']);
-    Route::put('/users/me', [UserProfileController::class, 'update']);
-    Route::put('/users/me/password', [UserProfileController::class, 'updatePassword']);
-    Route::delete('/users/me', [UserProfileController::class, 'destroy']);
-    Route::post('/users/me/avatar', [UserProfileController::class, 'uploadAvatar']);
-    Route::delete('/users/me/avatar', [UserProfileController::class, 'deleteAvatar']);
+    Route::get('/users/me', ShowProfileController::class);
+    Route::put('/users/me', UpdateProfileController::class);
+    Route::put('/users/me/password', UpdatePasswordController::class);
+    Route::delete('/users/me', DeleteAccountController::class);
+    Route::post('/users/me/avatar', UploadAvatarController::class);
+    Route::delete('/users/me/avatar', DeleteAvatarController::class);
 
     // New pet routes
-    Route::get('/my-pets', [PetController::class, 'myPets']);
-    Route::get('/my-pets/sections', [PetController::class, 'myPetsSections']);
-    Route::post('/pets', [PetController::class, 'store']);
-    Route::put('/pets/{pet}', [PetController::class, 'update']);
-    Route::delete('/pets/{pet}', [PetController::class, 'destroy'])->name('pets.destroy');
+    Route::get('/my-pets', ListMyPetsController::class);
+    Route::get('/my-pets/sections', ListMyPetsSectionsController::class);
+    Route::post('/pets', StorePetController::class);
+    Route::put('/pets/{pet}', UpdatePetController::class);
+    Route::delete('/pets/{pet}', DeletePetController::class)->name('pets.destroy');
     // Define delete alias with DELETE method so POST to this path returns 405 instead of 404 (for REST semantics tests)
-    Route::delete('/pets/{pet}/delete', [PetController::class, 'destroy'])->name('pets.destroy.alias');
-    Route::put('/pets/{pet}/status', [PetController::class, 'updateStatus'])->name('pets.updateStatus');
-    Route::get('/pet-types', [PetController::class, 'petTypes']);
+    Route::delete('/pets/{pet}/delete', DeletePetController::class)->name('pets.destroy.alias');
+    Route::put('/pets/{pet}/status', UpdatePetStatusController::class)->name('pets.updateStatus');
+    Route::get('/pet-types', ListPetTypesController::class);
 
     // New pet photo routes
-    Route::post('/pets/{pet}/photos', [PetPhotoController::class, 'store']);
-    Route::delete('/pets/{pet}/photos/{photo}', [PetPhotoController::class, 'destroy']);
-    Route::post('/placement-requests', [PlacementRequestController::class, 'store']);
-    Route::delete('/placement-requests/{placementRequest}', [PlacementRequestController::class, 'destroy']);
-    Route::post('/placement-requests/{placementRequest}/confirm', [PlacementRequestController::class, 'confirm']);
-    Route::post('/placement-requests/{placementRequest}/reject', [PlacementRequestController::class, 'reject']);
-    Route::apiResource('helper-profiles', HelperProfileController::class);
-    Route::post('helper-profiles/{helperProfile}', [HelperProfileController::class, 'update']);
-    Route::delete('helper-profiles/{helperProfile}/photos/{photo}', [HelperProfileController::class, 'destroyPhoto']);
-    Route::get('/pets/{pet}/weights', [WeightHistoryController::class, 'index']);
-    Route::post('/pets/{pet}/weights', [WeightHistoryController::class, 'store']);
-    Route::get('/pets/{pet}/weights/{weight}', [WeightHistoryController::class, 'show'])->whereNumber('weight');
-    Route::put('/pets/{pet}/weights/{weight}', [WeightHistoryController::class, 'update'])->whereNumber('weight');
-    Route::delete('/pets/{pet}/weights/{weight}', [WeightHistoryController::class, 'destroy'])->whereNumber('weight');
+    Route::post('/pets/{pet}/photos', StorePetPhotoController::class);
+    Route::delete('/pets/{pet}/photos/{photo}', DeletePetPhotoController::class);
+    Route::post('/placement-requests', StorePlacementRequestController::class);
+    Route::delete('/placement-requests/{placementRequest}', DeletePlacementRequestController::class);
+    Route::post('/placement-requests/{placementRequest}/confirm', ConfirmPlacementRequestController::class);
+    Route::post('/placement-requests/{placementRequest}/reject', RejectPlacementRequestController::class);
+    
+    // Helper profiles
+    Route::get('/helper-profiles', ListHelperProfilesController::class);
+    Route::post('/helper-profiles', StoreHelperProfileController::class);
+    Route::get('/helper-profiles/{helperProfile}', ShowHelperProfileController::class);
+    Route::put('/helper-profiles/{helperProfile}', UpdateHelperProfileController::class);
+    Route::patch('/helper-profiles/{helperProfile}', UpdateHelperProfileController::class);
+    Route::post('/helper-profiles/{helperProfile}', UpdateHelperProfileController::class);
+    Route::delete('/helper-profiles/{helperProfile}', DeleteHelperProfileController::class);
+    Route::delete('/helper-profiles/{helperProfile}/photos/{photo}', DeleteHelperProfilePhotoController::class);
+    
+    Route::get('/pets/{pet}/weights', ListWeightHistoryController::class);
+    Route::post('/pets/{pet}/weights', StoreWeightController::class);
+    Route::get('/pets/{pet}/weights/{weight}', ShowWeightController::class)->whereNumber('weight');
+    Route::put('/pets/{pet}/weights/{weight}', UpdateWeightController::class)->whereNumber('weight');
+    Route::delete('/pets/{pet}/weights/{weight}', DeleteWeightController::class)->whereNumber('weight');
 
     // Medical Notes
-    Route::get('/pets/{pet}/medical-notes', [MedicalNoteController::class, 'index']);
-    Route::post('/pets/{pet}/medical-notes', [MedicalNoteController::class, 'store']);
-    Route::get('/pets/{pet}/medical-notes/{note}', [MedicalNoteController::class, 'show'])->whereNumber('note');
-    Route::put('/pets/{pet}/medical-notes/{note}', [MedicalNoteController::class, 'update'])->whereNumber('note');
-    Route::delete('/pets/{pet}/medical-notes/{note}', [MedicalNoteController::class, 'destroy'])->whereNumber('note');
+    Route::get('/pets/{pet}/medical-notes', ListMedicalNotesController::class);
+    Route::post('/pets/{pet}/medical-notes', StoreMedicalNoteController::class);
+    Route::get('/pets/{pet}/medical-notes/{note}', ShowMedicalNoteController::class)->whereNumber('note');
+    Route::put('/pets/{pet}/medical-notes/{note}', UpdateMedicalNoteController::class)->whereNumber('note');
+    Route::delete('/pets/{pet}/medical-notes/{note}', DeleteMedicalNoteController::class)->whereNumber('note');
 
     // Vaccinations
-    Route::get('/pets/{pet}/vaccinations', [VaccinationRecordController::class, 'index']);
-    Route::post('/pets/{pet}/vaccinations', [VaccinationRecordController::class, 'store']);
-    Route::get('/pets/{pet}/vaccinations/{record}', [VaccinationRecordController::class, 'show'])->whereNumber('record');
-    Route::put('/pets/{pet}/vaccinations/{record}', [VaccinationRecordController::class, 'update'])->whereNumber('record');
-    Route::delete('/pets/{pet}/vaccinations/{record}', [VaccinationRecordController::class, 'destroy'])->whereNumber('record');
+    Route::get('/pets/{pet}/vaccinations', ListVaccinationRecordsController::class);
+    Route::post('/pets/{pet}/vaccinations', StoreVaccinationRecordController::class);
+    Route::get('/pets/{pet}/vaccinations/{record}', ShowVaccinationRecordController::class)->whereNumber('record');
+    Route::put('/pets/{pet}/vaccinations/{record}', UpdateVaccinationRecordController::class)->whereNumber('record');
+    Route::delete('/pets/{pet}/vaccinations/{record}', DeleteVaccinationRecordController::class)->whereNumber('record');
+    Route::post('/pets/{pet}/vaccinations/{record}/renew', RenewVaccinationRecordController::class)->whereNumber('record');
 
     // Microchips
-    Route::get('/pets/{pet}/microchips', [PetMicrochipController::class, 'index']);
-    Route::post('/pets/{pet}/microchips', [PetMicrochipController::class, 'store']);
-    Route::get('/pets/{pet}/microchips/{microchip}', [PetMicrochipController::class, 'show'])->whereNumber('microchip');
-    Route::put('/pets/{pet}/microchips/{microchip}', [PetMicrochipController::class, 'update'])->whereNumber('microchip');
-    Route::delete('/pets/{pet}/microchips/{microchip}', [PetMicrochipController::class, 'destroy'])->whereNumber('microchip');
-    Route::post('/transfer-requests', [TransferRequestController::class, 'store']);
-    Route::post('/transfer-requests/{transferRequest}/accept', [TransferRequestController::class, 'accept']);
-    Route::post('/transfer-requests/{transferRequest}/reject', [TransferRequestController::class, 'reject']);
+    Route::get('/pets/{pet}/microchips', ListPetMicrochipsController::class);
+    Route::post('/pets/{pet}/microchips', StorePetMicrochipController::class);
+    Route::get('/pets/{pet}/microchips/{microchip}', ShowPetMicrochipController::class)->whereNumber('microchip');
+    Route::put('/pets/{pet}/microchips/{microchip}', UpdatePetMicrochipController::class)->whereNumber('microchip');
+    Route::delete('/pets/{pet}/microchips/{microchip}', DeletePetMicrochipController::class)->whereNumber('microchip');
+    Route::post('/transfer-requests', StoreTransferRequestController::class);
+    Route::post('/transfer-requests/{transferRequest}/accept', AcceptTransferRequestController::class);
+    Route::post('/transfer-requests/{transferRequest}/reject', RejectTransferRequestController::class);
     // Owner-only: view responder's helper profile for a transfer request
-    Route::get('/transfer-requests/{transferRequest}/responder-profile', [TransferRequestController::class, 'responderProfile']);
+    Route::get('/transfer-requests/{transferRequest}/responder-profile', GetResponderProfileController::class);
     // Transfer handover lifecycle
-    Route::get('/transfer-requests/{transferRequest}/handover', [TransferHandoverController::class, 'showForTransfer']);
-    Route::post('/transfer-requests/{transferRequest}/handover', [TransferHandoverController::class, 'store']);
-    Route::post('/transfer-handovers/{handover}/confirm', [TransferHandoverController::class, 'helperConfirm']);
-    Route::post('/transfer-handovers/{handover}/complete', [TransferHandoverController::class, 'complete']);
-    Route::post('/transfer-handovers/{handover}/cancel', [TransferHandoverController::class, 'cancel']);
+    Route::get('/transfer-requests/{transferRequest}/handover', ShowHandoverForTransferController::class);
+    Route::post('/transfer-requests/{transferRequest}/handover', StoreTransferHandoverController::class);
+    Route::post('/transfer-handovers/{handover}/confirm', HelperConfirmHandoverController::class);
+    Route::post('/transfer-handovers/{handover}/complete', CompleteHandoverController::class);
+    Route::post('/transfer-handovers/{handover}/cancel', CancelHandoverController::class);
     // Foster assignment lifecycle
-    Route::post('/foster-assignments/{assignment}/complete', [FosterAssignmentController::class, 'complete']);
-    Route::post('/foster-assignments/{assignment}/cancel', [FosterAssignmentController::class, 'cancel']);
-    Route::post('/foster-assignments/{assignment}/extend', [FosterAssignmentController::class, 'extend']);
+    Route::post('/foster-assignments/{assignment}/complete', CompleteFosterAssignmentController::class);
+    Route::post('/foster-assignments/{assignment}/cancel', CancelFosterAssignmentController::class);
+    Route::post('/foster-assignments/{assignment}/extend', ExtendFosterAssignmentController::class);
 
     // Foster return handover lifecycle
-    Route::post('/foster-assignments/{assignment}/return-handover', [FosterReturnHandoverController::class, 'store']);
-    Route::post('/foster-return-handovers/{handover}/confirm', [FosterReturnHandoverController::class, 'ownerConfirm']);
-    Route::post('/foster-return-handovers/{handover}/complete', [FosterReturnHandoverController::class, 'complete']);
+    Route::post('/foster-assignments/{assignment}/return-handover', StoreFosterReturnHandoverController::class);
+    Route::post('/foster-return-handovers/{handover}/confirm', OwnerConfirmReturnController::class);
+    Route::post('/foster-return-handovers/{handover}/complete', CompleteReturnHandoverController::class);
     // Route::post('/reviews', [ReviewController::class, 'store']);
 
     // Message Routes
@@ -193,6 +323,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 });
 
 // New pet routes (public)
-Route::get('/pets/placement-requests', [PetController::class, 'placementRequests']);
-Route::get('/pets/featured', [PetController::class, 'featured']);
-Route::get('/pets/{pet}', [PetController::class, 'show'])->middleware('optional.auth')->whereNumber('pet');
+Route::get('/pets/placement-requests', ListPetsWithPlacementRequestsController::class);
+Route::get('/pets/featured', ListFeaturedPetsController::class);
+Route::get('/pets/{pet}', ShowPetController::class)->middleware('optional.auth')->whereNumber('pet');

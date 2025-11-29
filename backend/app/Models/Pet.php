@@ -13,6 +13,28 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
+/**
+ * @OA\Schema(
+ *     schema="Pet",
+ *     type="object",
+ *     title="Pet",
+ *     required={"id", "name", "breed", "location", "description", "status", "user_id", "pet_type_id"},
+ *
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="name", type="string", example="Whiskers"),
+ *     @OA\Property(property="breed", type="string", example="Siamese"),
+ *     @OA\Property(property="birthday", type="string", format="date", example="2020-01-01", nullable=true, description="Exact birthday (present only when birthday_precision=day). Deprecated: prefer component fields.", deprecated=true),
+ *     @OA\Property(property="birthday_year", type="integer", example=2020, nullable=true, description="Birth year when known (year/month/day precision)."),
+ *     @OA\Property(property="birthday_month", type="integer", example=5, nullable=true, description="Birth month when known (month/day precision)."),
+ *     @OA\Property(property="birthday_day", type="integer", example=12, nullable=true, description="Birth day when known (day precision)."),
+ *     @OA\Property(property="birthday_precision", type="string", enum={"day","month","year","unknown"}, example="month", description="Precision level for birthday components."),
+ *     @OA\Property(property="location", type="string", example="Hanoi"),
+ *     @OA\Property(property="description", type="string", example="A friendly pet."),
+ *     @OA\Property(property="status", type="string", example="active"),
+ *     @OA\Property(property="user_id", type="integer", example=5),
+ *     @OA\Property(property="pet_type_id", type="integer", example=1)
+ * )
+ */
 class Pet extends Model implements HasMedia
 {
     use HasFactory, InteractsWithMedia, SoftDeletes;
@@ -60,6 +82,7 @@ class Pet extends Model implements HasMedia
     {
         if ($this->status !== PetStatus::DELETED) {
             $this->status = PetStatus::DELETED;
+            $this->deleted_at = now();
 
             return $this->save();
         }
@@ -171,6 +194,19 @@ class Pet extends Model implements HasMedia
     public function activeFosterAssignment(): HasOne
     {
         return $this->hasOne(FosterAssignment::class)->where('status', 'active');
+    }
+
+    /**
+     * Calculate the age of the pet in years.
+     * Returns the difference between current year and birthday year.
+     */
+    public function getAge(): int
+    {
+        if (! $this->birthday) {
+            return 0;
+        }
+
+        return now()->year - $this->birthday->year;
     }
 
     /**

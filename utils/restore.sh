@@ -35,7 +35,7 @@ restore_db() {
         # Flatten globs into actual files
         local files=()
         local f
-        for f in ${options[@]}; do
+    for f in "${options[@]}"; do
             files+=("$f")
         done
         if [ ${#files[@]} -eq 0 ]; then

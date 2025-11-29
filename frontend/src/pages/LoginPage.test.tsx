@@ -1,9 +1,9 @@
 import { screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderWithRouter, userEvent } from '@/test-utils'
+import { renderWithRouter, userEvent } from '@/testing'
 import LoginPage from '../pages/LoginPage'
 import { http, HttpResponse } from 'msw'
-import { server } from '@/mocks/server'
+import { server } from '@/testing/mocks/server'
 
 // Fix ESM mocking: define mockNavigate at top scope
 let mockNavigate: ReturnType<typeof vi.fn>
@@ -44,7 +44,7 @@ describe('LoginPage', () => {
     expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument()
   })
 
-  it('logs in the user and navigates to /account/pets on success', async () => {
+  it('logs in the user and navigates to / on success', async () => {
     server.use(
       http.post('http://localhost:8000/login', async ({ request }) => {
         const body = (await request.json()) as { email?: string; password?: string }
@@ -91,11 +91,11 @@ describe('LoginPage', () => {
     await userEvent.click(loginButton)
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/account/pets')
+      expect(mockNavigate).toHaveBeenCalledWith('/')
     })
   })
 
-  it('redirects authenticated users to /account/pets', async () => {
+  it('redirects authenticated users to /', async () => {
     renderWithRouter(<LoginPage />, {
       initialAuthState: {
         user: { id: 1, name: 'Test User', email: 'test@example.com' },
@@ -106,7 +106,7 @@ describe('LoginPage', () => {
     })
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/account/pets')
+      expect(mockNavigate).toHaveBeenCalledWith('/')
     })
   })
 

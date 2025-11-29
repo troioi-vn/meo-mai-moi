@@ -1,6 +1,10 @@
 # Multi-stage build: First stage for building the entire application
 FROM node:22.17.1 AS app-build
 
+ARG VAPID_PUBLIC_KEY
+ENV VAPID_PUBLIC_KEY=$VAPID_PUBLIC_KEY
+ENV VITE_VAPID_PUBLIC_KEY=$VAPID_PUBLIC_KEY
+
 # Set the working directory for the entire application
 WORKDIR /app
 

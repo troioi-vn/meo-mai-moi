@@ -100,7 +100,7 @@ class JetstreamApiContractTest extends TestCase
         ]);
 
         $data = $response->json();
-        
+
         $this->assertIsString($data['message']);
         $this->assertIsString($data['redirect']);
         $this->assertEquals('/login', $data['redirect']);

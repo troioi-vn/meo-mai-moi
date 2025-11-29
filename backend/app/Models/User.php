@@ -17,6 +17,20 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Permission\Traits\HasRoles;
 
+/**
+ * @OA\Schema(
+ *     schema="User",
+ *     title="User",
+ *     description="User model",
+ *
+ *     @OA\Property(property="id", type="integer", format="int64", description="User ID"),
+ *     @OA\Property(property="name", type="string", description="User's name"),
+ *     @OA\Property(property="email", type="string", format="email", description="User's email address"),
+ *     @OA\Property(property="avatar_url", type="string", nullable=true, description="URL to the user's avatar image"),
+ *     @OA\Property(property="created_at", type="string", format="date-time", description="Timestamp of user creation"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time", description="Timestamp of last user update")
+ * )
+ */
 class User extends Authenticatable implements FilamentUser, HasMedia, MustVerifyEmail
 {
     use HasApiTokens;
@@ -87,6 +101,11 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
     public function notificationPreferences(): HasMany
     {
         return $this->hasMany(NotificationPreference::class);
+    }
+
+    public function pushSubscriptions(): HasMany
+    {
+        return $this->hasMany(PushSubscription::class);
     }
 
     /**
@@ -181,15 +200,23 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         $this->addMediaConversion('avatar_webp')
             ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256)
             ->format('webp');
-
     }
 
     /**
      * Get avatar URL attribute - returns URL from MediaLibrary.
+     * Falls back to original image if conversion is not ready.
      */
     public function getAvatarUrlAttribute()
     {
-        return $this->getFirstMediaUrl('avatar', 'avatar_256') ?: null;
+        // Try to get the converted image first
+        $convertedUrl = $this->getFirstMediaUrl('avatar', 'avatar_256');
+
+        // If conversion doesn't exist yet, fall back to original
+        if (! $convertedUrl) {
+            $convertedUrl = $this->getFirstMediaUrl('avatar');
+        }
+
+        return $convertedUrl ?: null;
     }
 
     /**

@@ -56,6 +56,11 @@ return [
     'asset_url' => env('ASSET_URL', null),
     'frontend_url' => env('FRONTEND_URL', 'http://localhost:5173'),
 
+    'push_icon' => env('APP_PUSH_ICON', '/icon-192.png'),
+    'push_badge' => env('APP_PUSH_BADGE', '/icon-32.png'),
+
+    'disallow_robots' => env('DISALLOW_ROBOTS', false),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

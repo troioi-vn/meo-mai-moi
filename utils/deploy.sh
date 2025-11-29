@@ -2,10 +2,67 @@
 set -euo pipefail
 
 # --- Configuration ---
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_PATH="${BASH_SOURCE[0]:-$0}"
+SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+load_root_env_file() {
+    local env_file="$PROJECT_ROOT/.env"
+    [ -f "$env_file" ] || return 0
+
+    while IFS='=' read -r key value; do
+        # Skip comments and empty/whitespace-only lines
+        case "$key" in
+            ''|\#*) continue ;;
+        esac
+
+        # Strip inline comments and surrounding whitespace from value
+        value=${value%%#*}
+        value=$(printf '%s' "$value" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+
+        # Ignore lines without a key after trimming
+        if [ -z "$key" ]; then
+            continue
+        fi
+
+        # Only set if not already present in the environment
+        if [ -z "${!key+x}" ]; then
+            export "$key=$value"
+        fi
+    done < "$env_file"
+}
+
+load_root_env_file
 
 # shellcheck source=./setup.sh
 source "$SCRIPT_DIR/setup.sh"
+
+# Self-update check BEFORE acquiring lock to avoid re-exec conflicts
+if [ "${SKIP_GIT_SELF_UPDATE:-false}" != "true" ]; then
+    CURRENT_COMMIT="$(git -C "$PROJECT_ROOT" rev-parse HEAD 2>/dev/null || echo "")"
+    TARGET_BRANCH="$(determine_deploy_branch "${APP_ENV_CURRENT:-development}")"
+
+    if [ -n "$TARGET_BRANCH" ] && [ -n "$CURRENT_COMMIT" ]; then
+        echo "ℹ️  Checking for newer deploy script on branch $TARGET_BRANCH..."
+        git -C "$PROJECT_ROOT" fetch origin "$TARGET_BRANCH" >/dev/null 2>&1 || true
+        REMOTE_COMMIT="$(git -C "$PROJECT_ROOT" rev-parse "origin/$TARGET_BRANCH" 2>/dev/null || echo "")"
+
+        if [ -n "$REMOTE_COMMIT" ] && [ "$REMOTE_COMMIT" != "$CURRENT_COMMIT" ]; then
+            echo "ℹ️  New commit detected on origin/$TARGET_BRANCH. Updating and re-running deploy script..."
+
+            # Try a fast-forward; if it fails, fall back to existing sync logic later
+            if git -C "$PROJECT_ROOT" merge --ff-only "origin/$TARGET_BRANCH" >/dev/null 2>&1; then
+                export SKIP_GIT_SELF_UPDATE=true
+                exec "$SCRIPT_DIR/$(basename "$SCRIPT_PATH")" "$@"
+            else
+                echo "⚠️  Fast-forward of deploy script failed, continuing with current version."
+            fi
+        fi
+    fi
+fi
+
+setup_initialize
+
 # shellcheck source=./deploy_db.sh
 source "$SCRIPT_DIR/deploy_db.sh"
 # shellcheck source=./deploy_docker.sh
@@ -14,8 +71,6 @@ source "$SCRIPT_DIR/deploy_docker.sh"
 source "$SCRIPT_DIR/deploy_notify.sh"
 # shellcheck source=./deploy_post.sh
 source "$SCRIPT_DIR/deploy_post.sh"
-
-setup_initialize
 
 ## (Removed) get_db_stats and check_db_connection helpers to simplify deployment flow
 
@@ -31,6 +86,8 @@ NO_INTERACTIVE="false"
 QUIET="false"
 ALLOW_EMPTY_DB="false"
 TEST_NOTIFY="false"
+SKIP_GIT_SYNC="false"
+CLEAN_UP="false"
 
 for arg in "$@"; do
     case "$arg" in
@@ -55,6 +112,12 @@ for arg in "$@"; do
             ;;
         --test-notify)
             TEST_NOTIFY="true"
+            ;;
+        --skip-git-sync)
+            SKIP_GIT_SYNC="true"
+            ;;
+        --clean-up)
+            CLEAN_UP="true"
             ;;
         -h|--help)
             print_help
@@ -93,24 +156,114 @@ deploy_notify_initialize
 
 # Handle --test-notify flag
 if [ "$TEST_NOTIFY" = "true" ]; then
+    echo "Testing notification systems..."
+    echo ""
+    
+    # Test Telegram notifications
     if [ "$DEPLOY_NOTIFY_ENABLED" = "true" ]; then
         echo "✓ Telegram notifications are configured"
-        echo "  Token: ${DEPLOY_NOTIFY_BOT_TOKEN:0:10}..."
-        echo "  Chat ID: $DEPLOY_NOTIFY_CHAT_ID"
+        echo "  Token: ${TELEGRAM_BOT_TOKEN:0:10}..."
+        echo "  Chat ID: $CHAT_ID"
         echo "  Prefix: $DEPLOY_NOTIFY_PREFIX"
         echo ""
-        echo "Sending test notification..."
+        echo "Sending Telegram test notification..."
         deploy_notify_send "Test notification sent at $(deploy_notify_now)."
-        echo "✓ Test notification sent successfully"
-        exit 0
+        echo "✓ Telegram test notification sent successfully"
     else
         echo "✗ Telegram notifications are not configured"
-        echo "  Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in backend/.env.docker"
-        exit 1
+        echo "  Set TELEGRAM_BOT_TOKEN and CHAT_ID in backend/.env to enable"
     fi
+    
+    echo ""
+    
+    # Test in-app notifications
+    # shellcheck disable=SC2153 # ENV_FILE is set by setup.sh before this point
+    notify_enabled=$(grep -E '^NOTIFY_SUPERADMIN_ON_DEPLOY=' "$ENV_FILE" 2>/dev/null | cut -d '=' -f2- | tr -d '\r' | tr -d '"' | tr -d "'" || echo "false")
+    
+    if [ "$notify_enabled" = "true" ]; then
+        echo "✓ In-app notifications are enabled"
+        echo ""
+        echo "Sending in-app test notification..."
+        
+        # Ensure containers are running
+        if ! docker compose ps backend | grep -q "Up"; then
+            echo "Starting containers..."
+            docker compose up -d >/dev/null 2>&1
+            sleep 10
+        fi
+        
+        test_title="🧪 Test Notification"
+        test_body="This is a test notification sent via --test-notify flag at $(date '+%Y-%m-%d %H:%M:%S %z').
+
+This notification should appear in your notification bell with both title and body text."
+        
+        if docker compose exec -T backend php artisan app:notify-superadmin \
+            "$test_title" \
+            "$test_body" >/dev/null 2>&1; then
+            echo "✓ In-app test notification sent successfully"
+            echo "  Check your notification bell at http://localhost:8000"
+        else
+            echo "✗ Failed to send in-app test notification"
+            echo "  Make sure containers are running and database is accessible"
+        fi
+    else
+        echo "✗ In-app notifications are disabled"
+        echo "  Set NOTIFY_SUPERADMIN_ON_DEPLOY=true in backend/.env to enable"
+    fi
+    
+    exit 0
 fi
 
 deploy_notify_register_traps
+
+# --- Disk Space Check ---
+DISK_SPACE_WARNING=""
+check_disk_space() {
+    local threshold="${DEPLOY_DISK_THRESHOLD:-10}"
+    local mount_point="/"
+    
+    # Get disk usage percentage (used space)
+    local usage_percent
+    usage_percent=$(df "$mount_point" | awk 'NR==2 {gsub(/%/,""); print $5}')
+    
+    if [ -z "$usage_percent" ]; then
+        note "⚠️  Could not determine disk usage"
+        log_warn "Disk space check failed - could not determine usage"
+        return 0
+    fi
+    
+    local free_percent=$((100 - usage_percent))
+    local total_size available_size
+    total_size=$(df -h "$mount_point" | awk 'NR==2 {print $2}')
+    available_size=$(df -h "$mount_point" | awk 'NR==2 {print $4}')
+    
+    if [ "$free_percent" -lt "$threshold" ]; then
+        DISK_SPACE_WARNING="⚠️ LOW DISK SPACE: ${free_percent}% free (${available_size} of ${total_size})"
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "$DISK_SPACE_WARNING"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+        log_warn "Low disk space detected" "free_percent=${free_percent} available=${available_size} total=${total_size}"
+        
+        # Export for notification inclusion
+        export DISK_SPACE_WARNING
+    else
+        note "ℹ️  Disk space: ${free_percent}% free (${available_size} of ${total_size})"
+        log_info "Disk space check passed" "free_percent=${free_percent} available=${available_size}"
+    fi
+}
+
+check_disk_space
+
+# Export deployment flags for notification messages
+export DEPLOY_FLAG_FRESH="$FRESH"
+export DEPLOY_FLAG_NO_CACHE="$NO_CACHE"
+export DEPLOY_FLAG_SEED="$SEED"
+export DEPLOY_FLAG_NO_INTERACTIVE="$NO_INTERACTIVE"
+export DEPLOY_FLAG_SKIP_GIT_SYNC="$SKIP_GIT_SYNC"
+export DEPLOY_FLAG_CLEAN_UP="$CLEAN_UP"
+
 deploy_notify_send_start
 
 # Rollback support
@@ -193,13 +346,44 @@ sync_repository_with_remote() {
         log_warn "Uncommitted changes detected"
     fi
 
-    note "ℹ️  Fetching latest changes from origin/$target_branch..."
-    log_info "Fetching from remote" "branch=$target_branch"
-    git -C "$PROJECT_ROOT" fetch origin "$target_branch" || {
-        echo "✗ Failed to fetch from remote" >&2
-        log_error "Git fetch failed" "branch=$target_branch"
+    # Add configurable delay to handle rapid commits (default: 3 seconds)
+    local fetch_delay="${DEPLOY_GIT_FETCH_DELAY:-3}"
+    if [ "$fetch_delay" -gt 0 ]; then
+        note "ℹ️  Waiting ${fetch_delay}s to allow rapid commits to settle on remote..."
+        log_info "Git fetch delay" "seconds=$fetch_delay"
+        sleep "$fetch_delay"
+    fi
+
+    # Retry fetch up to 3 times to handle temporary network issues or pending pushes
+    local fetch_attempts=0
+    local fetch_max_attempts=3
+    local fetch_succeeded=false
+    
+    while [ $fetch_attempts -lt $fetch_max_attempts ]; do
+        fetch_attempts=$((fetch_attempts + 1))
+        
+        if [ $fetch_attempts -gt 1 ]; then
+            note "ℹ️  Retry attempt $fetch_attempts of $fetch_max_attempts..."
+            sleep 2
+        fi
+        
+        note "ℹ️  Fetching latest changes from origin/$target_branch..."
+        log_info "Fetching from remote" "branch=$target_branch attempt=$fetch_attempts"
+        
+        if git -C "$PROJECT_ROOT" fetch origin "$target_branch"; then
+            fetch_succeeded=true
+            break
+        else
+            note "⚠️  Fetch attempt $fetch_attempts failed"
+            log_warn "Git fetch failed" "branch=$target_branch attempt=$fetch_attempts"
+        fi
+    done
+    
+    if [ "$fetch_succeeded" != "true" ]; then
+        echo "✗ Failed to fetch from remote after $fetch_max_attempts attempts" >&2
+        log_error "Git fetch failed after retries" "branch=$target_branch attempts=$fetch_max_attempts"
         exit 1
-    }
+    fi
     
     local local_commit remote_commit
     local_commit=$(git -C "$PROJECT_ROOT" rev-parse HEAD 2>/dev/null || echo "")
@@ -244,9 +428,20 @@ sync_repository_with_remote() {
                 note "✓ Repository reset to remote state"
                 log_success "Repository reset to remote" "commit=$remote_commit"
             else
-                echo "✗ Cannot continue with diverged branches" >&2
-                log_error "User declined reset - branches diverged"
-                exit 1
+                echo "⚠️  Repository remains diverged." >&2
+                read -r -p "Continue without git sync (deploy current local state)? (y/N): " skip_confirm
+                if [[ "$skip_confirm" =~ ^[yY]$ ]]; then
+                    note "⚠️  Proceeding without git sync at user request."
+                    log_warn "User opted to skip git sync after divergence" "local=$local_commit remote=$remote_commit"
+                    SKIP_GIT_SYNC="true"
+                    DEPLOY_FLAG_SKIP_GIT_SYNC="$SKIP_GIT_SYNC"
+                    export DEPLOY_FLAG_SKIP_GIT_SYNC
+                    return
+                else
+                    echo "✗ Cannot continue with diverged branches" >&2
+                    log_error "User declined reset and skip - branches diverged"
+                    exit 1
+                fi
             fi
         else
             echo "✗ Cannot proceed with diverged branches in non-interactive mode" >&2
@@ -257,7 +452,12 @@ sync_repository_with_remote() {
     fi
 }
 
-sync_repository_with_remote "$APP_ENV_CURRENT"
+if [ "$SKIP_GIT_SYNC" = "true" ]; then
+    note "⚠️  Skipping git repository sync (--skip-git-sync flag set)"
+    log_warn "Git sync skipped by user flag"
+else
+    sync_repository_with_remote "$APP_ENV_CURRENT"
+fi
 
 deploy_db_initialize
 
@@ -271,8 +471,8 @@ fi
 # Optional backup before making changes (recommended for production)
 if [ "$FRESH" = "false" ] && [ "$NO_INTERACTIVE" = "false" ]; then
     echo ""
-    read -r -p "Would you like to backup the database first? (y/N): " do_backup
-    if [[ "$do_backup" =~ ^[yY]([eE][sS])?$ ]]; then
+    read -r -p "Would you like to backup the database first? (Y/n): " do_backup
+    if [[ ! "$do_backup" =~ ^[nN]([oO])?$ ]]; then
         note "Preparing to run backup..."
         # Ensure DB container is running for backup script
         if ! docker compose ps --status=running 2>/dev/null | grep -q " db "; then
@@ -315,10 +515,61 @@ fi
 
 if [ "$FRESH" = "false" ] && [ "$EMPTY_DB_DETECTED" = "true" ] && [ "$ALLOW_EMPTY_DB" = "false" ] && [ "$SEED" = "false" ]; then
     echo ""
-    echo "✗ Empty database detected before deployment."
-    echo "  Use --seed to populate essential data, or --allow-empty-db to proceed anyway."
-    echo "  To quickly recreate the admin: docker compose exec backend php artisan db:seed --class=UserSeeder --force"
-    exit 1
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "⚠️  Empty database detected before deployment."
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "Options:"
+    echo "  1. Seed the database (recommended for fresh setups)"
+    echo "  2. Proceed without seeding (not recommended - app may not function correctly)"
+    echo "  3. Cancel deployment"
+    echo ""
+    echo "Tip: You can also use --seed flag to auto-seed, or --allow-empty-db to skip this prompt."
+    echo ""
+    
+    if [ "$NO_INTERACTIVE" = "true" ]; then
+        echo "✗ Non-interactive mode: Cannot proceed with empty database."
+        echo "  Use --seed to populate essential data, or --allow-empty-db to proceed anyway."
+        log_error "Empty database detected in non-interactive mode without --seed or --allow-empty-db"
+        exit 1
+    fi
+    
+    while true; do
+        read -r -p "Choose an option (1/2/3): " empty_db_choice
+        case "$empty_db_choice" in
+            1)
+                note "ℹ️  Seeding database..."
+                log_info "User chose to seed empty database"
+                SEED="true"
+                DEPLOY_FLAG_SEED="$SEED"
+                export DEPLOY_FLAG_SEED
+                break
+                ;;
+            2)
+                echo ""
+                echo "⚠️  Proceeding without seeding is NOT RECOMMENDED."
+                echo "    The application may not function correctly without initial data."
+                read -r -p "Are you sure you want to continue without seeding? (yes/no): " confirm_empty
+                if [ "$confirm_empty" = "yes" ]; then
+                    note "⚠️  Proceeding without seeding (user confirmed)"
+                    log_warn "User confirmed proceeding with empty database without seeding"
+                    ALLOW_EMPTY_DB="true"
+                    break
+                else
+                    echo "Returning to options menu..."
+                    echo ""
+                fi
+                ;;
+            3)
+                echo "❌ Deployment cancelled by user."
+                log_info "Deployment cancelled by user due to empty database"
+                exit 0
+                ;;
+            *)
+                echo "Invalid option. Please enter 1, 2, or 3."
+                ;;
+        esac
+    done
 fi
 
 if [ "$SEED" = "false" ] && [ "$DB_SNAPSHOT_ADMIN" = "missing" ] && [ -n "$ADMIN_EMAIL_TO_WATCH" ] && [ "$ADMIN_EMAIL_TO_WATCH" != "ignore" ]; then
@@ -336,22 +587,47 @@ if [ "$SEED" = "false" ] && [ "$DB_SNAPSHOT_ADMIN" = "missing" ] && [ -n "$ADMIN
 fi
 
 VOLUME_CREATED_AT=""
+# shellcheck disable=SC2034 # exported for potential diagnostics and future use
 VOLUME_FINGERPRINT_CHANGED="false"
+VOLUME_DELETE_LOG="$PROJECT_ROOT/.deploy/volume-deletions.log"
+mkdir -p "$(dirname "$VOLUME_DELETE_LOG")"
+
 if docker volume inspect "$DB_VOLUME_NAME" >/dev/null 2>&1; then
     VOLUME_CREATED_AT=$(docker volume inspect "$DB_VOLUME_NAME" --format '{{ .CreatedAt }}')
     note "ℹ️  Volume $DB_VOLUME_NAME created at $VOLUME_CREATED_AT"
+    log_info "DB volume found" "name=$DB_VOLUME_NAME created_at=$VOLUME_CREATED_AT"
+    
     if [ -f "$DB_FINGERPRINT_FILE" ]; then
         PREV_FINGERPRINT=$(cat "$DB_FINGERPRINT_FILE" 2>/dev/null || true)
         if [ -n "$PREV_FINGERPRINT" ] && [ "$PREV_FINGERPRINT" != "$VOLUME_CREATED_AT" ]; then
             VOLUME_FINGERPRINT_CHANGED="true"
             echo "⚠️  DB volume fingerprint changed. Previous: $PREV_FINGERPRINT | Current: $VOLUME_CREATED_AT"
+            log_warn "DB volume fingerprint changed - possible volume recreation" "previous=$PREV_FINGERPRINT current=$VOLUME_CREATED_AT"
+            
+            # Log volume deletion event if fingerprint changed
+            {
+                echo "=== VOLUME RECREATION DETECTED ==="
+                echo "Timestamp: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+                echo "Local time: $(date '+%Y-%m-%d %H:%M:%S %Z')"
+                echo "Previous fingerprint: $PREV_FINGERPRINT"
+                echo "Current fingerprint: $VOLUME_CREATED_AT"
+                echo "This suggests the volume was deleted and recreated outside of deploy.sh"
+                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                echo ""
+            } >> "$VOLUME_DELETE_LOG"
         fi
     fi
     # Persist current fingerprint for future runs
     echo "$VOLUME_CREATED_AT" > "$DB_FINGERPRINT_FILE"
+    log_info "DB volume fingerprint saved" "fingerprint=$VOLUME_CREATED_AT file=$DB_FINGERPRINT_FILE"
 else
     note "⚠️  Database volume $DB_VOLUME_NAME not found."
+    log_warn "DB volume not found" "name=$DB_VOLUME_NAME"
 fi
+
+# Enhanced logging: Check for volume mount issues
+DB_CONTAINER_MOUNTS=$(docker compose ps -q db 2>/dev/null | xargs -r docker inspect --format '{{range .Mounts}}{{.Type}}:{{.Source}}->{{.Destination}} {{end}}' 2>/dev/null || echo "unknown")
+log_info "DB container mounts" "mounts=$DB_CONTAINER_MOUNTS"
 
 # (moved) Postgres cluster initialization detection will run AFTER containers are up,
 # scoped to the current db container start time to avoid stale warnings
@@ -369,11 +645,32 @@ if [ "$FRESH" = "true" ]; then
         fi
     fi
     
+    # Log volume deletion event before destroying
+    {
+        echo "=== VOLUME DELETION EVENT ==="
+        echo "Timestamp: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+        echo "Local time: $(date '+%Y-%m-%d %H:%M:%S %Z')"
+        echo "User: $(whoami)"
+        echo "Command: deploy.sh --fresh"
+        echo "Reason: Fresh deployment requested"
+        echo "Volumes to be deleted:"
+        docker volume ls --filter "name=$(basename "$PROJECT_ROOT")" --format "  - {{.Name}}" 2>/dev/null || echo "  (could not list volumes)"
+        echo ""
+    } >> "$VOLUME_DELETE_LOG"
+    log_info "Volume deletion logged" "log=$VOLUME_DELETE_LOG"
+    
     echo "Removing containers and volumes..."
     docker compose down -v --remove-orphans || {
         echo "⚠️  docker compose down returned non-zero (containers may not have been running)"
     }
     echo "✓ Cleanup complete"
+    
+    # Log completion
+    {
+        echo "Status: Completed at $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+    } >> "$VOLUME_DELETE_LOG"
 else
     echo ""
     note "ℹ️  Standard deployment (data preservation mode)"
@@ -433,9 +730,85 @@ db_snapshot "after-migrate"
 
 ## (Removed) post-deployment DB summary for simplicity
 
+# --- Docker Cleanup (if requested) ---
+deploy_cleanup_docker() {
+    note "🧹 Cleaning up old Docker images and containers..."
+    log_info "Starting Docker cleanup"
+    
+    local cleaned_images=0
+    local cleaned_containers=0
+    local freed_space="0B"
+    
+    # Remove stopped containers (except current project ones)
+    local stopped_containers
+    stopped_containers=$(docker ps -aq --filter "status=exited" 2>/dev/null || true)
+    if [ -n "$stopped_containers" ]; then
+        local count
+        count=$(echo "$stopped_containers" | wc -l)
+        if docker container prune -f >/dev/null 2>&1; then
+            cleaned_containers=$count
+            note "✓ Removed $cleaned_containers stopped containers"
+            log_info "Removed stopped containers" "count=$cleaned_containers"
+        fi
+    fi
+    
+    # Remove dangling images (untagged)
+    local dangling_images
+    dangling_images=$(docker images -q --filter "dangling=true" 2>/dev/null || true)
+    if [ -n "$dangling_images" ]; then
+        local img_count
+        img_count=$(echo "$dangling_images" | wc -l)
+        if docker image prune -f >/dev/null 2>&1; then
+            cleaned_images=$img_count
+            note "✓ Removed $cleaned_images dangling images"
+            log_info "Removed dangling images" "count=$cleaned_images"
+        fi
+    fi
+    
+    # Remove unused images not associated with any container (more aggressive)
+    # This is optional and can free significant space
+    local unused_count
+    unused_count=$(docker images --filter "dangling=false" --format '{{.ID}}' 2>/dev/null | wc -l || echo "0")
+    if [ "$unused_count" -gt 10 ]; then
+        note "ℹ️  Found $unused_count images. Removing unused ones..."
+        local before_size after_size
+        before_size=$(docker system df --format '{{.Size}}' 2>/dev/null | head -1 || echo "unknown")
+        
+        # Prune images not used by existing containers (keeps recent ones)
+        if docker image prune -a --filter "until=24h" -f >/dev/null 2>&1; then
+            after_size=$(docker system df --format '{{.Size}}' 2>/dev/null | head -1 || echo "unknown")
+            note "✓ Pruned old unused images (was: $before_size, now: $after_size)"
+            log_info "Pruned old unused images" "before=$before_size after=$after_size"
+        fi
+    fi
+    
+    # Clean build cache
+    if docker builder prune -f --filter "until=168h" >/dev/null 2>&1; then
+        note "✓ Cleaned build cache (older than 7 days)"
+        log_info "Cleaned Docker build cache"
+    fi
+    
+    # Report final disk usage
+    local docker_usage
+    docker_usage=$(docker system df 2>/dev/null || echo "Could not determine Docker disk usage")
+    note "📊 Docker disk usage after cleanup:"
+    while IFS= read -r line; do
+        echo "   $line"
+    done <<< "$docker_usage"
+    log_info "Docker cleanup completed"
+}
+
+if [ "$CLEAN_UP" = "true" ]; then
+    echo ""
+    deploy_cleanup_docker
+fi
+
 echo ""
 note "✓ Deployment complete!"
 [ "$FRESH" = "false" ] && note "✓ Existing data preserved"
+
+# Send in-app notification to superadmin if enabled
+deploy_post_notify_superadmin
 
 # Calculate and report deployment duration
 if [ -n "$DEPLOY_START_TIME" ]; then

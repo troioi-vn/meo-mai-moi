@@ -5,7 +5,7 @@ import NotificationsPage from './NotificationsPage'
 import { vi } from 'vitest'
 
 // Mock the NotificationPreferences component
-vi.mock('@/components/NotificationPreferences', () => ({
+vi.mock('@/components/notifications/NotificationPreferences', () => ({
   NotificationPreferences: () => (
     <div data-testid="notification-preferences">Notification Preferences Component</div>
   ),
@@ -38,17 +38,17 @@ describe('NotificationsPage', () => {
     renderWithProviders(<NotificationsPage />)
 
     expect(screen.getByRole('navigation')).toBeInTheDocument()
-    const accountLinks = screen.getAllByRole('link', { name: /account/i })
-    expect(accountLinks.length).toBeGreaterThan(0)
+    const settingsLinks = screen.getAllByRole('link', { name: /settings/i })
+    expect(settingsLinks.length).toBeGreaterThan(0)
     expect(screen.getByText('Notifications')).toBeInTheDocument()
   })
 
-  it('renders back to account button', () => {
+  it('renders back to settings button', () => {
     renderWithProviders(<NotificationsPage />)
 
-    const backButton = screen.getByRole('link', { name: /back to account/i })
+    const backButton = screen.getByRole('link', { name: /back to settings/i })
     expect(backButton).toBeInTheDocument()
-    expect(backButton).toHaveAttribute('href', '/account')
+    expect(backButton).toHaveAttribute('href', '/settings/account')
   })
 
   it('renders the NotificationPreferences component', () => {
@@ -60,11 +60,11 @@ describe('NotificationsPage', () => {
   it('has correct breadcrumb links', () => {
     renderWithProviders(<NotificationsPage />)
 
-    const accountLinks = screen.getAllByRole('link', { name: /account/i })
+    const settingsLinks = screen.getAllByRole('link', { name: /settings/i })
     // Check that at least one of the account links has the correct href
-    const breadcrumbAccountLink = accountLinks.find(
-      (link) => link.getAttribute('href') === '/account' && link.textContent === 'Account'
+    const breadcrumbSettingsLink = settingsLinks.find(
+      (link) => link.getAttribute('href') === '/settings/account' && link.textContent === 'Settings'
     )
-    expect(breadcrumbAccountLink).toBeInTheDocument()
+    expect(breadcrumbSettingsLink).toBeInTheDocument()
   })
 })

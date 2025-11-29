@@ -68,6 +68,41 @@ Both SMTP and Mailgun configurations are pre-configured with:
 3. Check delivery status and error messages
 4. Retry failed emails if needed
 
+#### Email Status Lifecycle
+
+Email logs track the full delivery lifecycle with Mailgun webhook integration:
+
+- **pending**: Initial state when queued
+- **accepted**: Mailgun has accepted the email for delivery (replaces legacy "sent" status)
+- **delivered**: Email successfully delivered to recipient's mail server
+- **opened**: Recipient opened the email (tracking pixel)
+- **clicked**: Recipient clicked a link in the email
+- **unsubscribed**: Recipient unsubscribed via Mailgun
+- **complained**: Recipient marked email as spam
+- **failed**: Permanent delivery failure
+
+Additional tracking fields:
+
+- `opened_at`, `clicked_at`, `unsubscribed_at`, `complained_at`, `permanent_fail_at`
+
+#### Idempotency Protection
+
+Email verification notifications use idempotency to prevent duplicate sends:
+
+- Default window: 30 seconds (configurable via `EMAIL_VERIFICATION_IDEMPOTENCY_SECONDS`)
+- Applied at: notification channel, registration response, resend endpoint
+- See `config/notifications.php` for configuration
+
+#### Mailgun Webhook Setup
+
+Configure webhook in Mailgun dashboard to track delivery events:
+
+```
+POST /webhooks/mailgun
+```
+
+Required events: `delivered`, `opened`, `clicked`, `unsubscribed`, `complained`, `permanent_fail`
+
 ## New Features
 
 ### ✅ Test Email Address for Mailgun

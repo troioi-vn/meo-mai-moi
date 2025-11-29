@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\PetType;
 use App\Models\User;
+use App\Models\PetType;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class PetTypePolicy

@@ -47,7 +47,7 @@ This guide describes a safe, repeatable process to squash migrations into a sing
 - Add schema file and remove old migrations from Git:
   - `git add backend/database/schema/pgsql-schema.sql`
   - `git rm backend/database/migrations/*.php` (leave a `.gitkeep` if desired)
-  - `git add backend/.env.docker` (keep it versioned for compose)
+  - `git add backend/.env.example` (keep template versioned)
   - `git commit -m "chore(db): squash migrations via schema:dump --prune (pgsql)"`
 
 ## Rollback / Recovery
@@ -58,5 +58,5 @@ This guide describes a safe, repeatable process to squash migrations into a sing
 
 ## Notes & Tips
 - Healthcheck issues often stem from DB readiness; prefer letting Laravel handle connection errors rather than over-complicating entrypoints.
-- Keep `.env.docker` in the repo so compose consistently injects env vars into backend.
+- Keep `.env.example` and `backend/.env.example` templates in the repo for consistent deployments.
 - For prod: prefer running schema dumps in CI using a disposable DB and committing the resulting schema file in a PR.

@@ -27,6 +27,7 @@ export interface VaccinationRecord {
   due_at?: string | null // ISO date
   notes?: string | null
   reminder_sent_at?: string | null
+  completed_at?: string | null // ISO datetime - when set, record is completed/renewed
   created_at: string
   updated_at: string
 }
@@ -105,14 +106,9 @@ export const deletePet = async (id: string, password: string): Promise<void> => 
   })
 }
 
-export const updatePetStatus = async (
-  id: string,
-  status: string,
-  password: string
-): Promise<Pet> => {
+export const updatePetStatus = async (id: string, status: string): Promise<Pet> => {
   const response = await api.put<{ data: Pet }>(`/pets/${id}/status`, {
     status,
-    password,
   })
   return response.data.data
 }
@@ -129,7 +125,10 @@ export const uploadPetPhoto = async (petId: number, photo: File): Promise<Pet> =
   return response.data.data
 }
 
-export const deletePetPhoto = async (petId: number, photoId: number | string = 'current'): Promise<void> => {
+export const deletePetPhoto = async (
+  petId: number,
+  photoId: number | string = 'current'
+): Promise<void> => {
   await api.delete(`/pets/${String(petId)}/photos/${String(photoId)}`)
 }
 
@@ -232,13 +231,16 @@ export const deleteMedicalNote = async (petId: number, noteId: number): Promise<
 }
 
 // Vaccinations API
+export type VaccinationStatus = 'active' | 'completed' | 'all'
+
 export const getVaccinations = async (
   petId: number,
-  page = 1
+  page = 1,
+  status: VaccinationStatus = 'active'
 ): Promise<{ data: VaccinationRecord[]; links: unknown; meta: unknown }> => {
   const response = await api.get<{
     data: { data: VaccinationRecord[]; links: unknown; meta: unknown }
-  }>(`/pets/${String(petId)}/vaccinations`, { params: { page } })
+  }>(`/pets/${String(petId)}/vaccinations`, { params: { page, status } })
   return response.data.data
 }
 
@@ -320,6 +322,23 @@ export const updateVaccination = async (
 export const deleteVaccination = async (petId: number, recordId: number): Promise<boolean> => {
   const response = await api.delete<{ data: boolean }>(
     `/pets/${String(petId)}/vaccinations/${String(recordId)}`
+  )
+  return response.data.data
+}
+
+export const renewVaccination = async (
+  petId: number,
+  recordId: number,
+  payload: {
+    vaccine_name: string
+    administered_at: string
+    due_at?: string | null
+    notes?: string | null
+  }
+): Promise<VaccinationRecord> => {
+  const response = await api.post<{ data: VaccinationRecord }>(
+    `/pets/${String(petId)}/vaccinations/${String(recordId)}/renew`,
+    payload
   )
   return response.data.data
 }

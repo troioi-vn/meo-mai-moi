@@ -1,9 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { BrowserRouter } from 'react-router-dom'
-import { userEvent } from '@/test-utils'
+import { userEvent, renderWithRouter } from '@/testing'
 import ForgotPasswordPage from './ForgotPasswordPage'
-import { server } from '@/mocks/server'
+import { server } from '@/testing/mocks/server'
 import { http, HttpResponse } from 'msw'
 
 beforeEach(() => {
@@ -28,7 +28,7 @@ describe('ForgotPasswordPage', () => {
 
   it('renders forgot password form', () => {
     renderPage()
-    
+
     expect(screen.getByRole('heading', { name: /forgot password/i })).toBeInTheDocument()
     expect(screen.getByLabelText(/email address/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /send reset link/i })).toBeInTheDocument()
@@ -41,14 +41,13 @@ describe('ForgotPasswordPage', () => {
         return HttpResponse.json({
           data: {
             message: 'Password reset link sent',
-            email_sent: true,
           },
         })
       })
     )
 
     renderPage()
-    
+
     await user.type(screen.getByLabelText(/email address/i), 'test@example.com')
     await user.click(screen.getByRole('button', { name: /send reset link/i }))
 
@@ -69,7 +68,7 @@ describe('ForgotPasswordPage', () => {
     )
 
     renderPage()
-    
+
     await user.type(screen.getByLabelText(/email address/i), 'invalid-email')
     await user.click(screen.getByRole('button', { name: /send reset link/i }))
 
@@ -81,15 +80,12 @@ describe('ForgotPasswordPage', () => {
   it('shows rate limit error', async () => {
     server.use(
       http.post('http://localhost:3000/api/password/email', () => {
-        return HttpResponse.json(
-          { message: 'Too Many Attempts.' },
-          { status: 429 }
-        )
+        return HttpResponse.json({ message: 'Too Many Attempts.' }, { status: 429 })
       })
     )
 
     renderPage()
-    
+
     await user.type(screen.getByLabelText(/email address/i), 'test@example.com')
     await user.click(screen.getByRole('button', { name: /send reset link/i }))
 
@@ -104,14 +100,13 @@ describe('ForgotPasswordPage', () => {
         return HttpResponse.json({
           data: {
             message: 'Password reset link sent',
-            email_sent: true,
           },
         })
       })
     )
 
     renderPage()
-    
+
     await user.type(screen.getByLabelText(/email address/i), 'test@example.com')
     await user.click(screen.getByRole('button', { name: /send reset link/i }))
 
@@ -129,22 +124,31 @@ describe('ForgotPasswordPage', () => {
     server.use(
       http.post('http://localhost:3000/api/password/email', async () => {
         // Delay response to test loading state
-        await new Promise(resolve => setTimeout(resolve, 100))
+        await new Promise((resolve) => setTimeout(resolve, 100))
         return HttpResponse.json({
           data: {
             message: 'Password reset link sent',
-            email_sent: true,
           },
         })
       })
     )
 
     renderPage()
-    
+
     await user.type(screen.getByLabelText(/email address/i), 'test@example.com')
     await user.click(screen.getByRole('button', { name: /send reset link/i }))
 
     expect(screen.getByRole('button', { name: /sending.../i })).toBeInTheDocument()
     expect(screen.getByLabelText(/email address/i)).toBeDisabled()
+  })
+
+  it('prefills email from URL parameter', () => {
+    renderWithRouter(<ForgotPasswordPage />, {
+      initialEntries: ['/forgot-password?email=prefilled@example.com'],
+      routes: [{ path: '/forgot-password', element: <ForgotPasswordPage /> }],
+    })
+
+    const emailInput = screen.getByLabelText<HTMLInputElement>(/email address/i)
+    expect(emailInput.value).toBe('prefilled@example.com')
   })
 })

@@ -72,15 +72,67 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
 
   const unreadCount = useMemo(() => notifications.filter((n) => !n.read_at).length, [notifications])
 
-  const emitToastsForNew = useCallback((incoming: AppNotification[]) => {
-    for (const n of incoming) {
-      if (!n.read_at && !seenIdsRef.current.has(n.id)) {
-        seenIdsRef.current.add(n.id)
-        const fn = LEVEL_TO_TOAST[n.level]
-        fn(n.title, { description: n.body ?? undefined })
+  const showNativeNotification = useCallback((notification: AppNotification) => {
+    if (typeof window === 'undefined' || !('Notification' in window)) return
+    if (Notification.permission !== 'granted') return
+    if (isDropdownOpenRef.current) return
+
+    if (typeof document !== 'undefined') {
+      const isVisible = document.visibilityState === 'visible'
+      const hasFocus = typeof document.hasFocus === 'function' ? document.hasFocus() : true
+      if (isVisible && hasFocus) return
+    }
+
+    const options: NotificationOptions = {
+      body: notification.body ?? undefined,
+      tag: notification.id,
+      data: notification.url ? { url: notification.url } : undefined,
+    }
+
+    const showWithWindowContext = () => {
+      const fallback = new Notification(notification.title, options)
+      fallback.onclick = () => {
+        if (typeof window !== 'undefined') {
+          window.focus()
+          if (notification.url) {
+            window.location.assign(notification.url)
+          }
+        }
       }
     }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .getRegistration()
+        .then((registration) => {
+          if (registration) {
+            return registration.showNotification(notification.title, options)
+          }
+          // Fall back to Notification constructor if no registration available
+          showWithWindowContext()
+        })
+        .catch(() => {
+          // On failure, try direct notification constructor as a last resort
+          showWithWindowContext()
+        })
+    } else {
+      showWithWindowContext()
+    }
   }, [])
+
+  const emitToastsForNew = useCallback(
+    (incoming: AppNotification[]) => {
+      for (const n of incoming) {
+        if (!n.read_at && !seenIdsRef.current.has(n.id)) {
+          seenIdsRef.current.add(n.id)
+          const fn = LEVEL_TO_TOAST[n.level]
+          fn(n.title, { description: n.body ?? undefined })
+          showNativeNotification(n)
+        }
+      }
+    },
+    [showNativeNotification]
+  )
 
   const refresh = useCallback(async () => {
     setLoading(true)
@@ -97,8 +149,13 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
     }
   }, [emitToastsForNew])
 
-  // polling
+  // polling - only poll when user is authenticated
   useEffect(() => {
+    // Don't start polling if user is not authenticated
+    if (!isAuthenticated || !user) {
+      return
+    }
+
     let timer: number | undefined
     const tick = () => {
       if (!visible) {
@@ -112,14 +169,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
     return () => {
       if (timer) window.clearTimeout(timer)
     }
-  }, [pollMs, refresh, visible])
-
-  // initial fetch to populate badge quickly
-  useEffect(() => {
-    void refresh()
-  }, [refresh])
+  }, [pollMs, refresh, visible, isAuthenticated, user])
 
   // Reset and refetch when the authenticated user changes
+  // This effect handles both initial load and user changes
   useEffect(() => {
     // Clear local state to avoid showing previous user's notifications
     setNotifications([])
@@ -127,7 +180,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
     if (isAuthenticated && user) {
       void refresh()
     }
-  }, [isAuthenticated, user?.id, refresh])
+  }, [isAuthenticated, user?.id, refresh, user])
 
   // Mark all read when dropdown opens
   const setDropdownOpen = useCallback(

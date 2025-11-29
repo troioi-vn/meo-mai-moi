@@ -51,7 +51,7 @@ const ERROR_MESSAGES = {
 } as const
 
 const ROUTES = {
-  MY_PETS: '/account/pets',
+  MY_PETS: '/',
 } as const
 
 export const useCreatePetForm = (petId?: string) => {
@@ -106,9 +106,12 @@ export const useCreatePetForm = (petId?: string) => {
           setIsLoadingPet(true)
           const pet = await getPet(petId)
           // Convert ISO date to YYYY-MM-DD format for HTML date input
-          const formatDate = (dateStr: string): string => {
-            const date = new Date(dateStr)
-            return date.toISOString().split('T')[0]
+          const formatDate = (dateStr: string | undefined | null): string => {
+            if (!dateStr) return ''
+            const iso: string = new Date(dateStr).toISOString()
+            // toISOString always produces 'YYYY-MM-DDTHH:mm:ss.sssZ'
+            const [ymd] = iso.split('T')
+            return ymd ?? ''
           }
           setFormData({
             name: pet.name,
@@ -233,13 +236,12 @@ export const useCreatePetForm = (petId?: string) => {
         await createPet(payload)
       }
 
-
-
       const successMessage = isEditMode ? 'Pet updated successfully' : SUCCESS_MESSAGES.PET_CREATED
       toast.success(successMessage)
 
       if (isEditMode && petId) {
-        void navigate(`/pets/${petId}`)
+        // Use replace: true to prevent back button returning to edit page
+        void navigate(`/pets/${petId}`, { replace: true })
       } else {
         void navigate(ROUTES.MY_PETS)
       }

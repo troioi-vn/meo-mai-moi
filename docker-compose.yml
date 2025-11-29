@@ -4,18 +4,21 @@ services:
     build:
       context: .
       dockerfile: ./backend/Dockerfile
+      args:
+        VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
     image: meomaimoi/backend
     ports:
       - "8000:80"
     env_file:
-      - ./backend/.env.docker
+      - ./backend/.env
     environment:
       # Disable migrations in entrypoint - deploy.sh handles migrations explicitly
       # to prevent race conditions and ensure proper sequencing with seeding/verification
       - RUN_MIGRATIONS=false
       - IGNORE_OPTIMIZE_CLEAR_FAILURE=true
-    networks:
-      - meo-mai-moi-network
+      # Telegram notification config for monitoring scripts (from root .env)
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - CHAT_ID=${CHAT_ID}
     depends_on:
       db:
         condition: service_healthy
@@ -27,6 +30,8 @@ services:
       # Mount certificates directory (optional). If ENABLE_HTTPS=true and certs exist,
       # entrypoint will enable HTTPS using these files. Safe to mount even if empty.
       - ./backend/certs:/etc/nginx/certs:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     healthcheck:
       test:
         - CMD
@@ -46,26 +51,27 @@ services:
     depends_on:
       - backend
     ports:
+      - "80:80"
       - "443:443"
     volumes:
       - ./backend/certs:/etc/nginx/certs:ro
       - ./backend/nginx-https-proxy.conf:/etc/nginx/conf.d/default.conf:ro
-    networks:
-      - meo-mai-moi-network
     restart: unless-stopped
 
   db:
     image: postgres:14-alpine
     environment:
-      POSTGRES_DB: meo_mai_moi
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-    networks:
-      - meo-mai-moi-network
+      POSTGRES_DB: ${POSTGRES_DB:-meo_mai_moi}
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      # Create additional test database for PHPUnit tests to prevent wiping dev data
+      POSTGRES_TEST_DB: meo_mai_moi_test
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      # Init script to create test database
+      - ./backend/scripts/init-test-db.sh:/docker-entrypoint-initdb.d/init-test-db.sh:ro
     healthcheck:
       # Use container env vars (escaped $ -> $$) so expansion happens inside container, not by compose
       test:
@@ -75,10 +81,6 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
-
-networks:
-  meo-mai-moi-network:
-    driver: bridge
 
 volumes:
   pgdata:

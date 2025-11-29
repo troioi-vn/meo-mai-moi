@@ -5,7 +5,7 @@ Simple, repeatable steps to cut a new release and make `/api/version` reflect it
 ## Version source of truth
 
 - API version is config-driven via `config/version.php` and can be overridden by the `API_VERSION` env var.
-- In Docker/dev, set it in `backend/.env.docker`:
+- In Docker/dev, set it in `backend/.env`:
 
 ```
 API_VERSION=vX.Y.Z
@@ -18,7 +18,7 @@ If `API_VERSION` is unset, the default in `config/version.php` applies.
 1) Decide the new version, e.g., `v0.4.1` (SemVer: vMAJOR.MINOR.PATCH)
 
 2) Update version and references
-- Set `API_VERSION` in `backend/.env.docker` (for local Docker runs)
+- Set `API_VERSION` in `backend/.env` (for local Docker runs)
 - If you want the default to change too, update `backend/config/version.php`'s default
 - Update frontend mocks if they assert `/api/version` (e.g., `frontend/src/mocks/handlers.ts`)
 - Update tests that assert the version reads from config (`backend/tests/Feature/VersionControllerTest.php` already does this)

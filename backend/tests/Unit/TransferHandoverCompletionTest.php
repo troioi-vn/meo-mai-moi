@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Http\Controllers\TransferHandoverController;
+use App\Http\Controllers\TransferHandover\CompleteHandoverController;
 use App\Models\HelperProfile;
 use App\Models\OwnershipHistory;
 use App\Models\Pet;
@@ -50,10 +50,10 @@ class TransferHandoverCompletionTest extends TestCase
         ]);
 
         // Act as either party (owner) to complete
-        $controller = app(TransferHandoverController::class);
+        $controller = app(CompleteHandoverController::class);
         $request = Request::create('/', 'POST');
         $request->setUserResolver(fn () => $owner);
-        $response = $controller->complete($request, $handover);
+        $response = $controller($request, $handover);
 
         $responseData = $response->getData(true)['data'] ?? null;
         $this->assertNotNull($responseData);
@@ -95,10 +95,10 @@ class TransferHandoverCompletionTest extends TestCase
             'status' => 'pending',
         ]);
 
-        $controller = app(TransferHandoverController::class);
+        $controller = app(CompleteHandoverController::class);
         $request = Request::create('/', 'POST');
         $request->setUserResolver(fn () => $helper);
-        $controller->complete($request, $handover);
+        $controller($request, $handover);
 
         $pet->refresh();
         $this->assertEquals($helper->id, $pet->user_id);

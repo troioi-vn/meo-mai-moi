@@ -1,4 +1,4 @@
-import { ChangePasswordForm } from '@/components/ChangePasswordForm'
+import { ChangePasswordForm } from '@/components/auth/ChangePasswordForm'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -9,8 +9,8 @@ export default function PasswordPage() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Breadcrumbs */}
         <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-6">
-          <Link to="/account" className="hover:text-foreground transition-colors">
-            Account
+          <Link to="/settings/account" className="hover:text-foreground transition-colors">
+            Settings
           </Link>
           <span>/</span>
           <span className="text-foreground">Password</span>
@@ -19,9 +19,9 @@ export default function PasswordPage() {
         {/* Page Header */}
         <div className="flex items-center gap-4 mb-8">
           <Button variant="ghost" size="sm" asChild>
-            <Link to="/account" className="flex items-center gap-2">
+            <Link to="/settings/account" className="flex items-center gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Back to Account
+              Back to Settings
             </Link>
           </Button>
         </div>

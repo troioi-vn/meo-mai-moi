@@ -56,6 +56,7 @@ deploy_docker_start() {
     local no_cache="${1:-false}"
 
     note "Building and starting containers..."
+    note "ℹ️  Using root .env for Docker Compose and backend/.env for Laravel runtime"
 
     local build_args=()
     if [ "$no_cache" = "true" ]; then
@@ -140,8 +141,10 @@ deploy_docker_verify_application() {
 
     # Try candidates from host
     local curl_ok=0
+    local any_attempted=0
     local endpoint
     for endpoint in "${candidates[@]}"; do
+        any_attempted=1
         if printf "%s" "$endpoint" | grep -q '^https://'; then
             # Allow self-signed in dev when https enabled
             if curl -skf --max-time 8 "$endpoint" >/dev/null 2>&1; then
@@ -150,7 +153,6 @@ deploy_docker_verify_application() {
                 break
             else
                 echo "✗ Failed to reach $endpoint" >&2
-                failed=1
             fi
         else
             if curl -sf --max-time 8 "$endpoint" >/dev/null 2>&1; then
@@ -159,10 +161,12 @@ deploy_docker_verify_application() {
                 break
             else
                 echo "✗ Failed to reach $endpoint" >&2
-                failed=1
             fi
         fi
     done
+    if [ "$curl_ok" -ne 1 ] && [ "$any_attempted" -eq 1 ]; then
+        failed=1
+    fi
 
     # Also verify from inside the backend container (internal connectivity)
     note "Verifying internal endpoint from backend container..."
@@ -173,14 +177,16 @@ deploy_docker_verify_application() {
         failed=1
     fi
     
-    # Verify database connectivity from application
+    # Verify database connectivity from application (fallback to psql from backend container)
     note "Verifying database connectivity from application..."
-    if docker compose exec -T backend php artisan db:show 2>/dev/null | grep -q "pgsql"; then
+    if docker compose exec -T backend php artisan --no-ansi db:show 2>/dev/null | grep -q "pgsql"; then
         note "✓ Application connected to database"
+    elif docker compose exec -T backend sh -lc 'PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USERNAME" -d "$DB_DATABASE" -c "SELECT 1" >/dev/null 2>&1'; then
+        note "✓ Application can reach database via psql"
     else
         echo "✗ Application cannot connect to database" >&2
         echo "Database connection details:" >&2
-        docker compose exec -T backend php artisan db:show 2>&1 | head -20 >&2
+        docker compose exec -T backend php artisan --no-ansi db:show 2>&1 | head -20 >&2
         failed=1
     fi
     

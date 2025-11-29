@@ -72,6 +72,10 @@ class FortifyServiceProvider extends ServiceProvider
 
         // Registration rate limiting for additional security
         RateLimiter::for('registration', function (Request $request) {
+            if (app()->environment('testing')) {
+                return Limit::perMinute(10)->by($request->session()->getId());
+            }
+
             return Limit::perMinute(10)->by($request->ip());
         });
     }

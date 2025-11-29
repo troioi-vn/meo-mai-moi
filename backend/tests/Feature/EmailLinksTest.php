@@ -91,7 +91,7 @@ class EmailLinksTest extends TestCase
         $response = $this->get($url);
 
         // New behavior: user is verified and redirected to SPA
-        $response->assertRedirect(rtrim(config('app.frontend_url'), '/').'/account/pets?verified=1');
+        $response->assertRedirect(rtrim(config('app.frontend_url'), '/').'/?verified=1');
     }
 
     public function test_password_reset_web_route_redirects_to_frontend()
@@ -169,6 +169,6 @@ class EmailLinksTest extends TestCase
         $response = $this->get($url);
 
         // Already verified users are redirected to SPA
-        $response->assertRedirect(rtrim(config('app.frontend_url'), '/').'/account/pets?verified=1');
+        $response->assertRedirect(rtrim(config('app.frontend_url'), '/').'/?verified=1');
     }
 }

@@ -1,6 +1,6 @@
 import { screen, waitFor } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
-import { renderWithRouter } from '@/test-utils'
+import { renderWithRouter } from '@/testing'
 
 import { Alert, AlertTitle, AlertDescription } from './alert'
 

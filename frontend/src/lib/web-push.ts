@@ -1,0 +1,103 @@
+export function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
+
+  const rawData = window.atob(base64)
+  const outputArray = new Uint8Array(rawData.length)
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i)
+  }
+
+  return outputArray
+}
+
+export interface PushSubscriptionJSON {
+  endpoint: string
+  expirationTime?: number | null
+  keys?: {
+    p256dh?: string
+    auth?: string
+  }
+}
+
+export async function getServiceWorkerRegistration(): Promise<ServiceWorkerRegistration | null> {
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+    return null
+  }
+
+  const bases: string[] = []
+  try {
+    const base = import.meta.env.BASE_URL
+    if (typeof base === 'string' && base !== '/' && base !== '.') {
+      const normalized = base.endsWith('/') ? base : `${base}/`
+      bases.push(normalized)
+    }
+  } catch {
+    // ignore
+  }
+
+  const candidateScopes = ['/', ...bases]
+
+  try {
+    const readyPromise = navigator.serviceWorker.ready
+    const timeoutPromise = new Promise<ServiceWorkerRegistration | null>((resolve) => {
+      setTimeout(() => {
+        resolve(null)
+      }, 4000)
+    })
+    const registration = await Promise.race([readyPromise, timeoutPromise])
+    if (registration) {
+      return registration
+    }
+
+    for (const scope of candidateScopes) {
+      const reg = await navigator.serviceWorker.getRegistration(scope === '/' ? undefined : scope)
+      if (reg) return reg
+    }
+    return null
+  } catch {
+    for (const scope of candidateScopes) {
+      try {
+        const reg = await navigator.serviceWorker.getRegistration(scope === '/' ? undefined : scope)
+        if (reg) return reg
+      } catch {
+        // ignore
+      }
+    }
+    return null
+  }
+}
+
+export function normaliseSubscriptionJSON(
+  subscription: PushSubscription | PushSubscriptionJSON | null
+) {
+  if (!subscription) return null
+  const raw =
+    typeof (subscription as PushSubscription).toJSON === 'function'
+      ? (subscription as PushSubscription).toJSON()
+      : subscription
+  const json = raw as PushSubscriptionJSON
+  if (!json.endpoint) {
+    return null
+  }
+  const keys = json.keys ?? {}
+  return {
+    endpoint: json.endpoint,
+    keys: {
+      p256dh: keys.p256dh ?? '',
+      auth: keys.auth ?? '',
+    },
+    expirationTime: json.expirationTime ?? null,
+  }
+}
+
+export function isPushSupported(): boolean {
+  if (typeof window === 'undefined') return false
+  return (
+    'Notification' in window &&
+    'serviceWorker' in navigator &&
+    'PushManager' in window &&
+    Notification.permission !== 'denied'
+  )
+}

@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,10 +10,19 @@ import { api } from '@/api/axios'
 import { toast } from 'sonner'
 
 export default function ForgotPasswordPage() {
+  const [searchParams] = useSearchParams()
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
   const [error, setError] = useState('')
+
+  // Prefill email from URL parameter if available
+  useEffect(() => {
+    const emailParam = searchParams.get('email')
+    if (emailParam) {
+      setEmail(emailParam)
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,12 +37,10 @@ export default function ForgotPasswordPage() {
         return
       }
 
-      const response = await api.post<{ data: { email_sent: boolean } }>('/password/email', { email })
+      await api.post('/password/email', { email })
 
-      if (response.data.data.email_sent) {
-        setEmailSent(true)
-        toast.success('Password reset link sent to your email')
-      }
+      setEmailSent(true)
+      toast.success('Password reset link sent to your email')
     } catch (error: unknown) {
       if (error instanceof Error && 'response' in error) {
         const axiosError = error as { response?: { status?: number; data?: { message?: string } } }
@@ -42,7 +49,9 @@ export default function ForgotPasswordPage() {
         } else if (axiosError.response?.status === 429) {
           setError('Too many requests. Please wait before trying again.')
         } else {
-          setError(axiosError.response?.data?.message ?? 'Failed to send reset email. Please try again.')
+          setError(
+            axiosError.response?.data?.message ?? 'Failed to send reset email. Please try again.'
+          )
         }
       } else {
         setError('Failed to send reset email. Please try again.')
@@ -66,8 +75,8 @@ export default function ForgotPasswordPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Alert className="border-green-200 bg-green-50">
-              <AlertDescription className="text-green-800">
+            <Alert variant="success">
+              <AlertDescription>
                 If an account with that email exists, we have sent you a password reset link. Please
                 check your inbox and spam folder.
               </AlertDescription>
@@ -104,10 +113,16 @@ export default function ForgotPasswordPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form noValidate onSubmit={(e) => { void handleSubmit(e); }} className="space-y-4">
+          <form
+            noValidate
+            onSubmit={(e) => {
+              void handleSubmit(e)
+            }}
+            className="space-y-4"
+          >
             {error && (
-              <Alert className="border-red-200 bg-red-50">
-                <AlertDescription className="text-red-800">{error}</AlertDescription>
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
@@ -118,7 +133,9 @@ export default function ForgotPasswordPage() {
                 type="email"
                 placeholder="Enter your email"
                 value={email}
-                onChange={(e) => { setEmail(e.target.value) }}
+                onChange={(e) => {
+                  setEmail(e.target.value)
+                }}
                 required
                 disabled={isLoading}
               />

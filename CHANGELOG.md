@@ -7,13 +7,30 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Fixed
 
 - **Frontend: Date Picker Styling Reset**: Resolved date picker styling issues by removing react-day-picker default class names and implementing full Tailwind CSS styling
-  - Simplified Calendar component to use only Tailwind classes without conflicting rdp-* default classes
+  - Simplified Calendar component to use only Tailwind classes without conflicting rdp-\* default classes
   - Set fixed cell dimensions (h-9 w-9 = 36px) for proper calendar grid layout
   - Updated component to use react-day-picker v9 API with correct class names (month_caption, month_grid, day_button, etc.)
   - Improved weekday header and date cell rendering with consistent button styling
   - Now matches shadcn/ui demo appearance with proper spacing and cell sizes
 
 ### Added
+
+- **Vaccination Record Renewal System**: Complete refactor of vaccination record lifecycle management
+  - Added `completed_at` timestamp to mark vaccination records as completed/renewed instead of deleting them
+  - Completed records are archived and no longer trigger reminders
+  - New endpoint `POST /api/pets/{pet}/vaccinations/{record}/renew` marks old record as completed and creates new one
+  - Backend scopes: `->active()` for active records, `->completed()` for historical records
+  - Backend helper methods: `isActive()`, `isCompleted()`, `markAsCompleted()`
+  - Updated `SendVaccinationReminders` command to only send reminders for active (non-completed) records
+  - Updated vaccination list endpoint with `status` parameter: `active` (default), `completed`, or `all`
+
+- **Frontend: Vaccination Renewal UI**
+  - Added "Renew" button on each vaccination record (highlighted for overdue vaccinations)
+  - Renew modal pre-fills form with today's date, same vaccine name, and auto-calculated next due date based on vaccination interval
+  - Users can modify all fields before saving
+  - New utility functions: `isActiveVaccination()`, `getActiveVaccinations()`, `getVaccinationIntervalDays()`, `calculateNextDueDate()`
+  - Added "Show History" toggle in vaccination edit mode to display completed/renewed records
+  - Completed records show with "Renewed" badge, strikethrough due date, and read-only mode
 
 - **Background Job Scheduling Infrastructure**: Implemented Laravel Scheduler + Database Queue for background task processing
 

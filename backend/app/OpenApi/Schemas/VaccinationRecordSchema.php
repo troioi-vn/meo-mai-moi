@@ -17,9 +17,11 @@ use OpenApi\Annotations as OA;
  *     @OA\Property(property="due_at", type="string", format="date"),
  *     @OA\Property(property="notes", type="string"),
  *     @OA\Property(property="reminder_sent_at", type="string", format="date-time"),
+ *     @OA\Property(property="completed_at", type="string", format="date-time", nullable=true, description="When set, indicates the record is completed/renewed and no longer active"),
  *     @OA\Property(property="created_at", type="string", format="date-time"),
  *     @OA\Property(property="updated_at", type="string", format="date-time")
  * )
+ */
  */
 class VaccinationRecordSchema
 {

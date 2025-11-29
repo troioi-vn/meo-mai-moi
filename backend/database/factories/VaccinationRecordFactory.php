@@ -25,6 +25,17 @@ class VaccinationRecordFactory extends Factory
             'due_at' => $due,
             'notes' => $this->faker->optional()->sentence(8),
             'reminder_sent_at' => null,
+            'completed_at' => null,
         ];
+    }
+
+    /**
+     * Indicate that the vaccination record is completed.
+     */
+    public function completed(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'completed_at' => now(),
+        ]);
     }
 }

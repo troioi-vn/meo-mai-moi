@@ -1,16 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import {
   getVaccinations,
   createVaccination,
   updateVaccination,
   deleteVaccination,
+  renewVaccination,
   type VaccinationRecord,
+  type VaccinationStatus,
 } from '@/api/pets'
 
 export interface UseVaccinationsResult {
   items: VaccinationRecord[]
   loading: boolean
   error: string | null
+  status: VaccinationStatus
+  setStatus: (status: VaccinationStatus) => void
   create: (payload: {
     vaccine_name: string
     administered_at: string
@@ -27,30 +31,43 @@ export interface UseVaccinationsResult {
     }>
   ) => Promise<void>
   remove: (id: number) => Promise<void>
+  renew: (
+    id: number,
+    payload: {
+      vaccine_name: string
+      administered_at: string
+      due_at?: string | null
+      notes?: string | null
+    }
+  ) => Promise<VaccinationRecord>
+  reload: () => Promise<void>
 }
 
-export const useVaccinations = (petId: number): UseVaccinationsResult => {
+export const useVaccinations = (
+  petId: number,
+  initialStatus: VaccinationStatus = 'active'
+): UseVaccinationsResult => {
   const [items, setItems] = useState<VaccinationRecord[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
+  const [status, setStatus] = useState<VaccinationStatus>(initialStatus)
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
-      const resp = await getVaccinations(petId, 1)
+      const resp = await getVaccinations(petId, 1, status)
       setItems(resp.data)
     } catch {
       setError('Failed to load vaccinations')
     } finally {
       setLoading(false)
     }
-  }
+  }, [petId, status])
 
   useEffect(() => {
     void load()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [petId])
+  }, [load])
 
   const create = async (payload: {
     vaccine_name: string
@@ -59,7 +76,10 @@ export const useVaccinations = (petId: number): UseVaccinationsResult => {
     notes?: string | null
   }) => {
     const created = await createVaccination(petId, payload)
-    setItems((prev) => [created, ...prev])
+    // Only add to list if we're viewing active records (new records are active)
+    if (status === 'active' || status === 'all') {
+      setItems((prev) => [created, ...prev])
+    }
   }
 
   const update = async (
@@ -80,5 +100,20 @@ export const useVaccinations = (petId: number): UseVaccinationsResult => {
     setItems((prev) => prev.filter((w) => w.id !== id))
   }
 
-  return { items, loading, error, create, update, remove }
+  const renew = async (
+    id: number,
+    payload: {
+      vaccine_name: string
+      administered_at: string
+      due_at?: string | null
+      notes?: string | null
+    }
+  ): Promise<VaccinationRecord> => {
+    const newRecord = await renewVaccination(petId, id, payload)
+    // Reload the list to reflect the changes (old record completed, new record created)
+    await load()
+    return newRecord
+  }
+
+  return { items, loading, error, status, setStatus, create, update, remove, renew, reload: load }
 }

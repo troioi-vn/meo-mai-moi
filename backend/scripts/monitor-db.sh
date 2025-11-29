@@ -97,8 +97,8 @@ while true; do
         
         # Send alert if state changed from healthy to empty
         if [ "$PREVIOUS_STATE" != "empty" ]; then
-            MESSAGE="${MESSAGE}App URL: ${APP_URL_VALUE}%0A"
             MESSAGE="🚨 <b>DATABASE WIPEOUT DETECTED</b>%0A%0A"
+            MESSAGE="${MESSAGE}App URL: ${APP_URL_VALUE}%0A"
             MESSAGE="${MESSAGE}Time: ${TIMESTAMP}%0A"
             MESSAGE="${MESSAGE}Users: ${USER_COUNT}%0A"
             MESSAGE="${MESSAGE}Pets: ${PET_COUNT}%0A"

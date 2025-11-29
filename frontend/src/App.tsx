@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { useAuth } from '@/hooks/use-auth'
 import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
-import MainNav from '@/components/MainNav'
+import MainNav from '@/components/layout/MainNav'
 import { usePwaUpdate } from '@/hooks/use-pwa-update'
 
 import MainPage from './pages/MainPage'

@@ -1,9 +1,9 @@
-import { renderWithRouter, screen, userEvent, waitFor } from '@/test-utils'
+import { renderWithRouter, screen, userEvent, waitFor } from '@/testing'
 import { describe, it, expect } from 'vitest'
 import RequestsPage from '@/pages/RequestsPage'
 import { http, HttpResponse } from 'msw'
-import { server } from '@/mocks/server'
-import { mockPet } from '@/mocks/data/pets'
+import { server } from '@/testing/mocks/server'
+import { mockPet } from '@/testing/mocks/data/pets'
 
 describe('RequestsPage', () => {
   it('renders the page title', async () => {

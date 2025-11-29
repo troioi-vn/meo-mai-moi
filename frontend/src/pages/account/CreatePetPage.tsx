@@ -13,12 +13,12 @@ import { PetTypeSelect } from '@/components/pets/PetTypeSelect'
 import { PetFormFields } from '@/components/pets/PetFormFields'
 import { PetStatusControls } from '@/components/pets/PetStatusControls'
 import { PetDangerZone } from '@/components/pets/PetDangerZone'
-import { PetPhoto } from '@/components/PetPhoto'
+import { PetPhoto } from '@/components/pets/PetPhoto'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
-import { WeightHistoryCard } from '@/components/weights/WeightHistoryCard'
-import { UpcomingVaccinationsSection } from '@/components/vaccinations/UpcomingVaccinationsSection'
-import { MicrochipsSection } from '@/components/microchips/MicrochipsSection'
+import { WeightHistoryCard } from '@/components/pet-health/weights/WeightHistoryCard'
+import { UpcomingVaccinationsSection } from '@/components/pet-health/vaccinations/UpcomingVaccinationsSection'
+import { MicrochipsSection } from '@/components/pet-health/microchips/MicrochipsSection'
 
 const TAB_VALUES = ['general', 'health', 'status'] as const
 type TabValue = (typeof TAB_VALUES)[number]

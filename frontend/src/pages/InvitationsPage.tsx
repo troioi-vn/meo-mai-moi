@@ -25,8 +25,8 @@ import {
   RefreshCw,
 } from 'lucide-react'
 import { format } from 'date-fns'
-import InvitationQRCode from '@/components/InvitationQRCode'
-import InvitationShare from '@/components/InvitationShare'
+import InvitationQRCode from '@/components/invitations/InvitationQRCode'
+import InvitationShare from '@/components/invitations/InvitationShare'
 
 const REFRESH_INTERVAL_MS = 30_000
 

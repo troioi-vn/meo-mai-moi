@@ -1,7 +1,7 @@
 import { renderHook, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useInviteSystem } from './use-invite-system'
-import { server } from '@/mocks/server'
+import { server } from '@/testing/mocks/server'
 import { HttpResponse, http } from 'msw'
 
 // Mock useSearchParams with proper methods

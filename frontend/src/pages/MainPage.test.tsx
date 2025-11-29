@@ -1,16 +1,16 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderWithRouter } from '@/test-utils'
+import { renderWithRouter } from '@/testing'
 import MainPage from '../pages/MainPage'
 import { http, HttpResponse } from 'msw'
-import { server } from '@/mocks/server'
-import { testScenarios } from '@/mocks/data/pets'
+import { server } from '@/testing/mocks/server'
+import { testScenarios } from '@/testing/mocks/data/pets'
 
 // Mock HeroSection and Footer to focus on integration testing
-vi.mock('@/components/HeroSection', () => ({
+vi.mock('@/components/layout/HeroSection', () => ({
   HeroSection: () => <section data-testid="hero-section">Hero Section</section>,
 }))
-vi.mock('@/components/Footer', () => ({
+vi.mock('@/components/layout/Footer', () => ({
   Footer: () => <footer data-testid="footer">Footer</footer>,
 }))
 

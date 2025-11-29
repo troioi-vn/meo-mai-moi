@@ -1,8 +1,8 @@
 import { screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderWithRouter, userEvent } from '@/test-utils'
+import { renderWithRouter, userEvent } from '@/testing'
 import EmailVerificationPage from './EmailVerificationPage'
-import { server } from '@/mocks/server'
+import { server } from '@/testing/mocks/server'
 import { http, HttpResponse } from 'msw'
 
 const navigate = vi.fn()

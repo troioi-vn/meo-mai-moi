@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest'
 import { setupServer } from 'msw/node'
-import { handlers } from '@/mocks/handlers'
+import { handlers } from '@/testing/mocks/handlers'
 import { createMicrochip, deleteMicrochip, getMicrochips, updateMicrochip } from './pets'
 
 const server = setupServer(...handlers)

@@ -1,9 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { BrowserRouter } from 'react-router-dom'
-import { userEvent, renderWithRouter } from '@/test-utils'
+import { userEvent, renderWithRouter } from '@/testing'
 import ForgotPasswordPage from './ForgotPasswordPage'
-import { server } from '@/mocks/server'
+import { server } from '@/testing/mocks/server'
 import { http, HttpResponse } from 'msw'
 
 beforeEach(() => {

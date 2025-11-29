@@ -21,7 +21,7 @@ vi.mock('@/api/pets', () => ({
 }))
 
 // Mock the PetCard component
-vi.mock('@/components/PetCard', () => ({
+vi.mock('@/components/pets/PetCard', () => ({
   PetCard: ({ pet }: { pet: Pet }) => (
     <div data-testid={`pet-card-${String(pet.id)}`}>
       <h3>{pet.name}</h3>

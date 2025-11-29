@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { DatePicker } from '@/components/ui/date-picker'
 
 export interface VaccinationFormValues {
   vaccine_name: string
@@ -87,28 +88,46 @@ export const VaccinationForm: React.FC<{
         </div>
         <div>
           <label className="block text-sm font-medium">Administered on</label>
-          <input
-            type="date"
-            value={administeredAt}
-            onChange={(e) => {
-              setAdministeredAt(e.target.value)
-            }}
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-          />
+          <div className="mt-1">
+            <DatePicker
+              date={administeredAt ? new Date(administeredAt + 'T00:00:00') : undefined}
+              setDate={(d) => {
+                if (d) {
+                  const yyyy = d.getFullYear()
+                  const mm = String(d.getMonth() + 1).padStart(2, '0')
+                  const dd = String(d.getDate()).padStart(2, '0')
+                  setAdministeredAt(`${yyyy}-${mm}-${dd}`)
+                } else {
+                  setAdministeredAt('')
+                }
+              }}
+              placeholder="Select date"
+              className="w-full"
+            />
+          </div>
           {errors.administered_at && (
             <p className="text-xs text-destructive mt-1">{errors.administered_at}</p>
           )}
         </div>
         <div>
           <label className="block text-sm font-medium">Due at (optional)</label>
-          <input
-            type="date"
-            value={dueAt}
-            onChange={(e) => {
-              setDueAt(e.target.value)
-            }}
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-          />
+          <div className="mt-1">
+            <DatePicker
+              date={dueAt ? new Date(dueAt + 'T00:00:00') : undefined}
+              setDate={(d) => {
+                if (d) {
+                  const yyyy = d.getFullYear()
+                  const mm = String(d.getMonth() + 1).padStart(2, '0')
+                  const dd = String(d.getDate()).padStart(2, '0')
+                  setDueAt(`${yyyy}-${mm}-${dd}`)
+                } else {
+                  setDueAt('')
+                }
+              }}
+              placeholder="Select date"
+              className="w-full"
+            />
+          </div>
           {errors.due_at && <p className="text-xs text-destructive mt-1">{errors.due_at}</p>}
         </div>
         <div className="sm:col-span-2">

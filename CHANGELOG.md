@@ -4,6 +4,15 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Fixed
+
+- **Frontend: Date Picker Styling Reset**: Resolved date picker styling issues by removing react-day-picker default class names and implementing full Tailwind CSS styling
+  - Simplified Calendar component to use only Tailwind classes without conflicting rdp-* default classes
+  - Set fixed cell dimensions (h-9 w-9 = 36px) for proper calendar grid layout
+  - Updated component to use react-day-picker v9 API with correct class names (month_caption, month_grid, day_button, etc.)
+  - Improved weekday header and date cell rendering with consistent button styling
+  - Now matches shadcn/ui demo appearance with proper spacing and cell sizes
+
 ### Added
 
 - **Background Job Scheduling Infrastructure**: Implemented Laravel Scheduler + Database Queue for background task processing

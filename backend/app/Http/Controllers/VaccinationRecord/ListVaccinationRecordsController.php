@@ -19,6 +19,7 @@ use Illuminate\Http\Request;
  *
  *     @OA\Parameter(name="pet", in="path", required=true, @OA\Schema(type="integer")),
  *     @OA\Parameter(name="page", in="query", required=false, @OA\Schema(type="integer")),
+ *     @OA\Parameter(name="status", in="query", required=false, @OA\Schema(type="string", enum={"active", "completed", "all"}), description="Filter by status: active (default), completed, or all"),
  *
  *     @OA\Response(
  *         response=200,
@@ -49,7 +50,19 @@ class ListVaccinationRecordsController extends Controller
     {
         $this->validatePetResource($request, $pet, 'vaccinations');
 
-        $items = $pet->vaccinations()->orderByDesc('administered_at')->paginate(25);
+        $status = $request->query('status', 'active');
+
+        $query = $pet->vaccinations();
+
+        // Apply status filter
+        if ($status === 'active') {
+            $query->active();
+        } elseif ($status === 'completed') {
+            $query->completed();
+        }
+        // 'all' returns everything without filter
+
+        $items = $query->orderByDesc('administered_at')->paginate(25);
         $payload = $this->paginatedResponse($items, [
             'meta' => array_merge($this->paginatedResponse($items)['meta'], [
                 'path' => $items->path(),

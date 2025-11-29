@@ -1,4 +1,4 @@
-import { NotificationPreferences } from '@/components/NotificationPreferences'
+import { NotificationPreferences } from '@/components/notifications/NotificationPreferences'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'

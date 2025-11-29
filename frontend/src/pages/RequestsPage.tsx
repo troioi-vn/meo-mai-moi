@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { PetCard } from '@/components/PetCard'
+import { PetCard } from '@/components/pets/PetCard'
 import {
   Select,
   SelectContent,

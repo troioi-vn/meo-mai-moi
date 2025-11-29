@@ -46,6 +46,10 @@ class GetNotificationPreferencesController extends Controller
         $preferences = [];
 
         foreach (NotificationType::cases() as $type) {
+            if ($type === NotificationType::EMAIL_VERIFICATION) {
+                continue;
+            }
+
             $preference = NotificationPreference::getPreference($user, $type->value);
 
             $preferences[] = [

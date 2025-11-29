@@ -1,6 +1,6 @@
 import { screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
-import { renderWithRouter } from '@/test-utils'
+import { renderWithRouter } from '@/testing'
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select'
 

@@ -2,13 +2,13 @@ import { useCallback, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { NotificationPreferences } from '@/components/NotificationPreferences'
-import { UserAvatar } from '@/components/UserAvatar'
+import { NotificationPreferences } from '@/components/notifications/NotificationPreferences'
+import { UserAvatar } from '@/components/user/UserAvatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
-import { ChangePasswordDialog } from '@/components/ChangePasswordDialog'
-import { DeleteAccountDialog } from '@/components/DeleteAccountDialog'
+import { ChangePasswordDialog } from '@/components/auth/ChangePasswordDialog'
+import { DeleteAccountDialog } from '@/components/auth/DeleteAccountDialog'
 
 const TAB_VALUES = ['account', 'notifications', 'contact-us'] as const
 type TabValue = (typeof TAB_VALUES)[number]

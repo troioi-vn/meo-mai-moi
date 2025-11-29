@@ -6,6 +6,52 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Frontend: Microchips on Pet Edit Page**: Integrated microchips management into the pet edit page
+
+  - Microchips section now appears in the General tab of `/pets/:id/edit` page
+  - Only displays when the pet type has microchips enabled (configurable in Settings → Pet Types)
+  - Users can add, edit, and delete microchips with chip number (required, min 10 chars), issuer (optional), and implantation date (optional)
+  - Microchips cannot be added during pet creation, only after the pet is created
+
+### Fixed
+
+- **Frontend: Toast (Sonner) Dark/Light Mode Switching**: Fixed toasts always showing in dark mode
+
+  - Changed sonner component to use project's custom `@/hooks/use-theme` instead of Next.js-specific `next-themes`
+  - Toasts now correctly respond to theme changes and respect user's dark/light mode preference
+
+- **Frontend: Date Picker Styling Reset**: Resolved date picker styling issues by removing react-day-picker default class names and implementing full Tailwind CSS styling
+  - Simplified Calendar component to use only Tailwind classes without conflicting rdp-\* default classes
+  - Set fixed cell dimensions (h-9 w-9 = 36px) for proper calendar grid layout
+  - Updated component to use react-day-picker v9 API with correct class names (month_caption, month_grid, day_button, etc.)
+  - Improved weekday header and date cell rendering with consistent button styling
+  - Now matches shadcn/ui demo appearance with proper spacing and cell sizes
+
+### Removed
+
+- **Frontend: Removed unused `next-themes` dependency**: Cleaned up unused package that was part of shadcn/ui sonner template but not used in this Vite project
+
+### Added
+
+- **Vaccination Record Renewal System**: Complete refactor of vaccination record lifecycle management
+
+  - Added `completed_at` timestamp to mark vaccination records as completed/renewed instead of deleting them
+  - Completed records are archived and no longer trigger reminders
+  - New endpoint `POST /api/pets/{pet}/vaccinations/{record}/renew` marks old record as completed and creates new one
+  - Backend scopes: `->active()` for active records, `->completed()` for historical records
+  - Backend helper methods: `isActive()`, `isCompleted()`, `markAsCompleted()`
+  - Updated `SendVaccinationReminders` command to only send reminders for active (non-completed) records
+  - Updated vaccination list endpoint with `status` parameter: `active` (default), `completed`, or `all`
+
+- **Frontend: Vaccination Renewal UI**
+
+  - Added "Renew" button on each vaccination record (highlighted for overdue vaccinations)
+  - Renew modal pre-fills form with today's date, same vaccine name, and auto-calculated next due date based on vaccination interval
+  - Users can modify all fields before saving
+  - New utility functions: `isActiveVaccination()`, `getActiveVaccinations()`, `getVaccinationIntervalDays()`, `calculateNextDueDate()`
+  - Added "Show History" toggle in vaccination edit mode to display completed/renewed records
+  - Completed records show with "Renewed" badge, strikethrough due date, and read-only mode
+
 - **Background Job Scheduling Infrastructure**: Implemented Laravel Scheduler + Database Queue for background task processing
 
   - Added `scheduler` supervisor program running `schedule:run` every 60 seconds
@@ -798,6 +844,7 @@ The migration renames existing `email_logs.status = sent` to `accepted`. No data
 
 - SPA-only UI: Removed dependency on server-rendered Inertia pages and ensured all non-JSON auth responses redirect into the SPA
 - Web routes updated to redirect reset-password and email verification flows into SPA routes where applicable
+- **Notification Settings**: Removed "Email Verification Required" from the list of configurable notification types in user settings, as this is a mandatory system notification.
 - Backend configured as API-first for UI flows; Jetstream retained only for API features (tokens, 2FA) with views disabled
 - Frontend tests and setup streamlined: improved mocking for `sonner` and added reset password page tests
 

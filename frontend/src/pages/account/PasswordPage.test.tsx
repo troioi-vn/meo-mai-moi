@@ -4,7 +4,7 @@ import { describe, it, expect, vi } from 'vitest'
 import PasswordPage from './PasswordPage'
 
 // Mock ChangePasswordForm to isolate page layout
-vi.mock('@/components/ChangePasswordForm', () => ({
+vi.mock('@/components/auth/ChangePasswordForm', () => ({
   ChangePasswordForm: () => <div data-testid="change-password-form">ChangePasswordFormMock</div>,
 }))
 

@@ -50,12 +50,18 @@ class NotificationPreferenceApiTest extends TestCase
         ]);
 
         $data = $response->json('data');
-        $this->assertCount(count(NotificationType::cases()), $data);
+        $data = $response->json('data');
+        // We filter out EMAIL_VERIFICATION so expect one less
+        $this->assertCount(count(NotificationType::cases()) - 1, $data);
 
-        // Check that all notification types are present
+        // Check that all notification types are present except EMAIL_VERIFICATION
         $types = array_column($data, 'type');
         foreach (NotificationType::cases() as $type) {
-            $this->assertContains($type->value, $types);
+            if ($type === NotificationType::EMAIL_VERIFICATION) {
+                $this->assertNotContains($type->value, $types);
+            } else {
+                $this->assertContains($type->value, $types);
+            }
         }
 
         // Check default values (should be true for both email and in-app)

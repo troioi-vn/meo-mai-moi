@@ -104,11 +104,12 @@ use App\Http\Controllers\MedicalNote\UpdateMedicalNoteController;
 use App\Http\Controllers\MedicalNote\DeleteMedicalNoteController;
 
 // Vaccination record controllers
-use App\Http\Controllers\VaccinationRecord\ListVaccinationRecordsController;
-use App\Http\Controllers\VaccinationRecord\StoreVaccinationRecordController;
-use App\Http\Controllers\VaccinationRecord\ShowVaccinationRecordController;
-use App\Http\Controllers\VaccinationRecord\UpdateVaccinationRecordController;
 use App\Http\Controllers\VaccinationRecord\DeleteVaccinationRecordController;
+use App\Http\Controllers\VaccinationRecord\ListVaccinationRecordsController;
+use App\Http\Controllers\VaccinationRecord\RenewVaccinationRecordController;
+use App\Http\Controllers\VaccinationRecord\ShowVaccinationRecordController;
+use App\Http\Controllers\VaccinationRecord\StoreVaccinationRecordController;
+use App\Http\Controllers\VaccinationRecord\UpdateVaccinationRecordController;
 
 // Pet microchip controllers
 use App\Http\Controllers\PetMicrochip\ListPetMicrochipsController;
@@ -283,6 +284,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/pets/{pet}/vaccinations/{record}', ShowVaccinationRecordController::class)->whereNumber('record');
     Route::put('/pets/{pet}/vaccinations/{record}', UpdateVaccinationRecordController::class)->whereNumber('record');
     Route::delete('/pets/{pet}/vaccinations/{record}', DeleteVaccinationRecordController::class)->whereNumber('record');
+    Route::post('/pets/{pet}/vaccinations/{record}/renew', RenewVaccinationRecordController::class)->whereNumber('record');
 
     // Microchips
     Route::get('/pets/{pet}/microchips', ListPetMicrochipsController::class);

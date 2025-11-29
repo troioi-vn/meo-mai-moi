@@ -145,4 +145,103 @@ class VaccinationRecordsFeatureTest extends TestCase
             'administered_at' => '2024-06-01',
         ])->assertStatus(422)->assertJsonPath('error_code', 'FEATURE_NOT_AVAILABLE_FOR_PET_TYPE');
     }
+
+    public function test_owner_can_renew_vaccination()
+    {
+        Sanctum::actingAs($this->owner);
+
+        // Create initial vaccination
+        $create = $this->postJson("/api/pets/{$this->cat->id}/vaccinations", [
+            'vaccine_name' => 'Rabies',
+            'administered_at' => '2023-06-01',
+            'due_at' => '2024-06-01',
+        ]);
+        $create->assertStatus(201);
+        $oldId = $create->json('data.id');
+
+        // Renew the vaccination
+        $renew = $this->postJson("/api/pets/{$this->cat->id}/vaccinations/{$oldId}/renew", [
+            'vaccine_name' => 'Rabies',
+            'administered_at' => '2024-06-15',
+            'due_at' => '2025-06-15',
+            'notes' => 'Annual renewal',
+        ]);
+        $renew->assertStatus(201);
+        $newId = $renew->json('data.id');
+
+        // Verify new record was created
+        $this->assertNotEquals($oldId, $newId);
+        $this->assertEquals('Rabies', $renew->json('data.vaccine_name'));
+        $this->assertStringContainsString('2024-06-15', $renew->json('data.administered_at'));
+        $this->assertNull($renew->json('data.completed_at'));
+
+        // Verify old record was marked as completed
+        $oldRecord = $this->getJson("/api/pets/{$this->cat->id}/vaccinations/{$oldId}");
+        $oldRecord->assertOk();
+        $this->assertNotNull($oldRecord->json('data.completed_at'));
+    }
+
+    public function test_cannot_renew_completed_vaccination()
+    {
+        Sanctum::actingAs($this->owner);
+
+        // Create initial vaccination
+        $create = $this->postJson("/api/pets/{$this->cat->id}/vaccinations", [
+            'vaccine_name' => 'Rabies',
+            'administered_at' => '2023-06-01',
+            'due_at' => '2024-06-01',
+        ]);
+        $create->assertStatus(201);
+        $oldId = $create->json('data.id');
+
+        // Renew once
+        $this->postJson("/api/pets/{$this->cat->id}/vaccinations/{$oldId}/renew", [
+            'vaccine_name' => 'Rabies',
+            'administered_at' => '2024-06-15',
+            'due_at' => '2025-06-15',
+        ])->assertStatus(201);
+
+        // Try to renew the already-completed record
+        $this->postJson("/api/pets/{$this->cat->id}/vaccinations/{$oldId}/renew", [
+            'vaccine_name' => 'Rabies',
+            'administered_at' => '2024-07-01',
+            'due_at' => '2025-07-01',
+        ])->assertStatus(422)->assertJsonValidationErrors(['record']);
+    }
+
+    public function test_list_vaccinations_filters_by_status()
+    {
+        Sanctum::actingAs($this->owner);
+
+        // Create and renew a vaccination
+        $create = $this->postJson("/api/pets/{$this->cat->id}/vaccinations", [
+            'vaccine_name' => 'Rabies',
+            'administered_at' => '2023-06-01',
+            'due_at' => '2024-06-01',
+        ]);
+        $oldId = $create->json('data.id');
+
+        $this->postJson("/api/pets/{$this->cat->id}/vaccinations/{$oldId}/renew", [
+            'vaccine_name' => 'Rabies',
+            'administered_at' => '2024-06-15',
+            'due_at' => '2025-06-15',
+        ]);
+
+        // Default (active) should return 1 record
+        $active = $this->getJson("/api/pets/{$this->cat->id}/vaccinations");
+        $active->assertOk();
+        $this->assertCount(1, $active->json('data.data'));
+        $this->assertNull($active->json('data.data.0.completed_at'));
+
+        // Completed should return 1 record
+        $completed = $this->getJson("/api/pets/{$this->cat->id}/vaccinations?status=completed");
+        $completed->assertOk();
+        $this->assertCount(1, $completed->json('data.data'));
+        $this->assertNotNull($completed->json('data.data.0.completed_at'));
+
+        // All should return 2 records
+        $all = $this->getJson("/api/pets/{$this->cat->id}/vaccinations?status=all");
+        $all->assertOk();
+        $this->assertCount(2, $all->json('data.data'));
+    }
 }

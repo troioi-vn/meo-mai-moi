@@ -2,9 +2,9 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import HelperProfilePage from './HelperProfilePage'
-import { mockHelperProfile } from '@/mocks/data/helper-profiles'
+import { mockHelperProfile } from '@/testing/mocks/data/helper-profiles'
 import { http, HttpResponse } from 'msw'
-import { server } from '@/mocks/server'
+import { server } from '@/testing/mocks/server'
 
 const queryClient = new QueryClient()
 

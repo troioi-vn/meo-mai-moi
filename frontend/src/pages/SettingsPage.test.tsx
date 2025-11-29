@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from 'vitest'
 import { screen } from '@testing-library/react'
 import SettingsPage from './SettingsPage'
-import { renderWithRouter } from '@/test-utils'
+import { renderWithRouter } from '@/testing'
 
-vi.mock('@/components/NotificationPreferences', () => ({
+vi.mock('@/components/notifications/NotificationPreferences', () => ({
   NotificationPreferences: () => (
     <div data-testid="notification-preferences">Notification Preferences Component</div>
   ),

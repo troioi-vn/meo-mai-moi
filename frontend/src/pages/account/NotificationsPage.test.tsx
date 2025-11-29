@@ -5,7 +5,7 @@ import NotificationsPage from './NotificationsPage'
 import { vi } from 'vitest'
 
 // Mock the NotificationPreferences component
-vi.mock('@/components/NotificationPreferences', () => ({
+vi.mock('@/components/notifications/NotificationPreferences', () => ({
   NotificationPreferences: () => (
     <div data-testid="notification-preferences">Notification Preferences Component</div>
   ),

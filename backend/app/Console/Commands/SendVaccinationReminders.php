@@ -33,8 +33,9 @@ class SendVaccinationReminders extends Command
 
         $this->info("Scanning for vaccinations due on {$targetDate->toDateString()} (".self::REMINDER_DAYS_BEFORE." days from now)...");
 
-        // Get all vaccination records due on target date that haven't had reminders sent
+        // Get all active vaccination records due on target date that haven't had reminders sent
         $records = VaccinationRecord::query()
+            ->active() // Only active (non-completed) records
             ->whereNotNull('due_at')
             ->whereDate('due_at', $targetDate)
             ->whereNull('reminder_sent_at')

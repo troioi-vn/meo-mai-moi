@@ -1,4 +1,4 @@
-import { renderWithRouter } from '@/test-utils'
+import { renderWithRouter } from '@/testing'
 import { screen, waitFor } from '@testing-library/react'
 
 import ApplyToHelpPage from './ApplyToHelpPage'

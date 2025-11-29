@@ -4,9 +4,19 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Added
+
+- **Frontend: Microchips on Pet Edit Page**: Integrated microchips management into the pet edit page
+
+  - Microchips section now appears in the General tab of `/pets/:id/edit` page
+  - Only displays when the pet type has microchips enabled (configurable in Settings → Pet Types)
+  - Users can add, edit, and delete microchips with chip number (required, min 10 chars), issuer (optional), and implantation date (optional)
+  - Microchips cannot be added during pet creation, only after the pet is created
+
 ### Fixed
 
 - **Frontend: Toast (Sonner) Dark/Light Mode Switching**: Fixed toasts always showing in dark mode
+
   - Changed sonner component to use project's custom `@/hooks/use-theme` instead of Next.js-specific `next-themes`
   - Toasts now correctly respond to theme changes and respect user's dark/light mode preference
 

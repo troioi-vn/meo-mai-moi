@@ -18,6 +18,7 @@ import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { WeightHistoryCard } from '@/components/weights/WeightHistoryCard'
 import { UpcomingVaccinationsSection } from '@/components/vaccinations/UpcomingVaccinationsSection'
+import { MicrochipsSection } from '@/components/microchips/MicrochipsSection'
 
 const TAB_VALUES = ['general', 'health', 'status'] as const
 type TabValue = (typeof TAB_VALUES)[number]
@@ -129,6 +130,7 @@ const CreatePetPage: React.FC = () => {
   const supportsWeight = petType ? petSupportsCapability(petType, 'weight') : false
   const supportsVaccinations = petType ? petSupportsCapability(petType, 'vaccinations') : false
   const supportsHealth = supportsWeight || supportsVaccinations
+  const supportsMicrochips = petType ? petSupportsCapability(petType, 'microchips') : false
 
   // Create mode - simple form without tabs
   if (!isEditMode) {
@@ -305,6 +307,11 @@ const CreatePetPage: React.FC = () => {
                 </div>
               </form>
             </div>
+
+            {/* Microchips Section */}
+            {supportsMicrochips && loadedPet && (
+              <MicrochipsSection petId={loadedPet.id} canEdit={true} />
+            )}
           </TabsContent>
 
           {/* Health Tab */}

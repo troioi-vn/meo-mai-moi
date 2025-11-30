@@ -40,28 +40,6 @@ class PetType extends Model
     ];
 
     /**
-     * Boot the model and set up event listeners
-     */
-    protected static function boot()
-    {
-        parent::boot();
-
-        // Auto-generate slug from name if not provided
-        static::creating(function ($petType) {
-            if (! $petType->slug) {
-                $petType->slug = Str::slug($petType->name);
-            }
-
-            // Sensible defaults for system types when created directly in tests or seeds
-            if ($petType->slug === 'cat') {
-                $petType->placement_requests_allowed = true;
-                $petType->weight_tracking_allowed = true;
-                $petType->microchips_allowed = true;
-            }
-        });
-    }
-
-    /**
      * Get all pets of this type
      */
     public function pets(): HasMany
@@ -137,5 +115,27 @@ class PetType extends Model
     public function scopeOrdered($query)
     {
         return $query->orderBy('display_order')->orderBy('name');
+    }
+
+    /**
+     * Boot the model and set up event listeners
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Auto-generate slug from name if not provided
+        static::creating(function ($petType) {
+            if (! $petType->slug) {
+                $petType->slug = Str::slug($petType->name);
+            }
+
+            // Sensible defaults for system types when created directly in tests or seeds
+            if ($petType->slug === 'cat') {
+                $petType->placement_requests_allowed = true;
+                $petType->weight_tracking_allowed = true;
+                $petType->microchips_allowed = true;
+            }
+        });
     }
 }

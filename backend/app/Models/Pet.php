@@ -65,16 +65,6 @@ class Pet extends Model implements HasMedia
     protected $appends = ['photo_url', 'photos'];
 
     /**
-     * Boot the model and add global scope to hide deleted pets.
-     */
-    protected static function booted()
-    {
-        static::addGlobalScope('not_deleted', function ($query) {
-            $query->where('status', '!=', PetStatus::DELETED->value);
-        });
-    }
-
-    /**
      * Override delete to implement status-based soft delete for business logic.
      * This maintains the DELETED status while also supporting Laravel's soft deletes.
      */
@@ -270,6 +260,15 @@ class Pet extends Model implements HasMedia
         $this->addMediaConversion('webp')
             ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256)
             ->format('webp');
+    }
 
+    /**
+     * Boot the model and add global scope to hide deleted pets.
+     */
+    protected static function booted()
+    {
+        static::addGlobalScope('not_deleted', function ($query) {
+            $query->where('status', '!=', PetStatus::DELETED->value);
+        });
     }
 }

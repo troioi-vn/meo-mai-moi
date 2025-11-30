@@ -1,10 +1,13 @@
 {
   "name": "Meo Mai Moi",
   "short_name": "Meo Mai Moi",
+  "description": "Pet care & adoption platform",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
+  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/icon-192.png",

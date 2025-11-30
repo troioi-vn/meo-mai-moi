@@ -48,7 +48,8 @@ class EmailVerificationTest extends TestCase
         Event::assertDispatched(Verified::class);
 
         $this->assertTrue($user->fresh()->hasVerifiedEmail());
-        $response->assertRedirect(rtrim(config('app.frontend_url'), '/').'/account/pets?verified=1');
+        // After verification, user is redirected to home page with verified flag
+        $response->assertRedirect(rtrim(config('app.frontend_url'), '/').'/?verified=1');
     }
 
     public function test_email_can_not_verified_with_invalid_hash(): void

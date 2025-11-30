@@ -87,7 +87,6 @@ describe('UserMenu', () => {
 
     // Check that menu items are visible after clicking
     expect(screen.getByRole('menuitem', { name: 'Settings' })).toBeInTheDocument()
-    expect(screen.getByRole('menuitem', { name: 'My Pets' })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: 'Log Out' })).toBeInTheDocument()
   })
 
@@ -104,11 +103,13 @@ describe('UserMenu', () => {
 
     await user.click(avatar)
 
-    const profileLink = screen.getByRole('menuitem', { name: 'Settings' })
-    const myPetsLink = screen.getByRole('menuitem', { name: 'My Pets' })
+    const settingsLink = screen.getByRole('menuitem', { name: 'Settings' })
+    const invitationsLink = screen.getByRole('menuitem', { name: 'Invitations' })
+    const helperProfilesLink = screen.getByRole('menuitem', { name: 'Helper Profiles' })
 
-    expect(profileLink).toHaveAttribute('href', '/settings/account')
-    expect(myPetsLink).toHaveAttribute('href', '/')
+    expect(settingsLink).toHaveAttribute('href', '/settings/account')
+    expect(invitationsLink).toHaveAttribute('href', '/invitations')
+    expect(helperProfilesLink).toHaveAttribute('href', '/helper')
   })
 
   it('calls logout function when logout is clicked', async () => {
@@ -132,7 +133,7 @@ describe('UserMenu', () => {
     expect(mockLogout).toHaveBeenCalledTimes(1)
   })
 
-  it('shows theme toggle submenu', async () => {
+  it('shows theme toggle switch', async () => {
     const user = userEvent.setup()
     renderWithRouter(<UserMenu />)
 
@@ -145,11 +146,9 @@ describe('UserMenu', () => {
 
     await user.click(avatar)
 
-    // Check for theme label and options
-    expect(screen.getByText('Theme')).toBeInTheDocument()
-    expect(screen.getByRole('menuitemradio', { name: 'Light' })).toBeInTheDocument()
-    expect(screen.getByRole('menuitemradio', { name: 'Dark' })).toBeInTheDocument()
-    expect(screen.getByRole('menuitemradio', { name: 'System' })).toBeInTheDocument()
+    // Check for dark mode toggle switch
+    expect(screen.getByText('Dark')).toBeInTheDocument()
+    expect(screen.getByRole('switch', { name: 'Toggle dark mode' })).toBeInTheDocument()
   })
 
   it('handles user without name gracefully', () => {

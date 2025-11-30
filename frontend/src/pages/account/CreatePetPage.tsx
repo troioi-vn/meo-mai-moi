@@ -14,6 +14,7 @@ import { PetFormFields } from '@/components/pets/PetFormFields'
 import { PetStatusControls } from '@/components/pets/PetStatusControls'
 import { PetDangerZone } from '@/components/pets/PetDangerZone'
 import { PetPhoto } from '@/components/pets/PetPhoto'
+import { PetPhotoGallery } from '@/components/pets/PetPhotoGallery'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { WeightHistoryCard } from '@/components/pet-health/weights/WeightHistoryCard'
@@ -257,6 +258,16 @@ const CreatePetPage: React.FC = () => {
                   className="h-40 w-40 object-cover rounded-full border"
                 />
               </div>
+            )}
+
+            {/* Photo Gallery */}
+            {loadedPet && (
+              <PetPhotoGallery
+                pet={loadedPet}
+                onPetUpdate={(updatedPet) => {
+                  setLoadedPet(updatedPet)
+                }}
+              />
             )}
 
             {/* Pet Form */}

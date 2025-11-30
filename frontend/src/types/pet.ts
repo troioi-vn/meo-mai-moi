@@ -15,6 +15,13 @@ export interface PetType {
 
 export type BirthdayPrecision = 'day' | 'month' | 'year' | 'unknown'
 
+export interface PetPhoto {
+  id: number
+  url: string
+  thumb_url: string | null
+  is_primary: boolean
+}
+
 export interface Pet {
   id: number
   name: string
@@ -32,6 +39,7 @@ export interface Pet {
   imageUrl?: string
   photo_url?: string // Backend API photo URL
   photo?: { id: number; url: string } | null
+  photos?: PetPhoto[] // All photos for gallery
   created_at: string
   updated_at: string
   pet_type: PetType

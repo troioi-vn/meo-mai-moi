@@ -1,4 +1,5 @@
 import React from 'react'
+import { Cat, PawPrint } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
@@ -13,16 +14,22 @@ const MainNav: React.FC = () => {
   const isVerified = Boolean(user?.email_verified_at)
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b p-2">
+    <header className="fixed top-0 left-3 right-0 z-50 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 border-b p-2">
       <nav className="container flex h-16 items-center justify-between">
         {/* Left: Brand */}
         <div className="flex items-center">
-          <Link to="/" className="text-2xl font-bold text-foreground">
-            Meo!
+          <Link to="/" className="text-foreground hover:text-primary transition-colors">
+            <Cat className="h-8 w-8" />
+            <span className="sr-only">Meo!</span>
           </Link>
           {isVerified && (
-            <Link to="/requests" className="text-lg font-medium text-foreground ml-4">
-              Requests
+            <Link
+              to="/requests"
+              className="text-foreground ml-6 hover:text-primary transition-colors"
+              title="Requests"
+            >
+              <PawPrint className="h-6 w-6" />
+              <span className="sr-only">Requests</span>
             </Link>
           )}
         </div>

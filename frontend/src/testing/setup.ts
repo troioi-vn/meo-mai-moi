@@ -71,6 +71,19 @@ class MockResizeObserver {
 }
 ;(globalThis as unknown as { ResizeObserver?: unknown }).ResizeObserver = MockResizeObserver
 
+// Mock IntersectionObserver (needed for Embla Carousel)
+class MockIntersectionObserver {
+  root: Element | null = null
+  rootMargin = ''
+  thresholds: readonly number[] = []
+  observe = vi.fn()
+  unobserve = vi.fn()
+  disconnect = vi.fn()
+  takeRecords = vi.fn().mockReturnValue([])
+}
+;(globalThis as unknown as { IntersectionObserver?: unknown }).IntersectionObserver =
+  MockIntersectionObserver
+
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,

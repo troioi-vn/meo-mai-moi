@@ -13,6 +13,11 @@ vi.mock('@/api/axios', () => ({
   },
 }))
 
+// Mock the pets API
+vi.mock('@/api/pets', () => ({
+  getPet: vi.fn(),
+}))
+
 // Mock sonner toast
 vi.mock('sonner', () => ({
   toast: {
@@ -22,6 +27,7 @@ vi.mock('sonner', () => ({
 }))
 
 const mockApi = vi.mocked(api)
+import { getPet } from '@/api/pets'
 
 describe('PetPhoto', () => {
   const mockOnPhotoUpdate = vi.fn()
@@ -31,38 +37,21 @@ describe('PetPhoto', () => {
   })
 
   it('renders pet photo', () => {
-    render(
-      <PetPhoto 
-        pet={mockPet} 
-        onPhotoUpdate={mockOnPhotoUpdate}
-      />
-    )
+    render(<PetPhoto pet={mockPet} onPhotoUpdate={mockOnPhotoUpdate} />)
 
     const img = screen.getByRole('img', { name: mockPet.name })
     expect(img).toHaveAttribute('src', mockPet.photo_url)
   })
 
   it('shows upload controls when enabled', () => {
-    render(
-      <PetPhoto 
-        pet={mockPet} 
-        onPhotoUpdate={mockOnPhotoUpdate}
-        showUploadControls={true}
-      />
-    )
+    render(<PetPhoto pet={mockPet} onPhotoUpdate={mockOnPhotoUpdate} showUploadControls={true} />)
 
     expect(screen.getByRole('button', { name: /upload/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /remove/i })).toBeInTheDocument()
   })
 
   it('hides upload controls when disabled', () => {
-    render(
-      <PetPhoto 
-        pet={mockPet} 
-        onPhotoUpdate={mockOnPhotoUpdate}
-        showUploadControls={false}
-      />
-    )
+    render(<PetPhoto pet={mockPet} onPhotoUpdate={mockOnPhotoUpdate} showUploadControls={false} />)
 
     expect(screen.queryByRole('button', { name: /upload/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /remove/i })).not.toBeInTheDocument()
@@ -70,13 +59,9 @@ describe('PetPhoto', () => {
 
   it('hides remove button when pet has no photo', () => {
     const petWithoutPhoto = { ...mockPet, photo_url: undefined }
-    
+
     render(
-      <PetPhoto 
-        pet={petWithoutPhoto} 
-        onPhotoUpdate={mockOnPhotoUpdate}
-        showUploadControls={true}
-      />
+      <PetPhoto pet={petWithoutPhoto} onPhotoUpdate={mockOnPhotoUpdate} showUploadControls={true} />
     )
 
     expect(screen.getByRole('button', { name: /upload/i })).toBeInTheDocument()
@@ -87,24 +72,18 @@ describe('PetPhoto', () => {
     const user = userEvent.setup()
     const mockResponse = {
       data: {
-        data: { ...mockPet, photo_url: 'http://example.com/new-photo.jpg' }
-      }
+        data: { ...mockPet, photo_url: 'http://example.com/new-photo.jpg' },
+      },
     }
     mockApi.post.mockResolvedValue(mockResponse)
 
-    render(
-      <PetPhoto 
-        pet={mockPet} 
-        onPhotoUpdate={mockOnPhotoUpdate}
-        showUploadControls={true}
-      />
-    )
+    render(<PetPhoto pet={mockPet} onPhotoUpdate={mockOnPhotoUpdate} showUploadControls={true} />)
 
     const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' })
     const fileInput = screen.getByRole('button', { name: /upload/i })
-    
+
     await user.click(fileInput)
-    
+
     // Find the hidden file input and upload file
     const hiddenInput = document.querySelector('input[type="file"]')!
     await user.upload(hiddenInput, file)
@@ -122,15 +101,11 @@ describe('PetPhoto', () => {
 
   it('deletes photo successfully', async () => {
     const user = userEvent.setup()
+    const updatedPet = { ...mockPet, photo_url: undefined, photos: [] }
     mockApi.delete.mockResolvedValue({})
+    vi.mocked(getPet).mockResolvedValue(updatedPet)
 
-    render(
-      <PetPhoto 
-        pet={mockPet} 
-        onPhotoUpdate={mockOnPhotoUpdate}
-        showUploadControls={true}
-      />
-    )
+    render(<PetPhoto pet={mockPet} onPhotoUpdate={mockOnPhotoUpdate} showUploadControls={true} />)
 
     const removeButton = screen.getByRole('button', { name: /remove/i })
     await user.click(removeButton)
@@ -139,29 +114,24 @@ describe('PetPhoto', () => {
       expect(mockApi.delete).toHaveBeenCalledWith(`/pets/${mockPet.id}/photos/current`)
     })
 
-    expect(mockOnPhotoUpdate).toHaveBeenCalledWith({
-      ...mockPet,
-      photo_url: undefined
+    await waitFor(() => {
+      expect(getPet).toHaveBeenCalledWith(String(mockPet.id))
     })
+
+    expect(mockOnPhotoUpdate).toHaveBeenCalledWith(updatedPet)
   })
 
   it('handles upload error', async () => {
     const user = userEvent.setup()
     mockApi.post.mockRejectedValue(new Error('Upload failed'))
 
-    render(
-      <PetPhoto 
-        pet={mockPet} 
-        onPhotoUpdate={mockOnPhotoUpdate}
-        showUploadControls={true}
-      />
-    )
+    render(<PetPhoto pet={mockPet} onPhotoUpdate={mockOnPhotoUpdate} showUploadControls={true} />)
 
     const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' })
     const fileInput = screen.getByRole('button', { name: /upload/i })
-    
+
     await user.click(fileInput)
-    
+
     const hiddenInput = document.querySelector('input[type="file"]')!
     await user.upload(hiddenInput, file)
 
@@ -176,19 +146,13 @@ describe('PetPhoto', () => {
   it('validates file type', async () => {
     const user = userEvent.setup()
 
-    render(
-      <PetPhoto 
-        pet={mockPet} 
-        onPhotoUpdate={mockOnPhotoUpdate}
-        showUploadControls={true}
-      />
-    )
+    render(<PetPhoto pet={mockPet} onPhotoUpdate={mockOnPhotoUpdate} showUploadControls={true} />)
 
     const file = new File(['test'], 'test.txt', { type: 'text/plain' })
     const fileInput = screen.getByRole('button', { name: /upload/i })
-    
+
     await user.click(fileInput)
-    
+
     const hiddenInput = document.querySelector('input[type="file"]')!
     await user.upload(hiddenInput, file)
 
@@ -200,20 +164,14 @@ describe('PetPhoto', () => {
   it('validates file size', async () => {
     const user = userEvent.setup()
 
-    render(
-      <PetPhoto 
-        pet={mockPet} 
-        onPhotoUpdate={mockOnPhotoUpdate}
-        showUploadControls={true}
-      />
-    )
+    render(<PetPhoto pet={mockPet} onPhotoUpdate={mockOnPhotoUpdate} showUploadControls={true} />)
 
     // Create a file larger than 10MB
     const largeFile = new File(['x'.repeat(11 * 1024 * 1024)], 'large.jpg', { type: 'image/jpeg' })
     const fileInput = screen.getByRole('button', { name: /upload/i })
-    
+
     await user.click(fileInput)
-    
+
     const hiddenInput = document.querySelector('input[type="file"]')!
     await user.upload(hiddenInput, largeFile)
 

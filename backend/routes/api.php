@@ -74,6 +74,7 @@ use App\Http\Controllers\Pet\ListPetTypesController;
 // Pet photo controllers
 use App\Http\Controllers\PetPhoto\StorePetPhotoController;
 use App\Http\Controllers\PetPhoto\DeletePetPhotoController;
+use App\Http\Controllers\PetPhoto\SetPrimaryPetPhotoController;
 
 // Placement request controllers
 use App\Http\Controllers\PlacementRequest\StorePlacementRequestController;
@@ -250,6 +251,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // New pet photo routes
     Route::post('/pets/{pet}/photos', StorePetPhotoController::class);
     Route::delete('/pets/{pet}/photos/{photo}', DeletePetPhotoController::class);
+    Route::post('/pets/{pet}/photos/{photo}/set-primary', SetPrimaryPetPhotoController::class);
     Route::post('/placement-requests', StorePlacementRequestController::class);
     Route::delete('/placement-requests/{placementRequest}', DeletePlacementRequestController::class);
     Route::post('/placement-requests/{placementRequest}/confirm', ConfirmPlacementRequestController::class);

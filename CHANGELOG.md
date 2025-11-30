@@ -3,3 +3,21 @@
 All notable changes to this project are documented here, following the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Added
+
+- Pet photo gallery with carousel on edit pet page - view all uploaded photos in a thumbnail grid.
+- Full-size photo modal with carousel navigation for viewing pet photos.
+- "Set as Avatar" button in photo modal to choose which photo is the pet's avatar.
+- "Delete" button in photo modal to remove individual photos.
+- Star badge on primary photo thumbnail to indicate current avatar.
+- Newly uploaded photos are automatically set as the pet's primary photo.
+
+### Changed
+
+- Replaced "Meo!" text with Cat icon in the top navigation bar.
+- Replaced "Requests" text with PawPrint icon in the top navigation bar.
+
+### Fixed
+
+- Pet photos now display correctly immediately after upload (fallback to original when conversions aren't ready).

@@ -62,7 +62,7 @@ class Pet extends Model implements HasMedia
         'birthday_day' => 'integer',
     ];
 
-    protected $appends = ['photo_url'];
+    protected $appends = ['photo_url', 'photos'];
 
     /**
      * Boot the model and add global scope to hide deleted pets.
@@ -112,8 +112,45 @@ class Pet extends Model implements HasMedia
      */
     public function getPhotoUrlAttribute()
     {
-        // Try to get thumb conversion first, fall back to original
-        return $this->getFirstMediaUrl('photos', 'thumb') ?: $this->getFirstMediaUrl('photos') ?: null;
+        $media = $this->getFirstMedia('photos');
+        if (! $media) {
+            return null;
+        }
+
+        // Only use thumb conversion if it has been generated
+        if ($media->hasGeneratedConversion('thumb')) {
+            return $media->getUrl('thumb');
+        }
+
+        // Fall back to original
+        return $media->getUrl();
+    }
+
+    /**
+     * Get all photos for this pet as an array.
+     *
+     * @return array<int, array{id: int, url: string, thumb_url: string|null, is_primary: bool}>
+     */
+    public function getPhotosAttribute(): array
+    {
+        $media = $this->getMedia('photos');
+        $firstId = $media->first()?->id;
+
+        return $media->map(function ($item) use ($firstId) {
+            // Get original URL as fallback
+            $originalUrl = $item->getUrl();
+
+            // Only use conversion URL if it exists (conversion completed)
+            $mediumUrl = $item->hasGeneratedConversion('medium') ? $item->getUrl('medium') : $originalUrl;
+            $thumbUrl = $item->hasGeneratedConversion('thumb') ? $item->getUrl('thumb') : $originalUrl;
+
+            return [
+                'id' => $item->id,
+                'url' => $mediumUrl,
+                'thumb_url' => $thumbUrl,
+                'is_primary' => $item->id === $firstId,
+            ];
+        })->toArray();
     }
 
     /**

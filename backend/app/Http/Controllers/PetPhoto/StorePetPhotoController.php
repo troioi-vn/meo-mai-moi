@@ -10,6 +10,7 @@ use App\Traits\HandlesAuthentication;
 use App\Traits\HandlesPetResources;
 use App\Traits\HandlesValidation;
 use Illuminate\Http\Request;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
  * @OA\Post(
@@ -115,14 +116,19 @@ class StorePetPhotoController extends Controller
             'media_url' => $media->getUrl(),
         ]);
 
-        // Refresh pet with updated relationships and photo_url from accessor
+        // Set the newly uploaded photo as primary by moving it to first position
+        Media::setNewOrder(
+            collect([$media->id])
+                ->merge($pet->getMedia('photos')->where('id', '!=', $media->id)->pluck('id'))
+                ->toArray()
+        );
+
+        // Refresh pet with updated relationships and clear media cache
         $pet->load('petType');
         $pet->refresh();
+        // Clear media collection cache to get fresh photos
+        $pet->unsetRelation('media');
 
-        // Ensure photo_url is included in response (similar to User fix)
-        $petData = $pet->toArray();
-        $petData['photo_url'] = $pet->photo_url;
-
-        return $this->sendSuccess($petData);
+        return $this->sendSuccess($pet);
     }
 }

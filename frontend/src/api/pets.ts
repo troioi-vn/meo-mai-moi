@@ -132,6 +132,13 @@ export const deletePetPhoto = async (
   await api.delete(`/pets/${String(petId)}/photos/${String(photoId)}`)
 }
 
+export const setPrimaryPetPhoto = async (petId: number, photoId: number): Promise<Pet> => {
+  const response = await api.post<{ data: Pet }>(
+    `/pets/${String(petId)}/photos/${String(photoId)}/set-primary`
+  )
+  return response.data.data
+}
+
 export const getPlacementRequests = async (): Promise<Pet[]> => {
   const response = await api.get<{ data: Pet[] }>('/pets/placement-requests')
   return response.data.data

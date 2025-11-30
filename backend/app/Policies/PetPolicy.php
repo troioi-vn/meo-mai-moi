@@ -12,14 +12,6 @@ class PetPolicy
     use HandlesAuthorization;
 
     /**
-     * Admin helper.
-     */
-    private function isAdmin(User $user): bool
-    {
-        return method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
-    }
-
-    /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
@@ -116,5 +108,13 @@ class PetPolicy
     public function reorder(User $user): bool
     {
         return $this->isAdmin($user);
+    }
+
+    /**
+     * Admin helper.
+     */
+    private function isAdmin(User $user): bool
+    {
+        return method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
     }
 }

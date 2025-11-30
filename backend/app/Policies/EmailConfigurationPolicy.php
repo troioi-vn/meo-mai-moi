@@ -10,11 +10,6 @@ class EmailConfigurationPolicy
 {
     use HandlesAuthorization;
 
-    private function isAdmin(User $user): bool
-    {
-        return method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
-    }
-
     public function viewAny(User $user): bool
     {
         return $this->isAdmin($user);
@@ -73,5 +68,10 @@ class EmailConfigurationPolicy
     public function reorder(User $user): bool
     {
         return $this->isAdmin($user);
+    }
+
+    private function isAdmin(User $user): bool
+    {
+        return method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
     }
 }

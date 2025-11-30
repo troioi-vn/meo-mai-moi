@@ -2937,6 +2937,69 @@
                 ]
             }
         },
+        "/api/pets/{pet}/photos/{photo}/set-primary": {
+            "post": {
+                "tags": [
+                    "Pet Photos"
+                ],
+                "summary": "Set a specific photo as the primary (avatar) photo for a pet",
+                "operationId": "b320d7479ce375ae82a34306ee2129e6",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "description": "ID of the pet",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "photo",
+                        "in": "path",
+                        "description": "ID of the photo to set as primary",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Photo set as primary successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Pet"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Photo not found"
+                    },
+                    "422": {
+                        "description": "Feature not available for pet type"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/pets/{pet}/photos": {
             "post": {
                 "tags": [
@@ -4361,6 +4424,20 @@
                         "schema": {
                             "type": "integer"
                         }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by status: active (default), completed, or all",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "active",
+                                "completed",
+                                "all"
+                            ]
+                        }
                     }
                 ],
                 "responses": {
@@ -4477,6 +4554,101 @@
                     },
                     "403": {
                         "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pets/{pet}/vaccinations/{record}/renew": {
+            "post": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Renew a vaccination record (mark old as completed, create new)",
+                "operationId": "eb897e1039fa52c0a6af30c9803027f6",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "record",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "vaccine_name",
+                                    "administered_at"
+                                ],
+                                "properties": {
+                                    "vaccine_name": {
+                                        "type": "string",
+                                        "example": "Rabies"
+                                    },
+                                    "administered_at": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-11-30"
+                                    },
+                                    "due_at": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-11-30"
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Annual renewal"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/VaccinationRecord"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
                     },
                     "422": {
                         "description": "Validation error"
@@ -5604,6 +5776,12 @@
                     "reminder_sent_at": {
                         "type": "string",
                         "format": "date-time"
+                    },
+                    "completed_at": {
+                        "description": "When set, indicates the record is completed/renewed and no longer active",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
                     },
                     "created_at": {
                         "type": "string",

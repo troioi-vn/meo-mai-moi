@@ -8,8 +8,9 @@ use Illuminate\Support\Facades\Log;
 class NotificationTemplateResolver
 {
     public function __construct(
-        private NotificationLocaleResolver $localeResolver = new NotificationLocaleResolver
-    ) {}
+        private NotificationLocaleResolver $localeResolver = new NotificationLocaleResolver()
+    ) {
+    }
 
     /**
      * Resolve a template for type/channel and locale chain.
@@ -64,7 +65,6 @@ class NotificationTemplateResolver
     private function loadFileTemplate(string $type, string $channel, string $locale): ?array
     {
         $registry = config('notification_templates.types');
-        $defaultLocale = config('notification_templates.default_locale', 'en');
         $entry = $registry[$type] ?? null;
         if (! $entry) {
             return null;
@@ -72,64 +72,55 @@ class NotificationTemplateResolver
 
         $slug = $entry['slug'];
 
-        if ($channel === 'email') {
-            // Expect Blade views in emails/notifications/{locale}/{slug}.blade.php
-            $view = "emails.notifications.{$locale}.{$slug}";
-            // Backward-compat: also accept legacy path without locale folder for default locale
-            $legacyView = "emails.notifications.{$slug}";
+        return match ($channel) {
+            'email' => $this->loadEmailTemplate($slug, $locale),
+            'in_app' => $this->loadInAppTemplate($slug, $locale),
+            default => null,
+        };
+    }
 
-            if (view()->exists($view)) {
-                $subject = null; // Subject typically provided by mailable; can add subject files later if needed
-                $body = " @include('{$view}')"; // body will be rendered via Blade::render when html required
+    private function loadEmailTemplate(string $slug, string $locale): ?array
+    {
+        $view = "emails.notifications.{$locale}.{$slug}";
 
-                return [
-                    'source' => 'file',
-                    'subject' => $subject,
-                    'body' => $body,
-                    'engine' => 'blade',
-                    'locale' => $locale,
-                    'version' => null,
-                    'view' => $view,
-                ];
-            }
-
-            if ($locale === $defaultLocale && view()->exists($legacyView)) {
-                $subject = null;
-                $body = " @include('{$legacyView}')";
-
-                return [
-                    'source' => 'file',
-                    'subject' => $subject,
-                    'body' => $body,
-                    'engine' => 'blade',
-                    'locale' => $locale,
-                    'version' => null,
-                    'view' => $legacyView,
-                ];
-            }
-
-            return null;
+        if (view()->exists($view)) {
+            return $this->buildFileResult(" @include('{$view}')", 'blade', $locale, $view);
         }
 
-        if ($channel === 'in_app') {
-            // Expect Markdown file under resources/templates/notifications/bell/{locale}/{slug}.md
-            $path = resource_path("templates/notifications/bell/{$locale}/{$slug}.md");
-            if (is_file($path)) {
-                $body = file_get_contents($path) ?: '';
+        // Backward-compat: legacy path without locale folder for default locale
+        $defaultLocale = config('notification_templates.default_locale', 'en');
+        $legacyView = "emails.notifications.{$slug}";
 
-                return [
-                    'source' => 'file',
-                    'subject' => null,
-                    'body' => $body,
-                    'engine' => 'markdown',
-                    'locale' => $locale,
-                    'version' => null,
-                ];
-            }
-
-            return null;
+        if ($locale === $defaultLocale && view()->exists($legacyView)) {
+            return $this->buildFileResult(" @include('{$legacyView}')", 'blade', $locale, $legacyView);
         }
 
         return null;
+    }
+
+    private function loadInAppTemplate(string $slug, string $locale): ?array
+    {
+        $path = resource_path("templates/notifications/bell/{$locale}/{$slug}.md");
+
+        if (! is_file($path)) {
+            return null;
+        }
+
+        $body = file_get_contents($path) ?: '';
+
+        return $this->buildFileResult($body, 'markdown', $locale);
+    }
+
+    private function buildFileResult(string $body, string $engine, string $locale, ?string $view = null): array
+    {
+        return array_filter([
+            'source' => 'file',
+            'subject' => null,
+            'body' => $body,
+            'engine' => $engine,
+            'locale' => $locale,
+            'version' => null,
+            'view' => $view,
+        ], fn ($v) => $v !== null);
     }
 }

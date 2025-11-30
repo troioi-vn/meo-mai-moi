@@ -55,7 +55,8 @@ class RejectTransferRequestController extends Controller
 
     public function __construct(
         protected NotificationService $notificationService
-    ) {}
+    ) {
+    }
 
     public function __invoke(Request $request, TransferRequest $transferRequest)
     {
@@ -90,7 +91,8 @@ class RejectTransferRequestController extends Controller
                 }
             }
         } catch (\Throwable $e) {
-            // non-fatal
+            // Notification failure is non-fatal; log and continue
+            \Log::debug('Failed to send transfer request rejection notification', ['error' => $e->getMessage()]);
         }
 
         return $this->sendSuccess($transferRequest);

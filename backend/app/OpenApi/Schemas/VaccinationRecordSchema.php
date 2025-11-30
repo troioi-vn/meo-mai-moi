@@ -22,7 +22,6 @@ use OpenApi\Annotations as OA;
  *     @OA\Property(property="updated_at", type="string", format="date-time")
  * )
  */
- */
 class VaccinationRecordSchema
 {
     // Exists solely for OpenAPI schema generation

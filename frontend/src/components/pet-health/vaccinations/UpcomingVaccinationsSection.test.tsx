@@ -82,17 +82,15 @@ describe('UpcomingVaccinationsSection', () => {
   it('shows due dates for vaccinations', async () => {
     render(<UpcomingVaccinationsSection petId={1} canEdit={true} />)
     await waitFor(() => {
-      expect(screen.getByText(/Due: 2025-01-15/)).toBeInTheDocument()
-      expect(screen.getByText(/Due: 2024-06-20/)).toBeInTheDocument()
+      expect(screen.getByText('2025-01-15')).toBeInTheDocument()
+      expect(screen.getByText('2024-06-20')).toBeInTheDocument()
     })
   })
 
   it('shows add button when canEdit is true', async () => {
     render(<UpcomingVaccinationsSection petId={1} canEdit={true} />)
     await waitFor(() => {
-      expect(
-        screen.getByRole('button', { name: /add new vaccination entry/i })
-      ).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /add new vaccination entry/i })).toBeInTheDocument()
     })
   })
 
@@ -111,9 +109,7 @@ describe('UpcomingVaccinationsSection', () => {
     render(<UpcomingVaccinationsSection petId={1} canEdit={true} />)
 
     await waitFor(() => {
-      expect(
-        screen.getByRole('button', { name: /add new vaccination entry/i })
-      ).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /add new vaccination entry/i })).toBeInTheDocument()
     })
 
     await user.click(screen.getByRole('button', { name: /add new vaccination entry/i }))
@@ -166,9 +162,7 @@ describe('UpcomingVaccinationsSection', () => {
     )
 
     await waitFor(() => {
-      expect(
-        screen.getByRole('button', { name: /add new vaccination entry/i })
-      ).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /add new vaccination entry/i })).toBeInTheDocument()
     })
 
     await user.click(screen.getByRole('button', { name: /add new vaccination entry/i }))
@@ -190,5 +184,3 @@ describe('UpcomingVaccinationsSection', () => {
     })
   })
 })
-
-

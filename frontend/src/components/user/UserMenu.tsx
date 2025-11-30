@@ -27,7 +27,7 @@ export function UserMenu() {
     if (user?.avatar_url && user.avatar_url.trim() !== '') {
       const img = new Image()
       img.onload = () => {
-        setAvatarSrc(user.avatar_url!)
+        setAvatarSrc(user.avatar_url)
       }
       img.onerror = () => {
         setAvatarSrc(defaultAvatar)
@@ -81,7 +81,7 @@ export function UserMenu() {
         <div className="flex items-center justify-between px-2 py-1.5">
           <Switch
             checked={theme === 'dark'}
-            onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+            onCheckedChange={(checked) => { setTheme(checked ? 'dark' : 'light'); }}
             aria-label="Toggle dark mode"
           />
           <div className="flex items-center gap-2">

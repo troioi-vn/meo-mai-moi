@@ -74,7 +74,7 @@ export const WeightForm: React.FC<{
               date={date ? new Date(date + 'T00:00:00') : undefined}
               setDate={(d) => {
                 if (d) {
-                  const yyyy = d.getFullYear()
+                  const yyyy = String(d.getFullYear())
                   const mm = String(d.getMonth() + 1).padStart(2, '0')
                   const dd = String(d.getDate()).padStart(2, '0')
                   setDate(`${yyyy}-${mm}-${dd}`)

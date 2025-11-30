@@ -464,7 +464,7 @@ export const petHandlers = [
   // Returns a { data: { ... } } object
   http.post('http://localhost:3000/api/pets', async ({ request }) => {
     const newPetData = (await request.json()) as Partial<Pet>
-    const petType = mockPetTypes.find((t) => t.id === newPetData.pet_type_id) || mockCatType
+    const petType = mockPetTypes.find((t) => t.id === newPetData.pet_type_id) ?? mockCatType
     const newPet: Pet = {
       ...mockPet,
       id: Date.now(),

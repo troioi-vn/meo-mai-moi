@@ -18,7 +18,7 @@ interface HelperProfileForm {
   can_adopt: boolean
   is_public: boolean
   status?: string
-  photos: FileList | File[] | []
+  photos: FileList | File[]
   pet_type_ids: number[]
 }
 

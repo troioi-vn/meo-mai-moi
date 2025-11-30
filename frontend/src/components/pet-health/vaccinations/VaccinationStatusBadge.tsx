@@ -30,7 +30,8 @@ const statusConfig: Record<
 }
 
 export function VaccinationStatusBadge({ status, className }: VaccinationStatusBadgeProps) {
-  const config = statusConfig[status]
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  const config = statusConfig[status] as { label: string; className: string }
 
   return (
     <Badge variant="secondary" className={cn(config.className, className)}>

@@ -87,8 +87,8 @@ export function getUpcomingVaccinations(vaccinations: VaccinationRecord[]): Vacc
       return dueDate >= ninetyDaysAgo
     })
     .sort((a, b) => {
-      const dateA = new Date(a.due_at!)
-      const dateB = new Date(b.due_at!)
+      const dateA = new Date(a.due_at)
+      const dateB = new Date(b.due_at)
       return dateA.getTime() - dateB.getTime()
     })
 }

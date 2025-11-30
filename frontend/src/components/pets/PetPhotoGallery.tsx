@@ -157,15 +157,15 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
             <div className="flex justify-center">
               <button
                 type="button"
-                onClick={() => openModal(0)}
+                onClick={() => { openModal(0); }}
                 className="relative aspect-square w-32 overflow-hidden rounded-lg border bg-muted cursor-pointer hover:opacity-90 transition-opacity"
               >
                 <PhotoImage
-                  photo={photos[0]!}
+                  photo={photos[0]}
                   className="h-full w-full object-cover"
                   useThumbnail={true}
                 />
-                {photos[0]!.is_primary && (
+                {photos[0].is_primary && (
                   <div className="absolute top-2 right-2 bg-yellow-500 text-white rounded-full p-1">
                     <Star className="h-3 w-3 fill-current" />
                   </div>
@@ -188,7 +188,7 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
                     <CarouselItem key={photo.id} className="pl-2 md:pl-4 basis-1/2 md:basis-1/3">
                       <button
                         type="button"
-                        onClick={() => openModal(index)}
+                        onClick={() => { openModal(index); }}
                         className="relative aspect-square w-full overflow-hidden rounded-lg border bg-muted cursor-pointer hover:opacity-90 transition-opacity"
                       >
                         <PhotoImage
@@ -232,7 +232,7 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
               // Single photo - no carousel needed
               <div className="relative">
                 <PhotoImage
-                  photo={photos[0]!}
+                  photo={photos[0]}
                   className="w-full h-auto max-h-[70vh] object-contain bg-black"
                   useThumbnail={false}
                 />

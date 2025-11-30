@@ -21,8 +21,7 @@ import { WeightHistoryCard } from '@/components/pet-health/weights/WeightHistory
 import { UpcomingVaccinationsSection } from '@/components/pet-health/vaccinations/UpcomingVaccinationsSection'
 import { MicrochipsSection } from '@/components/pet-health/microchips/MicrochipsSection'
 
-const TAB_VALUES = ['general', 'health', 'status'] as const
-type TabValue = (typeof TAB_VALUES)[number]
+type TabValue = 'general' | 'health' | 'status'
 
 const CreatePetPage: React.FC = () => {
   const { id: petId } = useParams<{ id: string }>()
@@ -111,7 +110,7 @@ const CreatePetPage: React.FC = () => {
   }
 
   const handleBack = () => {
-    navigate(-1)
+    void navigate(-1)
   }
 
   // Show loading state for edit mode
@@ -122,7 +121,13 @@ const CreatePetPage: React.FC = () => {
   // Show error state if pet not found (edit mode only)
   if (isEditMode && loadError) {
     return (
-      <ErrorState error={loadError} onRetry={() => navigate('/')} retryText="Back to My Pets" />
+      <ErrorState
+        error={loadError}
+        onRetry={() => {
+          void navigate('/')
+        }}
+        retryText="Back to My Pets"
+      />
     )
   }
 
@@ -235,7 +240,9 @@ const CreatePetPage: React.FC = () => {
         <h1 className="text-3xl font-bold text-center text-foreground mb-6">Edit Pet</h1>
         <Tabs
           value={activeTab}
-          onValueChange={(value) => setActiveTab(value as TabValue)}
+          onValueChange={(value) => {
+            setActiveTab(value as TabValue)
+          }}
           className="space-y-6"
         >
           <TabsList className={`grid w-full ${supportsHealth ? 'grid-cols-3' : 'grid-cols-2'}`}>
@@ -353,7 +360,12 @@ const CreatePetPage: React.FC = () => {
             />
 
             {/* Danger Zone */}
-            <PetDangerZone isDeleting={isDeleting} onDelete={handleDeletePetClick} />
+            <PetDangerZone
+              isDeleting={isDeleting}
+              onDelete={(password) => {
+                void handleDeletePetClick(password)
+              }}
+            />
           </TabsContent>
         </Tabs>
       </div>

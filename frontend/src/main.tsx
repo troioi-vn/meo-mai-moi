@@ -50,7 +50,7 @@ if ('serviceWorker' in navigator) {
         setInterval(
           () => {
             console.log('[PWA] Checking for updates...')
-            registration.update().catch((err) => {
+            registration.update().catch((err: unknown) => {
               console.warn('[PWA] Update check failed:', err)
             })
           },

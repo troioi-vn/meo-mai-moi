@@ -24,10 +24,12 @@ const PetProfilePage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   // Track vaccination updates to refresh the badge
   const [vaccinationVersion, setVaccinationVersion] = useState(0)
-  const handleVaccinationChange = () => setVaccinationVersion((v) => v + 1)
+  const handleVaccinationChange = () => {
+    setVaccinationVersion((v) => v + 1)
+  }
 
   const handleBack = () => {
-    navigate(-1)
+    void navigate(-1)
   }
 
   const handleEdit = () => {
@@ -152,7 +154,13 @@ const PetProfilePage: React.FC = () => {
               )}
 
               {canEdit && (
-                <Button variant="outline" className="w-full" onClick={() => setIsModalOpen(true)}>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    setIsModalOpen(true)
+                  }}
+                >
                   + Placement Requests
                 </Button>
               )}
@@ -165,7 +173,9 @@ const PetProfilePage: React.FC = () => {
       <PlacementRequestModal
         petId={pet.id}
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false)
+        }}
         onSuccess={() => {
           refresh()
         }}

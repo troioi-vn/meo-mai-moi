@@ -1,147 +1,99 @@
 <?php
 
-// Single-action controllers
-use App\Http\Controllers\EmailConfigurationStatusController;
-use App\Http\Controllers\MailgunWebhookController;
-use App\Http\Controllers\PasswordResetController;
-use App\Http\Controllers\VersionController;
-
-// Auth controllers
 use App\Http\Controllers\Auth\CheckEmailController;
-
-// Email verification controllers
-use App\Http\Controllers\EmailVerification\VerifyEmailController;
-use App\Http\Controllers\EmailVerification\ResendVerificationEmailController;
+use App\Http\Controllers\EmailConfigurationStatusController;
 use App\Http\Controllers\EmailVerification\GetVerificationStatusController;
-
-// Settings controllers
-use App\Http\Controllers\Settings\GetPublicSettingsController;
-use App\Http\Controllers\Settings\GetInviteOnlyStatusController;
-
-// Waitlist controllers
-use App\Http\Controllers\Waitlist\JoinWaitlistController;
-use App\Http\Controllers\Waitlist\CheckWaitlistController;
-
-// Invitation controllers
-use App\Http\Controllers\Invitation\ListInvitationsController;
-use App\Http\Controllers\Invitation\StoreInvitationController;
-use App\Http\Controllers\Invitation\DeleteInvitationController;
-use App\Http\Controllers\Invitation\GetInvitationStatsController;
-use App\Http\Controllers\Invitation\ValidateInvitationCodeController;
-
-// Unsubscribe controllers
-use App\Http\Controllers\Unsubscribe\ProcessUnsubscribeController;
-
-// Notification controllers
-use App\Http\Controllers\Notification\ListNotificationsController;
-use App\Http\Controllers\Notification\MarkAllNotificationsReadController;
-use App\Http\Controllers\Notification\MarkNotificationReadController;
-use App\Http\Controllers\Notification\MarkAsReadLegacyController;
-
-// Push subscription controllers
-use App\Http\Controllers\PushSubscription\ListPushSubscriptionsController;
-use App\Http\Controllers\PushSubscription\StorePushSubscriptionController;
-use App\Http\Controllers\PushSubscription\DeletePushSubscriptionController;
-
-// Notification preference controllers
-use App\Http\Controllers\NotificationPreference\GetNotificationPreferencesController;
-use App\Http\Controllers\NotificationPreference\UpdateNotificationPreferencesController;
-
-// Impersonation controllers
-use App\Http\Controllers\Impersonation\GetImpersonationStatusController;
-use App\Http\Controllers\Impersonation\LeaveImpersonationController;
-
-// User profile controllers
-use App\Http\Controllers\UserProfile\ShowProfileController;
-use App\Http\Controllers\UserProfile\UpdateProfileController;
-use App\Http\Controllers\UserProfile\UpdatePasswordController;
-use App\Http\Controllers\UserProfile\DeleteAccountController;
-use App\Http\Controllers\UserProfile\UploadAvatarController;
-use App\Http\Controllers\UserProfile\DeleteAvatarController;
-
-// Pet controllers
-use App\Http\Controllers\Pet\ListMyPetsController;
-use App\Http\Controllers\Pet\ListMyPetsSectionsController;
-use App\Http\Controllers\Pet\ShowPetController;
-use App\Http\Controllers\Pet\ListFeaturedPetsController;
-use App\Http\Controllers\Pet\ListPetsWithPlacementRequestsController;
-use App\Http\Controllers\Pet\StorePetController;
-use App\Http\Controllers\Pet\UpdatePetController;
-use App\Http\Controllers\Pet\DeletePetController;
-use App\Http\Controllers\Pet\UpdatePetStatusController;
-use App\Http\Controllers\Pet\ListPetTypesController;
-
-// Pet photo controllers
-use App\Http\Controllers\PetPhoto\StorePetPhotoController;
-use App\Http\Controllers\PetPhoto\DeletePetPhotoController;
-use App\Http\Controllers\PetPhoto\SetPrimaryPetPhotoController;
-
-// Placement request controllers
-use App\Http\Controllers\PlacementRequest\StorePlacementRequestController;
-use App\Http\Controllers\PlacementRequest\DeletePlacementRequestController;
-use App\Http\Controllers\PlacementRequest\ConfirmPlacementRequestController;
-use App\Http\Controllers\PlacementRequest\RejectPlacementRequestController;
-
-// Helper profile controllers
-use App\Http\Controllers\HelperProfile\ListHelperProfilesController;
-use App\Http\Controllers\HelperProfile\StoreHelperProfileController;
-use App\Http\Controllers\HelperProfile\ShowHelperProfileController;
-use App\Http\Controllers\HelperProfile\UpdateHelperProfileController;
+use App\Http\Controllers\EmailVerification\ResendVerificationEmailController;
+use App\Http\Controllers\EmailVerification\VerifyEmailController;
+use App\Http\Controllers\FosterAssignment\CancelFosterAssignmentController;
+use App\Http\Controllers\FosterAssignment\CompleteFosterAssignmentController;
+use App\Http\Controllers\FosterAssignment\ExtendFosterAssignmentController;
+use App\Http\Controllers\FosterReturnHandover\CompleteReturnHandoverController;
+use App\Http\Controllers\FosterReturnHandover\OwnerConfirmReturnController;
+use App\Http\Controllers\FosterReturnHandover\StoreFosterReturnHandoverController;
 use App\Http\Controllers\HelperProfile\DeleteHelperProfileController;
 use App\Http\Controllers\HelperProfile\DeleteHelperProfilePhotoController;
-
-// Weight history controllers
-use App\Http\Controllers\WeightHistory\ListWeightHistoryController;
-use App\Http\Controllers\WeightHistory\StoreWeightController;
-use App\Http\Controllers\WeightHistory\ShowWeightController;
-use App\Http\Controllers\WeightHistory\UpdateWeightController;
-use App\Http\Controllers\WeightHistory\DeleteWeightController;
-
-// Medical note controllers
-use App\Http\Controllers\MedicalNote\ListMedicalNotesController;
-use App\Http\Controllers\MedicalNote\StoreMedicalNoteController;
-use App\Http\Controllers\MedicalNote\ShowMedicalNoteController;
-use App\Http\Controllers\MedicalNote\UpdateMedicalNoteController;
+use App\Http\Controllers\HelperProfile\ListHelperProfilesController;
+use App\Http\Controllers\HelperProfile\ShowHelperProfileController;
+use App\Http\Controllers\HelperProfile\StoreHelperProfileController;
+use App\Http\Controllers\HelperProfile\UpdateHelperProfileController;
+use App\Http\Controllers\Impersonation\GetImpersonationStatusController;
+use App\Http\Controllers\Impersonation\LeaveImpersonationController;
+use App\Http\Controllers\Invitation\DeleteInvitationController;
+use App\Http\Controllers\Invitation\GetInvitationStatsController;
+use App\Http\Controllers\Invitation\ListInvitationsController;
+use App\Http\Controllers\Invitation\StoreInvitationController;
+use App\Http\Controllers\Invitation\ValidateInvitationCodeController;
+use App\Http\Controllers\MailgunWebhookController;
 use App\Http\Controllers\MedicalNote\DeleteMedicalNoteController;
-
-// Vaccination record controllers
+use App\Http\Controllers\MedicalNote\ListMedicalNotesController;
+use App\Http\Controllers\MedicalNote\ShowMedicalNoteController;
+use App\Http\Controllers\MedicalNote\StoreMedicalNoteController;
+use App\Http\Controllers\MedicalNote\UpdateMedicalNoteController;
+use App\Http\Controllers\Notification\ListNotificationsController;
+use App\Http\Controllers\Notification\MarkAllNotificationsReadController;
+use App\Http\Controllers\Notification\MarkAsReadLegacyController;
+use App\Http\Controllers\Notification\MarkNotificationReadController;
+use App\Http\Controllers\NotificationPreference\GetNotificationPreferencesController;
+use App\Http\Controllers\NotificationPreference\UpdateNotificationPreferencesController;
+use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\Pet\DeletePetController;
+use App\Http\Controllers\Pet\ListFeaturedPetsController;
+use App\Http\Controllers\Pet\ListMyPetsController;
+use App\Http\Controllers\Pet\ListMyPetsSectionsController;
+use App\Http\Controllers\Pet\ListPetsWithPlacementRequestsController;
+use App\Http\Controllers\Pet\ListPetTypesController;
+use App\Http\Controllers\Pet\ShowPetController;
+use App\Http\Controllers\Pet\StorePetController;
+use App\Http\Controllers\Pet\UpdatePetController;
+use App\Http\Controllers\Pet\UpdatePetStatusController;
+use App\Http\Controllers\PetMicrochip\DeletePetMicrochipController;
+use App\Http\Controllers\PetMicrochip\ListPetMicrochipsController;
+use App\Http\Controllers\PetMicrochip\ShowPetMicrochipController;
+use App\Http\Controllers\PetMicrochip\StorePetMicrochipController;
+use App\Http\Controllers\PetMicrochip\UpdatePetMicrochipController;
+use App\Http\Controllers\PetPhoto\DeletePetPhotoController;
+use App\Http\Controllers\PetPhoto\SetPrimaryPetPhotoController;
+use App\Http\Controllers\PetPhoto\StorePetPhotoController;
+use App\Http\Controllers\PlacementRequest\ConfirmPlacementRequestController;
+use App\Http\Controllers\PlacementRequest\DeletePlacementRequestController;
+use App\Http\Controllers\PlacementRequest\RejectPlacementRequestController;
+use App\Http\Controllers\PlacementRequest\StorePlacementRequestController;
+use App\Http\Controllers\PushSubscription\DeletePushSubscriptionController;
+use App\Http\Controllers\PushSubscription\ListPushSubscriptionsController;
+use App\Http\Controllers\PushSubscription\StorePushSubscriptionController;
+use App\Http\Controllers\Settings\GetInviteOnlyStatusController;
+use App\Http\Controllers\Settings\GetPublicSettingsController;
+use App\Http\Controllers\TransferHandover\CancelHandoverController;
+use App\Http\Controllers\TransferHandover\CompleteHandoverController;
+use App\Http\Controllers\TransferHandover\HelperConfirmHandoverController;
+use App\Http\Controllers\TransferHandover\ShowHandoverForTransferController;
+use App\Http\Controllers\TransferHandover\StoreTransferHandoverController;
+use App\Http\Controllers\TransferRequest\AcceptTransferRequestController;
+use App\Http\Controllers\TransferRequest\GetResponderProfileController;
+use App\Http\Controllers\TransferRequest\RejectTransferRequestController;
+use App\Http\Controllers\TransferRequest\StoreTransferRequestController;
+use App\Http\Controllers\Unsubscribe\ProcessUnsubscribeController;
+use App\Http\Controllers\UserProfile\DeleteAccountController;
+use App\Http\Controllers\UserProfile\DeleteAvatarController;
+use App\Http\Controllers\UserProfile\ShowProfileController;
+use App\Http\Controllers\UserProfile\UpdatePasswordController;
+use App\Http\Controllers\UserProfile\UpdateProfileController;
+use App\Http\Controllers\UserProfile\UploadAvatarController;
 use App\Http\Controllers\VaccinationRecord\DeleteVaccinationRecordController;
 use App\Http\Controllers\VaccinationRecord\ListVaccinationRecordsController;
 use App\Http\Controllers\VaccinationRecord\RenewVaccinationRecordController;
 use App\Http\Controllers\VaccinationRecord\ShowVaccinationRecordController;
 use App\Http\Controllers\VaccinationRecord\StoreVaccinationRecordController;
 use App\Http\Controllers\VaccinationRecord\UpdateVaccinationRecordController;
-
-// Pet microchip controllers
-use App\Http\Controllers\PetMicrochip\ListPetMicrochipsController;
-use App\Http\Controllers\PetMicrochip\StorePetMicrochipController;
-use App\Http\Controllers\PetMicrochip\ShowPetMicrochipController;
-use App\Http\Controllers\PetMicrochip\UpdatePetMicrochipController;
-use App\Http\Controllers\PetMicrochip\DeletePetMicrochipController;
-
-// Transfer request controllers
-use App\Http\Controllers\TransferRequest\StoreTransferRequestController;
-use App\Http\Controllers\TransferRequest\AcceptTransferRequestController;
-use App\Http\Controllers\TransferRequest\RejectTransferRequestController;
-use App\Http\Controllers\TransferRequest\GetResponderProfileController;
-
-// Transfer handover controllers
-use App\Http\Controllers\TransferHandover\ShowHandoverForTransferController;
-use App\Http\Controllers\TransferHandover\StoreTransferHandoverController;
-use App\Http\Controllers\TransferHandover\HelperConfirmHandoverController;
-use App\Http\Controllers\TransferHandover\CompleteHandoverController;
-use App\Http\Controllers\TransferHandover\CancelHandoverController;
-
-// Foster assignment controllers
-use App\Http\Controllers\FosterAssignment\CompleteFosterAssignmentController;
-use App\Http\Controllers\FosterAssignment\CancelFosterAssignmentController;
-use App\Http\Controllers\FosterAssignment\ExtendFosterAssignmentController;
-
-// Foster return handover controllers
-use App\Http\Controllers\FosterReturnHandover\StoreFosterReturnHandoverController;
-use App\Http\Controllers\FosterReturnHandover\OwnerConfirmReturnController;
-use App\Http\Controllers\FosterReturnHandover\CompleteReturnHandoverController;
-
+use App\Http\Controllers\VersionController;
+use App\Http\Controllers\Waitlist\CheckWaitlistController;
+use App\Http\Controllers\Waitlist\JoinWaitlistController;
+use App\Http\Controllers\WeightHistory\DeleteWeightController;
+use App\Http\Controllers\WeightHistory\ListWeightHistoryController;
+use App\Http\Controllers\WeightHistory\ShowWeightController;
+use App\Http\Controllers\WeightHistory\StoreWeightController;
+use App\Http\Controllers\WeightHistory\UpdateWeightController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -256,7 +208,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::delete('/placement-requests/{placementRequest}', DeletePlacementRequestController::class);
     Route::post('/placement-requests/{placementRequest}/confirm', ConfirmPlacementRequestController::class);
     Route::post('/placement-requests/{placementRequest}/reject', RejectPlacementRequestController::class);
-    
+
     // Helper profiles
     Route::get('/helper-profiles', ListHelperProfilesController::class);
     Route::post('/helper-profiles', StoreHelperProfileController::class);
@@ -266,7 +218,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/helper-profiles/{helperProfile}', UpdateHelperProfileController::class);
     Route::delete('/helper-profiles/{helperProfile}', DeleteHelperProfileController::class);
     Route::delete('/helper-profiles/{helperProfile}/photos/{photo}', DeleteHelperProfilePhotoController::class);
-    
+
     Route::get('/pets/{pet}/weights', ListWeightHistoryController::class);
     Route::post('/pets/{pet}/weights', StoreWeightController::class);
     Route::get('/pets/{pet}/weights/{weight}', ShowWeightController::class)->whereNumber('weight');

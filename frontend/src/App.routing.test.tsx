@@ -70,8 +70,8 @@ describe('App Routing', () => {
         expect(await screen.findByText('Fluffy')).toBeInTheDocument()
       })
 
-      // MainNav should be present
-      expect(screen.getByRole('link', { name: 'Meo!' })).toBeInTheDocument()
+      // MainNav should be present (Requests link is always visible)
+      expect(screen.getByRole('link', { name: 'Requests' })).toBeInTheDocument()
 
       // Back button should also be present
       expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument()
@@ -80,9 +80,9 @@ describe('App Routing', () => {
     it('shows main navigation on other pages', async () => {
       renderWithRouter(<App />, { route: '/' })
 
-      // MainNav should be present
+      // MainNav should be present (Requests link is always visible)
       await waitFor(() => {
-        expect(screen.getByRole('link', { name: 'Meo!' })).toBeInTheDocument()
+        expect(screen.getByRole('link', { name: 'Requests' })).toBeInTheDocument()
       })
     })
   })

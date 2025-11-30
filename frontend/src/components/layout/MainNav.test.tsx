@@ -24,6 +24,8 @@ describe('MainNav', () => {
 
     expect(screen.getByText('Login')).toBeInTheDocument()
     expect(screen.getByText('Register')).toBeInTheDocument()
+    expect(screen.getByTitle('Requests')).toBeInTheDocument()
+    expect(screen.queryByTitle('Cats')).not.toBeInTheDocument()
   })
 
   it('renders notification bell and user menu when authenticated', async () => {
@@ -45,5 +47,7 @@ describe('MainNav', () => {
       expect(screen.getByRole('button', { name: /open notifications/i })).toBeInTheDocument()
     })
     expect(screen.getByText(/TU/i)).toBeInTheDocument() // User menu avatar with initials
+    expect(screen.getByTitle('Requests')).toBeInTheDocument()
+    expect(screen.getByTitle('Cats')).toBeInTheDocument()
   })
 })

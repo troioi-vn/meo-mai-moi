@@ -240,7 +240,8 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         $response->assertStatus(200);
         $preferences = $response->json('data');
 
-        $this->assertCount(count(NotificationType::cases()), $preferences);
+        // EMAIL_VERIFICATION is system-controlled and not returned in preferences
+        $this->assertCount(count(NotificationType::cases()) - 1, $preferences);
 
         // All should default to enabled
         foreach ($preferences as $preference) {

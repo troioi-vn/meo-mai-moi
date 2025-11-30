@@ -49,16 +49,24 @@ done
 echo "Generating apple-touch-icon.png (180x180)..."
 convert "$SOURCE_ICON" -resize 180x180 "$FRONTEND_PUBLIC/apple-touch-icon.png"
 
-MANIFEST_PATH="$FRONTEND_PUBLIC/site.webmanifest"
-echo "Updating web manifest..."
-cat >"$MANIFEST_PATH" <<'JSON'
+echo "Generating maskable-192.png (192x192)..."
+convert "$SOURCE_ICON" -resize 192x192 "$FRONTEND_PUBLIC/maskable-192.png"
+
+echo "Generating maskable-512.png (512x512)..."
+convert "$SOURCE_ICON" -resize 512x512 "$FRONTEND_PUBLIC/maskable-512.png"
+
+echo "Updating web manifests..."
+cat >"$FRONTEND_PUBLIC/site-light.webmanifest" <<'JSON'
 {
   "name": "Meo Mai Moi",
   "short_name": "Meo Mai Moi",
+  "description": "Pet care & adoption platform",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
+  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -69,6 +77,56 @@ cat >"$MANIFEST_PATH" <<'JSON'
       "src": "/icon-512.png",
       "type": "image/png",
       "sizes": "512x512"
+    },
+    {
+      "src": "/maskable-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/maskable-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ]
+}
+JSON
+
+cat >"$FRONTEND_PUBLIC/site-dark.webmanifest" <<'JSON'
+{
+  "name": "Meo Mai Moi",
+  "short_name": "Meo Mai Moi",
+  "description": "Pet care & adoption platform",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#111827",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
+    {
+      "src": "/maskable-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/maskable-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
     }
   ]
 }
@@ -81,7 +139,10 @@ cp "$FRONTEND_PUBLIC/icon-32.png" "$BACKEND_PUBLIC/icon-32.png"
 cp "$FRONTEND_PUBLIC/icon-192.png" "$BACKEND_PUBLIC/icon-192.png"
 cp "$FRONTEND_PUBLIC/icon-512.png" "$BACKEND_PUBLIC/icon-512.png"
 cp "$FRONTEND_PUBLIC/apple-touch-icon.png" "$BACKEND_PUBLIC/apple-touch-icon.png"
-cp "$FRONTEND_PUBLIC/site.webmanifest" "$BACKEND_PUBLIC/site.webmanifest"
+cp "$FRONTEND_PUBLIC/maskable-192.png" "$BACKEND_PUBLIC/maskable-192.png"
+cp "$FRONTEND_PUBLIC/maskable-512.png" "$BACKEND_PUBLIC/maskable-512.png"
+cp "$FRONTEND_PUBLIC/site-light.webmanifest" "$BACKEND_PUBLIC/site-light.webmanifest"
+cp "$FRONTEND_PUBLIC/site-dark.webmanifest" "$BACKEND_PUBLIC/site-dark.webmanifest"
 
 echo "Icon update complete."
 

@@ -12,6 +12,8 @@ All notable changes to this project are documented here, following the [Keep a C
 - "Delete" button in photo modal to remove individual photos.
 - Star badge on primary photo thumbnail to indicate current avatar.
 - Newly uploaded photos are automatically set as the pet's primary photo.
+- Entire pet card is now clickable to navigate to pet profile page (previously only photo was clickable).
+- Vaccination status badge on pet cards showing "Up to date", "Due soon", "Overdue", or "No records" (for pet types that support vaccinations).
 
 ### Changed
 

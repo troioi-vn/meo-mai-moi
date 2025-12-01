@@ -1,6 +1,8 @@
 import type { VaccinationRecord } from '@/api/pets'
 
 export type VaccinationStatusType = 'up_to_date' | 'overdue' | 'due_soon' | 'unknown'
+// Type alias for compatibility with VaccinationStatusBadge component
+export type VaccinationStatus = VaccinationStatusType
 
 /**
  * Check if a vaccination record is active (not completed).

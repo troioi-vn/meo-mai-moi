@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import type { Pet } from '@/types/pet'
 import { PlacementResponseModal } from '@/components/placement/PlacementResponseModal'
 import { useAuth } from '@/hooks/use-auth'
@@ -8,8 +8,10 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 // Using default avatar as placeholder for pets
 import placeholderCatImage from '@/assets/images/default-avatar.webp'
-import { formatPetAge } from '@/types/pet'
-import { petSupportsCapability } from '@/types/pet'
+import { formatPetAge, petSupportsCapability } from '@/types/pet'
+import { useVaccinations } from '@/hooks/useVaccinations'
+import { calculateVaccinationStatus } from '@/utils/vaccinationStatus'
+import { VaccinationStatusBadge } from '@/components/pet-health/vaccinations/VaccinationStatusBadge'
 
 interface PetCardProps {
   pet: Pet
@@ -17,6 +19,7 @@ interface PetCardProps {
 
 export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
   const { isAuthenticated, user } = useAuth()
+  const navigate = useNavigate()
   const [isModalOpen, setIsModalOpen] = React.useState(false)
 
   // Determine active/open placement requests per docs: is_active || status in {open,pending_review}
@@ -35,6 +38,8 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
 
   // Check if this pet type supports placement requests
   const supportsPlacement = petSupportsCapability(pet.pet_type, 'placement')
+  // Check if this pet type supports vaccinations
+  const supportsVaccinations = petSupportsCapability(pet.pet_type, 'vaccinations')
 
   // Check if current user has a pending response
   const myPendingTransfer = React.useMemo(() => {
@@ -62,19 +67,38 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
   const petRoute = `/pets/${String(pet.id)}`
   const isDeceased = pet.status === 'deceased'
 
+  // Handle card click - navigate to pet profile
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking on interactive elements
+    const target = e.target as HTMLElement
+    if (
+      target.closest('button') ||
+      target.closest('a') ||
+      target.closest('[role="button"]') ||
+      target.closest('.modal')
+    ) {
+      return
+    }
+    void navigate(petRoute)
+  }
+
   return (
-    <Card className="flex flex-col overflow-hidden rounded-lg shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl">
-      <Link to={petRoute} className="block">
+    <Card
+      className="flex flex-col overflow-hidden rounded-lg shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer"
+      onClick={handleCardClick}
+    >
+      <div className="block">
         <img
           src={imageUrl}
           alt={pet.name}
           className={`h-48 w-full object-cover ${isDeceased ? 'grayscale' : ''}`}
         />
-      </Link>
+      </div>
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-primary">{pet.name}</CardTitle>
         <CardDescription className="text-muted-foreground">{formatPetAge(pet)}</CardDescription>
         <div className="mt-2 flex flex-wrap gap-2">
+          {supportsVaccinations && <PetVaccinationStatusBadge petId={pet.id} />}
           {hasFulfilledPlacement && (
             <Badge variant="success" className="rounded-full">
               Fulfilled
@@ -113,7 +137,8 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
                       variant="outline"
                       size="sm"
                       className="w-full"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation()
                         // TODO: Add cancel functionality
                         console.log('Cancel response for transfer:', myPendingTransfer.id)
                       }}
@@ -124,7 +149,8 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
                 ) : (
                   <Button
                     className="w-full"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation()
                       setIsModalOpen(true)
                     }}
                   >
@@ -146,4 +172,16 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
       </CardContent>
     </Card>
   )
+}
+
+// Helper component to fetch and display vaccination status for a pet card
+function PetVaccinationStatusBadge({ petId }: { petId: number }) {
+  const { items, loading } = useVaccinations(petId)
+
+  if (loading) {
+    return null
+  }
+
+  const status = calculateVaccinationStatus(items)
+  return <VaccinationStatusBadge status={status} className="rounded-full" />
 }

@@ -1,5 +1,7 @@
 import React from 'react'
 import { FormField } from '@/components/ui/FormField'
+import { BirthdayDatePicker } from '@/components/ui/BirthdayDatePicker'
+import { Label } from '@/components/ui/label'
 
 interface Data {
   name: string
@@ -17,9 +19,16 @@ interface Props {
   formData: Data
   errors: Partial<Record<keyof Data, string>>
   updateField: (field: keyof Data) => (value: unknown) => void
+  /** Whether to show description and location fields (hidden in create mode) */
+  showOptionalFields?: boolean
 }
 
-export const PetFormFields: React.FC<Props> = ({ formData, errors, updateField }) => {
+export const PetFormFields: React.FC<Props> = ({
+  formData,
+  errors,
+  updateField,
+  showOptionalFields = true,
+}) => {
   return (
     <>
       <FormField
@@ -62,14 +71,21 @@ export const PetFormFields: React.FC<Props> = ({ formData, errors, updateField }
       </div>
 
       {formData.birthday_precision === 'day' && (
-        <FormField
-          id="birthday"
-          label="Birthday"
-          type="date"
-          value={formData.birthday}
-          onChange={updateField('birthday')}
-          error={errors.birthday}
-        />
+        <div className="space-y-2">
+          <Label htmlFor="birthday" className={errors.birthday ? 'text-destructive' : ''}>
+            Birthday
+          </Label>
+          <BirthdayDatePicker
+            id="birthday"
+            value={formData.birthday}
+            onChange={updateField('birthday')}
+            error={errors.birthday}
+            placeholder="Select pet's birthday"
+          />
+          {errors.birthday && (
+            <p className="text-sm font-medium text-destructive">{errors.birthday}</p>
+          )}
+        </div>
       )}
       {formData.birthday_precision === 'month' && (
         <div className="grid grid-cols-2 gap-4">
@@ -105,24 +121,28 @@ export const PetFormFields: React.FC<Props> = ({ formData, errors, updateField }
         />
       )}
 
-      <FormField
-        id="location"
-        label="Location"
-        value={formData.location}
-        onChange={updateField('location')}
-        error={errors.location}
-        placeholder="Enter pet's location"
-      />
+      {showOptionalFields && (
+        <>
+          <FormField
+            id="location"
+            label="Location"
+            value={formData.location}
+            onChange={updateField('location')}
+            error={errors.location}
+            placeholder="Enter pet's location"
+          />
 
-      <FormField
-        id="description"
-        label="Description"
-        type="textarea"
-        value={formData.description}
-        onChange={updateField('description')}
-        error={errors.description}
-        placeholder="Describe the pet's personality and characteristics"
-      />
+          <FormField
+            id="description"
+            label="Description"
+            type="textarea"
+            value={formData.description}
+            onChange={updateField('description')}
+            error={errors.description}
+            placeholder="Describe the pet's personality and characteristics"
+          />
+        </>
+      )}
     </>
   )
 }

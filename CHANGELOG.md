@@ -21,3 +21,9 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Fixed
 
 - Pet photos now display correctly immediately after upload (fallback to original when conversions aren't ready).
+- Date picker now includes year and month dropdowns for easier selection of past dates.
+- Description and location fields are now optional when creating a pet (can be added later in edit mode).
+
+### Changed
+
+- Description and location fields are hidden from pet creation form (accessible via edit page).

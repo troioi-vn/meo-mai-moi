@@ -183,7 +183,12 @@ const CreatePetPage: React.FC = () => {
                   error={errors.pet_type_id}
                 />
 
-                <PetFormFields formData={formData} errors={errors} updateField={updateField} />
+                <PetFormFields
+                  formData={formData}
+                  errors={errors}
+                  updateField={updateField}
+                  showOptionalFields={false}
+                />
 
                 {error && (
                   <p className="text-destructive" data-testid="form-error">
@@ -296,7 +301,12 @@ const CreatePetPage: React.FC = () => {
                   error={errors.pet_type_id}
                 />
 
-                <PetFormFields formData={formData} errors={errors} updateField={updateField} />
+                <PetFormFields
+                  formData={formData}
+                  errors={errors}
+                  updateField={updateField}
+                  showOptionalFields={true}
+                />
 
                 {error && (
                   <p className="text-destructive" data-testid="form-error">

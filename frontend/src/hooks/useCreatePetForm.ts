@@ -36,8 +36,6 @@ const VALIDATION_MESSAGES = {
   REQUIRED_BIRTHDAY_COMPONENTS: 'Complete date required for day precision',
   REQUIRED_YEAR: 'Year required',
   REQUIRED_MONTH: 'Month required',
-  REQUIRED_LOCATION: 'Location is required',
-  REQUIRED_DESCRIPTION: 'Description is required',
   REQUIRED_PET_TYPE: 'Pet type is required',
 } as const
 
@@ -177,12 +175,7 @@ export const useCreatePetForm = (petId?: string) => {
     } else if (formData.birthday_precision === 'year') {
       if (!formData.birthday_year) newErrors.birthday_year = VALIDATION_MESSAGES.REQUIRED_YEAR
     }
-    if (!formData.location.trim()) {
-      newErrors.location = VALIDATION_MESSAGES.REQUIRED_LOCATION
-    }
-    if (!formData.description.trim()) {
-      newErrors.description = VALIDATION_MESSAGES.REQUIRED_DESCRIPTION
-    }
+    // Note: location and description are optional fields
     if (!formData.pet_type_id) {
       newErrors.pet_type_id = VALIDATION_MESSAGES.REQUIRED_PET_TYPE
     }

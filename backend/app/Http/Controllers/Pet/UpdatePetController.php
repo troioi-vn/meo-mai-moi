@@ -62,8 +62,8 @@ class UpdatePetController extends Controller
         $rules = [
             'name' => 'sometimes|required|string|max:255',
             'breed' => 'sometimes|required|string|max:255',
-            'location' => 'sometimes|required|string|max:255',
-            'description' => 'sometimes|required|string',
+            'location' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
             'pet_type_id' => 'sometimes|required|exists:pet_types,id',
             'birthday' => 'nullable|date|before_or_equal:today',
             'birthday_precision' => 'nullable|in:day,month,year,unknown',

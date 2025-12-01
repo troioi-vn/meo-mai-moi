@@ -20,6 +20,7 @@ import { ErrorState } from '@/components/ui/ErrorState'
 import { WeightHistoryCard } from '@/components/pet-health/weights/WeightHistoryCard'
 import { UpcomingVaccinationsSection } from '@/components/pet-health/vaccinations/UpcomingVaccinationsSection'
 import { MicrochipsSection } from '@/components/pet-health/microchips/MicrochipsSection'
+import { MedicalRecordsSection } from '@/components/pet-health/medical/MedicalRecordsSection'
 
 type TabValue = 'general' | 'health' | 'status'
 
@@ -135,7 +136,8 @@ const CreatePetPage: React.FC = () => {
   const petType = loadedPet?.pet_type
   const supportsWeight = petType ? petSupportsCapability(petType, 'weight') : false
   const supportsVaccinations = petType ? petSupportsCapability(petType, 'vaccinations') : false
-  const supportsHealth = supportsWeight || supportsVaccinations
+  const supportsMedical = petType ? petSupportsCapability(petType, 'medical') : false
+  const supportsHealth = supportsWeight || supportsVaccinations || supportsMedical
   const supportsMicrochips = petType ? petSupportsCapability(petType, 'microchips') : false
 
   // Create mode - simple form without tabs
@@ -345,11 +347,14 @@ const CreatePetPage: React.FC = () => {
           {/* Health Tab */}
           {supportsHealth && (
             <TabsContent value="health" className="space-y-6">
+              {supportsWeight && loadedPet && (
+                <WeightHistoryCard petId={loadedPet.id} canEdit={true} mode="edit" />
+              )}
               {supportsVaccinations && loadedPet && (
                 <UpcomingVaccinationsSection petId={loadedPet.id} canEdit={true} mode="edit" />
               )}
-              {supportsWeight && loadedPet && (
-                <WeightHistoryCard petId={loadedPet.id} canEdit={true} mode="edit" />
+              {supportsMedical && loadedPet && (
+                <MedicalRecordsSection petId={loadedPet.id} canEdit={true} mode="edit" />
               )}
             </TabsContent>
           )}

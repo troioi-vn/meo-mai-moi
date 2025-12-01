@@ -30,6 +30,11 @@ use App\Http\Controllers\MedicalNote\ListMedicalNotesController;
 use App\Http\Controllers\MedicalNote\ShowMedicalNoteController;
 use App\Http\Controllers\MedicalNote\StoreMedicalNoteController;
 use App\Http\Controllers\MedicalNote\UpdateMedicalNoteController;
+use App\Http\Controllers\MedicalRecord\DeleteMedicalRecordController;
+use App\Http\Controllers\MedicalRecord\ListMedicalRecordsController;
+use App\Http\Controllers\MedicalRecord\ShowMedicalRecordController;
+use App\Http\Controllers\MedicalRecord\StoreMedicalRecordController;
+use App\Http\Controllers\MedicalRecord\UpdateMedicalRecordController;
 use App\Http\Controllers\Notification\ListNotificationsController;
 use App\Http\Controllers\Notification\MarkAllNotificationsReadController;
 use App\Http\Controllers\Notification\MarkAsReadLegacyController;
@@ -231,6 +236,13 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/pets/{pet}/medical-notes/{note}', ShowMedicalNoteController::class)->whereNumber('note');
     Route::put('/pets/{pet}/medical-notes/{note}', UpdateMedicalNoteController::class)->whereNumber('note');
     Route::delete('/pets/{pet}/medical-notes/{note}', DeleteMedicalNoteController::class)->whereNumber('note');
+
+    // Medical Records
+    Route::get('/pets/{pet}/medical-records', ListMedicalRecordsController::class);
+    Route::post('/pets/{pet}/medical-records', StoreMedicalRecordController::class);
+    Route::get('/pets/{pet}/medical-records/{record}', ShowMedicalRecordController::class)->whereNumber('record');
+    Route::put('/pets/{pet}/medical-records/{record}', UpdateMedicalRecordController::class)->whereNumber('record');
+    Route::delete('/pets/{pet}/medical-records/{record}', DeleteMedicalRecordController::class)->whereNumber('record');
 
     // Vaccinations
     Route::get('/pets/{pet}/vaccinations', ListVaccinationRecordsController::class);

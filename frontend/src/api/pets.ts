@@ -32,6 +32,20 @@ export interface VaccinationRecord {
   updated_at: string
 }
 
+export type MedicalRecordType = 'vaccination' | 'vet_visit' | 'medication' | 'treatment' | 'other'
+
+export interface MedicalRecord {
+  id: number
+  pet_id: number
+  record_type: MedicalRecordType
+  description: string
+  record_date: string // ISO date
+  vet_name?: string | null
+  attachment_url?: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface PetMicrochip {
   id: number
   pet_id: number
@@ -346,6 +360,64 @@ export const renewVaccination = async (
   const response = await api.post<{ data: VaccinationRecord }>(
     `/pets/${String(petId)}/vaccinations/${String(recordId)}/renew`,
     payload
+  )
+  return response.data.data
+}
+
+// Medical Records API
+export const getMedicalRecords = async (
+  petId: number,
+  page = 1,
+  recordType?: MedicalRecordType
+): Promise<{ data: MedicalRecord[]; links: unknown; meta: unknown }> => {
+  const params: { page: number; record_type?: string } = { page }
+  if (recordType) {
+    params.record_type = recordType
+  }
+  const response = await api.get<{
+    data: { data: MedicalRecord[]; links: unknown; meta: unknown }
+  }>(`/pets/${String(petId)}/medical-records`, { params })
+  return response.data.data
+}
+
+export const createMedicalRecord = async (
+  petId: number,
+  payload: {
+    record_type: MedicalRecordType
+    description: string
+    record_date: string
+    vet_name?: string | null
+    attachment_url?: string | null
+  }
+): Promise<MedicalRecord> => {
+  const response = await api.post<{ data: MedicalRecord }>(
+    `/pets/${String(petId)}/medical-records`,
+    payload
+  )
+  return response.data.data
+}
+
+export const updateMedicalRecord = async (
+  petId: number,
+  recordId: number,
+  payload: Partial<{
+    record_type: MedicalRecordType
+    description: string
+    record_date: string
+    vet_name?: string | null
+    attachment_url?: string | null
+  }>
+): Promise<MedicalRecord> => {
+  const response = await api.put<{ data: MedicalRecord }>(
+    `/pets/${String(petId)}/medical-records/${String(recordId)}`,
+    payload
+  )
+  return response.data.data
+}
+
+export const deleteMedicalRecord = async (petId: number, recordId: number): Promise<boolean> => {
+  const response = await api.delete<{ data: boolean }>(
+    `/pets/${String(petId)}/medical-records/${String(recordId)}`
   )
   return response.data.data
 }

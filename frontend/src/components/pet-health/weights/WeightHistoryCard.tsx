@@ -157,7 +157,9 @@ export function WeightHistoryCard({ petId, canEdit, mode = 'view' }: WeightHisto
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                              onClick={() => { setEditingId(w.id); }}
+                              onClick={() => {
+                                setEditingId(w.id)
+                              }}
                             >
                               <Pencil className="h-4 w-4" />
                             </Button>
@@ -207,9 +209,15 @@ export function WeightHistoryCard({ petId, canEdit, mode = 'view' }: WeightHisto
               <p className="text-sm text-muted-foreground py-2">No weight records yet.</p>
             )}
 
-            {/* View mode with canEdit: show add button */}
-            {mode === 'view' && canEdit && (
-              <Button variant="outline" className="w-full mt-4" onClick={() => { setAdding(true); }}>
+            {/* Show add button for canEdit users */}
+            {canEdit && (
+              <Button
+                variant="outline"
+                className="w-full mt-4"
+                onClick={() => {
+                  setAdding(true)
+                }}
+              >
                 + Add New Weight Entry
               </Button>
             )}

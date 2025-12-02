@@ -12,7 +12,10 @@ interface FormErrors {
   birthday_month?: string
   birthday_day?: string
   birthday_precision?: string
-  location?: string
+  country?: string
+  state?: string
+  city?: string
+  address?: string
   description?: string
   pet_type_id?: string
 }
@@ -25,7 +28,10 @@ interface CreatePetFormData {
   birthday_month: string
   birthday_day: string
   birthday_precision: 'day' | 'month' | 'year' | 'unknown'
-  location: string
+  country: string
+  state: string
+  city: string
+  address: string
   description: string
   pet_type_id: number | null
 }
@@ -37,6 +43,7 @@ const VALIDATION_MESSAGES = {
   REQUIRED_YEAR: 'Year required',
   REQUIRED_MONTH: 'Month required',
   REQUIRED_PET_TYPE: 'Pet type is required',
+  REQUIRED_COUNTRY: 'Country is required',
 } as const
 
 const SUCCESS_MESSAGES = {
@@ -65,7 +72,10 @@ export const useCreatePetForm = (petId?: string) => {
     birthday_month: '',
     birthday_day: '',
     birthday_precision: 'unknown',
-    location: '',
+    country: 'VN', // Default to Vietnam
+    state: '',
+    city: '',
+    address: '',
     description: '',
     pet_type_id: null,
   })
@@ -119,7 +129,10 @@ export const useCreatePetForm = (petId?: string) => {
             birthday_month: pet.birthday_month ? String(pet.birthday_month) : '',
             birthday_day: pet.birthday_day ? String(pet.birthday_day) : '',
             birthday_precision: pet.birthday_precision ?? (pet.birthday ? 'day' : 'unknown'),
-            location: pet.location,
+            country: pet.country,
+            state: pet.state ?? '',
+            city: pet.city ?? '',
+            address: pet.address ?? '',
             description: pet.description,
             pet_type_id: pet.pet_type.id,
           })
@@ -175,7 +188,10 @@ export const useCreatePetForm = (petId?: string) => {
     } else if (formData.birthday_precision === 'year') {
       if (!formData.birthday_year) newErrors.birthday_year = VALIDATION_MESSAGES.REQUIRED_YEAR
     }
-    // Note: location and description are optional fields
+    // Country is required, other location fields are optional
+    if (!formData.country.trim()) {
+      newErrors.country = VALIDATION_MESSAGES.REQUIRED_COUNTRY
+    }
     if (!formData.pet_type_id) {
       newErrors.pet_type_id = VALIDATION_MESSAGES.REQUIRED_PET_TYPE
     }
@@ -203,7 +219,10 @@ export const useCreatePetForm = (petId?: string) => {
       const payload: import('@/api/pets').CreatePetPayload = {
         name: formData.name,
         breed: formData.breed,
-        location: formData.location,
+        country: formData.country,
+        state: formData.state || undefined,
+        city: formData.city || undefined,
+        address: formData.address || undefined,
         description: formData.description,
         pet_type_id: formData.pet_type_id,
         birthday_precision: formData.birthday_precision,

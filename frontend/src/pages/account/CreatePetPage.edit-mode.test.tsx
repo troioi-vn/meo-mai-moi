@@ -15,7 +15,8 @@ const mockPet: Partial<Pet> = {
   name: 'Fluffy',
   breed: 'Persian',
   birthday: '2020-01-01T00:00:00Z',
-  location: 'Hanoi',
+  country: 'VN',
+  city: 'Hanoi',
   description: 'A lovely cat',
   status: 'active' as const,
   photo_url: 'https://example.com/photo.jpg',
@@ -86,11 +87,11 @@ describe('CreatePetPage edit mode enhancements', () => {
     await waitFor(() =>
       expect(screen.getByRole('heading', { name: /edit pet/i })).toBeInTheDocument()
     )
-    
+
     // Check that pet data is loaded into form fields
     expect(screen.getByDisplayValue('Fluffy')).toBeInTheDocument()
     expect(screen.getByDisplayValue('Persian')).toBeInTheDocument()
-    
+
     // Check that upload controls are shown
     expect(screen.getByRole('button', { name: /upload/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /remove/i })).toBeInTheDocument()

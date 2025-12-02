@@ -15,7 +15,9 @@ describe('MainPage Integration with ActivePlacementRequestsSection', () => {
     birthday: '2020-01-15',
     status: 'active',
     description: 'A very friendly and fluffy cat.',
-    location: 'New York, NY',
+    country: 'US',
+    state: 'NY',
+    city: 'New York',
     photo_url: 'http://localhost:3000/storage/pets/profiles/fluffy.jpg',
     user_id: 2, // Different from authenticated user (id: 1)
     pet_type_id: 1,

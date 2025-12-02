@@ -37,7 +37,8 @@ class PetBirthdayPrecisionFeatureTest extends TestCase
         return $this->postJson('/api/pets', array_merge([
             'name' => 'Testy',
             'breed' => 'Breed',
-            'location' => 'Somewhere',
+            'country' => 'VN',
+            'city' => 'Hanoi',
             'description' => 'Desc',
             'pet_type_id' => $this->catType->id,
         ], $data));

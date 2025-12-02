@@ -43,7 +43,7 @@ class HelperProfileApiTest extends TestCase
         $user = User::factory()->create();
 
         $data = [
-            'country' => 'Test Country',
+            'country' => 'VN',
             'address' => '123 Test St',
             'city' => 'Testville',
             'state' => 'TS',

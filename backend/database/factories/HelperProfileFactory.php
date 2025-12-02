@@ -14,7 +14,7 @@ class HelperProfileFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'country' => $this->faker->country(),
+            'country' => $this->faker->countryCode(), // ISO 3166-1 alpha-2 code
             'address' => $this->faker->address(),
             'city' => $this->faker->city(),
             'state' => $this->faker->randomElement(['CA', 'NY', 'TX', 'FL', 'IL']),

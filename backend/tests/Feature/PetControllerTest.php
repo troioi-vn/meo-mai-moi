@@ -51,7 +51,8 @@ class PetControllerTest extends TestCase
             'name' => 'Fluffy',
             'breed' => 'Persian',
             'birthday' => '2020-01-01',
-            'location' => 'Hanoi',
+            'country' => 'VN',
+            'city' => 'Hanoi',
             'description' => 'A lovely cat',
             'pet_type_id' => $this->catType->id,
         ];
@@ -65,7 +66,7 @@ class PetControllerTest extends TestCase
                     'name',
                     'breed',
                     'birthday',
-                    'location',
+                    'country',
                     'description',
                     'pet_type_id',
                     'user_id',
@@ -205,7 +206,8 @@ class PetControllerTest extends TestCase
             'name' => 'Fluffy',
             'breed' => 'Persian',
             'birthday' => '2020-01-01',
-            'location' => 'Hanoi',
+            'country' => 'VN',
+            'city' => 'Hanoi',
             'description' => 'A lovely cat',
             'pet_type_id' => $this->catType->id,
         ];
@@ -242,8 +244,7 @@ class PetControllerTest extends TestCase
             ->assertJsonValidationErrors([
                 'name',
                 'breed',
-                'location',
-                'description',
+                'country',
             ]);
 
         // pet_type_id is optional and defaults; should NOT be a validation error.
@@ -258,7 +259,8 @@ class PetControllerTest extends TestCase
             'name' => 'Fluffy',
             'breed' => 'Persian',
             'birthday' => '2020-01-01',
-            'location' => 'Hanoi',
+            'country' => 'VN',
+            'city' => 'Hanoi',
             'description' => 'A lovely cat',
             'pet_type_id' => 999, // Non-existent pet type
         ];

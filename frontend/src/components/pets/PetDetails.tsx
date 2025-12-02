@@ -9,6 +9,7 @@ import { usePlacementInfo } from '@/hooks/usePlacementInfo'
 import { PlacementRequestsSection } from '@/components/placement/pet-profile/PlacementRequestsSection'
 import { PlacementResponseSection } from '@/components/placement/pet-profile/PlacementResponseSection'
 import { PetPhoto } from '@/components/pets/PetPhoto'
+import { getCountryName } from '@/components/ui/CountrySelect'
 
 interface PetDetailsProps {
   pet: Pet
@@ -110,7 +111,9 @@ const PetDetails: React.FC<PetDetailsProps> = ({
         <div className="space-y-4">
           <div>
             <h3 className="font-semibold text-card-foreground">Location</h3>
-            <p className="text-muted-foreground">{pet.location}</p>
+            <p className="text-muted-foreground">
+              {[pet.city, pet.state, getCountryName(pet.country)].filter(Boolean).join(', ')}
+            </p>
           </div>
           <div>
             <h3 className="font-semibold text-card-foreground">Description</h3>

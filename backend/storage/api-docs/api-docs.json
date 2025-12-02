@@ -5737,8 +5737,28 @@
                         "type": "boolean"
                     },
                     "country": {
-                        "description": "Country of the helper",
+                        "description": "ISO 3166-1 alpha-2 country code",
                         "type": "string"
+                    },
+                    "state": {
+                        "description": "State/Province",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "city": {
+                        "description": "City",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "address": {
+                        "description": "Street address",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "zip_code": {
+                        "description": "ZIP/Postal code",
+                        "type": "string",
+                        "nullable": true
                     },
                     "created_at": {
                         "description": "Timestamp of helper profile creation",
@@ -5759,7 +5779,7 @@
                     "id",
                     "name",
                     "breed",
-                    "location",
+                    "country",
                     "description",
                     "status",
                     "user_id",
@@ -5815,9 +5835,25 @@
                         ],
                         "example": "month"
                     },
-                    "location": {
+                    "country": {
+                        "description": "ISO 3166-1 alpha-2 country code",
                         "type": "string",
-                        "example": "Hanoi"
+                        "example": "VN"
+                    },
+                    "state": {
+                        "type": "string",
+                        "example": "Hanoi",
+                        "nullable": true
+                    },
+                    "city": {
+                        "type": "string",
+                        "example": "Hanoi",
+                        "nullable": true
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "123 Main St",
+                        "nullable": true
                     },
                     "description": {
                         "type": "string",

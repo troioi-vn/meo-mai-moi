@@ -62,7 +62,10 @@ class UpdatePetController extends Controller
         $rules = [
             'name' => 'sometimes|required|string|max:255',
             'breed' => 'sometimes|required|string|max:255',
-            'location' => 'nullable|string|max:255',
+            'country' => 'sometimes|required|string|size:2',
+            'state' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'pet_type_id' => 'sometimes|required|exists:pet_types,id',
             'birthday' => 'nullable|date|before_or_equal:today',
@@ -183,7 +186,10 @@ class UpdatePetController extends Controller
             'birthday_month' => $data['birthday_month'] ?? null,
             'birthday_day' => $data['birthday_day'] ?? null,
             'birthday_precision' => $precision,
-            'location' => $data['location'] ?? null,
+            'country' => $data['country'] ?? null,
+            'state' => $data['state'] ?? null,
+            'city' => $data['city'] ?? null,
+            'address' => $data['address'] ?? null,
             'description' => $data['description'] ?? null,
             'pet_type_id' => $data['pet_type_id'] ?? null,
         ], fn ($v) => $v !== null));

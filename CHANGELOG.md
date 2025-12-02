@@ -6,7 +6,17 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Standardized Location Fields**:
+
+  - Pet and HelperProfile models now use consistent location fields: Country (required), State, City, and Address (optional)
+  - Country field uses ISO 3166-1 alpha-2 codes (2-character country codes, e.g., 'VN' for Vietnam)
+  - New `CountrySelect` component with searchable dropdown featuring all countries (using `i18n-iso-countries` package)
+  - Vietnam set as default country in pet creation form
+  - Pet location display shows formatted "City, State, Country" on profile pages
+  - Email templates updated to display structured location format
+
 - **Placement Terms & Conditions System**:
+
   - New placement terms document stored in `backend/resources/markdown/placement-terms.md`
   - API endpoint `GET /api/legal/placement-terms` to serve terms with version tracking
   - PlacementTermsDialog component displaying terms in a scrollable modal
@@ -16,6 +26,7 @@ All notable changes to this project are documented here, following the [Keep a C
   - Version dating based on file modification time with 1-hour HTTP cache
 
 - **Placement Request Enhancements**:
+
   - Public profile visibility warning checkbox - users must acknowledge pet profile will become publicly visible
   - Date validation: Pick-up date cannot be in the past (today is allowed)
   - Date validation: Drop-off date must be on or after pick-up date
@@ -60,4 +71,6 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Changed
 
+- **Pet Location Structure**: Replaced single `location` text field with structured `country`, `state`, `city`, and `address` fields
+- **HelperProfile Location Fields**: Made `state`, `city`, `address`, and `zip_code` fields optional (previously some were required)
 - Description and location fields are hidden from pet creation form (accessible via edit page).

@@ -1,6 +1,7 @@
 import React from 'react'
 import { FormField } from '@/components/ui/FormField'
 import { BirthdayDatePicker } from '@/components/ui/BirthdayDatePicker'
+import { CountrySelect } from '@/components/ui/CountrySelect'
 import { Label } from '@/components/ui/label'
 
 interface Data {
@@ -11,7 +12,10 @@ interface Data {
   birthday_month?: string
   birthday_day?: string
   birthday_precision?: 'day' | 'month' | 'year' | 'unknown'
-  location: string
+  country: string
+  state?: string
+  city?: string
+  address?: string
   description: string
 }
 
@@ -121,15 +125,49 @@ export const PetFormFields: React.FC<Props> = ({
         />
       )}
 
+      {/* Country is always shown since it's required */}
+      <div className="space-y-2">
+        <Label htmlFor="country" className={errors.country ? 'text-destructive' : ''}>
+          Country <span className="text-destructive">*</span>
+        </Label>
+        <CountrySelect
+          value={formData.country}
+          onValueChange={(value) => updateField('country')(value)}
+          data-testid="country-select"
+        />
+        {errors.country && <p className="text-sm font-medium text-destructive">{errors.country}</p>}
+      </div>
+
       {showOptionalFields && (
         <>
+          {/* Optional location fields */}
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              id="state"
+              label="State/Province"
+              value={formData.state ?? ''}
+              onChange={updateField('state')}
+              error={errors.state}
+              placeholder="Enter state or province"
+            />
+
+            <FormField
+              id="city"
+              label="City"
+              value={formData.city ?? ''}
+              onChange={updateField('city')}
+              error={errors.city}
+              placeholder="Enter city"
+            />
+          </div>
+
           <FormField
-            id="location"
-            label="Location"
-            value={formData.location}
-            onChange={updateField('location')}
-            error={errors.location}
-            placeholder="Enter pet's location"
+            id="address"
+            label="Address"
+            value={formData.address ?? ''}
+            onChange={updateField('address')}
+            error={errors.address}
+            placeholder="Enter street address"
           />
 
           <FormField

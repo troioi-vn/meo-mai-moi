@@ -49,7 +49,10 @@ class StorePetController extends Controller
         $rules = [
             'name' => 'required|string|max:255',
             'breed' => 'required|string|max:255',
-            'location' => 'nullable|string|max:255',
+            'country' => 'required|string|size:2',
+            'state' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'pet_type_id' => 'nullable|exists:pet_types,id',
             // Legacy exact date (optional now)
@@ -185,7 +188,10 @@ class StorePetController extends Controller
             'birthday_month' => $data['birthday_month'] ?? null,
             'birthday_day' => $data['birthday_day'] ?? null,
             'birthday_precision' => $precision,
-            'location' => $data['location'] ?? '',
+            'country' => $data['country'],
+            'state' => $data['state'] ?? null,
+            'city' => $data['city'] ?? null,
+            'address' => $data['address'] ?? null,
             'description' => $data['description'] ?? '',
             'pet_type_id' => $petTypeId,
             'user_id' => $request->user()->id,

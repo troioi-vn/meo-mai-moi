@@ -31,7 +31,10 @@ export interface Pet {
   birthday_month?: number | null
   birthday_day?: number | null
   birthday_precision?: BirthdayPrecision
-  location: string
+  country: string // ISO 3166-1 alpha-2 code
+  state?: string | null
+  city?: string | null
+  address?: string | null
   description: string
   user_id: number
   pet_type_id: number
@@ -47,7 +50,6 @@ export interface Pet {
     id: number
     name: string
     email: string
-    location?: string
   }
   viewer_permissions?: {
     can_edit?: boolean

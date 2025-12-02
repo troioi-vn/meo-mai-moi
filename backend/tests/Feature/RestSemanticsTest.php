@@ -210,7 +210,8 @@ class RestSemanticsTest extends TestCase
             'gender' => 'male',
             'status' => 'active',
             'birthday' => '2022-01-01',
-            'location' => 'Test City',
+            'country' => 'VN',
+            'city' => 'Test City',
             'description' => 'A lovely test pet',
         ];
 

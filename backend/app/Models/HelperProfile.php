@@ -41,7 +41,31 @@ use OpenApi\Annotations as OA;
  *     @OA\Property(
  *         property="country",
  *         type="string",
- *         description="Country of the helper"
+ *         description="ISO 3166-1 alpha-2 country code"
+ *     ),
+ *     @OA\Property(
+ *         property="state",
+ *         type="string",
+ *         nullable=true,
+ *         description="State/Province"
+ *     ),
+ *     @OA\Property(
+ *         property="city",
+ *         type="string",
+ *         nullable=true,
+ *         description="City"
+ *     ),
+ *     @OA\Property(
+ *         property="address",
+ *         type="string",
+ *         nullable=true,
+ *         description="Street address"
+ *     ),
+ *     @OA\Property(
+ *         property="zip_code",
+ *         type="string",
+ *         nullable=true,
+ *         description="ZIP/Postal code"
  *     ),
  *     @OA\Property(
  *         property="created_at",

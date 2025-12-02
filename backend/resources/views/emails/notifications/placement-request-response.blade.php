@@ -17,7 +17,7 @@
             <div class="pet-name">{!! htmlspecialchars($pet->name, ENT_COMPAT, 'UTF-8', false) !!}</div>
             <div class="pet-details">
                 <strong>Type:</strong> {{ $pet->petType->name ?? 'Pet' }}<br>
-                <strong>Location:</strong> {{ $pet->location ?? 'Unknown' }}<br>
+                <strong>Location:</strong> {{ collect([$pet->city, $pet->state, $pet->country])->filter()->implode(', ') ?: 'Unknown' }}<br>
                 @if($pet->birthday)
                     <strong>Age:</strong> {{ $pet->birthday->diffInYears(now()) }} years old<br>
                 @endif
@@ -33,7 +33,7 @@
 
         <div style="background-color: #e8f4fd; padding: 15px; border-radius: 6px; margin: 20px 0;">
             <strong>Helper Details:</strong><br>
-            <strong>Location:</strong> {{ $helperProfile->city }}, {{ $helperProfile->country }}<br>
+            <strong>Location:</strong> {{ collect([$helperProfile->city, $helperProfile->state, $helperProfile->country])->filter()->implode(', ') ?: 'Unknown' }}<br>
             @if($helperProfile->can_foster && $helperProfile->can_adopt)
                 <strong>Available for:</strong> Fostering and Adoption<br>
             @elseif($helperProfile->can_foster)

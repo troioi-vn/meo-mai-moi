@@ -86,7 +86,10 @@ export const getMyPetsSections = async (): Promise<{
 export interface CreatePetPayload {
   name: string
   breed: string
-  location?: string
+  country: string // ISO 3166-1 alpha-2 code
+  state?: string
+  city?: string
+  address?: string
   description?: string
   pet_type_id: number | null
   // Approximate birthday support

@@ -121,7 +121,7 @@ const PetDetails: React.FC<PetDetailsProps> = ({
           </div>
 
           {showPlacementRequests && (
-            <div>
+            <div className="space-y-3">
               <h3 className="font-semibold text-card-foreground">Placement Requests</h3>
               <PlacementRequestsSection
                 placementRequests={placementRequests}

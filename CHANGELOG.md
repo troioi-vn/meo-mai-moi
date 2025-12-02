@@ -49,6 +49,37 @@ All notable changes to this project are documented here, following the [Keep a C
 - "Delete" button in photo modal to remove individual photos.
 - Star badge on primary photo thumbnail to indicate current avatar.
 - Newly uploaded photos are automatically set as the pet's primary photo.
+
+### Changed
+
+- **Placement Request Display Refactor**:
+  - PlacementRequestsSection now uses improved card-based styling with badges for request types
+  - Request types formatted as human-readable labels: "Foster (Free)", "Foster (Paid)", "Permanent Adoption"
+  - Request type badges color-coded: default for permanent, secondary for fostering, outline for others
+  - Response count displayed with Users icon showing number of pending responses
+  - Expiration date displayed with Clock icon for better visual hierarchy
+  - Delete button changed to ghost icon button with Trash icon for cleaner design
+  - Improved spacing and visual consistency across request cards
+
+- **Helper Profiles Page Redesign**:
+  - Changed from table layout to modern card-based design matching app's design system
+  - Added back button navigation consistent with other pages
+  - Location displayed with MapPin icon showing "City, State" format
+  - Public/Private status shown as badges with Eye/EyeOff icons
+  - Edit button changed to ghost icon button with Pencil icon
+  - Improved loading and error states using LoadingState and ErrorState components
+  - Empty state with call-to-action button when no profiles exist
+  - Better responsive layout on mobile devices
+
+- **Placement Response Section Styling**:
+  - ResponseSection now uses card-based styling with improved visual hierarchy
+  - Helper profile displayed with user avatar placeholder and User icon
+  - "View Profile" button now includes Eye icon for clarity
+  - Responsive button layout (stacks on mobile, inline on desktop)
+  - PlacementResponseSection updated with matching card styling
+  - Request type displayed as badge in header for visual consistency
+  - Pending state shows Clock icon with descriptive text
+  - Cancel button includes X icon for better usability
 - Entire pet card is now clickable to navigate to pet profile page (previously only photo was clickable).
 - Vaccination status badge on pet cards showing "Up to date", "Due soon", "Overdue", or "No records" (for pet types that support vaccinations).
 - Placement Requests now displayed in a Card component on Pet Profile page for consistency with other sections.

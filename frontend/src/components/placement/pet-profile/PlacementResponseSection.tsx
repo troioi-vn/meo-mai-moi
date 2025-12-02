@@ -1,6 +1,8 @@
 import React, { useCallback, useState } from 'react'
 import type { Pet } from '@/types/pet'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Clock, X } from 'lucide-react'
 import { PlacementResponseModal } from '@/components/placement/PlacementResponseModal'
 
 type PlacementRequest = NonNullable<Pet['placement_requests']>[number]
@@ -12,6 +14,15 @@ interface Props {
   myPendingTransfer?: TransferRequest
   onCancelTransferRequest?: (id: number) => void | Promise<void>
   onTransferResponseSuccess?: () => void
+}
+
+const formatRequestType = (type: string): string => {
+  const labels: Record<string, string> = {
+    foster_free: 'Foster (Free)',
+    foster_payed: 'Foster (Paid)',
+    permanent: 'Permanent Adoption',
+  }
+  return labels[type] ?? type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
 export const PlacementResponseSection: React.FC<Props> = ({
@@ -33,19 +44,27 @@ export const PlacementResponseSection: React.FC<Props> = ({
   }, [myPendingTransfer, onCancelTransferRequest])
 
   return (
-    <div className="border-t pt-4">
+    <div className="rounded-lg border p-4 bg-muted/50 space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-foreground">Placement Request</h3>
+        <Badge variant="secondary">{formatRequestType(activePlacementRequest.request_type)}</Badge>
+      </div>
+
       {myPendingTransfer ? (
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">
-            You responded to this placement request. Waiting for approval...
-          </p>
+        <div className="rounded-md bg-background border p-3 space-y-3">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Clock className="h-4 w-4" />
+            <span>Your response is pending approval</span>
+          </div>
           <Button
             variant="outline"
             size="sm"
             onClick={() => {
               void handleCancel()
             }}
+            className="w-full"
           >
+            <X className="h-4 w-4 mr-1" />
             Cancel Response
           </Button>
         </div>

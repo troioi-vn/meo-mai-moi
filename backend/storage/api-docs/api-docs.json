@@ -1207,6 +1207,60 @@
                 ]
             }
         },
+        "/api/legal/placement-terms": {
+            "get": {
+                "tags": [
+                    "Legal"
+                ],
+                "summary": "Get placement terms and conditions",
+                "description": "Retrieve the placement terms and conditions document in markdown format.",
+                "operationId": "e36ef4d592c626aa542edb2b86aa08f2",
+                "responses": {
+                    "200": {
+                        "description": "Placement terms retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "content": {
+                                                    "description": "Markdown content of the placement terms",
+                                                    "type": "string"
+                                                },
+                                                "version": {
+                                                    "description": "Version date of the terms",
+                                                    "type": "string",
+                                                    "example": "2025-12-02"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Terms document not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Placement terms not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/pets/{pet}/medical-notes/{note}": {
             "get": {
                 "tags": [
@@ -6255,6 +6309,10 @@
         {
             "name": "Invitations",
             "description": "Invitations"
+        },
+        {
+            "name": "Legal",
+            "description": "Legal"
         },
         {
             "name": "Pets",

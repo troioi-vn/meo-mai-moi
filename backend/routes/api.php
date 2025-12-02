@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\CheckEmailController;
 use App\Http\Controllers\EmailConfigurationStatusController;
 use App\Http\Controllers\EmailVerification\GetVerificationStatusController;
+use App\Http\Controllers\Legal\GetPlacementTermsController;
 use App\Http\Controllers\EmailVerification\ResendVerificationEmailController;
 use App\Http\Controllers\EmailVerification\VerifyEmailController;
 use App\Http\Controllers\FosterAssignment\CancelFosterAssignmentController;
@@ -130,6 +131,9 @@ Route::get('/password/reset/{token}', [PasswordResetController::class, 'validate
 // Public settings endpoints
 Route::get('/settings/public', GetPublicSettingsController::class);
 Route::get('/settings/invite-only-status', GetInviteOnlyStatusController::class);
+
+// Legal documents (public)
+Route::get('/legal/placement-terms', GetPlacementTermsController::class);
 
 // Public waitlist endpoint (rate limited + validated)
 Route::post('/waitlist', JoinWaitlistController::class)->middleware(['throttle:5,1', 'validate.invitation']); // 5 requests per minute

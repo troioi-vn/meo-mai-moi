@@ -6,6 +6,23 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Placement Terms & Conditions System**:
+  - New placement terms document stored in `backend/resources/markdown/placement-terms.md`
+  - API endpoint `GET /api/legal/placement-terms` to serve terms with version tracking
+  - PlacementTermsDialog component displaying terms in a scrollable modal
+  - PlacementTermsLink component for easy inline access to full terms
+  - Mandatory checkbox in Placement Request modal requiring users to accept terms before submission
+  - Comprehensive terms covering authorization, information accuracy, health disclosure, liability, and legal compliance
+  - Version dating based on file modification time with 1-hour HTTP cache
+
+- **Placement Request Enhancements**:
+  - Public profile visibility warning checkbox - users must acknowledge pet profile will become publicly visible
+  - Date validation: Pick-up date cannot be in the past (today is allowed)
+  - Date validation: Drop-off date must be on or after pick-up date
+  - Calendar components now disable invalid dates (past dates for pick-up, dates before pick-up for drop-off)
+  - Validation error messages displayed below date fields when invalid dates are selected
+  - Submit button disabled when dates are invalid or required checkboxes not accepted
+
 - **Medical Records feature**: Full CRUD functionality for pet medical records
   - Backend API endpoints for creating, reading, updating, and deleting medical records
   - Support for record types: vaccination, vet visit, medication, treatment, and other
@@ -27,6 +44,7 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Changed
 
+- **Placement Request Modal Labels**: "Start Date" renamed to "Pick-up Date" and "End Date" renamed to "Drop-off Date" for clarity (database field names unchanged)
 - Replaced "Meo!" text with Cat icon in the top navigation bar.
 - Replaced "Requests" text with PawPrint icon in the top navigation bar.
 - Section order on Pet Profile Edit page: Weight History now appears before Vaccinations.

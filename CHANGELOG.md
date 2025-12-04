@@ -4,6 +4,35 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Added
+
+- **Login Prompt for Placement Requests**:
+
+  - "Respond" button on pet cards is now visible to all users (not just logged-in users)
+  - Non-authenticated users clicking "Respond" see a modal with "Please login to respond" message
+  - Modal includes "Login" and "Cancel" buttons
+  - "Login" button redirects to login page with return URL parameter (`/login?redirect=/pets/:id`)
+  - After successful login, users are automatically redirected back to the pet profile page
+  - Existing login redirect functionality already supported this pattern with security validation
+
+- **Enhanced Filters on Requests Page**:
+
+  - Added **Request Type filter** with options: All Request Types, Foster (Paid), Foster (Free), Permanent
+  - Added **Country filter** dynamically populated from available pets, sorted alphabetically with human-readable country names
+  - Improved **date filters** with comparison operators:
+    - Renamed "Start Date" to "Pickup Date" and "End Date" to "Drop-off Date"
+    - Added comparison select dropdowns (Before/On/After) for both pickup and drop-off dates
+    - Pickup Date filters on `placement_request.start_date` field
+    - Drop-off Date filters on `placement_request.end_date` field
+    - Drop-off Date filter is automatically hidden when "Permanent" request type is selected
+  - Filters are organized in a cleaner two-row layout for better usability
+
+- **Logout confirmation in Main Menu**:
+  - Clicking "Log Out" from the user avatar menu opens a confirmation dialog with "Cancel" and "Log Out" actions
+  - Confirming the action logs out the current user and redirects to `/login`; cancelling closes the dialog
+  - Frontend: `UserMenu` component now uses `AlertDialog` to display the confirmation
+  - Tests: Updated unit tests and e2e tests to assert dialog behavior and logout flow
+
 ### Fixed
 
 - **Pet Cards Visibility on Requests Page**:

@@ -5,6 +5,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Switch } from '@/components/ui/switch'
 import { Link, useNavigate } from 'react-router-dom'
@@ -21,6 +31,7 @@ export function UserMenu() {
   const navigate = useNavigate()
   const isVerified = Boolean(user?.email_verified_at)
   const [avatarSrc, setAvatarSrc] = useState<string>(defaultAvatar)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
   // Preload avatar image to ensure it's available
   useEffect(() => {
@@ -81,7 +92,9 @@ export function UserMenu() {
         <div className="flex items-center justify-between px-2 py-1.5">
           <Switch
             checked={theme === 'dark'}
-            onCheckedChange={(checked) => { setTheme(checked ? 'dark' : 'light'); }}
+            onCheckedChange={(checked) => {
+              setTheme(checked ? 'dark' : 'light')
+            }}
             aria-label="Toggle dark mode"
           />
           <div className="flex items-center gap-2">
@@ -92,18 +105,38 @@ export function UserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => {
-            void logout()
-              .then(() => {
-                void navigate('/login')
-              })
-              .catch((err: unknown) => {
-                console.error('Logout error:', err)
-              })
+            setShowLogoutConfirm(true)
           }}
         >
           Log Out
         </DropdownMenuItem>
       </DropdownMenuContent>
+      <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Log out?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to log out of your account?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                void logout()
+                  .then(() => {
+                    void navigate('/login')
+                  })
+                  .catch((err: unknown) => {
+                    console.error('Logout error:', err)
+                  })
+              }}
+            >
+              Log Out
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DropdownMenu>
   )
 }

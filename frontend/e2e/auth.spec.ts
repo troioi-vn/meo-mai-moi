@@ -106,6 +106,9 @@ test('auth flow: register → login → logout', async ({ page }) => {
   await page.getByRole('img', { name: TEST_USER.name }).click()
   await page.getByRole('menuitem', { name: /log out/i }).click()
 
+  // Confirm logout in the dialog
+  await page.getByRole('button', { name: /log out/i }).click()
+
   // Back to login
   await expect(page).toHaveURL(/\/login/)
 })

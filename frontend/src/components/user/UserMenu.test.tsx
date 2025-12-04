@@ -112,7 +112,7 @@ describe('UserMenu', () => {
     expect(helperProfilesLink).toHaveAttribute('href', '/helper')
   })
 
-  it('calls logout function when logout is clicked', async () => {
+  it('calls logout function when logout is clicked and confirmed', async () => {
     const user = userEvent.setup()
     mockLogout.mockResolvedValue(undefined)
 
@@ -130,7 +130,43 @@ describe('UserMenu', () => {
     const logoutButton = screen.getByRole('menuitem', { name: 'Log Out' })
     await user.click(logoutButton)
 
+    // Confirmation dialog should appear
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument()
+    expect(screen.getByText('Log out?')).toBeInTheDocument()
+
+    // Click the confirm button in the dialog
+    const confirmButton = screen.getByRole('button', { name: 'Log Out' })
+    await user.click(confirmButton)
+
     expect(mockLogout).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not logout when cancel is clicked in confirmation dialog', async () => {
+    const user = userEvent.setup()
+    mockLogout.mockResolvedValue(undefined)
+
+    renderWithRouter(<UserMenu />)
+
+    const avatar = document.querySelector('[aria-haspopup="menu"]')
+    expect(avatar).toBeInTheDocument()
+
+    if (!avatar) {
+      throw new Error('Avatar dropdown trigger not found')
+    }
+
+    await user.click(avatar)
+
+    const logoutButton = screen.getByRole('menuitem', { name: 'Log Out' })
+    await user.click(logoutButton)
+
+    // Confirmation dialog should appear
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument()
+
+    // Click the cancel button
+    const cancelButton = screen.getByRole('button', { name: 'Cancel' })
+    await user.click(cancelButton)
+
+    expect(mockLogout).not.toHaveBeenCalled()
   })
 
   it('shows theme toggle switch', async () => {
@@ -195,6 +231,13 @@ describe('UserMenu', () => {
 
     const logoutButton = screen.getByRole('menuitem', { name: 'Log Out' })
     await user.click(logoutButton)
+
+    // Confirmation dialog should appear
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument()
+
+    // Click the confirm button in the dialog
+    const confirmButton = screen.getByRole('button', { name: 'Log Out' })
+    await user.click(confirmButton)
 
     expect(mockLogout).toHaveBeenCalledTimes(1)
     expect(consoleErrorSpy).toHaveBeenCalledWith('Logout error:', expect.any(Error))

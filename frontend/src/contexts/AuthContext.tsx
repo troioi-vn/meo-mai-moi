@@ -24,7 +24,14 @@ export function AuthProvider({
 
   const loadUser = useCallback(async () => {
     try {
-      const { data } = await api.get<{ data: User }>('users/me')
+      // Add cache-busting to ensure fresh user data after cache clear/deployment
+      const { data } = await api.get<{ data: User }>('users/me', {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          Pragma: 'no-cache',
+          Expires: '0',
+        },
+      })
       setUser(data.data)
     } catch (error) {
       console.error('Error loading user:', error)
@@ -85,6 +92,53 @@ export function AuthProvider({
       void loadUser()
     }
   }, [loadUser, skipInitialLoad])
+
+  // Refresh user data when service worker updates or app becomes visible
+  // This ensures avatar and user data are fresh after cache clear/deployment
+  useEffect(() => {
+    if (skipInitialLoad || !user) {
+      return
+    }
+
+    let lastRefreshTime = 0
+    const MIN_REFRESH_INTERVAL = 5000 // Don't refresh more than once per 5 seconds
+
+    const refreshUserIfNeeded = () => {
+      const now = Date.now()
+      if (now - lastRefreshTime < MIN_REFRESH_INTERVAL) {
+        return
+      }
+      lastRefreshTime = now
+      void loadUser()
+    }
+
+    const handleVisibilityChange = () => {
+      // Refresh user data when app becomes visible (useful after deployment/cache clear)
+      if (document.visibilityState === 'visible') {
+        refreshUserIfNeeded()
+      }
+    }
+
+    const handleServiceWorkerUpdate = () => {
+      // Refresh user data when service worker updates (indicates new deployment)
+      refreshUserIfNeeded()
+    }
+
+    // Listen for visibility changes (less aggressive than focus events)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    // Listen for service worker controller change (indicates SW update)
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.addEventListener('controllerchange', handleServiceWorkerUpdate)
+    }
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.removeEventListener('controllerchange', handleServiceWorkerUpdate)
+      }
+    }
+  }, [loadUser, skipInitialLoad, user])
 
   const isAuthenticated = user !== null
 

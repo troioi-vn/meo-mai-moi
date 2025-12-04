@@ -135,7 +135,8 @@ Route::get('/settings/public', GetPublicSettingsController::class);
 Route::get('/settings/invite-only-status', GetInviteOnlyStatusController::class);
 
 // Legal documents (public)
-Route::get('/legal/placement-terms', GetPlacementTermsController::class);
+Route::get('/legal/placement-terms', GetPlacementTermsController::class)
+    ->withoutMiddleware([\Illuminate\Session\Middleware\StartSession::class]);
 
 // Public waitlist endpoint (rate limited + validated)
 Route::post('/waitlist', JoinWaitlistController::class)->middleware(['throttle:5,1', 'validate.invitation']); // 5 requests per minute

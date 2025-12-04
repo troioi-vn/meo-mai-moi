@@ -410,7 +410,7 @@ class EmailConfiguration extends Model
             }
         }
 
-        if (isset($config['encryption']) && $config['encryption'] !== null && $config['encryption'] !== '' && ! in_array($config['encryption'], ['tls', 'ssl'])) {
+        if (! empty($config['encryption']) && ! in_array($config['encryption'], ['tls', 'ssl'])) {
             $errors[] = "SMTP encryption must be 'tls', 'ssl', or empty";
         }
 

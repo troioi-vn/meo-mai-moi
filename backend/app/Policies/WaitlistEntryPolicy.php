@@ -77,7 +77,7 @@ class WaitlistEntryPolicy
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, WaitlistEntry $waitlistEntry): bool
+    public function restore(User $user, WaitlistEntry $_waitlistEntry): bool
     {
         return $user->can('restore_waitlist::entry');
     }
@@ -93,7 +93,7 @@ class WaitlistEntryPolicy
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, WaitlistEntry $waitlistEntry): bool
+    public function replicate(User $user, WaitlistEntry $_waitlistEntry): bool
     {
         return $user->can('replicate_waitlist::entry');
     }

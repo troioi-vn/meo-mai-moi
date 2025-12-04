@@ -57,6 +57,6 @@ class GetPlacementTermsController extends Controller
                 'content' => $content,
                 'version' => $version,
             ],
-        ])->header('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
+        ])->header('Cache-Control', 'max-age=3600, public'); // Cache for 1 hour
     }
 }

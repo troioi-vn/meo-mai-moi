@@ -61,9 +61,9 @@ class Settings extends Model
     }
 
     /**
-     * Enable or disable invite-only mode
+     * Update invite-only mode configuration
      */
-    public static function setInviteOnlyEnabled(bool $enabled): void
+    public static function updateInviteOnlyMode(bool $enabled): void
     {
         static::set('invite_only_enabled', $enabled ? 'true' : 'false');
     }

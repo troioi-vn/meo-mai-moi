@@ -71,7 +71,8 @@ class StoreInvitationController extends Controller
 
     public function __construct(
         private InvitationService $invitationService
-    ) {}
+    ) {
+    }
 
     public function __invoke(Request $request)
     {
@@ -116,7 +117,6 @@ class StoreInvitationController extends Controller
                 'invitation_url' => $invitation->getInvitationUrl(),
                 'created_at' => $invitation->created_at,
             ], 201);
-
         } catch (\Exception $e) {
             return $this->handleException($e, 'Failed to create invitation');
         }

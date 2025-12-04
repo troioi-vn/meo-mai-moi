@@ -210,7 +210,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // Define delete alias with DELETE method so POST to this path returns 405 instead of 404 (for REST semantics tests)
     Route::delete('/pets/{pet}/delete', DeletePetController::class)->name('pets.destroy.alias');
     Route::put('/pets/{pet}/status', UpdatePetStatusController::class)->name('pets.updateStatus');
-    Route::get('/pet-types', ListPetTypesController::class);
 
     // Category routes
     Route::get('/categories', ListCategoriesController::class);
@@ -303,3 +302,4 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 Route::get('/pets/placement-requests', ListPetsWithPlacementRequestsController::class);
 Route::get('/pets/featured', ListFeaturedPetsController::class);
 Route::get('/pets/{pet}', ShowPetController::class)->middleware('optional.auth')->whereNumber('pet');
+Route::get('/pet-types', ListPetTypesController::class);

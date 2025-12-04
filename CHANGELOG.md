@@ -4,9 +4,17 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Fixed
+
+- **Pet Cards Visibility on Requests Page**:
+  - Made `/api/pet-types` endpoint public so non-logged-in users can view Pet Cards on the `/requests` page
+  - Previously, the endpoint was protected by `auth:sanctum` middleware, causing the page to fail for unauthenticated users
+  - Moved `/api/pet-types` route to public routes section to allow access without authentication
+
 ### Added
 
 - **Pet Sex Field**:
+
   - Added `sex` field to Pet model with options: Male, Female, and Not Specified (default)
   - Sex field available in pet creation (`/pets/create`) and edit (`/pets/:id/edit`) forms
   - Sex displayed on pet profile page (`/pets/:id`) and pet cards
@@ -80,6 +88,7 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Changed
 
 - **Pet Model Schema**:
+
   - Removed `breed` field from Pet model (replaced by Categories system for more flexible tagging)
   - Pet breed information can now be stored using the Categories system (e.g., "Siamese", "Persian" categories)
   - Pet profile displays now show pet type name instead of breed

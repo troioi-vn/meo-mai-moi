@@ -59,10 +59,6 @@ export const CategorySelect: React.FC<Props> = ({
     void loadCategories()
   }, [loadCategories])
 
-  useEffect(() => {
-    console.log(categories)
-  }, [categories])
-
   // Clear selected categories when pet type changes
   useEffect(() => {
     if (petTypeId && selectedCategories.length > 0) {
@@ -200,11 +196,6 @@ export const CategorySelect: React.FC<Props> = ({
                       >
                         <div className="flex flex-col">
                           <span>{category.name}</span>
-                          {category.description && (
-                            <span className="text-xs text-muted-foreground">
-                              {category.description}
-                            </span>
-                          )}
                         </div>
                         <div className="flex items-center gap-2">
                           {!category.approved_at && (

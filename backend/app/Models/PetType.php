@@ -48,6 +48,14 @@ class PetType extends Model
     }
 
     /**
+     * Get all categories for this pet type
+     */
+    public function categories(): HasMany
+    {
+        return $this->hasMany(Category::class);
+    }
+
+    /**
      * Check if the pet type is active.
      */
     public function isActive(): bool

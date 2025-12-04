@@ -21,6 +21,7 @@ import { WeightHistoryCard } from '@/components/pet-health/weights/WeightHistory
 import { UpcomingVaccinationsSection } from '@/components/pet-health/vaccinations/UpcomingVaccinationsSection'
 import { MicrochipsSection } from '@/components/pet-health/microchips/MicrochipsSection'
 import { MedicalRecordsSection } from '@/components/pet-health/medical/MedicalRecordsSection'
+import { CategorySelect } from '@/components/pets/CategorySelect'
 
 type TabValue = 'general' | 'health' | 'status'
 
@@ -47,6 +48,7 @@ const CreatePetPage: React.FC = () => {
     isSubmitting,
     isLoadingPet,
     updateField,
+    updateCategories,
     handleSubmit,
     handleCancel,
   } = useCreatePetForm(petId)
@@ -185,6 +187,12 @@ const CreatePetPage: React.FC = () => {
                   error={errors.pet_type_id}
                 />
 
+                <CategorySelect
+                  petTypeId={formData.pet_type_id}
+                  selectedCategories={formData.categories}
+                  onChange={updateCategories}
+                />
+
                 <PetFormFields
                   formData={formData}
                   errors={errors}
@@ -301,6 +309,12 @@ const CreatePetPage: React.FC = () => {
                     updateField('pet_type_id')(id)
                   }}
                   error={errors.pet_type_id}
+                />
+
+                <CategorySelect
+                  petTypeId={formData.pet_type_id}
+                  selectedCategories={formData.categories}
+                  onChange={updateCategories}
                 />
 
                 <PetFormFields

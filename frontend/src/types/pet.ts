@@ -13,6 +13,20 @@ export interface PetType {
   updated_at: string
 }
 
+export interface Category {
+  id: number
+  name: string
+  slug: string
+  pet_type_id: number
+  description?: string | null
+  created_by?: number | null
+  approved_at?: string | null
+  usage_count: number
+  created_at: string
+  updated_at: string
+  pet_type?: PetType
+}
+
 export type BirthdayPrecision = 'day' | 'month' | 'year' | 'unknown'
 
 export interface PetPhoto {
@@ -46,6 +60,7 @@ export interface Pet {
   created_at: string
   updated_at: string
   pet_type: PetType
+  categories?: Category[]
   user: {
     id: number
     name: string

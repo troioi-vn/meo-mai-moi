@@ -1,9 +1,10 @@
 <?php
 
 use App\Http\Controllers\Auth\CheckEmailController;
+use App\Http\Controllers\Category\ListCategoriesController;
+use App\Http\Controllers\Category\StoreCategoryController;
 use App\Http\Controllers\EmailConfigurationStatusController;
 use App\Http\Controllers\EmailVerification\GetVerificationStatusController;
-use App\Http\Controllers\Legal\GetPlacementTermsController;
 use App\Http\Controllers\EmailVerification\ResendVerificationEmailController;
 use App\Http\Controllers\EmailVerification\VerifyEmailController;
 use App\Http\Controllers\FosterAssignment\CancelFosterAssignmentController;
@@ -25,6 +26,7 @@ use App\Http\Controllers\Invitation\GetInvitationStatsController;
 use App\Http\Controllers\Invitation\ListInvitationsController;
 use App\Http\Controllers\Invitation\StoreInvitationController;
 use App\Http\Controllers\Invitation\ValidateInvitationCodeController;
+use App\Http\Controllers\Legal\GetPlacementTermsController;
 use App\Http\Controllers\MailgunWebhookController;
 use App\Http\Controllers\MedicalNote\DeleteMedicalNoteController;
 use App\Http\Controllers\MedicalNote\ListMedicalNotesController;
@@ -208,6 +210,10 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::delete('/pets/{pet}/delete', DeletePetController::class)->name('pets.destroy.alias');
     Route::put('/pets/{pet}/status', UpdatePetStatusController::class)->name('pets.updateStatus');
     Route::get('/pet-types', ListPetTypesController::class);
+
+    // Category routes
+    Route::get('/categories', ListCategoriesController::class);
+    Route::post('/categories', StoreCategoryController::class);
 
     // New pet photo routes
     Route::post('/pets/{pet}/photos', StorePetPhotoController::class);

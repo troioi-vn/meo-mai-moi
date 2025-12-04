@@ -55,6 +55,9 @@ class StorePetController extends Controller
             'address' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'pet_type_id' => 'nullable|exists:pet_types,id',
+            // Category IDs
+            'category_ids' => 'nullable|array|max:10',
+            'category_ids.*' => 'integer|exists:categories,id',
             // Legacy exact date (optional now)
             'birthday' => 'nullable|date|before_or_equal:today',
             // New precision inputs
@@ -214,7 +217,12 @@ class StorePetController extends Controller
             }
         }
 
-        $pet->load('petType');
+        // Sync categories if provided
+        if (isset($data['category_ids'])) {
+            $pet->categories()->sync($data['category_ids']);
+        }
+
+        $pet->load(['petType', 'categories']);
 
         return $this->sendSuccess($pet, 201);
     }

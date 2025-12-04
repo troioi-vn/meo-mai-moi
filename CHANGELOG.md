@@ -6,6 +6,22 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Pet Categories System**:
+
+  - Category model for tagging pets with breed, type, and other characteristics
+  - Categories are pet-type-specific (cats have different categories than dogs)
+  - Dual-mode creation: administrators create via admin panel, users create on-demand during pet creation/editing
+  - Approval workflow: user-created categories require admin approval before general visibility
+  - API endpoints: `GET /api/categories` (search/filter) and `POST /api/categories` (create)
+  - Admin panel at Admin → System → Categories with full CRUD, bulk approval actions, and usage tracking
+  - CategorySelect React component with autocomplete, search, and inline category creation
+  - Multi-select support with max 10 categories per pet
+  - "Pending" badge indicator for unapproved categories
+  - Comprehensive database schema with unique constraints and pivot table for pet-category relationships
+  - 30+ pre-seeded categories for cats and dogs (all approved)
+  - Full feature test coverage (18 tests, 49 assertions, all passing)
+  - Comprehensive documentation at `/docs/categories.md`
+
 - **Standardized Location Fields**:
 
   - Pet and HelperProfile models now use consistent location fields: Country (required), State, City, and Address (optional)
@@ -53,6 +69,7 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Changed
 
 - **Placement Request Display Refactor**:
+
   - PlacementRequestsSection now uses improved card-based styling with badges for request types
   - Request types formatted as human-readable labels: "Foster (Free)", "Foster (Paid)", "Permanent Adoption"
   - Request type badges color-coded: default for permanent, secondary for fostering, outline for others
@@ -62,6 +79,7 @@ All notable changes to this project are documented here, following the [Keep a C
   - Improved spacing and visual consistency across request cards
 
 - **Helper Profiles Page Redesign**:
+
   - Changed from table layout to modern card-based design matching app's design system
   - Added back button navigation consistent with other pages
   - Location displayed with MapPin icon showing "City, State" format

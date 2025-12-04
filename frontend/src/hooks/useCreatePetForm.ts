@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createPet, getPetTypes, getPet, updatePet } from '@/api/pets'
-import type { PetType } from '@/types/pet'
+import type { PetType, Category } from '@/types/pet'
 import { toast } from 'sonner'
 
 interface FormErrors {
@@ -34,6 +34,7 @@ interface CreatePetFormData {
   address: string
   description: string
   pet_type_id: number | null
+  categories: Category[]
 }
 
 const VALIDATION_MESSAGES = {
@@ -78,6 +79,7 @@ export const useCreatePetForm = (petId?: string) => {
     address: '',
     description: '',
     pet_type_id: null,
+    categories: [],
   })
   const [petTypes, setPetTypes] = useState<PetType[]>([])
   const [loadingPetTypes, setLoadingPetTypes] = useState(true)
@@ -135,6 +137,7 @@ export const useCreatePetForm = (petId?: string) => {
             address: pet.address ?? '',
             description: pet.description,
             pet_type_id: pet.pet_type.id,
+            categories: pet.categories ?? [],
           })
         } catch (err) {
           console.error('Failed to load pet data:', err)
@@ -226,6 +229,7 @@ export const useCreatePetForm = (petId?: string) => {
         description: formData.description,
         pet_type_id: formData.pet_type_id,
         birthday_precision: formData.birthday_precision,
+        category_ids: formData.categories.map((c) => c.id),
       }
       if (formData.birthday_precision === 'day') {
         if (formData.birthday) {
@@ -271,6 +275,10 @@ export const useCreatePetForm = (petId?: string) => {
     void navigate(ROUTES.MY_PETS)
   }
 
+  const updateCategories = (categories: Category[]) => {
+    setFormData((prev) => ({ ...prev, categories }))
+  }
+
   return {
     formData,
     petTypes,
@@ -280,6 +288,7 @@ export const useCreatePetForm = (petId?: string) => {
     isSubmitting,
     isLoadingPet,
     updateField,
+    updateCategories,
     handleSubmit,
     handleCancel,
   }

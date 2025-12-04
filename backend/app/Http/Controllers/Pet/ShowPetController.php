@@ -44,7 +44,7 @@ class ShowPetController extends Controller
     public function __invoke(Request $request, Pet $pet)
     {
         // Load placement requests and nested relations needed for the view
-        $pet->load(['placementRequests.transferRequests.helperProfile.user', 'petType']);
+        $pet->load(['placementRequests.transferRequests.helperProfile.user', 'petType', 'categories']);
 
         // Resolve user and authorize access
         $user = $this->authorizeUser($request, 'view', $pet);

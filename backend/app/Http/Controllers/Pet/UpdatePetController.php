@@ -68,6 +68,9 @@ class UpdatePetController extends Controller
             'address' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'pet_type_id' => 'sometimes|required|exists:pet_types,id',
+            // Category IDs
+            'category_ids' => 'nullable|array|max:10',
+            'category_ids.*' => 'integer|exists:categories,id',
             'birthday' => 'nullable|date|before_or_equal:today',
             'birthday_precision' => 'nullable|in:day,month,year,unknown',
             'birthday_year' => 'nullable|integer|min:1900|max:'.now()->year,
@@ -195,7 +198,12 @@ class UpdatePetController extends Controller
         ], fn ($v) => $v !== null));
         $pet->save();
 
-        $pet->load('petType');
+        // Sync categories if provided
+        if (isset($data['category_ids'])) {
+            $pet->categories()->sync($data['category_ids']);
+        }
+
+        $pet->load(['petType', 'categories']);
 
         return $this->sendSuccess($pet);
     }

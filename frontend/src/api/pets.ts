@@ -92,6 +92,8 @@ export interface CreatePetPayload {
   address?: string
   description?: string
   pet_type_id: number | null
+  // Category IDs
+  category_ids?: number[]
   // Approximate birthday support
   birthday_precision?: BirthdayPrecision
   birthday?: string

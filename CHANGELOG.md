@@ -6,6 +6,17 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Pet Sex Field**:
+  - Added `sex` field to Pet model with options: Male, Female, and Not Specified (default)
+  - Sex field available in pet creation (`/pets/create`) and edit (`/pets/:id/edit`) forms
+  - Sex displayed on pet profile page (`/pets/:id`) and pet cards
+  - Sex field shown only when value is not "Not Specified" (Male/Female displayed)
+  - Database migration adds `sex` column with default value `'not_specified'`
+  - Backend enum `PetSex` with label() method for human-readable labels
+  - Admin panel (Filament) includes sex field in pet form and table with color-coded badges
+  - API endpoints updated to accept and return sex field
+  - Factory and seeders updated to include sex values
+
 - **Pet Categories System**:
 
   - Category model for tagging pets with breed, type, and other characteristics
@@ -67,6 +78,14 @@ All notable changes to this project are documented here, following the [Keep a C
 - Newly uploaded photos are automatically set as the pet's primary photo.
 
 ### Changed
+
+- **Pet Model Schema**:
+  - Removed `breed` field from Pet model (replaced by Categories system for more flexible tagging)
+  - Pet breed information can now be stored using the Categories system (e.g., "Siamese", "Persian" categories)
+  - Pet profile displays now show pet type name instead of breed
+  - Database migration removes `breed` column from pets table
+  - API endpoints no longer accept or return breed field
+  - Admin panel (Filament) removed breed field from pet form and table
 
 - **Placement Request Display Refactor**:
 

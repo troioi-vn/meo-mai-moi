@@ -271,6 +271,78 @@ const photoHandlers = [
   }),
 ]
 
+// Mock categories data
+const mockCategories = [
+  {
+    id: 1,
+    name: 'Indoor',
+    slug: 'indoor',
+    pet_type_id: 1,
+    description: 'Indoor pets',
+    created_by: null,
+    approved_at: '2023-01-01T00:00:00Z',
+    usage_count: 10,
+    created_at: '2023-01-01T00:00:00Z',
+    updated_at: '2023-01-01T00:00:00Z',
+  },
+  {
+    id: 2,
+    name: 'Playful',
+    slug: 'playful',
+    pet_type_id: 1,
+    description: 'Playful pets',
+    created_by: null,
+    approved_at: '2023-01-01T00:00:00Z',
+    usage_count: 5,
+    created_at: '2023-01-01T00:00:00Z',
+    updated_at: '2023-01-01T00:00:00Z',
+  },
+]
+
+const categoryHandlers = [
+  // Get categories for a pet type
+  http.get('http://localhost:3000/api/categories', ({ request }) => {
+    const url = new URL(request.url)
+    const petTypeId = url.searchParams.get('pet_type_id')
+    const search = url.searchParams.get('search')
+
+    let filtered = mockCategories
+    if (petTypeId) {
+      filtered = filtered.filter((c) => c.pet_type_id === Number(petTypeId))
+    }
+    if (search) {
+      const searchLower = search.toLowerCase()
+      filtered = filtered.filter((c) => c.name.toLowerCase().includes(searchLower))
+    }
+
+    return HttpResponse.json({ data: filtered })
+  }),
+
+  // Create a new category
+  http.post('http://localhost:3000/api/categories', async ({ request }) => {
+    const body = (await request.json()) as {
+      name: string
+      pet_type_id: number
+      description?: string
+    }
+
+    const newCategory = {
+      id: mockCategories.length + 1,
+      name: body.name,
+      slug: body.name.toLowerCase().replace(/\s+/g, '-'),
+      pet_type_id: body.pet_type_id,
+      description: body.description ?? null,
+      created_by: 1,
+      approved_at: null,
+      usage_count: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    return HttpResponse.json({ data: newCategory }, { status: 201 })
+  }),
+]
+
 const messageHandlers = [
   http.get('http://localhost:3000/api/messages', () => {
     return HttpResponse.json([])
@@ -790,6 +862,7 @@ export const handlers = [
   ...petHandlers,
   ...userHandlers,
   ...photoHandlers,
+  ...categoryHandlers,
   ...messageHandlers,
   ...transferRequestHandlers,
   ...versionHandlers,

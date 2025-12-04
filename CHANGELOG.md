@@ -7,9 +7,16 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Fixed
 
 - **Pet Cards Visibility on Requests Page**:
+
   - Made `/api/pet-types` endpoint public so non-logged-in users can view Pet Cards on the `/requests` page
   - Previously, the endpoint was protected by `auth:sanctum` middleware, causing the page to fail for unauthenticated users
   - Moved `/api/pet-types` route to public routes section to allow access without authentication
+
+- **Pet Profile Page Visibility for Non-Logged-In Users**:
+  - Made pet health data endpoints (medical records, vaccinations, weights, medical notes, microchips) publicly readable
+  - GET endpoints now use `optional.auth` middleware, allowing non-logged-in users to view pet profiles without errors
+  - Write operations (POST/PUT/DELETE) still require authentication
+  - Previously, visiting `/pets/:id` as a non-logged-in user showed "Failed to load medical records" error
 
 ### Added
 

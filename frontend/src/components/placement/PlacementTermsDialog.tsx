@@ -43,7 +43,7 @@ function renderMarkdown(markdown: string): React.ReactNode[] {
     }
 
     // Numbered list items with bold text
-    const listMatch = line.match(/^(\d+)\.\s+\*\*(.+?)\*\*(.*)$/)
+    const listMatch = /^(\d+)\.\s+\*\*(.+?)\*\*(.*)$/.exec(line)
     if (listMatch) {
       const [, , boldPart, rest] = listMatch
       elements.push(
@@ -126,7 +126,7 @@ export const PlacementTermsLink: React.FC<PlacementTermsLinkProps> = ({ classNam
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => { setOpen(true); }}
         className={`inline-flex items-center gap-1 text-primary hover:underline font-medium ${className ?? ''}`}
       >
         Placement Terms & Conditions

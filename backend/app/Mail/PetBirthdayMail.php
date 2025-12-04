@@ -23,6 +23,6 @@ class PetBirthdayMail extends NotificationMail
 
         $age = $this->data['age'] ?? '';
 
-        return "🎂 Happy Birthday {$petName}!" . ($age ? " ({$age})" : '');
+        return "🎂 Happy Birthday {$petName}!".($age ? " ({$age})" : '');
     }
 }

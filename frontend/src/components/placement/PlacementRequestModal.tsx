@@ -225,7 +225,7 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
               <Checkbox
                 id="public-profile-accepted"
                 checked={publicProfileAccepted}
-                onCheckedChange={(checked) => setPublicProfileAccepted(checked === true)}
+                onCheckedChange={(checked) => { setPublicProfileAccepted(checked === true); }}
                 className="mt-1"
               />
               <Label
@@ -241,7 +241,7 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
               <Checkbox
                 id="terms-accepted"
                 checked={termsAccepted}
-                onCheckedChange={(checked) => setTermsAccepted(checked === true)}
+                onCheckedChange={(checked) => { setTermsAccepted(checked === true); }}
                 className="mt-1"
               />
               <Label

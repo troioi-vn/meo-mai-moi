@@ -31,7 +31,7 @@ export const HelperProfileFormFields: React.FC<Props> = ({ formData, errors, upd
         </Label>
         <CountrySelect
           value={formData.country}
-          onValueChange={(value) => updateField('country')(value)}
+          onValueChange={(value) => { updateField('country')(value); }}
           data-testid="country-select"
         />
         {errors.country && <p className="text-sm font-medium text-destructive">{errors.country}</p>}

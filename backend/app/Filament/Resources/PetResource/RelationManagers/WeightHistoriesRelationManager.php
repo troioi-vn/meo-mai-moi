@@ -51,7 +51,7 @@ class WeightHistoriesRelationManager extends RelationManager
             ->columns([
                 TextColumn::make('weight_kg')
                     ->label('Weight')
-                    ->formatStateUsing(fn ($state) => number_format($state, 2) . ' kg')
+                    ->formatStateUsing(fn ($state) => number_format($state, 2).' kg')
                     ->sortable(),
 
                 TextColumn::make('record_date')
@@ -90,4 +90,3 @@ class WeightHistoriesRelationManager extends RelationManager
             ->emptyStateIcon('heroicon-o-scale');
     }
 }
-

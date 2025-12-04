@@ -14,7 +14,7 @@ class EmailConfigurationService
 
     public function __construct(?ConfigurationTester $tester = null)
     {
-        $this->tester = $tester ?? new ConfigurationTester();
+        $this->tester = $tester ?? new ConfigurationTester;
     }
 
     /**

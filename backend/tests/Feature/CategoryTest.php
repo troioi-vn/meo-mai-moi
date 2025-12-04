@@ -201,7 +201,6 @@ class CategoryTest extends TestCase
 
         $response = $this->postJson('/api/pets', [
             'name' => 'Fluffy',
-            'breed' => 'Siamese Mix',
             'country' => 'VN',
             'pet_type_id' => $this->catType->id,
             'category_ids' => [$category1->id, $category2->id],
@@ -226,7 +225,6 @@ class CategoryTest extends TestCase
 
         $response = $this->postJson('/api/pets', [
             'name' => 'Fluffy',
-            'breed' => 'Test',
             'country' => 'VN',
             'pet_type_id' => $this->catType->id,
             'category_ids' => $categories->pluck('id')->toArray(),

@@ -29,6 +29,14 @@ export interface Category {
 
 export type BirthdayPrecision = 'day' | 'month' | 'year' | 'unknown'
 
+export type PetSex = 'male' | 'female' | 'not_specified'
+
+export const PetSexLabels: Record<PetSex, string> = {
+  male: 'Male',
+  female: 'Female',
+  not_specified: 'Not Specified',
+}
+
 export interface PetPhoto {
   id: number
   url: string
@@ -39,7 +47,7 @@ export interface PetPhoto {
 export interface Pet {
   id: number
   name: string
-  breed: string
+  sex?: PetSex
   birthday: string | null // Exact ISO date when precision=day; nullable otherwise
   birthday_year?: number | null
   birthday_month?: number | null

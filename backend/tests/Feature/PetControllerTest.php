@@ -49,7 +49,6 @@ class PetControllerTest extends TestCase
 
         $petData = [
             'name' => 'Fluffy',
-            'breed' => 'Persian',
             'birthday' => '2020-01-01',
             'country' => 'VN',
             'city' => 'Hanoi',
@@ -64,7 +63,6 @@ class PetControllerTest extends TestCase
                 'data' => [
                     'id',
                     'name',
-                    'breed',
                     'birthday',
                     'country',
                     'description',
@@ -76,7 +74,6 @@ class PetControllerTest extends TestCase
 
         $this->assertDatabaseHas('pets', [
             'name' => 'Fluffy',
-            'breed' => 'Persian',
             'pet_type_id' => $this->catType->id,
             'user_id' => $this->user->id,
         ]);
@@ -166,7 +163,6 @@ class PetControllerTest extends TestCase
 
         $updateData = [
             'name' => 'Updated Name',
-            'breed' => 'Updated Breed',
         ];
 
         $response = $this->putJson("/api/pets/{$pet->id}", $updateData);
@@ -176,7 +172,6 @@ class PetControllerTest extends TestCase
         $this->assertDatabaseHas('pets', [
             'id' => $pet->id,
             'name' => 'Updated Name',
-            'breed' => 'Updated Breed',
         ]);
     }
 
@@ -204,7 +199,6 @@ class PetControllerTest extends TestCase
     {
         $petData = [
             'name' => 'Fluffy',
-            'breed' => 'Persian',
             'birthday' => '2020-01-01',
             'country' => 'VN',
             'city' => 'Hanoi',
@@ -243,7 +237,6 @@ class PetControllerTest extends TestCase
         $response->assertStatus(422)
             ->assertJsonValidationErrors([
                 'name',
-                'breed',
                 'country',
             ]);
 
@@ -257,7 +250,6 @@ class PetControllerTest extends TestCase
 
         $petData = [
             'name' => 'Fluffy',
-            'breed' => 'Persian',
             'birthday' => '2020-01-01',
             'country' => 'VN',
             'city' => 'Hanoi',

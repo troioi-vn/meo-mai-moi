@@ -11,7 +11,6 @@ describe('MainPage Integration with ActivePlacementRequestsSection', () => {
   const mockPetWithActivePlacement: Pet = {
     id: 1,
     name: 'Fluffy',
-    breed: 'Persian',
     birthday: '2020-01-15',
     status: 'active',
     description: 'A very friendly and fluffy cat.',

@@ -47,7 +47,6 @@ const mockPhotos: PetPhoto[] = [photo1, photo2, photo3]
 const mockPet: Pet = {
   id: 1,
   name: 'Fluffy',
-  breed: 'Persian',
   birthday: '2020-01-01',
   country: 'VN',
   city: 'Hanoi',

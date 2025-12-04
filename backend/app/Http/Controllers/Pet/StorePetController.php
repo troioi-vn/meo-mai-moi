@@ -48,7 +48,7 @@ class StorePetController extends Controller
     {
         $rules = [
             'name' => 'required|string|max:255',
-            'breed' => 'required|string|max:255',
+            'sex' => 'nullable|in:male,female,not_specified',
             'country' => 'required|string|size:2',
             'state' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:255',
@@ -185,7 +185,7 @@ class StorePetController extends Controller
 
         $pet = Pet::create([
             'name' => $data['name'],
-            'breed' => $data['breed'],
+            'sex' => $data['sex'] ?? 'not_specified',
             'birthday' => $birthdayDate,
             'birthday_year' => $data['birthday_year'] ?? null,
             'birthday_month' => $data['birthday_month'] ?? null,

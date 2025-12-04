@@ -5948,7 +5948,6 @@
                 "required": [
                     "id",
                     "name",
-                    "breed",
                     "country",
                     "description",
                     "status",
@@ -5964,9 +5963,15 @@
                         "type": "string",
                         "example": "Whiskers"
                     },
-                    "breed": {
+                    "sex": {
+                        "description": "Sex of the pet",
                         "type": "string",
-                        "example": "Siamese"
+                        "enum": [
+                            "male",
+                            "female",
+                            "not_specified"
+                        ],
+                        "example": "male"
                     },
                     "birthday": {
                         "description": "Exact birthday (present only when birthday_precision=day). Deprecated: prefer component fields.",

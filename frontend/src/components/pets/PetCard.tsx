@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 // Using default avatar as placeholder for pets
 import placeholderCatImage from '@/assets/images/default-avatar.webp'
-import { formatPetAge, petSupportsCapability } from '@/types/pet'
+import { formatPetAge, petSupportsCapability, PetSexLabels } from '@/types/pet'
 import { useVaccinations } from '@/hooks/useVaccinations'
 import { calculateVaccinationStatus } from '@/utils/vaccinationStatus'
 import { VaccinationStatusBadge } from '@/components/pet-health/vaccinations/VaccinationStatusBadge'
@@ -96,7 +96,12 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
       </div>
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-primary">{pet.name}</CardTitle>
-        <CardDescription className="text-muted-foreground">{formatPetAge(pet)}</CardDescription>
+        <CardDescription className="text-muted-foreground">
+          {pet.sex && pet.sex !== 'not_specified' && (
+            <span>{PetSexLabels[pet.sex]} • </span>
+          )}
+          {formatPetAge(pet)}
+        </CardDescription>
         <div className="mt-2 flex flex-wrap gap-2">
           {supportsVaccinations && <PetVaccinationStatusBadge petId={pet.id} />}
           {hasFulfilledPlacement && (

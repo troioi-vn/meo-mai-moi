@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PetSex;
 use App\Enums\PetStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,11 +20,11 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  *     schema="Pet",
  *     type="object",
  *     title="Pet",
- *     required={"id", "name", "breed", "country", "description", "status", "user_id", "pet_type_id"},
+ *     required={"id", "name", "country", "description", "status", "user_id", "pet_type_id"},
  *
  *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="name", type="string", example="Whiskers"),
- *     @OA\Property(property="breed", type="string", example="Siamese"),
+ *     @OA\Property(property="sex", type="string", enum={"male","female","not_specified"}, example="male", description="Sex of the pet"),
  *     @OA\Property(property="birthday", type="string", format="date", example="2020-01-01", nullable=true, description="Exact birthday (present only when birthday_precision=day). Deprecated: prefer component fields.", deprecated=true),
  *     @OA\Property(property="birthday_year", type="integer", example=2020, nullable=true, description="Birth year when known (year/month/day precision)."),
  *     @OA\Property(property="birthday_month", type="integer", example=5, nullable=true, description="Birth month when known (month/day precision)."),
@@ -46,7 +47,7 @@ class Pet extends Model implements HasMedia
     protected $fillable = [
         'pet_type_id',
         'name',
-        'breed',
+        'sex',
         'country',
         'state',
         'city',
@@ -63,6 +64,7 @@ class Pet extends Model implements HasMedia
 
     protected $casts = [
         'status' => PetStatus::class,
+        'sex' => PetSex::class,
         'birthday' => 'date',
         'birthday_year' => 'integer',
         'birthday_month' => 'integer',

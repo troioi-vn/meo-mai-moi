@@ -41,7 +41,6 @@ const mockDogType: PetType = {
 const mockCat: Pet = {
   id: 1,
   name: 'Fluffy',
-  breed: 'Persian',
   birthday: '2020-01-01',
   country: 'VN',
   state: '',
@@ -74,7 +73,6 @@ const mockCat: Pet = {
 const mockDog: Pet = {
   id: 2,
   name: 'Buddy',
-  breed: 'Golden Retriever',
   birthday: '2021-01-01',
   country: 'VN',
   state: '',

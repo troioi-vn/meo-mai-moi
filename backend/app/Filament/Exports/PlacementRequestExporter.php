@@ -20,8 +20,6 @@ class PlacementRequestExporter extends Exporter
                 ->label('ID'),
             ExportColumn::make('pet.name')
                 ->label('Pet Name'),
-            ExportColumn::make('pet.breed')
-                ->label('Pet Breed'),
             ExportColumn::make('pet.petType.name')
                 ->label('Pet Type'),
             ExportColumn::make('user.name')

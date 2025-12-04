@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\PetSex;
 use App\Enums\PetStatus;
 use App\Models\Pet;
 use App\Models\PetType;
@@ -51,10 +52,7 @@ class PetFactory extends Factory
 
         return [
             'name' => $this->faker->firstName(),
-            'breed' => $this->faker->randomElement([
-                'Persian', 'Siamese', 'Maine Coon', 'British Shorthair', 'Ragdoll',
-                'Golden Retriever', 'Labrador', 'German Shepherd', 'Bulldog', 'Poodle',
-            ]),
+            'sex' => $this->faker->randomElement([PetSex::MALE, PetSex::FEMALE, PetSex::NOT_SPECIFIED]),
             'birthday' => $birthday,
             'birthday_year' => $birthday_year,
             'birthday_month' => $birthday_month,
@@ -92,9 +90,6 @@ class PetFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'pet_type_id' => 1, // Cat
-            'breed' => $this->faker->randomElement([
-                'Persian', 'Siamese', 'Maine Coon', 'British Shorthair', 'Ragdoll',
-            ]),
         ]);
     }
 
@@ -105,9 +100,6 @@ class PetFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'pet_type_id' => 2, // Dog
-            'breed' => $this->faker->randomElement([
-                'Golden Retriever', 'Labrador', 'German Shepherd', 'Bulldog', 'Poodle',
-            ]),
         ]);
     }
 

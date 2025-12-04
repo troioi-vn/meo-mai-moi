@@ -13,7 +13,6 @@ vi.mock('@/api/pets')
 const mockPet: Partial<Pet> = {
   id: 123,
   name: 'Fluffy',
-  breed: 'Persian',
   birthday: '2020-01-01T00:00:00Z',
   country: 'VN',
   city: 'Hanoi',
@@ -90,7 +89,6 @@ describe('CreatePetPage edit mode enhancements', () => {
 
     // Check that pet data is loaded into form fields
     expect(screen.getByDisplayValue('Fluffy')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('Persian')).toBeInTheDocument()
 
     // Check that upload controls are shown
     expect(screen.getByRole('button', { name: /upload/i })).toBeInTheDocument()

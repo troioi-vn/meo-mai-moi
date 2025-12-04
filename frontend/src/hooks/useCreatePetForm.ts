@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createPet, getPetTypes, getPet, updatePet } from '@/api/pets'
-import type { PetType, Category } from '@/types/pet'
+import type { PetType, Category, PetSex } from '@/types/pet'
 import { toast } from 'sonner'
 
 interface FormErrors {
   name?: string
-  breed?: string
   birthday?: string
   birthday_year?: string
   birthday_month?: string
@@ -22,7 +21,7 @@ interface FormErrors {
 
 interface CreatePetFormData {
   name: string
-  breed: string
+  sex: PetSex
   birthday: string // exact date only when precision=day
   birthday_year: string
   birthday_month: string
@@ -39,7 +38,6 @@ interface CreatePetFormData {
 
 const VALIDATION_MESSAGES = {
   REQUIRED_NAME: 'Name is required',
-  REQUIRED_BREED: 'Breed is required',
   REQUIRED_BIRTHDAY_COMPONENTS: 'Complete date required for day precision',
   REQUIRED_YEAR: 'Year required',
   REQUIRED_MONTH: 'Month required',
@@ -67,7 +65,7 @@ export const useCreatePetForm = (petId?: string) => {
 
   const [formData, setFormData] = useState<CreatePetFormData>({
     name: '',
-    breed: '',
+    sex: 'not_specified',
     birthday: '',
     birthday_year: '',
     birthday_month: '',
@@ -125,7 +123,7 @@ export const useCreatePetForm = (petId?: string) => {
           }
           setFormData({
             name: pet.name,
-            breed: pet.breed,
+            sex: pet.sex ?? 'not_specified',
             birthday: pet.birthday ? formatDate(pet.birthday) : '',
             birthday_year: pet.birthday_year ? String(pet.birthday_year) : '',
             birthday_month: pet.birthday_month ? String(pet.birthday_month) : '',
@@ -174,9 +172,6 @@ export const useCreatePetForm = (petId?: string) => {
     if (!formData.name.trim()) {
       newErrors.name = VALIDATION_MESSAGES.REQUIRED_NAME
     }
-    if (!formData.breed.trim()) {
-      newErrors.breed = VALIDATION_MESSAGES.REQUIRED_BREED
-    }
     // Precision-specific validation
     if (formData.birthday_precision === 'day') {
       if (
@@ -221,7 +216,7 @@ export const useCreatePetForm = (petId?: string) => {
       // Build payload with precision rules
       const payload: import('@/api/pets').CreatePetPayload = {
         name: formData.name,
-        breed: formData.breed,
+        sex: formData.sex,
         country: formData.country,
         state: formData.state || undefined,
         city: formData.city || undefined,

@@ -105,7 +105,6 @@ describe('CreatePetPage', () => {
     })
 
     expect(screen.getByLabelText('Name')).toBeInTheDocument()
-    expect(screen.getByLabelText('Breed')).toBeInTheDocument()
     expect(screen.getByLabelText('Birthday Precision')).toBeInTheDocument()
     // Date input not shown by default (unknown precision)
     expect(screen.queryByLabelText('Birthday')).not.toBeInTheDocument()
@@ -176,7 +175,6 @@ describe('CreatePetPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Name is required')).toBeInTheDocument()
-      expect(screen.getByText('Breed is required')).toBeInTheDocument()
       // Birthday no longer universally required
       expect(screen.queryByText('Birthday is required')).not.toBeInTheDocument()
       // Country defaults to 'VN' so it won't show validation error
@@ -190,7 +188,6 @@ describe('CreatePetPage', () => {
     const mockPetData = {
       id: 1,
       name: 'Fluffy',
-      breed: 'Persian',
       birthday: '2020-01-01',
       country: 'VN',
       description: '',
@@ -214,7 +211,6 @@ describe('CreatePetPage', () => {
 
     // Fill out the form
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Fluffy' } })
-    fireEvent.change(screen.getByLabelText('Breed'), { target: { value: 'Persian' } })
     // Enable full date precision
     fireEvent.change(screen.getByLabelText('Birthday Precision'), { target: { value: 'day' } })
     await waitFor(() => expect(screen.getByLabelText('Birthday')).toBeInTheDocument())
@@ -229,7 +225,6 @@ describe('CreatePetPage', () => {
       expect(mockCreatePet).toHaveBeenCalledWith(
         expect.objectContaining({
           name: 'Fluffy',
-          breed: 'Persian',
           birthday: '2020-01-01',
           birthday_precision: 'day',
           country: 'VN',
@@ -250,7 +245,6 @@ describe('CreatePetPage', () => {
 
     // Fill required fields
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Test Pet' } })
-    fireEvent.change(screen.getByLabelText('Breed'), { target: { value: 'Test Breed' } })
     fireEvent.change(screen.getByLabelText('Birthday Precision'), { target: { value: 'month' } })
     // Provide year+month components
     fireEvent.change(screen.getByLabelText('Birth Year'), { target: { value: '2022' } })
@@ -282,7 +276,6 @@ describe('CreatePetPage', () => {
 
     // Fill required fields
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Test Pet' } })
-    fireEvent.change(screen.getByLabelText('Breed'), { target: { value: 'Test Breed' } })
     fireEvent.change(screen.getByLabelText('Birthday Precision'), { target: { value: 'year' } })
     fireEvent.change(screen.getByLabelText('Birth Year'), { target: { value: '2023' } })
     // Country defaults to VN, Description not available in create mode
@@ -301,7 +294,6 @@ describe('CreatePetPage', () => {
       expect(screen.getByRole('button', { name: 'Create Pet' })).toBeInTheDocument()
     )
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Patchy' } })
-    fireEvent.change(screen.getByLabelText('Breed'), { target: { value: 'Mixed' } })
     // Country defaults to VN, Description not available in create mode
     fireEvent.change(screen.getByLabelText('Birthday Precision'), { target: { value: 'day' } })
     // Do not supply date -> should produce error on submit
@@ -318,7 +310,6 @@ describe('CreatePetPage', () => {
     )
 
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ghost' } })
-    fireEvent.change(screen.getByLabelText('Breed'), { target: { value: 'Unknown' } })
     // Country defaults to VN, Description not available in create mode
 
     const submitButton = screen.getByRole('button', { name: 'Create Pet' })

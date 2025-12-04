@@ -71,7 +71,6 @@ describe('CreatePetPage edit controls', () => {
     mockGetPet.mockResolvedValue({
       id: 1,
       name: 'Fluffy',
-      breed: 'Persian',
       country: 'VN',
       city: 'Hanoi',
       description: 'A cat',

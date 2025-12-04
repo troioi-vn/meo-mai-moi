@@ -30,7 +30,6 @@ class PetFeatureTest extends TestCase
     {
         return array_merge([
             'name' => 'Fluffy',
-            'breed' => 'Persian',
             'birthday' => '2020-01-01',
             'country' => 'VN',
             'city' => 'Hanoi',

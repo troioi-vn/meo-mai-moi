@@ -1,5 +1,5 @@
 import { api } from './axios'
-import type { Pet, PetType, BirthdayPrecision } from '@/types/pet'
+import type { Pet, PetType, BirthdayPrecision, PetSex } from '@/types/pet'
 
 export interface WeightHistory {
   id: number
@@ -85,7 +85,7 @@ export const getMyPetsSections = async (): Promise<{
 
 export interface CreatePetPayload {
   name: string
-  breed: string
+  sex?: PetSex
   country: string // ISO 3166-1 alpha-2 code
   state?: string
   city?: string

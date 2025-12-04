@@ -61,7 +61,7 @@ class UpdatePetController extends Controller
 
         $rules = [
             'name' => 'sometimes|required|string|max:255',
-            'breed' => 'sometimes|required|string|max:255',
+            'sex' => 'nullable|in:male,female,not_specified',
             'country' => 'sometimes|required|string|size:2',
             'state' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:255',
@@ -183,7 +183,7 @@ class UpdatePetController extends Controller
 
         $pet->fill(array_filter([
             'name' => $data['name'] ?? null,
-            'breed' => $data['breed'] ?? null,
+            'sex' => $data['sex'] ?? null,
             'birthday' => $birthdayDate,
             'birthday_year' => $data['birthday_year'] ?? null,
             'birthday_month' => $data['birthday_month'] ?? null,

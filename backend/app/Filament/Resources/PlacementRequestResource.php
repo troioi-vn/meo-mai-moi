@@ -86,7 +86,7 @@ class PlacementRequestResource extends Resource
                     ->searchable()
                     ->preload()
                     ->required()
-                    ->getOptionLabelFromRecordUsing(fn (Pet $record): string => "{$record->name} ({$record->breed}) - {$record->petType->name}"),
+                    ->getOptionLabelFromRecordUsing(fn (Pet $record): string => "{$record->name} - {$record->petType->name}"),
 
                 Select::make('user_id')
                     ->label('Owner')
@@ -146,10 +146,10 @@ class PlacementRequestResource extends Resource
 
                 TextColumn::make('pet.name')
                     ->label('Pet')
-                    ->searchable(['pets.name', 'pets.breed'])
+                    ->searchable(['pets.name'])
                     ->sortable()
                     ->url(fn (PlacementRequest $record): string => route('filament.admin.resources.pets.edit', $record->pet))
-                    ->description(fn (PlacementRequest $record): string => ($record->pet->breed ?? '').' ('.($record->pet->petType->name ?? '').')'),
+                    ->description(fn (PlacementRequest $record): string => $record->pet->petType->name ?? ''),
 
                 TextColumn::make('user.name')
                     ->label('Owner')

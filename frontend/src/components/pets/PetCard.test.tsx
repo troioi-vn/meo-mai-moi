@@ -153,10 +153,22 @@ describe('PetCard', () => {
     expect(screen.getByText('Respond')).toBeInTheDocument()
   })
 
-  it('does not show respond button when user is not authenticated', () => {
+  it('shows respond button when user is not authenticated', () => {
     renderWithProviders(<PetCard pet={mockCat} />)
 
-    expect(screen.queryByText('Respond')).not.toBeInTheDocument()
+    expect(screen.getByText('Respond')).toBeInTheDocument()
+  })
+
+  it('shows login prompt modal when non-authenticated user clicks respond', () => {
+    renderWithProviders(<PetCard pet={mockCat} />)
+
+    const respondButton = screen.getByText('Respond')
+    fireEvent.click(respondButton)
+
+    expect(screen.getByText('Login Required')).toBeInTheDocument()
+    expect(screen.getByText('Please login to respond to this placement request.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Login' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
   })
 
   it('opens placement response modal when respond button is clicked', () => {

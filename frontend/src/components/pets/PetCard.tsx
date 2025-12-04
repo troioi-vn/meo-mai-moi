@@ -6,6 +6,16 @@ import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 // Using default avatar as placeholder for pets
 import placeholderCatImage from '@/assets/images/default-avatar.webp'
 import { formatPetAge, petSupportsCapability, PetSexLabels } from '@/types/pet'
@@ -21,6 +31,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
   const { isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
   const [isModalOpen, setIsModalOpen] = React.useState(false)
+  const [isLoginPromptOpen, setIsLoginPromptOpen] = React.useState(false)
 
   // Determine active/open placement requests per docs: is_active || status in {open,pending_review}
   const hasAnyPlacementRequests = (pet.placement_requests?.length ?? 0) > 0
@@ -97,9 +108,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-primary">{pet.name}</CardTitle>
         <CardDescription className="text-muted-foreground">
-          {pet.sex && pet.sex !== 'not_specified' && (
-            <span>{PetSexLabels[pet.sex]} • </span>
-          )}
+          {pet.sex && pet.sex !== 'not_specified' && <span>{PetSexLabels[pet.sex]} • </span>}
           {formatPetAge(pet)}
         </CardDescription>
         <div className="mt-2 flex flex-wrap gap-2">
@@ -126,14 +135,14 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
       </CardHeader>
       <CardContent className="flex grow flex-col justify-between p-4">
         <div className="mt-4">
-          {isAuthenticated &&
-            user?.id !== pet.user_id &&
+          {/* Show Respond button for all users (except pet owner) when there's an active placement request */}
+          {(!isAuthenticated || user?.id !== pet.user_id) &&
             supportsPlacement &&
             // Prefer backend convenience flag; fallback to derived active/open state
             (pet.placement_request_active ?? hasActivePlacementRequests) &&
             activePlacementRequestId !== undefined && (
               <>
-                {myPendingTransfer ? (
+                {isAuthenticated && myPendingTransfer ? (
                   <div className="space-y-2">
                     <p className="text-sm text-muted-foreground text-center">
                       You responded... Waiting for approval
@@ -156,23 +165,58 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
                     className="w-full"
                     onClick={(e) => {
                       e.stopPropagation()
-                      setIsModalOpen(true)
+                      if (isAuthenticated) {
+                        setIsModalOpen(true)
+                      } else {
+                        setIsLoginPromptOpen(true)
+                      }
                     }}
                   >
                     Respond
                   </Button>
                 )}
-                <PlacementResponseModal
-                  isOpen={isModalOpen}
-                  onClose={() => {
-                    setIsModalOpen(false)
-                  }}
-                  petName={pet.name}
-                  petId={pet.id}
-                  placementRequestId={activePlacementRequestId}
-                />
+                {isAuthenticated && (
+                  <PlacementResponseModal
+                    isOpen={isModalOpen}
+                    onClose={() => {
+                      setIsModalOpen(false)
+                    }}
+                    petName={pet.name}
+                    petId={pet.id}
+                    placementRequestId={activePlacementRequestId}
+                  />
+                )}
               </>
             )}
+
+          {/* Login prompt modal for non-authenticated users */}
+          <AlertDialog open={isLoginPromptOpen} onOpenChange={setIsLoginPromptOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Login Required</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Please login to respond to this placement request.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel
+                  onClick={(e) => {
+                    e.stopPropagation()
+                  }}
+                >
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    void navigate(`/login?redirect=/pets/${String(pet.id)}`)
+                  }}
+                >
+                  Login
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </CardContent>
     </Card>

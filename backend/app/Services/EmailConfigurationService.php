@@ -152,7 +152,7 @@ class EmailConfigurationService
             // Purge the mail manager to force reconfiguration
             app('mail.manager')->purge();
 
-            Log::info('Mail configuration updated successfully', [
+            Log::debug('Mail configuration updated successfully', [
                 'provider' => $activeConfig->provider,
                 'from_address' => $mailConfig['from']['address'] ?? $mailConfig['from'] ?? 'not set',
             ]);

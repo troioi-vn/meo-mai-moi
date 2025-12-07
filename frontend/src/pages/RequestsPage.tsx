@@ -126,9 +126,7 @@ const RequestsPage = () => {
             return prDate < filterDate
           case 'on':
             // Compare dates only (ignore time)
-            return (
-              new Date(prDate).toDateString() === new Date(filterDate).toDateString()
-            )
+            return new Date(prDate).toDateString() === new Date(filterDate).toDateString()
           case 'after':
             return prDate > filterDate
         }
@@ -156,7 +154,16 @@ const RequestsPage = () => {
 
       return true
     })
-  }, [pets, requestTypeFilter, petTypeFilter, countryFilter, pickupDate, pickupDateComparison, dropoffDate, dropoffDateComparison])
+  }, [
+    pets,
+    requestTypeFilter,
+    petTypeFilter,
+    countryFilter,
+    pickupDate,
+    pickupDateComparison,
+    dropoffDate,
+    dropoffDateComparison,
+  ])
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -166,72 +173,84 @@ const RequestsPage = () => {
       <div className="mb-6 flex flex-col gap-4">
         {/* First row: Request Type, Pet Type, Country */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <div className="flex flex-col gap-2">
-            <span className="text-sm text-muted-foreground">Request Type</span>
-            <Select
-              value={requestTypeFilter}
-              onValueChange={(v) => {
-                setRequestTypeFilter(v as PlacementRequestType)
-              }}
-            >
-              <SelectTrigger className="w-full sm:w-[180px]" aria-label="Request Type Filter">
-                <SelectValue placeholder="All Types" />
-              </SelectTrigger>
-              <SelectContent>
-                {(Object.keys(PLACEMENT_REQUEST_TYPE_LABELS) as PlacementRequestType[]).map(
-                  (type) => (
-                    <SelectItem key={type} value={type}>
-                      {PLACEMENT_REQUEST_TYPE_LABELS[type]}
-                    </SelectItem>
-                  )
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-col gap-2">
-            <span className="text-sm text-muted-foreground">Pet Type</span>
-            <Select value={petTypeFilter} onValueChange={setPetTypeFilter}>
-              <SelectTrigger className="w-full sm:w-[180px]" aria-label="Pet Type Filter">
-                <SelectValue placeholder="All Pet Types" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Pet Types</SelectItem>
-                {petTypes.map((pt) => (
-                  <SelectItem key={pt.id} value={pt.slug}>
-                    {pt.name}
+          <Select
+            value={requestTypeFilter}
+            onValueChange={(v) => {
+              setRequestTypeFilter(v as PlacementRequestType)
+            }}
+          >
+            <SelectTrigger className="w-full sm:w-[180px]" aria-label="Request Type Filter">
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent>
+              {(Object.keys(PLACEMENT_REQUEST_TYPE_LABELS) as PlacementRequestType[]).map(
+                (type) => (
+                  <SelectItem key={type} value={type}>
+                    {PLACEMENT_REQUEST_TYPE_LABELS[type]}
                   </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-col gap-2">
-            <span className="text-sm text-muted-foreground">Country</span>
-            <Select value={countryFilter} onValueChange={setCountryFilter}>
-              <SelectTrigger className="w-full sm:w-[180px]" aria-label="Country Filter">
-                <SelectValue placeholder="All Countries" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Countries</SelectItem>
-                {availableCountries.map((code) => (
-                  <SelectItem key={code} value={code}>
-                    {getCountryName(code)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+                )
+              )}
+            </SelectContent>
+          </Select>
+          <Select value={petTypeFilter} onValueChange={setPetTypeFilter}>
+            <SelectTrigger className="w-full sm:w-[180px]" aria-label="Pet Type Filter">
+              <SelectValue placeholder="All Pet Types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Pet Types</SelectItem>
+              {petTypes.map((pt) => (
+                <SelectItem key={pt.id} value={pt.slug}>
+                  {pt.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={countryFilter} onValueChange={setCountryFilter}>
+            <SelectTrigger className="w-full sm:w-[180px]" aria-label="Country Filter">
+              <SelectValue placeholder="All Countries" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Countries</SelectItem>
+              {availableCountries.map((code) => (
+                <SelectItem key={code} value={code}>
+                  {getCountryName(code)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         {/* Second row: Date filters */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           {/* Pickup Date filter */}
-          <div className="flex flex-col gap-2">
-            <span className="text-sm text-muted-foreground">Pickup Date</span>
-            <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            <span className="text-sm text-muted-foreground shrink-0">Pickup</span>
+            <Select
+              value={pickupDateComparison}
+              onValueChange={(v) => setPickupDateComparison(v as DateComparison)}
+            >
+              <SelectTrigger className="w-[80px]" aria-label="Pickup Date Comparison">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {(Object.keys(DATE_COMPARISON_LABELS) as DateComparison[]).map((op) => (
+                  <SelectItem key={op} value={op}>
+                    {DATE_COMPARISON_LABELS[op]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <DatePicker date={pickupDate} setDate={setPickupDate} className="w-[130px]" />
+          </div>
+
+          {/* Drop-off Date filter - hidden for permanent requests */}
+          {requestTypeFilter !== 'permanent' && (
+            <div className="flex gap-2 items-center">
+              <span className="text-sm text-muted-foreground shrink-0">Drop-off</span>
               <Select
-                value={pickupDateComparison}
-                onValueChange={(v) => setPickupDateComparison(v as DateComparison)}
+                value={dropoffDateComparison}
+                onValueChange={(v) => setDropoffDateComparison(v as DateComparison)}
               >
-                <SelectTrigger className="w-[100px]" aria-label="Pickup Date Comparison">
+                <SelectTrigger className="w-[80px]" aria-label="Drop-off Date Comparison">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -242,40 +261,7 @@ const RequestsPage = () => {
                   ))}
                 </SelectContent>
               </Select>
-              <DatePicker
-                date={pickupDate}
-                setDate={setPickupDate}
-                className="w-full sm:w-[160px]"
-              />
-            </div>
-          </div>
-
-          {/* Drop-off Date filter - hidden for permanent requests */}
-          {requestTypeFilter !== 'permanent' && (
-            <div className="flex flex-col gap-2">
-              <span className="text-sm text-muted-foreground">Drop-off Date</span>
-              <div className="flex gap-2">
-                <Select
-                  value={dropoffDateComparison}
-                  onValueChange={(v) => setDropoffDateComparison(v as DateComparison)}
-                >
-                  <SelectTrigger className="w-[100px]" aria-label="Drop-off Date Comparison">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(Object.keys(DATE_COMPARISON_LABELS) as DateComparison[]).map((op) => (
-                      <SelectItem key={op} value={op}>
-                        {DATE_COMPARISON_LABELS[op]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <DatePicker
-                  date={dropoffDate}
-                  setDate={setDropoffDate}
-                  className="w-full sm:w-[160px]"
-                />
-              </div>
+              <DatePicker date={dropoffDate} setDate={setDropoffDate} className="w-[130px]" />
             </div>
           )}
         </div>

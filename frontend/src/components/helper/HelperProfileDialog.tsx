@@ -78,6 +78,12 @@ export const HelperProfileDialog: React.FC<HelperProfileDialogProps> = ({
             <p>
               <strong>Phone:</strong> {profile.phone_number ?? profile.phone ?? 'N/A'}
             </p>
+            {profile.contact_info && (
+              <p className="col-span-full">
+                <strong>Contact Info:</strong>{' '}
+                <span className="whitespace-pre-line">{profile.contact_info}</span>
+              </p>
+            )}
             <p>
               <strong>City:</strong> {profile.city ?? 'N/A'}
             </p>

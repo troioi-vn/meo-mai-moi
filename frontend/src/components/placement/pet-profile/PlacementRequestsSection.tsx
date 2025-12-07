@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -12,7 +12,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { Trash2, Users, Clock } from 'lucide-react'
+import { Trash2, Users, Clock, CheckCircle2, Loader2, Home } from 'lucide-react'
+import { api } from '@/api/axios'
+import { toast } from 'sonner'
 import type { Pet } from '@/types/pet'
 
 type PlacementRequest = NonNullable<Pet['placement_requests']>[number]
@@ -21,6 +23,7 @@ interface Props {
   placementRequests: PlacementRequest[]
   canEdit: boolean
   onDeletePlacementRequest: (id: number) => void | Promise<void>
+  onRefresh?: () => void
 }
 
 const formatRequestType = (type: string): string => {
@@ -40,11 +43,50 @@ const getRequestTypeBadgeVariant = (
   return 'outline'
 }
 
+const getStatusBadgeVariant = (
+  status: string
+): 'default' | 'secondary' | 'destructive' | 'outline' | 'success' => {
+  switch (status) {
+    case 'open':
+      return 'default'
+    case 'fulfilled':
+      return 'secondary'
+    case 'pending_transfer':
+      return 'secondary'
+    case 'active':
+      return 'success'
+    case 'finalized':
+      return 'success'
+    default:
+      return 'outline'
+  }
+}
+
+const formatStatus = (status: string): string => {
+  const labels: Record<string, string> = {
+    open: 'Open',
+    fulfilled: 'Awaiting Helper Confirmation',
+    pending_transfer: 'Transfer in Progress',
+    active: 'Active Fostering',
+    finalized: 'Completed',
+    expired: 'Expired',
+    cancelled: 'Cancelled',
+  }
+  return labels[status] ?? status.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+const isFosteringType = (type: string): boolean => {
+  return type === 'foster_free' || type === 'foster_payed'
+}
+
 export const PlacementRequestsSection: React.FC<Props> = ({
   placementRequests,
   canEdit,
   onDeletePlacementRequest,
+  onRefresh,
 }) => {
+  const [finalizingId, setFinalizingId] = useState<number | null>(null)
+
   const handleDelete = useCallback(
     async (requestId: number) => {
       try {
@@ -54,6 +96,23 @@ export const PlacementRequestsSection: React.FC<Props> = ({
       }
     },
     [onDeletePlacementRequest]
+  )
+
+  const handleFinalize = useCallback(
+    async (requestId: number) => {
+      setFinalizingId(requestId)
+      try {
+        await api.post(`placement-requests/${String(requestId)}/finalize`)
+        toast.success('Pet has been marked as returned!')
+        onRefresh?.()
+      } catch (error) {
+        console.error('Failed to finalize placement request', error)
+        toast.error('Failed to mark pet as returned. Please try again.')
+      } finally {
+        setFinalizingId(null)
+      }
+    },
+    [onRefresh]
   )
 
   if (!placementRequests.length) {
@@ -66,19 +125,30 @@ export const PlacementRequestsSection: React.FC<Props> = ({
         const pendingResponses =
           request.transfer_requests?.filter((tr) => tr.status === 'pending') ?? []
         const responseCount = pendingResponses.length
+        const isActive = request.status === 'active'
+        const isFostering = isFosteringType(request.request_type)
+        const showReturnButton = canEdit && isActive && isFostering
+        const isFinishing = finalizingId === request.id
 
         return (
           <div key={request.id} className="rounded-lg border p-4 bg-muted/50 space-y-3">
-            {/* Header: Request type and actions */}
+            {/* Header: Request type, status, and actions */}
             <div className="flex items-start justify-between gap-3">
               <div className="flex flex-col gap-2">
-                <Badge variant={getRequestTypeBadgeVariant(request.request_type)} className="w-fit">
-                  {formatRequestType(request.request_type)}
-                </Badge>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant={getRequestTypeBadgeVariant(request.request_type)} className="w-fit">
+                    {formatRequestType(request.request_type)}
+                  </Badge>
+                  {request.status !== 'open' && (
+                    <Badge variant={getStatusBadgeVariant(request.status)} className="w-fit">
+                      {formatStatus(request.status)}
+                    </Badge>
+                  )}
+                </div>
                 {request.notes && <p className="text-sm text-muted-foreground">{request.notes}</p>}
               </div>
 
-              {canEdit && (
+              {canEdit && request.status === 'open' && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button
@@ -93,8 +163,8 @@ export const PlacementRequestsSection: React.FC<Props> = ({
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete Placement Request</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Are you sure you want to delete this placement request? This action cannot
-                        be undone.
+                        Are you sure you want to delete this placement request? This action cannot be
+                        undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -111,23 +181,84 @@ export const PlacementRequestsSection: React.FC<Props> = ({
               )}
             </div>
 
-            {/* Footer: Response count and dates */}
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              {responseCount > 0 && (
-                <div className="flex items-center gap-1">
-                  <Users className="h-4 w-4" />
-                  <span>
-                    {responseCount} {responseCount === 1 ? 'response' : 'responses'}
-                  </span>
+            {/* Active fostering status indicator */}
+            {isActive && (
+              <div className="rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 p-3">
+                <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
+                  <Home className="h-4 w-4" />
+                  <span>Pet is currently with foster</span>
                 </div>
-              )}
-              {request.expires_at && (
-                <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  <span>Expires {new Date(request.expires_at).toLocaleDateString()}</span>
+              </div>
+            )}
+
+            {/* Pet is returned button for active fostering */}
+            {showReturnButton && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" className="w-full" disabled={isFinishing}>
+                    {isFinishing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                        Pet is Returned
+                      </>
+                    )}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Confirm Pet Return</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you confirming that the pet has been returned to you? This will end the
+                      fostering period and mark the placement as completed.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => void handleFinalize(request.id)}
+                      disabled={isFinishing}
+                    >
+                      {isFinishing ? 'Processing...' : 'Confirm Return'}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+
+            {/* Finalized status */}
+            {request.status === 'finalized' && (
+              <div className="rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 p-3">
+                <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span>Placement completed successfully</span>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+
+            {/* Footer: Response count and dates (only for open requests) */}
+            {request.status === 'open' && (
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                {responseCount > 0 && (
+                  <div className="flex items-center gap-1">
+                    <Users className="h-4 w-4" />
+                    <span>
+                      {responseCount} {responseCount === 1 ? 'response' : 'responses'}
+                    </span>
+                  </div>
+                )}
+                {request.expires_at && (
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-4 w-4" />
+                    <span>Expires {new Date(request.expires_at).toLocaleDateString()}</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )
       })}

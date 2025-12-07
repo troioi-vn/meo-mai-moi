@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\TransferHandover;
 
+use App\Enums\PlacementRequestStatus;
 use App\Http\Controllers\Controller;
 use App\Models\FosterAssignment;
 use App\Models\Notification;
@@ -46,6 +47,13 @@ class CompleteHandoverController extends Controller
             $handover->completed_at = now();
             $handover->save();
 
+            // Set placement request to pending_transfer first
+            $placementRequest = $tr->placementRequest;
+            if ($placementRequest) {
+                $placementRequest->status = PlacementRequestStatus::PENDING_TRANSFER;
+                $placementRequest->save();
+            }
+
             // Finalize transfer effects depending on relationship type
             $type = $tr->requested_relationship_type;
             if ($type === 'permanent_foster') {
@@ -76,6 +84,12 @@ class CompleteHandoverController extends Controller
                     'from_ts' => now(),
                     'to_ts' => null,
                 ]);
+
+                // For permanent rehoming, set status to finalized
+                if ($placementRequest) {
+                    $placementRequest->status = PlacementRequestStatus::FINALIZED;
+                    $placementRequest->save();
+                }
             } elseif ($type === 'fostering' && Schema::hasTable('foster_assignments')) {
                 FosterAssignment::firstOrCreate([
                     'pet_id' => $tr->pet_id,
@@ -87,6 +101,12 @@ class CompleteHandoverController extends Controller
                     'expected_end_date' => optional($tr->placementRequest)->end_date,
                     'status' => 'active',
                 ]);
+
+                // For temporary fostering, set status to active
+                if ($placementRequest) {
+                    $placementRequest->status = PlacementRequestStatus::ACTIVE;
+                    $placementRequest->save();
+                }
             }
         });
         // Notify both parties of completion

@@ -3807,6 +3807,49 @@
                 ]
             }
         },
+        "/api/placement-requests/{id}/finalize": {
+            "post": {
+                "tags": [
+                    "Placement Requests"
+                ],
+                "summary": "Finalize an active placement request (mark pet as returned for temporary fostering)",
+                "operationId": "ffb3a0beb8c355ae6cf2109d8254f284",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the placement request to finalize",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Placement request finalized successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlacementRequest"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Only owner can finalize"
+                    },
+                    "409": {
+                        "description": "Conflict - Placement request is not in active status"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/placement-requests/{id}/reject": {
             "post": {
                 "tags": [
@@ -6045,6 +6088,11 @@
                     },
                     "zip_code": {
                         "description": "ZIP/Postal code",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "contact_info": {
+                        "description": "Additional contact information visible to pet owners when responding to placement requests",
                         "type": "string",
                         "nullable": true
                     },

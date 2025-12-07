@@ -42,6 +42,7 @@ class StoreHelperProfileController extends Controller
             'address' => 'nullable|string|max:255',
             'zip_code' => 'nullable|string|max:20',
             'phone_number' => 'required|string|max:20',
+            'contact_info' => 'nullable|string|max:1000',
             'experience' => 'required|string',
             'has_pets' => 'required|boolean',
             'has_children' => 'required|boolean',

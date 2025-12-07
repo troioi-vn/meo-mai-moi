@@ -89,7 +89,7 @@ const RequestsPage = () => {
 
       // Hide pets with only fulfilled placement requests
       const hasActivePlacementRequest = prs.some(
-        (pr) => pr.is_active === true || pr.status === 'open' || pr.status === 'pending_review'
+        (pr) => pr.status === 'open' || pr.status === 'finalized'
       )
       if (!hasActivePlacementRequest) return false
 

@@ -79,7 +79,7 @@ describe('HelperProfileEditPage', () => {
     )
     renderComponent()
     await waitFor(() => {
-      expect(screen.getByText(/error fetching helper profile/i)).toBeInTheDocument()
+      expect(screen.getByText(/failed to load helper profile/i)).toBeInTheDocument()
     })
   })
 
@@ -98,6 +98,7 @@ describe('HelperProfileEditPage', () => {
       expect(screen.getByLabelText(/city/i)).toHaveValue(mockHelperProfile.city)
       expect(screen.getByLabelText(/experience/i)).toHaveValue(mockHelperProfile.experience)
       expect(screen.getByLabelText(/phone number/i)).toHaveValue(mockHelperProfile.phone_number)
+      expect(screen.getByLabelText(/contact info/i)).toHaveValue(mockHelperProfile.contact_info)
     })
 
     const cityInput = screen.getByLabelText(/city/i)
@@ -149,17 +150,22 @@ describe('HelperProfileEditPage', () => {
       expect(screen.getByText(/edit helper profile/i)).toBeInTheDocument()
     })
 
-    // Find the main delete button (not photo delete buttons)
-    const deleteButtons = screen.getAllByRole('button', { name: /delete/i })
-    const profileDeleteButton = deleteButtons.find(
-      (btn) => !btn.getAttribute('aria-label')?.includes('Delete photo')
+    // Find the delete button in the header (ghost button with trash icon)
+    // It's a button inside an AlertDialogTrigger
+    const allButtons = screen.getAllByRole('button')
+    // The profile delete button is in the navigation area, not in the form
+    // It triggers an AlertDialog
+    const deleteButton = allButtons.find(
+      (btn) =>
+        btn.classList.contains('text-destructive') ||
+        btn.className.includes('text-destructive')
     )
-    expect(profileDeleteButton).toBeDefined()
-    fireEvent.click(profileDeleteButton!)
+    expect(deleteButton).toBeDefined()
+    fireEvent.click(deleteButton!)
 
-    await screen.findByText(/are you sure?/i)
+    await screen.findByText(/delete helper profile/i)
 
-    const confirmDeleteButton = screen.getByRole('button', { name: /delete/i })
+    const confirmDeleteButton = screen.getByRole('button', { name: /delete profile/i })
     fireEvent.click(confirmDeleteButton)
 
     await waitFor(() => {

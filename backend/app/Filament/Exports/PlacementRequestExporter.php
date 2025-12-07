@@ -38,7 +38,7 @@ class PlacementRequestExporter extends Exporter
                 ->label('Status')
                 ->formatStateUsing(fn (PlacementRequestStatus $state): string => match ($state) {
                     PlacementRequestStatus::OPEN => 'Open',
-                    PlacementRequestStatus::PENDING_REVIEW => 'Pending Review',
+                    PlacementRequestStatus::FINALIZED => 'Finalized',
                     PlacementRequestStatus::FULFILLED => 'Fulfilled',
                     PlacementRequestStatus::EXPIRED => 'Expired',
                     PlacementRequestStatus::CANCELLED => 'Cancelled',

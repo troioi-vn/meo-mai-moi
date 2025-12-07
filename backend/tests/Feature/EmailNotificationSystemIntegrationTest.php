@@ -65,7 +65,6 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         $placementRequest = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
-            'is_active' => true,
             'status' => PlacementRequestStatus::OPEN->value,
         ]);
 
@@ -146,7 +145,6 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         $placementRequest2 = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
-            'is_active' => true,
             'status' => PlacementRequestStatus::OPEN->value,
         ]);
 

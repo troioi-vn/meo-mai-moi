@@ -39,7 +39,6 @@ describe('MainPage Integration with ActivePlacementRequestsSection', () => {
         request_type: 'fostering',
         status: 'open',
         notes: 'Looking for a loving home.',
-        is_active: true,
         created_at: '2025-07-20T00:00:00Z',
         updated_at: '2025-07-20T00:00:00Z',
         transfer_requests: [],

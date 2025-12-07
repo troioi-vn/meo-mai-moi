@@ -66,6 +66,7 @@ use App\Http\Controllers\PetPhoto\SetPrimaryPetPhotoController;
 use App\Http\Controllers\PetPhoto\StorePetPhotoController;
 use App\Http\Controllers\PlacementRequest\ConfirmPlacementRequestController;
 use App\Http\Controllers\PlacementRequest\DeletePlacementRequestController;
+use App\Http\Controllers\PlacementRequest\FinalizePlacementRequestController;
 use App\Http\Controllers\PlacementRequest\RejectPlacementRequestController;
 use App\Http\Controllers\PlacementRequest\StorePlacementRequestController;
 use App\Http\Controllers\PushSubscription\DeletePushSubscriptionController;
@@ -224,6 +225,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::delete('/placement-requests/{placementRequest}', DeletePlacementRequestController::class);
     Route::post('/placement-requests/{placementRequest}/confirm', ConfirmPlacementRequestController::class);
     Route::post('/placement-requests/{placementRequest}/reject', RejectPlacementRequestController::class);
+    Route::post('/placement-requests/{placementRequest}/finalize', FinalizePlacementRequestController::class);
 
     // Helper profiles
     Route::get('/helper-profiles', ListHelperProfilesController::class);

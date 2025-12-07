@@ -3,12 +3,13 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Clock, X, Info } from 'lucide-react'
+import { Clock, X, Info, CheckCircle2, Loader2 } from 'lucide-react'
 import { PlacementResponseModal } from '@/components/placement/PlacementResponseModal'
 import { api } from '@/api/axios'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
 import type { PublicPet } from '@/api/pets'
+import { getTransferHandover, completeHandover } from '@/api/handovers'
 
 type PlacementRequest = NonNullable<PublicPet['placement_requests']>[number]
 type TransferRequest = NonNullable<PlacementRequest['transfer_requests']>[number]
@@ -35,12 +36,48 @@ const getRequestTypeBadgeVariant = (
   return 'outline'
 }
 
+const getStatusBadgeVariant = (
+  status: string
+): 'default' | 'secondary' | 'destructive' | 'outline' | 'success' => {
+  switch (status) {
+    case 'open':
+      return 'default'
+    case 'fulfilled':
+      return 'secondary'
+    case 'pending_transfer':
+      return 'secondary'
+    case 'active':
+      return 'success'
+    case 'finalized':
+      return 'success'
+    default:
+      return 'outline'
+  }
+}
+
+const formatStatus = (status: string): string => {
+  const labels: Record<string, string> = {
+    open: 'Open',
+    fulfilled: 'Awaiting Confirmation',
+    pending_transfer: 'Transfer in Progress',
+    active: 'Active Fostering',
+    finalized: 'Completed',
+    expired: 'Expired',
+    cancelled: 'Cancelled',
+  }
+  return labels[status] ?? status.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
 export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh }) => {
   const { user } = useAuth()
   const [respondingToRequest, setRespondingToRequest] = useState<PlacementRequest | null>(null)
+  const [confirmingRehomingId, setConfirmingRehomingId] = useState<number | null>(null)
 
   const placementRequests = pet.placement_requests ?? []
-  const activePlacementRequests = placementRequests.filter((pr) => pr.status === 'open')
+  // Show open and fulfilled placement requests (fulfilled means awaiting helper confirmation)
+  const visiblePlacementRequests = placementRequests.filter(
+    (pr) => pr.status === 'open' || pr.status === 'fulfilled'
+  )
   const isOwner = Boolean(pet.viewer_permissions?.is_owner)
 
   // Find user's pending transfer request for any active placement request
@@ -48,6 +85,14 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
     if (!user) return undefined
     return request.transfer_requests?.find(
       (tr) => tr.status === 'pending' && tr.helper_profile?.user?.id === user.id
+    )
+  }
+
+  // Find user's accepted transfer request (for fulfilled placement requests)
+  const findMyAcceptedTransfer = (request: PlacementRequest): TransferRequest | undefined => {
+    if (!user) return undefined
+    return request.transfer_requests?.find(
+      (tr) => tr.status === 'accepted' && tr.helper_profile?.user?.id === user.id
     )
   }
 
@@ -65,7 +110,32 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
     [onRefresh]
   )
 
-  if (activePlacementRequests.length === 0) {
+  const handleConfirmRehoming = useCallback(
+    async (transferRequest: TransferRequest) => {
+      setConfirmingRehomingId(transferRequest.id)
+      try {
+        // First, get the handover for this transfer request
+        const handover = await getTransferHandover(transferRequest.id)
+        if (!handover) {
+          toast.error('No handover found for this transfer request')
+          return
+        }
+
+        // Complete the handover
+        await completeHandover(handover.id)
+        toast.success('Rehoming confirmed successfully!')
+        onRefresh?.()
+      } catch (error) {
+        console.error('Failed to confirm rehoming', error)
+        toast.error('Failed to confirm rehoming. Please try again.')
+      } finally {
+        setConfirmingRehomingId(null)
+      }
+    },
+    [onRefresh]
+  )
+
+  if (visiblePlacementRequests.length === 0) {
     return null
   }
 
@@ -75,16 +145,27 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
         <CardTitle className="text-lg font-semibold">Placement Requests</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {activePlacementRequests.map((request) => {
+        {visiblePlacementRequests.map((request) => {
           const myPendingTransfer = findMyPendingTransfer(request)
+          const myAcceptedTransfer = findMyAcceptedTransfer(request)
+          const isConfirming = confirmingRehomingId === myAcceptedTransfer?.id
 
           return (
             <div key={request.id} className="rounded-lg border p-4 bg-muted/50 space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-foreground">Available for Placement</h3>
-                <Badge variant={getRequestTypeBadgeVariant(request.request_type)}>
-                  {formatRequestType(request.request_type)}
-                </Badge>
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="font-semibold text-foreground">
+                  {request.status === 'open' ? 'Available for Placement' : 'Placement in Progress'}
+                </h3>
+                <div className="flex items-center gap-2">
+                  <Badge variant={getRequestTypeBadgeVariant(request.request_type)}>
+                    {formatRequestType(request.request_type)}
+                  </Badge>
+                  {request.status !== 'open' && (
+                    <Badge variant={getStatusBadgeVariant(request.status)}>
+                      {formatStatus(request.status)}
+                    </Badge>
+                  )}
+                </div>
               </div>
 
               {request.notes && <p className="text-sm text-muted-foreground">{request.notes}</p>}
@@ -96,49 +177,83 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                 </div>
               )}
 
-              {user ? (
-                isOwner ? (
-                  <Alert variant="info" className="mt-2">
-                    <Info className="h-4 w-4" />
-                    <AlertDescription>
-                      You cannot respond to your own pet's placement request.
-                    </AlertDescription>
-                  </Alert>
-                ) : myPendingTransfer ? (
-                  <div className="rounded-md bg-background border p-3 space-y-3">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Clock className="h-4 w-4" />
-                      <span>Your response is pending approval</span>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        void handleCancelTransferRequest(myPendingTransfer.id)
-                      }}
-                      className="w-full"
-                    >
-                      <X className="h-4 w-4 mr-1" />
-                      Cancel Response
-                    </Button>
+              {/* Show Confirm Rehoming button for accepted helper when status is fulfilled */}
+              {request.status === 'fulfilled' && myAcceptedTransfer && (
+                <div className="rounded-md bg-background border p-3 space-y-3">
+                  <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span>Your response was accepted!</span>
                   </div>
-                ) : (
                   <Button
                     onClick={() => {
-                      setRespondingToRequest(request)
+                      void handleConfirmRehoming(myAcceptedTransfer)
                     }}
+                    disabled={isConfirming}
                     className="w-full"
                   >
-                    Respond to Placement Request
+                    {isConfirming ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Confirming...
+                      </>
+                    ) : (
+                      'Confirm Rehoming'
+                    )}
                   </Button>
-                )
-              ) : (
-                <div className="text-sm text-muted-foreground text-center py-2">
-                  <a href="/login" className="text-primary hover:underline">
-                    Sign in
-                  </a>{' '}
-                  to respond to this placement request
+                  <p className="text-xs text-muted-foreground text-center">
+                    Click to confirm you have received the pet
+                  </p>
                 </div>
+              )}
+
+              {/* Show regular UI for open placement requests */}
+              {request.status === 'open' && (
+                <>
+                  {user ? (
+                    isOwner ? (
+                      <Alert variant="info" className="mt-2">
+                        <Info className="h-4 w-4" />
+                        <AlertDescription>
+                          You cannot respond to your own pet's placement request.
+                        </AlertDescription>
+                      </Alert>
+                    ) : myPendingTransfer ? (
+                      <div className="rounded-md bg-background border p-3 space-y-3">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Clock className="h-4 w-4" />
+                          <span>Your response is pending approval</span>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            void handleCancelTransferRequest(myPendingTransfer.id)
+                          }}
+                          className="w-full"
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          Cancel Response
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        onClick={() => {
+                          setRespondingToRequest(request)
+                        }}
+                        className="w-full"
+                      >
+                        Respond to Placement Request
+                      </Button>
+                    )
+                  ) : (
+                    <div className="text-sm text-muted-foreground text-center py-2">
+                      <a href="/login" className="text-primary hover:underline">
+                        Sign in
+                      </a>{' '}
+                      to respond to this placement request
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )

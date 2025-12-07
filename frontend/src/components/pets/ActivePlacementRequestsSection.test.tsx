@@ -77,7 +77,6 @@ const createMockPet = (id: number, name: string, petType: PetType = mockCatType)
       request_type: 'fostering',
       status: 'open',
       notes: 'Looking for help',
-      is_active: true,
       created_at: '2025-07-20T00:00:00Z',
       updated_at: '2025-07-20T00:00:00Z',
     },

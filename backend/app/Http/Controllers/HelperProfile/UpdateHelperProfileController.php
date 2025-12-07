@@ -99,6 +99,7 @@ class UpdateHelperProfileController extends Controller
             'address' => 'sometimes|string|max:255|nullable',
             'zip_code' => 'sometimes|string|max:20|nullable',
             'phone_number' => 'sometimes|string|max:20',
+            'contact_info' => 'sometimes|string|max:1000|nullable',
             'experience' => 'sometimes|string',
             'has_pets' => 'sometimes|boolean',
             'has_children' => 'sometimes|boolean',

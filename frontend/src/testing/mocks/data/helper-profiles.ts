@@ -8,6 +8,7 @@ export const mockHelperProfile = {
   city: 'Testville',
   state: 'TS',
   phone_number: '123-456-7890',
+  contact_info: 'You can also reach me on Telegram @testhelper',
   experience: 'Lots of experience',
   has_pets: true,
   has_children: false,

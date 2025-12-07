@@ -11,6 +11,7 @@ interface HelperProfileForm {
   city: string
   state: string
   phone_number: string
+  contact_info: string
   experience: string
   has_pets: boolean
   has_children: boolean
@@ -35,6 +36,7 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
     city: '',
     state: '',
     phone_number: '',
+    contact_info: '',
     experience: '',
     has_pets: false,
     has_children: false,
@@ -56,6 +58,7 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
         city: '',
         state: '',
         phone_number: '',
+        contact_info: '',
         experience: '',
         has_pets: false,
         has_children: false,
@@ -155,6 +158,7 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
       'city',
       'state',
       'phone_number',
+      'contact_info',
       'experience',
       'has_pets',
       'has_children',

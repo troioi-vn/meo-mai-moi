@@ -23,13 +23,11 @@ describe('RequestsPage', () => {
       })
     )
     renderWithRouter(<RequestsPage />)
-    expect(
-      await screen.findByRole('combobox', { name: 'Request Type Filter' })
-    ).toBeInTheDocument()
+    expect(await screen.findByRole('combobox', { name: 'Request Type Filter' })).toBeInTheDocument()
     expect(await screen.findByRole('combobox', { name: 'Pet Type Filter' })).toBeInTheDocument()
     expect(await screen.findByRole('combobox', { name: 'Country Filter' })).toBeInTheDocument()
-    expect(await screen.findByText(/pickup date/i)).toBeInTheDocument()
-    expect(await screen.findByText(/drop-off date/i)).toBeInTheDocument()
+    expect(await screen.findByText(/pickup/i)).toBeInTheDocument()
+    expect(await screen.findByText(/drop-off/i)).toBeInTheDocument()
     expect(
       await screen.findByRole('combobox', { name: 'Pickup Date Comparison' })
     ).toBeInTheDocument()
@@ -47,16 +45,16 @@ describe('RequestsPage', () => {
     )
     renderWithRouter(<RequestsPage />)
 
-    // Initially, drop-off date is visible
-    expect(await screen.findByText(/drop-off date/i)).toBeInTheDocument()
+    // Initially, drop-off is visible
+    expect(await screen.findByText(/drop-off/i)).toBeInTheDocument()
 
     // Select "Permanent" request type
     await user.click(screen.getByLabelText('Request Type Filter'))
     await user.click(screen.getByRole('option', { name: /permanent/i }))
 
-    // Drop-off date should be hidden
+    // Drop-off should be hidden
     await waitFor(() => {
-      expect(screen.queryByText(/drop-off date/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/drop-off/i)).not.toBeInTheDocument()
     })
   })
 
@@ -85,7 +83,6 @@ describe('RequestsPage', () => {
                   request_type: 'permanent',
                   start_date: '2025-08-01',
                   end_date: '2025-09-01',
-                  is_active: true,
                   status: 'open',
                   notes: 'Looking for permanent adoption',
                   created_at: '2025-07-20T00:00:00Z',
@@ -105,7 +102,6 @@ describe('RequestsPage', () => {
                   request_type: 'foster_free',
                   start_date: '2025-08-01',
                   end_date: '2025-09-01',
-                  is_active: true,
                   status: 'open',
                   notes: 'Looking for free fostering',
                   created_at: '2025-07-20T00:00:00Z',
@@ -159,7 +155,6 @@ describe('RequestsPage', () => {
                   id: 1,
                   pet_id: 1,
                   request_type: 'permanent',
-                  is_active: true,
                   status: 'open',
                 },
               ],
@@ -174,7 +169,6 @@ describe('RequestsPage', () => {
                   id: 2,
                   pet_id: 2,
                   request_type: 'foster_free',
-                  is_active: true,
                   status: 'open',
                 },
               ],

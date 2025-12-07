@@ -78,9 +78,9 @@ class TransferAcceptanceLifecycleTest extends TestCase
         // Ownership transferred to helper now
         $this->assertEquals($helper->id, $pet->fresh()->user_id);
 
-        // Placement fulfilled and inactive
+        // Placement finalized and inactive (for permanent rehoming)
         $this->assertFalse($placement->fresh()->isActive());
-        $this->assertEquals(\App\Enums\PlacementRequestStatus::FULFILLED, $placement->fresh()->status);
+        $this->assertEquals(\App\Enums\PlacementRequestStatus::FINALIZED, $placement->fresh()->status);
 
         // Other pending auto-rejected
         $this->assertEquals(\App\Enums\TransferRequestStatus::REJECTED, $otherPending->fresh()->status);
@@ -128,9 +128,8 @@ class TransferAcceptanceLifecycleTest extends TestCase
         \Laravel\Sanctum\Sanctum::actingAs($owner);
         $this->postJson("/api/transfer-handovers/{$handover->id}/complete")->assertStatus(200);
 
-        // Placement fulfilled
-        $this->assertFalse((bool) $placement->fresh()->is_active);
-        $this->assertEquals(\App\Enums\PlacementRequestStatus::FULFILLED, $placement->fresh()->status);
+        // Placement active (for temporary fostering)
+        $this->assertEquals(\App\Enums\PlacementRequestStatus::ACTIVE, $placement->fresh()->status);
 
         // Foster assignment created on completion
         $this->assertDatabaseHas('foster_assignments', [

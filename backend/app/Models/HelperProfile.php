@@ -68,6 +68,12 @@ use OpenApi\Annotations as OA;
  *         description="ZIP/Postal code"
  *     ),
  *     @OA\Property(
+ *         property="contact_info",
+ *         type="string",
+ *         nullable=true,
+ *         description="Additional contact information visible to pet owners when responding to placement requests"
+ *     ),
+ *     @OA\Property(
  *         property="created_at",
  *         type="string",
  *         format="date-time",
@@ -93,6 +99,7 @@ class HelperProfile extends Model
         'state',
         'zip_code',
         'phone_number',
+        'contact_info',
         'experience',
         'has_pets',
         'has_children',

@@ -120,9 +120,7 @@ const PetProfilePage: React.FC = () => {
               <CardContent className="py-12 text-center space-y-4">
                 <ShieldAlert className="h-12 w-12 mx-auto text-muted-foreground" />
                 <h2 className="text-xl font-semibold text-foreground">Access Restricted</h2>
-                <p className="text-muted-foreground">
-                  This pet profile is not publicly available.
-                </p>
+                <p className="text-muted-foreground">This pet profile is not publicly available.</p>
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -223,6 +221,7 @@ const PetProfilePage: React.FC = () => {
                     placementRequests={placementRequests}
                     canEdit={canEdit}
                     onDeletePlacementRequest={handleDeletePlacementRequest}
+                    onRefresh={refresh}
                   />
                 ) : (
                   <p className="text-sm text-muted-foreground py-2">

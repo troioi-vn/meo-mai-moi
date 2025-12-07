@@ -20,6 +20,7 @@ class HelperProfileFactory extends Factory
             'state' => $this->faker->randomElement(['CA', 'NY', 'TX', 'FL', 'IL']),
             'zip_code' => $this->faker->postcode(),
             'phone_number' => $this->faker->phoneNumber(),
+            'contact_info' => $this->faker->optional()->sentence(),
             'experience' => $this->faker->paragraph(),
             'has_pets' => $this->faker->boolean(),
             'has_children' => $this->faker->boolean(),

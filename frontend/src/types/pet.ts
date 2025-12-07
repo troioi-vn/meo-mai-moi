@@ -114,7 +114,6 @@ export interface PlacementRequest {
   // Optional date-range fields used by filters/tests
   start_date?: string
   end_date?: string
-  is_active?: boolean
   transfer_requests?: TransferRequest[]
   created_at?: string
   updated_at?: string

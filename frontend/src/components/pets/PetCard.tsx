@@ -33,15 +33,13 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
   const [isModalOpen, setIsModalOpen] = React.useState(false)
   const [isLoginPromptOpen, setIsLoginPromptOpen] = React.useState(false)
 
-  // Determine active/open placement requests per docs: is_active || status in {open,pending_review}
+  // Determine active/open placement requests: status in {open,finalized}
   const hasAnyPlacementRequests = (pet.placement_requests?.length ?? 0) > 0
   const isStatusOpen = (status?: string) => {
     const s = (status ?? '').toLowerCase()
-    return s === 'open' || s === 'pending_review' || s === 'pending'
+    return s === 'open' || s === 'finalized' || s === 'pending'
   }
-  const activePlacementRequest = pet.placement_requests?.find(
-    (req) => req.is_active === true || isStatusOpen(req.status)
-  )
+  const activePlacementRequest = pet.placement_requests?.find((req) => isStatusOpen(req.status))
   const activePlacementRequestId = activePlacementRequest?.id
   // Show Fulfilled only when there were requests but none are currently active/open
   const hasActivePlacementRequests = Boolean(activePlacementRequest)

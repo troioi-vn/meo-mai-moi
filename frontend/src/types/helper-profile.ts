@@ -14,6 +14,7 @@ export interface HelperProfile {
   zip_code?: string
   phone_number?: string
   phone?: string
+  contact_info?: string
   experience?: string
   about?: string
   has_pets?: boolean

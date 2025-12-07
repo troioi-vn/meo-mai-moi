@@ -33,7 +33,7 @@ class PlacementRequest extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'pet_id', // Updated from cat_id
+        'pet_id',
         'user_id',
         'request_type',
         'status',
@@ -41,8 +41,6 @@ class PlacementRequest extends Model
         'expires_at',
         'start_date',
         'end_date',
-        // Backward-compatibility bridge
-        'is_active',
     ];
 
     protected $casts = [
@@ -84,30 +82,6 @@ class PlacementRequest extends Model
     public function isActive(): bool
     {
         return $this->status === PlacementRequestStatus::OPEN;
-    }
-
-    /**
-     * Virtual accessor for `is_active` legacy boolean.
-     */
-    public function getIsActiveAttribute(): bool
-    {
-        return $this->isActive();
-    }
-
-    /**
-     * Virtual mutator for `is_active` mapping to OPEN/CANCELLED (or leave as-is if false but not open).
-     */
-    public function setIsActiveAttribute($value): void
-    {
-        $bool = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-        if ($bool === null) {
-            $bool = ! empty($value);
-        }
-        $this->attributes['status'] = $bool
-            ? PlacementRequestStatus::OPEN->value
-            : ($this->status === PlacementRequestStatus::FULFILLED
-                ? PlacementRequestStatus::FULFILLED->value
-                : PlacementRequestStatus::CANCELLED->value);
     }
 
     /**

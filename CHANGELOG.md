@@ -6,6 +6,56 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Placement Request Status Flow Enhancement**:
+  - Implemented complete status lifecycle for placement requests:
+    - `open` → `fulfilled` (when Owner accepts Helper's response)
+    - `fulfilled` → `pending_transfer` (when Helper clicks "Confirm Rehoming")
+    - `pending_transfer` → `finalized` (for permanent rehoming) OR `active` (for temporary fostering)
+    - `active` → `finalized` (when Owner clicks "Pet is Returned" for temporary fostering)
+  - Added "Confirm Rehoming" button for Helpers on public pet profile pages when their response is accepted
+  - Added "Pet is Returned" button for Owners on pet profile pages for active temporary fostering
+  - Updated `CompleteHandoverController` to properly set PlacementRequest status based on rehoming type
+  - New `FinalizePlacementRequestController` endpoint: `POST /api/placement-requests/{id}/finalize`
+  - Status badges and visual indicators throughout the UI showing current placement request state
+  - Comprehensive status flow documentation updated in `docs/rehoming-flow.md`
+
+- **Helper Profile Pages UI Modernization**:
+  - Updated `HelperProfilePage` (list view) with modern card-based design matching Pet Profile patterns
+  - Updated `HelperProfileViewPage` with consistent navigation, status badges, and organized card sections
+  - Updated `CreateHelperProfilePage` and `HelperProfileEditPage` with consistent navigation headers
+  - Improved empty states, loading states, and error handling across all helper profile pages
+  - Better visual hierarchy with icons, badges, and consistent spacing
+
+- **Contact Info Field for Helper Profiles**:
+
+  - Added new `contact_info` multiline text field to helper profiles, positioned after the phone number field
+  - Helpers can add additional contact information (e.g., Telegram, Zalo, WhatsApp, preferred contact times)
+  - Field includes a help icon with tooltip explaining that this info and phone number will be visible to pet owners when responding to placement requests
+  - Contact info is displayed in:
+    - Helper profile view page
+    - Helper profile dialog (shown to pet owners when reviewing placement responses)
+  - Database migration adds nullable `contact_info` text column to `helper_profiles` table
+  - Backend validation allows up to 1000 characters
+  - Updated documentation: new `docs/helper-profiles.md` with complete field reference
+
+- **Public Pet Profile Endpoint and UI**:
+
+  - New `/api/pets/{id}/public` endpoint for accessing pet profiles publicly (for guests and non-owners)
+  - Public profiles are accessible for:
+    - Pets with status "lost" (always publicly viewable)
+    - Pets with active (OPEN) placement requests
+  - Whitelisted fields returned in public view: id, name, sex, birthday data, location (no exact address), description, status, pet type, categories, photos, placement requests, and viewer permissions
+  - New `ShowPublicPetController.php` backend controller implementing public profile access with field filtering
+  - New `PetPolicy::isPubliclyViewable()` method determining public visibility logic
+  - New frontend routes and components:
+    - Route `/pets/:id/public` for public pet profile page (`PetPublicProfilePage.tsx`)
+    - `PublicPlacementRequestSection.tsx` component for displaying placement requests on public profiles
+    - Automatic redirect from `/pets/:id` to `/pets/:id/public` for non-owners viewing publicly viewable pets
+  - Owner viewing their own public profile sees banner: "You are viewing the public profile of your pet."
+  - Lost pets show warning banner: "This pet has been reported as lost..."
+  - Comprehensive documentation: new `docs/pet-profiles.md` explaining access control, routing logic, and API endpoints
+  - Test coverage: `PublicPetProfileTest.php` and `PetPublicProfilePage.test.tsx` with 13+ test cases
+
 - **Login Prompt for Placement Requests**:
 
   - "Respond" button on pet cards is now visible to all users (not just logged-in users)
@@ -32,6 +82,17 @@ All notable changes to this project are documented here, following the [Keep a C
   - Confirming the action logs out the current user and redirects to `/login`; cancelling closes the dialog
   - Frontend: `UserMenu` component now uses `AlertDialog` to display the confirmation
   - Tests: Updated unit tests and e2e tests to assert dialog behavior and logout flow
+
+### Changed
+
+- **Placement Request Status Update**: Replaced `PENDING_REVIEW` status with `FINALIZED`
+  - Updated enum `PlacementRequestStatus` in backend
+  - Updated all UI labels and filters across Filament admin panel
+  - Updated API database queries for active request checks
+  - Updated frontend logic for determining active placement requests
+  - Affected files:
+    - Backend: `PlacementRequestStatus.php`, `PlacementRequestResource.php`, `StorePlacementRequestController.php`, `PlacementRequestExporter.php`
+    - Frontend: `PetCard.tsx`, `RequestsPage.tsx`, `usePlacementInfo.ts`
 
 ### Fixed
 

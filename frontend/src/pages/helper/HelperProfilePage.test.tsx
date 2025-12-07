@@ -29,13 +29,13 @@ describe('HelperProfilePage', () => {
     await waitFor(() => {
       expect(screen.getByText('My Helper Profiles')).toBeInTheDocument()
     })
-    // Location should show city and state
+    // Location should show city, state, and country
     expect(
-      screen.getByText(`${mockHelperProfile.city}, ${mockHelperProfile.state}`)
+      screen.getByText(`${mockHelperProfile.city}, ${mockHelperProfile.state}, ${mockHelperProfile.country}`)
     ).toBeInTheDocument()
     // Public badge should be visible
     expect(screen.getByText('Public')).toBeInTheDocument()
-    // Edit button (now icon button with pencil)
-    expect(screen.getByRole('link', { name: '' })).toBeInTheDocument()
+    // Profile card should be a clickable link
+    expect(screen.getByRole('link')).toBeInTheDocument()
   })
 })

@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useAuth } from '@/hooks/use-auth'
 import { toast } from 'sonner'

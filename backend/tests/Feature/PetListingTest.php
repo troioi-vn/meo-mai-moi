@@ -30,20 +30,20 @@ class PetListingTest extends TestCase
 
         $petData = [
             'name' => 'Test Pet',
-            'breed' => 'Test Breed',
             'birthday' => '2023-01-01 00:00:00',
-            'location' => 'Test Location',
+            'country' => 'VN',
+            'city' => 'Test City',
             'description' => 'Test Description',
         ];
 
         $response = $this->postJson('/api/pets', $petData);
 
         $response->assertStatus(201)
-            ->assertJsonStructure(['data' => ['id', 'name', 'breed']]);
+            ->assertJsonStructure(['data' => ['id', 'name']]);
         $this->assertDatabaseHas('pets', [
             'name' => 'Test Pet',
-            'breed' => 'Test Breed',
-            'location' => 'Test Location',
+            'country' => 'VN',
+            'city' => 'Test City',
             'description' => 'Test Description',
         ]);
     }
@@ -53,9 +53,9 @@ class PetListingTest extends TestCase
     {
         $petData = [
             'name' => 'Test Pet',
-            'breed' => 'Test Breed',
             'birthday' => '2023-01-01',
-            'location' => 'Test Location',
+            'country' => 'VN',
+            'city' => 'Test City',
             'description' => 'Test Description',
         ];
 

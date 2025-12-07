@@ -130,7 +130,7 @@ class SettingsTest extends TestCase
 
     public function test_set_invite_only_enabled_stores_true_as_string()
     {
-        Settings::setInviteOnlyEnabled(true);
+        Settings::updateInviteOnlyMode(true);
 
         $this->assertEquals('true', Settings::get('invite_only_enabled'));
         $this->assertTrue(Settings::isInviteOnlyEnabled());
@@ -138,7 +138,7 @@ class SettingsTest extends TestCase
 
     public function test_set_invite_only_enabled_stores_false_as_string()
     {
-        Settings::setInviteOnlyEnabled(false);
+        Settings::updateInviteOnlyMode(false);
 
         $this->assertEquals('false', Settings::get('invite_only_enabled'));
         $this->assertFalse(Settings::isInviteOnlyEnabled());

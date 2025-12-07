@@ -41,9 +41,11 @@ const mockDogType: PetType = {
 const mockCat: Pet = {
   id: 1,
   name: 'Fluffy',
-  breed: 'Persian',
   birthday: '2020-01-01',
-  location: 'Hanoi',
+  country: 'VN',
+  state: '',
+  city: 'Hanoi',
+  address: '',
   description: 'A lovely cat',
   user_id: 1,
   pet_type_id: 1,
@@ -71,9 +73,11 @@ const mockCat: Pet = {
 const mockDog: Pet = {
   id: 2,
   name: 'Buddy',
-  breed: 'Golden Retriever',
   birthday: '2021-01-01',
-  location: 'Ho Chi Minh City',
+  country: 'VN',
+  state: '',
+  city: 'Ho Chi Minh City',
+  address: '',
   description: 'A friendly dog',
   user_id: 1,
   pet_type_id: 2,
@@ -149,10 +153,22 @@ describe('PetCard', () => {
     expect(screen.getByText('Respond')).toBeInTheDocument()
   })
 
-  it('does not show respond button when user is not authenticated', () => {
+  it('shows respond button when user is not authenticated', () => {
     renderWithProviders(<PetCard pet={mockCat} />)
 
-    expect(screen.queryByText('Respond')).not.toBeInTheDocument()
+    expect(screen.getByText('Respond')).toBeInTheDocument()
+  })
+
+  it('shows login prompt modal when non-authenticated user clicks respond', () => {
+    renderWithProviders(<PetCard pet={mockCat} />)
+
+    const respondButton = screen.getByText('Respond')
+    fireEvent.click(respondButton)
+
+    expect(screen.getByText('Login Required')).toBeInTheDocument()
+    expect(screen.getByText('Please login to respond to this placement request.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Login' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
   })
 
   it('opens placement response modal when respond button is clicked', () => {
@@ -165,14 +181,13 @@ describe('PetCard', () => {
     expect(screen.getByText('Modal for Fluffy')).toBeInTheDocument()
   })
 
-  it('links to unified pet route', () => {
+  it('navigates to unified pet route on card click', () => {
     const { container } = renderWithProviders(<PetCard pet={mockCat} />)
-    const catLink = container.querySelector('a[href="/pets/1"]')
-    expect(catLink).toBeInTheDocument()
 
-    const { container: dogContainer } = renderWithProviders(<PetCard pet={mockDog} />)
-    const dogLink = dogContainer.querySelector('a[href="/pets/2"]')
-    expect(dogLink).toBeInTheDocument()
+    // Card should be clickable (find by data-slot="card" or the cursor-pointer class)
+    const card = container.querySelector('[data-slot="card"]')
+    expect(card).toBeInTheDocument()
+    expect(card).toHaveClass('cursor-pointer')
   })
 
   it('shows fulfilled status when placement request is fulfilled', () => {

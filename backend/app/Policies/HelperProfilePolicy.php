@@ -10,11 +10,6 @@ class HelperProfilePolicy
 {
     use HandlesAuthorization;
 
-    private function isAdmin(User $user): bool
-    {
-        return method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
-    }
-
     public function viewAny(User $user): bool
     {
         return true;
@@ -79,5 +74,10 @@ class HelperProfilePolicy
     public function reorder(User $user): bool
     {
         return $this->isAdmin($user);
+    }
+
+    private function isAdmin(User $user): bool
+    {
+        return method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
     }
 }

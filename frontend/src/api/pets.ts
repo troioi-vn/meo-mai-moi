@@ -1,5 +1,5 @@
 import { api } from './axios'
-import type { Pet, PetType, BirthdayPrecision } from '@/types/pet'
+import type { Pet, PetType, BirthdayPrecision, PetSex } from '@/types/pet'
 
 export interface WeightHistory {
   id: number
@@ -28,6 +28,20 @@ export interface VaccinationRecord {
   notes?: string | null
   reminder_sent_at?: string | null
   completed_at?: string | null // ISO datetime - when set, record is completed/renewed
+  created_at: string
+  updated_at: string
+}
+
+export type MedicalRecordType = 'vaccination' | 'vet_visit' | 'medication' | 'treatment' | 'other'
+
+export interface MedicalRecord {
+  id: number
+  pet_id: number
+  record_type: MedicalRecordType
+  description: string
+  record_date: string // ISO date
+  vet_name?: string | null
+  attachment_url?: string | null
   created_at: string
   updated_at: string
 }
@@ -71,10 +85,15 @@ export const getMyPetsSections = async (): Promise<{
 
 export interface CreatePetPayload {
   name: string
-  breed: string
-  location: string
-  description: string
+  sex?: PetSex
+  country: string // ISO 3166-1 alpha-2 code
+  state?: string
+  city?: string
+  address?: string
+  description?: string
   pet_type_id: number | null
+  // Category IDs
+  category_ids?: number[]
   // Approximate birthday support
   birthday_precision?: BirthdayPrecision
   birthday?: string
@@ -130,6 +149,13 @@ export const deletePetPhoto = async (
   photoId: number | string = 'current'
 ): Promise<void> => {
   await api.delete(`/pets/${String(petId)}/photos/${String(photoId)}`)
+}
+
+export const setPrimaryPetPhoto = async (petId: number, photoId: number): Promise<Pet> => {
+  const response = await api.post<{ data: Pet }>(
+    `/pets/${String(petId)}/photos/${String(photoId)}/set-primary`
+  )
+  return response.data.data
 }
 
 export const getPlacementRequests = async (): Promise<Pet[]> => {
@@ -339,6 +365,64 @@ export const renewVaccination = async (
   const response = await api.post<{ data: VaccinationRecord }>(
     `/pets/${String(petId)}/vaccinations/${String(recordId)}/renew`,
     payload
+  )
+  return response.data.data
+}
+
+// Medical Records API
+export const getMedicalRecords = async (
+  petId: number,
+  page = 1,
+  recordType?: MedicalRecordType
+): Promise<{ data: MedicalRecord[]; links: unknown; meta: unknown }> => {
+  const params: { page: number; record_type?: string } = { page }
+  if (recordType) {
+    params.record_type = recordType
+  }
+  const response = await api.get<{
+    data: { data: MedicalRecord[]; links: unknown; meta: unknown }
+  }>(`/pets/${String(petId)}/medical-records`, { params })
+  return response.data.data
+}
+
+export const createMedicalRecord = async (
+  petId: number,
+  payload: {
+    record_type: MedicalRecordType
+    description: string
+    record_date: string
+    vet_name?: string | null
+    attachment_url?: string | null
+  }
+): Promise<MedicalRecord> => {
+  const response = await api.post<{ data: MedicalRecord }>(
+    `/pets/${String(petId)}/medical-records`,
+    payload
+  )
+  return response.data.data
+}
+
+export const updateMedicalRecord = async (
+  petId: number,
+  recordId: number,
+  payload: Partial<{
+    record_type: MedicalRecordType
+    description: string
+    record_date: string
+    vet_name?: string | null
+    attachment_url?: string | null
+  }>
+): Promise<MedicalRecord> => {
+  const response = await api.put<{ data: MedicalRecord }>(
+    `/pets/${String(petId)}/medical-records/${String(recordId)}`,
+    payload
+  )
+  return response.data.data
+}
+
+export const deleteMedicalRecord = async (petId: number, recordId: number): Promise<boolean> => {
+  const response = await api.delete<{ data: boolean }>(
+    `/pets/${String(petId)}/medical-records/${String(recordId)}`
   )
   return response.data.data
 }

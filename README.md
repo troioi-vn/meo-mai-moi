@@ -112,7 +112,7 @@ For architecture context, see `GEMINI.md` (AI Agent Guide).
 
 **Cat Care Management**:
 
-- **Cat Profiles**: Comprehensive profiles with photos, breed info, and personality traits
+- **Cat Profiles**: Comprehensive profiles with photos, sex information, and personality traits
 - **Health Tracking**: Medical records, vaccination schedules, and appointment reminders
 - **Weight Monitoring**: Regular weight tracking with visual charts and health insights
 - **Care Scheduling**: Feeding schedules, medication reminders, and routine care tasks

@@ -6,7 +6,6 @@ use App\Enums\NotificationType;
 use App\Models\Pet;
 use App\Models\User;
 use App\Services\NotificationService;
-use App\Services\PetCapabilityService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -32,7 +31,7 @@ class SendBirthdayReminders extends Command
             ->with(['user', 'petType'])
             ->where(function ($q) use ($month, $day) {
                 // For pets with exact birthday (precision = day)
-                $q->whereRaw("EXTRACT(MONTH FROM birthday) = ? AND EXTRACT(DAY FROM birthday) = ?", [$month, $day]);
+                $q->whereRaw('EXTRACT(MONTH FROM birthday) = ? AND EXTRACT(DAY FROM birthday) = ?', [$month, $day]);
             });
 
         $count = 0;
@@ -54,7 +53,7 @@ class SendBirthdayReminders extends Command
 
                 $data = [
                     'message' => sprintf(
-                        "🎂 Happy Birthday %s! Today %s turns %s",
+                        '🎂 Happy Birthday %s! Today %s turns %s',
                         $pet->name,
                         $pet->name,
                         $age

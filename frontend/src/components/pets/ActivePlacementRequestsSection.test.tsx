@@ -17,7 +17,6 @@ vi.mock('@/components/pets/PetCard', () => ({
   PetCard: ({ pet }: { pet: Pet }) => (
     <div data-testid={`pet-card-${String(pet.id)}`}>
       <h3>{pet.name}</h3>
-      <p>{pet.breed}</p>
       <span>{pet.pet_type.name}</span>
     </div>
   ),
@@ -53,11 +52,13 @@ const mockCatType: PetType = {
 const createMockPet = (id: number, name: string, petType: PetType = mockCatType): Pet => ({
   id,
   name,
-  breed: 'Persian',
   birthday: '2020-01-15',
   status: 'active',
   description: 'A friendly pet',
-  location: 'New York, NY',
+  country: 'US',
+  state: 'NY',
+  city: 'New York',
+  address: '',
   photo_url: 'http://example.com/pet.jpg',
   user_id: 1,
   pet_type_id: petType.id,

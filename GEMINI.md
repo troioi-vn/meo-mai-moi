@@ -10,7 +10,7 @@ Meo Mai Moi is a comprehensive cat care management platform that helps cat owner
 
 **Core Features (MVP Focus)**:
 **Cat Care Management**:
-- Cat profiles with photos, breed information, and personality traits
+- Cat profiles with photos, sex information, and personality traits
 - Health tracking with medical records and vaccination schedules
 - Weight monitoring with visual charts and trend analysis
 - Care scheduling for feeding, medications, and routine tasks

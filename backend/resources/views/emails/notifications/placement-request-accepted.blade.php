@@ -14,7 +14,7 @@
             <div class="pet-name">{{ $pet->name }}</div>
             <div class="pet-details">
                 <strong>Type:</strong> {{ $pet->petType->name ?? 'Pet' }}<br>
-                <strong>Location:</strong> {{ $pet->location ?? 'Unknown' }}<br>
+                <strong>Location:</strong> {{ collect([$pet->city, $pet->state, $pet->country])->filter()->implode(', ') ?: 'Unknown' }}<br>
                 @if($pet->birthday)
                     <strong>Age:</strong> {{ $pet->birthday->diffInYears(now()) }} years old<br>
                 @endif

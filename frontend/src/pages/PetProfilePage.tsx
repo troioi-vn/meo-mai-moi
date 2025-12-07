@@ -3,12 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { ChevronLeft } from 'lucide-react'
 import { usePetProfile } from '@/hooks/usePetProfile'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { PlacementRequestModal } from '@/components/placement/PlacementRequestModal'
 import { WeightHistoryCard } from '@/components/pet-health/weights/WeightHistoryCard'
 import { UpcomingVaccinationsSection } from '@/components/pet-health/vaccinations/UpcomingVaccinationsSection'
 import { VaccinationStatusBadge } from '@/components/pet-health/vaccinations/VaccinationStatusBadge'
+import { MedicalRecordsSection } from '@/components/pet-health/medical/MedicalRecordsSection'
 import { useVaccinations } from '@/hooks/useVaccinations'
 import { calculateVaccinationStatus } from '@/utils/vaccinationStatus'
 import { petSupportsCapability, formatPetAge } from '@/types/pet'
@@ -24,10 +26,12 @@ const PetProfilePage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   // Track vaccination updates to refresh the badge
   const [vaccinationVersion, setVaccinationVersion] = useState(0)
-  const handleVaccinationChange = () => setVaccinationVersion((v) => v + 1)
+  const handleVaccinationChange = () => {
+    setVaccinationVersion((v) => v + 1)
+  }
 
   const handleBack = () => {
-    navigate(-1)
+    void navigate(-1)
   }
 
   const handleEdit = () => {
@@ -80,6 +84,7 @@ const PetProfilePage: React.FC = () => {
   // Check capabilities for this pet type
   const supportsWeight = petSupportsCapability(pet.pet_type, 'weight')
   const supportsVaccinations = petSupportsCapability(pet.pet_type, 'vaccinations')
+  const supportsMedical = petSupportsCapability(pet.pet_type, 'medical')
   const supportsPlacement = petSupportsCapability(pet.pet_type, 'placement')
   const placementRequests = pet.placement_requests ?? []
   const hasPlacementRequests = placementRequests.length > 0
@@ -140,23 +145,43 @@ const PetProfilePage: React.FC = () => {
             />
           )}
 
+          {/* Medical Records */}
+          {supportsMedical && (
+            <MedicalRecordsSection petId={pet.id} canEdit={canEdit} mode="view" />
+          )}
+
           {/* Placement Requests Section */}
           {supportsPlacement && (
-            <section className="space-y-3">
-              {hasPlacementRequests && (
-                <PlacementRequestsSection
-                  placementRequests={placementRequests}
-                  canEdit={canEdit}
-                  onDeletePlacementRequest={handleDeletePlacementRequest}
-                />
-              )}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-semibold">Placement Requests</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {hasPlacementRequests ? (
+                  <PlacementRequestsSection
+                    placementRequests={placementRequests}
+                    canEdit={canEdit}
+                    onDeletePlacementRequest={handleDeletePlacementRequest}
+                  />
+                ) : (
+                  <p className="text-sm text-muted-foreground py-2">
+                    No active placement requests.
+                  </p>
+                )}
 
-              {canEdit && (
-                <Button variant="outline" className="w-full" onClick={() => setIsModalOpen(true)}>
-                  + Placement Requests
-                </Button>
-              )}
-            </section>
+                {canEdit && (
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => {
+                      setIsModalOpen(true)
+                    }}
+                  >
+                    + Add Placement Request
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
           )}
         </div>
       </main>
@@ -165,7 +190,9 @@ const PetProfilePage: React.FC = () => {
       <PlacementRequestModal
         petId={pet.id}
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false)
+        }}
         onSuccess={() => {
           refresh()
         }}

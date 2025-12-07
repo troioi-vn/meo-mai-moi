@@ -1,6 +1,8 @@
 import React from 'react'
 import { FormField } from '@/components/ui/FormField'
 import { CheckboxField } from '@/components/ui/CheckboxField'
+import { CountrySelect } from '@/components/ui/CountrySelect'
+import { Label } from '@/components/ui/label'
 
 interface Props {
   formData: {
@@ -23,14 +25,35 @@ interface Props {
 export const HelperProfileFormFields: React.FC<Props> = ({ formData, errors, updateField }) => {
   return (
     <>
-      <FormField
-        id="country"
-        label="Country"
-        value={formData.country}
-        onChange={updateField('country')}
-        error={errors.country}
-        placeholder="Enter your country"
-      />
+      <div className="space-y-2">
+        <Label htmlFor="country" className={errors.country ? 'text-destructive' : ''}>
+          Country <span className="text-destructive">*</span>
+        </Label>
+        <CountrySelect
+          value={formData.country}
+          onValueChange={(value) => { updateField('country')(value); }}
+          data-testid="country-select"
+        />
+        {errors.country && <p className="text-sm font-medium text-destructive">{errors.country}</p>}
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <FormField
+          id="state"
+          label="State/Province"
+          value={formData.state}
+          onChange={updateField('state')}
+          error={errors.state}
+          placeholder="Enter state or province"
+        />
+        <FormField
+          id="city"
+          label="City"
+          value={formData.city}
+          onChange={updateField('city')}
+          error={errors.city}
+          placeholder="Enter your city"
+        />
+      </div>
       <FormField
         id="address"
         label="Address"
@@ -38,22 +61,6 @@ export const HelperProfileFormFields: React.FC<Props> = ({ formData, errors, upd
         onChange={updateField('address')}
         error={errors.address}
         placeholder="Enter your address"
-      />
-      <FormField
-        id="city"
-        label="City"
-        value={formData.city}
-        onChange={updateField('city')}
-        error={errors.city}
-        placeholder="Enter your city"
-      />
-      <FormField
-        id="state"
-        label="State"
-        value={formData.state}
-        onChange={updateField('state')}
-        error={errors.state}
-        placeholder="Enter your state"
       />
       <FormField
         id="phone_number"

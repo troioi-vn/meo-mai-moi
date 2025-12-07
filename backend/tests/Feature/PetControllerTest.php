@@ -49,9 +49,9 @@ class PetControllerTest extends TestCase
 
         $petData = [
             'name' => 'Fluffy',
-            'breed' => 'Persian',
             'birthday' => '2020-01-01',
-            'location' => 'Hanoi',
+            'country' => 'VN',
+            'city' => 'Hanoi',
             'description' => 'A lovely cat',
             'pet_type_id' => $this->catType->id,
         ];
@@ -63,9 +63,8 @@ class PetControllerTest extends TestCase
                 'data' => [
                     'id',
                     'name',
-                    'breed',
                     'birthday',
-                    'location',
+                    'country',
                     'description',
                     'pet_type_id',
                     'user_id',
@@ -75,7 +74,6 @@ class PetControllerTest extends TestCase
 
         $this->assertDatabaseHas('pets', [
             'name' => 'Fluffy',
-            'breed' => 'Persian',
             'pet_type_id' => $this->catType->id,
             'user_id' => $this->user->id,
         ]);
@@ -165,7 +163,6 @@ class PetControllerTest extends TestCase
 
         $updateData = [
             'name' => 'Updated Name',
-            'breed' => 'Updated Breed',
         ];
 
         $response = $this->putJson("/api/pets/{$pet->id}", $updateData);
@@ -175,7 +172,6 @@ class PetControllerTest extends TestCase
         $this->assertDatabaseHas('pets', [
             'id' => $pet->id,
             'name' => 'Updated Name',
-            'breed' => 'Updated Breed',
         ]);
     }
 
@@ -203,9 +199,9 @@ class PetControllerTest extends TestCase
     {
         $petData = [
             'name' => 'Fluffy',
-            'breed' => 'Persian',
             'birthday' => '2020-01-01',
-            'location' => 'Hanoi',
+            'country' => 'VN',
+            'city' => 'Hanoi',
             'description' => 'A lovely cat',
             'pet_type_id' => $this->catType->id,
         ];
@@ -241,9 +237,7 @@ class PetControllerTest extends TestCase
         $response->assertStatus(422)
             ->assertJsonValidationErrors([
                 'name',
-                'breed',
-                'location',
-                'description',
+                'country',
             ]);
 
         // pet_type_id is optional and defaults; should NOT be a validation error.
@@ -256,9 +250,9 @@ class PetControllerTest extends TestCase
 
         $petData = [
             'name' => 'Fluffy',
-            'breed' => 'Persian',
             'birthday' => '2020-01-01',
-            'location' => 'Hanoi',
+            'country' => 'VN',
+            'city' => 'Hanoi',
             'description' => 'A lovely cat',
             'pet_type_id' => 999, // Non-existent pet type
         ];

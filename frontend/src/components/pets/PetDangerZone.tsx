@@ -64,7 +64,7 @@ export const PetDangerZone: React.FC<Props> = ({
                 type="password"
                 placeholder="Enter your password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => { setPassword(e.target.value); }}
                 autoFocus
               />
             </div>

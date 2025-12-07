@@ -35,10 +35,6 @@ class SendNotificationEmail implements ShouldQueue
     // 1 min, 5 min, 15 min
     protected array $backoffSchedule = [60, 300, 900];
 
-    // Provide backwards-compatible public property expected by some tests
-    /** @var int[] */
-    public array $backoff = [60, 300, 900];
-
     private ?EmailLog $emailLog = null;
 
     /**
@@ -227,6 +223,40 @@ class SendNotificationEmail implements ShouldQueue
     }
 
     /**
+     * Handle a job failure.
+     */
+    public function failed(\Throwable $exception): void
+    {
+        $notification = Notification::find($this->notificationId);
+
+        if ($notification) {
+            $notification->update([
+                'failed_at' => now(),
+                'failure_reason' => $this->truncateFailureReason($exception->getMessage()),
+                'delivered_at' => null,
+            ]);
+        }
+
+        // Mark email log as failed if it exists
+        if ($this->emailLog && $this->emailLog->status !== 'failed') {
+            $this->emailLog->markAsFailed('Job failed permanently after '.$this->tries.' attempts: '.$exception->getMessage());
+        }
+
+        Log::error('Email notification job failed permanently', [
+            'notification_id' => $this->notificationId,
+            'email_log_id' => $this->emailLog?->id,
+            'user_id' => $this->user->id,
+            'user_email' => $this->user->email,
+            'type' => $this->type,
+            'error' => $exception->getMessage(),
+            'attempts' => $this->attempts(),
+        ]);
+
+        // Implement fallback to in-app notification
+        $this->createFallbackNotification($exception);
+    }
+
+    /**
      * Create the appropriate mail class for the notification type.
      */
     private function createMailClass(NotificationType $notificationType)
@@ -274,40 +304,6 @@ class SendNotificationEmail implements ShouldQueue
     }
 
     /**
-     * Handle a job failure.
-     */
-    public function failed(\Throwable $exception): void
-    {
-        $notification = Notification::find($this->notificationId);
-
-        if ($notification) {
-            $notification->update([
-                'failed_at' => now(),
-                'failure_reason' => $this->truncateFailureReason($exception->getMessage()),
-                'delivered_at' => null,
-            ]);
-        }
-
-        // Mark email log as failed if it exists
-        if ($this->emailLog && $this->emailLog->status !== 'failed') {
-            $this->emailLog->markAsFailed('Job failed permanently after '.$this->tries.' attempts: '.$exception->getMessage());
-        }
-
-        Log::error('Email notification job failed permanently', [
-            'notification_id' => $this->notificationId,
-            'email_log_id' => $this->emailLog?->id,
-            'user_id' => $this->user->id,
-            'user_email' => $this->user->email,
-            'type' => $this->type,
-            'error' => $exception->getMessage(),
-            'attempts' => $this->attempts(),
-        ]);
-
-        // Implement fallback to in-app notification
-        $this->createFallbackNotification($exception);
-    }
-
-    /**
      * Create a fallback in-app notification when email fails.
      */
     private function createFallbackNotification(\Throwable $exception): void
@@ -350,7 +346,6 @@ class SendNotificationEmail implements ShouldQueue
                     'type' => $this->type,
                 ]);
             }
-
         } catch (\Exception $e) {
             Log::error('Failed to create fallback notification', [
                 'original_notification_id' => $this->notificationId,

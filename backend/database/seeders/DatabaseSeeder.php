@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             PetTypeSeeder::class, // Add pet types first
+            CategorySeeder::class, // Add categories after pet types
             RolesAndPermissionsSeeder::class,
             UserSeeder::class,
             PlacementRequestSeeder::class,

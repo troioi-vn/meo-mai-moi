@@ -48,10 +48,16 @@ class StorePetController extends Controller
     {
         $rules = [
             'name' => 'required|string|max:255',
-            'breed' => 'required|string|max:255',
-            'location' => 'required|string|max:255',
-            'description' => 'required|string',
+            'sex' => 'nullable|in:male,female,not_specified',
+            'country' => 'required|string|size:2',
+            'state' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
             'pet_type_id' => 'nullable|exists:pet_types,id',
+            // Category IDs
+            'category_ids' => 'nullable|array|max:10',
+            'category_ids.*' => 'integer|exists:categories,id',
             // Legacy exact date (optional now)
             'birthday' => 'nullable|date|before_or_equal:today',
             // New precision inputs
@@ -179,14 +185,17 @@ class StorePetController extends Controller
 
         $pet = Pet::create([
             'name' => $data['name'],
-            'breed' => $data['breed'],
+            'sex' => $data['sex'] ?? 'not_specified',
             'birthday' => $birthdayDate,
             'birthday_year' => $data['birthday_year'] ?? null,
             'birthday_month' => $data['birthday_month'] ?? null,
             'birthday_day' => $data['birthday_day'] ?? null,
             'birthday_precision' => $precision,
-            'location' => $data['location'],
-            'description' => $data['description'],
+            'country' => $data['country'],
+            'state' => $data['state'] ?? null,
+            'city' => $data['city'] ?? null,
+            'address' => $data['address'] ?? null,
+            'description' => $data['description'] ?? '',
             'pet_type_id' => $petTypeId,
             'user_id' => $request->user()->id,
             'status' => PetStatus::ACTIVE,
@@ -208,7 +217,12 @@ class StorePetController extends Controller
             }
         }
 
-        $pet->load('petType');
+        // Sync categories if provided
+        if (isset($data['category_ids'])) {
+            $pet->categories()->sync($data['category_ids']);
+        }
+
+        $pet->load(['petType', 'categories']);
 
         return $this->sendSuccess($pet, 201);
     }

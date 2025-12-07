@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useMicrochips } from '@/hooks/useMicrochips'
 import { Button } from '@/components/ui/button'
 import {
@@ -174,110 +175,114 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
   if (error) return <div className="text-destructive">{error}</div>
 
   return (
-    <section className="mt-8">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-2xl font-bold">Microchips</h2>
-        {canEdit && !adding && editingId == null && (
-          <Button
-            size="sm"
-            onClick={() => {
-              startAdd()
-            }}
-          >
-            Add
-          </Button>
-        )}
-      </div>
-
-      {adding && canEdit && (
-        <div className="mb-4 rounded-md border p-3">
-          <MicrochipForm
-            onSubmit={handleCreate}
-            onCancel={cancel}
-            submitting={submitting}
-            serverError={serverError}
-          />
+    <Card className="mt-8">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-semibold">Microchips</CardTitle>
+          {canEdit && !adding && editingId == null && (
+            <Button
+              size="sm"
+              onClick={() => {
+                startAdd()
+              }}
+            >
+              Add
+            </Button>
+          )}
         </div>
-      )}
+      </CardHeader>
 
-      <ul className="divide-y rounded-md border">
-        {sorted.length === 0 && (
-          <li className="p-3 text-sm text-muted-foreground">No microchips recorded.</li>
+      <CardContent>
+        {adding && canEdit && (
+          <div className="mb-4 rounded-md border p-3">
+            <MicrochipForm
+              onSubmit={handleCreate}
+              onCancel={cancel}
+              submitting={submitting}
+              serverError={serverError}
+            />
+          </div>
         )}
-        {sorted.map((m) => (
-          <li key={String(m.id)} className="flex items-center justify-between p-3">
-            {editingId === m.id ? (
-              <MicrochipForm
-                initial={{
-                  chip_number: m.chip_number,
-                  issuer: m.issuer ?? undefined,
-                  implanted_at: m.implanted_at ?? undefined,
-                }}
-                onSubmit={async (v) => {
-                  await handleUpdate(m.id, v)
-                }}
-                onCancel={() => {
-                  setEditingId(null)
-                }}
-                submitting={submitting}
-                serverError={serverError}
-              />
-            ) : (
-              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between w-full">
-                <div className="flex-1">
-                  <div className="font-medium">{m.chip_number}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {m.issuer ? `Issuer: ${m.issuer}` : 'Issuer: —'}
+
+        <ul className="divide-y rounded-md border">
+          {sorted.length === 0 && (
+            <li className="p-3 text-sm text-muted-foreground">No microchips recorded.</li>
+          )}
+          {sorted.map((m) => (
+            <li key={String(m.id)} className="flex items-center justify-between p-3">
+              {editingId === m.id ? (
+                <MicrochipForm
+                  initial={{
+                    chip_number: m.chip_number,
+                    issuer: m.issuer ?? undefined,
+                    implanted_at: m.implanted_at ?? undefined,
+                  }}
+                  onSubmit={async (v) => {
+                    await handleUpdate(m.id, v)
+                  }}
+                  onCancel={() => {
+                    setEditingId(null)
+                  }}
+                  submitting={submitting}
+                  serverError={serverError}
+                />
+              ) : (
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between w-full">
+                  <div className="flex-1">
+                    <div className="font-medium">{m.chip_number}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {m.issuer ? `Issuer: ${m.issuer}` : 'Issuer: —'}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Implanted:{' '}
+                      {m.implanted_at ? new Date(m.implanted_at).toLocaleDateString() : '—'}
+                    </div>
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    Implanted:{' '}
-                    {m.implanted_at ? new Date(m.implanted_at).toLocaleDateString() : '—'}
-                  </div>
-                </div>
-                {canEdit && (
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setEditingId(m.id)
-                      }}
-                    >
-                      Edit
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button size="sm" variant="destructive">
-                          Delete
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete microchip?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => {
-                              void remove(m.id)
-                            }}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
+                  {canEdit && (
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setEditingId(m.id)
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="sm" variant="destructive">
                             Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                )}
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
-    </section>
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete microchip?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => {
+                                void remove(m.id)
+                              }}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  )}
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
   )
 }

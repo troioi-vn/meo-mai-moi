@@ -14,14 +14,16 @@ import { PetFormFields } from '@/components/pets/PetFormFields'
 import { PetStatusControls } from '@/components/pets/PetStatusControls'
 import { PetDangerZone } from '@/components/pets/PetDangerZone'
 import { PetPhoto } from '@/components/pets/PetPhoto'
+import { PetPhotoGallery } from '@/components/pets/PetPhotoGallery'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { WeightHistoryCard } from '@/components/pet-health/weights/WeightHistoryCard'
 import { UpcomingVaccinationsSection } from '@/components/pet-health/vaccinations/UpcomingVaccinationsSection'
 import { MicrochipsSection } from '@/components/pet-health/microchips/MicrochipsSection'
+import { MedicalRecordsSection } from '@/components/pet-health/medical/MedicalRecordsSection'
+import { CategorySelect } from '@/components/pets/CategorySelect'
 
-const TAB_VALUES = ['general', 'health', 'status'] as const
-type TabValue = (typeof TAB_VALUES)[number]
+type TabValue = 'general' | 'health' | 'status'
 
 const CreatePetPage: React.FC = () => {
   const { id: petId } = useParams<{ id: string }>()
@@ -46,6 +48,7 @@ const CreatePetPage: React.FC = () => {
     isSubmitting,
     isLoadingPet,
     updateField,
+    updateCategories,
     handleSubmit,
     handleCancel,
   } = useCreatePetForm(petId)
@@ -110,7 +113,7 @@ const CreatePetPage: React.FC = () => {
   }
 
   const handleBack = () => {
-    navigate(-1)
+    void navigate(-1)
   }
 
   // Show loading state for edit mode
@@ -121,7 +124,13 @@ const CreatePetPage: React.FC = () => {
   // Show error state if pet not found (edit mode only)
   if (isEditMode && loadError) {
     return (
-      <ErrorState error={loadError} onRetry={() => navigate('/')} retryText="Back to My Pets" />
+      <ErrorState
+        error={loadError}
+        onRetry={() => {
+          void navigate('/')
+        }}
+        retryText="Back to My Pets"
+      />
     )
   }
 
@@ -129,7 +138,8 @@ const CreatePetPage: React.FC = () => {
   const petType = loadedPet?.pet_type
   const supportsWeight = petType ? petSupportsCapability(petType, 'weight') : false
   const supportsVaccinations = petType ? petSupportsCapability(petType, 'vaccinations') : false
-  const supportsHealth = supportsWeight || supportsVaccinations
+  const supportsMedical = petType ? petSupportsCapability(petType, 'medical') : false
+  const supportsHealth = supportsWeight || supportsVaccinations || supportsMedical
   const supportsMicrochips = petType ? petSupportsCapability(petType, 'microchips') : false
 
   // Create mode - simple form without tabs
@@ -177,7 +187,18 @@ const CreatePetPage: React.FC = () => {
                   error={errors.pet_type_id}
                 />
 
-                <PetFormFields formData={formData} errors={errors} updateField={updateField} />
+                <CategorySelect
+                  petTypeId={formData.pet_type_id}
+                  selectedCategories={formData.categories}
+                  onChange={updateCategories}
+                />
+
+                <PetFormFields
+                  formData={formData}
+                  errors={errors}
+                  updateField={updateField}
+                  showOptionalFields={false}
+                />
 
                 {error && (
                   <p className="text-destructive" data-testid="form-error">
@@ -234,7 +255,9 @@ const CreatePetPage: React.FC = () => {
         <h1 className="text-3xl font-bold text-center text-foreground mb-6">Edit Pet</h1>
         <Tabs
           value={activeTab}
-          onValueChange={(value) => setActiveTab(value as TabValue)}
+          onValueChange={(value) => {
+            setActiveTab(value as TabValue)
+          }}
           className="space-y-6"
         >
           <TabsList className={`grid w-full ${supportsHealth ? 'grid-cols-3' : 'grid-cols-2'}`}>
@@ -259,6 +282,16 @@ const CreatePetPage: React.FC = () => {
               </div>
             )}
 
+            {/* Photo Gallery */}
+            {loadedPet && (
+              <PetPhotoGallery
+                pet={loadedPet}
+                onPetUpdate={(updatedPet) => {
+                  setLoadedPet(updatedPet)
+                }}
+              />
+            )}
+
             {/* Pet Form */}
             <div className="bg-card rounded-lg shadow-lg border p-6">
               <form
@@ -278,7 +311,18 @@ const CreatePetPage: React.FC = () => {
                   error={errors.pet_type_id}
                 />
 
-                <PetFormFields formData={formData} errors={errors} updateField={updateField} />
+                <CategorySelect
+                  petTypeId={formData.pet_type_id}
+                  selectedCategories={formData.categories}
+                  onChange={updateCategories}
+                />
+
+                <PetFormFields
+                  formData={formData}
+                  errors={errors}
+                  updateField={updateField}
+                  showOptionalFields={true}
+                />
 
                 {error && (
                   <p className="text-destructive" data-testid="form-error">
@@ -317,11 +361,14 @@ const CreatePetPage: React.FC = () => {
           {/* Health Tab */}
           {supportsHealth && (
             <TabsContent value="health" className="space-y-6">
+              {supportsWeight && loadedPet && (
+                <WeightHistoryCard petId={loadedPet.id} canEdit={true} mode="edit" />
+              )}
               {supportsVaccinations && loadedPet && (
                 <UpcomingVaccinationsSection petId={loadedPet.id} canEdit={true} mode="edit" />
               )}
-              {supportsWeight && loadedPet && (
-                <WeightHistoryCard petId={loadedPet.id} canEdit={true} mode="edit" />
+              {supportsMedical && loadedPet && (
+                <MedicalRecordsSection petId={loadedPet.id} canEdit={true} mode="edit" />
               )}
             </TabsContent>
           )}
@@ -342,7 +389,12 @@ const CreatePetPage: React.FC = () => {
             />
 
             {/* Danger Zone */}
-            <PetDangerZone isDeleting={isDeleting} onDelete={handleDeletePetClick} />
+            <PetDangerZone
+              isDeleting={isDeleting}
+              onDelete={(password) => {
+                void handleDeletePetClick(password)
+              }}
+            />
           </TabsContent>
         </Tabs>
       </div>

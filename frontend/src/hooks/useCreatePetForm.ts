@@ -1,44 +1,48 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createPet, getPetTypes, getPet, updatePet } from '@/api/pets'
-import type { PetType } from '@/types/pet'
+import type { PetType, Category, PetSex } from '@/types/pet'
 import { toast } from 'sonner'
 
 interface FormErrors {
   name?: string
-  breed?: string
   birthday?: string
   birthday_year?: string
   birthday_month?: string
   birthday_day?: string
   birthday_precision?: string
-  location?: string
+  country?: string
+  state?: string
+  city?: string
+  address?: string
   description?: string
   pet_type_id?: string
 }
 
 interface CreatePetFormData {
   name: string
-  breed: string
+  sex: PetSex
   birthday: string // exact date only when precision=day
   birthday_year: string
   birthday_month: string
   birthday_day: string
   birthday_precision: 'day' | 'month' | 'year' | 'unknown'
-  location: string
+  country: string
+  state: string
+  city: string
+  address: string
   description: string
   pet_type_id: number | null
+  categories: Category[]
 }
 
 const VALIDATION_MESSAGES = {
   REQUIRED_NAME: 'Name is required',
-  REQUIRED_BREED: 'Breed is required',
   REQUIRED_BIRTHDAY_COMPONENTS: 'Complete date required for day precision',
   REQUIRED_YEAR: 'Year required',
   REQUIRED_MONTH: 'Month required',
-  REQUIRED_LOCATION: 'Location is required',
-  REQUIRED_DESCRIPTION: 'Description is required',
   REQUIRED_PET_TYPE: 'Pet type is required',
+  REQUIRED_COUNTRY: 'Country is required',
 } as const
 
 const SUCCESS_MESSAGES = {
@@ -61,15 +65,19 @@ export const useCreatePetForm = (petId?: string) => {
 
   const [formData, setFormData] = useState<CreatePetFormData>({
     name: '',
-    breed: '',
+    sex: 'not_specified',
     birthday: '',
     birthday_year: '',
     birthday_month: '',
     birthday_day: '',
     birthday_precision: 'unknown',
-    location: '',
+    country: 'VN', // Default to Vietnam
+    state: '',
+    city: '',
+    address: '',
     description: '',
     pet_type_id: null,
+    categories: [],
   })
   const [petTypes, setPetTypes] = useState<PetType[]>([])
   const [loadingPetTypes, setLoadingPetTypes] = useState(true)
@@ -115,15 +123,19 @@ export const useCreatePetForm = (petId?: string) => {
           }
           setFormData({
             name: pet.name,
-            breed: pet.breed,
+            sex: pet.sex ?? 'not_specified',
             birthday: pet.birthday ? formatDate(pet.birthday) : '',
             birthday_year: pet.birthday_year ? String(pet.birthday_year) : '',
             birthday_month: pet.birthday_month ? String(pet.birthday_month) : '',
             birthday_day: pet.birthday_day ? String(pet.birthday_day) : '',
             birthday_precision: pet.birthday_precision ?? (pet.birthday ? 'day' : 'unknown'),
-            location: pet.location,
+            country: pet.country,
+            state: pet.state ?? '',
+            city: pet.city ?? '',
+            address: pet.address ?? '',
             description: pet.description,
             pet_type_id: pet.pet_type.id,
+            categories: pet.categories ?? [],
           })
         } catch (err) {
           console.error('Failed to load pet data:', err)
@@ -160,9 +172,6 @@ export const useCreatePetForm = (petId?: string) => {
     if (!formData.name.trim()) {
       newErrors.name = VALIDATION_MESSAGES.REQUIRED_NAME
     }
-    if (!formData.breed.trim()) {
-      newErrors.breed = VALIDATION_MESSAGES.REQUIRED_BREED
-    }
     // Precision-specific validation
     if (formData.birthday_precision === 'day') {
       if (
@@ -177,11 +186,9 @@ export const useCreatePetForm = (petId?: string) => {
     } else if (formData.birthday_precision === 'year') {
       if (!formData.birthday_year) newErrors.birthday_year = VALIDATION_MESSAGES.REQUIRED_YEAR
     }
-    if (!formData.location.trim()) {
-      newErrors.location = VALIDATION_MESSAGES.REQUIRED_LOCATION
-    }
-    if (!formData.description.trim()) {
-      newErrors.description = VALIDATION_MESSAGES.REQUIRED_DESCRIPTION
+    // Country is required, other location fields are optional
+    if (!formData.country.trim()) {
+      newErrors.country = VALIDATION_MESSAGES.REQUIRED_COUNTRY
     }
     if (!formData.pet_type_id) {
       newErrors.pet_type_id = VALIDATION_MESSAGES.REQUIRED_PET_TYPE
@@ -209,11 +216,15 @@ export const useCreatePetForm = (petId?: string) => {
       // Build payload with precision rules
       const payload: import('@/api/pets').CreatePetPayload = {
         name: formData.name,
-        breed: formData.breed,
-        location: formData.location,
+        sex: formData.sex,
+        country: formData.country,
+        state: formData.state || undefined,
+        city: formData.city || undefined,
+        address: formData.address || undefined,
         description: formData.description,
         pet_type_id: formData.pet_type_id,
         birthday_precision: formData.birthday_precision,
+        category_ids: formData.categories.map((c) => c.id),
       }
       if (formData.birthday_precision === 'day') {
         if (formData.birthday) {
@@ -259,6 +270,10 @@ export const useCreatePetForm = (petId?: string) => {
     void navigate(ROUTES.MY_PETS)
   }
 
+  const updateCategories = (categories: Category[]) => {
+    setFormData((prev) => ({ ...prev, categories }))
+  }
+
   return {
     formData,
     petTypes,
@@ -268,6 +283,7 @@ export const useCreatePetForm = (petId?: string) => {
     isSubmitting,
     isLoadingPet,
     updateField,
+    updateCategories,
     handleSubmit,
     handleCancel,
   }

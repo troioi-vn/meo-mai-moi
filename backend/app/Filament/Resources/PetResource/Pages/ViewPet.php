@@ -81,7 +81,6 @@ class ViewPet extends ViewRecord
                                 TextEntry::make('petType.name')
                                     ->label('Type')
                                     ->badge(),
-                                TextEntry::make('breed'),
                                 TextEntry::make('birthday')
                                     ->date()
                                     ->formatStateUsing(function ($state) {

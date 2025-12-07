@@ -205,12 +205,12 @@ class RestSemanticsTest extends TestCase
         // Pet creation should require POST
         $petData = [
             'name' => 'New Pet',
-            'breed' => 'Mixed',
             'age_years' => 2,
             'gender' => 'male',
             'status' => 'active',
             'birthday' => '2022-01-01',
-            'location' => 'Test City',
+            'country' => 'VN',
+            'city' => 'Test City',
             'description' => 'A lovely test pet',
         ];
 

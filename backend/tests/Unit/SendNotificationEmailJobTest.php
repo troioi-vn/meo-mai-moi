@@ -354,7 +354,7 @@ class SendNotificationEmailJobTest extends TestCase
         );
 
         $this->assertEquals(3, $job->tries);
-        $this->assertEquals([60, 300, 900], $job->backoff);
+        $this->assertEquals([60, 300, 900], $job->backoff());
     }
 
     public function test_job_clears_previous_failure_on_successful_delivery()

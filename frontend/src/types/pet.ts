@@ -13,18 +13,50 @@ export interface PetType {
   updated_at: string
 }
 
+export interface Category {
+  id: number
+  name: string
+  slug: string
+  pet_type_id: number
+  description?: string | null
+  created_by?: number | null
+  approved_at?: string | null
+  usage_count: number
+  created_at: string
+  updated_at: string
+  pet_type?: PetType
+}
+
 export type BirthdayPrecision = 'day' | 'month' | 'year' | 'unknown'
+
+export type PetSex = 'male' | 'female' | 'not_specified'
+
+export const PetSexLabels: Record<PetSex, string> = {
+  male: 'Male',
+  female: 'Female',
+  not_specified: 'Not Specified',
+}
+
+export interface PetPhoto {
+  id: number
+  url: string
+  thumb_url: string | null
+  is_primary: boolean
+}
 
 export interface Pet {
   id: number
   name: string
-  breed: string
+  sex?: PetSex
   birthday: string | null // Exact ISO date when precision=day; nullable otherwise
   birthday_year?: number | null
   birthday_month?: number | null
   birthday_day?: number | null
   birthday_precision?: BirthdayPrecision
-  location: string
+  country: string // ISO 3166-1 alpha-2 code
+  state?: string | null
+  city?: string | null
+  address?: string | null
   description: string
   user_id: number
   pet_type_id: number
@@ -32,14 +64,15 @@ export interface Pet {
   imageUrl?: string
   photo_url?: string // Backend API photo URL
   photo?: { id: number; url: string } | null
+  photos?: PetPhoto[] // All photos for gallery
   created_at: string
   updated_at: string
   pet_type: PetType
+  categories?: Category[]
   user: {
     id: number
     name: string
     email: string
-    location?: string
   }
   viewer_permissions?: {
     can_edit?: boolean

@@ -1,6 +1,6 @@
 import React from 'react'
 import type { Pet } from '@/types/pet'
-import { formatPetAge } from '@/types/pet'
+import { formatPetAge, PetSexLabels } from '@/types/pet'
 import { getStatusDisplay, getStatusClasses } from '@/utils/petStatus'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
@@ -9,6 +9,7 @@ import { usePlacementInfo } from '@/hooks/usePlacementInfo'
 import { PlacementRequestsSection } from '@/components/placement/pet-profile/PlacementRequestsSection'
 import { PlacementResponseSection } from '@/components/placement/pet-profile/PlacementResponseSection'
 import { PetPhoto } from '@/components/pets/PetPhoto'
+import { getCountryName } from '@/components/ui/CountrySelect'
 
 interface PetDetailsProps {
   pet: Pet
@@ -74,7 +75,10 @@ const PetDetails: React.FC<PetDetailsProps> = ({
           <div>
             <h1 className="text-3xl font-bold text-card-foreground">{pet.name}</h1>
             <p className="text-lg text-muted-foreground">
-              {pet.breed} • {ageDisplay}
+              {pet.pet_type.name}
+              {pet.sex && pet.sex !== 'not_specified' && ` • ${PetSexLabels[pet.sex]}`}
+              {' • '}
+              {ageDisplay}
             </p>
             <div className="flex items-center gap-2 mt-2">
               <span className="inline-block bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-1 rounded-full text-sm font-medium">
@@ -110,7 +114,9 @@ const PetDetails: React.FC<PetDetailsProps> = ({
         <div className="space-y-4">
           <div>
             <h3 className="font-semibold text-card-foreground">Location</h3>
-            <p className="text-muted-foreground">{pet.location}</p>
+            <p className="text-muted-foreground">
+              {[pet.city, pet.state, getCountryName(pet.country)].filter(Boolean).join(', ')}
+            </p>
           </div>
           <div>
             <h3 className="font-semibold text-card-foreground">Description</h3>
@@ -118,7 +124,7 @@ const PetDetails: React.FC<PetDetailsProps> = ({
           </div>
 
           {showPlacementRequests && (
-            <div>
+            <div className="space-y-3">
               <h3 className="font-semibold text-card-foreground">Placement Requests</h3>
               <PlacementRequestsSection
                 placementRequests={placementRequests}

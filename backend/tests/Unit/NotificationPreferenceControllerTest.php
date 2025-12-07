@@ -34,8 +34,9 @@ class NotificationPreferenceControllerTest extends TestCase
 
         $data = json_decode($response->getContent(), true)['data'];
 
-        // Should return all notification types
-        $this->assertCount(count(NotificationType::cases()), $data);
+        // Should return all notification types except EMAIL_VERIFICATION (which is system-controlled)
+        $expectedCount = count(NotificationType::cases()) - 1;
+        $this->assertCount($expectedCount, $data);
 
         // Check structure and default values
         foreach ($data as $preference) {
@@ -154,6 +155,11 @@ class NotificationPreferenceControllerTest extends TestCase
         $data = json_decode($response->getContent(), true)['data'];
 
         foreach (NotificationType::cases() as $type) {
+            // EMAIL_VERIFICATION is system-controlled and not returned in preferences
+            if ($type === NotificationType::EMAIL_VERIFICATION) {
+                continue;
+            }
+
             $preference = collect($data)->firstWhere('type', $type->value);
 
             $this->assertNotNull($preference, "Missing preference for type: {$type->value}");

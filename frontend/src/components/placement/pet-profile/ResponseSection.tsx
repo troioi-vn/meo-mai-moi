@@ -1,4 +1,6 @@
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { User, Eye } from 'lucide-react'
 import type { TransferRequest, PlacementRequest as PlacementRequestType } from '@/types/pet'
 
 interface Props {
@@ -8,36 +10,58 @@ interface Props {
   onReject: (id: number) => void
 }
 
+const formatRequestType = (type: string): string => {
+  const labels: Record<string, string> = {
+    foster_free: 'Foster (Free)',
+    foster_payed: 'Foster (Paid)',
+    permanent: 'Permanent Adoption',
+  }
+  return labels[type] ?? type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
 export function ResponseSection({ placementRequest, onViewProfile, onConfirm, onReject }: Props) {
   const pendingTransfers =
     placementRequest.transfer_requests?.filter((tr) => tr.status === 'pending') ?? []
   if (pendingTransfers.length === 0) return null
+
   return (
-    <div className="mb-4 p-4 border rounded-lg">
-      <div className="flex justify-between items-center">
-        <h3 className="font-bold">
-          Responses for <span>{placementRequest.request_type.replace('_', ' ').toUpperCase()}</span>
+    <div className="rounded-lg border p-4 bg-muted/50 space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-foreground">
+          Responses for{' '}
+          <Badge variant="secondary" className="ml-1">
+            {formatRequestType(placementRequest.request_type)}
+          </Badge>
         </h3>
       </div>
-      <ul>
+      <ul className="space-y-3">
         {pendingTransfers.map((transferRequest) => (
-          <li key={String(transferRequest.id)} className="flex justify-between items-center">
-            <span>{transferRequest.helper_profile?.user?.name}</span>
-            <div>
+          <li
+            key={String(transferRequest.id)}
+            className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-md bg-background border"
+          >
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+                <User className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <span className="font-medium">
+                {transferRequest.helper_profile?.user?.name ?? 'Unknown Helper'}
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
               <Button
-                variant="secondary"
+                variant="outline"
                 size="sm"
-                className="mr-2"
                 onClick={() => {
                   onViewProfile(transferRequest)
                 }}
               >
-                View helper profile
+                <Eye className="h-4 w-4 mr-1" />
+                View Profile
               </Button>
               <Button
-                variant="outline"
+                variant="default"
                 size="sm"
-                className="mr-2"
                 onClick={() => {
                   onConfirm(transferRequest.id)
                 }}

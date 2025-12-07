@@ -56,3 +56,5 @@ gha-creds-*.json
 
 .github/
 .db_volume_fingerprint
+
+.kiro/

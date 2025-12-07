@@ -100,11 +100,14 @@ test('auth flow: register → login → logout', async ({ page }) => {
   await login(page, { email: TEST_USER.email, password: TEST_USER.password })
 
   // Expect landing on default path after login
-  await expect(page).toHaveURL(/^https?:\/\/[^\/]+\/?$/)
+  await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?$/)
 
   // Open user menu and logout
   await page.getByRole('img', { name: TEST_USER.name }).click()
   await page.getByRole('menuitem', { name: /log out/i }).click()
+
+  // Confirm logout in the dialog
+  await page.getByRole('button', { name: /log out/i }).click()
 
   // Back to login
   await expect(page).toHaveURL(/\/login/)
@@ -167,7 +170,7 @@ test('login redirects to home and logout returns to login', async ({ page }) => 
   await login(page)
 
   // Expect redirect to /
-  await expect(page).toHaveURL(/^https?:\/\/[^\/]+\/?$/)
+  await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?$/)
 
   // Stub logout API
   await page.route('**/api/logout', (route) => route.fulfill({ status: 204, body: '' }))

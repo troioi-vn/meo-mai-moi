@@ -58,7 +58,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
   const seenIdsRef = useRef<Set<string>>(new Set())
   const isDropdownOpenRef = useRef(false)
   const visible = useVisibility()
-  let user: ReturnType<typeof useAuth>['user'] | null = null
+  let user: ReturnType<typeof useAuth>['user'] = null
   let isAuthenticated = false
   try {
     const auth = useAuth()

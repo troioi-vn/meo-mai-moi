@@ -2,17 +2,25 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Switch } from '@/components/ui/switch'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { useTheme } from '@/hooks/use-theme'
-import { Moon, Sun } from 'lucide-react'
+import { Moon } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import defaultAvatar from '@/assets/images/default-avatar.webp'
 import { useEffect, useState } from 'react'
@@ -23,6 +31,7 @@ export function UserMenu() {
   const navigate = useNavigate()
   const isVerified = Boolean(user?.email_verified_at)
   const [avatarSrc, setAvatarSrc] = useState<string>(defaultAvatar)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
   // Preload avatar image to ensure it's available
   useEffect(() => {
@@ -69,60 +78,65 @@ export function UserMenu() {
         {isVerified && (
           <>
             <DropdownMenuItem className="cursor-pointer" asChild>
-              <Link to="/settings/account">Settings</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer" asChild>
-              <Link to="/">My Pets</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer" asChild>
               <Link to="/invitations">Invitations</Link>
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer" asChild>
               <Link to="/helper">Helper Profiles</Link>
             </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" asChild>
+              <Link to="/settings/account">Settings</Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
         )}
-        <DropdownMenuLabel>Theme</DropdownMenuLabel>
-        <DropdownMenuRadioGroup
-          value={theme}
-          onValueChange={(value: string) => {
-            if (value === 'light' || value === 'dark' || value === 'system') {
-              setTheme(value)
-            }
-          }}
-        >
-          <DropdownMenuRadioItem value="light">
-            <Sun className="h-[1.2rem] w-[1.2rem] mr-2" />
-            Light
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="dark">
-            <Moon className="h-[1.2rem] w-[1.2rem] mr-2" />
-            Dark
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="system">
-            <div className="h-[1.2rem] w-[1.2rem] mr-2 relative">
-              <Sun className="h-[1.2rem] w-[1.2rem] absolute rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="h-[1.2rem] w-[1.2rem] absolute rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            </div>
-            System
-          </DropdownMenuRadioItem>
-        </DropdownMenuRadioGroup>
+        <div className="flex items-center justify-between px-2 py-1.5">
+          <Switch
+            checked={theme === 'dark'}
+            onCheckedChange={(checked) => {
+              setTheme(checked ? 'dark' : 'light')
+            }}
+            aria-label="Toggle dark mode"
+          />
+          <div className="flex items-center gap-2">
+            <span className="text-sm">Dark</span>
+            <Moon className="h-4 w-4" />
+          </div>
+        </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => {
-            void logout()
-              .then(() => {
-                void navigate('/login')
-              })
-              .catch((err: unknown) => {
-                console.error('Logout error:', err)
-              })
+            setShowLogoutConfirm(true)
           }}
         >
           Log Out
         </DropdownMenuItem>
       </DropdownMenuContent>
+      <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Log out?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to log out of your account?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                void logout()
+                  .then(() => {
+                    void navigate('/login')
+                  })
+                  .catch((err: unknown) => {
+                    console.error('Logout error:', err)
+                  })
+              }}
+            >
+              Log Out
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DropdownMenu>
   )
 }

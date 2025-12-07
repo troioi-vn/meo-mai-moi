@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\PetSex;
 use App\Enums\PetStatus;
 use App\Filament\Resources\PetResource\Pages;
 use App\Filament\Resources\PetResource\RelationManagers;
@@ -48,9 +49,10 @@ class PetResource extends Resource
                     ->searchable()
                     ->preload(),
 
-                Forms\Components\TextInput::make('breed')
-                    ->required()
-                    ->maxLength(255),
+                Select::make('sex')
+                    ->options(PetSex::class)
+                    ->default('not_specified')
+                    ->required(),
 
                 Forms\Components\DatePicker::make('birthday')
                     ->required()
@@ -100,9 +102,17 @@ class PetResource extends Resource
                         'gray' => fn ($state) => ! in_array($state, ['Cat', 'Dog']),
                     ]),
 
-                TextColumn::make('breed')
-                    ->searchable()
-                    ->sortable(),
+                BadgeColumn::make('sex')
+                    ->colors([
+                        'primary' => 'male',
+                        'danger' => 'female',
+                        'gray' => 'not_specified',
+                    ])
+                    ->formatStateUsing(fn ($state) => match ($state) {
+                        'male' => 'Male',
+                        'female' => 'Female',
+                        default => 'Not Specified',
+                    }),
 
                 TextColumn::make('birthday')
                     ->date()

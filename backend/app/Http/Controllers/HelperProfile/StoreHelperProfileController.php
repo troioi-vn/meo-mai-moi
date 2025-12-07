@@ -36,11 +36,11 @@ class StoreHelperProfileController extends Controller
     public function __invoke(Request $request)
     {
         $validatedData = $request->validate([
-            'country' => 'required|string|max:255',
-            'address' => 'required|string|max:255',
-            'city' => 'required|string|max:255',
-            'state' => 'required|string|max:255',
-            'zip_code' => 'required|string|max:20',
+            'country' => 'required|string|size:2',
+            'state' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
+            'zip_code' => 'nullable|string|max:20',
             'phone_number' => 'required|string|max:20',
             'experience' => 'required|string',
             'has_pets' => 'required|boolean',

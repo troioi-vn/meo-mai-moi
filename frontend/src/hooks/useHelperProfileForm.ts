@@ -18,7 +18,7 @@ interface HelperProfileForm {
   can_adopt: boolean
   is_public: boolean
   status?: string
-  photos: FileList | File[] | []
+  photos: FileList | File[]
   pet_type_ids: number[]
 }
 
@@ -136,9 +136,7 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
     if (!formData.country) newErrors.country = 'Country is required'
-    if (!formData.address) newErrors.address = 'Address is required'
-    if (!formData.city) newErrors.city = 'City is required'
-    if (!formData.state) newErrors.state = 'State is required'
+    // address, city, state are now optional
     if (!formData.phone_number) newErrors.phone_number = 'Phone number is required'
     if (!formData.experience) newErrors.experience = 'Experience is required'
     setErrors(newErrors)

@@ -74,7 +74,9 @@ class RegisterController extends Controller
                 Auth::login($user);
                 $request->session()->regenerate();
             } catch (\Exception $e) {
-                // Ignore login errors in API context
+                // Session login is optional in API context - continue silently
+                // Log for debugging but don't fail registration
+                \Log::debug('Session login failed during registration', ['error' => $e->getMessage()]);
             }
         }
 

@@ -1,15 +1,22 @@
 import React from 'react'
 import { FormField } from '@/components/ui/FormField'
+import { BirthdayDatePicker } from '@/components/ui/BirthdayDatePicker'
+import { CountrySelect } from '@/components/ui/CountrySelect'
+import { Label } from '@/components/ui/label'
+import type { PetSex } from '@/types/pet'
 
 interface Data {
   name: string
-  breed: string
+  sex: PetSex
   birthday: string
   birthday_year?: string
   birthday_month?: string
   birthday_day?: string
   birthday_precision?: 'day' | 'month' | 'year' | 'unknown'
-  location: string
+  country: string
+  state?: string
+  city?: string
+  address?: string
   description: string
 }
 
@@ -17,9 +24,16 @@ interface Props {
   formData: Data
   errors: Partial<Record<keyof Data, string>>
   updateField: (field: keyof Data) => (value: unknown) => void
+  /** Whether to show description and location fields (hidden in create mode) */
+  showOptionalFields?: boolean
 }
 
-export const PetFormFields: React.FC<Props> = ({ formData, errors, updateField }) => {
+export const PetFormFields: React.FC<Props> = ({
+  formData,
+  errors,
+  updateField,
+  showOptionalFields = true,
+}) => {
   return (
     <>
       <FormField
@@ -31,14 +45,22 @@ export const PetFormFields: React.FC<Props> = ({ formData, errors, updateField }
         placeholder="Enter pet's name"
       />
 
-      <FormField
-        id="breed"
-        label="Breed"
-        value={formData.breed}
-        onChange={updateField('breed')}
-        error={errors.breed}
-        placeholder="Enter pet's breed"
-      />
+      {/* Sex Selection */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-foreground" htmlFor="sex">
+          Sex
+        </label>
+        <select
+          id="sex"
+          className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          value={formData.sex ?? 'not_specified'}
+          onChange={updateField('sex')}
+        >
+          <option value="not_specified">Not Specified</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
 
       {/* Birthday Precision Selection */}
       <div className="space-y-2">
@@ -62,14 +84,21 @@ export const PetFormFields: React.FC<Props> = ({ formData, errors, updateField }
       </div>
 
       {formData.birthday_precision === 'day' && (
-        <FormField
-          id="birthday"
-          label="Birthday"
-          type="date"
-          value={formData.birthday}
-          onChange={updateField('birthday')}
-          error={errors.birthday}
-        />
+        <div className="space-y-2">
+          <Label htmlFor="birthday" className={errors.birthday ? 'text-destructive' : ''}>
+            Birthday
+          </Label>
+          <BirthdayDatePicker
+            id="birthday"
+            value={formData.birthday}
+            onChange={updateField('birthday')}
+            error={errors.birthday}
+            placeholder="Select pet's birthday"
+          />
+          {errors.birthday && (
+            <p className="text-sm font-medium text-destructive">{errors.birthday}</p>
+          )}
+        </div>
       )}
       {formData.birthday_precision === 'month' && (
         <div className="grid grid-cols-2 gap-4">
@@ -105,24 +134,64 @@ export const PetFormFields: React.FC<Props> = ({ formData, errors, updateField }
         />
       )}
 
-      <FormField
-        id="location"
-        label="Location"
-        value={formData.location}
-        onChange={updateField('location')}
-        error={errors.location}
-        placeholder="Enter pet's location"
-      />
+      {/* Country is always shown since it's required */}
+      <div className="space-y-2">
+        <Label htmlFor="country" className={errors.country ? 'text-destructive' : ''}>
+          Country <span className="text-destructive">*</span>
+        </Label>
+        <CountrySelect
+          value={formData.country}
+          onValueChange={(value) => {
+            updateField('country')(value)
+          }}
+          data-testid="country-select"
+        />
+        {errors.country && <p className="text-sm font-medium text-destructive">{errors.country}</p>}
+      </div>
 
-      <FormField
-        id="description"
-        label="Description"
-        type="textarea"
-        value={formData.description}
-        onChange={updateField('description')}
-        error={errors.description}
-        placeholder="Describe the pet's personality and characteristics"
-      />
+      {showOptionalFields && (
+        <>
+          {/* Optional location fields */}
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              id="state"
+              label="State/Province"
+              value={formData.state ?? ''}
+              onChange={updateField('state')}
+              error={errors.state}
+              placeholder="Enter state or province"
+            />
+
+            <FormField
+              id="city"
+              label="City"
+              value={formData.city ?? ''}
+              onChange={updateField('city')}
+              error={errors.city}
+              placeholder="Enter city"
+            />
+          </div>
+
+          <FormField
+            id="address"
+            label="Address"
+            value={formData.address ?? ''}
+            onChange={updateField('address')}
+            error={errors.address}
+            placeholder="Enter street address"
+          />
+
+          <FormField
+            id="description"
+            label="Description"
+            type="textarea"
+            value={formData.description}
+            onChange={updateField('description')}
+            error={errors.description}
+            placeholder="Describe the pet's personality and characteristics"
+          />
+        </>
+      )}
     </>
   )
 }

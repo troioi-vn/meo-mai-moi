@@ -1,6 +1,8 @@
 import type { VaccinationRecord } from '@/api/pets'
 
 export type VaccinationStatusType = 'up_to_date' | 'overdue' | 'due_soon' | 'unknown'
+// Type alias for compatibility with VaccinationStatusBadge component
+export type VaccinationStatus = VaccinationStatusType
 
 /**
  * Check if a vaccination record is active (not completed).
@@ -87,8 +89,8 @@ export function getUpcomingVaccinations(vaccinations: VaccinationRecord[]): Vacc
       return dueDate >= ninetyDaysAgo
     })
     .sort((a, b) => {
-      const dateA = new Date(a.due_at!)
-      const dateB = new Date(b.due_at!)
+      const dateA = new Date(a.due_at)
+      const dateB = new Date(b.due_at)
       return dateA.getTime() - dateB.getTime()
     })
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Calendar, Pencil, Trash2, RefreshCw, History } from 'lucide-react'
+import { Syringe, Pencil, Trash2, RefreshCw, History } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
@@ -33,6 +33,8 @@ import type { VaccinationRecord } from '@/api/pets'
 import { format, parseISO } from 'date-fns'
 import { toast } from 'sonner'
 
+/* eslint-disable @typescript-eslint/no-confusing-void-expression */
+
 interface UpcomingVaccinationsSectionProps {
   petId: number
   canEdit: boolean
@@ -47,7 +49,7 @@ export function UpcomingVaccinationsSection({
   onVaccinationChange,
   mode = 'view',
 }: UpcomingVaccinationsSectionProps) {
-  const { items, loading, create, update, remove, renew, status, setStatus, reload } =
+  const { items, loading, create, update, remove, renew, setStatus } =
     useVaccinations(petId)
   const [adding, setAdding] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -155,6 +157,10 @@ export function UpcomingVaccinationsSection({
   // In edit mode show all vaccinations, in view mode show only upcoming
   const displayedVaccinations = mode === 'edit' ? items : upcomingVaccinations
 
+  const handleAddClick = () => {
+    setAdding(true)
+  }
+
   return (
     <>
       <Card>
@@ -235,50 +241,62 @@ export function UpcomingVaccinationsSection({
                         ) : (
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                              <Calendar className="h-5 w-5 text-muted-foreground" />
-                              <div>
+                              <Syringe
+                                className={`h-5 w-5 ${
+                                  isCompleted
+                                    ? 'text-muted-foreground'
+                                    : isPast
+                                      ? 'text-destructive'
+                                      : 'text-blue-500'
+                                }`}
+                              />
+                              <div className="flex items-center gap-2">
                                 <span className="font-medium">{v.vaccine_name}</span>
+                                {dueDate && (
+                                  <span
+                                    className={`text-sm ${
+                                      isCompleted
+                                        ? 'text-muted-foreground line-through'
+                                        : isPast
+                                          ? 'text-destructive'
+                                          : 'text-muted-foreground'
+                                    }`}
+                                  >
+                                    {format(dueDate, 'yyyy-MM-dd')}
+                                  </span>
+                                )}
                                 {isCompleted && (
-                                  <span className="ml-2 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
+                                  <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
                                     Renewed
                                   </span>
                                 )}
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              {dueDate && (
-                                <span
-                                  className={`text-sm ${
-                                    isCompleted
-                                      ? 'text-muted-foreground line-through'
-                                      : isPast
-                                        ? 'text-destructive font-medium'
-                                        : 'text-muted-foreground'
-                                  }`}
+                            <div className="flex items-center gap-1">
+                              {/* View mode: show Renew button only */}
+                              {mode === 'view' && canEdit && !isCompleted && dueDate && (
+                                <Button
+                                  variant={isPast ? 'default' : 'outline'}
+                                  size="sm"
+                                  className="h-8 gap-1"
+                                  onClick={() => {
+                                    setRenewingRecord(v)
+                                  }}
                                 >
-                                  {isCompleted ? 'Was due: ' : isPast ? 'Overdue: ' : 'Due: '}
-                                  {format(dueDate, 'yyyy-MM-dd')}
-                                </span>
+                                  <RefreshCw className="h-3 w-3" />
+                                  Renew
+                                </Button>
                               )}
-                              {canEdit && !isCompleted && (
+                              {/* Edit mode: show Pencil and Delete icons */}
+                              {mode === 'edit' && canEdit && !isCompleted && (
                                 <>
-                                  {/* Renew button - shown for due soon or overdue vaccinations */}
-                                  {dueDate && (
-                                    <Button
-                                      variant={isPast ? 'default' : 'outline'}
-                                      size="sm"
-                                      className="h-8 gap-1"
-                                      onClick={() => setRenewingRecord(v)}
-                                    >
-                                      <RefreshCw className="h-3 w-3" />
-                                      Renew
-                                    </Button>
-                                  )}
                                   <Button
                                     variant="ghost"
                                     size="icon"
                                     className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                                    onClick={() => setEditingId(v.id)}
+                                    onClick={() => {
+                                      setEditingId(v.id)
+                                    }}
                                   >
                                     <Pencil className="h-4 w-4" />
                                   </Button>
@@ -307,7 +325,9 @@ export function UpcomingVaccinationsSection({
                                       <AlertDialogFooter>
                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                                         <AlertDialogAction
-                                          onClick={() => void handleDelete(v.id)}
+                                          onClick={() => {
+                                            void handleDelete(v.id)
+                                          }}
                                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                         >
                                           Delete
@@ -317,8 +337,8 @@ export function UpcomingVaccinationsSection({
                                   </AlertDialog>
                                 </>
                               )}
-                              {/* Only delete for completed records */}
-                              {canEdit && isCompleted && (
+                              {/* Delete for completed records (in edit mode only) */}
+                              {mode === 'edit' && canEdit && isCompleted && (
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
                                     <Button
@@ -345,7 +365,9 @@ export function UpcomingVaccinationsSection({
                                     <AlertDialogFooter>
                                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                                       <AlertDialogAction
-                                        onClick={() => void handleDelete(v.id)}
+                                        onClick={() => {
+                                          void handleDelete(v.id)
+                                        }}
                                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                       >
                                         Delete
@@ -363,10 +385,29 @@ export function UpcomingVaccinationsSection({
                 </ul>
               )}
 
+
               {canEdit && mode === 'view' && (
-                <Button variant="outline" className="w-full mt-3" onClick={() => setAdding(true)}>
-                  + Add New Vaccination Entry
-                </Button>
+                <>
+                  <Button
+                    variant="outline"
+                    className="w-full mt-3"
+                    onClick={handleAddClick}
+                  >
+                    + Add New Vaccination Entry
+                  </Button>
+                </>
+              )}
+
+              {canEdit && mode === 'edit' && (
+                <>
+                  <Button
+                    variant="outline"
+                    className="w-full mt-3"
+                    onClick={handleAddClick}
+                  >
+                    + Add Vaccination
+                  </Button>
+                </>
               )}
             </>
           )}
@@ -403,3 +444,4 @@ export function UpcomingVaccinationsSection({
     </>
   )
 }
+/* eslint-enable @typescript-eslint/no-confusing-void-expression */

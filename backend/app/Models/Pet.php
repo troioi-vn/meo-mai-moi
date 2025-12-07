@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\PetSex;
 use App\Enums\PetStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -18,17 +20,20 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  *     schema="Pet",
  *     type="object",
  *     title="Pet",
- *     required={"id", "name", "breed", "location", "description", "status", "user_id", "pet_type_id"},
+ *     required={"id", "name", "country", "description", "status", "user_id", "pet_type_id"},
  *
  *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="name", type="string", example="Whiskers"),
- *     @OA\Property(property="breed", type="string", example="Siamese"),
+ *     @OA\Property(property="sex", type="string", enum={"male","female","not_specified"}, example="male", description="Sex of the pet"),
  *     @OA\Property(property="birthday", type="string", format="date", example="2020-01-01", nullable=true, description="Exact birthday (present only when birthday_precision=day). Deprecated: prefer component fields.", deprecated=true),
  *     @OA\Property(property="birthday_year", type="integer", example=2020, nullable=true, description="Birth year when known (year/month/day precision)."),
  *     @OA\Property(property="birthday_month", type="integer", example=5, nullable=true, description="Birth month when known (month/day precision)."),
  *     @OA\Property(property="birthday_day", type="integer", example=12, nullable=true, description="Birth day when known (day precision)."),
  *     @OA\Property(property="birthday_precision", type="string", enum={"day","month","year","unknown"}, example="month", description="Precision level for birthday components."),
- *     @OA\Property(property="location", type="string", example="Hanoi"),
+ *     @OA\Property(property="country", type="string", example="VN", description="ISO 3166-1 alpha-2 country code"),
+ *     @OA\Property(property="state", type="string", example="Hanoi", nullable=true),
+ *     @OA\Property(property="city", type="string", example="Hanoi", nullable=true),
+ *     @OA\Property(property="address", type="string", example="123 Main St", nullable=true),
  *     @OA\Property(property="description", type="string", example="A friendly pet."),
  *     @OA\Property(property="status", type="string", example="active"),
  *     @OA\Property(property="user_id", type="integer", example=5),
@@ -42,8 +47,11 @@ class Pet extends Model implements HasMedia
     protected $fillable = [
         'pet_type_id',
         'name',
-        'breed',
-        'location',
+        'sex',
+        'country',
+        'state',
+        'city',
+        'address',
         'description',
         'user_id',
         'status',
@@ -56,23 +64,14 @@ class Pet extends Model implements HasMedia
 
     protected $casts = [
         'status' => PetStatus::class,
+        'sex' => PetSex::class,
         'birthday' => 'date',
         'birthday_year' => 'integer',
         'birthday_month' => 'integer',
         'birthday_day' => 'integer',
     ];
 
-    protected $appends = ['photo_url'];
-
-    /**
-     * Boot the model and add global scope to hide deleted pets.
-     */
-    protected static function booted()
-    {
-        static::addGlobalScope('not_deleted', function ($query) {
-            $query->where('status', '!=', PetStatus::DELETED->value);
-        });
-    }
+    protected $appends = ['photo_url', 'photos'];
 
     /**
      * Override delete to implement status-based soft delete for business logic.
@@ -112,8 +111,45 @@ class Pet extends Model implements HasMedia
      */
     public function getPhotoUrlAttribute()
     {
-        // Try to get thumb conversion first, fall back to original
-        return $this->getFirstMediaUrl('photos', 'thumb') ?: $this->getFirstMediaUrl('photos') ?: null;
+        $media = $this->getFirstMedia('photos');
+        if (! $media) {
+            return null;
+        }
+
+        // Only use thumb conversion if it has been generated
+        if ($media->hasGeneratedConversion('thumb')) {
+            return $media->getUrl('thumb');
+        }
+
+        // Fall back to original
+        return $media->getUrl();
+    }
+
+    /**
+     * Get all photos for this pet as an array.
+     *
+     * @return array<int, array{id: int, url: string, thumb_url: string|null, is_primary: bool}>
+     */
+    public function getPhotosAttribute(): array
+    {
+        $media = $this->getMedia('photos');
+        $firstId = $media->first()?->id;
+
+        return $media->map(function ($item) use ($firstId) {
+            // Get original URL as fallback
+            $originalUrl = $item->getUrl();
+
+            // Only use conversion URL if it exists (conversion completed)
+            $mediumUrl = $item->hasGeneratedConversion('medium') ? $item->getUrl('medium') : $originalUrl;
+            $thumbUrl = $item->hasGeneratedConversion('thumb') ? $item->getUrl('thumb') : $originalUrl;
+
+            return [
+                'id' => $item->id,
+                'url' => $mediumUrl,
+                'thumb_url' => $thumbUrl,
+                'is_primary' => $item->id === $firstId,
+            ];
+        })->toArray();
     }
 
     /**
@@ -154,6 +190,15 @@ class Pet extends Model implements HasMedia
     public function microchips(): HasMany
     {
         return $this->hasMany(PetMicrochip::class);
+    }
+
+    /**
+     * Get categories for this pet.
+     */
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(Category::class, 'pet_categories')
+            ->withTimestamps();
     }
 
     /**
@@ -233,6 +278,15 @@ class Pet extends Model implements HasMedia
         $this->addMediaConversion('webp')
             ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256)
             ->format('webp');
+    }
 
+    /**
+     * Boot the model and add global scope to hide deleted pets.
+     */
+    protected static function booted()
+    {
+        static::addGlobalScope('not_deleted', function ($query) {
+            $query->where('status', '!=', PetStatus::DELETED->value);
+        });
     }
 }

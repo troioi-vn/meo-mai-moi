@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { api } from '@/api/axios'
+import { getPet } from '@/api/pets'
 import { toast } from 'sonner'
 import { Upload, Trash2 } from 'lucide-react'
 import type { AxiosError } from 'axios'
@@ -85,8 +86,8 @@ export function PetPhoto({
       await api.delete(`/pets/${String(pet.id)}/photos/current`)
       toast.success('Photo deleted successfully')
 
-      // Create updated pet object with photo_url removed
-      const updatedPet = { ...pet, photo_url: undefined }
+      // Refetch the pet to get updated photos list
+      const updatedPet = await getPet(String(pet.id))
       onPhotoUpdate(updatedPet)
     } catch (error: unknown) {
       let errorMessage = 'Failed to delete photo'

@@ -93,11 +93,11 @@ class UpdateHelperProfileController extends Controller
         $this->authorize('update', $helperProfile);
 
         $validatedData = $request->validate([
-            'country' => 'sometimes|string|max:255',
-            'address' => 'sometimes|string|max:255',
-            'city' => 'sometimes|string|max:255',
-            'state' => 'sometimes|string|max:255',
-            'zip_code' => 'sometimes|string|max:20',
+            'country' => 'sometimes|string|size:2',
+            'state' => 'sometimes|string|max:255|nullable',
+            'city' => 'sometimes|string|max:255|nullable',
+            'address' => 'sometimes|string|max:255|nullable',
+            'zip_code' => 'sometimes|string|max:20|nullable',
             'phone_number' => 'sometimes|string|max:20',
             'experience' => 'sometimes|string',
             'has_pets' => 'sometimes|boolean',

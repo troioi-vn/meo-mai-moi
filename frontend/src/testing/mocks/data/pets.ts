@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw'
-import { type Pet, type PetType } from '@/types/pet'
+import { type Pet, type PetType, type PetSex } from '@/types/pet'
 
 // Mock pet types
 export const mockCatType: PetType = {
@@ -38,11 +38,13 @@ export const mockPetTypes = [mockCatType, mockDogType]
 export const mockCatWithFosterRequest: Pet = {
   id: 1,
   name: 'Fluffy',
-  breed: 'Persian',
+  sex: 'female' as PetSex,
   birthday: '2020-01-15',
   status: 'active',
   description: 'A very friendly and fluffy cat looking for a temporary foster home.',
-  location: 'New York, NY',
+  country: 'US',
+  state: 'NY',
+  city: 'New York',
   photo_url: 'http://localhost:3000/storage/pets/profiles/fluffy.jpg',
   user_id: 1,
   pet_type_id: 1,
@@ -111,11 +113,13 @@ export const mockCatWithFosterRequest: Pet = {
 export const mockCatWithAdoptionRequest: Pet = {
   id: 2,
   name: 'Whiskers',
-  breed: 'Siamese',
+  sex: 'male' as PetSex,
   birthday: '2019-05-20',
   status: 'active',
   description: 'A curious and playful cat looking for a forever home.',
-  location: 'Los Angeles, CA',
+  country: 'US',
+  state: 'CA',
+  city: 'Los Angeles',
   photo_url: 'http://localhost:3000/storage/pets/profiles/whiskers.jpg',
   user_id: 2,
   pet_type_id: 1,
@@ -151,11 +155,13 @@ export const mockCatWithAdoptionRequest: Pet = {
 export const mockDogWithPhotos: Pet = {
   id: 3,
   name: 'Buddy',
-  breed: 'Golden Retriever',
+  sex: 'male' as PetSex,
   birthday: '2021-03-10',
   status: 'active',
   description: 'A friendly and energetic dog who loves to play fetch.',
-  location: 'Chicago, IL',
+  country: 'US',
+  state: 'IL',
+  city: 'Chicago',
   photo_url: 'http://localhost:3000/storage/pets/profiles/buddy.jpg',
   user_id: 3,
   pet_type_id: 2,
@@ -179,11 +185,13 @@ export const mockDogWithPhotos: Pet = {
 export const mockCatWithUrgentAdoptionRequest: Pet = {
   id: 4,
   name: 'Luna',
-  breed: 'Tabby',
+  sex: 'female' as PetSex,
   birthday: '2018-11-05',
   status: 'active',
   description: "Sweet senior cat needs urgent rehoming due to owner's housing situation.",
-  location: 'Austin, TX',
+  country: 'US',
+  state: 'TX',
+  city: 'Austin',
   photo_url: 'http://localhost:3000/storage/pets/profiles/luna.jpg',
   user_id: 4,
   pet_type_id: 1,
@@ -219,11 +227,13 @@ export const mockCatWithUrgentAdoptionRequest: Pet = {
 export const mockCatWithFosterRequest5: Pet = {
   id: 5,
   name: 'Mittens',
-  breed: 'Calico',
+  sex: 'female' as PetSex,
   birthday: '2022-01-20',
   status: 'active',
   description: 'Young playful cat needs temporary home while owner relocates.',
-  location: 'Seattle, WA',
+  country: 'US',
+  state: 'WA',
+  city: 'Seattle',
   photo_url: 'http://localhost:3000/storage/pets/profiles/mittens.jpg',
   user_id: 5,
   pet_type_id: 1,
@@ -261,11 +271,13 @@ export const mockCatWithFosterRequest5: Pet = {
 export const mockCatWithAdoptionRequest6: Pet = {
   id: 6,
   name: 'Oreo',
-  breed: 'Tuxedo',
+  sex: 'male' as PetSex,
   birthday: '2020-07-12',
   status: 'active',
   description: 'Friendly black and white cat looking for a new family.',
-  location: 'Denver, CO',
+  country: 'US',
+  state: 'CO',
+  city: 'Denver',
   photo_url: 'http://localhost:3000/storage/pets/profiles/oreo.jpg',
   user_id: 6,
   pet_type_id: 1,
@@ -304,11 +316,13 @@ export const mockPet: Pet = mockCatWithFosterRequest
 export const mockPetWithoutPlacementRequest: Pet = {
   id: 7,
   name: 'Smokey',
-  breed: 'Russian Blue',
+  sex: 'male' as PetSex,
   birthday: '2019-05-20',
   status: 'active',
   description: 'A curious and playful cat with no current placement needs.',
-  location: 'Los Angeles, CA',
+  country: 'US',
+  state: 'CA',
+  city: 'Los Angeles',
   user_id: 7,
   pet_type_id: 1,
   pet_type: mockCatType,
@@ -330,11 +344,12 @@ export const mockPetWithoutPlacementRequest: Pet = {
 export const deceasedMockPet: Pet = {
   id: 8,
   name: 'Deceased Pet',
-  breed: 'Unknown',
+  sex: 'not_specified' as PetSex,
   birthday: '2010-01-01',
   status: 'deceased',
   description: 'A beloved pet who has passed away.',
-  location: 'Rainbow Bridge',
+  country: 'US',
+  city: 'Rainbow Bridge',
   user_id: 8,
   pet_type_id: 1,
   pet_type: mockCatType,
@@ -464,7 +479,7 @@ export const petHandlers = [
   // Returns a { data: { ... } } object
   http.post('http://localhost:3000/api/pets', async ({ request }) => {
     const newPetData = (await request.json()) as Partial<Pet>
-    const petType = mockPetTypes.find((t) => t.id === newPetData.pet_type_id) || mockCatType
+    const petType = mockPetTypes.find((t) => t.id === newPetData.pet_type_id) ?? mockCatType
     const newPet: Pet = {
       ...mockPet,
       id: Date.now(),

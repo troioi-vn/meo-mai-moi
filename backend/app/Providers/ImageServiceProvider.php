@@ -18,7 +18,7 @@ class ImageServiceProvider extends ServiceProvider
             $driver = $app->make('config')->get('image.driver', 'gd');
 
             return new ImageManager(
-                $driver === 'imagick' ? new ImagickDriver : new GdDriver
+                $driver === 'imagick' ? new ImagickDriver() : new GdDriver()
             );
         });
     }

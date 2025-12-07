@@ -45,11 +45,9 @@ class ValidateInvitationRequest
             $email = $request->input('email');
 
             // Check for suspicious email patterns
-            if ($email && (
-                str_contains($email, '+') && substr_count($email, '+') > 2 || // Multiple + signs
+            if ($email && (str_contains($email, '+') && substr_count($email, '+') > 2 || // Multiple + signs
                 preg_match('/\d{5,}/', $email) || // Long number sequences
-                str_contains($email, 'test') && str_contains($email, 'example') // Test emails
-            )) {
+                str_contains($email, 'test') && str_contains($email, 'example'))) { // Test emails
                 Log::warning('Suspicious waitlist request - potentially fake email', [
                     'ip' => $request->ip(),
                     'email' => $email,

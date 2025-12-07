@@ -17,7 +17,7 @@ describe('HelperProfilePage', () => {
     )
   })
 
-  it('renders a table of helper profiles with an edit button', async () => {
+  it('renders helper profiles with location and edit button', async () => {
     render(
       <QueryClientProvider client={queryClient}>
         <MemoryRouter>
@@ -29,11 +29,13 @@ describe('HelperProfilePage', () => {
     await waitFor(() => {
       expect(screen.getByText('My Helper Profiles')).toBeInTheDocument()
     })
-    expect(screen.getByText('City')).toBeInTheDocument()
+    // Location should show city and state
+    expect(
+      screen.getByText(`${mockHelperProfile.city}, ${mockHelperProfile.state}`)
+    ).toBeInTheDocument()
+    // Public badge should be visible
     expect(screen.getByText('Public')).toBeInTheDocument()
-    expect(screen.getByText('Actions')).toBeInTheDocument()
-    expect(screen.getByText(mockHelperProfile.city)).toBeInTheDocument()
-    expect(screen.getByText('Yes')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument()
+    // Edit button (now icon button with pencil)
+    expect(screen.getByRole('link', { name: '' })).toBeInTheDocument()
   })
 })

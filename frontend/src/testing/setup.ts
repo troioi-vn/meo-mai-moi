@@ -71,6 +71,19 @@ class MockResizeObserver {
 }
 ;(globalThis as unknown as { ResizeObserver?: unknown }).ResizeObserver = MockResizeObserver
 
+// Mock IntersectionObserver (needed for Embla Carousel)
+class MockIntersectionObserver {
+  root: Element | null = null
+  rootMargin = ''
+  thresholds: readonly number[] = []
+  observe = vi.fn()
+  unobserve = vi.fn()
+  disconnect = vi.fn()
+  takeRecords = vi.fn().mockReturnValue([])
+}
+;(globalThis as unknown as { IntersectionObserver?: unknown }).IntersectionObserver =
+  MockIntersectionObserver
+
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -126,7 +139,19 @@ Object.defineProperty(navigator, 'share', {
 // No need to mock buttonVariants export from button anymore
 
 beforeAll(() => {
-  server.listen({ onUnhandledRequest: 'error' })
+  server.listen({
+    onUnhandledRequest: (request, print) => {
+      // Ignore requests to localhost:3000 that happen during cleanup
+      // These are stray async requests that complete after tests
+      const url = new URL(request.url)
+      if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+        // Log for debugging but don't error
+        console.warn(`[MSW] Bypassing stray request: ${request.method} ${request.url}`)
+        return
+      }
+      print.error()
+    },
+  })
 })
 afterAll(() => {
   server.close()

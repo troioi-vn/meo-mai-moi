@@ -122,7 +122,7 @@ class ConfigurationTester
         app('mail.manager')->purge();
     }
 
-    private function sendTestEmail(array $fromConfig, string $recipientEmail): void
+    private function sendTestEmail(array $_fromConfig, string $recipientEmail): void
     {
         $subject = 'Email Configuration Test - '.config('app.name');
         $body = 'This is a test email to verify your email configuration.';

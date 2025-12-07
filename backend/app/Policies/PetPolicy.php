@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\PetStatus;
 use App\Enums\PlacementRequestStatus;
 use App\Models\Pet;
 use App\Models\User;
@@ -25,13 +26,11 @@ class PetPolicy
      */
     public function view(?User $user, Pet $pet): bool
     {
-        // Guests may view when there is an active placement request for the pet
-        $hasActivePlacement = $pet->placementRequests()
-            ->where('status', PlacementRequestStatus::OPEN)
-            ->exists();
+        // Check if pet is publicly viewable (has active placement request OR is lost)
+        $isPubliclyViewable = $this->isPubliclyViewable($pet);
 
         if (! $user) {
-            return $hasActivePlacement;
+            return $isPubliclyViewable;
         }
 
         if ($this->isAdmin($user)) {
@@ -43,8 +42,24 @@ class PetPolicy
             return true;
         }
 
-        // Non-owners may view when there is an active placement request for the pet
-        return $hasActivePlacement;
+        // Non-owners may view when pet is publicly viewable
+        return $isPubliclyViewable;
+    }
+
+    /**
+     * Check if pet is publicly viewable (has active placement request OR is lost).
+     */
+    public function isPubliclyViewable(Pet $pet): bool
+    {
+        // Pet is lost
+        if ($pet->status === PetStatus::LOST) {
+            return true;
+        }
+
+        // Pet has active placement request
+        return $pet->placementRequests()
+            ->where('status', PlacementRequestStatus::OPEN)
+            ->exists();
     }
 
     /**

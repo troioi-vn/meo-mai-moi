@@ -52,6 +52,7 @@ use App\Http\Controllers\Pet\ListMyPetsSectionsController;
 use App\Http\Controllers\Pet\ListPetsWithPlacementRequestsController;
 use App\Http\Controllers\Pet\ListPetTypesController;
 use App\Http\Controllers\Pet\ShowPetController;
+use App\Http\Controllers\Pet\ShowPublicPetController;
 use App\Http\Controllers\Pet\StorePetController;
 use App\Http\Controllers\Pet\UpdatePetController;
 use App\Http\Controllers\Pet\UpdatePetStatusController;
@@ -294,6 +295,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 Route::get('/pets/placement-requests', ListPetsWithPlacementRequestsController::class);
 Route::get('/pets/featured', ListFeaturedPetsController::class);
 Route::get('/pets/{pet}', ShowPetController::class)->middleware('optional.auth')->whereNumber('pet');
+Route::get('/pets/{pet}/public', ShowPublicPetController::class)->middleware('optional.auth')->whereNumber('pet');
 Route::get('/pet-types', ListPetTypesController::class);
 
 // Pet health data routes (public read, auth required for write)

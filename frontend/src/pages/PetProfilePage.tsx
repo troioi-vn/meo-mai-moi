@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, ShieldAlert } from 'lucide-react'
 import { usePetProfile } from '@/hooks/usePetProfile'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -50,6 +50,27 @@ const PetProfilePage: React.FC = () => {
     }
   }
 
+  // Check if pet is publicly viewable (lost or has active placement request)
+  const isPubliclyViewable = (petData: typeof pet): boolean => {
+    if (!petData) return false
+    if (petData.status === 'lost') return true
+    const placementRequests = petData.placement_requests ?? []
+    return placementRequests.some((pr) => pr.status === 'open')
+  }
+
+  // Check if user is owner
+  const canEdit = pet ? Boolean(pet.viewer_permissions?.can_edit) : false
+
+  // Redirect non-owners to public view if pet is publicly viewable
+  useEffect(() => {
+    if (loading || !pet || !id) return
+
+    // If user is not owner but pet is publicly viewable, redirect to public view
+    if (!canEdit && isPubliclyViewable(pet)) {
+      void navigate(`/pets/${id}/public`, { replace: true })
+    }
+  }, [loading, pet, canEdit, id, navigate])
+
   if (loading) {
     return <LoadingState message="Loading pet information..." />
   }
@@ -76,7 +97,47 @@ const PetProfilePage: React.FC = () => {
     )
   }
 
-  const canEdit = Boolean(pet.viewer_permissions?.can_edit)
+  // If user is not owner and pet is not publicly viewable, show access denied
+  if (!canEdit && !isPubliclyViewable(pet)) {
+    return (
+      <div className="min-h-screen">
+        <div className="px-4 py-3">
+          <div className="max-w-lg mx-auto">
+            <Button
+              variant="ghost"
+              size="default"
+              onClick={handleBack}
+              className="flex items-center gap-1 -ml-2 text-base"
+            >
+              <ChevronLeft className="h-6 w-6" />
+              Back
+            </Button>
+          </div>
+        </div>
+        <main className="px-4 pb-8">
+          <div className="max-w-lg mx-auto">
+            <Card>
+              <CardContent className="py-12 text-center space-y-4">
+                <ShieldAlert className="h-12 w-12 mx-auto text-muted-foreground" />
+                <h2 className="text-xl font-semibold text-foreground">Access Restricted</h2>
+                <p className="text-muted-foreground">
+                  This pet profile is not publicly available.
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    void navigate('/')
+                  }}
+                >
+                  Go to Home
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+      </div>
+    )
+  }
   const imageUrl = deriveImageUrl(pet)
   const ageDisplay = formatPetAge(pet)
   const isDeceased = pet.status === 'deceased'

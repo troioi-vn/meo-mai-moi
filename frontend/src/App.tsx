@@ -17,6 +17,7 @@ import CreatePetPage from './pages/account/CreatePetPage'
 import PasswordPage from './pages/account/PasswordPage'
 import InvitationsPage from './pages/InvitationsPage'
 import PetProfilePage from './pages/PetProfilePage'
+import PetPublicProfilePage from './pages/PetPublicProfilePage'
 import SettingsPage from './pages/SettingsPage'
 import HelperProfilePage from './pages/helper/HelperProfilePage'
 import HelperProfileEditPage from './pages/helper/HelperProfileEditPage'
@@ -64,6 +65,7 @@ export function AppRoutes() {
 
       {/* Pet routes */}
       <Route path="/pets/:id" element={<PetProfilePage />} />
+      <Route path="/pets/:id/public" element={<PetPublicProfilePage />} />
       <Route
         path="/pets/:id/edit"
         element={

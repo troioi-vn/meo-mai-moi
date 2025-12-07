@@ -112,6 +112,37 @@ export const getPet = async (id: string): Promise<Pet> => {
   return response.data.data
 }
 
+export interface PublicPet {
+  id: number
+  name: string
+  sex?: 'male' | 'female' | 'not_specified'
+  birthday_precision?: 'day' | 'month' | 'year' | 'unknown'
+  birthday_year?: number | null
+  birthday_month?: number | null
+  birthday_day?: number | null
+  country: string
+  state?: string | null
+  city?: string | null
+  description: string
+  status: 'active' | 'lost' | 'deceased' | 'deleted'
+  pet_type_id: number
+  photo_url?: string | null
+  photos?: { id: number; url: string; thumb_url: string | null; is_primary: boolean }[]
+  pet_type: Pet['pet_type']
+  categories?: Pet['categories']
+  placement_requests?: Pet['placement_requests']
+  viewer_permissions?: {
+    is_owner?: boolean
+  }
+  created_at: string
+  updated_at: string
+}
+
+export const getPetPublic = async (id: string): Promise<PublicPet> => {
+  const response = await api.get<{ data: PublicPet }>(`/pets/${id}/public`)
+  return response.data.data
+}
+
 export type UpdatePetPayload = Partial<CreatePetPayload>
 
 export const updatePet = async (id: string, petData: UpdatePetPayload): Promise<Pet> => {

@@ -103,7 +103,7 @@ export const PlacementRequestsSection: React.FC<Props> = ({
   const handleConfirmResponse = useCallback(
     async (transferId: number) => {
       try {
-        await api.post(`transfer-requests/${String(transferId)}/confirm`)
+        await api.post(`transfer-requests/${String(transferId)}/accept`)
         toast.success('Response accepted!')
         onRefresh?.()
       } catch (error) {

@@ -54,6 +54,12 @@ class TransferRequestPolicy
         return $this->isAdmin($user) || $transferRequest->recipient_user_id === $user->id;
     }
 
+    public function cancel(User $user, TransferRequest $transferRequest): bool
+    {
+        // Only the initiator (helper) or admin can cancel their own pending request
+        return $this->isAdmin($user) || $transferRequest->initiator_user_id === $user->id;
+    }
+
     public function viewResponderProfile(User $user, TransferRequest $transferRequest): bool
     {
         // Owner/recipient and admin can view responder profile

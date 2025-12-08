@@ -80,6 +80,7 @@ use App\Http\Controllers\TransferHandover\HelperConfirmHandoverController;
 use App\Http\Controllers\TransferHandover\ShowHandoverForTransferController;
 use App\Http\Controllers\TransferHandover\StoreTransferHandoverController;
 use App\Http\Controllers\TransferRequest\AcceptTransferRequestController;
+use App\Http\Controllers\TransferRequest\CancelTransferRequestController;
 use App\Http\Controllers\TransferRequest\GetResponderProfileController;
 use App\Http\Controllers\TransferRequest\RejectTransferRequestController;
 use App\Http\Controllers\TransferRequest\StoreTransferRequestController;
@@ -264,6 +265,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::delete('/pets/{pet}/microchips/{microchip}', DeletePetMicrochipController::class)->whereNumber('microchip');
 
     Route::post('/transfer-requests', StoreTransferRequestController::class);
+    Route::delete('/transfer-requests/{transferRequest}', CancelTransferRequestController::class);
     Route::post('/transfer-requests/{transferRequest}/accept', AcceptTransferRequestController::class);
     Route::post('/transfer-requests/{transferRequest}/reject', RejectTransferRequestController::class);
     // Owner-only: view responder's helper profile for a transfer request

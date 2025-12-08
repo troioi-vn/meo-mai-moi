@@ -4325,6 +4325,55 @@
                 ]
             }
         },
+        "/api/transfer-requests/{id}": {
+            "delete": {
+                "tags": [
+                    "Transfer Requests"
+                ],
+                "summary": "Cancel a transfer request (by the initiator/helper)",
+                "operationId": "e92128a5959b69ad36342d9a4c67cca9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the transfer request to cancel",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transfer request canceled successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TransferRequest"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Transfer request not found"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden: You are not the initiator of this request."
+                    },
+                    "409": {
+                        "description": "Only pending requests can be canceled."
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/transfer-requests/{id}/responder-profile": {
             "get": {
                 "tags": [

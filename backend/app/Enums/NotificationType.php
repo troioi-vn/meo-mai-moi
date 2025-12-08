@@ -8,6 +8,7 @@ enum NotificationType: string
     case PLACEMENT_REQUEST_ACCEPTED = 'placement_request_accepted';
     case HELPER_RESPONSE_ACCEPTED = 'helper_response_accepted';
     case HELPER_RESPONSE_REJECTED = 'helper_response_rejected';
+    case HELPER_RESPONSE_CANCELED = 'helper_response_canceled';
     case FOSTER_ASSIGNMENT_COMPLETED = 'foster_assignment_completed';
     case FOSTER_ASSIGNMENT_CANCELED = 'foster_assignment_canceled';
     case VACCINATION_REMINDER = 'vaccination_reminder';
@@ -21,6 +22,7 @@ enum NotificationType: string
             self::PLACEMENT_REQUEST_ACCEPTED,
             self::HELPER_RESPONSE_ACCEPTED,
             self::HELPER_RESPONSE_REJECTED,
+            self::HELPER_RESPONSE_CANCELED,
             self::FOSTER_ASSIGNMENT_COMPLETED,
             self::FOSTER_ASSIGNMENT_CANCELED => 'helper_profile',
             self::VACCINATION_REMINDER,
@@ -36,6 +38,7 @@ enum NotificationType: string
             self::PLACEMENT_REQUEST_ACCEPTED => 'Placement Request Accepted',
             self::HELPER_RESPONSE_ACCEPTED => 'Helper Response Accepted',
             self::HELPER_RESPONSE_REJECTED => 'Helper Response Rejected',
+            self::HELPER_RESPONSE_CANCELED => 'Helper Response Canceled',
             self::FOSTER_ASSIGNMENT_COMPLETED => 'Foster Assignment Completed',
             self::FOSTER_ASSIGNMENT_CANCELED => 'Foster Assignment Canceled',
             self::VACCINATION_REMINDER => 'Vaccination Due Soon',

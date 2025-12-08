@@ -4,6 +4,15 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Changed
+
+- **Placement Request Auto-Rejection Timing**:
+  - Moved auto-rejection of other pending helper offers from the "Accept Response" step to the "Complete Handover" step
+  - Previously: Other offers were rejected when the owner accepted a response (PlacementRequest → `fulfilled`)
+  - Now: Other offers remain pending until the handover is completed and status changes to `active` (fostering) or `finalized` (permanent rehoming)
+  - This provides a backup option if the initially selected helper doesn't complete the handover
+  - Rejected helpers are notified only when the transfer is actually confirmed
+
 ### Added
 
 - **Placement Response Modal Improvements**:

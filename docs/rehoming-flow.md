@@ -19,9 +19,9 @@ The placement request goes through the following status transitions:
 - Effects:
   - Marks the transfer request as accepted (accepted_at set)
   - Sets PlacementRequest status to `fulfilled`
-  - Auto-rejects all other pending responses for that PlacementRequest
   - Creates an initial TransferHandover record (status=pending)
   - Frontend shows "Confirm Rehoming" button to the accepted Helper on public pet profile
+  - Note: Other pending responses remain pending at this stage (not rejected yet)
 
 ## 2) Confirm Rehoming (Helper)
 - Action: Helper clicks "Confirm Rehoming" button on public pet profile page
@@ -31,6 +31,7 @@ The placement request goes through the following status transitions:
   - Completes the handover (status=completed)
   - For permanent placement: changes Pet.user_id (ownership) to the helper; updates OwnershipHistory (close previous owner record and open new one). Sets PlacementRequest status to `finalized`
   - For foster placement: creates or ensures an active FosterAssignment. Sets PlacementRequest status to `active`
+  - **Auto-rejects all other pending responses for that PlacementRequest** (moved from accept to here)
 
 ## 3) Schedule & Complete the Physical Handover
 - Create/Schedule (Owner):

@@ -97,40 +97,9 @@ class AcceptTransferRequestController extends Controller
                 }
                 $placement->save();
 
-                // Auto-reject other pending transfer requests for the same placement
-                $rejectedRequests = TransferRequest::where('placement_request_id', $placement->id)
-                    ->where('id', '!=', $transferRequest->id)
-                    ->where('status', TransferRequestStatus::PENDING)
-                    ->get();
-
-                foreach ($rejectedRequests as $rejectedRequest) {
-                    $rejectedRequest->update(['status' => TransferRequestStatus::REJECTED, 'rejected_at' => now()]);
-
-                    // Notify rejected helper
-                    try {
-                        $rejectedHelper = User::find($rejectedRequest->initiator_user_id);
-                        $pet = $rejectedRequest->pet ?: Pet::find($rejectedRequest->pet_id);
-                        if ($rejectedHelper && $pet) {
-                            $this->notificationService->send(
-                                $rejectedHelper,
-                                NotificationType::HELPER_RESPONSE_REJECTED->value,
-                                [
-                                    'message' => 'Your request for '.$pet->name.' was not selected. The owner chose another helper.',
-                                    'link' => '/pets/'.$pet->id,
-                                    'pet_name' => $pet->name,
-                                    'pet_id' => $pet->id,
-                                    'transfer_request_id' => $rejectedRequest->id,
-                                ]
-                            );
-                        }
-                    } catch (\Throwable $e) {
-                        // non-fatal; log at debug level for auditability
-                        Log::debug('Failed to notify rejected helper', [
-                            'transfer_request_id' => $rejectedRequest->id,
-                            'error' => $e->getMessage(),
-                        ]);
-                    }
-                }
+                // Note: Other pending transfer requests are auto-rejected when the handover
+                // is completed and the placement status changes to ACTIVE or FINALIZED.
+                // See CompleteHandoverController for that logic.
             }
 
             // Create initial handover record; finalization occurs on handover completion

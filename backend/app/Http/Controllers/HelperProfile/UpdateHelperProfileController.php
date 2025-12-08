@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\HelperProfile;
 
+use App\Enums\PlacementRequestType;
 use App\Http\Controllers\Controller;
 use App\Models\HelperProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 /**
  * @OA\Put(
@@ -103,9 +105,8 @@ class UpdateHelperProfileController extends Controller
             'experience' => 'sometimes|string',
             'has_pets' => 'sometimes|boolean',
             'has_children' => 'sometimes|boolean',
-            'can_foster' => 'sometimes|boolean',
-            'can_adopt' => 'sometimes|boolean',
-            'is_public' => 'sometimes|boolean',
+            'request_types' => ['sometimes', 'array', 'min:1'],
+            'request_types.*' => [Rule::enum(PlacementRequestType::class)],
             'status' => 'sometimes|string|in:active,cancelled,deleted',
             'photos' => 'sometimes|array|max:5',
             'photos.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:10240',

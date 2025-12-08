@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createHelperProfile, updateHelperProfile } from '@/api/helper-profiles'
 import { toast } from 'sonner'
 import type React from 'react'
+import type { PlacementRequestType } from '@/types/helper-profile'
 
 interface HelperProfileForm {
   country: string
@@ -15,9 +16,7 @@ interface HelperProfileForm {
   experience: string
   has_pets: boolean
   has_children: boolean
-  can_foster: boolean
-  can_adopt: boolean
-  is_public: boolean
+  request_types: PlacementRequestType[]
   status?: string
   photos: FileList | File[]
   pet_type_ids: number[]
@@ -40,9 +39,7 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
     experience: '',
     has_pets: false,
     has_children: false,
-    can_foster: false,
-    can_adopt: false,
-    is_public: true,
+    request_types: [],
     photos: [],
     pet_type_ids: [],
     ...initialData,
@@ -62,9 +59,7 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
         experience: '',
         has_pets: false,
         has_children: false,
-        can_foster: false,
-        can_adopt: false,
-        is_public: true,
+        request_types: [],
         photos: [],
         pet_type_ids: [],
         ...initialData,
@@ -142,6 +137,9 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
     // address, city, state are now optional
     if (!formData.phone_number) newErrors.phone_number = 'Phone number is required'
     if (!formData.experience) newErrors.experience = 'Experience is required'
+    if (!formData.request_types || formData.request_types.length === 0) {
+      newErrors.request_types = 'At least one request type is required'
+    }
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -162,9 +160,6 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
       'experience',
       'has_pets',
       'has_children',
-      'can_foster',
-      'can_adopt',
-      'is_public',
       'status',
     ]
 
@@ -175,6 +170,11 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
       } else if (typeof value === 'string' || typeof value === 'number') {
         dataToSend.append(key, String(value))
       }
+    }
+
+    // Append request_types array
+    for (const type of formData.request_types) {
+      dataToSend.append('request_types[]', type)
     }
 
     // Append photos if present

@@ -4,8 +4,16 @@ import { CheckboxField } from '@/components/ui/CheckboxField'
 import { CountrySelect } from '@/components/ui/CountrySelect'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { CircleHelp } from 'lucide-react'
+import type { PlacementRequestType } from '@/types/helper-profile'
+
+const REQUEST_TYPE_OPTIONS: { value: PlacementRequestType; label: string }[] = [
+  { value: 'foster_payed', label: 'Foster (Paid)' },
+  { value: 'foster_free', label: 'Foster (Free)' },
+  { value: 'permanent', label: 'Permanent Adoption' },
+]
 
 interface Props {
   formData: {
@@ -18,9 +26,7 @@ interface Props {
     experience: string
     has_pets: boolean
     has_children: boolean
-    can_foster: boolean
-    can_adopt: boolean
-    is_public: boolean
+    request_types: PlacementRequestType[]
   }
   errors: Record<string, string>
   updateField: (field: keyof Props['formData']) => (value: unknown) => void
@@ -134,27 +140,38 @@ export const HelperProfileFormFields: React.FC<Props> = ({ formData, errors, upd
         onChange={updateField('has_children')}
         error={errors.has_children}
       />
-      <CheckboxField
-        id="can_foster"
-        label="Can Foster"
-        checked={formData.can_foster}
-        onChange={updateField('can_foster')}
-        error={errors.can_foster}
-      />
-      <CheckboxField
-        id="can_adopt"
-        label="Can Adopt"
-        checked={formData.can_adopt}
-        onChange={updateField('can_adopt')}
-        error={errors.can_adopt}
-      />
-      <CheckboxField
-        id="is_public"
-        label="Is Public"
-        checked={formData.is_public}
-        onChange={updateField('is_public')}
-        error={errors.is_public}
-      />
+      <div className="space-y-3">
+        <Label className={errors.request_types ? 'text-destructive' : ''}>
+          Request Types <span className="text-destructive">*</span>
+        </Label>
+        <p className="text-sm text-muted-foreground">
+          Select which types of placement requests you can respond to
+        </p>
+        <div className="space-y-2">
+          {REQUEST_TYPE_OPTIONS.map((option) => (
+            <div key={option.value} className="flex items-center space-x-2">
+              <Checkbox
+                id={`request_type_${option.value}`}
+                checked={formData.request_types.includes(option.value)}
+                onCheckedChange={(checked) => {
+                  const currentTypes = formData.request_types
+                  if (checked) {
+                    updateField('request_types')([...currentTypes, option.value])
+                  } else {
+                    updateField('request_types')(currentTypes.filter((t) => t !== option.value))
+                  }
+                }}
+              />
+              <Label htmlFor={`request_type_${option.value}`} className="font-normal">
+                {option.label}
+              </Label>
+            </div>
+          ))}
+        </div>
+        {errors.request_types && (
+          <p className="text-sm font-medium text-destructive">{errors.request_types}</p>
+        )}
+      </div>
     </>
   )
 }

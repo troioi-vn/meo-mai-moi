@@ -4,6 +4,8 @@ export interface HelperProfileUser {
   email?: string
 }
 
+export type PlacementRequestType = 'foster_payed' | 'foster_free' | 'permanent'
+
 export interface HelperProfile {
   id: number
   user_id?: number
@@ -19,9 +21,8 @@ export interface HelperProfile {
   about?: string
   has_pets?: boolean
   has_children?: boolean
-  can_foster?: boolean
-  can_adopt?: boolean
-  is_public?: boolean
+  request_types?: PlacementRequestType[]
+  approval_status?: string
   status?: string
   user?: HelperProfileUser
   photos?: unknown[]

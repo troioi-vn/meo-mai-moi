@@ -12,9 +12,8 @@ export const mockHelperProfile = {
   experience: 'Lots of experience',
   has_pets: true,
   has_children: false,
-  can_foster: true,
-  can_adopt: false,
-  is_public: true,
+  request_types: ['foster_free', 'permanent'],
+  approval_status: 'approved',
   status: 'active',
   photos: [
     { id: 1, path: '/test-photo-1.jpg' },

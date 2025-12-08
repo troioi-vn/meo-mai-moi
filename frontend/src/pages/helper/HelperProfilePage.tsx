@@ -4,27 +4,17 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import {
-  PlusCircle,
-  MapPin,
-  Eye,
-  EyeOff,
-  ChevronLeft,
-  ChevronRight,
-  Home,
-  Heart,
-} from 'lucide-react'
+import { PlusCircle, MapPin, ChevronLeft, ChevronRight, Home, Heart } from 'lucide-react'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
+import type { PlacementRequestType } from '@/types/helper-profile'
 
 interface HelperProfile {
   id: number
   city?: string
   state?: string
   country?: string
-  is_public?: boolean
-  can_foster?: boolean
-  can_adopt?: boolean
+  request_types?: PlacementRequestType[]
   user?: {
     name?: string
   }
@@ -158,29 +148,22 @@ function HelperProfileListItem({ profile }: { profile: HelperProfile }) {
 
           {/* Tags */}
           <div className="flex flex-wrap gap-2">
-            <Badge variant={profile.is_public ? 'default' : 'secondary'} className="text-xs">
-              {profile.is_public ? (
-                <span className="flex items-center gap-1">
-                  <Eye className="h-3 w-3" />
-                  Public
-                </span>
-              ) : (
-                <span className="flex items-center gap-1">
-                  <EyeOff className="h-3 w-3" />
-                  Private
-                </span>
-              )}
-            </Badge>
-            {profile.can_foster && (
+            {profile.request_types?.includes('foster_payed') && (
               <Badge variant="outline" className="text-xs">
                 <Home className="h-3 w-3 mr-1" />
-                Foster
+                Foster (Paid)
               </Badge>
             )}
-            {profile.can_adopt && (
+            {profile.request_types?.includes('foster_free') && (
+              <Badge variant="outline" className="text-xs">
+                <Home className="h-3 w-3 mr-1" />
+                Foster (Free)
+              </Badge>
+            )}
+            {profile.request_types?.includes('permanent') && (
               <Badge variant="outline" className="text-xs">
                 <Heart className="h-3 w-3 mr-1" />
-                Adopt
+                Permanent
               </Badge>
             )}
           </div>

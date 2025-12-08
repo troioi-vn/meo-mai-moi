@@ -34,9 +34,10 @@ use OpenApi\Annotations as OA;
  *         description="Status of the helper profile"
  *     ),
  *     @OA\Property(
- *         property="is_public",
- *         type="boolean",
- *         description="Is the helper profile public"
+ *         property="request_types",
+ *         type="array",
+ *         @OA\Items(type="string", enum={"foster_payed", "foster_free", "permanent"}),
+ *         description="Types of placement requests this helper can respond to"
  *     ),
  *     @OA\Property(
  *         property="country",
@@ -103,18 +104,14 @@ class HelperProfile extends Model
         'experience',
         'has_pets',
         'has_children',
-        'can_foster',
-        'can_adopt',
+        'request_types',
         'approval_status',
-        'is_public',
     ];
 
     protected $casts = [
         'has_pets' => 'boolean',
         'has_children' => 'boolean',
-        'can_foster' => 'boolean',
-        'can_adopt' => 'boolean',
-        'is_public' => 'boolean',
+        'request_types' => 'array',
     ];
 
     public function user(): BelongsTo
@@ -130,5 +127,39 @@ class HelperProfile extends Model
     public function petTypes(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(PetType::class, 'helper_profile_pet_type');
+    }
+
+    public function transferRequests(): HasMany
+    {
+        return $this->hasMany(TransferRequest::class);
+    }
+
+    /**
+     * Check if a user can view this helper profile.
+     *
+     * A user can view a helper profile if:
+     * - They are the owner of the helper profile
+     * - They own a pet that has a PlacementRequest with a response (TransferRequest) from this helper profile
+     */
+    public function isVisibleToUser(?User $user): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        // Owner can always view
+        if ($this->user_id === $user->id) {
+            return true;
+        }
+
+        // Check if user has a pet with a PlacementRequest that has a response from this helper profile
+        return TransferRequest::query()
+            ->where('helper_profile_id', $this->id)
+            ->whereHas('placementRequest', function ($query) use ($user) {
+                $query->whereHas('pet', function ($petQuery) use ($user) {
+                    $petQuery->where('user_id', $user->id);
+                });
+            })
+            ->exists();
     }
 }

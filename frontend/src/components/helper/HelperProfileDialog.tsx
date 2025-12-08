@@ -102,11 +102,21 @@ export const HelperProfileDialog: React.FC<HelperProfileDialogProps> = ({
             <p>
               <strong>Has children:</strong> {profile.has_children ? 'Yes' : 'No'}
             </p>
-            <p>
-              <strong>Can foster:</strong> {profile.can_foster ? 'Yes' : 'No'}
-            </p>
-            <p>
-              <strong>Can adopt:</strong> {profile.can_adopt ? 'Yes' : 'No'}
+            <p className="col-span-full">
+              <strong>Request Types:</strong>{' '}
+              {profile.request_types?.length
+                ? profile.request_types
+                    .map((t) =>
+                      t === 'foster_payed'
+                        ? 'Foster (Paid)'
+                        : t === 'foster_free'
+                          ? 'Foster (Free)'
+                          : t === 'permanent'
+                            ? 'Permanent'
+                            : t
+                    )
+                    .join(', ')
+                : 'None'}
             </p>
             <p>
               <strong>Status:</strong> {profile.status ?? 'N/A'}

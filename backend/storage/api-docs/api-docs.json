@@ -6063,9 +6063,17 @@
                             "deleted"
                         ]
                     },
-                    "is_public": {
-                        "description": "Is the helper profile public",
-                        "type": "boolean"
+                    "request_types": {
+                        "description": "Types of placement requests this helper can respond to",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "foster_payed",
+                                "foster_free",
+                                "permanent"
+                            ]
+                        }
                     },
                     "country": {
                         "description": "ISO 3166-1 alpha-2 country code",

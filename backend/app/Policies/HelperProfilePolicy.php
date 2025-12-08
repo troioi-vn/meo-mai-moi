@@ -21,8 +21,8 @@ class HelperProfilePolicy
             return true;
         }
 
-        // Owner can always view; otherwise public-only
-        return $helperProfile->is_public || $helperProfile->user_id === $user->id;
+        // Use the model's visibility logic
+        return $helperProfile->isVisibleToUser($user);
     }
 
     public function create(User $user): bool

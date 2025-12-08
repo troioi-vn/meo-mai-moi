@@ -55,9 +55,9 @@ describe('HelperProfileEditPage', () => {
       expect(screen.getByLabelText(/experience/i)).toHaveValue(mockHelperProfile.experience)
       expect(screen.getByLabelText(/has pets/i)).toBeChecked()
       expect(screen.getByLabelText(/has children/i)).not.toBeChecked()
-      expect(screen.getByLabelText(/can foster/i)).toBeChecked()
-      expect(screen.getByLabelText(/can adopt/i)).not.toBeChecked()
-      expect(screen.getByLabelText(/is public/i)).toBeChecked()
+      // Check request types checkboxes
+      expect(screen.getByLabelText(/foster \(free\)/i)).toBeChecked()
+      expect(screen.getByLabelText(/permanent adoption/i)).toBeChecked()
     })
   })
 
@@ -157,8 +157,7 @@ describe('HelperProfileEditPage', () => {
     // It triggers an AlertDialog
     const deleteButton = allButtons.find(
       (btn) =>
-        btn.classList.contains('text-destructive') ||
-        btn.className.includes('text-destructive')
+        btn.classList.contains('text-destructive') || btn.className.includes('text-destructive')
     )
     expect(deleteButton).toBeDefined()
     fireEvent.click(deleteButton!)

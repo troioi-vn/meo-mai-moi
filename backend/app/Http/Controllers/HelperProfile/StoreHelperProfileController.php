@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\HelperProfile;
 
+use App\Enums\PlacementRequestType;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 /**
  * @OA\Post(
@@ -46,9 +48,8 @@ class StoreHelperProfileController extends Controller
             'experience' => 'required|string',
             'has_pets' => 'required|boolean',
             'has_children' => 'required|boolean',
-            'can_foster' => 'required|boolean',
-            'can_adopt' => 'required|boolean',
-            'is_public' => 'required|boolean',
+            'request_types' => ['required', 'array', 'min:1'],
+            'request_types.*' => [Rule::enum(PlacementRequestType::class)],
             'photos' => 'sometimes|array|max:5',
             'photos.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:10240',
             'pet_type_ids' => 'sometimes|array',

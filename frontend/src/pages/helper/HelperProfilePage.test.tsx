@@ -31,10 +31,13 @@ describe('HelperProfilePage', () => {
     })
     // Location should show city, state, and country
     expect(
-      screen.getByText(`${mockHelperProfile.city}, ${mockHelperProfile.state}, ${mockHelperProfile.country}`)
+      screen.getByText(
+        `${mockHelperProfile.city}, ${mockHelperProfile.state}, ${mockHelperProfile.country}`
+      )
     ).toBeInTheDocument()
-    // Public badge should be visible
-    expect(screen.getByText('Public')).toBeInTheDocument()
+    // Request type badges should be visible (based on mock data: foster_free, permanent)
+    expect(screen.getByText('Foster (Free)')).toBeInTheDocument()
+    expect(screen.getByText('Permanent')).toBeInTheDocument()
     // Profile card should be a clickable link
     expect(screen.getByRole('link')).toBeInTheDocument()
   })

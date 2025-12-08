@@ -13,7 +13,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel'
-import { ChevronLeft, MapPin, Eye, EyeOff, PawPrint, Baby, Home, Heart, User } from 'lucide-react'
+import { ChevronLeft, MapPin, PawPrint, Baby, Home, Heart, User } from 'lucide-react'
 import placeholderAvatar from '@/assets/images/default-avatar.webp'
 
 interface Photo {
@@ -109,22 +109,6 @@ export default function HelperProfileViewPage() {
                 <MapPin className="h-4 w-4" />
                 <span className="text-sm">{location}</span>
               </div>
-              <Badge
-                variant={profile.is_public ? 'default' : 'secondary'}
-                className="w-fit text-xs mt-1"
-              >
-                {profile.is_public ? (
-                  <span className="flex items-center gap-1">
-                    <Eye className="h-3 w-3" />
-                    Public Profile
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1">
-                    <EyeOff className="h-3 w-3" />
-                    Private Profile
-                  </span>
-                )}
-              </Badge>
             </div>
           </section>
 
@@ -160,29 +144,34 @@ export default function HelperProfileViewPage() {
             </Card>
           )}
 
-          {/* Availability */}
+          {/* Request Types */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg font-semibold">Availability</CardTitle>
+              <CardTitle className="text-lg font-semibold">Request Types</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-2 text-muted-foreground">
-                  <Home className="h-4 w-4" />
-                  Can Foster
-                </span>
-                <Badge variant={profile.can_foster ? 'success' : 'secondary'}>
-                  {profile.can_foster ? 'Yes' : 'No'}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-2 text-muted-foreground">
-                  <Heart className="h-4 w-4" />
-                  Can Adopt
-                </span>
-                <Badge variant={profile.can_adopt ? 'success' : 'secondary'}>
-                  {profile.can_adopt ? 'Yes' : 'No'}
-                </Badge>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {profile.request_types?.includes('foster_payed') && (
+                  <Badge variant="default" className="text-sm">
+                    <Home className="h-3 w-3 mr-1" />
+                    Foster (Paid)
+                  </Badge>
+                )}
+                {profile.request_types?.includes('foster_free') && (
+                  <Badge variant="default" className="text-sm">
+                    <Home className="h-3 w-3 mr-1" />
+                    Foster (Free)
+                  </Badge>
+                )}
+                {profile.request_types?.includes('permanent') && (
+                  <Badge variant="default" className="text-sm">
+                    <Heart className="h-3 w-3 mr-1" />
+                    Permanent Adoption
+                  </Badge>
+                )}
+                {(!profile.request_types || profile.request_types.length === 0) && (
+                  <span className="text-sm text-muted-foreground">No request types specified</span>
+                )}
               </div>
             </CardContent>
           </Card>

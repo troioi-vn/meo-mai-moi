@@ -7,6 +7,7 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Added
 
 - **Placement Request Status Flow Enhancement**:
+
   - Implemented complete status lifecycle for placement requests:
     - `open` → `fulfilled` (when Owner accepts Helper's response)
     - `fulfilled` → `pending_transfer` (when Helper clicks "Confirm Rehoming")
@@ -20,11 +21,25 @@ All notable changes to this project are documented here, following the [Keep a C
   - Comprehensive status flow documentation updated in `docs/rehoming-flow.md`
 
 - **Helper Profile Pages UI Modernization**:
+
   - Updated `HelperProfilePage` (list view) with modern card-based design matching Pet Profile patterns
   - Updated `HelperProfileViewPage` with consistent navigation, status badges, and organized card sections
   - Updated `CreateHelperProfilePage` and `HelperProfileEditPage` with consistent navigation headers
   - Improved empty states, loading states, and error handling across all helper profile pages
   - Better visual hierarchy with icons, badges, and consistent spacing
+
+- **Helper Profile Request Types & Visibility**:
+
+  - Removed legacy boolean fields `is_public`, `can_foster`, and `can_adopt` from helper profiles.
+  - Added new `request_types` array field on `helper_profiles` backed by the `PlacementRequestType` enum (`foster_payed`, `foster_free`, `permanent`).
+  - Enforced validation so that helper profiles must have at least one `request_type` selected on create and update.
+  - Updated backend model, controllers, factories, policies, Filament resource, and API schema to use `request_types`.
+  - Updated frontend types, forms, pages, and tests to surface `request_types` as selectable chips/badges.
+  - Implemented visibility rules for helper profiles:
+    - Owners can always view their own helper profiles.
+    - Pet owners can view helper profiles that have responded to their placement requests (via transfer requests linked to their pets).
+    - Admins can view all helper profiles.
+  - Updated helper profile listing and show endpoints to respect the new visibility logic.
 
 - **Contact Info Field for Helper Profiles**:
 

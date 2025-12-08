@@ -15,7 +15,8 @@ import {
 import { Trash2, Users, Clock, CheckCircle2, Loader2, Home } from 'lucide-react'
 import { api } from '@/api/axios'
 import { toast } from 'sonner'
-import type { Pet } from '@/types/pet'
+import type { Pet, TransferRequest } from '@/types/pet'
+import { ResponsesDrawer } from './ResponsesDrawer'
 
 type PlacementRequest = NonNullable<Pet['placement_requests']>[number]
 
@@ -86,6 +87,46 @@ export const PlacementRequestsSection: React.FC<Props> = ({
   onRefresh,
 }) => {
   const [finalizingId, setFinalizingId] = useState<number | null>(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [activeRequestId, setActiveRequestId] = useState<number | null>(null)
+
+  // Get the pending responses for the active request
+  const activeRequest = placementRequests.find((r) => r.id === activeRequestId)
+  const activeResponses: TransferRequest[] =
+    activeRequest?.transfer_requests?.filter((tr) => tr.status === 'pending') ?? []
+
+  const handleOpenResponses = (requestId: number) => {
+    setActiveRequestId(requestId)
+    setDrawerOpen(true)
+  }
+
+  const handleConfirmResponse = useCallback(
+    async (transferId: number) => {
+      try {
+        await api.post(`transfer-requests/${String(transferId)}/confirm`)
+        toast.success('Response accepted!')
+        onRefresh?.()
+      } catch (error) {
+        console.error('Failed to confirm transfer request', error)
+        toast.error('Failed to accept response. Please try again.')
+      }
+    },
+    [onRefresh]
+  )
+
+  const handleRejectResponse = useCallback(
+    async (transferId: number) => {
+      try {
+        await api.post(`transfer-requests/${String(transferId)}/reject`)
+        toast.success('Response rejected')
+        onRefresh?.()
+      } catch (error) {
+        console.error('Failed to reject transfer request', error)
+        toast.error('Failed to reject response. Please try again.')
+      }
+    },
+    [onRefresh]
+  )
 
   const handleDelete = useCallback(
     async (requestId: number) => {
@@ -136,7 +177,10 @@ export const PlacementRequestsSection: React.FC<Props> = ({
             <div className="flex items-start justify-between gap-3">
               <div className="flex flex-col gap-2">
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant={getRequestTypeBadgeVariant(request.request_type)} className="w-fit">
+                  <Badge
+                    variant={getRequestTypeBadgeVariant(request.request_type)}
+                    className="w-fit"
+                  >
                     {formatRequestType(request.request_type)}
                   </Badge>
                   {request.status !== 'open' && (
@@ -163,8 +207,8 @@ export const PlacementRequestsSection: React.FC<Props> = ({
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete Placement Request</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Are you sure you want to delete this placement request? This action cannot be
-                        undone.
+                        Are you sure you want to delete this placement request? This action cannot
+                        be undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -243,7 +287,21 @@ export const PlacementRequestsSection: React.FC<Props> = ({
             {/* Footer: Response count and dates (only for open requests) */}
             {request.status === 'open' && (
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                {responseCount > 0 && (
+                {responseCount > 0 && canEdit && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleOpenResponses(request.id)
+                    }}
+                    className="flex items-center gap-1 hover:text-foreground transition-colors underline underline-offset-2 cursor-pointer"
+                  >
+                    <Users className="h-4 w-4" />
+                    <span>
+                      {responseCount} {responseCount === 1 ? 'response' : 'responses'}
+                    </span>
+                  </button>
+                )}
+                {responseCount > 0 && !canEdit && (
                   <div className="flex items-center gap-1">
                     <Users className="h-4 w-4" />
                     <span>
@@ -262,6 +320,18 @@ export const PlacementRequestsSection: React.FC<Props> = ({
           </div>
         )
       })}
+
+      {/* Responses Drawer */}
+      {activeRequest && (
+        <ResponsesDrawer
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
+          responses={activeResponses}
+          requestType={activeRequest.request_type}
+          onConfirm={handleConfirmResponse}
+          onReject={handleRejectResponse}
+        />
+      )}
     </div>
   )
 }

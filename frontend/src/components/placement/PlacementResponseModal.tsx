@@ -18,6 +18,9 @@ interface PlacementResponseModalProps {
   petName: string
   petId: number
   placementRequestId: number
+  requestType: string
+  petCity?: string | null
+  petCountry?: string | null
   onSuccess?: () => void
 }
 
@@ -27,6 +30,9 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({
   petName,
   petId,
   placementRequestId,
+  requestType,
+  petCity,
+  petCountry,
   onSuccess,
 }) => {
   const {
@@ -36,7 +42,6 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({
     selectedProfile,
     setSelectedProfile,
     requestedRelationshipType,
-    setRequestedRelationshipType,
     fosteringType,
     setFosteringType,
     price,
@@ -45,11 +50,18 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({
     submitting,
     handleInitialSubmit,
     handleConfirmSubmit,
+    requestTypeWarning,
+    cityWarning,
+    countryWarning,
+    canSubmit,
   } = usePlacementResponse({
     isOpen,
     petName,
     petId,
     placementRequestId,
+    requestType,
+    petCity: petCity ?? undefined,
+    petCountry: petCountry ?? undefined,
     onSuccess,
     onClose,
   })
@@ -71,11 +83,13 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({
             selectedProfile={selectedProfile}
             setSelectedProfile={setSelectedProfile}
             requestedRelationshipType={requestedRelationshipType}
-            setRequestedRelationshipType={setRequestedRelationshipType}
             fosteringType={fosteringType}
             setFosteringType={setFosteringType}
             price={price}
             setPrice={setPrice}
+            requestTypeWarning={requestTypeWarning}
+            cityWarning={cityWarning}
+            countryWarning={countryWarning}
             onCreateHelperProfile={() => {
               window.location.href = '/helper/create'
             }}
@@ -95,10 +109,7 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({
             Cancel
           </Button>
           {!showConfirmation ? (
-            <Button
-              onClick={handleInitialSubmit}
-              disabled={selectedProfile === '' || requestedRelationshipType === '' || submitting}
-            >
+            <Button onClick={handleInitialSubmit} disabled={!canSubmit || submitting}>
               Submit
             </Button>
           ) : (

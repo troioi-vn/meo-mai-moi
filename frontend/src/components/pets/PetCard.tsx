@@ -182,6 +182,9 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
                     petName={pet.name}
                     petId={pet.id}
                     placementRequestId={activePlacementRequestId}
+                    requestType={activePlacementRequest?.request_type ?? ''}
+                    petCity={pet.city}
+                    petCountry={pet.country}
                   />
                 )}
               </>

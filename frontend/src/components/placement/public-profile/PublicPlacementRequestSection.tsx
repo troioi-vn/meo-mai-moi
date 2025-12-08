@@ -269,6 +269,9 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
           petName={pet.name}
           petId={pet.id}
           placementRequestId={respondingToRequest.id}
+          requestType={respondingToRequest.request_type}
+          petCity={pet.city}
+          petCountry={pet.country}
           onSuccess={() => {
             setRespondingToRequest(null)
             onRefresh?.()

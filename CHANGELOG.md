@@ -6,6 +6,19 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Placement Response Modal Improvements**:
+  - Removed "Relationship Type" dropdown - now automatically derived from placement request type
+  - Auto-prefill "Helper Profile" dropdown when user has only one profile
+  - Added validation to compare request type against helper profile's allowed request types
+    - Shows destructive warning if type is not allowed and disables Submit button
+  - Added location validation warnings:
+    - City mismatch: Shows warning (non-blocking)
+    - Country mismatch: Shows serious/destructive warning (non-blocking)
+  - Automatically derive fostering type and price requirements from placement request type:
+    - `foster_payed` → Fostering with "Paid" type (requires price input)
+    - `foster_free` → Fostering with "Free" type
+    - `permanent` → Permanent Foster
+
 - **Placement Request Status Flow Enhancement**:
 
   - Implemented complete status lifecycle for placement requests:

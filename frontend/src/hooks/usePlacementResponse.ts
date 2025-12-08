@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { api } from '@/api/axios'
-import type { HelperProfile } from '@/types/helper-profile'
+import type { HelperProfile, PlacementRequestType } from '@/types/helper-profile'
 import { toast } from 'sonner'
 
 export type RelationshipType = 'fostering' | 'permanent_foster' | ''
@@ -11,8 +11,30 @@ interface Params {
   petName: string
   petId: number
   placementRequestId: number
+  requestType: string
+  petCity?: string
+  petCountry?: string
   onSuccess?: () => void
   onClose: () => void
+}
+
+/**
+ * Derive relationship type and fostering type from placement request type
+ */
+function deriveFromRequestType(requestType: string): {
+  relationshipType: RelationshipType
+  fosteringType: FosteringType
+} {
+  switch (requestType) {
+    case 'foster_payed':
+      return { relationshipType: 'fostering', fosteringType: 'paid' }
+    case 'foster_free':
+      return { relationshipType: 'fostering', fosteringType: 'free' }
+    case 'permanent':
+      return { relationshipType: 'permanent_foster', fosteringType: 'free' }
+    default:
+      return { relationshipType: '', fosteringType: 'free' }
+  }
 }
 
 export function usePlacementResponse({
@@ -20,6 +42,9 @@ export function usePlacementResponse({
   petName,
   petId,
   placementRequestId,
+  requestType,
+  petCity,
+  petCountry,
   onSuccess,
   onClose,
 }: Params) {
@@ -29,11 +54,20 @@ export function usePlacementResponse({
   const [helperProfiles, setHelperProfiles] = useState<HelperProfile[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedProfile, setSelectedProfile] = useState<string>('')
-  const [requestedRelationshipType, setRequestedRelationshipType] = useState<RelationshipType>('')
   const [showConfirmation, setShowConfirmation] = useState(false)
-  const [fosteringType, setFosteringType] = useState<FosteringType>('free')
   const [price, setPrice] = useState<string>('')
   const [submitting, setSubmitting] = useState(false)
+
+  // Derive relationship type and fostering type from request type
+  const { relationshipType: requestedRelationshipType, fosteringType: derivedFosteringType } =
+    useMemo(() => deriveFromRequestType(requestType), [requestType])
+
+  const [fosteringType, setFosteringType] = useState<FosteringType>(derivedFosteringType)
+
+  // Update fostering type when request type changes
+  useEffect(() => {
+    setFosteringType(derivedFosteringType)
+  }, [derivedFosteringType])
 
   // Load helper profiles when opened
   useEffect(() => {
@@ -42,7 +76,13 @@ export function usePlacementResponse({
       try {
         setLoading(true)
         const response = await api.get<{ data: HelperProfile[] }>('helper-profiles')
-        setHelperProfiles(response.data.data)
+        const profiles = response.data.data
+        setHelperProfiles(profiles)
+
+        // Auto-select if only one profile exists
+        if (profiles.length === 1) {
+          setSelectedProfile(String(profiles[0].id))
+        }
       } catch (error) {
         console.error('Failed to fetch helper profiles', error)
         toast.error('Failed to fetch helper profiles.')
@@ -54,13 +94,53 @@ export function usePlacementResponse({
     })
   }, [isOpen])
 
-  // Reset fostering fields when type changes
-  useEffect(() => {
-    if (requestedRelationshipType !== 'fostering') {
-      setFosteringType('free')
-      setPrice('')
+  // Get selected helper profile object
+  const selectedHelperProfile = useMemo(() => {
+    if (!selectedProfile) return undefined
+    return helperProfiles.find((hp) => String(hp.id) === selectedProfile)
+  }, [selectedProfile, helperProfiles])
+
+  // Warning: request type mismatch
+  const requestTypeWarning = useMemo(() => {
+    if (!selectedHelperProfile) return undefined
+    const allowedTypes = selectedHelperProfile.request_types ?? []
+    if (allowedTypes.length === 0) return undefined
+    if (!allowedTypes.includes(requestType as PlacementRequestType)) {
+      const formattedType = requestType.replace(/_/g, ' ')
+      return `This helper profile is not allowed to handle ${formattedType} requests. Please select another profile or add this request type to the profile settings.`
     }
-  }, [requestedRelationshipType])
+    return undefined
+  }, [selectedHelperProfile, requestType])
+
+  // Warning: city mismatch
+  const cityWarning = useMemo(() => {
+    if (!selectedHelperProfile || !petCity) return undefined
+    const profileCity = selectedHelperProfile.city?.toLowerCase().trim()
+    const requestCity = petCity.toLowerCase().trim()
+    if (profileCity && requestCity && profileCity !== requestCity) {
+      return 'Warning: You are trying to respond to a request outside of your city. Please make sure you can handle this request.'
+    }
+    return undefined
+  }, [selectedHelperProfile, petCity])
+
+  // Warning: country mismatch
+  const countryWarning = useMemo(() => {
+    if (!selectedHelperProfile || !petCountry) return undefined
+    const profileCountry = selectedHelperProfile.country?.toLowerCase().trim()
+    const requestCountry = petCountry.toLowerCase().trim()
+    if (profileCountry && requestCountry && profileCountry !== requestCountry) {
+      return 'Serious Warning: You are trying to respond to a request outside of your country. Please make sure you can handle this request.'
+    }
+    return undefined
+  }, [selectedHelperProfile, petCountry])
+
+  // Can submit only if profile is selected and request type is allowed
+  const canSubmit = useMemo(() => {
+    if (!selectedProfile) return false
+    if (!requestedRelationshipType) return false
+    if (requestTypeWarning) return false // Block submission if request type not allowed
+    return true
+  }, [selectedProfile, requestedRelationshipType, requestTypeWarning])
 
   const handleInitialSubmit = () => {
     if (!selectedProfile || !requestedRelationshipType) {
@@ -131,11 +211,15 @@ export function usePlacementResponse({
     selectedProfile,
     setSelectedProfile,
     requestedRelationshipType,
-    setRequestedRelationshipType,
     fosteringType,
     setFosteringType,
     price,
     setPrice,
+    // warnings
+    requestTypeWarning,
+    cityWarning,
+    countryWarning,
+    canSubmit,
     // ui state
     showConfirmation,
     setShowConfirmation,

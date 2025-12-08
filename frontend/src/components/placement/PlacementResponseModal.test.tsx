@@ -18,33 +18,38 @@ describe('PlacementResponseModal', () => {
   const baseProps = {
     isOpen: true,
     onClose: vi.fn(),
-    catName: 'Fluffy',
-    catId: 1,
+    petName: 'Fluffy',
+    petId: 1,
     placementRequestId: 101,
+    requestType: 'foster_free',
+    petCity: 'Testville',
+    petCountry: 'VN',
   }
 
-  it('loads helper profiles and keeps Submit disabled until selections are made', async () => {
+  it('loads helper profiles and auto-selects when only one profile exists', async () => {
     render(<PlacementResponseModal {...baseProps} />)
 
-    // Two comboboxes should be present (profile and relationship type)
-    const combos = await screen.findAllByRole('combobox')
+    // Wait for profile to be loaded and auto-selected (only one profile in mock data)
     await waitFor(() => {
-      expect(combos.length).toBeGreaterThanOrEqual(2)
-      expect(screen.getByRole('button', { name: /submit/i })).toBeDisabled()
+      // There should be at least 1 combobox (helper profile, and possibly fostering type)
+      const combos = screen.getAllByRole('combobox')
+      expect(combos.length).toBeGreaterThanOrEqual(1)
+    })
+
+    // Submit button should be enabled since profile is auto-selected and request type matches
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /submit/i })).toBeEnabled()
     })
   })
 
-  it('shows confirmation step after selecting profile and relationship type', async () => {
+  it('shows confirmation step after selecting profile', async () => {
     render(<PlacementResponseModal {...baseProps} />)
 
-    // Select a helper profile
-    const [profileCombo, typeCombo] = await screen.findAllByRole('combobox')
-    await user.click(profileCombo)
-    await user.click(await screen.findByText(/testville, ts/i))
-
-    // Select relationship type
-    await user.click(typeCombo)
-    await user.click(await screen.findByText(/fostering/i))
+    // Wait for profile to be loaded
+    await waitFor(() => {
+      const combos = screen.getAllByRole('combobox')
+      expect(combos.length).toBeGreaterThanOrEqual(1)
+    })
 
     await user.click(screen.getByRole('button', { name: /submit/i }))
 
@@ -64,18 +69,12 @@ describe('PlacementResponseModal', () => {
     )
 
     render(<PlacementResponseModal {...baseProps} onClose={onClose} />)
-    await waitFor(async () => {
-      expect(await screen.findAllByRole('combobox')).toHaveLength(2)
+
+    // Wait for profile to be loaded
+    await waitFor(() => {
+      const combos = screen.getAllByRole('combobox')
+      expect(combos.length).toBeGreaterThanOrEqual(1)
     })
-
-    // Select a helper profile
-    const [profileCombo, typeCombo] = await screen.findAllByRole('combobox')
-    await user.click(profileCombo)
-    await user.click(await screen.findByText(/testville, ts/i))
-
-    // Select relationship type
-    await user.click(typeCombo)
-    await user.click(await screen.findByText(/fostering/i))
 
     await user.click(screen.getByRole('button', { name: /submit/i }))
 
@@ -86,5 +85,60 @@ describe('PlacementResponseModal', () => {
       expect(toast.success).toHaveBeenCalled()
       expect(onClose).toHaveBeenCalled()
     })
+  })
+
+  it('shows warning when request type does not match helper profile allowed types', async () => {
+    // Use a request type that's not in the mock helper profile's allowed types
+    render(<PlacementResponseModal {...baseProps} requestType="foster_payed" />)
+
+    // Wait for profile to be loaded
+    await waitFor(() => {
+      const combos = screen.getAllByRole('combobox')
+      expect(combos.length).toBeGreaterThanOrEqual(1)
+    })
+
+    // Should show warning about request type mismatch
+    await waitFor(() => {
+      expect(screen.getByText(/this helper profile is not allowed to handle/i)).toBeInTheDocument()
+    })
+
+    // Submit button should be disabled
+    expect(screen.getByRole('button', { name: /submit/i })).toBeDisabled()
+  })
+
+  it('shows warning when city does not match', async () => {
+    render(<PlacementResponseModal {...baseProps} petCity="Other City" />)
+
+    // Wait for profile to be loaded
+    await waitFor(() => {
+      const combos = screen.getAllByRole('combobox')
+      expect(combos.length).toBeGreaterThanOrEqual(1)
+    })
+
+    // Should show city warning
+    await waitFor(() => {
+      expect(screen.getByText(/outside of your city/i)).toBeInTheDocument()
+    })
+
+    // Submit button should still be enabled (city warning doesn't block)
+    expect(screen.getByRole('button', { name: /submit/i })).toBeEnabled()
+  })
+
+  it('shows serious warning when country does not match', async () => {
+    render(<PlacementResponseModal {...baseProps} petCountry="US" />)
+
+    // Wait for profile to be loaded
+    await waitFor(() => {
+      const combos = screen.getAllByRole('combobox')
+      expect(combos.length).toBeGreaterThanOrEqual(1)
+    })
+
+    // Should show country warning
+    await waitFor(() => {
+      expect(screen.getByText(/outside of your country/i)).toBeInTheDocument()
+    })
+
+    // Submit button should still be enabled (country warning doesn't block)
+    expect(screen.getByRole('button', { name: /submit/i })).toBeEnabled()
   })
 })

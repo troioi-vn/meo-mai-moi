@@ -37,7 +37,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
   const hasAnyPlacementRequests = (pet.placement_requests?.length ?? 0) > 0
   const isStatusOpen = (status?: string) => {
     const s = (status ?? '').toLowerCase()
-    return s === 'open' || s === 'finalized' || s === 'pending'
+    return ['open', 'fulfilled', 'pending_transfer', 'active', 'finalized', 'pending'].includes(s)
   }
   const activePlacementRequest = pet.placement_requests?.find((req) => isStatusOpen(req.status))
   const activePlacementRequestId = activePlacementRequest?.id

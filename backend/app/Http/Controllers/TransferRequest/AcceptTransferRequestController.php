@@ -124,8 +124,8 @@ class AcceptTransferRequestController extends Controller
                         $helper,
                         NotificationType::HELPER_RESPONSE_ACCEPTED->value,
                         [
-                            'message' => 'Your request for '.$pet->name.' was accepted. Schedule a handover.',
-                            'link' => '/pets/'.$pet->id,
+                            'message' => 'Your request for '.$pet->name.' was accepted. Confirm the handover from the pet page.',
+                            'link' => '/pets/'.$pet->id.'/public',
                             'pet_name' => $pet->name,
                             'pet_id' => $pet->id,
                             'transfer_request_id' => $transferRequest->id,

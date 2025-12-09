@@ -4,6 +4,7 @@ namespace App\Http\Controllers\TransferHandover;
 
 use App\Enums\NotificationType;
 use App\Enums\PlacementRequestStatus;
+use App\Enums\PlacementRequestType;
 use App\Enums\TransferRequestStatus;
 use App\Http\Controllers\Controller;
 use App\Models\FosterAssignment;
@@ -66,9 +67,20 @@ class CompleteHandoverController extends Controller
                 $placementRequest->save();
             }
 
+            // Decide flow based on placement request type (canonical), fall back to transfer request
+            $placementType = $placementRequest?->request_type;
+            $relationshipType = match ($placementType) {
+                PlacementRequestType::PERMANENT => 'permanent',
+                PlacementRequestType::FOSTER_FREE, PlacementRequestType::FOSTER_PAYED => 'fostering',
+                default => null,
+            } ?? match ($tr->requested_relationship_type) {
+                'permanent_foster' => 'permanent',
+                'fostering' => 'fostering',
+                default => null,
+            };
+
             // Finalize transfer effects depending on relationship type
-            $type = $tr->requested_relationship_type;
-            if ($type === 'permanent_foster') {
+            if ($relationshipType === 'permanent') {
                 // Close previous ownership record for current owner; backfill if missing
                 $closed = OwnershipHistory::where('pet_id', $tr->pet_id)
                     ->where('user_id', $tr->recipient_user_id)
@@ -102,7 +114,7 @@ class CompleteHandoverController extends Controller
                     $placementRequest->status = PlacementRequestStatus::FINALIZED;
                     $placementRequest->save();
                 }
-            } elseif ($type === 'fostering' && Schema::hasTable('foster_assignments')) {
+            } elseif ($relationshipType === 'fostering' && Schema::hasTable('foster_assignments')) {
                 FosterAssignment::firstOrCreate([
                     'pet_id' => $tr->pet_id,
                     'owner_user_id' => $tr->recipient_user_id,

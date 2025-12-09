@@ -4,7 +4,16 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Added
+
+- **Helper handover guidance**:
+  - Acceptance notification now links helpers directly to the public pet page (`/pets/:id/public`) where they can confirm the handover.
+
 ### Changed
+
+- **Requests page visibility**:
+
+  - Pets stay visible on the `/requests` page when their placement requests are in progress (`fulfilled`, `pending_transfer`, `active`, `finalized`) so accepted helpers can still access the public pet page and continue the flow.
 
 - **Placement Request Auto-Rejection Timing**:
   - Moved auto-rejection of other pending helper offers from the "Accept Response" step to the "Complete Handover" step
@@ -12,6 +21,14 @@ All notable changes to this project are documented here, following the [Keep a C
   - Now: Other offers remain pending until the handover is completed and status changes to `active` (fostering) or `finalized` (permanent rehoming)
   - This provides a backup option if the initially selected helper doesn't complete the handover
   - Rejected helpers are notified only when the transfer is actually confirmed
+
+### Fixed
+
+- **Temporary fostering no longer transfers ownership**:
+  - Handover completion now keys off `placement_request.request_type` (canonical) to decide between permanent vs fostering flows
+  - Temporary fostering (`foster_free` / `foster_payed`) keeps the pet owner unchanged, creates/ensures a foster assignment, and sets placement status to `active`
+  - Permanent rehoming still transfers ownership, closes prior ownership history, and finalizes the placement
+  - Admin pet view continues to show the original owner for temporary fostering cases
 
 ### Added
 

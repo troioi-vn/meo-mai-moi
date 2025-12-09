@@ -87,11 +87,12 @@ const RequestsPage = () => {
       const prs = pet.placement_requests
       if (!prs || prs.length === 0) return false
 
-      // Hide pets with only fulfilled placement requests
-      const hasActivePlacementRequest = prs.some(
-        (pr) => pr.status === 'open' || pr.status === 'finalized'
+      // Hide pets with no visible placement requests
+      const visibleStatuses = ['open', 'fulfilled', 'pending_transfer', 'active', 'finalized']
+      const hasVisiblePlacementRequest = prs.some((pr) =>
+        visibleStatuses.includes((pr.status ?? '').toLowerCase())
       )
-      if (!hasActivePlacementRequest) return false
+      if (!hasVisiblePlacementRequest) return false
 
       // Pet Type filter
       if (petTypeFilter !== 'all' && pet.pet_type.slug !== petTypeFilter) {

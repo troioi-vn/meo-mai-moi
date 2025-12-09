@@ -42,6 +42,14 @@ class PetPolicy
             return true;
         }
 
+        // Explicit viewer/editor access
+        if (
+            $pet->viewers()->where('user_id', $user->id)->exists()
+            || $pet->editors()->where('user_id', $user->id)->exists()
+        ) {
+            return true;
+        }
+
         // Non-owners may view when pet is publicly viewable
         return $isPubliclyViewable;
     }
@@ -76,7 +84,11 @@ class PetPolicy
      */
     public function update(User $user, Pet $pet): bool
     {
-        return $this->isAdmin($user) || $pet->user_id === $user->id;
+        if ($this->isAdmin($user) || $pet->user_id === $user->id) {
+            return true;
+        }
+
+        return $pet->editors()->where('user_id', $user->id)->exists();
     }
 
     /**

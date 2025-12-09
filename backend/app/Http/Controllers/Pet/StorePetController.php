@@ -58,6 +58,11 @@ class StorePetController extends Controller
             // Category IDs
             'category_ids' => 'nullable|array|max:10',
             'category_ids.*' => 'integer|exists:categories,id',
+            // Viewer / editor permissions
+            'viewer_user_ids' => 'nullable|array',
+            'viewer_user_ids.*' => 'integer|distinct|exists:users,id',
+            'editor_user_ids' => 'nullable|array',
+            'editor_user_ids.*' => 'integer|distinct|exists:users,id',
             // Legacy exact date (optional now)
             'birthday' => 'nullable|date|before_or_equal:today',
             // New precision inputs
@@ -222,7 +227,15 @@ class StorePetController extends Controller
             $pet->categories()->sync($data['category_ids']);
         }
 
-        $pet->load(['petType', 'categories']);
+        // Sync viewers / editors if provided
+        if (isset($data['viewer_user_ids'])) {
+            $pet->viewers()->sync($data['viewer_user_ids']);
+        }
+        if (isset($data['editor_user_ids'])) {
+            $pet->editors()->sync($data['editor_user_ids']);
+        }
+
+        $pet->load(['petType', 'categories', 'viewers', 'editors']);
 
         return $this->sendSuccess($pet, 201);
     }

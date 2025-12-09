@@ -57,7 +57,7 @@ class UpdatePetController extends Controller
 
     public function __invoke(Request $request, Pet $pet)
     {
-        $this->authorizeUser($request, 'update', $pet);
+        $user = $this->authorizeUser($request, 'update', $pet);
 
         $rules = [
             'name' => 'sometimes|required|string|max:255',
@@ -71,6 +71,11 @@ class UpdatePetController extends Controller
             // Category IDs
             'category_ids' => 'nullable|array|max:10',
             'category_ids.*' => 'integer|exists:categories,id',
+            // Viewer / editor permissions
+            'viewer_user_ids' => 'nullable|array',
+            'viewer_user_ids.*' => 'integer|distinct|exists:users,id',
+            'editor_user_ids' => 'nullable|array',
+            'editor_user_ids.*' => 'integer|distinct|exists:users,id',
             'birthday' => 'nullable|date|before_or_equal:today',
             'birthday_precision' => 'nullable|in:day,month,year,unknown',
             'birthday_year' => 'nullable|integer|min:1900|max:'.now()->year,
@@ -203,7 +208,24 @@ class UpdatePetController extends Controller
             $pet->categories()->sync($data['category_ids']);
         }
 
-        $pet->load(['petType', 'categories']);
+        // Sync viewers / editors if provided
+        if (isset($data['viewer_user_ids'])) {
+            $pet->viewers()->sync($data['viewer_user_ids']);
+        }
+        if (isset($data['editor_user_ids'])) {
+            $pet->editors()->sync($data['editor_user_ids']);
+        }
+
+        $pet->load(['petType', 'categories', 'viewers', 'editors']);
+
+        // Build viewer permission flags for response
+        $isOwner = $this->isOwnerOrAdmin($user, $pet);
+        $isAdmin = $this->hasRole($user, ['admin', 'super_admin']);
+        $isEditor = $user ? $pet->editors->contains($user->id) : false;
+        $pet->setAttribute('viewer_permissions', [
+            'can_edit' => $isOwner || $isAdmin || $isEditor,
+            'can_view_contact' => $isAdmin || ($user && ! $isOwner),
+        ]);
 
         return $this->sendSuccess($pet);
     }

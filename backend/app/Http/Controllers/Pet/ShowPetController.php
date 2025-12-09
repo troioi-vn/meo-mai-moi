@@ -44,15 +44,22 @@ class ShowPetController extends Controller
     public function __invoke(Request $request, Pet $pet)
     {
         // Load placement requests and nested relations needed for the view
-        $pet->load(['placementRequests.transferRequests.helperProfile.user', 'petType', 'categories']);
+        $pet->load([
+            'placementRequests.transferRequests.helperProfile.user',
+            'petType',
+            'categories',
+            'viewers',
+            'editors',
+        ]);
 
         // Resolve user and authorize access
         $user = $this->authorizeUser($request, 'view', $pet);
         $isOwner = $this->isOwnerOrAdmin($user, $pet);
         $isAdmin = $this->hasRole($user, ['admin', 'super_admin']);
+        $isEditor = $user ? $pet->editors->contains($user->id) : false;
 
         $viewerPermissions = [
-            'can_edit' => $isOwner || $isAdmin,
+            'can_edit' => $isOwner || $isAdmin || $isEditor,
             'can_view_contact' => $isAdmin || ($user && ! $isOwner),
         ];
         $pet->setAttribute('viewer_permissions', $viewerPermissions);

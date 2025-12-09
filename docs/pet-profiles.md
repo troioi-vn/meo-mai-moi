@@ -24,6 +24,7 @@ The full pet profile is accessible only to:
 
 - **Pet owner**: Full access with edit permissions
 - **Admin**: Full access with edit permissions
+- **Editors**: Users explicitly added to the pet's "Users who can edit this pet" list
 
 Owner view includes:
 
@@ -47,6 +48,7 @@ Public view includes (whitelisted fields only):
 - Photos
 - Categories
 - Active placement requests
+- Viewer permission flags (owner/admin/editor awareness, no edit controls)
 
 Public view **excludes**:
 
@@ -92,6 +94,9 @@ Full pet profile endpoint (existing).
 - **Auth**: Optional (uses `optional.auth` middleware)
 - **Access**: Owner, Admin, or users viewing pets with active placement requests
 - **Returns**: Full pet data with `viewer_permissions`
+  - `viewer_permissions` includes:
+    - `can_edit` (owner/admin/editors)
+    - `can_view_contact` (admin or authenticated non-owner)
 
 ### GET /api/pets/{id}/public
 

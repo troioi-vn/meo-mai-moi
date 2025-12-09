@@ -107,6 +107,22 @@ class Pet extends Model implements HasMedia
     }
 
     /**
+     * Users who can view this pet (in addition to owner/admin/public rules)
+     */
+    public function viewers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'pet_viewers')->withTimestamps();
+    }
+
+    /**
+     * Users who can edit this pet (in addition to owner/admin)
+     */
+    public function editors(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'pet_editors')->withTimestamps();
+    }
+
+    /**
      * Get photo URL attribute - returns URL from MediaLibrary.
      */
     public function getPhotoUrlAttribute()

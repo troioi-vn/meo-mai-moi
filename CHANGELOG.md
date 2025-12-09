@@ -15,7 +15,16 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Per-Pet Viewer/Editor Access Lists**:
+
+  - Pets now support explicit “Users who can see this pet” and “Users who can edit this pet” lists
+  - Backed by new pivot tables `pet_viewers` and `pet_editors` with model relationships and policy updates
+  - Create/Update pet APIs accept `viewer_user_ids` and `editor_user_ids` to manage these lists
+  - Filament pet form exposes multi-selects for viewers and editors
+  - Tests: `PetViewerEditorAccessTest` covers creation, viewing, and editing permissions
+
 - **Placement Response Modal Improvements**:
+
   - Removed "Relationship Type" dropdown - now automatically derived from placement request type
   - Auto-prefill "Helper Profile" dropdown when user has only one profile
   - Added validation to compare request type against helper profile's allowed request types

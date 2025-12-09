@@ -78,6 +78,20 @@ class PetResource extends Resource
                     ->searchable()
                     ->preload()
                     ->required(),
+
+                Select::make('viewers')
+                    ->label('Viewers (can view)')
+                    ->relationship('viewers', 'name')
+                    ->multiple()
+                    ->searchable()
+                    ->preload(),
+
+                Select::make('editors')
+                    ->label('Editors (can edit)')
+                    ->relationship('editors', 'name')
+                    ->multiple()
+                    ->searchable()
+                    ->preload(),
             ]);
     }
 

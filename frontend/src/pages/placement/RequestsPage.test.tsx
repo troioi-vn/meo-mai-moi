@@ -195,6 +195,51 @@ describe('RequestsPage', () => {
     })
   })
 
+  it('initializes sort from the query string', async () => {
+    server.use(
+      http.get('http://localhost:3000/api/pets/placement-requests', () => {
+        return HttpResponse.json({
+          data: [
+            {
+              ...mockPet,
+              name: 'Newest',
+              placement_requests: [
+                {
+                  id: 1,
+                  pet_id: 1,
+                  request_type: 'permanent',
+                  status: 'open',
+                  created_at: '2025-09-01T00:00:00Z',
+                },
+              ],
+            },
+            {
+              ...mockPet,
+              id: 2,
+              name: 'Oldest',
+              placement_requests: [
+                {
+                  id: 2,
+                  pet_id: 2,
+                  request_type: 'permanent',
+                  status: 'open',
+                  created_at: '2025-06-01T00:00:00Z',
+                },
+              ],
+            },
+          ],
+        })
+      })
+    )
+
+    renderWithRouter(<RequestsPage />, { initialEntries: ['/requests?sort=oldest'] })
+
+    const initialOrder = await screen.findAllByText(/Newest|Oldest/i, {
+      selector: '[data-slot="card-title"]',
+    })
+    expect(initialOrder.map((el) => el.textContent)).toEqual(['Oldest', 'Newest'])
+  })
+
   it('sorts pets by placement request created_at', async () => {
     const user = userEvent.setup()
     server.use(
@@ -235,14 +280,18 @@ describe('RequestsPage', () => {
 
     renderWithRouter(<RequestsPage />)
 
-    const initialOrder = await screen.findAllByRole('heading', { name: /(Newest|Oldest)/i })
+    const initialOrder = await screen.findAllByText(/Newest|Oldest/i, {
+      selector: '[data-slot="card-title"]',
+    })
     expect(initialOrder.map((el) => el.textContent)).toEqual(['Newest', 'Oldest'])
 
     await user.click(screen.getByLabelText('Created Date Sort'))
     await user.click(screen.getByRole('option', { name: /oldest first/i }))
 
     await waitFor(() => {
-      const reordered = screen.getAllByRole('heading', { name: /(Newest|Oldest)/i })
+      const reordered = screen.getAllByText(/Newest|Oldest/i, {
+        selector: '[data-slot="card-title"]',
+      })
       expect(reordered.map((el) => el.textContent)).toEqual(['Oldest', 'Newest'])
     })
   })

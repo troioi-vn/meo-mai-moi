@@ -255,6 +255,7 @@ const PetProfilePage: React.FC = () => {
         }}
         onSuccess={() => {
           refresh()
+          void navigate('/requests?sort=newest')
         }}
       />
     </div>

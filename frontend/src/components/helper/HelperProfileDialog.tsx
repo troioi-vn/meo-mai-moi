@@ -114,9 +114,7 @@ export const HelperProfileDialog: React.FC<HelperProfileDialogProps> = ({
                         ? 'Foster (Paid)'
                         : t === 'foster_free'
                           ? 'Foster (Free)'
-                          : t === 'permanent'
-                            ? 'Permanent'
-                            : t
+                          : 'Permanent'
                     )
                     .join(', ')
                 : 'None'}

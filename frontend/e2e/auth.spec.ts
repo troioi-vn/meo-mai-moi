@@ -34,7 +34,7 @@ async function stubAuthNetwork(page: Page) {
       password?: string
       password_confirmation?: string
     }
-    if (!body?.email || !body?.password || !body?.password_confirmation) {
+    if (!body.email || !body.password || !body.password_confirmation) {
       return route.fulfill({ status: 422, body: JSON.stringify({ message: 'Invalid' }) })
     }
     return route.fulfill({
@@ -64,7 +64,7 @@ async function stubAuthNetwork(page: Page) {
       return
     }
     const body = (await route.request().postDataJSON()) as { email?: string; password?: string }
-    if (body?.email === TEST_USER.email && body?.password === TEST_USER.password) {
+    if (body.email === TEST_USER.email && body.password === TEST_USER.password) {
       return route.fulfill({
         status: 200,
         headers: { 'Content-Type': 'application/json' },

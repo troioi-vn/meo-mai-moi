@@ -71,7 +71,7 @@ export const HelperProfileFormFields: React.FC<Props> = ({
         <CitySelect
           country={formData.country || null}
           value={cityValue ?? null}
-          onChange={onCityChange ?? (() => {})}
+          onChange={onCityChange ?? (() => { /* noop */ })}
         />
       </div>
       <FormField

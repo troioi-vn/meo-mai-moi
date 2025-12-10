@@ -49,6 +49,7 @@ const CreatePetPage: React.FC = () => {
     isLoadingPet,
     updateField,
     updateCategories,
+    updateCity,
     handleSubmit,
     handleCancel,
   } = useCreatePetForm(petId)
@@ -197,6 +198,8 @@ const CreatePetPage: React.FC = () => {
                   formData={formData}
                   errors={errors}
                   updateField={updateField}
+                  cityValue={formData.city_selected}
+                  onCityChange={updateCity}
                   showOptionalFields={false}
                 />
 
@@ -321,6 +324,8 @@ const CreatePetPage: React.FC = () => {
                   formData={formData}
                   errors={errors}
                   updateField={updateField}
+                  cityValue={formData.city_selected}
+                  onCityChange={updateCity}
                   showOptionalFields={true}
                 />
 

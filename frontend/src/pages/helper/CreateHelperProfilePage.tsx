@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { FileInput } from '@/components/ui/FileInput'
 import useHelperProfileForm from '@/hooks/useHelperProfileForm'
 import { getPetTypes } from '@/api/pets'
-import type { PetType } from '@/types/pet'
+import type { PetType, City } from '@/types/pet'
 import { toast } from 'sonner'
 import { HelperProfileFormFields } from '@/components/helper/HelperProfileFormFields'
 import { PetTypesSelector } from '@/components/helper/PetTypesSelector'
@@ -13,7 +13,7 @@ import { ChevronLeft } from 'lucide-react'
 
 const CreateHelperProfilePage: React.FC = () => {
   const navigate = useNavigate()
-  const { formData, errors, isSubmitting, updateField, handleSubmit, handleCancel } =
+  const { formData, errors, isSubmitting, updateField, updateCity, handleSubmit, handleCancel } =
     useHelperProfileForm(undefined, {})
 
   const [petTypes, setPetTypes] = useState<PetType[]>([])
@@ -71,6 +71,8 @@ const CreateHelperProfilePage: React.FC = () => {
                   formData={formData}
                   errors={errors}
                   updateField={updateField}
+                  cityValue={formData.city_selected as City | null}
+                  onCityChange={updateCity}
                 />
                 <PetTypesSelector
                   petTypes={petTypes}

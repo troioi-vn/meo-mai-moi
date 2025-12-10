@@ -115,7 +115,10 @@ export function usePlacementResponse({
   // Warning: city mismatch
   const cityWarning = useMemo(() => {
     if (!selectedHelperProfile || !petCity) return undefined
-    const profileCity = selectedHelperProfile.city?.toLowerCase().trim()
+    const profileCity =
+      typeof selectedHelperProfile.city === 'string'
+        ? selectedHelperProfile.city?.toLowerCase().trim()
+        : selectedHelperProfile.city?.name?.toLowerCase().trim()
     const requestCity = petCity.toLowerCase().trim()
     if (profileCity && requestCity && profileCity !== requestCity) {
       return 'Warning: You are trying to respond to a request outside of your city. Please make sure you can handle this request.'

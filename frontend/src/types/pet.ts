@@ -13,6 +13,18 @@ export interface PetType {
   updated_at: string
 }
 
+export interface City {
+  id: number
+  name: string
+  slug: string
+  country: string
+  description?: string | null
+  created_by?: number | null
+  approved_at?: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface Category {
   id: number
   name: string
@@ -55,7 +67,8 @@ export interface Pet {
   birthday_precision?: BirthdayPrecision
   country: string // ISO 3166-1 alpha-2 code
   state?: string | null
-  city?: string | null
+  city_id?: number | null
+  city?: City | string | null
   address?: string | null
   description: string
   user_id: number

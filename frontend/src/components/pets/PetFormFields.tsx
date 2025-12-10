@@ -3,7 +3,8 @@ import { FormField } from '@/components/ui/FormField'
 import { BirthdayDatePicker } from '@/components/ui/BirthdayDatePicker'
 import { CountrySelect } from '@/components/ui/CountrySelect'
 import { Label } from '@/components/ui/label'
-import type { PetSex } from '@/types/pet'
+import { CitySelect } from '@/components/location/CitySelect'
+import type { PetSex, City } from '@/types/pet'
 
 interface Data {
   name: string
@@ -16,6 +17,7 @@ interface Data {
   country: string
   state?: string
   city?: string
+  city_id?: number | null
   address?: string
   description: string
 }
@@ -24,6 +26,8 @@ interface Props {
   formData: Data
   errors: Partial<Record<keyof Data, string>>
   updateField: (field: keyof Data) => (value: unknown) => void
+  cityValue?: City | null
+  onCityChange?: (city: City | null) => void
   /** Whether to show description and location fields (hidden in create mode) */
   showOptionalFields?: boolean
 }
@@ -32,6 +36,8 @@ export const PetFormFields: React.FC<Props> = ({
   formData,
   errors,
   updateField,
+  cityValue,
+  onCityChange,
   showOptionalFields = true,
 }) => {
   return (
@@ -151,7 +157,7 @@ export const PetFormFields: React.FC<Props> = ({
 
       {showOptionalFields && (
         <>
-          {/* Optional location fields */}
+          {/* Location */}
           <div className="grid grid-cols-2 gap-4">
             <FormField
               id="state"
@@ -161,14 +167,11 @@ export const PetFormFields: React.FC<Props> = ({
               error={errors.state}
               placeholder="Enter state or province"
             />
-
-            <FormField
-              id="city"
-              label="City"
-              value={formData.city ?? ''}
-              onChange={updateField('city')}
-              error={errors.city}
-              placeholder="Enter city"
+            <CitySelect
+              country={formData.country || null}
+              value={cityValue ?? null}
+              onChange={onCityChange ?? (() => {})}
+              disabled={false}
             />
           </div>
 

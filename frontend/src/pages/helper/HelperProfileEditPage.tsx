@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { FileInput } from '@/components/ui/FileInput'
 import useHelperProfileForm from '@/hooks/useHelperProfileForm'
 import { getPetTypes } from '@/api/pets'
-import type { PetType } from '@/types/pet'
+import type { PetType, City } from '@/types/pet'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getHelperProfile,
@@ -53,10 +53,27 @@ const HelperProfileEditPage: React.FC = () => {
   const initialFormData = useMemo(() => {
     if (!data?.data) return {}
 
+    const cityValue =
+      typeof data.data.city === 'string'
+        ? {
+            id: data.data.city_id ?? -1,
+            name: data.data.city,
+            slug: data.data.city.toLowerCase().replace(/\s+/g, '-'),
+            country: data.data.country ?? '',
+            description: null,
+            created_by: null,
+            approved_at: data.data.approved_at ?? null,
+            created_at: '',
+            updated_at: '',
+          }
+        : ((data.data.city as unknown as City) ?? null)
+
     return {
       country: data.data.country ?? '',
       address: data.data.address ?? '',
-      city: data.data.city ?? '',
+      city: typeof data.data.city === 'string' ? data.data.city : (data.data.city?.name ?? ''),
+      city_id: data.data.city_id ?? (cityValue ? cityValue.id : null),
+      city_selected: cityValue,
       state: data.data.state ?? '',
       phone_number: data.data.phone_number ?? data.data.phone ?? '',
       contact_info: data.data.contact_info ?? '',
@@ -71,7 +88,7 @@ const HelperProfileEditPage: React.FC = () => {
   }, [data?.data])
 
   // Initialize the form hook with proper initial data
-  const { formData, errors, isSubmitting, updateField, handleSubmit, handleCancel } =
+  const { formData, errors, isSubmitting, updateField, updateCity, handleSubmit, handleCancel } =
     useHelperProfileForm(numericId, initialFormData)
 
   const deleteMutation = useMutation({
@@ -213,6 +230,8 @@ const HelperProfileEditPage: React.FC = () => {
                   formData={formData}
                   errors={errors}
                   updateField={updateField}
+                  cityValue={formData.city_selected as City | null}
+                  onCityChange={updateCity}
                 />
                 <PetTypesSelector
                   petTypes={petTypes ?? []}
@@ -221,6 +240,7 @@ const HelperProfileEditPage: React.FC = () => {
                     updateField('pet_type_ids')(ids)
                   }}
                   label="Pet Types"
+                  error={errors.pet_type_ids}
                 />
                 <FileInput
                   id="photos"

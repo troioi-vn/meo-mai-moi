@@ -130,7 +130,8 @@ export default function HelperProfilePage() {
 }
 
 function HelperProfileListItem({ profile }: { profile: HelperProfile }) {
-  const locationParts = [profile.city, profile.state, profile.country].filter(Boolean)
+  const cityName = typeof profile.city === 'string' ? profile.city : profile.city?.name
+  const locationParts = [cityName, profile.state, profile.country].filter(Boolean)
   const location = locationParts.join(', ') || 'No location set'
 
   return (

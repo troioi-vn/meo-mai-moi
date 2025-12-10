@@ -1,5 +1,5 @@
 import { api } from './axios'
-import type { Pet, PetType, BirthdayPrecision, PetSex } from '@/types/pet'
+import type { Pet, PetType, BirthdayPrecision, PetSex, City } from '@/types/pet'
 
 export interface WeightHistory {
   id: number
@@ -88,6 +88,7 @@ export interface CreatePetPayload {
   sex?: PetSex
   country: string // ISO 3166-1 alpha-2 code
   state?: string
+  city_id?: number | null
   city?: string
   address?: string
   description?: string
@@ -122,7 +123,8 @@ export interface PublicPet {
   birthday_day?: number | null
   country: string
   state?: string | null
-  city?: string | null
+  city_id?: number | null
+  city?: City | string | null
   description: string
   status: 'active' | 'lost' | 'deceased' | 'deleted'
   pet_type_id: number

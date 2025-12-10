@@ -60,7 +60,8 @@ export default function HelperProfileViewPage() {
   const petTypes = profile.pet_types ?? []
 
   // Get location string
-  const locationParts = [profile.city, profile.state, profile.country].filter(Boolean)
+  const cityName = typeof profile.city === 'string' ? profile.city : profile.city?.name
+  const locationParts = [cityName, profile.state, profile.country].filter(Boolean)
   const location = locationParts.join(', ') || 'Location not specified'
 
   // Get first photo URL for avatar

@@ -270,7 +270,7 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
           petId={pet.id}
           placementRequestId={respondingToRequest.id}
           requestType={respondingToRequest.request_type}
-          petCity={pet.city}
+          petCity={typeof pet.city === 'string' ? pet.city : pet.city?.name}
           petCountry={pet.country}
           onSuccess={() => {
             setRespondingToRequest(null)

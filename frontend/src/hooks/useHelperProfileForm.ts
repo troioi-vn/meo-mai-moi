@@ -5,11 +5,14 @@ import { createHelperProfile, updateHelperProfile } from '@/api/helper-profiles'
 import { toast } from 'sonner'
 import type React from 'react'
 import type { PlacementRequestType } from '@/types/helper-profile'
+import type { City } from '@/types/pet'
 
 interface HelperProfileForm {
   country: string
   address: string
   city: string
+  city_id: number | null
+  city_selected?: City | null
   state: string
   phone_number: string
   contact_info: string
@@ -33,6 +36,8 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
     country: '',
     address: '',
     city: '',
+    city_id: null,
+    city_selected: null,
     state: '',
     phone_number: '',
     contact_info: '',
@@ -53,6 +58,8 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
         country: '',
         address: '',
         city: '',
+        city_id: null,
+        city_selected: null,
         state: '',
         phone_number: '',
         contact_info: '',
@@ -131,14 +138,33 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
     setFormData((prev) => ({ ...prev, [field]: value as never }))
   }
 
+  const updateCity = (city: City | null) => {
+    setFormData((prev) => ({
+      ...prev,
+      city_selected: city,
+      city_id: city?.id ?? null,
+      city: city?.name ?? '',
+    }))
+    if (errors.city) {
+      setErrors((prev) => {
+        const { city: _cityError, ...rest } = prev
+        return rest
+      })
+    }
+  }
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
     if (!formData.country) newErrors.country = 'Country is required'
-    // address, city, state are now optional
+    if (!formData.city_id) newErrors.city = 'City is required'
+    // address, state are now optional
     if (!formData.phone_number) newErrors.phone_number = 'Phone number is required'
     if (!formData.experience) newErrors.experience = 'Experience is required'
     if (!formData.request_types || formData.request_types.length === 0) {
       newErrors.request_types = 'At least one request type is required'
+    }
+    if (!formData.pet_type_ids || formData.pet_type_ids.length === 0) {
+      newErrors.pet_type_ids = 'Select at least one pet type'
     }
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -153,7 +179,7 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
     const fieldsToSubmit = [
       'country',
       'address',
-      'city',
+      'city_id',
       'state',
       'phone_number',
       'contact_info',
@@ -210,6 +236,7 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
     errors,
     isSubmitting,
     updateField,
+    updateCity,
     handleSubmit,
     handleCancel,
     setFormData,

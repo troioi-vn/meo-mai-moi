@@ -8,6 +8,8 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { CircleHelp } from 'lucide-react'
 import type { PlacementRequestType } from '@/types/helper-profile'
+import { CitySelect } from '@/components/location/CitySelect'
+import type { City } from '@/types/pet'
 
 const REQUEST_TYPE_OPTIONS: { value: PlacementRequestType; label: string }[] = [
   { value: 'foster_payed', label: 'Foster (Paid)' },
@@ -19,6 +21,7 @@ interface Props {
   formData: {
     country: string
     address: string
+    city_id?: number | null
     city: string
     state: string
     phone_number: string
@@ -30,9 +33,17 @@ interface Props {
   }
   errors: Record<string, string>
   updateField: (field: keyof Props['formData']) => (value: unknown) => void
+  cityValue?: City | null
+  onCityChange?: (city: City | null) => void
 }
 
-export const HelperProfileFormFields: React.FC<Props> = ({ formData, errors, updateField }) => {
+export const HelperProfileFormFields: React.FC<Props> = ({
+  formData,
+  errors,
+  updateField,
+  cityValue,
+  onCityChange,
+}) => {
   return (
     <>
       <div className="space-y-2">
@@ -57,13 +68,10 @@ export const HelperProfileFormFields: React.FC<Props> = ({ formData, errors, upd
           error={errors.state}
           placeholder="Enter state or province"
         />
-        <FormField
-          id="city"
-          label="City"
-          value={formData.city}
-          onChange={updateField('city')}
-          error={errors.city}
-          placeholder="Enter your city"
+        <CitySelect
+          country={formData.country || null}
+          value={cityValue ?? null}
+          onChange={onCityChange ?? (() => {})}
         />
       </div>
       <FormField

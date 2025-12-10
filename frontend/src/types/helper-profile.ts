@@ -11,7 +11,8 @@ export interface HelperProfile {
   user_id?: number
   country?: string
   address?: string
-  city?: string
+  city_id?: number | null
+  city?: string | import('@/types/pet').City
   state?: string
   zip_code?: string
   phone_number?: string
@@ -23,6 +24,7 @@ export interface HelperProfile {
   has_children?: boolean
   request_types?: PlacementRequestType[]
   approval_status?: string
+  approved_at?: string | null
   status?: string
   user?: HelperProfileUser
   photos?: unknown[]

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createPet, getPetTypes, getPet, updatePet } from '@/api/pets'
-import type { PetType, Category, PetSex } from '@/types/pet'
+import type { PetType, Category, PetSex, City } from '@/types/pet'
 import { toast } from 'sonner'
 
 interface FormErrors {
@@ -30,6 +30,8 @@ interface CreatePetFormData {
   country: string
   state: string
   city: string
+  city_id: number | null
+  city_selected: City | null
   address: string
   description: string
   pet_type_id: number | null
@@ -74,6 +76,8 @@ export const useCreatePetForm = (petId?: string) => {
     country: 'VN', // Default to Vietnam
     state: '',
     city: '',
+    city_id: null,
+    city_selected: null,
     address: '',
     description: '',
     pet_type_id: null,
@@ -131,7 +135,9 @@ export const useCreatePetForm = (petId?: string) => {
             birthday_precision: pet.birthday_precision ?? (pet.birthday ? 'day' : 'unknown'),
             country: pet.country,
             state: pet.state ?? '',
-            city: pet.city ?? '',
+            city: pet.city?.name ?? pet.city ?? '',
+            city_id: pet.city_id ?? pet.city?.id ?? null,
+            city_selected: pet.city ?? null,
             address: pet.address ?? '',
             description: pet.description,
             pet_type_id: pet.pet_type.id,
@@ -190,6 +196,9 @@ export const useCreatePetForm = (petId?: string) => {
     if (!formData.country.trim()) {
       newErrors.country = VALIDATION_MESSAGES.REQUIRED_COUNTRY
     }
+    if (!formData.city_id) {
+      newErrors.city = 'City is required'
+    }
     if (!formData.pet_type_id) {
       newErrors.pet_type_id = VALIDATION_MESSAGES.REQUIRED_PET_TYPE
     }
@@ -219,6 +228,7 @@ export const useCreatePetForm = (petId?: string) => {
         sex: formData.sex,
         country: formData.country,
         state: formData.state || undefined,
+        city_id: formData.city_id ?? undefined,
         city: formData.city || undefined,
         address: formData.address || undefined,
         description: formData.description,
@@ -274,6 +284,18 @@ export const useCreatePetForm = (petId?: string) => {
     setFormData((prev) => ({ ...prev, categories }))
   }
 
+  const updateCity = (city: City | null) => {
+    setFormData((prev) => ({
+      ...prev,
+      city_selected: city,
+      city_id: city?.id ?? null,
+      city: city?.name ?? '',
+    }))
+    if (errors.city) {
+      setErrors((prev) => ({ ...prev, city: undefined }))
+    }
+  }
+
   return {
     formData,
     petTypes,
@@ -284,6 +306,7 @@ export const useCreatePetForm = (petId?: string) => {
     isLoadingPet,
     updateField,
     updateCategories,
+    updateCity,
     handleSubmit,
     handleCancel,
   }

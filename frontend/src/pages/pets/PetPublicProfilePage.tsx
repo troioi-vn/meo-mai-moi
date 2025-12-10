@@ -71,7 +71,8 @@ const derivePublicPetImageUrl = (pet: PublicPet): string => {
 
 // Helper function to format location
 const formatLocation = (pet: PublicPet): string => {
-  const parts = [pet.city, pet.state, pet.country].filter(Boolean)
+  const cityName = typeof pet.city === 'string' ? pet.city : pet.city?.name
+  const parts = [cityName, pet.state, pet.country].filter(Boolean)
   return parts.join(', ') || 'Location not specified'
 }
 

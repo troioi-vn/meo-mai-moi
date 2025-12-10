@@ -64,7 +64,8 @@ export function PlacementResponseForm({
           <SelectContent>
             {helperProfiles.map((profile) => (
               <SelectItem key={profile.id} value={String(profile.id)}>
-                {profile.city}, {profile.state}
+                {typeof profile.city === 'string' ? profile.city : profile.city?.name},{' '}
+                {profile.state}
               </SelectItem>
             ))}
           </SelectContent>

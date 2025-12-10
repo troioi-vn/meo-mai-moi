@@ -85,7 +85,10 @@ export const HelperProfileDialog: React.FC<HelperProfileDialogProps> = ({
               </p>
             )}
             <p>
-              <strong>City:</strong> {profile.city ?? 'N/A'}
+              <strong>City:</strong>{' '}
+              {typeof profile.city === 'string'
+                ? profile.city ?? 'N/A'
+                : profile.city?.name ?? 'N/A'}
             </p>
             <p>
               <strong>State:</strong> {profile.state ?? 'N/A'}

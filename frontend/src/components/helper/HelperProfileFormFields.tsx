@@ -113,7 +113,7 @@ export const HelperProfileFormFields: React.FC<Props> = ({
           id="contact_info"
           name="contact_info"
           value={formData.contact_info}
-          onChange={(e) => updateField('contact_info')(e.target.value)}
+          onChange={(e) => { updateField('contact_info')(e.target.value); }}
           placeholder="Add any additional contact info (e.g., Telegram, Zalo, WhatsApp, preferred contact times)"
           rows={3}
           aria-invalid={!!errors.contact_info}

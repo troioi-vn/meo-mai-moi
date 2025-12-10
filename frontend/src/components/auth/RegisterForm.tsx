@@ -81,7 +81,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
             <UserCheck className="h-5 w-5 text-green-600 dark:text-green-400" />
             <div>
               <p className="text-sm font-medium text-green-800 dark:text-green-200">
-                You've been invited by <strong>{inviterName}</strong>
+                You&apos;ve been invited by <strong>{inviterName}</strong>
               </p>
               <p className="text-xs text-green-600 dark:text-green-400">
                 Complete the form below to create your account

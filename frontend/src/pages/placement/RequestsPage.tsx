@@ -347,7 +347,7 @@ const RequestsPage = () => {
             <span className="text-sm text-muted-foreground shrink-0">Pickup</span>
             <Select
               value={pickupDateComparison}
-              onValueChange={(v) => setPickupDateComparison(v as DateComparison)}
+              onValueChange={(v) => { setPickupDateComparison(v as DateComparison); }}
             >
               <SelectTrigger className="w-[80px]" aria-label="Pickup Date Comparison">
                 <SelectValue />
@@ -369,7 +369,7 @@ const RequestsPage = () => {
               <span className="text-sm text-muted-foreground shrink-0">Drop-off</span>
               <Select
                 value={dropoffDateComparison}
-                onValueChange={(v) => setDropoffDateComparison(v as DateComparison)}
+                onValueChange={(v) => { setDropoffDateComparison(v as DateComparison); }}
               >
                 <SelectTrigger className="w-[80px]" aria-label="Drop-off Date Comparison">
                   <SelectValue />

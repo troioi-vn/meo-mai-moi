@@ -76,18 +76,18 @@ const WaitlistForm: React.FC<WaitlistFormProps> = ({ onSuccess }) => {
           <CheckCircle className="h-16 w-16 text-green-500" />
         </div>
         <h2 className="text-2xl font-bold text-green-700 dark:text-green-400">
-          You're on the waitlist! 🎉
+          You&apos;re on the waitlist! 🎉
         </h2>
         <p className="text-muted-foreground">
-          We've sent a confirmation email to <strong>{email}</strong>. You'll be among the first to
+          We&apos;ve sent a confirmation email to <strong>{email}</strong>. You&apos;ll be among the first to
           know when we have space available!
         </p>
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 text-sm text-green-800 dark:text-green-200">
           <p className="font-medium">What happens next?</p>
           <ul className="mt-2 space-y-1 text-left">
-            <li>• We'll send you an invitation as soon as possible</li>
+            <li>• We&apos;ll send you an invitation as soon as possible</li>
             <li>• Keep an eye on your inbox for updates</li>
-            <li>• Ask a friend who's already a member to send you an invitation</li>
+            <li>• Ask a friend who&apos;s already a member to send you an invitation</li>
           </ul>
         </div>
       </div>

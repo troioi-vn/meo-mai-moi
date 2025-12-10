@@ -162,7 +162,7 @@ export const CitySelect: React.FC<Props> = ({
                       ) : (
                         <PlusIcon className="text-muted-foreground" size={14} />
                       )}
-                      Create: "{searchValue.trim()}"
+                      Create: &quot;{searchValue.trim()}&quot;
                     </button>
                   ) : (
                     'No cities found.'

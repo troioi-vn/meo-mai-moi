@@ -6,6 +6,27 @@ import ForgotPasswordPage from './ForgotPasswordPage'
 import { server } from '@/testing/mocks/server'
 import { http, HttpResponse } from 'msw'
 
+// Ensure ProgressEvent is available for MSW's XHR interceptor in Node
+if (!(globalThis as { ProgressEvent?: unknown }).ProgressEvent) {
+  class PolyfillProgressEvent extends Event {
+    lengthComputable = false
+    loaded = 0
+    total = 0
+    constructor(
+      type: string,
+      init?: { lengthComputable?: boolean; loaded?: number; total?: number }
+    ) {
+      super(type)
+      if (init) {
+        this.lengthComputable = !!init.lengthComputable
+        this.loaded = init.loaded ?? 0
+        this.total = init.total ?? 0
+      }
+    }
+  }
+  ;(globalThis as { ProgressEvent?: unknown }).ProgressEvent = PolyfillProgressEvent
+}
+
 beforeEach(() => {
   vi.clearAllMocks()
 })

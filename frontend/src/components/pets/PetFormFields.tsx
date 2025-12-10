@@ -137,7 +137,7 @@ export const PetFormFields: React.FC<Props> = ({
       {/* Country is always shown since it's required */}
       <div className="space-y-2">
         <Label htmlFor="country" className={errors.country ? 'text-destructive' : ''}>
-          Country <span className="text-destructive">*</span>
+          Country
         </Label>
         <CountrySelect
           value={formData.country}

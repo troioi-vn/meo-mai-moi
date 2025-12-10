@@ -90,10 +90,6 @@ async function stubAuthNetwork(page: Page) {
 
   // Logout
   await page.route('**/logout', async (route) => {
-    if (route.request().method() !== 'POST') {
-      await route.fallback()
-      return
-    }
     await route.fulfill({ status: 200, body: JSON.stringify({ message: 'ok' }) })
   })
 
@@ -252,19 +248,11 @@ test('login redirects to home and logout returns to login', async ({ page }) => 
   await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?$/)
 
   // Stub logout API
-  await page.route('**/logout', (route) => {
-    if (route.request().method() !== 'POST') {
-      return route.fallback()
-    }
-    return route.fulfill({ status: 204, body: '' })
-  })
+  await page.route('**/api/logout', (route) => route.fulfill({ status: 204, body: '' }))
 
   // Navigate to settings and click Logout (we go via nav)
   await page.goto('/settings')
-  await expect(page).toHaveURL(/\/settings\/account/)
-  const logoutButton = page.getByRole('button', { name: /log out/i })
-  await expect(logoutButton).toBeVisible()
-  await logoutButton.click()
+  await page.getByRole('button', { name: /logout/i }).click()
 
   // After logout, app navigates to /login
   await expect(page).toHaveURL(/\/login$/)

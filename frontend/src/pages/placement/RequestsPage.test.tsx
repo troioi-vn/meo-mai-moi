@@ -234,9 +234,7 @@ describe('RequestsPage', () => {
 
     renderWithRouter(<RequestsPage />, { initialEntries: ['/requests?sort=oldest'] })
 
-    const initialOrder = await screen.findAllByText(/Newest|Oldest/i, {
-      selector: '[data-slot="card-title"]',
-    })
+    const initialOrder = await screen.findAllByRole('heading', { name: /(Newest|Oldest)/i })
     expect(initialOrder.map((el) => el.textContent)).toEqual(['Oldest', 'Newest'])
   })
 
@@ -280,18 +278,14 @@ describe('RequestsPage', () => {
 
     renderWithRouter(<RequestsPage />)
 
-    const initialOrder = await screen.findAllByText(/Newest|Oldest/i, {
-      selector: '[data-slot="card-title"]',
-    })
+    const initialOrder = await screen.findAllByRole('heading', { name: /(Newest|Oldest)/i })
     expect(initialOrder.map((el) => el.textContent)).toEqual(['Newest', 'Oldest'])
 
     await user.click(screen.getByLabelText('Created Date Sort'))
     await user.click(screen.getByRole('option', { name: /oldest first/i }))
 
     await waitFor(() => {
-      const reordered = screen.getAllByText(/Newest|Oldest/i, {
-        selector: '[data-slot="card-title"]',
-      })
+      const reordered = screen.getAllByRole('heading', { name: /(Newest|Oldest)/i })
       expect(reordered.map((el) => el.textContent)).toEqual(['Oldest', 'Newest'])
     })
   })

@@ -10,9 +10,8 @@ import {
 } from '@/components/ui/select'
 import { DatePicker } from '@/components/ui/date-picker'
 import { getPlacementRequests, getPetTypes } from '@/api/pets'
-import type { Pet, PetType, City } from '@/types/pet'
+import type { Pet, PetType } from '@/types/pet'
 import { getCountryName } from '@/components/ui/CountrySelect'
-import { CitySelect } from '@/components/location/CitySelect'
 
 // Placement request type values matching backend enum
 type PlacementRequestType = 'all' | 'foster_payed' | 'foster_free' | 'permanent'
@@ -48,7 +47,6 @@ const RequestsPage = () => {
   const [requestTypeFilter, setRequestTypeFilter] = useState<PlacementRequestType>('all')
   const [petTypeFilter, setPetTypeFilter] = useState<string>('all')
   const [countryFilter, setCountryFilter] = useState<string>('all')
-  const [cityFilter, setCityFilter] = useState<City | null>(null)
   const [pickupDate, setPickupDate] = useState<Date | undefined>(undefined)
   const [pickupDateComparison, setPickupDateComparison] = useState<DateComparison>('on')
   const [dropoffDate, setDropoffDate] = useState<Date | undefined>(undefined)
@@ -87,14 +85,11 @@ const RequestsPage = () => {
       return
     }
 
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev)
-        next.set('sort', 'newest')
-        return next
-      },
-      { replace: true }
-    )
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.set('sort', 'newest')
+      return next
+    }, { replace: true })
   }, [createdSortDirection, searchParams, setSearchParams])
 
   // Get unique countries from pets for the country filter
@@ -111,13 +106,6 @@ const RequestsPage = () => {
       return nameA.localeCompare(nameB)
     })
   }, [pets])
-
-  // Reset city when country changes to all
-  useEffect(() => {
-    if (countryFilter === 'all') {
-      setCityFilter(null)
-    }
-  }, [countryFilter])
 
   const filteredPets = useMemo(() => {
     if (pets.length === 0) return [] as Pet[]
@@ -140,27 +128,6 @@ const RequestsPage = () => {
       // Country filter
       if (countryFilter !== 'all' && pet.country !== countryFilter) {
         return false
-      }
-
-      if (cityFilter) {
-        const petCityId =
-          (pet as unknown as { city_id?: number | null }).city_id ??
-          (typeof pet.city !== 'string' ? pet.city?.id : undefined)
-        const petCityName =
-          typeof pet.city === 'string'
-            ? pet.city
-            : typeof pet.city?.name === 'string'
-              ? pet.city.name
-              : ''
-        if (petCityId) {
-          if (petCityId !== cityFilter.id) return false
-        } else if (petCityName) {
-          if (petCityName.toLowerCase().trim() !== cityFilter.name.toLowerCase().trim()) {
-            return false
-          }
-        } else {
-          return false
-        }
       }
 
       // Request Type filter (matches placement request's request_type)
@@ -239,7 +206,6 @@ const RequestsPage = () => {
     requestTypeFilter,
     petTypeFilter,
     countryFilter,
-    cityFilter,
     pickupDate,
     pickupDateComparison,
     dropoffDate,
@@ -287,13 +253,7 @@ const RequestsPage = () => {
               ))}
             </SelectContent>
           </Select>
-          <Select
-            value={countryFilter}
-            onValueChange={(value) => {
-              setCountryFilter(value)
-              setCityFilter(null)
-            }}
-          >
+          <Select value={countryFilter} onValueChange={setCountryFilter}>
             <SelectTrigger className="w-full sm:w-[180px]" aria-label="Country Filter">
               <SelectValue placeholder="All Countries" />
             </SelectTrigger>
@@ -306,16 +266,6 @@ const RequestsPage = () => {
               ))}
             </SelectContent>
           </Select>
-          {countryFilter !== 'all' && (
-            <div className="w-full sm:w-[220px]">
-              <CitySelect
-                country={countryFilter}
-                value={cityFilter}
-                onChange={setCityFilter}
-                allowCreate={false}
-              />
-            </div>
-          )}
           <Select
             value={createdSortDirection}
             onValueChange={(v) => {
@@ -347,7 +297,7 @@ const RequestsPage = () => {
             <span className="text-sm text-muted-foreground shrink-0">Pickup</span>
             <Select
               value={pickupDateComparison}
-              onValueChange={(v) => { setPickupDateComparison(v as DateComparison); }}
+              onValueChange={(v) => setPickupDateComparison(v as DateComparison)}
             >
               <SelectTrigger className="w-[80px]" aria-label="Pickup Date Comparison">
                 <SelectValue />
@@ -369,7 +319,7 @@ const RequestsPage = () => {
               <span className="text-sm text-muted-foreground shrink-0">Drop-off</span>
               <Select
                 value={dropoffDateComparison}
-                onValueChange={(v) => { setDropoffDateComparison(v as DateComparison); }}
+                onValueChange={(v) => setDropoffDateComparison(v as DateComparison)}
               >
                 <SelectTrigger className="w-[80px]" aria-label="Drop-off Date Comparison">
                   <SelectValue />

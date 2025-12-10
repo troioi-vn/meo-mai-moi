@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Enums\PetSex;
 use App\Enums\PetStatus;
-use App\Models\City;
 use App\Models\Pet;
 use App\Models\PetType;
 use App\Models\User;
@@ -51,9 +50,6 @@ class PetFactory extends Factory
             $birthday_year = $year;
         }
 
-        $country = $this->faker->randomElement(['VN', 'US', 'JP', 'TH', 'SG']);
-        $cityModel = City::factory()->create(['country' => $country]);
-
         return [
             'name' => $this->faker->firstName(),
             'sex' => $this->faker->randomElement([PetSex::MALE, PetSex::FEMALE, PetSex::NOT_SPECIFIED]),
@@ -62,10 +58,9 @@ class PetFactory extends Factory
             'birthday_month' => $birthday_month,
             'birthday_day' => $birthday_day,
             'birthday_precision' => $precision,
-            'country' => $country,
+            'country' => $this->faker->randomElement(['VN', 'US', 'JP', 'TH', 'SG']),
             'state' => $this->faker->optional(0.3)->randomElement(['Hanoi', 'Ho Chi Minh City', 'Da Nang', 'Hai Phong', 'Can Tho']),
-            'city_id' => $cityModel->id,
-            'city' => $cityModel->name,
+            'city' => $this->faker->city(),
             'address' => $this->faker->optional(0.5)->streetAddress(),
             'description' => $this->faker->paragraph(),
             'status' => PetStatus::ACTIVE,

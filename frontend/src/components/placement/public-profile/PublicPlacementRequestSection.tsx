@@ -214,7 +214,7 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                       <Alert variant="info" className="mt-2">
                         <Info className="h-4 w-4" />
                         <AlertDescription>
-                          You cannot respond to your own pet's placement request.
+                          You cannot respond to your own pet&apos;s placement request.
                         </AlertDescription>
                       </Alert>
                     ) : myPendingTransfer ? (

@@ -145,7 +145,7 @@ export default function RegisterPage() {
             <p className="text-sm text-muted-foreground">You have a valid invitation</p>
           )}
           {mode === 'invite-only-no-code' && (
-            <p className="text-sm text-muted-foreground">We're currently invite-only</p>
+            <p className="text-sm text-muted-foreground">We&apos;re currently invite-only</p>
           )}
         </div>
 

@@ -62,7 +62,7 @@ const CreateHelperProfilePage: React.FC = () => {
             <CardHeader>
               <CardTitle className="text-2xl">Create Helper Profile</CardTitle>
               <CardDescription>
-                Set up your profile to let pet owners know you're available to help
+                Set up your profile to let pet owners know you&apos;re available to help
               </CardDescription>
             </CardHeader>
             <CardContent>

@@ -96,7 +96,7 @@ export default function HelperProfilePage() {
                 <div className="space-y-2">
                   <h2 className="text-lg font-semibold text-foreground">No helper profiles yet</h2>
                   <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                    Create a helper profile to let pet owners know you're available to foster or
+                    Create a helper profile to let pet owners know you&apos;re available to foster or
                     adopt pets.
                   </p>
                 </div>

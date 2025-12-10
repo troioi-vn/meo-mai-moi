@@ -30,7 +30,7 @@ export default function AccountPasswordPage() {
           <div>
             <h1 className="text-3xl font-bold text-foreground">Change Password</h1>
             <p className="text-muted-foreground mt-2">
-              Update your account password. Choose a strong password you don't use elsewhere.
+              Update your account password. Choose a strong password you don&apos;t use elsewhere.
             </p>
           </div>
 

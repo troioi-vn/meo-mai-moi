@@ -135,8 +135,8 @@ export interface PlacementRequest {
 export interface TransferRequest {
   id: number
   pet_id?: number
-
   placement_request_id?: number
+
   helper_profile_id?: number
   initiator_user_id?: number
   requested_relationship_type?: string
@@ -158,6 +158,8 @@ export interface TransferRequest {
     created_at?: string
     updated_at?: string
   }
+  placement_request?: PlacementRequest
+  pet?: Pet
 }
 
 // Helper function to calculate age from birthday

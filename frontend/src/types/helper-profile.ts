@@ -1,3 +1,5 @@
+import type { City, Pet, PlacementRequest, TransferRequest } from '@/types/pet'
+
 export interface HelperProfileUser {
   id?: number
   name?: string
@@ -12,7 +14,7 @@ export interface HelperProfile {
   country?: string
   address?: string
   city_id?: number | null
-  city?: string | import('@/types/pet').City
+  city?: string | City
   state?: string
   zip_code?: string
   phone_number?: string
@@ -29,6 +31,10 @@ export interface HelperProfile {
   user?: HelperProfileUser
   photos?: unknown[]
   pet_types?: { id: number; name: string; placement_requests_allowed: boolean }[]
+  transfer_requests?: (TransferRequest & {
+    placement_request?: PlacementRequest
+    pet?: Pet
+  })[]
   created_at?: string
   updated_at?: string
 }

@@ -12,6 +12,10 @@ All notable changes to this project are documented here, following the [Keep a C
   - Frontend city autocomplete for pet and helper profile forms (country-scoped with create-on-the-fly).
 - **Requests page filters**:
   - Added City filter with autocomplete (country-dependent, no create) to `/requests`.
+- **Helper profile pets section**:
+  - Helper profile view now lists pets linked via placement requests, showing request type plus placement and transfer statuses with links to pet pages.
+  - `helper-profiles/{id}` API now eager-loads transfer requests with related placement requests and pets.
+  - Added unit tests for the new Pets section (linked pets and empty state).
 
 - **Helper handover guidance**:
   - Acceptance notification now links helpers directly to the public pet page (`/pets/:id/public`) where they can confirm the handover.

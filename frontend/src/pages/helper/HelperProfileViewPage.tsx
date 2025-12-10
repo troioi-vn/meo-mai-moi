@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { getHelperProfile } from '@/api/helper-profiles'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
+import type { Pet } from '@/types/pet'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -15,6 +16,9 @@ import {
 } from '@/components/ui/carousel'
 import { ChevronLeft, MapPin, PawPrint, Baby, Home, Heart, User } from 'lucide-react'
 import placeholderAvatar from '@/assets/images/default-avatar.webp'
+
+const formatLabel = (value: string, fallback = 'Unknown') =>
+  value ? value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : fallback
 
 interface Photo {
   id: number
@@ -58,6 +62,7 @@ export default function HelperProfileViewPage() {
   const profile = data.data
   const photos = (profile.photos as Photo[] | undefined) ?? []
   const petTypes = profile.pet_types ?? []
+  const transferRequests = profile.transfer_requests ?? []
 
   // Get location string
   const cityName = typeof profile.city === 'string' ? profile.city : profile.city?.name
@@ -69,6 +74,40 @@ export default function HelperProfileViewPage() {
   const avatarUrl = firstPhoto
     ? (firstPhoto.url ?? `/storage/${firstPhoto.path}`)
     : placeholderAvatar
+
+  // Normalize pet/placement data from transfer requests
+  const petPlacements = transferRequests
+    .map((tr) => {
+      const placement = tr.placement_request
+      const pet = tr.pet ?? placement?.pet
+      if (!pet) return null
+
+      const petPhoto =
+        (Array.isArray((pet as { photos?: { url?: string }[] }).photos)
+          ? (pet as { photos?: { url?: string }[] }).photos?.[0]?.url
+          : undefined) ?? pet.photo_url ?? placeholderAvatar
+
+      const placementStatus = placement?.status ?? ''
+      const transferStatus = tr.status ?? ''
+      const requestType = placement?.request_type ?? ''
+
+      return {
+        id: `${String(tr.id)}-${String(pet.id)}`,
+        pet,
+        petPhoto,
+        placementStatus,
+        transferStatus,
+        requestType,
+      }
+    })
+    .filter(Boolean) as {
+    id: string
+    pet: Pet
+    petPhoto: string
+    placementStatus: string
+    transferStatus: string
+    requestType: string
+  }[]
 
   return (
     <div className="min-h-screen">
@@ -144,6 +183,50 @@ export default function HelperProfileViewPage() {
               </CardContent>
             </Card>
           )}
+
+          {/* Pets via placement requests */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-semibold">Pets</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {petPlacements.length === 0 && (
+                <p className="text-sm text-muted-foreground">No pets linked to this profile yet.</p>
+              )}
+              {petPlacements.map((item) => (
+                <Link
+                  key={item.id}
+                  to={`/pets/${String(item.pet.id)}`}
+                  className="flex items-center gap-3 rounded-lg border p-3 hover:bg-accent/60 transition-colors"
+                >
+                  <img
+                    src={item.petPhoto}
+                    alt={item.pet.name}
+                    className="h-12 w-12 rounded-md object-cover border"
+                  />
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-semibold text-foreground truncate">{item.pet.name}</p>
+                      <Badge variant="outline" className="shrink-0">
+                        {item.pet.pet_type?.name ?? 'Pet'}
+                      </Badge>
+                    </div>
+                    <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                      <Badge variant="secondary" className="rounded-full">
+                        Request: {formatLabel(item.requestType, 'N/A')}
+                      </Badge>
+                      <Badge variant="default" className="rounded-full">
+                        Placement: {formatLabel(item.placementStatus, 'Unknown')}
+                      </Badge>
+                      <Badge variant="outline" className="rounded-full">
+                        Transfer: {formatLabel(item.transferStatus, 'Unknown')}
+                      </Badge>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </CardContent>
+          </Card>
 
           {/* Request Types */}
           <Card>

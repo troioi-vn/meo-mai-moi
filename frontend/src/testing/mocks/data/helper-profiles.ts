@@ -19,6 +19,7 @@ export const mockHelperProfile = {
     { id: 1, path: '/test-photo-1.jpg' },
     { id: 2, path: '/test-photo-2.jpg' },
   ],
+  transfer_requests: [],
 }
 
 export const helperProfileHandlers = [

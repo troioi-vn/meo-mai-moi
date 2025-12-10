@@ -4,7 +4,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { MockedFunction } from 'vitest'
-import CreatePetPage from './CreatePetPage'
+import EditPetPage from './EditPetPage'
 import { getPet, getPetTypes, updatePetStatus, deletePet } from '@/api/pets'
 import { AuthProvider } from '@/contexts/AuthContext'
 
@@ -41,7 +41,7 @@ const renderEditPage = (petId = '1', initialUser = { id: 1, name: 'User', email:
       <BrowserRouter>
         <AuthProvider initialUser={initialUser}>
           <Routes>
-            <Route path="/pets/:id/edit" element={<CreatePetPage />} />
+            <Route path="/pets/:id/edit" element={<EditPetPage />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>

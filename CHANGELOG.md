@@ -30,6 +30,9 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Frontend pages restructuring**:
   - Reorganized `frontend/src/pages` into domain folders (`auth/`, `pets/`, `settings/`, `home/`, `placement/`, `invitations/`, `errors/`) for clearer ownership and imports.
   - Renamed settings screens to `AccountPasswordPage` and `NotificationSettingsPage`; updated routes and tests to match.
+- **Pet create vs edit split**:
+  - Separated pet creation and editing into dedicated pages (`CreatePetPage` and `EditPetPage`) with a shared `PetFormSection`.
+  - Renamed edit-focused tests to `EditPetPage.*.test.tsx` to align with the new page.
 - **Requests page visibility**:
 
   - Pets stay visible on the `/requests` page when their placement requests are in progress (`fulfilled`, `pending_transfer`, `active`, `finalized`) so accepted helpers can still access the public pet page and continue the flow.

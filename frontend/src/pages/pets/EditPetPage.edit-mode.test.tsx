@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import CreatePetPage from './CreatePetPage'
+import EditPetPage from './EditPetPage'
 import { AuthProvider } from '@/contexts/AuthContext'
 import * as petsApi from '@/api/pets'
 import type { Pet } from '@/types/pet'
@@ -46,7 +46,7 @@ function renderEditPage() {
       <BrowserRouter>
         <AuthProvider initialUser={mockUser}>
           <Routes>
-            <Route path="/pets/:id/edit" element={<CreatePetPage />} />
+            <Route path="/pets/:id/edit" element={<EditPetPage />} />
             <Route path="/pets/:id" element={<div>Pet Profile Page</div>} />
           </Routes>
         </AuthProvider>

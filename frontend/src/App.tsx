@@ -14,6 +14,7 @@ import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from './pages/auth/ResetPasswordPage'
 import MyPetsPage from './pages/pets/MyPetsPage'
 import CreatePetPage from './pages/pets/CreatePetPage'
+import EditPetPage from './pages/pets/EditPetPage'
 import AccountPasswordPage from './pages/settings/AccountPasswordPage'
 import InvitationsPage from './pages/invitations/InvitationsPage'
 import PetProfilePage from './pages/pets/PetProfilePage'
@@ -70,7 +71,7 @@ export function AppRoutes() {
         path="/pets/:id/edit"
         element={
           <PrivateRoute>
-            <CreatePetPage />
+            <EditPetPage />
           </PrivateRoute>
         }
       />

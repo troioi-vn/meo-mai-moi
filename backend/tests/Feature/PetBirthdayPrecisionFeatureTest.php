@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\PetType;
 use App\Models\User;
+use App\Models\City;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -34,10 +35,13 @@ class PetBirthdayPrecisionFeatureTest extends TestCase
      */
     protected function postPet(array $data)
     {
+        $country = $data['country'] ?? 'VN';
+        $city = City::factory()->create(['country' => $country]);
+
         return $this->postJson('/api/pets', array_merge([
             'name' => 'Testy',
-            'country' => 'VN',
-            'city' => 'Hanoi',
+            'country' => $country,
+            'city_id' => $city->id,
             'description' => 'Desc',
             'pet_type_id' => $this->catType->id,
         ], $data));

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Pet;
+use App\Models\City;
 use App\Models\PetType;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -26,12 +27,14 @@ class PetViewerEditorAccessTest extends TestCase
             'slug' => 'cat',
             'is_system' => true,
         ]);
+        $city = City::factory()->create(['country' => 'VN']);
 
         Sanctum::actingAs($owner);
 
         $response = $this->postJson('/api/pets', [
             'name' => 'Buddy',
             'country' => 'VN',
+            'city_id' => $city->id,
             'pet_type_id' => $petType->id,
             'viewer_user_ids' => [$viewer->id],
             'editor_user_ids' => [$editor->id],

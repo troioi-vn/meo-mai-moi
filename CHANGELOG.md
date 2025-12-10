@@ -6,12 +6,22 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **City catalog per country**:
+  - Introduced `cities` model/API (list + create) with approval workflow; pets and helper profiles now store `city_id` alongside the display name.
+  - Backfilled existing pets/helper profiles into the city catalog and linked records.
+  - Frontend city autocomplete for pet and helper profile forms (country-scoped with create-on-the-fly).
+- **Requests page filters**:
+  - Added City filter with autocomplete (country-dependent, no create) to `/requests`.
+
 - **Helper handover guidance**:
   - Acceptance notification now links helpers directly to the public pet page (`/pets/:id/public`) where they can confirm the handover.
 - **Requests page sorting**:
   - Added created-at sort control (newest first or oldest first) to the `/requests` filters.
 
 ### Changed
+
+- **Helper profile updates**:
+  - Updating a helper profile no longer requires sending `pet_type_ids` when only changing location/contact details.
 
 - **Frontend pages restructuring**:
   - Reorganized `frontend/src/pages` into domain folders (`auth/`, `pets/`, `settings/`, `home/`, `placement/`, `invitations/`, `errors/`) for clearer ownership and imports.
@@ -20,15 +30,30 @@ All notable changes to this project are documented here, following the [Keep a C
 
   - Pets stay visible on the `/requests` page when their placement requests are in progress (`fulfilled`, `pending_transfer`, `active`, `finalized`) so accepted helpers can still access the public pet page and continue the flow.
 
+- **Placement request completion flow**:
+
+  - After creating a placement request, owners are redirected to `/requests?sort=newest` so they land on the latest-first view.
+  - The requests page now syncs the created-date sort with the `?sort=` query param, defaulting to `newest` and preserving user selection in the URL.
+
 - **Placement Request Auto-Rejection Timing**:
+
   - Moved auto-rejection of other pending helper offers from the "Accept Response" step to the "Complete Handover" step
   - Previously: Other offers were rejected when the owner accepted a response (PlacementRequest → `fulfilled`)
   - Now: Other offers remain pending until the handover is completed and status changes to `active` (fostering) or `finalized` (permanent rehoming)
   - This provides a backup option if the initially selected helper doesn't complete the handover
   - Rejected helpers are notified only when the transfer is actually confirmed
 
+- **Helper profile pet type validation**:
+  - Filament helper profile form now requires selecting at least one pet type for placement requests before saving.
+  - Public API create/update endpoints now enforce at least one `pet_type_id` (required array with `min:1`).
+  - Main app create/edit helper profile pages validate pet type selection client-side and show inline errors.
+
 ### Fixed
 
+- **Backend type-safety hardening**:
+  - PhpStan now passes cleanly after tightening controller and command types (vaccination reminders, placement acceptance, pet listing).
+  - Added stronger relation typing on models and factories to prevent undefined method/property access at runtime.
+  - Updated web route view helpers to use typed view strings for safer rendering in SPA stubs.
 - **Temporary fostering no longer transfers ownership**:
   - Handover completion now keys off `placement_request.request_type` (canonical) to decide between permanent vs fostering flows
   - Temporary fostering (`foster_free` / `foster_payed`) keeps the pet owner unchanged, creates/ensures a foster assignment, and sets placement status to `active`

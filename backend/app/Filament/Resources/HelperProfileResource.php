@@ -96,6 +96,8 @@ class HelperProfileResource extends Resource
                                 return \App\Models\PetType::where('placement_requests_allowed', true)
                                     ->pluck('name', 'id');
                             })
+                            ->required()
+                            ->minItems(1)
                             ->columnSpanFull(),
                     ])
                     ->columns(2),

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Pet;
 
 use App\Enums\PetStatus;
 use App\Http\Controllers\Controller;
+use App\Models\City;
 use App\Models\OwnershipHistory;
 use App\Models\Pet;
 use App\Models\PetType;
@@ -51,7 +52,7 @@ class StorePetController extends Controller
             'sex' => 'nullable|in:male,female,not_specified',
             'country' => 'required|string|size:2',
             'state' => 'nullable|string|max:255',
-            'city' => 'nullable|string|max:255',
+            'city_id' => 'required|integer|exists:cities,id',
             'address' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'pet_type_id' => 'nullable|exists:pet_types,id',
@@ -159,6 +160,16 @@ class StorePetController extends Controller
 
         $validator->validate();
         $data = $validator->validated();
+        $data['country'] = strtoupper($data['country']);
+
+        /** @var \App\Models\City $city */
+        $city = City::find($data['city_id']);
+        if (! $city) {
+            return $this->sendError('City not found.', 422);
+        }
+        if ($city->country !== $data['country']) {
+            return $this->sendError('Selected city does not belong to the specified country.', 422);
+        }
 
         $precision = $data['birthday_precision'] ?? 'unknown';
         $birthdayDate = null;
@@ -198,7 +209,8 @@ class StorePetController extends Controller
             'birthday_precision' => $precision,
             'country' => $data['country'],
             'state' => $data['state'] ?? null,
-            'city' => $data['city'] ?? null,
+            'city_id' => $data['city_id'],
+            'city' => $city->name,
             'address' => $data['address'] ?? null,
             'description' => $data['description'] ?? '',
             'pet_type_id' => $petTypeId,
@@ -235,7 +247,7 @@ class StorePetController extends Controller
             $pet->editors()->sync($data['editor_user_ids']);
         }
 
-        $pet->load(['petType', 'categories', 'viewers', 'editors']);
+        $pet->load(['petType', 'categories', 'viewers', 'editors', 'city']);
 
         return $this->sendSuccess($pet, 201);
     }

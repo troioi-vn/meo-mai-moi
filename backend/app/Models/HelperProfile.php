@@ -96,6 +96,7 @@ class HelperProfile extends Model
         'user_id',
         'country',
         'address',
+        'city_id',
         'city',
         'state',
         'zip_code',
@@ -117,6 +118,11 @@ class HelperProfile extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function city(): BelongsTo
+    {
+        return $this->belongsTo(City::class);
     }
 
     public function photos(): HasMany

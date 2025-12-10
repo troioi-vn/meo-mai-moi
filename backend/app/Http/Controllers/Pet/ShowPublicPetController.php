@@ -87,6 +87,7 @@ class ShowPublicPetController extends Controller
         'country',
         'state',
         'city',
+        'city_id',
         'description',
         'status',
         'pet_type_id',
@@ -105,7 +106,7 @@ class ShowPublicPetController extends Controller
         }
 
         // Load relations needed for public view
-        $pet->load(['placementRequests.transferRequests.helperProfile.user', 'petType', 'categories']);
+        $pet->load(['placementRequests.transferRequests.helperProfile.user', 'petType', 'categories', 'city']);
 
         // Resolve user to determine if viewer is owner
         $user = $this->resolveUser($request);

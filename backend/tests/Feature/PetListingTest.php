@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Pet;
+use App\Models\City;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -27,12 +28,13 @@ class PetListingTest extends TestCase
     public function authenticated_user_can_create_pet_listing(): void
     {
         $this->createUserAndLogin();
+        $city = City::factory()->create(['country' => 'VN']);
 
         $petData = [
             'name' => 'Test Pet',
             'birthday' => '2023-01-01 00:00:00',
             'country' => 'VN',
-            'city' => 'Test City',
+            'city_id' => $city->id,
             'description' => 'Test Description',
         ];
 
@@ -43,7 +45,7 @@ class PetListingTest extends TestCase
         $this->assertDatabaseHas('pets', [
             'name' => 'Test Pet',
             'country' => 'VN',
-            'city' => 'Test City',
+            'city' => $city->name,
             'description' => 'Test Description',
         ]);
     }
@@ -55,7 +57,7 @@ class PetListingTest extends TestCase
             'name' => 'Test Pet',
             'birthday' => '2023-01-01',
             'country' => 'VN',
-            'city' => 'Test City',
+            'city_id' => City::factory()->create(['country' => 'VN'])->id,
             'description' => 'Test Description',
         ];
 

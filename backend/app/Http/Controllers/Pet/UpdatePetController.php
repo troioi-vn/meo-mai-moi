@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Pet;
 
 use App\Http\Controllers\Controller;
+use App\Models\City;
 use App\Models\Pet;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
@@ -64,7 +65,7 @@ class UpdatePetController extends Controller
             'sex' => 'nullable|in:male,female,not_specified',
             'country' => 'sometimes|required|string|size:2',
             'state' => 'nullable|string|max:255',
-            'city' => 'nullable|string|max:255',
+            'city_id' => 'sometimes|required|integer|exists:cities,id',
             'address' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'pet_type_id' => 'sometimes|required|exists:pet_types,id',
@@ -162,6 +163,9 @@ class UpdatePetController extends Controller
         });
         $validator->validate();
         $data = $validator->validated();
+        if (isset($data['country'])) {
+            $data['country'] = strtoupper($data['country']);
+        }
         $precision = $data['birthday_precision'] ?? $pet->birthday_precision ?? 'unknown';
         $birthdayDate = $pet->birthday; // default retain
         if ($precision === 'day') {
@@ -186,6 +190,18 @@ class UpdatePetController extends Controller
             }
         }
 
+        if (isset($data['city_id'])) {
+            $countryForCity = $data['country'] ?? $pet->country;
+            $city = City::find($data['city_id']);
+            if (! $city) {
+                return $this->sendError('City not found.', 422);
+            }
+            if ($city->country !== $countryForCity) {
+                return $this->sendError('Selected city does not belong to the specified country.', 422);
+            }
+            $data['city'] = $city->name;
+        }
+
         $pet->fill(array_filter([
             'name' => $data['name'] ?? null,
             'sex' => $data['sex'] ?? null,
@@ -196,6 +212,7 @@ class UpdatePetController extends Controller
             'birthday_precision' => $precision,
             'country' => $data['country'] ?? null,
             'state' => $data['state'] ?? null,
+            'city_id' => $data['city_id'] ?? null,
             'city' => $data['city'] ?? null,
             'address' => $data['address'] ?? null,
             'description' => $data['description'] ?? null,
@@ -216,7 +233,7 @@ class UpdatePetController extends Controller
             $pet->editors()->sync($data['editor_user_ids']);
         }
 
-        $pet->load(['petType', 'categories', 'viewers', 'editors']);
+        $pet->load(['petType', 'categories', 'viewers', 'editors', 'city']);
 
         // Build viewer permission flags for response
         $isOwner = $this->isOwnerOrAdmin($user, $pet);

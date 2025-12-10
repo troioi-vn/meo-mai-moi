@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Pet;
 use App\Models\PetType;
 use App\Models\User;
+use App\Models\City;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -18,6 +19,8 @@ class PetControllerTest extends TestCase
     protected PetType $catType;
 
     protected PetType $dogType;
+
+    protected City $vnCity;
 
     protected function setUp(): void
     {
@@ -41,6 +44,11 @@ class PetControllerTest extends TestCase
             'is_system' => true,
             'display_order' => 2,
         ]);
+
+        $this->vnCity = City::factory()->create([
+            'name' => 'Hanoi',
+            'country' => 'VN',
+        ]);
     }
 
     public function test_can_create_pet()
@@ -51,7 +59,7 @@ class PetControllerTest extends TestCase
             'name' => 'Fluffy',
             'birthday' => '2020-01-01',
             'country' => 'VN',
-            'city' => 'Hanoi',
+            'city_id' => $this->vnCity->id,
             'description' => 'A lovely cat',
             'pet_type_id' => $this->catType->id,
         ];
@@ -201,7 +209,7 @@ class PetControllerTest extends TestCase
             'name' => 'Fluffy',
             'birthday' => '2020-01-01',
             'country' => 'VN',
-            'city' => 'Hanoi',
+            'city_id' => $this->vnCity->id,
             'description' => 'A lovely cat',
             'pet_type_id' => $this->catType->id,
         ];
@@ -238,6 +246,7 @@ class PetControllerTest extends TestCase
             ->assertJsonValidationErrors([
                 'name',
                 'country',
+                'city_id',
             ]);
 
         // pet_type_id is optional and defaults; should NOT be a validation error.
@@ -252,7 +261,7 @@ class PetControllerTest extends TestCase
             'name' => 'Fluffy',
             'birthday' => '2020-01-01',
             'country' => 'VN',
-            'city' => 'Hanoi',
+            'city_id' => $this->vnCity->id,
             'description' => 'A lovely cat',
             'pet_type_id' => 999, // Non-existent pet type
         ];

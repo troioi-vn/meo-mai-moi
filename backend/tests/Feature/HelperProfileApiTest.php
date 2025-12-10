@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Enums\PlacementRequestType;
 use App\Models\HelperProfile;
+use App\Models\PetType;
 use App\Models\User;
+use App\Models\City;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -45,11 +47,13 @@ class HelperProfileApiTest extends TestCase
     public function can_create_a_helper_profile()
     {
         $user = User::factory()->create();
+        $city = City::factory()->create(['country' => 'VN']);
+        $petType = PetType::factory()->create(['name' => 'Cat', 'slug' => 'cat', 'is_system' => true]);
 
         $data = [
             'country' => 'VN',
             'address' => '123 Test St',
-            'city' => 'Testville',
+            'city_id' => $city->id,
             'state' => 'TS',
             'phone_number' => '123-456-7890',
             'contact_info' => 'You can also reach me on Telegram @testhelper',
@@ -58,6 +62,7 @@ class HelperProfileApiTest extends TestCase
             'has_children' => false,
             'request_types' => [PlacementRequestType::FOSTER_FREE->value, PlacementRequestType::PERMANENT->value],
             'zip_code' => '12345',
+            'pet_type_ids' => [$petType->id],
         ];
 
         $response = $this->actingAs($user)->postJson('/api/helper-profiles', $data);
@@ -69,7 +74,7 @@ class HelperProfileApiTest extends TestCase
         $this->assertDatabaseHas('helper_profiles', [
             'country' => 'VN',
             'address' => '123 Test St',
-            'city' => 'Testville',
+            'city' => $city->name,
         ]);
     }
 
@@ -77,11 +82,13 @@ class HelperProfileApiTest extends TestCase
     public function cannot_create_helper_profile_without_request_types()
     {
         $user = User::factory()->create();
+        $city = City::factory()->create(['country' => 'VN']);
+        $petType = PetType::factory()->create(['name' => 'Cat', 'slug' => 'cat', 'is_system' => true]);
 
         $data = [
             'country' => 'VN',
             'address' => '123 Test St',
-            'city' => 'Testville',
+            'city_id' => $city->id,
             'state' => 'TS',
             'phone_number' => '123-456-7890',
             'experience' => 'Lots of experience',
@@ -89,6 +96,7 @@ class HelperProfileApiTest extends TestCase
             'has_children' => false,
             'request_types' => [],
             'zip_code' => '12345',
+            'pet_type_ids' => [$petType->id],
         ];
 
         $response = $this->actingAs($user)->postJson('/api/helper-profiles', $data);

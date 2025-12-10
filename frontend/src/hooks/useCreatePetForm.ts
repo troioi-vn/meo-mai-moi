@@ -196,9 +196,6 @@ export const useCreatePetForm = (petId?: string) => {
     if (!formData.country.trim()) {
       newErrors.country = VALIDATION_MESSAGES.REQUIRED_COUNTRY
     }
-    if (!formData.city_id) {
-      newErrors.city = 'City is required'
-    }
     if (!formData.pet_type_id) {
       newErrors.pet_type_id = VALIDATION_MESSAGES.REQUIRED_PET_TYPE
     }

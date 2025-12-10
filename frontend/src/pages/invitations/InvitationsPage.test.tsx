@@ -89,7 +89,7 @@ describe('InvitationsPage', () => {
     renderInvitationsPage()
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /invitations/i })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /^invitations$/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /generate invitation/i })).toBeInTheDocument()
 
       // Check truncated invitation codes are displayed

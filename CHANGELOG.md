@@ -8,9 +8,14 @@ All notable changes to this project are documented here, following the [Keep a C
 
 - **Helper handover guidance**:
   - Acceptance notification now links helpers directly to the public pet page (`/pets/:id/public`) where they can confirm the handover.
+- **Requests page sorting**:
+  - Added created-at sort control (newest first or oldest first) to the `/requests` filters.
 
 ### Changed
 
+- **Frontend pages restructuring**:
+  - Reorganized `frontend/src/pages` into domain folders (`auth/`, `pets/`, `settings/`, `home/`, `placement/`, `invitations/`, `errors/`) for clearer ownership and imports.
+  - Renamed settings screens to `AccountPasswordPage` and `NotificationSettingsPage`; updated routes and tests to match.
 - **Requests page visibility**:
 
   - Pets stay visible on the `/requests` page when their placement requests are in progress (`fulfilled`, `pending_transfer`, `active`, `finalized`) so accepted helpers can still access the public pet page and continue the flow.

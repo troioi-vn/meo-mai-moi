@@ -22,6 +22,13 @@ const PLACEMENT_REQUEST_TYPE_LABELS: Record<PlacementRequestType, string> = {
   permanent: 'Permanent',
 }
 
+type SortDirection = 'newest' | 'oldest'
+
+const SORT_DIRECTION_LABELS: Record<SortDirection, string> = {
+  newest: 'Newest first',
+  oldest: 'Oldest first',
+}
+
 // Date comparison operators
 type DateComparison = 'before' | 'on' | 'after'
 
@@ -43,6 +50,7 @@ const RequestsPage = () => {
   const [pickupDateComparison, setPickupDateComparison] = useState<DateComparison>('on')
   const [dropoffDate, setDropoffDate] = useState<Date | undefined>(undefined)
   const [dropoffDateComparison, setDropoffDateComparison] = useState<DateComparison>('on')
+  const [createdSortDirection, setCreatedSortDirection] = useState<SortDirection>('newest')
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -83,7 +91,7 @@ const RequestsPage = () => {
 
   const filteredPets = useMemo(() => {
     if (pets.length === 0) return [] as Pet[]
-    return pets.filter((pet) => {
+    const filtered = pets.filter((pet) => {
       const prs = pet.placement_requests
       if (!prs || prs.length === 0) return false
 
@@ -155,6 +163,26 @@ const RequestsPage = () => {
 
       return true
     })
+
+    const getLatestRequestCreatedAt = (pet: Pet): number => {
+      const timestamps =
+        pet.placement_requests
+          ?.map((pr) => (pr.created_at ? new Date(pr.created_at).getTime() : NaN))
+          .filter((t) => !Number.isNaN(t)) ?? []
+      if (timestamps.length === 0) return 0
+      return Math.max(...timestamps)
+    }
+
+    return filtered
+      .map((pet) => ({
+        pet,
+        latestCreatedAt: getLatestRequestCreatedAt(pet),
+      }))
+      .sort((a, b) => {
+        const diff = b.latestCreatedAt - a.latestCreatedAt
+        return createdSortDirection === 'newest' ? diff : -diff
+      })
+      .map(({ pet }) => pet)
   }, [
     pets,
     requestTypeFilter,
@@ -164,6 +192,7 @@ const RequestsPage = () => {
     pickupDateComparison,
     dropoffDate,
     dropoffDateComparison,
+    createdSortDirection,
   ])
 
   return (
@@ -215,6 +244,21 @@ const RequestsPage = () => {
               {availableCountries.map((code) => (
                 <SelectItem key={code} value={code}>
                   {getCountryName(code)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={createdSortDirection}
+            onValueChange={(v) => setCreatedSortDirection(v as SortDirection)}
+          >
+            <SelectTrigger className="w-full sm:w-[180px]" aria-label="Created Date Sort">
+              <SelectValue placeholder="Sort by Created Date" />
+            </SelectTrigger>
+            <SelectContent>
+              {(Object.keys(SORT_DIRECTION_LABELS) as SortDirection[]).map((dir) => (
+                <SelectItem key={dir} value={dir}>
+                  {SORT_DIRECTION_LABELS[dir]}
                 </SelectItem>
               ))}
             </SelectContent>

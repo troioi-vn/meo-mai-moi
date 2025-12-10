@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderWithRouter } from '@/testing'
-import MainPage from '../pages/MainPage'
+import MainPage from './MainPage'
 import { http, HttpResponse } from 'msw'
 import { server } from '@/testing/mocks/server'
 import { testScenarios } from '@/testing/mocks/data/pets'

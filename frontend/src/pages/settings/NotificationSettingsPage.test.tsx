@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import NotificationsPage from './NotificationsPage'
+import NotificationSettingsPage from './NotificationSettingsPage'
 import { vi } from 'vitest'
 
 // Mock the NotificationPreferences component
@@ -26,16 +26,16 @@ const renderWithProviders = (component: React.ReactElement) => {
   )
 }
 
-describe('NotificationsPage', () => {
+describe('NotificationSettingsPage', () => {
   it('renders the page title and description', () => {
-    renderWithProviders(<NotificationsPage />)
+    renderWithProviders(<NotificationSettingsPage />)
 
     expect(screen.getByRole('heading', { name: /notification settings/i })).toBeInTheDocument()
     expect(screen.getByText(/manage how you receive notifications/i)).toBeInTheDocument()
   })
 
   it('renders breadcrumbs navigation', () => {
-    renderWithProviders(<NotificationsPage />)
+    renderWithProviders(<NotificationSettingsPage />)
 
     expect(screen.getByRole('navigation')).toBeInTheDocument()
     const settingsLinks = screen.getAllByRole('link', { name: /settings/i })
@@ -44,7 +44,7 @@ describe('NotificationsPage', () => {
   })
 
   it('renders back to settings button', () => {
-    renderWithProviders(<NotificationsPage />)
+    renderWithProviders(<NotificationSettingsPage />)
 
     const backButton = screen.getByRole('link', { name: /back to settings/i })
     expect(backButton).toBeInTheDocument()
@@ -52,13 +52,13 @@ describe('NotificationsPage', () => {
   })
 
   it('renders the NotificationPreferences component', () => {
-    renderWithProviders(<NotificationsPage />)
+    renderWithProviders(<NotificationSettingsPage />)
 
     expect(screen.getByTestId('notification-preferences')).toBeInTheDocument()
   })
 
   it('has correct breadcrumb links', () => {
-    renderWithProviders(<NotificationsPage />)
+    renderWithProviders(<NotificationSettingsPage />)
 
     const settingsLinks = screen.getAllByRole('link', { name: /settings/i })
     // Check that at least one of the account links has the correct href

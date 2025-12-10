@@ -12,17 +12,20 @@ The system includes a waitlist feature for users when invite-only mode is enable
 ## Key Features
 
 ### For Administrators
+
 - Toggle between open and invite-only registration
 - Monitor waitlist entries
 - View system-wide invitation statistics
 
 ### For Users
+
 - Generate invitation codes
 - Share invitations via QR code, email, SMS, or direct links
 - Manage sent invitations (view status, revoke pending invitations)
 - Track invitation acceptance
 
 ### For New Users
+
 - Join waitlist when registration is restricted
 - Register with valid invitation codes
 - Receive clear messaging about registration requirements
@@ -32,26 +35,31 @@ The system includes a waitlist feature for users when invite-only mode is enable
 ### Backend Components
 
 #### Models
+
 - **`Invitation`** (`backend/app/Models/Invitation.php`): Core invitation model with relationships to inviter and recipient users
 - **`WaitlistEntry`** (`backend/app/Models/WaitlistEntry.php`): Manages users waiting for invitations
 - **`Settings`** (`backend/app/Models/Settings.php`): Key-value store for system configuration
 
 #### Services
+
 - **`InvitationService`** (`backend/app/Services/InvitationService.php`): Business logic for invitation generation, validation, and acceptance
 - **`WaitlistService`** (`backend/app/Services/WaitlistService.php`): Manages waitlist operations
 - **`SettingsService`** (`backend/app/Services/SettingsService.php`): Handles system settings access and caching
 
 #### Controllers
+
 - **`InvitationController`** (`backend/app/Http/Controllers/InvitationController.php`): API endpoints for invitation management
 - **`WaitlistController`** (`backend/app/Http/Controllers/WaitlistController.php`): Waitlist join and management
 - **`SettingsController`** (`backend/app/Http/Controllers/SettingsController.php`): Public settings endpoint
 
 #### Notifications
+
 - **`InvitationToEmail`** (`backend/app/Notifications/InvitationToEmail.php`): Email notifications for direct invitations
 - **`WaitlistConfirmation`** (`backend/app/Notifications/WaitlistConfirmation.php`): Confirmation emails for waitlist entries
 
 #### Database
-- **Migrations**: 
+
+- **Migrations**:
   - `create_invitations_table.php` - Stores invitation codes and status
   - `create_waitlist_entries_table.php` - Manages waitlist
   - `create_settings_table.php` - System configuration
@@ -59,17 +67,21 @@ The system includes a waitlist feature for users when invite-only mode is enable
 ### Frontend Components
 
 #### API Layer
+
 - **`invite-system.ts`** (`frontend/src/api/invite-system.ts`): TypeScript API client for all invitation endpoints
 
 #### Components
+
 - **`WaitlistForm`** (`frontend/src/components/WaitlistForm.tsx`): Join waitlist form
 - **`InvitationShare`** (`frontend/src/components/InvitationShare.tsx`): Share invitations via multiple channels
 - **`InvitationQRCode`** (`frontend/src/components/InvitationQRCode.tsx`): Generate and download QR codes
 
 #### Pages
-- **`InvitationsPage`** (`frontend/src/pages/InvitationsPage.tsx`): Dashboard for managing invitations
+
+- **`InvitationsPage`** (`frontend/src/pages/invitations/InvitationsPage.tsx`): Dashboard for managing invitations
 
 #### Hooks
+
 - **`useInviteSystem`** (`frontend/src/hooks/use-invite-system.ts`): React hook for registration mode detection
 
 ## API Endpoints
@@ -77,11 +89,13 @@ The system includes a waitlist feature for users when invite-only mode is enable
 ### Public Endpoints
 
 #### Get Public Settings
+
 ```http
 GET /api/settings/public
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -91,6 +105,7 @@ GET /api/settings/public
 ```
 
 #### Join Waitlist
+
 ```http
 POST /api/waitlist
 Content-Type: application/json
@@ -101,6 +116,7 @@ Content-Type: application/json
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "data": {
@@ -112,10 +128,12 @@ Content-Type: application/json
 ```
 
 **Error Responses:**
+
 - `409 Conflict` - Email already on waitlist or registered
 - `422 Unprocessable Entity` - Validation errors
 
 #### Validate Invitation Code
+
 ```http
 POST /api/invitations/validate
 Content-Type: application/json
@@ -126,6 +144,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -141,6 +160,7 @@ Content-Type: application/json
 ### Authenticated Endpoints
 
 #### Generate Invitation
+
 ```http
 POST /api/invitations
 Authorization: Bearer {token}
@@ -153,6 +173,7 @@ Content-Type: application/json
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "data": {
@@ -170,12 +191,14 @@ Content-Type: application/json
 **Rate Limiting:** Limited to 10 invitations per user per day
 
 #### List User Invitations
+
 ```http
 GET /api/invitations
 Authorization: Bearer {token}
 ```
 
 **Response:**
+
 ```json
 {
   "data": [
@@ -206,12 +229,14 @@ Authorization: Bearer {token}
 ```
 
 #### Revoke Invitation
+
 ```http
 DELETE /api/invitations/{id}
 Authorization: Bearer {token}
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "data": []
@@ -219,15 +244,18 @@ Authorization: Bearer {token}
 ```
 
 **Error Responses:**
+
 - `404 Not Found` - Invitation not found or cannot be revoked
 
 #### Get Invitation Statistics
+
 ```http
 GET /api/invitations/stats
 Authorization: Bearer {token}
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -258,7 +286,7 @@ if (Settings::isInviteOnlyEnabled()) {
 The `useInviteSystem` hook automatically detects the registration mode:
 
 ```typescript
-const { mode, invitationCode, invitationValidation, error } = useInviteSystem()
+const { mode, invitationCode, invitationValidation, error } = useInviteSystem();
 
 // mode can be:
 // - 'open-registration': Anyone can register
@@ -269,17 +297,20 @@ const { mode, invitationCode, invitationValidation, error } = useInviteSystem()
 ### Registration Modes
 
 #### Open Registration Mode
+
 - Standard registration form
 - Optional invitation code can still be provided
 - No restrictions on new users
 
 #### Invite-Only Mode (No Code)
+
 - Registration form is hidden
 - Waitlist form is displayed prominently
 - Clear messaging about registration requirements
 - Users can request invitations from existing members
 
 #### Invite-Only Mode (With Valid Code)
+
 - Registration form is displayed
 - Invitation code is pre-filled from URL parameter
 - Shows inviter information
@@ -288,28 +319,34 @@ const { mode, invitationCode, invitationValidation, error } = useInviteSystem()
 ## Email Notifications
 
 ### Invitation Email
+
 Sent when a user generates an invitation to a specific email address:
 
 **Subject:** You're invited to join Meo Mai Moi!
 
 **Content:**
+
 - Personalized greeting with inviter name
 - Call-to-action button with invitation link
 - Invitation code for manual entry
 - Expiration information (if applicable)
 
 ### Waitlist Confirmation Email
+
 Sent when a user joins the waitlist:
 
 **Subject:** You're on the waitlist!
 
 **Content:**
+
 - Confirmation of waitlist entry
 - What to expect next
 - Alternative options (ask existing members)
 
 ### Email Templates
+
 Custom email templates are located in:
+
 - `backend/resources/views/vendor/mail/html/` - HTML templates
 - `backend/resources/views/vendor/mail/text/` - Plain text templates
 
@@ -353,6 +390,7 @@ $isEnabled = Settings::isInviteOnlyEnabled();
 ### Rate Limiting
 
 Invitation generation is rate-limited to prevent abuse:
+
 - **User limit**: 10 invitations per day
 - **Endpoint throttle**: Standard API rate limits apply
 
@@ -361,6 +399,7 @@ Invitation generation is rate-limited to prevent abuse:
 ### Backend Tests
 
 #### Feature Tests
+
 - **`InvitationControllerTest`**: API endpoint testing
 - **`InviteSystemAuthTest`**: Registration flow with invitations
 - **`InviteSystemIntegrationTest`**: End-to-end workflows
@@ -368,6 +407,7 @@ Invitation generation is rate-limited to prevent abuse:
 - **`WaitlistControllerTest`**: Waitlist management
 
 #### Unit Tests
+
 - **`InvitationServiceTest`**: Service layer logic
 - **`InvitationTest`**: Model behavior and scopes
 - **`SettingsTest`**: Settings model methods
@@ -376,6 +416,7 @@ Invitation generation is rate-limited to prevent abuse:
 - **`WaitlistServiceTest`**: Waitlist operations
 
 #### Running Tests
+
 ```bash
 cd backend
 ./vendor/bin/phpunit --testsuite=Feature --filter=Invitation
@@ -385,17 +426,21 @@ cd backend
 ### Frontend Tests
 
 #### Component Tests
+
 - **`WaitlistForm.test.tsx`**: Waitlist form behavior
 - **`InvitationQRCode.test.tsx`**: QR code generation
 - **`InvitationShare.test.tsx`**: Share functionality
 
 #### Page Tests
+
 - **`InvitationsPage.test.tsx`**: Invitation management UI
 
 #### Hook Tests
+
 - **`use-invite-system.test.ts`**: Registration mode detection
 
 #### Running Tests
+
 ```bash
 cd frontend
 npm run test
@@ -406,15 +451,18 @@ npm run test
 ### Workflow 1: User Joins Waitlist and Gets Invited
 
 1. **User visits registration page**
+
    - System detects invite-only mode is enabled
    - Waitlist form is displayed
 
 2. **User joins waitlist**
+
    - Enters email address
    - Receives confirmation email
    - Status: "pending"
 
 3. **Existing user invites from waitlist**
+
    - Navigates to invitations page
    - Generates invitation for waitlist email
    - System sends invitation email
@@ -429,11 +477,13 @@ npm run test
 ### Workflow 2: Direct Invitation
 
 1. **User generates invitation**
+
    - Navigates to invitations page
    - Clicks "Generate Invitation"
    - Receives invitation link
 
 2. **User shares invitation**
+
    - Copies link directly
    - Or shares via QR code
    - Or sends via email/SMS through share dialog
@@ -446,6 +496,7 @@ npm run test
 ### Workflow 3: Open Registration with Optional Invitation
 
 1. **User visits registration page**
+
    - Normal registration form is displayed
    - No invitation code required
 
@@ -457,27 +508,32 @@ npm run test
 ## Security Considerations
 
 ### Invitation Code Generation
+
 - Codes are 32-character random strings
 - Uniqueness is enforced at database level
 - Codes are non-sequential and unpredictable
 
 ### Validation Rules
+
 - Invitation codes must be pending status
 - Codes must not be expired
 - Each code can only be used once
 - Users can only revoke their own invitations
 
 ### Rate Limiting
+
 - Invitation generation limited per user
 - API endpoints have standard throttling
 - Waitlist submissions are rate-limited
 
 ### Authorization
+
 - Only authenticated users can generate invitations
 - Users can only view and manage their own invitations
 - Public endpoints only expose necessary information
 
 ### Data Protection
+
 - Email addresses in waitlist are validated
 - Sensitive data is not exposed in public endpoints
 - Settings cache is cleared on updates
@@ -487,18 +543,22 @@ npm run test
 ### Common Issues
 
 #### Invitation Codes Not Working
+
 **Symptoms:** Invalid code error during registration
 
 **Solutions:**
+
 1. Check invitation status (must be "pending")
 2. Verify expiration date hasn't passed
 3. Ensure invite-only mode is actually enabled
 4. Clear settings cache: `php artisan cache:clear`
 
 #### Emails Not Sending
+
 **Symptoms:** No confirmation emails received
 
 **Solutions:**
+
 1. Verify mail configuration in `.env`
 2. Check mail logs: `storage/logs/laravel.log`
 3. Test mail connection: `php artisan tinker`
@@ -509,18 +569,22 @@ npm run test
    ```
 
 #### Frontend Not Detecting Invite Mode
+
 **Symptoms:** Wrong form displayed
 
 **Solutions:**
+
 1. Check `/api/settings/public` endpoint response
 2. Verify settings in database
 3. Clear browser cache and cookies
 4. Check console for JavaScript errors
 
 #### Database Issues
+
 **Symptoms:** Migration errors
 
 **Solutions:**
+
 1. Run migrations: `php artisan migrate`
 2. Check database connection
 3. Verify permissions on settings table
@@ -549,6 +613,7 @@ Potential improvements for the invitation system:
 ## Support
 
 For issues or questions about the invitation system:
+
 1. Check this documentation first
 2. Review the test files for usage examples
 3. Check the GitHub issues

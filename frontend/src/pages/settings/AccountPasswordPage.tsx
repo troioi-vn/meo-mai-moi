@@ -1,9 +1,9 @@
-import { NotificationPreferences } from '@/components/notifications/NotificationPreferences'
+import { ChangePasswordForm } from '@/components/auth/ChangePasswordForm'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-export default function NotificationsPage() {
+export default function AccountPasswordPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -13,7 +13,7 @@ export default function NotificationsPage() {
             Settings
           </Link>
           <span>/</span>
-          <span className="text-foreground">Notifications</span>
+          <span className="text-foreground">Password</span>
         </nav>
 
         {/* Page Header */}
@@ -28,15 +28,14 @@ export default function NotificationsPage() {
 
         <div className="space-y-6">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Notification Settings</h1>
+            <h1 className="text-3xl font-bold text-foreground">Change Password</h1>
             <p className="text-muted-foreground mt-2">
-              Manage how you receive notifications about important events and updates.
+              Update your account password. Choose a strong password you don't use elsewhere.
             </p>
           </div>
 
-          {/* Notification Preferences Component */}
           <div className="bg-card rounded-lg border p-6">
-            <NotificationPreferences />
+            <ChangePasswordForm />
           </div>
         </div>
       </div>

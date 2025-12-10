@@ -1,9 +1,9 @@
 import { screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderWithRouter, userEvent } from '@/testing'
-import RegisterPage from '@/pages/RegisterPage'
-import LoginPage from '@/pages/LoginPage'
-import EmailVerificationPage from '@/pages/EmailVerificationPage'
+import RegisterPage from '@/pages/auth/RegisterPage'
+import LoginPage from '@/pages/auth/LoginPage'
+import EmailVerificationPage from '@/pages/auth/EmailVerificationPage'
 import { server } from '@/testing/mocks/server'
 import { http, HttpResponse } from 'msw'
 

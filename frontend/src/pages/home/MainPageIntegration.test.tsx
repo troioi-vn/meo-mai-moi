@@ -1,7 +1,7 @@
 import { screen, waitFor } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 import { renderWithRouter } from '@/testing'
-import MainPage from '@/pages/MainPage'
+import MainPage from '@/pages/home/MainPage'
 import { http, HttpResponse } from 'msw'
 import { server } from '@/testing/mocks/server'
 import type { Pet } from '@/types/pet'

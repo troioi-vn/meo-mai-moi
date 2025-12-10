@@ -1,18 +1,18 @@
 import { render, screen } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import { describe, it, expect, vi } from 'vitest'
-import PasswordPage from './PasswordPage'
+import AccountPasswordPage from './AccountPasswordPage'
 
 // Mock ChangePasswordForm to isolate page layout
 vi.mock('@/components/auth/ChangePasswordForm', () => ({
   ChangePasswordForm: () => <div data-testid="change-password-form">ChangePasswordFormMock</div>,
 }))
 
-describe('PasswordPage', () => {
+describe('AccountPasswordPage', () => {
   const renderPage = () => {
     render(
       <BrowserRouter>
-        <PasswordPage />
+        <AccountPasswordPage />
       </BrowserRouter>
     )
   }

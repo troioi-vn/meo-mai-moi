@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Pet;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
-use App\Policies\PetPolicy;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use Illuminate\Http\Request;
@@ -100,10 +99,7 @@ class ShowPublicPetController extends Controller
     public function __invoke(Request $request, Pet $pet)
     {
         // Check if pet is publicly viewable using the policy
-        $policy = new PetPolicy();
-        if (! $policy->isPubliclyViewable($pet)) {
-            return $this->sendError('This pet profile is not publicly available.', 403);
-        }
+        $this->authorize('view', $pet);
 
         // Load relations needed for public view
         $pet->load(['placementRequests.transferRequests.helperProfile.user', 'petType', 'categories', 'city']);
@@ -128,5 +124,3 @@ class ShowPublicPetController extends Controller
         return $this->sendSuccess($publicData);
     }
 }
-
-

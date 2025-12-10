@@ -9,4 +9,3 @@ class EditCity extends EditRecord
 {
     protected static string $resource = CityResource::class;
 }
-

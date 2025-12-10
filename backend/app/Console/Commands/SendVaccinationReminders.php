@@ -4,8 +4,8 @@ namespace App\Console\Commands;
 
 use App\Enums\NotificationType;
 use App\Models\Pet;
-use App\Models\VaccinationRecord;
 use App\Models\User;
+use App\Models\VaccinationRecord;
 use App\Services\NotificationService;
 use App\Services\PetCapabilityService;
 use Carbon\Carbon;

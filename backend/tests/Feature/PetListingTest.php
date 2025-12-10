@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Pet;
 use App\Models\City;
+use App\Models\Pet;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;

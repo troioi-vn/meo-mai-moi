@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Pet;
 use App\Models\City;
+use App\Models\Pet;
 use App\Models\PetType;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -95,4 +95,3 @@ class PetViewerEditorAccessTest extends TestCase
         $this->assertDatabaseHas('pets', ['id' => $pet->id, 'name' => 'New Name']);
     }
 }
-

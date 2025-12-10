@@ -113,4 +113,3 @@ class CityTest extends TestCase
         $response->assertStatus(422);
     }
 }
-

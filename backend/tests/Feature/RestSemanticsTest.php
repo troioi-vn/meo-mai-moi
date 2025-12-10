@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\City;
 use App\Models\HelperProfile;
 use App\Models\Notification;
 use App\Models\Pet;
 use App\Models\User;
-use App\Models\City;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\Test;

@@ -31,4 +31,3 @@ class ListCitiesController extends Controller
         return $this->sendSuccess($cities);
     }
 }
-

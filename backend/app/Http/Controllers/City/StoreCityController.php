@@ -60,4 +60,3 @@ class StoreCityController extends Controller
         return $this->sendSuccess($city, 201);
     }
 }
-

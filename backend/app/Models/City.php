@@ -84,14 +84,14 @@ class City extends Model
 
         static::creating(function ($city) {
             if (empty($city->slug)) {
-                $city->slug = static::generateUniqueSlug($city->name, $city->country);
+                $city->slug = self::generateUniqueSlug($city->name, $city->country);
             }
             $city->country = strtoupper($city->country);
         });
 
         static::updating(function ($city) {
             if ($city->isDirty('name') && ! $city->isDirty('slug')) {
-                $city->slug = static::generateUniqueSlug($city->name, $city->country);
+                $city->slug = self::generateUniqueSlug($city->name, $city->country);
             }
             if ($city->isDirty('country')) {
                 $city->country = strtoupper($city->country);
@@ -113,4 +113,3 @@ class City extends Model
         return $slug;
     }
 }
-

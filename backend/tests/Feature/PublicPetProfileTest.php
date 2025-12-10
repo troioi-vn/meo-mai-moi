@@ -184,4 +184,3 @@ class PublicPetProfileTest extends TestCase
             ->assertJsonPath('data.status', 'lost');
     }
 }
-

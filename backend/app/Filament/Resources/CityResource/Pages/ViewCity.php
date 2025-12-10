@@ -9,4 +9,3 @@ class ViewCity extends ViewRecord
 {
     protected static string $resource = CityResource::class;
 }
-

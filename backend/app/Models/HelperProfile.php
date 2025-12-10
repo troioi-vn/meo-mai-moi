@@ -36,9 +36,11 @@ use OpenApi\Annotations as OA;
  *     @OA\Property(
  *         property="request_types",
  *         type="array",
+ *
  *         @OA\Items(type="string", enum={"foster_payed", "foster_free", "permanent"}),
  *         description="Types of placement requests this helper can respond to"
  *     ),
+ *
  *     @OA\Property(
  *         property="country",
  *         type="string",

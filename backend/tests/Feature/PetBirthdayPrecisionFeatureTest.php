@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\City;
 use App\Models\PetType;
 use App\Models\User;
-use App\Models\City;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;

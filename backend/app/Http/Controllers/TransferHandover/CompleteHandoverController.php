@@ -39,8 +39,7 @@ class CompleteHandoverController extends Controller
 
     public function __construct(
         protected NotificationService $notificationService
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, TransferHandover $handover)
     {

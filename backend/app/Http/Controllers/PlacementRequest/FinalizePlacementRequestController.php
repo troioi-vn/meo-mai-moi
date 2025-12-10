@@ -108,4 +108,3 @@ class FinalizePlacementRequestController extends Controller
         return $this->sendSuccess($placementRequest->fresh());
     }
 }
-

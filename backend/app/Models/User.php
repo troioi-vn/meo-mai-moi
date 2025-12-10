@@ -167,7 +167,6 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
      * Uses Laravel's native notification system with custom EmailLog integration.
      *
      * @param  string  $token
-     *
      * @return void
      */
     public function sendPasswordResetNotification($token)
@@ -185,7 +184,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
      */
     public function sendEmailVerificationNotification()
     {
-        $this->notify(new \App\Notifications\VerifyEmail());
+        $this->notify(new \App\Notifications\VerifyEmail);
     }
 
     /**

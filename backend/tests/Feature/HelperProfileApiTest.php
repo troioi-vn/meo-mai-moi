@@ -3,10 +3,10 @@
 namespace Tests\Feature;
 
 use App\Enums\PlacementRequestType;
+use App\Models\City;
 use App\Models\HelperProfile;
 use App\Models\PetType;
 use App\Models\User;
-use App\Models\City;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;

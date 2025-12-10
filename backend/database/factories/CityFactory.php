@@ -36,4 +36,3 @@ class CityFactory extends Factory
         return $this->state(fn () => ['created_by' => $user->id]);
     }
 }
-

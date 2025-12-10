@@ -4,6 +4,7 @@ namespace App\Http\Controllers\VaccinationRecord;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
+use App\Models\VaccinationRecord;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use App\Traits\HandlesPetResources;
@@ -52,7 +53,7 @@ class ListVaccinationRecordsController extends Controller
 
         $status = $request->query('status', 'active');
 
-        $query = $pet->vaccinations();
+        $query = VaccinationRecord::query()->whereBelongsTo($pet);
 
         // Apply status filter
         if ($status === 'active') {

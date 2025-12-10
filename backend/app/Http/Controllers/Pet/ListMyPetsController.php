@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesErrors;
 use Illuminate\Http\Request;
 
 /**
@@ -36,6 +37,7 @@ class ListMyPetsController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+    use HandlesErrors;
 
     public function __invoke(Request $request)
     {

@@ -6,7 +6,7 @@ use Tests\TestCase;
 
 class RegisterRouteTest extends TestCase
 {
-    /** @test */
+    #[PHPUnit\Framework\Attributes\Test]
     public function register_route_returns_success_without_redirect_loop()
     {
         $response = $this->get('/register');

@@ -7,6 +7,7 @@ use App\Enums\PlacementRequestStatus;
 use App\Enums\TransferRequestStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
+use App\Models\PlacementRequest;
 use App\Models\TransferHandover;
 use App\Models\TransferRequest;
 use App\Models\User;
@@ -82,7 +83,7 @@ class AcceptTransferRequestController extends Controller
 
             $placement = $transferRequest->placementRequest;
 
-            if ($placement) {
+            if ($placement instanceof PlacementRequest) {
                 // Fulfill the placement request
                 $placement->markAsFulfilled();
                 // If status enum supports it, set to fulfilled

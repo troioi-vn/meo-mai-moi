@@ -179,7 +179,7 @@ export const CategorySelect: React.FC<Props> = ({
                       ) : (
                         <PlusIcon className="text-muted-foreground" size={14} />
                       )}
-                      Create: "{searchValue.trim()}"
+                      Create: &quot;{searchValue.trim()}&quot;
                     </button>
                   ) : (
                     'No categories found.'

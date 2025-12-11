@@ -54,12 +54,19 @@ class LoginController extends Controller
 
     public function __invoke(Request $request)
     {
-        $credentials = $request->validate([
+        $validated = $request->validate([
             'email' => 'required|string|email',
             'password' => 'required|string',
+            'remember' => 'sometimes|boolean',
         ]);
 
-        if (Auth::attempt($credentials)) {
+        $credentials = [
+            'email' => $validated['email'],
+            'password' => $validated['password'],
+        ];
+        $remember = (bool) ($validated['remember'] ?? false);
+
+        if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
             /** @var User $user */
             $user = Auth::user();

@@ -13,6 +13,7 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Requests page filters**:
   - Added City filter with autocomplete (country-dependent, no create) to `/requests`.
 - **Helper profile pets section**:
+
   - Helper profile view now lists pets linked via placement requests, showing request type plus placement and transfer statuses with links to pet pages.
   - `helper-profiles/{id}` API now eager-loads transfer requests with related placement requests and pets.
   - Added unit tests for the new Pets section (linked pets and empty state).
@@ -27,6 +28,7 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Unauthorized handling**:
   - Any 401 API response now clears auth state and redirects to `/login?redirect=<path>` using shared axios interceptors, preventing stale sessions and error screens.
 - **Helper profile updates**:
+
   - Updating a helper profile no longer requires sending `pet_type_ids` when only changing location/contact details.
 
 - **Frontend pages restructuring**:
@@ -59,6 +61,8 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Fixed
 
+- **Remember me login**:
+  - Login API now validates the `remember` flag and passes it to authentication so persistent cookies are issued when the box is checked.
 - **Backend type-safety hardening**:
   - PhpStan now passes cleanly after tightening controller and command types (vaccination reminders, placement acceptance, pet listing).
   - Added stronger relation typing on models and factories to prevent undefined method/property access at runtime.

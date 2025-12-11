@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { api, authApi, csrf } from '@/api/axios'
+import { api, authApi, csrf, setUnauthorizedHandler } from '@/api/axios'
 import type { User } from '@/types/user'
 import type { RegisterPayload, RegisterResponse, LoginPayload, LoginResponse } from '@/types/auth'
 import { AuthContext } from './auth-context'
@@ -92,6 +92,30 @@ export function AuthProvider({
       void loadUser()
     }
   }, [loadUser, skipInitialLoad])
+
+  // Globally handle 401 responses by clearing auth state and redirecting to login
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const handler = () => {
+      setUser(null)
+      const { pathname, search, hash } = window.location
+
+      // Avoid redirect loops while already on the login page
+      if (pathname.startsWith('/login')) {
+        return
+      }
+
+      const currentLocation = `${pathname}${search}${hash}`
+      const redirectParam = encodeURIComponent(currentLocation || '/')
+      window.location.assign(`/login?redirect=${redirectParam}`)
+    }
+
+    setUnauthorizedHandler(handler)
+    return () => {
+      setUnauthorizedHandler(null)
+    }
+  }, [])
 
   // Refresh user data when service worker updates or app becomes visible
   // This ensures avatar and user data are fresh after cache clear/deployment

@@ -24,6 +24,8 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Changed
 
+- **Unauthorized handling**:
+  - Any 401 API response now clears auth state and redirects to `/login?redirect=<path>` using shared axios interceptors, preventing stale sessions and error screens.
 - **Helper profile updates**:
   - Updating a helper profile no longer requires sending `pet_type_ids` when only changing location/contact details.
 

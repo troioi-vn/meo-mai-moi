@@ -120,15 +120,15 @@ describe('LoginPage', () => {
     })
   })
 
-  it('displays an error when query param is email_exists', async () => {
+  it('displays an error when query param is oauth_failed', async () => {
     renderWithRouter(<LoginPage />, {
       initialAuthState: { user: null, isLoading: false, isAuthenticated: false },
-      route: '/login?error=email_exists',
+      route: '/login?error=oauth_failed',
     })
 
     await waitFor(() => {
       expect(screen.getByTestId('login-error-message')).toHaveTextContent(
-        'An account with this email already exists. Please log in with your password.'
+        'Google sign in failed. Please try again.'
       )
     })
   })

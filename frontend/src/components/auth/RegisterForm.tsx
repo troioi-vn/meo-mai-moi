@@ -183,7 +183,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
               </Button>
             </div>
             <Button type="button" variant="secondary" size="sm" onClick={generatePassword}>
-              Generate Password
+              Generate
             </Button>
           </div>
         </div>

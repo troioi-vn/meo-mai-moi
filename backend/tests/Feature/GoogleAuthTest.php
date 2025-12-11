@@ -95,26 +95,40 @@ class GoogleAuthTest extends TestCase
         $this->assertNotNull($user->email_verified_at);
     }
 
-    public function test_callback_redirects_when_email_exists_without_google(): void
+    public function test_callback_links_google_to_existing_email_user(): void
     {
         config(['app.frontend_url' => 'https://frontend.test']);
 
         $existing = User::factory()->create([
             'email' => 'taken@example.com',
             'google_id' => null,
+            'google_token' => null,
+            'google_refresh_token' => null,
+            'google_avatar' => null,
+            'email_verified_at' => null,
         ]);
 
         $this->mockGoogleUser([
             'id' => 'google-999',
             'email' => $existing->email,
             'name' => 'Another User',
+            'avatar' => 'https://example.com/linked-avatar.png',
+            'token' => 'linked-token',
+            'refresh_token' => 'linked-refresh',
         ]);
 
         $response = $this->get('/auth/google/callback');
 
-        $response->assertRedirect('https://frontend.test/login?error=email_exists');
-        $this->assertGuest();
-        $this->assertEquals(1, User::count());
+        $response->assertRedirect('https://frontend.test/account/pets');
+
+        $existing->refresh();
+        $this->assertAuthenticatedAs($existing);
+        $this->assertEquals(1, User::count()); // No new user created
+        $this->assertEquals('google-999', $existing->google_id);
+        $this->assertEquals('linked-token', $existing->google_token);
+        $this->assertEquals('linked-refresh', $existing->google_refresh_token);
+        $this->assertEquals('https://example.com/linked-avatar.png', $existing->google_avatar);
+        $this->assertNotNull($existing->email_verified_at); // Now verified via Google
     }
 
     public function test_callback_redirects_when_google_returns_no_email(): void

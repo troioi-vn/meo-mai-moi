@@ -49,12 +49,22 @@ class GoogleAuthController extends Controller
 
         $email = $googleUser->getEmail();
 
-        if ($email && User::where('email', $email)->exists()) {
-            return $this->redirectToFrontend('/login?error=email_exists');
-        }
-
         if (! $email) {
             return $this->redirectToFrontend('/login?error=missing_email');
+        }
+
+        // Check if a user with this email already exists (registered via password)
+        $existingEmailUser = User::where('email', $email)->first();
+
+        if ($existingEmailUser) {
+            // Link Google account to existing user and log them in
+            $this->updateGoogleFields($existingEmailUser, $googleUser);
+            $existingEmailUser->forceFill(['google_id' => $googleUser->getId()])->save();
+
+            Auth::login($existingEmailUser, true);
+            $request->session()->regenerate();
+
+            return $this->redirectToFrontend($this->consumeRedirect($request));
         }
 
         $user = User::create([

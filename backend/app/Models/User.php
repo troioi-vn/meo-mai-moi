@@ -53,6 +53,10 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         'name',
         'email',
         'password',
+        'google_id',
+        'google_token',
+        'google_refresh_token',
+        'google_avatar',
     ];
 
     /**
@@ -66,6 +70,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         'two_factor_recovery_codes',
         'two_factor_secret',
         'two_factor_confirmed_at',
+        'google_token',
+        'google_refresh_token',
     ];
 
     public function helperProfiles(): HasMany

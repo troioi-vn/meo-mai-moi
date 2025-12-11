@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\EmailVerification\VerifyEmailWebController;
+use App\Http\Controllers\GoogleAuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -13,6 +14,9 @@ $welcomeView = 'welcome';
 Route::get('/', function () use ($welcomeView) {
     return view($welcomeView);
 });
+
+Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->name('google.redirect');
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
 
 // Fortify will register /login and /register POST routes for the API.
 // For SPA-only mode, provide GET route stubs that redirect to the frontend.

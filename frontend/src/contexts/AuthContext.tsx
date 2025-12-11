@@ -51,15 +51,21 @@ export function AuthProvider({
     return data.data
   }, [])
 
-  const login = useCallback(async (payload: LoginPayload): Promise<LoginResponse> => {
-    await csrf()
-    const { data } = await authApi.post<{ data: LoginResponse }>('/login', payload)
+  const login = useCallback(
+    async (payload: LoginPayload): Promise<LoginResponse> => {
+      await csrf()
+      const { data } = await authApi.post<{ data: LoginResponse }>('/login', payload)
 
-    // Set user immediately from response
-    setUser(data.data.user)
+      // Set user immediately from response
+      setUser(data.data.user)
 
-    return data.data
-  }, [])
+      // Fetch full profile (avatar, etc.) after auth cookie is set
+      void loadUser()
+
+      return data.data
+    },
+    [loadUser]
+  )
 
   const logout = useCallback(async () => {
     await authApi.post('/logout')

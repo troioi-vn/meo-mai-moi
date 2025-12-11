@@ -72,6 +72,41 @@ describe('LoginForm', () => {
     expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument()
   })
 
+  it('shows the Google login button with default redirect', async () => {
+    renderWithRouter(<LoginForm />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: /sign in with google/i })).toBeInTheDocument()
+    })
+
+    expect(screen.getByRole('link', { name: /sign in with google/i })).toHaveAttribute(
+      'href',
+      '/auth/google/redirect'
+    )
+  })
+
+  it('includes redirect param on Google login button when provided', async () => {
+    renderWithRouter(<LoginForm />, { initialEntries: ['/login?redirect=/account/pets'] })
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: /sign in with google/i })).toBeInTheDocument()
+    })
+
+    // The redirect param is URL-encoded
+    expect(screen.getByRole('link', { name: /sign in with google/i })).toHaveAttribute(
+      'href',
+      '/auth/google/redirect?redirect=%2Faccount%2Fpets'
+    )
+  })
+
+  it('displays an initial error message when provided', async () => {
+    renderWithRouter(<LoginForm initialErrorMessage="Email already exists" />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('login-error-message')).toHaveTextContent('Email already exists')
+    })
+  })
+
   it('allows the user to fill out the form', async () => {
     renderWithRouter(<LoginForm />)
     const emailInput = screen.getByLabelText(/email/i)

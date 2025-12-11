@@ -4,18 +4,22 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import EmailVerificationPrompt from './EmailVerificationPrompt'
 import type { LoginResponse } from '@/types/auth'
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
 
-export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
+interface LoginFormProps extends React.ComponentPropsWithoutRef<'div'> {
+  initialErrorMessage?: string | null
+}
+
+export function LoginForm({ className, initialErrorMessage = null, ...props }: LoginFormProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(initialErrorMessage)
   const [isLoading, setIsLoading] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
   const [loginResponse, setLoginResponse] = useState<LoginResponse | null>(null)
@@ -23,6 +27,10 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
   const { login, loadUser, checkEmail } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+
+  useEffect(() => {
+    setError(initialErrorMessage)
+  }, [initialErrorMessage])
 
   const getRedirectPath = (): string => {
     const params = new URLSearchParams(location.search)
@@ -33,6 +41,11 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     }
     return '/'
   }
+
+  const redirectPath = getRedirectPath()
+  const googleRedirectQuery =
+    redirectPath !== '/' ? `?redirect=${encodeURIComponent(redirectPath)}` : ''
+  const googleLoginHref = `/auth/google/redirect${googleRedirectQuery}`
 
   const handleEmailSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -129,6 +142,22 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
           <h1 className="text-2xl leading-none font-semibold">Login</h1>
         </CardHeader>
         <CardContent>
+          <div className="flex flex-col gap-3">
+            <Button
+              asChild
+              variant="outline"
+              className="w-full"
+              data-testid="google-login-button"
+              aria-label="Sign in with Google"
+            >
+              <a href={googleLoginHref}>Sign in with Google</a>
+            </Button>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="h-px flex-1 bg-border" />
+              <span>OR</span>
+              <span className="h-px flex-1 bg-border" />
+            </div>
+          </div>
           {step === 'email' ? (
             <form
               onSubmit={(e) => {

@@ -120,4 +120,17 @@ describe('RegisterForm', () => {
       expect(passwordConfirmInput).toHaveAttribute('type', 'password')
     }
   })
+
+  it('generates and fills password and confirmation', async () => {
+    renderWithRouter(<RegisterForm />)
+
+    const generateButton = await screen.findByRole('button', { name: /generate password/i })
+    await user.click(generateButton)
+
+    const passwordInput = screen.getByLabelText<HTMLInputElement>(/^Password$/i)
+    const passwordConfirmInput = screen.getByLabelText<HTMLInputElement>(/confirm password/i)
+
+    expect(passwordInput.value).toHaveLength(12)
+    expect(passwordInput.value).toBe(passwordConfirmInput.value)
+  })
 })

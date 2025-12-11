@@ -1,11 +1,31 @@
-import { use, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { use, useEffect, useMemo } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { LoginForm } from '@/components/auth/LoginForm'
 import { AuthContext } from '@/contexts/AuthContext'
 
 export default function LoginPage() {
   const auth = use(AuthContext)
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const errorMessage = useMemo(() => {
+    const params = new URLSearchParams(location.search)
+    const error = params.get('error')
+
+    if (error === 'email_exists') {
+      return 'An account with this email already exists. Please log in with your password.'
+    }
+
+    if (error === 'oauth_failed') {
+      return 'Google sign in failed. Please try again.'
+    }
+
+    if (error === 'missing_email') {
+      return 'Unable to retrieve your email from Google. Please try another login method.'
+    }
+
+    return null
+  }, [location.search])
 
   useEffect(() => {
     if (auth && !auth.isLoading && auth.isAuthenticated) {
@@ -26,7 +46,7 @@ export default function LoginPage() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
       <div className="w-full max-w-lg">
-        <LoginForm />
+        <LoginForm initialErrorMessage={errorMessage} />
       </div>
     </div>
   )

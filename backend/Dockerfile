@@ -1,5 +1,5 @@
 # Multi-stage build: First stage for building the entire application
-FROM node:22.17.1 AS app-build
+FROM node:25.2.1 AS app-build
 
 ARG VAPID_PUBLIC_KEY
 ENV VAPID_PUBLIC_KEY=$VAPID_PUBLIC_KEY
@@ -9,8 +9,7 @@ ENV VITE_VAPID_PUBLIC_KEY=$VAPID_PUBLIC_KEY
 WORKDIR /app
 
 # Update npm to the latest version
-RUN npm install -g npm@11.5.2
-
+RUN npm install -g npm@11.7.0
 ##
 # Build Frontend SPA assets
 ##
@@ -63,7 +62,7 @@ RUN rm /usr/local/etc/php-fpm.d/www.conf.default && rm /usr/local/etc/php-fpm.d/
 RUN mkdir -p /var/run/php-fpm && chown www-data:www-data /var/run/php-fpm && chmod 775 /var/run/php-fpm
 
 # Install Composer (pinned for reproducible builds; 2.8+ fixes E_STRICT notices on PHP 8.4)
-COPY --from=composer:2.8 /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2.9.2 /usr/bin/composer /usr/bin/composer
 
 # Copy the entire backend application from the build stage,
 # including the Blade file that was updated by the frontend build.

@@ -1,4 +1,4 @@
-import { renderWithRouter, screen, userEvent, waitFor } from '@/testing'
+import { renderWithRouter, screen, waitFor } from '@/testing'
 import PetProfilePage from './PetProfilePage'
 import { vi } from 'vitest'
 import { mockPet } from '@/testing/mocks/data/pets'

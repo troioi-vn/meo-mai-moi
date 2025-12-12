@@ -99,8 +99,26 @@ Notes:
 - `FRONTEND_URL` must point to your SPA origin (e.g., `https://app.example.com` or `http://localhost:5173`).
 - `SANCTUM_STATEFUL_DOMAINS` must include the SPA host (no scheme, include port for non-443), e.g., `localhost:5173,localhost` or `app.example.com,app.example.com:443`.
 - `SESSION_DOMAIN` should be the parent domain (e.g., `.example.com`) when sharing cookies across subdomains; set `SESSION_SECURE_COOKIE=true` in HTTPS environments.
+- Google OAuth variables:
+  - `GOOGLE_CLIENT_ID`
+  - `GOOGLE_CLIENT_SECRET`
+  - `GOOGLE_REDIRECT_URI` — e.g. `https://dev.meo-mai-moi.com/auth/google/callback`
 - SPA entry routes:
   - When `FRONTEND_URL` is same-origin as the backend, GET `/login` and `/register` serve the SPA index so the React router renders those pages.
   - When `FRONTEND_URL` is different-origin, those paths 302 redirect to the SPA.
 - Password reset web route (`/reset-password/{token}?email=...`) always redirects to `${FRONTEND_URL}/password/reset/...` with a robust fallback to `env('FRONTEND_URL')` (or `http://localhost:5173` in dev).
 - Email pre-check endpoint: `POST /api/check-email` returns `{ exists: boolean }` and is throttled and audit-logged.
+
+## Google OAuth login
+
+- Backend
+  - Routes: `GET /auth/google/redirect` (stores optional `redirect` param for SPA-safe relative redirects) and `GET /auth/google/callback`.
+  - Controller: `GoogleAuthController` (Socialite driver `google`) creates or updates users, keeps password nullable for social signups, saves `google_id` and tokens, and auto-verifies email from Google.
+  - Avatar handling: Google avatar URLs are validated (HTTPS, Google-hosted domains only), downloaded with a 5MB size limit, and stored via Spatie MediaLibrary. Only known image types (PNG, GIF, WebP, JPEG) are accepted; unknown types are rejected.
+  - Conflicts: if an existing user with the same email but without `google_id` exists, callback redirects to `/login?error=email_exists`.
+  - Missing email from Google redirects to `/login?error=missing_email`; unexpected OAuth errors redirect to `/login?error=oauth_failed`.
+- Frontend
+  - Login page shows “Sign in with Google” linking to `/auth/google/redirect` (passes `?redirect=` when present and safe).
+  - On return, `LoginPage` surfaces query errors (`email_exists`, `oauth_failed`, `missing_email`) in the form error banner.
+- Environment
+  - Set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` in both `.env` and `.env.docker.example` (redirect URL must match the Google console configuration).

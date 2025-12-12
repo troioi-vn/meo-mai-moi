@@ -1,30 +1,37 @@
 import js from '@eslint/js'
 import globals from 'globals'
+import react from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
-import { globalIgnores } from 'eslint/config'
-import reactX from 'eslint-plugin-react-x'
 import reactDom from 'eslint-plugin-react-dom'
 
-export default tseslint.config([
+export default tseslint.config(
   {
-    ignores: ['dist', 'node_modules', 'src/components/ui'],
+    ignores: [
+      'dist',
+      'node_modules',
+      'coverage',
+      'public',
+      'scripts/**',
+      'playwright-report',
+      'test-results',
+      'src/components/ui',
+      '.dependency-cruiser.cjs',
+      'eslint.config.js',
+      '*.config.js',
+      '*.config.cjs',
+      '*.config.mjs',
+      '*.config.ts',
+    ],
   },
   // Main application files
+  js.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
+  ...tseslint.configs.strictTypeChecked,
+  ...tseslint.configs.stylisticTypeChecked,
   {
     files: ['src/**/*.{ts,tsx}', 'vite.config.ts'],
-    extends: [
-      js.configs.recommended,
-      tseslint.configs.recommended,
-      reactHooks.configs['recommended-latest'],
-      reactRefresh.configs.vite,
-      ...tseslint.configs.recommendedTypeChecked,
-      ...tseslint.configs.strictTypeChecked,
-      ...tseslint.configs.stylisticTypeChecked,
-      reactX.configs['recommended-typescript'],
-      reactDom.configs.recommended,
-    ],
     languageOptions: {
       parserOptions: {
         project: ['./tsconfig.app.json', './tsconfig.node.json'],
@@ -32,6 +39,25 @@ export default tseslint.config([
       },
       ecmaVersion: 2020,
       globals: globals.browser,
+    },
+    plugins: {
+      'react-hooks': reactHooks,
+      'react-refresh': reactRefresh,
+      react: react,
+      'react-dom': reactDom,
+    },
+    rules: {
+      ...react.configs.recommended.rules,
+      ...react.configs['jsx-runtime'].rules,
+      ...reactHooks.configs.recommended.rules,
+      'react-refresh/only-export-components': 'warn',
+      ...reactDom.configs.recommended.rules,
+      'react/prop-types': 'off',
+    },
+    settings: {
+      react: {
+        version: 'detect',
+      },
     },
   },
   // Test files
@@ -41,11 +67,6 @@ export default tseslint.config([
       'src/**/*.behavior.test.{ts,tsx}',
       'src/**/*.integration.test.{ts,tsx}',
       'test/**/*.{ts,tsx}',
-    ],
-    extends: [
-      js.configs.recommended,
-      tseslint.configs.recommended,
-      ...tseslint.configs.recommendedTypeChecked,
     ],
     languageOptions: {
       parserOptions: {
@@ -59,11 +80,6 @@ export default tseslint.config([
   // E2E test files
   {
     files: ['e2e/**/*.{ts,tsx}', 'playwright.config.ts'],
-    extends: [
-      js.configs.recommended,
-      tseslint.configs.recommended,
-      ...tseslint.configs.recommendedTypeChecked,
-    ],
     languageOptions: {
       parserOptions: {
         project: ['./tsconfig.e2e.json'],
@@ -94,5 +110,5 @@ export default tseslint.config([
       '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
     },
-  },
-])
+  }
+)

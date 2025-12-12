@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\HelperProfile;
 
+use App\Enums\PlacementRequestType;
 use App\Http\Controllers\Controller;
+use App\Models\City;
 use App\Models\HelperProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 /**
  * @OA\Put(
@@ -95,16 +98,16 @@ class UpdateHelperProfileController extends Controller
         $validatedData = $request->validate([
             'country' => 'sometimes|string|size:2',
             'state' => 'sometimes|string|max:255|nullable',
-            'city' => 'sometimes|string|max:255|nullable',
+            'city_id' => 'sometimes|required|integer|exists:cities,id',
             'address' => 'sometimes|string|max:255|nullable',
             'zip_code' => 'sometimes|string|max:20|nullable',
             'phone_number' => 'sometimes|string|max:20',
+            'contact_info' => 'sometimes|string|max:1000|nullable',
             'experience' => 'sometimes|string',
             'has_pets' => 'sometimes|boolean',
             'has_children' => 'sometimes|boolean',
-            'can_foster' => 'sometimes|boolean',
-            'can_adopt' => 'sometimes|boolean',
-            'is_public' => 'sometimes|boolean',
+            'request_types' => ['sometimes', 'array', 'min:1'],
+            'request_types.*' => [Rule::enum(PlacementRequestType::class)],
             'status' => 'sometimes|string|in:active,cancelled,deleted',
             'photos' => 'sometimes|array|max:5',
             'photos.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:10240',
@@ -112,7 +115,29 @@ class UpdateHelperProfileController extends Controller
             'pet_type_ids.*' => 'exists:pet_types,id',
         ]);
 
+        if (isset($validatedData['country'])) {
+            $validatedData['country'] = strtoupper($validatedData['country']);
+        }
+
         $helperProfile->update($validatedData);
+        if (isset($validatedData['city_id'])) {
+            $country = $validatedData['country'] ?? $helperProfile->country;
+            $city = City::find($validatedData['city_id']);
+            if (! $city) {
+                return response()->json(['message' => 'City not found'], 422);
+            }
+            if ($city->country !== strtoupper($country)) {
+                return response()->json(['message' => 'Selected city does not belong to the specified country.'], 422);
+            }
+            $helperProfile->update([
+                'city' => $city->name,
+                'country' => strtoupper($country),
+            ]);
+        } elseif (isset($validatedData['country'])) {
+            $helperProfile->update([
+                'country' => strtoupper($validatedData['country']),
+            ]);
+        }
 
         if (isset($validatedData['pet_type_ids'])) {
             $helperProfile->petTypes()->sync($validatedData['pet_type_ids']);
@@ -129,6 +154,6 @@ class UpdateHelperProfileController extends Controller
             Log::info('No photos found in request');
         }
 
-        return response()->json(['data' => $helperProfile->load('photos')]);
+        return response()->json(['data' => $helperProfile->load('photos', 'city')]);
     }
 }

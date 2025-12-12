@@ -65,7 +65,8 @@ class RenewVaccinationRecordController extends Controller
         ]);
 
         // Check uniqueness for the new record (only among active records)
-        $exists = $pet->vaccinations()
+        $exists = VaccinationRecord::query()
+            ->whereBelongsTo($pet)
             ->active()
             ->where('id', '!=', $record->id)
             ->where('vaccine_name', $validated['vaccine_name'])

@@ -36,6 +36,38 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
   const { register } = useAuth()
   const navigate = useNavigate()
 
+  const generatePassword = () => {
+    const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    const lower = 'abcdefghijklmnopqrstuvwxyz'
+    const digits = '0123456789'
+    const symbols = '!@#$%^&*()-_=+'
+    const allChars = upper + lower + digits + symbols
+    const pick = (pool: string) => {
+      if (typeof crypto !== 'undefined' && 'getRandomValues' in crypto) {
+        const array = new Uint32Array(1)
+        crypto.getRandomValues(array)
+        return pool[array[0] % pool.length]
+      }
+      return pool[Math.floor(Math.random() * pool.length)]
+    }
+
+    const seed = [pick(upper), pick(lower), pick(digits), pick(symbols)]
+    const rest = Array.from({ length: 12 - seed.length }, () => pick(allChars))
+    const combined = [...seed, ...rest]
+
+    for (let i = combined.length - 1; i > 0; i -= 1) {
+      const j =
+        typeof crypto !== 'undefined' && 'getRandomValues' in crypto
+          ? crypto.getRandomValues(new Uint32Array(1))[0] % (i + 1)
+          : Math.floor(Math.random() * (i + 1))
+      ;[combined[i], combined[j]] = [combined[j], combined[i]]
+    }
+
+    const newPassword = combined.join('')
+    setPassword(newPassword)
+    setPasswordConfirmation(newPassword)
+  }
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
     setError(null)
@@ -81,7 +113,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
             <UserCheck className="h-5 w-5 text-green-600 dark:text-green-400" />
             <div>
               <p className="text-sm font-medium text-green-800 dark:text-green-200">
-                You've been invited by <strong>{inviterName}</strong>
+                You&apos;ve been invited by <strong>{inviterName}</strong>
               </p>
               <p className="text-xs text-green-600 dark:text-green-400">
                 Complete the form below to create your account
@@ -127,26 +159,31 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         </div>
         <div className="mb-4">
           <Label htmlFor="password">Password</Label>
-          <div className="relative">
-            <Input
-              type={showPassword ? 'text' : 'password'}
-              id="password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value)
-              }}
-              required
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-              onClick={() => {
-                setShowPassword(!showPassword)
-              }}
-            >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          <div className="flex items-center gap-2">
+            <div className="relative w-full">
+              <Input
+                type={showPassword ? 'text' : 'password'}
+                id="password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value)
+                }}
+                required
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                onClick={() => {
+                  setShowPassword(!showPassword)
+                }}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
+            <Button type="button" variant="secondary" size="sm" onClick={generatePassword}>
+              Generate
             </Button>
           </div>
         </div>

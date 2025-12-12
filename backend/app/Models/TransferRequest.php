@@ -6,6 +6,7 @@ use App\Enums\TransferRequestStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -73,17 +74,17 @@ class TransferRequest extends Model
         return $this->belongsTo(User::class, 'requester_id');
     }
 
-    public function helperProfile()
+    public function helperProfile(): BelongsTo
     {
         return $this->belongsTo(HelperProfile::class);
     }
 
-    public function placementRequest()
+    public function placementRequest(): BelongsTo
     {
         return $this->belongsTo(PlacementRequest::class);
     }
 
-    public function transferHandover()
+    public function transferHandover(): HasOne
     {
         return $this->hasOne(TransferHandover::class);
     }

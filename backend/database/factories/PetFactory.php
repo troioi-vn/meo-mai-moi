@@ -59,7 +59,7 @@ class PetFactory extends Factory
             'birthday_day' => $birthday_day,
             'birthday_precision' => $precision,
             'country' => $this->faker->randomElement(['VN', 'US', 'JP', 'TH', 'SG']),
-            'state' => $this->faker->optional(0.3)->state(),
+            'state' => $this->faker->optional(0.3)->randomElement(['Hanoi', 'Ho Chi Minh City', 'Da Nang', 'Hai Phong', 'Can Tho']),
             'city' => $this->faker->city(),
             'address' => $this->faker->optional(0.5)->streetAddress(),
             'description' => $this->faker->paragraph(),

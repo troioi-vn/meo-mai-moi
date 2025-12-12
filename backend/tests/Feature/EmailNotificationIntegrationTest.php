@@ -36,8 +36,7 @@ class EmailNotificationIntegrationTest extends TestCase
         $placementRequest = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
-            'is_active' => true,
-            'status' => \App\Enums\PlacementRequestStatus::OPEN->value,
+            'status' => \App\Enums\PlacementRequestStatus::OPEN,
         ]);
         $helperProfile = HelperProfile::factory()->create(['user_id' => $helper->id]);
 
@@ -78,8 +77,7 @@ class EmailNotificationIntegrationTest extends TestCase
         $placementRequest = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
-            'is_active' => true,
-            'status' => \App\Enums\PlacementRequestStatus::OPEN->value,
+            'status' => \App\Enums\PlacementRequestStatus::OPEN,
         ]);
         $helperProfile = HelperProfile::factory()->create(['user_id' => $helper->id]);
 
@@ -125,8 +123,7 @@ class EmailNotificationIntegrationTest extends TestCase
         $placementRequest = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
-            'is_active' => true,
-            'status' => \App\Enums\PlacementRequestStatus::OPEN->value,
+            'status' => \App\Enums\PlacementRequestStatus::OPEN,
         ]);
         $helperProfile = HelperProfile::factory()->create(['user_id' => $helper->id]);
 

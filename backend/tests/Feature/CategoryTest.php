@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\City;
 use App\Models\Pet;
 use App\Models\PetType;
 use App\Models\User;
@@ -19,6 +20,8 @@ class CategoryTest extends TestCase
     protected PetType $catType;
 
     protected PetType $dogType;
+
+    protected City $city;
 
     protected function setUp(): void
     {
@@ -40,6 +43,11 @@ class CategoryTest extends TestCase
             'slug' => 'dog',
             'is_system' => true,
             'display_order' => 2,
+        ]);
+
+        $this->city = City::factory()->create([
+            'name' => 'Hanoi',
+            'country' => 'VN',
         ]);
     }
 
@@ -202,6 +210,7 @@ class CategoryTest extends TestCase
         $response = $this->postJson('/api/pets', [
             'name' => 'Fluffy',
             'country' => 'VN',
+            'city_id' => $this->city->id,
             'pet_type_id' => $this->catType->id,
             'category_ids' => [$category1->id, $category2->id],
         ]);
@@ -226,6 +235,7 @@ class CategoryTest extends TestCase
         $response = $this->postJson('/api/pets', [
             'name' => 'Fluffy',
             'country' => 'VN',
+            'city_id' => $this->city->id,
             'pet_type_id' => $this->catType->id,
             'category_ids' => $categories->pluck('id')->toArray(),
         ]);

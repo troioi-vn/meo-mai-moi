@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Pet;
 
 use App\Http\Controllers\Controller;
+use App\Models\City;
 use App\Models\Pet;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
@@ -57,20 +58,25 @@ class UpdatePetController extends Controller
 
     public function __invoke(Request $request, Pet $pet)
     {
-        $this->authorizeUser($request, 'update', $pet);
+        $user = $this->authorizeUser($request, 'update', $pet);
 
         $rules = [
             'name' => 'sometimes|required|string|max:255',
             'sex' => 'nullable|in:male,female,not_specified',
             'country' => 'sometimes|required|string|size:2',
             'state' => 'nullable|string|max:255',
-            'city' => 'nullable|string|max:255',
+            'city_id' => 'sometimes|required|integer|exists:cities,id',
             'address' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'pet_type_id' => 'sometimes|required|exists:pet_types,id',
             // Category IDs
             'category_ids' => 'nullable|array|max:10',
             'category_ids.*' => 'integer|exists:categories,id',
+            // Viewer / editor permissions
+            'viewer_user_ids' => 'nullable|array',
+            'viewer_user_ids.*' => 'integer|distinct|exists:users,id',
+            'editor_user_ids' => 'nullable|array',
+            'editor_user_ids.*' => 'integer|distinct|exists:users,id',
             'birthday' => 'nullable|date|before_or_equal:today',
             'birthday_precision' => 'nullable|in:day,month,year,unknown',
             'birthday_year' => 'nullable|integer|min:1900|max:'.now()->year,
@@ -157,6 +163,9 @@ class UpdatePetController extends Controller
         });
         $validator->validate();
         $data = $validator->validated();
+        if (isset($data['country'])) {
+            $data['country'] = strtoupper($data['country']);
+        }
         $precision = $data['birthday_precision'] ?? $pet->birthday_precision ?? 'unknown';
         $birthdayDate = $pet->birthday; // default retain
         if ($precision === 'day') {
@@ -181,6 +190,18 @@ class UpdatePetController extends Controller
             }
         }
 
+        if (isset($data['city_id'])) {
+            $countryForCity = $data['country'] ?? $pet->country;
+            $city = City::find($data['city_id']);
+            if (! $city) {
+                return $this->sendError('City not found.', 422);
+            }
+            if ($city->country !== $countryForCity) {
+                return $this->sendError('Selected city does not belong to the specified country.', 422);
+            }
+            $data['city'] = $city->name;
+        }
+
         $pet->fill(array_filter([
             'name' => $data['name'] ?? null,
             'sex' => $data['sex'] ?? null,
@@ -191,6 +212,7 @@ class UpdatePetController extends Controller
             'birthday_precision' => $precision,
             'country' => $data['country'] ?? null,
             'state' => $data['state'] ?? null,
+            'city_id' => $data['city_id'] ?? null,
             'city' => $data['city'] ?? null,
             'address' => $data['address'] ?? null,
             'description' => $data['description'] ?? null,
@@ -203,7 +225,24 @@ class UpdatePetController extends Controller
             $pet->categories()->sync($data['category_ids']);
         }
 
-        $pet->load(['petType', 'categories']);
+        // Sync viewers / editors if provided
+        if (isset($data['viewer_user_ids'])) {
+            $pet->viewers()->sync($data['viewer_user_ids']);
+        }
+        if (isset($data['editor_user_ids'])) {
+            $pet->editors()->sync($data['editor_user_ids']);
+        }
+
+        $pet->load(['petType', 'categories', 'viewers', 'editors', 'city']);
+
+        // Build viewer permission flags for response
+        $isOwner = $this->isOwnerOrAdmin($user, $pet);
+        $isAdmin = $this->hasRole($user, ['admin', 'super_admin']);
+        $isEditor = $user ? $pet->editors->contains($user->id) : false;
+        $pet->setAttribute('viewer_permissions', [
+            'can_edit' => $isOwner || $isAdmin || $isEditor,
+            'can_view_contact' => $isAdmin || ($user && ! $isOwner),
+        ]);
 
         return $this->sendSuccess($pet);
     }

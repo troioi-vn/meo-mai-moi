@@ -1,20 +1,27 @@
 <?php
 
 use App\Http\Controllers\EmailVerification\VerifyEmailWebController;
+use App\Http\Controllers\GoogleAuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+/** @var view-string $welcomeView */
+$welcomeView = 'welcome';
 
 // Inertia is not used (SPA-only UI)
 
 // Serve the React SPA as the main app entry
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/', function () use ($welcomeView) {
+    return view($welcomeView);
 });
+
+Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->name('google.redirect');
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
 
 // Fortify will register /login and /register POST routes for the API.
 // For SPA-only mode, provide GET route stubs that redirect to the frontend.
 // In testing, return 200 responses so tests pass; in dev/prod, redirect to frontend.
-Route::get('/login', function (Request $request) {
+Route::get('/login', function (Request $request) use ($welcomeView) {
     if (app()->environment('testing')) {
         return response('Login (SPA testing stub)', 200);
     }
@@ -26,13 +33,13 @@ Route::get('/login', function (Request $request) {
     // Relax same-origin detection to host-only to avoid HTTPS proxy scheme/port mismatches
     // that trigger redirect loops when the frontend and backend share a domain.
     if ($frontendHost === $requestHost) {
-        return view('welcome');
+        return view($welcomeView);
     }
 
     return redirect(rtrim($frontend, '/').'/login');
 })->name('login');
 
-Route::get('/register', function (Request $request) {
+Route::get('/register', function (Request $request) use ($welcomeView) {
     if (app()->environment('testing')) {
         return response('Register (SPA testing stub)', 200);
     }
@@ -44,14 +51,14 @@ Route::get('/register', function (Request $request) {
     // Same reasoning as /login: rely on host match only to prevent infinite redirects
     // when proxy headers cause scheme/port differences.
     if ($frontendHost === $requestHost) {
-        return view('welcome');
+        return view($welcomeView);
     }
 
     return redirect(rtrim($frontend, '/').'/register');
 });
 
 // Provide a GET wrapper for logout to avoid 405 when visiting directly
-Route::get('/logout', function (Request $request) {
+Route::get('/logout', function (Request $request) use ($welcomeView) {
     if (app()->environment('testing')) {
         return response('Logout (SPA testing stub)', 200);
     }
@@ -61,13 +68,13 @@ Route::get('/logout', function (Request $request) {
     $requestHost = $request->getHost();
 
     if ($frontendHost === $requestHost) {
-        return view('welcome');
+        return view($welcomeView);
     }
 
     return redirect(rtrim($frontend, '/').'/logout');
 });
 
-Route::get('/email/verify', function (Request $request) {
+Route::get('/email/verify', function (Request $request) use ($welcomeView) {
     if (app()->environment('testing')) {
         return response('Email Verify (SPA testing stub)', 200);
     }
@@ -77,13 +84,13 @@ Route::get('/email/verify', function (Request $request) {
     $requestHost = $request->getHost();
 
     if ($frontendHost === $requestHost) {
-        return view('welcome');
+        return view($welcomeView);
     }
 
     return redirect(rtrim($frontend, '/').'/verify-email');
 });
 
-Route::get('/forgot-password', function (Request $request) {
+Route::get('/forgot-password', function (Request $request) use ($welcomeView) {
     if (app()->environment('testing')) {
         return response('Forgot Password (SPA testing stub)', 200);
     }
@@ -93,13 +100,13 @@ Route::get('/forgot-password', function (Request $request) {
     $requestHost = $request->getHost();
 
     if ($frontendHost === $requestHost) {
-        return view('welcome');
+        return view($welcomeView);
     }
 
     return redirect(rtrim($frontend, '/').'/forgot-password');
 });
 
-Route::get('/user/confirm-password', function (Request $request) {
+Route::get('/user/confirm-password', function (Request $request) use ($welcomeView) {
     if (app()->environment('testing')) {
         return response('Confirm Password (SPA testing stub)', 200);
     }
@@ -109,7 +116,7 @@ Route::get('/user/confirm-password', function (Request $request) {
     $requestHost = $request->getHost();
 
     if ($frontendHost === $requestHost) {
-        return view('welcome');
+        return view($welcomeView);
     }
 
     return redirect(rtrim($frontend, '/').'/confirm-password');
@@ -137,7 +144,7 @@ Route::get('/reset-password/{token}', function ($token, \Illuminate\Http\Request
 // No dashboard route needed; SPA handles post-login navigation client-side
 
 // Catch-all route for SPA (serve frontend for non-API, non-admin paths)
-Route::get('/{any}', function (Request $request) {
+Route::get('/{any}', function (Request $request) use ($welcomeView) {
     if (app()->environment('testing')) {
         return response('SPA Catch-all (testing stub)', 200);
     }
@@ -147,7 +154,7 @@ Route::get('/{any}', function (Request $request) {
     $requestHost = $request->getHost();
 
     if ($frontendHost === $requestHost) {
-        return view('welcome');
+        return view($welcomeView);
     }
 
     // Preserve path and query string when redirecting to external frontend

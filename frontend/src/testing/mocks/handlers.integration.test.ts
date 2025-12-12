@@ -146,9 +146,16 @@ describe('MSW Pet Handlers Integration', () => {
 
           pet.placement_requests.forEach((request: any) => {
             expect(request.pet_id).toBe(pet.id)
-            expect(request.is_active).toBe(true)
+            expect([
+              'open',
+              'fulfilled',
+              'pending_transfer',
+              'active',
+              'finalized',
+              'expired',
+              'cancelled',
+            ]).toContain(request.status)
             expect(request.request_type).toMatch(/^(fostering|adoption)$/)
-            expect(request.status).toBeDefined()
           })
         })
       }

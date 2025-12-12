@@ -238,7 +238,7 @@ export default function EmailVerificationPrompt({
 
         <div className="text-center text-sm text-muted-foreground">
           <p>
-            Can't find the email? Check your spam folder or{' '}
+            Can&apos;t find the email? Check your spam folder or{' '}
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <button
@@ -253,7 +253,7 @@ export default function EmailVerificationPrompt({
                 <AlertDialogHeader>
                   <AlertDialogTitle>Resend verification email?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    We'll resend the verification email to <strong>{email}</strong>.
+                    We&apos;ll resend the verification email to <strong>{email}</strong>.
                     {resendAttempts >= RESEND_MAX_ATTEMPTS && (
                       <> You have reached the resend limit ({RESEND_MAX_ATTEMPTS}).</>
                     )}

@@ -87,6 +87,9 @@ export const PlacementResponseSection: React.FC<Props> = ({
         petName={pet.name}
         petId={pet.id}
         placementRequestId={activePlacementRequest.id}
+        requestType={activePlacementRequest.request_type}
+        petCity={typeof pet.city === 'string' ? pet.city : pet.city?.name}
+        petCountry={pet.country}
         onSuccess={onTransferResponseSuccess}
       />
     </div>

@@ -6,8 +6,7 @@ type PlacementRequest = NonNullable<Pet['placement_requests']>[number]
 type TransferRequest = NonNullable<PlacementRequest['transfer_requests']>[number]
 
 const isPlacementRequestActive = (request: PlacementRequest): boolean => {
-  if (typeof request.is_active === 'boolean') return request.is_active
-  return request.status === 'open' || request.status === 'pending_review'
+  return request.status === 'open' || request.status === 'finalized'
 }
 
 export const usePlacementInfo = (pet: Pet, userId?: number) => {
@@ -26,7 +25,7 @@ export const usePlacementInfo = (pet: Pet, userId?: number) => {
     const activePlacementRequest =
       placementRequests.find((request) => isPlacementRequestActive(request)) ??
       placementRequests.find(
-        (request) => request.status === 'open' || request.status === 'pending_review'
+        (request) => request.status === 'open' || request.status === 'finalized'
       )
 
     const hasActivePlacementRequest =

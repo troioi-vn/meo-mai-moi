@@ -1,0 +1,366 @@
+import { useState, useCallback } from 'react'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer'
+import { User, Eye, Check, X, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
+import type { TransferRequest } from '@/types/pet'
+import type { HelperProfile } from '@/types/helper-profile'
+import { api } from '@/api/axios'
+import { toast } from 'sonner'
+
+interface ResponsesDrawerProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  responses: TransferRequest[]
+  requestType: string
+  onConfirm: (transferId: number) => void | Promise<void>
+  onReject: (transferId: number) => void | Promise<void>
+}
+
+const formatRequestType = (type: string): string => {
+  const labels: Record<string, string> = {
+    foster_free: 'Foster (Free)',
+    foster_payed: 'Foster (Paid)',
+    permanent: 'Permanent Adoption',
+  }
+  return labels[type] ?? type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+export function ResponsesDrawer({
+  open,
+  onOpenChange,
+  responses,
+  requestType,
+  onConfirm,
+  onReject,
+}: ResponsesDrawerProps) {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [viewingProfile, setViewingProfile] = useState(false)
+  const [loadingProfile, setLoadingProfile] = useState(false)
+  const [profileData, setProfileData] = useState<HelperProfile | null>(null)
+  const [actionLoading, setActionLoading] = useState<'confirm' | 'reject' | null>(null)
+
+  const currentResponse = responses[currentIndex]
+  const hasMultiple = responses.length > 1
+
+  const goToPrevious = () => {
+    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : responses.length - 1))
+    setViewingProfile(false)
+    setProfileData(null)
+  }
+
+  const goToNext = () => {
+    setCurrentIndex((prev) => (prev < responses.length - 1 ? prev + 1 : 0))
+    setViewingProfile(false)
+    setProfileData(null)
+  }
+
+  const handleViewProfile = useCallback(async () => {
+    if (!currentResponse?.helper_profile_id) return
+    setLoadingProfile(true)
+    try {
+      const res = await api.get<{ data: HelperProfile }>(
+        `helper-profiles/${String(currentResponse.helper_profile_id)}`
+      )
+      setProfileData(res.data.data)
+      setViewingProfile(true)
+    } catch (error) {
+      console.error('Failed to load helper profile', error)
+      toast.error('Failed to load helper profile')
+    } finally {
+      setLoadingProfile(false)
+    }
+  }, [currentResponse?.helper_profile_id])
+
+  const handleConfirm = async () => {
+    if (!currentResponse) return
+    setActionLoading('confirm')
+    try {
+      await onConfirm(currentResponse.id)
+      // If there are more responses, move to next; otherwise close
+      if (responses.length === 1) {
+        onOpenChange(false)
+      } else if (currentIndex >= responses.length - 1) {
+        setCurrentIndex(0)
+      }
+      setViewingProfile(false)
+      setProfileData(null)
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const handleReject = async () => {
+    if (!currentResponse) return
+    setActionLoading('reject')
+    try {
+      await onReject(currentResponse.id)
+      // If there are more responses, stay at current or adjust index
+      if (responses.length === 1) {
+        onOpenChange(false)
+      } else if (currentIndex >= responses.length - 1) {
+        setCurrentIndex(Math.max(0, responses.length - 2))
+      }
+      setViewingProfile(false)
+      setProfileData(null)
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const handleBackToList = () => {
+    setViewingProfile(false)
+    setProfileData(null)
+  }
+
+  // Reset state when drawer closes
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      setCurrentIndex(0)
+      setViewingProfile(false)
+      setProfileData(null)
+    }
+    onOpenChange(newOpen)
+  }
+
+  if (!currentResponse) return null
+
+  return (
+    <Drawer open={open} onOpenChange={handleOpenChange}>
+      <DrawerContent className="max-h-[85vh]">
+        <DrawerHeader className="border-b">
+          <div className="flex items-center justify-between">
+            {viewingProfile ? (
+              <Button variant="ghost" size="sm" onClick={handleBackToList} className="-ml-2">
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Back
+              </Button>
+            ) : (
+              <div />
+            )}
+            <Badge variant="secondary">{formatRequestType(requestType)}</Badge>
+          </div>
+          <DrawerTitle>{viewingProfile ? 'Helper Profile' : 'Responses'}</DrawerTitle>
+          <DrawerDescription>
+            {viewingProfile
+              ? `Viewing ${profileData?.user?.name ?? 'helper'}'s profile`
+              : `${String(responses.length)} ${responses.length === 1 ? 'person' : 'people'} responded to your request`}
+          </DrawerDescription>
+        </DrawerHeader>
+
+        <div className="flex-1 overflow-auto p-4">
+          {viewingProfile && profileData ? (
+            // Profile view
+            <div className="space-y-4">
+              {/* Response details */}
+              <div className="rounded-lg border p-3 bg-muted/50">
+                <p className="font-semibold mb-2 text-sm">Response Details</p>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <p>
+                    <span className="text-muted-foreground">Relationship:</span>{' '}
+                    {currentResponse.requested_relationship_type?.replace(/_/g, ' ') ?? 'N/A'}
+                  </p>
+                  {currentResponse.fostering_type && (
+                    <p>
+                      <span className="text-muted-foreground">Fostering:</span>{' '}
+                      {currentResponse.fostering_type}
+                    </p>
+                  )}
+                  {currentResponse.price !== undefined && currentResponse.price !== null && (
+                    <p>
+                      <span className="text-muted-foreground">Price:</span> {currentResponse.price}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Profile details */}
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <p>
+                    <span className="text-muted-foreground">Name:</span>{' '}
+                    {profileData.user?.name ?? 'N/A'}
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">Email:</span>{' '}
+                    {profileData.user?.email ?? 'N/A'}
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">Phone:</span>{' '}
+                    {profileData.phone_number ?? profileData.phone ?? 'N/A'}
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">Location:</span>{' '}
+                    {[profileData.city, profileData.state, profileData.country]
+                      .filter(Boolean)
+                      .join(', ') || 'N/A'}
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">Has pets:</span>{' '}
+                    {profileData.has_pets ? 'Yes' : 'No'}
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">Has children:</span>{' '}
+                    {profileData.has_children ? 'Yes' : 'No'}
+                  </p>
+                </div>
+
+                {profileData.experience && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Experience</p>
+                    <p className="text-sm whitespace-pre-line">{profileData.experience}</p>
+                  </div>
+                )}
+
+                {profileData.about && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">About</p>
+                    <p className="text-sm whitespace-pre-line">{profileData.about}</p>
+                  </div>
+                )}
+
+                {Array.isArray(profileData.photos) && profileData.photos.length > 0 && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">Photos</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {profileData.photos.map((ph) => {
+                        const photo = ph as { id?: number; path?: string; url?: string }
+                        const key = photo.id ? String(photo.id) : (photo.path ?? '')
+                        const src = photo.url ?? (photo.path ? `/storage/${photo.path}` : '')
+                        return (
+                          <img
+                            key={key}
+                            src={src}
+                            alt="Helper"
+                            className="rounded object-cover w-full h-20"
+                          />
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            // Response card view
+            <div className="space-y-4">
+              {/* Navigation for multiple responses */}
+              {hasMultiple && (
+                <div className="flex items-center justify-between">
+                  <Button variant="outline" size="sm" onClick={goToPrevious}>
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-sm text-muted-foreground">
+                    {currentIndex + 1} of {responses.length}
+                  </span>
+                  <Button variant="outline" size="sm" onClick={goToNext}>
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+
+              {/* Current response card */}
+              <div className="rounded-lg border p-4 bg-background space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+                    <User className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">
+                      {currentResponse.helper_profile?.user?.name ?? 'Unknown Helper'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {[currentResponse.helper_profile?.city, currentResponse.helper_profile?.state]
+                        .filter(Boolean)
+                        .join(', ') || 'Location not specified'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Response details */}
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <p>
+                    <span className="text-muted-foreground">Relationship:</span>{' '}
+                    {currentResponse.requested_relationship_type?.replace(/_/g, ' ') ?? 'N/A'}
+                  </p>
+                  {currentResponse.fostering_type && (
+                    <p>
+                      <span className="text-muted-foreground">Type:</span>{' '}
+                      {currentResponse.fostering_type}
+                    </p>
+                  )}
+                  {currentResponse.price !== undefined && currentResponse.price !== null && (
+                    <p>
+                      <span className="text-muted-foreground">Price:</span> {currentResponse.price}
+                    </p>
+                  )}
+                </div>
+
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => void handleViewProfile()}
+                  disabled={loadingProfile}
+                >
+                  {loadingProfile ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="h-4 w-4 mr-2" />
+                      View Full Profile
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <DrawerFooter className="border-t">
+          <div className="flex gap-2 w-full">
+            <Button
+              variant="default"
+              className="flex-1"
+              onClick={() => void handleConfirm()}
+              disabled={actionLoading !== null}
+            >
+              {actionLoading === 'confirm' ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Check className="h-4 w-4 mr-2" />
+              )}
+              Accept
+            </Button>
+            <Button
+              variant="destructive"
+              className="flex-1"
+              onClick={() => void handleReject()}
+              disabled={actionLoading !== null}
+            >
+              {actionLoading === 'reject' ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <X className="h-4 w-4 mr-2" />
+              )}
+              Reject
+            </Button>
+          </div>
+          <DrawerClose asChild>
+            <Button variant="outline">Close</Button>
+          </DrawerClose>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
+  )
+}

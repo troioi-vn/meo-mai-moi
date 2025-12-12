@@ -25,6 +25,13 @@ export const authApi = axios.create({
   },
 })
 
+type UnauthorizedHandler = (() => void) | null
+let unauthorizedHandler: UnauthorizedHandler = null
+
+export const setUnauthorizedHandler = (handler: UnauthorizedHandler) => {
+  unauthorizedHandler = handler
+}
+
 api.interceptors.request.use(
   (config) => {
     return config
@@ -34,11 +41,31 @@ api.interceptors.request.use(
   }
 )
 
+api.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      unauthorizedHandler?.()
+    }
+    return Promise.reject(error)
+  }
+)
+
 authApi.interceptors.request.use(
   (config) => {
     return config
   },
   (error: AxiosError) => {
+    return Promise.reject(error)
+  }
+)
+
+authApi.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      unauthorizedHandler?.()
+    }
     return Promise.reject(error)
   }
 )

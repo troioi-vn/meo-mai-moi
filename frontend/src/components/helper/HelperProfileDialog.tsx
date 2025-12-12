@@ -78,8 +78,17 @@ export const HelperProfileDialog: React.FC<HelperProfileDialogProps> = ({
             <p>
               <strong>Phone:</strong> {profile.phone_number ?? profile.phone ?? 'N/A'}
             </p>
+            {profile.contact_info && (
+              <p className="col-span-full">
+                <strong>Contact Info:</strong>{' '}
+                <span className="whitespace-pre-line">{profile.contact_info}</span>
+              </p>
+            )}
             <p>
-              <strong>City:</strong> {profile.city ?? 'N/A'}
+              <strong>City:</strong>{' '}
+              {typeof profile.city === 'string'
+                ? profile.city ?? 'N/A'
+                : profile.city?.name ?? 'N/A'}
             </p>
             <p>
               <strong>State:</strong> {profile.state ?? 'N/A'}
@@ -96,11 +105,19 @@ export const HelperProfileDialog: React.FC<HelperProfileDialogProps> = ({
             <p>
               <strong>Has children:</strong> {profile.has_children ? 'Yes' : 'No'}
             </p>
-            <p>
-              <strong>Can foster:</strong> {profile.can_foster ? 'Yes' : 'No'}
-            </p>
-            <p>
-              <strong>Can adopt:</strong> {profile.can_adopt ? 'Yes' : 'No'}
+            <p className="col-span-full">
+              <strong>Request Types:</strong>{' '}
+              {profile.request_types?.length
+                ? profile.request_types
+                    .map((t) =>
+                      t === 'foster_payed'
+                        ? 'Foster (Paid)'
+                        : t === 'foster_free'
+                          ? 'Foster (Free)'
+                          : 'Permanent'
+                    )
+                    .join(', ')
+                : 'None'}
             </p>
             <p>
               <strong>Status:</strong> {profile.status ?? 'N/A'}

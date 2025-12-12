@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\PetStatus;
 use App\Enums\PetTypeStatus;
+use App\Models\City;
 use App\Models\Pet;
 use App\Models\PetType;
 use App\Models\User;
@@ -28,11 +29,14 @@ class PetFeatureTest extends TestCase
 
     private function petPayload(array $overrides = []): array
     {
+        $country = $overrides['country'] ?? 'VN';
+        $city = City::factory()->create(['country' => $country]);
+
         return array_merge([
             'name' => 'Fluffy',
             'birthday' => '2020-01-01',
-            'country' => 'VN',
-            'city' => 'Hanoi',
+            'country' => $country,
+            'city_id' => $city->id,
             'description' => 'A friendly pet',
         ], $overrides);
     }

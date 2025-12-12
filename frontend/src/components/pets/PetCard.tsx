@@ -33,15 +33,14 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
   const [isModalOpen, setIsModalOpen] = React.useState(false)
   const [isLoginPromptOpen, setIsLoginPromptOpen] = React.useState(false)
 
-  // Determine active/open placement requests per docs: is_active || status in {open,pending_review}
+  // Determine active/open placement requests: status in {open,finalized}
   const hasAnyPlacementRequests = (pet.placement_requests?.length ?? 0) > 0
   const isStatusOpen = (status?: string) => {
     const s = (status ?? '').toLowerCase()
-    return s === 'open' || s === 'pending_review' || s === 'pending'
+    // Fulfilled should not count as open so we can surface the fulfilled badge
+    return ['open', 'pending_transfer', 'active', 'finalized', 'pending'].includes(s)
   }
-  const activePlacementRequest = pet.placement_requests?.find(
-    (req) => req.is_active === true || isStatusOpen(req.status)
-  )
+  const activePlacementRequest = pet.placement_requests?.find((req) => isStatusOpen(req.status))
   const activePlacementRequestId = activePlacementRequest?.id
   // Show Fulfilled only when there were requests but none are currently active/open
   const hasActivePlacementRequests = Boolean(activePlacementRequest)
@@ -184,6 +183,9 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
                     petName={pet.name}
                     petId={pet.id}
                     placementRequestId={activePlacementRequestId}
+                    requestType={activePlacementRequest?.request_type ?? ''}
+                    petCity={typeof pet.city === 'string' ? pet.city : pet.city?.name ?? ''}
+                    petCountry={pet.country}
                   />
                 )}
               </>

@@ -6,24 +6,26 @@ import { Toaster } from '@/components/ui/sonner'
 import MainNav from '@/components/layout/MainNav'
 import { usePwaUpdate } from '@/hooks/use-pwa-update'
 
-import MainPage from './pages/MainPage'
-import LoginPage from './pages/LoginPage'
-import RegisterPage from './pages/RegisterPage'
-import EmailVerificationPage from './pages/EmailVerificationPage'
-import ForgotPasswordPage from './pages/ForgotPasswordPage'
-import ResetPasswordPage from './pages/ResetPasswordPage'
-import MyPetsPage from './pages/account/MyPetsPage'
-import CreatePetPage from './pages/account/CreatePetPage'
-import PasswordPage from './pages/account/PasswordPage'
-import InvitationsPage from './pages/InvitationsPage'
-import PetProfilePage from './pages/PetProfilePage'
-import SettingsPage from './pages/SettingsPage'
+import MainPage from './pages/home/MainPage'
+import LoginPage from './pages/auth/LoginPage'
+import RegisterPage from './pages/auth/RegisterPage'
+import EmailVerificationPage from './pages/auth/EmailVerificationPage'
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
+import ResetPasswordPage from './pages/auth/ResetPasswordPage'
+import MyPetsPage from './pages/pets/MyPetsPage'
+import CreatePetPage from './pages/pets/CreatePetPage'
+import EditPetPage from './pages/pets/EditPetPage'
+import AccountPasswordPage from './pages/settings/AccountPasswordPage'
+import InvitationsPage from './pages/invitations/InvitationsPage'
+import PetProfilePage from './pages/pets/PetProfilePage'
+import PetPublicProfilePage from './pages/pets/PetPublicProfilePage'
+import SettingsPage from './pages/settings/SettingsPage'
 import HelperProfilePage from './pages/helper/HelperProfilePage'
 import HelperProfileEditPage from './pages/helper/HelperProfileEditPage'
 import CreateHelperProfilePage from './pages/helper/CreateHelperProfilePage'
 import HelperProfileViewPage from './pages/helper/HelperProfileViewPage'
-import NotFoundPage from './pages/NotFoundPage'
-import RequestsPage from './pages/RequestsPage'
+import NotFoundPage from './pages/errors/NotFoundPage'
+import RequestsPage from './pages/placement/RequestsPage'
 import './App.css'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -64,11 +66,12 @@ export function AppRoutes() {
 
       {/* Pet routes */}
       <Route path="/pets/:id" element={<PetProfilePage />} />
+      <Route path="/pets/:id/public" element={<PetPublicProfilePage />} />
       <Route
         path="/pets/:id/edit"
         element={
           <PrivateRoute>
-            <CreatePetPage />
+            <EditPetPage />
           </PrivateRoute>
         }
       />
@@ -104,7 +107,7 @@ export function AppRoutes() {
         path="/account/password"
         element={
           <PrivateRoute>
-            <PasswordPage />
+            <AccountPasswordPage />
           </PrivateRoute>
         }
       />

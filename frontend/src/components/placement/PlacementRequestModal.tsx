@@ -232,7 +232,7 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
                 htmlFor="public-profile-accepted"
                 className="text-sm font-normal leading-relaxed cursor-pointer"
               >
-                I understand the pet's profile will become publicly visible.
+                I understand the pet&apos;s profile will become publicly visible.
               </Label>
             </div>
 

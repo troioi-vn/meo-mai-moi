@@ -39,9 +39,23 @@ class ShowHelperProfileController extends Controller
     public function __invoke(Request $request, HelperProfile $helperProfile)
     {
         $user = $request->user();
-        // Allow viewing if the profile is public or owned by the requester
-        if ($helperProfile->is_public || ($user && $helperProfile->user_id === $user->id)) {
-            return response()->json(['data' => $helperProfile->load('photos', 'user', 'petTypes')]);
+
+        // Check visibility: owner can always view, or user has a pet with a response from this helper
+        if ($helperProfile->isVisibleToUser($user)) {
+            $helperProfile->load([
+                'photos',
+                'user',
+                'petTypes',
+                'city',
+                'transferRequests' => function ($query) {
+                    $query->with([
+                        'placementRequest.pet',
+                        'pet',
+                    ]);
+                },
+            ]);
+
+            return response()->json(['data' => $helperProfile]);
         }
 
         return response()->json(['message' => 'Forbidden'], 403);

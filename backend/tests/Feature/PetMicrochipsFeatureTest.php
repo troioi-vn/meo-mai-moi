@@ -91,9 +91,11 @@ class PetMicrochipsFeatureTest extends TestCase
     #[Test]
     public function guests_cannot_list_pet_microchips()
     {
+        // Route uses optional.auth middleware, so guests get 403 (Forbidden) from policy check
+        // rather than 401 (Unauthorized) from authentication middleware
         $response = $this->getJson("/api/pets/{$this->pet->id}/microchips");
 
-        $response->assertUnauthorized();
+        $response->assertForbidden();
     }
 
     #[Test]

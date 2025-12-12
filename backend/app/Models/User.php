@@ -7,6 +7,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -52,6 +53,9 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         'name',
         'email',
         'password',
+        'google_id',
+        'google_token',
+        'google_refresh_token',
     ];
 
     /**
@@ -65,6 +69,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         'two_factor_recovery_codes',
         'two_factor_secret',
         'two_factor_confirmed_at',
+        'google_token',
+        'google_refresh_token',
     ];
 
     public function helperProfiles(): HasMany
@@ -96,6 +102,16 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
     public function notifications(): HasMany
     {
         return $this->hasMany(Notification::class);
+    }
+
+    public function viewablePets(): BelongsToMany
+    {
+        return $this->belongsToMany(Pet::class, 'pet_viewers')->withTimestamps();
+    }
+
+    public function editablePets(): BelongsToMany
+    {
+        return $this->belongsToMany(Pet::class, 'pet_editors')->withTimestamps();
     }
 
     public function notificationPreferences(): HasMany
@@ -156,7 +172,6 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
      * Uses Laravel's native notification system with custom EmailLog integration.
      *
      * @param  string  $token
-     *
      * @return void
      */
     public function sendPasswordResetNotification($token)
@@ -174,7 +189,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
      */
     public function sendEmailVerificationNotification()
     {
-        $this->notify(new \App\Notifications\VerifyEmail());
+        $this->notify(new \App\Notifications\VerifyEmail);
     }
 
     /**

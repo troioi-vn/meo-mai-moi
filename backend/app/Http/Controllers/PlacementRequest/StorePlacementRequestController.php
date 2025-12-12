@@ -71,8 +71,7 @@ class StorePlacementRequestController extends Controller
 
     public function __construct(
         protected PetCapabilityService $capabilityService
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request)
     {
@@ -101,7 +100,7 @@ class StorePlacementRequestController extends Controller
         // Implement the business rule: One active placement request per type per pet.
         $existingRequest = PlacementRequest::where('pet_id', $pet->id)
             ->where('request_type', $validatedData['request_type'])
-            ->whereIn('status', ['open', 'pending_review'])
+            ->whereIn('status', ['open', 'finalized'])
             ->exists();
 
         if ($existingRequest) {

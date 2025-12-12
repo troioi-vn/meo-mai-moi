@@ -23,29 +23,73 @@ async function stubAuthNetwork(page: Page) {
   })
 
   // Register
-  await page.route('**/api/register', async (route) => {
+  await page.route('**/register', async (route) => {
+    if (route.request().method() !== 'POST') {
+      await route.fallback()
+      return
+    }
     const body = (await route.request().postDataJSON()) as {
+      name?: string
       email?: string
       password?: string
       password_confirmation?: string
     }
-    if (!body?.email || !body?.password || !body?.password_confirmation) {
+    if (!body.email || !body.password || !body.password_confirmation) {
       return route.fulfill({ status: 422, body: JSON.stringify({ message: 'Invalid' }) })
     }
-    return route.fulfill({ status: 201, body: JSON.stringify({ message: 'ok' }) })
+    return route.fulfill({
+      status: 201,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        data: {
+          user: {
+            id: 1,
+            name: body.name ?? TEST_USER.name,
+            email: body.email ?? TEST_USER.email,
+            email_verified_at: new Date().toISOString(),
+          },
+          email_verified: true,
+          email_sent: false,
+          requires_verification: false,
+          message: 'ok',
+        },
+      }),
+    })
   })
 
   // Login
-  await page.route('**/api/login', async (route) => {
-    const body = (await route.request().postDataJSON()) as { email?: string; password?: string }
-    if (body?.email === TEST_USER.email && body?.password === TEST_USER.password) {
-      return route.fulfill({ status: 200, body: JSON.stringify({ message: 'ok' }) })
+  await page.route('**/login', async (route) => {
+    if (route.request().method() !== 'POST') {
+      await route.fallback()
+      return
     }
-    return route.fulfill({ status: 401, body: JSON.stringify({ message: 'Unauthorized' }) })
+    const body = (await route.request().postDataJSON()) as { email?: string; password?: string }
+    if (body.email === TEST_USER.email && body.password === TEST_USER.password) {
+      return route.fulfill({
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          data: {
+            user: {
+              id: 1,
+              name: TEST_USER.name,
+              email: TEST_USER.email,
+              email_verified_at: new Date().toISOString(),
+            },
+            two_factor: false,
+          },
+        }),
+      })
+    }
+    return route.fulfill({
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: 'Unauthorized' }),
+    })
   })
 
   // Logout
-  await page.route('**/api/logout', async (route) => {
+  await page.route('**/logout', async (route) => {
     await route.fulfill({ status: 200, body: JSON.stringify({ message: 'ok' }) })
   })
 
@@ -65,11 +109,11 @@ async function stubAuthNetwork(page: Page) {
 
   // Track authentication state by observing login/logout
   page.on('requestfinished', async (req) => {
-    if (req.url().includes('/api/login') && req.method() === 'POST') {
+    if (req.url().includes('/login') && req.method() === 'POST') {
       const res = await req.response()
       authenticated = res?.status() === 200
     }
-    if (req.url().includes('/api/logout') && req.method() === 'POST') {
+    if (req.url().includes('/logout') && req.method() === 'POST') {
       authenticated = false
     }
   })
@@ -124,10 +168,21 @@ async function login(
 ) {
   // Intercept CSRF and login calls
   await page.route('**/sanctum/csrf-cookie', (route) => route.fulfill({ status: 204, body: '' }))
+  await page.route('**/api/check-email', (route) =>
+    route.fulfill({
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: { exists: true } }),
+    })
+  )
 
   let authenticated = false
 
-  await page.route('**/api/login', async (route) => {
+  await page.route('**/login', async (route) => {
+    if (route.request().method() !== 'POST') {
+      await route.fallback()
+      return
+    }
     // Basic body validation
     const body = JSON.parse(route.request().postData() ?? '{}') as {
       email?: string
@@ -135,9 +190,27 @@ async function login(
     }
     if (body.email === email && body.password === password) {
       authenticated = true
-      await route.fulfill({ status: 200, body: JSON.stringify({ message: 'ok' }) })
+      await route.fulfill({
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          data: {
+            user: {
+              id: 1,
+              name: 'Test User',
+              email,
+              email_verified_at: new Date().toISOString(),
+            },
+            two_factor: false,
+          },
+        }),
+      })
     } else {
-      await route.fulfill({ status: 422, body: JSON.stringify({ message: 'Invalid credentials' }) })
+      await route.fulfill({
+        status: 422,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'Invalid credentials' }),
+      })
     }
   })
 
@@ -157,6 +230,8 @@ async function login(
   await expect(page.locator('#root')).toBeVisible()
   await expect(page.getByRole('heading', { name: /login/i })).toBeVisible()
   await page.getByLabel('Email', { exact: true }).fill(email)
+  await page.getByRole('button', { name: /next/i }).click()
+  await expect(page.getByLabel('Password', { exact: true })).toBeVisible()
   await page.getByLabel('Password', { exact: true }).fill(password)
   if (remember) await page.getByLabel('Remember me', { exact: true }).check()
   await page.locator('form').getByRole('button', { name: 'Login', exact: true }).click()

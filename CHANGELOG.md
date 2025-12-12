@@ -6,6 +6,166 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Google OAuth login/registration**:
+  - Added Socialite-based Google auth flow with redirect/callback routes and SPA-safe redirects.
+  - Users can sign in or create accounts with Google; existing email/password users are blocked from auto-linking and see `error=email_exists`.
+  - Stored Google tokens/id/avatar on users; password is now nullable for social signups.
+  - Frontend shows “Sign in with Google” plus error banner handling for `email_exists`, `oauth_failed`, and missing email responses. - Avatar handling refactored to use MediaLibrary: avatars are now downloaded and stored via Spatie MediaLibrary with proper validation, 5MB size limits, and content-type verification.- **City catalog per country**:
+  - Introduced `cities` model/API (list + create) with approval workflow; pets and helper profiles now store `city_id` alongside the display name.
+  - Backfilled existing pets/helper profiles into the city catalog and linked records.
+  - Frontend city autocomplete for pet and helper profile forms (country-scoped with create-on-the-fly).
+- **Requests page filters**:
+  - Added City filter with autocomplete (country-dependent, no create) to `/requests`.
+- **Helper profile pets section**:
+
+  - Helper profile view now lists pets linked via placement requests, showing request type plus placement and transfer statuses with links to pet pages.
+  - `helper-profiles/{id}` API now eager-loads transfer requests with related placement requests and pets.
+  - Added unit tests for the new Pets section (linked pets and empty state).
+
+- **Helper handover guidance**:
+  - Acceptance notification now links helpers directly to the public pet page (`/pets/:id/public`) where they can confirm the handover.
+- **Requests page sorting**:
+  - Added created-at sort control (newest first or oldest first) to the `/requests` filters.
+
+### Changed
+
+- **Unauthorized handling**:
+  - Any 401 API response now clears auth state and redirects to `/login?redirect=<path>` using shared axios interceptors, preventing stale sessions and error screens.
+- **Helper profile updates**:
+
+  - Updating a helper profile no longer requires sending `pet_type_ids` when only changing location/contact details.
+
+- **Frontend pages restructuring**:
+  - Reorganized `frontend/src/pages` into domain folders (`auth/`, `pets/`, `settings/`, `home/`, `placement/`, `invitations/`, `errors/`) for clearer ownership and imports.
+  - Renamed settings screens to `AccountPasswordPage` and `NotificationSettingsPage`; updated routes and tests to match.
+- **Pet create vs edit split**:
+  - Separated pet creation and editing into dedicated pages (`CreatePetPage` and `EditPetPage`) with a shared `PetFormSection`.
+  - Renamed edit-focused tests to `EditPetPage.*.test.tsx` to align with the new page.
+- **Requests page visibility**:
+
+  - Pets stay visible on the `/requests` page when their placement requests are in progress (`fulfilled`, `pending_transfer`, `active`, `finalized`) so accepted helpers can still access the public pet page and continue the flow.
+
+- **Placement request completion flow**:
+
+  - After creating a placement request, owners are redirected to `/requests?sort=newest` so they land on the latest-first view.
+  - The requests page now syncs the created-date sort with the `?sort=` query param, defaulting to `newest` and preserving user selection in the URL.
+
+- **Placement Request Auto-Rejection Timing**:
+
+  - Moved auto-rejection of other pending helper offers from the "Accept Response" step to the "Complete Handover" step
+  - Previously: Other offers were rejected when the owner accepted a response (PlacementRequest → `fulfilled`)
+  - Now: Other offers remain pending until the handover is completed and status changes to `active` (fostering) or `finalized` (permanent rehoming)
+  - This provides a backup option if the initially selected helper doesn't complete the handover
+  - Rejected helpers are notified only when the transfer is actually confirmed
+
+- **Helper profile pet type validation**:
+  - Filament helper profile form now requires selecting at least one pet type for placement requests before saving.
+  - Public API create/update endpoints now enforce at least one `pet_type_id` (required array with `min:1`).
+  - Main app create/edit helper profile pages validate pet type selection client-side and show inline errors.
+
+### Fixed
+
+- **Remember me login**:
+  - Login API now validates the `remember` flag and passes it to authentication so persistent cookies are issued when the box is checked.
+- **Backend type-safety hardening**:
+  - PhpStan now passes cleanly after tightening controller and command types (vaccination reminders, placement acceptance, pet listing).
+  - Added stronger relation typing on models and factories to prevent undefined method/property access at runtime.
+  - Updated web route view helpers to use typed view strings for safer rendering in SPA stubs.
+- **Temporary fostering no longer transfers ownership**:
+  - Handover completion now keys off `placement_request.request_type` (canonical) to decide between permanent vs fostering flows
+  - Temporary fostering (`foster_free` / `foster_payed`) keeps the pet owner unchanged, creates/ensures a foster assignment, and sets placement status to `active`
+  - Permanent rehoming still transfers ownership, closes prior ownership history, and finalizes the placement
+  - Admin pet view continues to show the original owner for temporary fostering cases
+
+### Added
+
+- **Per-Pet Viewer/Editor Access Lists**:
+
+  - Pets now support explicit “Users who can see this pet” and “Users who can edit this pet” lists
+  - Backed by new pivot tables `pet_viewers` and `pet_editors` with model relationships and policy updates
+  - Create/Update pet APIs accept `viewer_user_ids` and `editor_user_ids` to manage these lists
+  - Filament pet form exposes multi-selects for viewers and editors
+  - Tests: `PetViewerEditorAccessTest` covers creation, viewing, and editing permissions
+
+- **Placement Response Modal Improvements**:
+
+  - Removed "Relationship Type" dropdown - now automatically derived from placement request type
+  - Auto-prefill "Helper Profile" dropdown when user has only one profile
+  - Added validation to compare request type against helper profile's allowed request types
+    - Shows destructive warning if type is not allowed and disables Submit button
+  - Added location validation warnings:
+    - City mismatch: Shows warning (non-blocking)
+    - Country mismatch: Shows serious/destructive warning (non-blocking)
+  - Automatically derive fostering type and price requirements from placement request type:
+    - `foster_payed` → Fostering with "Paid" type (requires price input)
+    - `foster_free` → Fostering with "Free" type
+    - `permanent` → Permanent Foster
+
+- **Placement Request Status Flow Enhancement**:
+
+  - Implemented complete status lifecycle for placement requests:
+    - `open` → `fulfilled` (when Owner accepts Helper's response)
+    - `fulfilled` → `pending_transfer` (when Helper clicks "Confirm Rehoming")
+    - `pending_transfer` → `finalized` (for permanent rehoming) OR `active` (for temporary fostering)
+    - `active` → `finalized` (when Owner clicks "Pet is Returned" for temporary fostering)
+  - Added "Confirm Rehoming" button for Helpers on public pet profile pages when their response is accepted
+  - Added "Pet is Returned" button for Owners on pet profile pages for active temporary fostering
+  - Updated `CompleteHandoverController` to properly set PlacementRequest status based on rehoming type
+  - New `FinalizePlacementRequestController` endpoint: `POST /api/placement-requests/{id}/finalize`
+  - Status badges and visual indicators throughout the UI showing current placement request state
+  - Comprehensive status flow documentation updated in `docs/rehoming-flow.md`
+
+- **Helper Profile Pages UI Modernization**:
+
+  - Updated `HelperProfilePage` (list view) with modern card-based design matching Pet Profile patterns
+  - Updated `HelperProfileViewPage` with consistent navigation, status badges, and organized card sections
+  - Updated `CreateHelperProfilePage` and `HelperProfileEditPage` with consistent navigation headers
+  - Improved empty states, loading states, and error handling across all helper profile pages
+  - Better visual hierarchy with icons, badges, and consistent spacing
+
+- **Helper Profile Request Types & Visibility**:
+
+  - Removed legacy boolean fields `is_public`, `can_foster`, and `can_adopt` from helper profiles.
+  - Added new `request_types` array field on `helper_profiles` backed by the `PlacementRequestType` enum (`foster_payed`, `foster_free`, `permanent`).
+  - Enforced validation so that helper profiles must have at least one `request_type` selected on create and update.
+  - Updated backend model, controllers, factories, policies, Filament resource, and API schema to use `request_types`.
+  - Updated frontend types, forms, pages, and tests to surface `request_types` as selectable chips/badges.
+  - Implemented visibility rules for helper profiles:
+    - Owners can always view their own helper profiles.
+    - Pet owners can view helper profiles that have responded to their placement requests (via transfer requests linked to their pets).
+    - Admins can view all helper profiles.
+  - Updated helper profile listing and show endpoints to respect the new visibility logic.
+
+- **Contact Info Field for Helper Profiles**:
+
+  - Added new `contact_info` multiline text field to helper profiles, positioned after the phone number field
+  - Helpers can add additional contact information (e.g., Telegram, Zalo, WhatsApp, preferred contact times)
+  - Field includes a help icon with tooltip explaining that this info and phone number will be visible to pet owners when responding to placement requests
+  - Contact info is displayed in:
+    - Helper profile view page
+    - Helper profile dialog (shown to pet owners when reviewing placement responses)
+  - Database migration adds nullable `contact_info` text column to `helper_profiles` table
+  - Backend validation allows up to 1000 characters
+  - Updated documentation: new `docs/helper-profiles.md` with complete field reference
+
+- **Public Pet Profile Endpoint and UI**:
+
+  - New `/api/pets/{id}/public` endpoint for accessing pet profiles publicly (for guests and non-owners)
+  - Public profiles are accessible for:
+    - Pets with status "lost" (always publicly viewable)
+    - Pets with active (OPEN) placement requests
+  - Whitelisted fields returned in public view: id, name, sex, birthday data, location (no exact address), description, status, pet type, categories, photos, placement requests, and viewer permissions
+  - New `ShowPublicPetController.php` backend controller implementing public profile access with field filtering
+  - New `PetPolicy::isPubliclyViewable()` method determining public visibility logic
+  - New frontend routes and components:
+    - Route `/pets/:id/public` for public pet profile page (`PetPublicProfilePage.tsx`)
+    - `PublicPlacementRequestSection.tsx` component for displaying placement requests on public profiles
+    - Automatic redirect from `/pets/:id` to `/pets/:id/public` for non-owners viewing publicly viewable pets
+  - Owner viewing their own public profile sees banner: "You are viewing the public profile of your pet."
+  - Lost pets show warning banner: "This pet has been reported as lost..."
+  - Comprehensive documentation: new `docs/pet-profiles.md` explaining access control, routing logic, and API endpoints
+  - Test coverage: `PublicPetProfileTest.php` and `PetPublicProfilePage.test.tsx` with 13+ test cases
+
 - **Login Prompt for Placement Requests**:
 
   - "Respond" button on pet cards is now visible to all users (not just logged-in users)
@@ -32,6 +192,17 @@ All notable changes to this project are documented here, following the [Keep a C
   - Confirming the action logs out the current user and redirects to `/login`; cancelling closes the dialog
   - Frontend: `UserMenu` component now uses `AlertDialog` to display the confirmation
   - Tests: Updated unit tests and e2e tests to assert dialog behavior and logout flow
+
+### Changed
+
+- **Placement Request Status Update**: Replaced `PENDING_REVIEW` status with `FINALIZED`
+  - Updated enum `PlacementRequestStatus` in backend
+  - Updated all UI labels and filters across Filament admin panel
+  - Updated API database queries for active request checks
+  - Updated frontend logic for determining active placement requests
+  - Affected files:
+    - Backend: `PlacementRequestStatus.php`, `PlacementRequestResource.php`, `StorePlacementRequestController.php`, `PlacementRequestExporter.php`
+    - Frontend: `PetCard.tsx`, `RequestsPage.tsx`, `usePlacementInfo.ts`
 
 ### Fixed
 

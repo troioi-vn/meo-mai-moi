@@ -2970,6 +2970,124 @@
                 }
             }
         },
+        "/api/pets/{id}/public": {
+            "get": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Get public profile of a specific pet",
+                "description": "Returns whitelisted fields for public view. Only accessible for pets that are lost or have active placement requests.",
+                "operationId": "d3818cb5a32260a751e5bba5937d2295",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the pet",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The pet public profile",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "sex": {
+                                            "type": "string"
+                                        },
+                                        "birthday_precision": {
+                                            "type": "string"
+                                        },
+                                        "birthday_year": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        },
+                                        "birthday_month": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        },
+                                        "birthday_day": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "city": {
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "pet_type_id": {
+                                            "type": "integer"
+                                        },
+                                        "photo_url": {
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "photos": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "pet_type": {
+                                            "type": "object"
+                                        },
+                                        "categories": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "placement_requests": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "viewer_permissions": {
+                                            "properties": {
+                                                "is_owner": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Pet is not publicly viewable"
+                    },
+                    "404": {
+                        "description": "Pet not found"
+                    }
+                }
+            }
+        },
         "/api/pets": {
             "post": {
                 "tags": [
@@ -3689,6 +3807,49 @@
                 ]
             }
         },
+        "/api/placement-requests/{id}/finalize": {
+            "post": {
+                "tags": [
+                    "Placement Requests"
+                ],
+                "summary": "Finalize an active placement request (mark pet as returned for temporary fostering)",
+                "operationId": "ffb3a0beb8c355ae6cf2109d8254f284",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the placement request to finalize",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Placement request finalized successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlacementRequest"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Only owner can finalize"
+                    },
+                    "409": {
+                        "description": "Conflict - Placement request is not in active status"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/placement-requests/{id}/reject": {
             "post": {
                 "tags": [
@@ -4155,6 +4316,55 @@
                     },
                     "403": {
                         "description": "Forbidden: You are not the recipient of this request or the request is not pending."
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/transfer-requests/{id}": {
+            "delete": {
+                "tags": [
+                    "Transfer Requests"
+                ],
+                "summary": "Cancel a transfer request (by the initiator/helper)",
+                "operationId": "e92128a5959b69ad36342d9a4c67cca9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the transfer request to cancel",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transfer request canceled successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TransferRequest"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Transfer request not found"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden: You are not the initiator of this request."
+                    },
+                    "409": {
+                        "description": "Only pending requests can be canceled."
                     }
                 },
                 "security": [
@@ -5902,9 +6112,17 @@
                             "deleted"
                         ]
                     },
-                    "is_public": {
-                        "description": "Is the helper profile public",
-                        "type": "boolean"
+                    "request_types": {
+                        "description": "Types of placement requests this helper can respond to",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "foster_payed",
+                                "foster_free",
+                                "permanent"
+                            ]
+                        }
                     },
                     "country": {
                         "description": "ISO 3166-1 alpha-2 country code",
@@ -5927,6 +6145,11 @@
                     },
                     "zip_code": {
                         "description": "ZIP/Postal code",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "contact_info": {
+                        "description": "Additional contact information visible to pet owners when responding to placement requests",
                         "type": "string",
                         "nullable": true
                     },

@@ -7,6 +7,7 @@ use App\Enums\PlacementRequestStatus;
 use App\Enums\TransferRequestStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
+use App\Models\PlacementRequest;
 use App\Models\TransferHandover;
 use App\Models\TransferRequest;
 use App\Models\User;
@@ -63,8 +64,7 @@ class AcceptTransferRequestController extends Controller
 
     public function __construct(
         protected NotificationService $notificationService
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, TransferRequest $transferRequest)
     {
@@ -82,7 +82,7 @@ class AcceptTransferRequestController extends Controller
 
             $placement = $transferRequest->placementRequest;
 
-            if ($placement) {
+            if ($placement instanceof PlacementRequest) {
                 // Fulfill the placement request
                 $placement->markAsFulfilled();
                 // If status enum supports it, set to fulfilled
@@ -97,40 +97,9 @@ class AcceptTransferRequestController extends Controller
                 }
                 $placement->save();
 
-                // Auto-reject other pending transfer requests for the same placement
-                $rejectedRequests = TransferRequest::where('placement_request_id', $placement->id)
-                    ->where('id', '!=', $transferRequest->id)
-                    ->where('status', TransferRequestStatus::PENDING)
-                    ->get();
-
-                foreach ($rejectedRequests as $rejectedRequest) {
-                    $rejectedRequest->update(['status' => TransferRequestStatus::REJECTED, 'rejected_at' => now()]);
-
-                    // Notify rejected helper
-                    try {
-                        $rejectedHelper = User::find($rejectedRequest->initiator_user_id);
-                        $pet = $rejectedRequest->pet ?: Pet::find($rejectedRequest->pet_id);
-                        if ($rejectedHelper && $pet) {
-                            $this->notificationService->send(
-                                $rejectedHelper,
-                                NotificationType::HELPER_RESPONSE_REJECTED->value,
-                                [
-                                    'message' => 'Your request for '.$pet->name.' was not selected. The owner chose another helper.',
-                                    'link' => '/pets/'.$pet->id,
-                                    'pet_name' => $pet->name,
-                                    'pet_id' => $pet->id,
-                                    'transfer_request_id' => $rejectedRequest->id,
-                                ]
-                            );
-                        }
-                    } catch (\Throwable $e) {
-                        // non-fatal; log at debug level for auditability
-                        Log::debug('Failed to notify rejected helper', [
-                            'transfer_request_id' => $rejectedRequest->id,
-                            'error' => $e->getMessage(),
-                        ]);
-                    }
-                }
+                // Note: Other pending transfer requests are auto-rejected when the handover
+                // is completed and the placement status changes to ACTIVE or FINALIZED.
+                // See CompleteHandoverController for that logic.
             }
 
             // Create initial handover record; finalization occurs on handover completion
@@ -155,8 +124,8 @@ class AcceptTransferRequestController extends Controller
                         $helper,
                         NotificationType::HELPER_RESPONSE_ACCEPTED->value,
                         [
-                            'message' => 'Your request for '.$pet->name.' was accepted. Schedule a handover.',
-                            'link' => '/pets/'.$pet->id,
+                            'message' => 'Your request for '.$pet->name.' was accepted. Confirm the handover from the pet page.',
+                            'link' => '/pets/'.$pet->id.'/public',
                             'pet_name' => $pet->name,
                             'pet_id' => $pet->id,
                             'transfer_request_id' => $transferRequest->id,

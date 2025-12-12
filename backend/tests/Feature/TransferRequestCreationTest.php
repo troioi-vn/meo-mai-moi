@@ -107,9 +107,10 @@ class TransferRequestCreationTest extends TestCase
         $response = $this->postJson("/api/transfer-requests/{$transferRequest->id}/accept");
 
         $response->assertStatus(200);
+        // After accepting, placement request is fulfilled (not finalized - that happens after handover completion)
         $this->assertDatabaseHas('placement_requests', [
             'id' => $placementRequest->id,
-            'is_active' => false,
+            'status' => \App\Enums\PlacementRequestStatus::FULFILLED->value,
         ]);
     }
 }

@@ -2,14 +2,23 @@
 
 namespace App\Http\Controllers\TransferHandover;
 
+use App\Enums\NotificationType;
+use App\Enums\PlacementRequestStatus;
+use App\Enums\PlacementRequestType;
+use App\Enums\TransferRequestStatus;
 use App\Http\Controllers\Controller;
 use App\Models\FosterAssignment;
 use App\Models\Notification;
 use App\Models\OwnershipHistory;
+use App\Models\Pet;
 use App\Models\TransferHandover;
+use App\Models\TransferRequest;
+use App\Models\User;
+use App\Services\NotificationService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -27,6 +36,10 @@ use Illuminate\Support\Facades\Schema;
 class CompleteHandoverController extends Controller
 {
     use ApiResponseTrait;
+
+    public function __construct(
+        protected NotificationService $notificationService
+    ) {}
 
     public function __invoke(Request $request, TransferHandover $handover)
     {
@@ -46,9 +59,27 @@ class CompleteHandoverController extends Controller
             $handover->completed_at = now();
             $handover->save();
 
+            // Set placement request to pending_transfer first
+            $placementRequest = $tr->placementRequest;
+            if ($placementRequest) {
+                $placementRequest->status = PlacementRequestStatus::PENDING_TRANSFER;
+                $placementRequest->save();
+            }
+
+            // Decide flow based on placement request type (canonical), fall back to transfer request
+            $placementType = $placementRequest?->request_type;
+            $relationshipType = match ($placementType) {
+                PlacementRequestType::PERMANENT => 'permanent',
+                PlacementRequestType::FOSTER_FREE, PlacementRequestType::FOSTER_PAYED => 'fostering',
+                default => null,
+            } ?? match ($tr->requested_relationship_type) {
+                'permanent_foster' => 'permanent',
+                'fostering' => 'fostering',
+                default => null,
+            };
+
             // Finalize transfer effects depending on relationship type
-            $type = $tr->requested_relationship_type;
-            if ($type === 'permanent_foster') {
+            if ($relationshipType === 'permanent') {
                 // Close previous ownership record for current owner; backfill if missing
                 $closed = OwnershipHistory::where('pet_id', $tr->pet_id)
                     ->where('user_id', $tr->recipient_user_id)
@@ -76,7 +107,13 @@ class CompleteHandoverController extends Controller
                     'from_ts' => now(),
                     'to_ts' => null,
                 ]);
-            } elseif ($type === 'fostering' && Schema::hasTable('foster_assignments')) {
+
+                // For permanent rehoming, set status to finalized
+                if ($placementRequest) {
+                    $placementRequest->status = PlacementRequestStatus::FINALIZED;
+                    $placementRequest->save();
+                }
+            } elseif ($relationshipType === 'fostering' && Schema::hasTable('foster_assignments')) {
                 FosterAssignment::firstOrCreate([
                     'pet_id' => $tr->pet_id,
                     'owner_user_id' => $tr->recipient_user_id,
@@ -87,6 +124,18 @@ class CompleteHandoverController extends Controller
                     'expected_end_date' => optional($tr->placementRequest)->end_date,
                     'status' => 'active',
                 ]);
+
+                // For temporary fostering, set status to active
+                if ($placementRequest) {
+                    $placementRequest->status = PlacementRequestStatus::ACTIVE;
+                    $placementRequest->save();
+                }
+            }
+
+            // Auto-reject other pending transfer requests for the same placement
+            // now that the pet transfer is complete
+            if ($placementRequest) {
+                $this->rejectOtherPendingRequests($placementRequest->id, $tr->id);
             }
         });
         // Notify both parties of completion
@@ -108,5 +157,46 @@ class CompleteHandoverController extends Controller
         ]);
 
         return $this->sendSuccess($handover->fresh());
+    }
+
+    /**
+     * Auto-reject all other pending transfer requests for the same placement request.
+     * This is called when the handover is completed and the pet transfer is finalized.
+     */
+    private function rejectOtherPendingRequests(int $placementRequestId, int $acceptedTransferRequestId): void
+    {
+        $rejectedRequests = TransferRequest::where('placement_request_id', $placementRequestId)
+            ->where('id', '!=', $acceptedTransferRequestId)
+            ->where('status', TransferRequestStatus::PENDING)
+            ->get();
+
+        foreach ($rejectedRequests as $rejectedRequest) {
+            $rejectedRequest->update(['status' => TransferRequestStatus::REJECTED, 'rejected_at' => now()]);
+
+            // Notify rejected helper
+            try {
+                $rejectedHelper = User::find($rejectedRequest->initiator_user_id);
+                $pet = $rejectedRequest->pet ?: Pet::find($rejectedRequest->pet_id);
+                if ($rejectedHelper && $pet) {
+                    $this->notificationService->send(
+                        $rejectedHelper,
+                        NotificationType::HELPER_RESPONSE_REJECTED->value,
+                        [
+                            'message' => 'Your request for '.$pet->name.' was not selected. The owner chose another helper.',
+                            'link' => '/pets/'.$pet->id,
+                            'pet_name' => $pet->name,
+                            'pet_id' => $pet->id,
+                            'transfer_request_id' => $rejectedRequest->id,
+                        ]
+                    );
+                }
+            } catch (\Throwable $e) {
+                // non-fatal; log at debug level for auditability
+                Log::debug('Failed to notify rejected helper', [
+                    'transfer_request_id' => $rejectedRequest->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
     }
 }

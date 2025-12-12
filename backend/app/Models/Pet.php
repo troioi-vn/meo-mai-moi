@@ -50,6 +50,7 @@ class Pet extends Model implements HasMedia
         'sex',
         'country',
         'state',
+        'city_id',
         'city',
         'address',
         'description',
@@ -98,12 +99,33 @@ class Pet extends Model implements HasMedia
         return $this->belongsTo(PetType::class);
     }
 
+    public function city(): BelongsTo
+    {
+        return $this->belongsTo(City::class);
+    }
+
     /**
      * Get the user who owns this pet
      */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Users who can view this pet (in addition to owner/admin/public rules)
+     */
+    public function viewers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'pet_viewers')->withTimestamps();
+    }
+
+    /**
+     * Users who can edit this pet (in addition to owner/admin)
+     */
+    public function editors(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'pet_editors')->withTimestamps();
     }
 
     /**

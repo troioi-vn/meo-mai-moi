@@ -62,7 +62,7 @@ class PlacementRequestResource extends Resource
             },
             'Status' => match ($record->status) {
                 PlacementRequestStatus::OPEN => 'Open',
-                PlacementRequestStatus::PENDING_REVIEW => 'Pending Review',
+                PlacementRequestStatus::FINALIZED => 'Finalized',
                 PlacementRequestStatus::FULFILLED => 'Fulfilled',
                 PlacementRequestStatus::EXPIRED => 'Expired',
                 PlacementRequestStatus::CANCELLED => 'Cancelled',
@@ -113,7 +113,7 @@ class PlacementRequestResource extends Resource
                 Select::make('status')
                     ->options([
                         PlacementRequestStatus::OPEN->value => 'Open',
-                        PlacementRequestStatus::PENDING_REVIEW->value => 'Pending Review',
+                        PlacementRequestStatus::FINALIZED->value => 'Finalized',
                         PlacementRequestStatus::FULFILLED->value => 'Fulfilled',
                         PlacementRequestStatus::EXPIRED->value => 'Expired',
                         PlacementRequestStatus::CANCELLED->value => 'Cancelled',
@@ -174,7 +174,7 @@ class PlacementRequestResource extends Resource
                 BadgeColumn::make('status')
                     ->formatStateUsing(fn (PlacementRequestStatus $state): string => match ($state) {
                         PlacementRequestStatus::OPEN => 'Open',
-                        PlacementRequestStatus::PENDING_REVIEW => 'Pending Review',
+                        PlacementRequestStatus::FINALIZED => 'Finalized',
                         PlacementRequestStatus::FULFILLED => 'Fulfilled',
                         PlacementRequestStatus::EXPIRED => 'Expired',
                         PlacementRequestStatus::CANCELLED => 'Cancelled',
@@ -182,7 +182,7 @@ class PlacementRequestResource extends Resource
                     })
                     ->colors([
                         'success' => PlacementRequestStatus::FULFILLED->value,
-                        'warning' => PlacementRequestStatus::PENDING_REVIEW->value,
+                        'warning' => PlacementRequestStatus::FINALIZED->value,
                         'info' => PlacementRequestStatus::OPEN->value,
                         'danger' => [PlacementRequestStatus::EXPIRED->value, PlacementRequestStatus::CANCELLED->value],
                     ]),
@@ -247,7 +247,7 @@ class PlacementRequestResource extends Resource
                     ->label('Status')
                     ->options([
                         PlacementRequestStatus::OPEN->value => 'Open',
-                        PlacementRequestStatus::PENDING_REVIEW->value => 'Pending Review',
+                        PlacementRequestStatus::FINALIZED->value => 'Finalized',
                         PlacementRequestStatus::FULFILLED->value => 'Fulfilled',
                         PlacementRequestStatus::EXPIRED->value => 'Expired',
                         PlacementRequestStatus::CANCELLED->value => 'Cancelled',

@@ -65,7 +65,6 @@ const mockCat: Pet = {
       user_id: 1,
       request_type: 'adoption',
       status: 'open',
-      is_active: true,
     },
   ],
 }
@@ -97,7 +96,6 @@ const mockDog: Pet = {
       user_id: 1,
       request_type: 'adoption',
       status: 'open',
-      is_active: true,
     },
   ],
 }
@@ -166,7 +164,9 @@ describe('PetCard', () => {
     fireEvent.click(respondButton)
 
     expect(screen.getByText('Login Required')).toBeInTheDocument()
-    expect(screen.getByText('Please login to respond to this placement request.')).toBeInTheDocument()
+    expect(
+      screen.getByText('Please login to respond to this placement request.')
+    ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Login' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
   })
@@ -200,7 +200,6 @@ describe('PetCard', () => {
           user_id: 1,
           request_type: 'adoption',
           status: 'fulfilled',
-          is_active: false,
         },
       ],
     }

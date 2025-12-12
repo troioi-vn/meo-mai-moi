@@ -1,5 +1,5 @@
 import { api } from './axios'
-import type { Pet, PetType, BirthdayPrecision, PetSex } from '@/types/pet'
+import type { Pet, PetType, BirthdayPrecision, PetSex, City } from '@/types/pet'
 
 export interface WeightHistory {
   id: number
@@ -88,6 +88,7 @@ export interface CreatePetPayload {
   sex?: PetSex
   country: string // ISO 3166-1 alpha-2 code
   state?: string
+  city_id?: number | null
   city?: string
   address?: string
   description?: string
@@ -109,6 +110,38 @@ export const createPet = async (petData: CreatePetPayload): Promise<Pet> => {
 
 export const getPet = async (id: string): Promise<Pet> => {
   const response = await api.get<{ data: Pet }>(`/pets/${id}`)
+  return response.data.data
+}
+
+export interface PublicPet {
+  id: number
+  name: string
+  sex?: 'male' | 'female' | 'not_specified'
+  birthday_precision?: 'day' | 'month' | 'year' | 'unknown'
+  birthday_year?: number | null
+  birthday_month?: number | null
+  birthday_day?: number | null
+  country: string
+  state?: string | null
+  city_id?: number | null
+  city?: City | string | null
+  description: string
+  status: 'active' | 'lost' | 'deceased' | 'deleted'
+  pet_type_id: number
+  photo_url?: string | null
+  photos?: { id: number; url: string; thumb_url: string | null; is_primary: boolean }[]
+  pet_type: Pet['pet_type']
+  categories?: Pet['categories']
+  placement_requests?: Pet['placement_requests']
+  viewer_permissions?: {
+    is_owner?: boolean
+  }
+  created_at: string
+  updated_at: string
+}
+
+export const getPetPublic = async (id: string): Promise<PublicPet> => {
+  const response = await api.get<{ data: PublicPet }>(`/pets/${id}/public`)
   return response.data.data
 }
 

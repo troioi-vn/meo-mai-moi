@@ -104,7 +104,7 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
         <div className="text-center space-y-4">
           <p className="text-destructive text-lg">{error}</p>
           <p className="text-muted-foreground">
-            We're having trouble loading the placement requests. Please check your connection and
+            We&apos;re having trouble loading the placement requests. Please check your connection and
             try again.
           </p>
           <Button

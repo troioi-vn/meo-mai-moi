@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\City;
 use App\Models\HelperProfile;
 use App\Models\Notification;
 use App\Models\Pet;
@@ -23,13 +24,21 @@ class RestSemanticsTest extends TestCase
 
     private Notification $notification;
 
+    private City $city;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->user = User::factory()->create();
+        $this->city = City::factory()->create(['country' => 'VN']);
         $this->pet = Pet::factory()->create(['user_id' => $this->user->id]);
-        $this->helperProfile = HelperProfile::factory()->create(['user_id' => $this->user->id]);
+        $this->helperProfile = HelperProfile::factory()->create([
+            'user_id' => $this->user->id,
+            'country' => $this->city->country,
+            'city_id' => $this->city->id,
+            'city' => $this->city->name,
+        ]);
         $this->notification = Notification::factory()->create(['user_id' => $this->user->id]);
 
         Sanctum::actingAs($this->user);
@@ -163,7 +172,8 @@ class RestSemanticsTest extends TestCase
     #[Test]
     public function helper_profile_update_supports_both_put_and_post_for_compatibility()
     {
-        $updateData = ['city' => 'Updated City'];
+        $newCity = City::factory()->create(['country' => 'VN']);
+        $updateData = ['city_id' => $newCity->id];
 
         // PUT should work (preferred method)
         $response = $this->putJson("/api/helper-profiles/{$this->helperProfile->id}", $updateData);
@@ -210,7 +220,7 @@ class RestSemanticsTest extends TestCase
             'status' => 'active',
             'birthday' => '2022-01-01',
             'country' => 'VN',
-            'city' => 'Test City',
+            'city_id' => $this->city->id,
             'description' => 'A lovely test pet',
         ];
 

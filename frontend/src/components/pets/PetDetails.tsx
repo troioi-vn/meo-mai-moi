@@ -115,7 +115,13 @@ const PetDetails: React.FC<PetDetailsProps> = ({
           <div>
             <h3 className="font-semibold text-card-foreground">Location</h3>
             <p className="text-muted-foreground">
-              {[pet.city, pet.state, getCountryName(pet.country)].filter(Boolean).join(', ')}
+              {[
+                typeof pet.city === 'string' ? pet.city : pet.city?.name,
+                pet.state,
+                getCountryName(pet.country),
+              ]
+                .filter(Boolean)
+                .join(', ')}
             </p>
           </div>
           <div>

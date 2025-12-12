@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\PlacementRequestType;
 use App\Filament\Resources\HelperProfileResource\Pages;
 use App\Filament\Resources\HelperProfileResource\RelationManagers;
 use App\Models\HelperProfile;
@@ -42,12 +43,17 @@ class HelperProfileResource extends Resource
 
                 Forms\Components\Section::make('Services Offered')
                     ->schema([
-                        Forms\Components\Checkbox::make('can_foster')
-                            ->label('Can Foster'),
-                        Forms\Components\Checkbox::make('can_adopt')
-                            ->label('Can Adopt'),
-                    ])
-                    ->columns(2),
+                        Forms\Components\CheckboxList::make('request_types')
+                            ->label('Request Types')
+                            ->options([
+                                PlacementRequestType::FOSTER_PAYED->value => 'Foster (Paid)',
+                                PlacementRequestType::FOSTER_FREE->value => 'Foster (Free)',
+                                PlacementRequestType::PERMANENT->value => 'Permanent Adoption',
+                            ])
+                            ->required()
+                            ->minItems(1)
+                            ->columnSpanFull(),
+                    ]),
 
                 Forms\Components\Section::make('Location Information')
                     ->schema([
@@ -90,6 +96,8 @@ class HelperProfileResource extends Resource
                                 return \App\Models\PetType::where('placement_requests_allowed', true)
                                     ->pluck('name', 'id');
                             })
+                            ->required()
+                            ->minItems(1)
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
@@ -124,18 +132,20 @@ class HelperProfileResource extends Resource
                     ->searchable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('services_offered')
-                    ->label('Services')
+                Tables\Columns\TextColumn::make('request_types')
+                    ->label('Request Types')
                     ->formatStateUsing(function (HelperProfile $record): string {
-                        $services = [];
-                        if ($record->can_foster) {
-                            $services[] = 'Foster';
-                        }
-                        if ($record->can_adopt) {
-                            $services[] = 'Adopt';
-                        }
+                        $types = $record->request_types ?? [];
+                        $labels = array_map(function ($type) {
+                            return match ($type) {
+                                'foster_payed' => 'Foster (Paid)',
+                                'foster_free' => 'Foster (Free)',
+                                'permanent' => 'Permanent',
+                                default => $type,
+                            };
+                        }, $types);
 
-                        return implode(', ', $services) ?: 'None';
+                        return implode(', ', $labels) ?: 'None';
                     })
                     ->badge()
                     ->separator(','),
@@ -183,23 +193,24 @@ class HelperProfileResource extends Resource
                         'suspended' => 'Suspended',
                     ]),
 
-                Tables\Filters\Filter::make('services')
-                    ->form([
-                        Forms\Components\Checkbox::make('can_foster')
-                            ->label('Can Foster'),
-                        Forms\Components\Checkbox::make('can_adopt')
-                            ->label('Can Adopt'),
+                Tables\Filters\SelectFilter::make('request_types')
+                    ->label('Request Types')
+                    ->multiple()
+                    ->options([
+                        PlacementRequestType::FOSTER_PAYED->value => 'Foster (Paid)',
+                        PlacementRequestType::FOSTER_FREE->value => 'Foster (Free)',
+                        PlacementRequestType::PERMANENT->value => 'Permanent',
                     ])
                     ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['can_foster'],
-                                fn (Builder $query): Builder => $query->where('can_foster', true),
-                            )
-                            ->when(
-                                $data['can_adopt'],
-                                fn (Builder $query): Builder => $query->where('can_adopt', true),
-                            );
+                        if (empty($data['values'])) {
+                            return $query;
+                        }
+
+                        return $query->where(function (Builder $q) use ($data) {
+                            foreach ($data['values'] as $type) {
+                                $q->orWhereJsonContains('request_types', $type);
+                            }
+                        });
                     }),
 
                 Tables\Filters\SelectFilter::make('country')

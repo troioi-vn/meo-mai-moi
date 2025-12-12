@@ -3,11 +3,14 @@
 namespace App\Console\Commands;
 
 use App\Enums\NotificationType;
+use App\Models\Pet;
 use App\Models\VaccinationRecord;
+use App\Models\User;
 use App\Services\NotificationService;
 use App\Services\PetCapabilityService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
 class SendVaccinationReminders extends Command
@@ -37,10 +40,11 @@ class SendVaccinationReminders extends Command
         $count = 0;
         $service = app(NotificationService::class);
 
-        $query->chunkById(100, function ($records) use (&$count, $service) {
+        $query->chunkById(100, function (Collection $records) use (&$count, $service): void {
+            /** @var VaccinationRecord $record */
             foreach ($records as $record) {
                 $pet = $record->pet;
-                if (! $pet || ! $pet->user) {
+                if (! $pet instanceof Pet || ! $pet->user) {
                     continue;
                 }
 
@@ -52,6 +56,9 @@ class SendVaccinationReminders extends Command
                 }
 
                 $owner = $pet->user;
+                if (! $owner instanceof User) {
+                    continue;
+                }
 
                 $data = [
                     'message' => sprintf(

@@ -3,6 +3,8 @@
 use App\Http\Controllers\Auth\CheckEmailController;
 use App\Http\Controllers\Category\ListCategoriesController;
 use App\Http\Controllers\Category\StoreCategoryController;
+use App\Http\Controllers\City\ListCitiesController;
+use App\Http\Controllers\City\StoreCityController;
 use App\Http\Controllers\EmailConfigurationStatusController;
 use App\Http\Controllers\EmailVerification\GetVerificationStatusController;
 use App\Http\Controllers\EmailVerification\ResendVerificationEmailController;
@@ -52,6 +54,7 @@ use App\Http\Controllers\Pet\ListMyPetsSectionsController;
 use App\Http\Controllers\Pet\ListPetsWithPlacementRequestsController;
 use App\Http\Controllers\Pet\ListPetTypesController;
 use App\Http\Controllers\Pet\ShowPetController;
+use App\Http\Controllers\Pet\ShowPublicPetController;
 use App\Http\Controllers\Pet\StorePetController;
 use App\Http\Controllers\Pet\UpdatePetController;
 use App\Http\Controllers\Pet\UpdatePetStatusController;
@@ -65,6 +68,7 @@ use App\Http\Controllers\PetPhoto\SetPrimaryPetPhotoController;
 use App\Http\Controllers\PetPhoto\StorePetPhotoController;
 use App\Http\Controllers\PlacementRequest\ConfirmPlacementRequestController;
 use App\Http\Controllers\PlacementRequest\DeletePlacementRequestController;
+use App\Http\Controllers\PlacementRequest\FinalizePlacementRequestController;
 use App\Http\Controllers\PlacementRequest\RejectPlacementRequestController;
 use App\Http\Controllers\PlacementRequest\StorePlacementRequestController;
 use App\Http\Controllers\PushSubscription\DeletePushSubscriptionController;
@@ -78,6 +82,7 @@ use App\Http\Controllers\TransferHandover\HelperConfirmHandoverController;
 use App\Http\Controllers\TransferHandover\ShowHandoverForTransferController;
 use App\Http\Controllers\TransferHandover\StoreTransferHandoverController;
 use App\Http\Controllers\TransferRequest\AcceptTransferRequestController;
+use App\Http\Controllers\TransferRequest\CancelTransferRequestController;
 use App\Http\Controllers\TransferRequest\GetResponderProfileController;
 use App\Http\Controllers\TransferRequest\RejectTransferRequestController;
 use App\Http\Controllers\TransferRequest\StoreTransferRequestController;
@@ -215,6 +220,10 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/categories', ListCategoriesController::class);
     Route::post('/categories', StoreCategoryController::class);
 
+    // City routes
+    Route::get('/cities', ListCitiesController::class);
+    Route::post('/cities', StoreCityController::class);
+
     // New pet photo routes
     Route::post('/pets/{pet}/photos', StorePetPhotoController::class);
     Route::delete('/pets/{pet}/photos/{photo}', DeletePetPhotoController::class);
@@ -223,6 +232,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::delete('/placement-requests/{placementRequest}', DeletePlacementRequestController::class);
     Route::post('/placement-requests/{placementRequest}/confirm', ConfirmPlacementRequestController::class);
     Route::post('/placement-requests/{placementRequest}/reject', RejectPlacementRequestController::class);
+    Route::post('/placement-requests/{placementRequest}/finalize', FinalizePlacementRequestController::class);
 
     // Helper profiles
     Route::get('/helper-profiles', ListHelperProfilesController::class);
@@ -261,6 +271,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::delete('/pets/{pet}/microchips/{microchip}', DeletePetMicrochipController::class)->whereNumber('microchip');
 
     Route::post('/transfer-requests', StoreTransferRequestController::class);
+    Route::delete('/transfer-requests/{transferRequest}', CancelTransferRequestController::class);
     Route::post('/transfer-requests/{transferRequest}/accept', AcceptTransferRequestController::class);
     Route::post('/transfer-requests/{transferRequest}/reject', RejectTransferRequestController::class);
     // Owner-only: view responder's helper profile for a transfer request
@@ -294,6 +305,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 Route::get('/pets/placement-requests', ListPetsWithPlacementRequestsController::class);
 Route::get('/pets/featured', ListFeaturedPetsController::class);
 Route::get('/pets/{pet}', ShowPetController::class)->middleware('optional.auth')->whereNumber('pet');
+Route::get('/pets/{pet}/public', ShowPublicPetController::class)->middleware('optional.auth')->whereNumber('pet');
 Route::get('/pet-types', ListPetTypesController::class);
 
 // Pet health data routes (public read, auth required for write)

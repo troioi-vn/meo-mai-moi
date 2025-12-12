@@ -8,17 +8,18 @@ export const mockHelperProfile = {
   city: 'Testville',
   state: 'TS',
   phone_number: '123-456-7890',
+  contact_info: 'You can also reach me on Telegram @testhelper',
   experience: 'Lots of experience',
   has_pets: true,
   has_children: false,
-  can_foster: true,
-  can_adopt: false,
-  is_public: true,
+  request_types: ['foster_free', 'permanent'],
+  approval_status: 'approved',
   status: 'active',
   photos: [
     { id: 1, path: '/test-photo-1.jpg' },
     { id: 2, path: '/test-photo-2.jpg' },
   ],
+  transfer_requests: [],
 }
 
 export const helperProfileHandlers = [

@@ -4,16 +4,20 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { PlusCircle, MapPin, Pencil, Eye, EyeOff } from 'lucide-react'
+import { PlusCircle, MapPin, ChevronLeft, ChevronRight, Home, Heart } from 'lucide-react'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
-import { ChevronLeft } from 'lucide-react'
+import type { PlacementRequestType } from '@/types/helper-profile'
 
 interface HelperProfile {
   id: number
   city?: string
   state?: string
-  is_public?: boolean
+  country?: string
+  request_types?: PlacementRequestType[]
+  user?: {
+    name?: string
+  }
 }
 
 export default function HelperProfilePage() {
@@ -45,10 +49,10 @@ export default function HelperProfilePage() {
   const profiles = (data?.data as HelperProfile[] | undefined) ?? []
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       {/* Navigation */}
       <div className="px-4 py-3">
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-lg mx-auto flex items-center justify-between">
           <Button
             variant="ghost"
             size="default"
@@ -58,34 +62,49 @@ export default function HelperProfilePage() {
             <ChevronLeft className="h-6 w-6" />
             Back
           </Button>
+          <Button
+            size="default"
+            onClick={() => {
+              void navigate('/helper/create')
+            }}
+          >
+            <PlusCircle className="mr-2 h-4 w-4" />
+            New Profile
+          </Button>
         </div>
       </div>
 
       <main className="px-4 pb-8">
         <div className="max-w-lg mx-auto space-y-6">
           {/* Header */}
-          <div className="flex items-center justify-between">
+          <section>
             <h1 className="text-2xl font-bold text-foreground">My Helper Profiles</h1>
-            <Button
-              size="sm"
-              onClick={() => {
-                void navigate('/helper/create')
-              }}
-            >
-              <PlusCircle className="mr-2 h-4 w-4" />
-              New
-            </Button>
-          </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              Manage your profiles for fostering and adoption
+            </p>
+          </section>
 
           {/* Profiles List */}
           {profiles.length === 0 ? (
             <Card>
-              <CardContent className="py-8 text-center">
-                <p className="text-muted-foreground mb-4">No helper profiles yet.</p>
+              <CardContent className="py-12 text-center space-y-4">
+                <div className="flex justify-center">
+                  <div className="p-4 rounded-full bg-muted">
+                    <Home className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-lg font-semibold text-foreground">No helper profiles yet</h2>
+                  <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                    Create a helper profile to let pet owners know you&apos;re available to foster or
+                    adopt pets.
+                  </p>
+                </div>
                 <Button
                   onClick={() => {
                     void navigate('/helper/create')
                   }}
+                  className="mt-4"
                 >
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Create Your First Profile
@@ -99,42 +118,7 @@ export default function HelperProfilePage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {profiles.map((profile) => (
-                  <div
-                    key={profile.id}
-                    className="rounded-lg border p-4 bg-muted/50 flex items-center justify-between gap-3"
-                  >
-                    <div className="flex flex-col gap-2">
-                      <Link
-                        to={'/helper/' + String(profile.id)}
-                        className="flex items-center gap-2 font-medium hover:underline"
-                      >
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        {[profile.city, profile.state].filter(Boolean).join(', ') || 'No location'}
-                      </Link>
-                      <Badge
-                        variant={profile.is_public ? 'default' : 'secondary'}
-                        className="w-fit text-xs"
-                      >
-                        {profile.is_public ? (
-                          <span className="flex items-center gap-1">
-                            <Eye className="h-3 w-3" />
-                            Public
-                          </span>
-                        ) : (
-                          <span className="flex items-center gap-1">
-                            <EyeOff className="h-3 w-3" />
-                            Private
-                          </span>
-                        )}
-                      </Badge>
-                    </div>
-
-                    <Link to={'/helper/' + String(profile.id) + '/edit'}>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </div>
+                  <HelperProfileListItem key={profile.id} profile={profile} />
                 ))}
               </CardContent>
             </Card>
@@ -142,5 +126,53 @@ export default function HelperProfilePage() {
         </div>
       </main>
     </div>
+  )
+}
+
+function HelperProfileListItem({ profile }: { profile: HelperProfile }) {
+  const cityName = typeof profile.city === 'string' ? profile.city : profile.city?.name
+  const locationParts = [cityName, profile.state, profile.country].filter(Boolean)
+  const location = locationParts.join(', ') || 'No location set'
+
+  return (
+    <Link
+      to={`/helper/${String(profile.id)}`}
+      className="block rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+    >
+      <div className="p-4 flex items-center gap-4">
+        <div className="flex-1 min-w-0">
+          {/* Location */}
+          <div className="flex items-center gap-2 mb-2">
+            <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+            <span className="font-medium text-foreground truncate">{location}</span>
+          </div>
+
+          {/* Tags */}
+          <div className="flex flex-wrap gap-2">
+            {profile.request_types?.includes('foster_payed') && (
+              <Badge variant="outline" className="text-xs">
+                <Home className="h-3 w-3 mr-1" />
+                Foster (Paid)
+              </Badge>
+            )}
+            {profile.request_types?.includes('foster_free') && (
+              <Badge variant="outline" className="text-xs">
+                <Home className="h-3 w-3 mr-1" />
+                Foster (Free)
+              </Badge>
+            )}
+            {profile.request_types?.includes('permanent') && (
+              <Badge variant="outline" className="text-xs">
+                <Heart className="h-3 w-3 mr-1" />
+                Permanent
+              </Badge>
+            )}
+          </div>
+        </div>
+
+        {/* Arrow indicator */}
+        <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+      </div>
+    </Link>
   )
 }

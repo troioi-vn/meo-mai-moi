@@ -13,6 +13,18 @@ export interface PetType {
   updated_at: string
 }
 
+export interface City {
+  id: number
+  name: string
+  slug: string
+  country: string
+  description?: string | null
+  created_by?: number | null
+  approved_at?: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface Category {
   id: number
   name: string
@@ -55,7 +67,8 @@ export interface Pet {
   birthday_precision?: BirthdayPrecision
   country: string // ISO 3166-1 alpha-2 code
   state?: string | null
-  city?: string | null
+  city_id?: number | null
+  city?: City | string | null
   address?: string | null
   description: string
   user_id: number
@@ -114,7 +127,6 @@ export interface PlacementRequest {
   // Optional date-range fields used by filters/tests
   start_date?: string
   end_date?: string
-  is_active?: boolean
   transfer_requests?: TransferRequest[]
   created_at?: string
   updated_at?: string
@@ -123,8 +135,8 @@ export interface PlacementRequest {
 export interface TransferRequest {
   id: number
   pet_id?: number
-
   placement_request_id?: number
+
   helper_profile_id?: number
   initiator_user_id?: number
   requested_relationship_type?: string
@@ -146,6 +158,8 @@ export interface TransferRequest {
     created_at?: string
     updated_at?: string
   }
+  placement_request?: PlacementRequest
+  pet?: Pet
 }
 
 // Helper function to calculate age from birthday

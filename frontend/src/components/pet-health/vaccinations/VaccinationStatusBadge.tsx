@@ -30,7 +30,7 @@ const statusConfig: Record<
 }
 
 export function VaccinationStatusBadge({ status, className }: VaccinationStatusBadgeProps) {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+   
   const config = statusConfig[status] as { label: string; className: string }
 
   return (

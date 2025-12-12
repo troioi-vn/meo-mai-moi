@@ -59,7 +59,6 @@ class EmailNotificationDeliveryTest extends TestCase
         $placementRequest = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
-            'is_active' => true,
             'status' => PlacementRequestStatus::OPEN->value,
         ]);
 
@@ -121,7 +120,6 @@ class EmailNotificationDeliveryTest extends TestCase
         $placementRequest = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
-            'is_active' => true,
             'status' => PlacementRequestStatus::OPEN->value,
         ]);
 
@@ -175,7 +173,6 @@ class EmailNotificationDeliveryTest extends TestCase
         $placementRequest = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
-            'is_active' => true,
             'status' => PlacementRequestStatus::OPEN->value,
         ]);
 
@@ -226,7 +223,6 @@ class EmailNotificationDeliveryTest extends TestCase
         $placementRequest = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
-            'is_active' => true,
             'status' => PlacementRequestStatus::OPEN->value,
         ]);
 
@@ -324,7 +320,6 @@ class EmailNotificationDeliveryTest extends TestCase
         $placementRequest = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
-            'is_active' => true,
             'status' => PlacementRequestStatus::OPEN->value,
         ]);
         $helperProfile1 = HelperProfile::factory()->create(['user_id' => $helper1->id]);

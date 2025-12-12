@@ -1,62 +1,84 @@
 # Squashing Laravel Migrations (PostgreSQL)
 
-This guide describes a safe, repeatable process to squash migrations into a single schema file while keeping your Docker environment healthy and your Git history clean.
+Squash all migrations into a single schema file for faster CI, cleaner history, and fewer moving parts.
 
-## TL;DR
-- Ensure containers are healthy and API responds.
-- Run: `php artisan schema:dump --prune` (inside backend container).
-- Commit `backend/database/schema/pgsql-schema.sql` and remove old migrations.
+## Quick Reference
 
-## Why squash?
-- Faster CI and deployments (no need to replay every migration).
-- Lower operational risk (fewer moving parts during boot).
-- Cleaner history; schema is captured in one canonical file.
+```bash
+# 1. Dump schema and prune migrations (inside container)
+docker compose exec backend php artisan schema:dump --prune
 
-## Preconditions
-- Stack is healthy: `docker compose ps` shows backend/db healthy.
-- App can migrate cleanly from scratch on a fresh DB.
-- You have a backup or you’re intentionally discarding data (in dev).
+# 2. Copy schema file to your local filesystem (required!)
+docker compose cp backend:/var/www/database/schema/pgsql-schema.sql backend/database/schema/pgsql-schema.sql
 
-## One-time hardening (recommended)
-- Ensure PostgreSQL client tools are available in the PHP image (already included via `postgresql-client`).
-  - We no longer use SQLite anywhere; `sqlite3` is not required.
+# 3. Commit
+git add backend/database/schema/pgsql-schema.sql
+git rm backend/database/migrations/*.php
+git commit -m "chore(db): squash migrations via schema:dump --prune"
+```
 
-## Step-by-step
+## Why Squash?
 
-1) Start fresh (optional in dev)
-- Recreate DB volume (destroys data):
-  - `docker compose down`
-  - `docker volume rm meo-mai-moi_pgdata`
-  - `docker compose up -d`
-- Confirm health: `docker compose ps`
-- Smoke test: `curl -sf http://localhost:8000/api/version`
+- **Faster** CI and deployments (no migration replay)
+- **Lower risk** (fewer moving parts during boot)
+- **Cleaner** Git history with canonical schema file
 
-2) Generate schema and prune
-- Exec into backend or run one-off command:
-  - `docker compose exec backend php artisan schema:dump --prune`
-- This will:
-  - Create `backend/database/schema/pgsql-schema.sql`
-  - Delete migration files from the filesystem (if not, remove them manually)
+## Prerequisites
 
-3) Verify
-- `docker compose exec backend ls -l database/schema`
-- Inspect the first lines: `head -n 20 backend/database/schema/pgsql-schema.sql`
-- Ensure app still boots healthy.
+- Stack is healthy: `docker compose ps` shows backend/db healthy
+- DB can migrate cleanly from scratch
+- Backup exists or you're okay losing dev data
 
-4) Commit
-- Add schema file and remove old migrations from Git:
-  - `git add backend/database/schema/pgsql-schema.sql`
-  - `git rm backend/database/migrations/*.php` (leave a `.gitkeep` if desired)
-  - `git add backend/.env.example` (keep template versioned)
-  - `git commit -m "chore(db): squash migrations via schema:dump --prune (pgsql)"`
+## Detailed Steps
 
-## Rollback / Recovery
-- If something breaks:
-  - `git restore` any changed files
-  - Restore old migrations from your branch or remote and rebuild
-  - Recreate DB volume and migrate normally (`php artisan migrate`)
+### 1. (Optional) Start Fresh
 
-## Notes & Tips
-- Healthcheck issues often stem from DB readiness; prefer letting Laravel handle connection errors rather than over-complicating entrypoints.
-- Keep `.env.example` and `backend/.env.example` templates in the repo for consistent deployments.
-- For prod: prefer running schema dumps in CI using a disposable DB and committing the resulting schema file in a PR.
+```bash
+docker compose down
+docker volume rm meo-mai-moi_pgdata
+docker compose up -d
+```
+
+### 2. Generate Schema
+
+```bash
+docker compose exec backend php artisan schema:dump --prune
+```
+
+This creates `backend/database/schema/pgsql-schema.sql` inside the container.
+
+### 3. Copy to Host
+
+Since `./backend` is **not** bind-mounted, the schema file only exists inside the container. Copy it out:
+
+```bash
+docker compose cp backend:/var/www/database/schema/pgsql-schema.sql backend/database/schema/pgsql-schema.sql
+```
+
+**Alternative** (bind-mount approach—changes land directly in working tree):
+
+```bash
+docker compose run --rm -v ./backend:/var/www backend php artisan schema:dump --prune
+```
+
+### 4. Verify & Commit
+
+```bash
+ls -l backend/database/schema/pgsql-schema.sql
+head -n 20 backend/database/schema/pgsql-schema.sql
+
+git add backend/database/schema/pgsql-schema.sql
+git rm backend/database/migrations/*.php
+git commit -m "chore(db): squash migrations via schema:dump --prune (pgsql)"
+```
+
+Keep only **new** migrations created after the dump.
+
+## Rollback
+
+```bash
+git restore backend/database/schema/ backend/database/migrations/
+docker volume rm meo-mai-moi_pgdata
+docker compose up -d
+docker compose exec backend php artisan migrate
+```

@@ -113,7 +113,8 @@ Notes:
 
 - Backend
   - Routes: `GET /auth/google/redirect` (stores optional `redirect` param for SPA-safe relative redirects) and `GET /auth/google/callback`.
-  - Controller: `GoogleAuthController` (Socialite driver `google`) creates or updates users, keeps password nullable for social signups, saves `google_id`, tokens, and `google_avatar`, and auto-verifies email from Google.
+  - Controller: `GoogleAuthController` (Socialite driver `google`) creates or updates users, keeps password nullable for social signups, saves `google_id` and tokens, and auto-verifies email from Google.
+  - Avatar handling: Google avatar URLs are validated (HTTPS, Google-hosted domains only), downloaded with a 5MB size limit, and stored via Spatie MediaLibrary. Only known image types (PNG, GIF, WebP, JPEG) are accepted; unknown types are rejected.
   - Conflicts: if an existing user with the same email but without `google_id` exists, callback redirects to `/login?error=email_exists`.
   - Missing email from Google redirects to `/login?error=missing_email`; unexpected OAuth errors redirect to `/login?error=oauth_failed`.
 - Frontend

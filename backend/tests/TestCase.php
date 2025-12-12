@@ -5,6 +5,7 @@ namespace Tests;
 use App\Models\Settings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Support\Facades\File;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -38,5 +39,16 @@ abstract class TestCase extends BaseTestCase
         ];
         // Keep session domain unset in tests to use host-only cookies.
         $this->app['config']['session.domain'] = null;
+    }
+
+    protected function tearDown(): void
+    {
+        // Spatie MediaLibrary uses storage_path('media-library/temp') by default.
+        // In tests we also point it at storage/framework/testing/media-library/temp.
+        // Either way, clean up so the repo doesn't accumulate temp artifacts.
+        File::deleteDirectory(storage_path('framework/testing/media-library'));
+        File::deleteDirectory(storage_path('media-library'));
+
+        parent::tearDown();
     }
 }

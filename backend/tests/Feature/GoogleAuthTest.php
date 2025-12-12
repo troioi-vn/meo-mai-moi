@@ -3,11 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Http\RedirectResponse;
 use Laravel\Socialite\Contracts\Provider;
 use Laravel\Socialite\Contracts\User as GoogleUser;
 use Laravel\Socialite\Facades\Socialite;
 use Mockery;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Tests\TestCase;
 
 class GoogleAuthTest extends TestCase
@@ -38,11 +39,19 @@ class GoogleAuthTest extends TestCase
     {
         config(['app.frontend_url' => 'https://frontend.test']);
 
+        $tinyPng = base64_decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO3Z1WQAAAAASUVORK5CYII='
+        );
+
+        Http::fake([
+            'lh3.googleusercontent.com/*' => Http::response($tinyPng, 200, ['Content-Type' => 'image/png']),
+        ]);
+
         $this->mockGoogleUser([
             'id' => 'google-123',
             'email' => 'new@example.com',
             'name' => 'Google Person',
-            'avatar' => 'https://example.com/avatar.png',
+            'avatar' => 'https://lh3.googleusercontent.com/avatar.png',
             'token' => 'token-abc',
             'refresh_token' => 'refresh-token-xyz',
         ]);
@@ -58,7 +67,7 @@ class GoogleAuthTest extends TestCase
         $this->assertEquals('google-123', $user->google_id);
         $this->assertEquals('token-abc', $user->google_token);
         $this->assertEquals('refresh-token-xyz', $user->google_refresh_token);
-        $this->assertEquals('https://example.com/avatar.png', $user->google_avatar);
+        $this->assertNotNull($user->avatar_url);
         $this->assertNotNull($user->email_verified_at);
     }
 
@@ -70,7 +79,6 @@ class GoogleAuthTest extends TestCase
             'google_id' => 'google-123',
             'google_token' => 'old-token',
             'google_refresh_token' => 'old-refresh',
-            'google_avatar' => null,
             'email_verified_at' => null,
         ]);
 
@@ -91,7 +99,6 @@ class GoogleAuthTest extends TestCase
         $this->assertAuthenticatedAs($user);
         $this->assertEquals('new-token', $user->google_token);
         $this->assertEquals('new-refresh', $user->google_refresh_token);
-        $this->assertEquals('https://example.com/new-avatar.png', $user->google_avatar);
         $this->assertNotNull($user->email_verified_at);
     }
 
@@ -104,7 +111,6 @@ class GoogleAuthTest extends TestCase
             'google_id' => null,
             'google_token' => null,
             'google_refresh_token' => null,
-            'google_avatar' => null,
             'email_verified_at' => null,
         ]);
 
@@ -127,7 +133,6 @@ class GoogleAuthTest extends TestCase
         $this->assertEquals('google-999', $existing->google_id);
         $this->assertEquals('linked-token', $existing->google_token);
         $this->assertEquals('linked-refresh', $existing->google_refresh_token);
-        $this->assertEquals('https://example.com/linked-avatar.png', $existing->google_avatar);
         $this->assertNotNull($existing->email_verified_at); // Now verified via Google
     }
 

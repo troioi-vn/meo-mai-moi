@@ -176,7 +176,10 @@ return [
      * The path where to store temporary files while performing image conversions.
      * If set to null, storage_path('media-library/temp') will be used.
      */
-    'temporary_directory_path' => null,
+    'temporary_directory_path' => env(
+        'MEDIA_LIBRARY_TEMPORARY_DIRECTORY_PATH',
+        env('APP_ENV') === 'testing' ? storage_path('framework/testing/media-library/temp') : null
+    ),
 
     /*
      * The engine that should perform the image conversions.

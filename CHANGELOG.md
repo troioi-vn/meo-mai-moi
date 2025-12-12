@@ -10,8 +10,7 @@ All notable changes to this project are documented here, following the [Keep a C
   - Added Socialite-based Google auth flow with redirect/callback routes and SPA-safe redirects.
   - Users can sign in or create accounts with Google; existing email/password users are blocked from auto-linking and see `error=email_exists`.
   - Stored Google tokens/id/avatar on users; password is now nullable for social signups.
-  - Frontend shows “Sign in with Google” plus error banner handling for `email_exists`, `oauth_failed`, and missing email responses.
-- **City catalog per country**:
+  - Frontend shows “Sign in with Google” plus error banner handling for `email_exists`, `oauth_failed`, and missing email responses.  - Avatar handling refactored to use MediaLibrary: avatars are now downloaded and stored via Spatie MediaLibrary with proper validation, 5MB size limits, and content-type verification.- **City catalog per country**:
   - Introduced `cities` model/API (list + create) with approval workflow; pets and helper profiles now store `city_id` alongside the display name.
   - Backfilled existing pets/helper profiles into the city catalog and linked records.
   - Frontend city autocomplete for pet and helper profile forms (country-scoped with create-on-the-fly).

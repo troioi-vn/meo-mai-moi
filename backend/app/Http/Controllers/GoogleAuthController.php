@@ -4,12 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Exception;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Laravel\Socialite\Contracts\User as GoogleUser;
 use Laravel\Socialite\Facades\Socialite;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class GoogleAuthController extends Controller
 {
@@ -74,8 +75,9 @@ class GoogleAuthController extends Controller
             'google_id' => $googleUser->getId(),
             'google_token' => $googleUser->token ?? null,
             'google_refresh_token' => $googleUser->refreshToken ?? null,
-            'google_avatar' => $googleUser->getAvatar(),
         ]);
+
+        $this->maybeSetAvatarFromGoogle($user, $googleUser->getAvatar());
 
         // Consider Google emails verified by default
         $user->forceFill(['email_verified_at' => Carbon::now()])->save();
@@ -91,7 +93,6 @@ class GoogleAuthController extends Controller
         $user->forceFill([
             'google_token' => $googleUser->token ?? null,
             'google_refresh_token' => $googleUser->refreshToken ?? null,
-            'google_avatar' => $googleUser->getAvatar(),
         ]);
 
         if (! $user->email_verified_at) {
@@ -99,6 +100,112 @@ class GoogleAuthController extends Controller
         }
 
         $user->save();
+    }
+
+    private function maybeSetAvatarFromGoogle(User $user, ?string $avatarUrl): void
+    {
+        if (! $this->isValidGoogleAvatarUrl($avatarUrl)) {
+            return;
+        }
+
+        if ($user->getMedia('avatar')->isNotEmpty()) {
+            return;
+        }
+
+        $this->downloadAndAttachAvatar($user, $avatarUrl);
+    }
+
+    private function isValidGoogleAvatarUrl(?string $avatarUrl): bool
+    {
+        if (! $avatarUrl) {
+            return false;
+        }
+
+        $parsedUrl = parse_url($avatarUrl);
+        if (! is_array($parsedUrl)) {
+            return false;
+        }
+
+        $scheme = strtolower($parsedUrl['scheme'] ?? '');
+        $host = strtolower($parsedUrl['host'] ?? '');
+        if ($scheme !== 'https' || ! $host) {
+            return false;
+        }
+
+        $allowedHosts = [
+            'googleusercontent.com',
+            'ggpht.com',
+        ];
+
+        foreach ($allowedHosts as $allowedHost) {
+            if ($host === $allowedHost || str_ends_with($host, '.'.$allowedHost)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function downloadAndAttachAvatar(User $user, string $avatarUrl): void
+    {
+        $tmpFile = null;
+
+        try {
+            $response = Http::timeout(5)
+                ->withUserAgent((string) (config('app.name', 'MeoMaiMoi')).'/1.0 (avatar fetch)')
+                ->get($avatarUrl);
+
+            if (! $response->ok()) {
+                return;
+            }
+
+            $contentType = $response->header('Content-Type');
+            $extension = $this->getImageExtensionFromContentType($contentType);
+            if (! $extension) {
+                return;
+            }
+
+            $body = $response->body();
+            $maxSize = 5 * 1024 * 1024; // 5MB
+            if (strlen($body) > $maxSize) {
+                return;
+            }
+
+            $tmpPath = tempnam(sys_get_temp_dir(), 'google-avatar-');
+            if (! $tmpPath) {
+                return;
+            }
+
+            $tmpFile = $tmpPath.'.'.$extension;
+            @rename($tmpPath, $tmpFile);
+
+            file_put_contents($tmpFile, $body);
+
+            $user->addMedia($tmpFile)
+                ->usingFileName('google-avatar.'.$extension)
+                ->toMediaCollection('avatar');
+        } catch (Exception $exception) {
+            report($exception);
+        } finally {
+            if ($tmpFile && file_exists($tmpFile)) {
+                @unlink($tmpFile);
+            }
+        }
+    }
+
+    private function getImageExtensionFromContentType(?string $contentType): ?string
+    {
+        if (! $contentType || ! str_starts_with(strtolower($contentType), 'image/')) {
+            return null;
+        }
+
+        return match (strtolower(trim(explode(';', $contentType)[0]))) {
+            'image/png' => 'png',
+            'image/gif' => 'gif',
+            'image/webp' => 'webp',
+            'image/jpeg', 'image/jpg' => 'jpg',
+            default => null,
+        };
     }
 
     private function sanitizeRedirectPath(?string $path): ?string

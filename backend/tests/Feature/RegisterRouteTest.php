@@ -2,11 +2,12 @@
 
 namespace Tests\Feature;
 
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class RegisterRouteTest extends TestCase
 {
-    #[PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function register_route_returns_success_without_redirect_loop()
     {
         $response = $this->get('/register');

@@ -245,6 +245,17 @@ cd frontend && npm test
 cd frontend && npm run typecheck
 ```
 
+**E2E Tests (Playwright + MailHog)**:
+```bash
+cd frontend && npm run test:e2e
+cd frontend && npm run test:e2e:keep  # Keep services running for debugging
+```
+
+- **Real Email Testing**: Uses MailHog SMTP server for authentic email verification flows
+- **Automated Setup**: `E2ETestingSeeder` configures complete test environment with MailHog
+- **Email Debugging**: MailHog UI at http://localhost:8025 for viewing captured emails
+- **Service Isolation**: Docker profiles ensure e2e services don't interfere with development
+- **Comprehensive Testing**: Full registration → email verification → login flow testing
 - With schema dumps: tests call `psql` for `RefreshDatabase`; install `postgresql-client` locally if missing.
 - Seed dependencies in tests (e.g., `PetTypeSeeder`) to avoid FK and enum gaps.
 - MSW for API mocking: global server in `frontend/src/setupTests.ts`; handlers per resource under `frontend/src/mocks` using absolute URLs; mirror `{ data: ... }` API shape.
@@ -264,6 +275,7 @@ cd frontend && npm run typecheck
 - Frontend build feeds backend views (see `welcome.blade.php`). Docker build compiles frontend first, then copies assets into the backend image.
 - Runtime setup happens in `backend/docker-entrypoint.sh` (e.g., `storage:link`). Check here for upload issues.
 - Email settings are database-driven via Filament at `/admin/email-configurations`. An active DB config overrides `.env` `MAIL_*`.
+- E2E tests use separate database (`meo_mai_moi_test`) and MailHog email configuration. The `E2ETestingSeeder` automatically sets up the complete test environment including email provider configuration.
 
 ## 7) Troubleshooting Guide
 
@@ -296,6 +308,19 @@ cd frontend && npm run typecheck
     *   Check logs: `docker compose logs backend`
     *   Use deploy script: `./utils/deploy.sh --no-cache`
 
+**E2E Testing Issues**
+
+*   **MailHog Not Accessible**:
+    *   Ensure e2e profile is running: `docker compose --profile e2e ps`
+    *   Check MailHog API: `curl http://localhost:8025/api/v2/messages`
+    *   Restart services: `docker compose --profile e2e down && docker compose --profile e2e up -d`
+*   **Email Configuration Errors**:
+    *   Verify config: `docker compose exec backend php artisan email:verify-config --env=e2e`
+    *   Reset email config: `docker compose exec backend php artisan db:seed --class=E2EEmailConfigurationSeeder --env=e2e`
+*   **Test Database Issues**:
+    *   Use test database: `DB_DATABASE=meo_mai_moi_test` in backend/.env.e2e
+    *   Fresh setup: `docker compose exec backend php artisan migrate:fresh --env=e2e`
+
 ## 8) Linting & formatting
 
 - Backend: Laravel Pint (`./vendor/bin/pint`).
@@ -306,8 +331,11 @@ cd frontend && npm run typecheck
 - Start (Docker): `docker compose up -d --build`
 - Backend tests: `docker compose exec backend php artisan test`
 - Frontend tests: `cd frontend && npm test`
+- E2E tests: `cd frontend && npm run test:e2e`
+- E2E debug: `cd frontend && npm run test:e2e:keep` (keeps services running)
 - Migrate/seed (Docker): `docker compose exec backend php artisan migrate --seed`
 - Generate API docs: `docker compose exec backend php artisan l5-swagger:generate`
 - Admin panel: http://localhost:8000/admin
+- MailHog UI: http://localhost:8025 (during e2e tests)
 
 For complete workflows (Git, CI, more commands), see `docs/development.md`.

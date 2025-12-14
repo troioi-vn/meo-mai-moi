@@ -20,7 +20,7 @@ for (const f of envFiles) {
   }
 }
 
-const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5173'
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:8000'
 const isLocalhost = /localhost|127\.0\.0\.1/.test(baseURL)
 
 export default defineConfig({
@@ -37,6 +37,8 @@ export default defineConfig({
     video: 'retain-on-failure',
     screenshot: 'only-on-failure',
     viewport: { width: 1280, height: 800 },
+    // Uncomment the line below to slow down tests for debugging
+    launchOptions: { slowMo: 500 },
   },
   projects: [
     {
@@ -44,13 +46,6 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  // Only auto-start Vite dev server when targeting localhost
-  webServer: isLocalhost
-    ? {
-        command: 'npm run dev',
-        url: baseURL,
-        reuseExistingServer: true,
-        timeout: 90 * 1000,
-      }
-    : undefined,
+  // Don't auto-start dev server for e2e tests - we use Docker containers
+  webServer: undefined,
 })

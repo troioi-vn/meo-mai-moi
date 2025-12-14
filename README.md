@@ -19,7 +19,7 @@ Meo Mai Moi is a comprehensive pet care platform designed to help cat owners (an
 
 _Future expansion: Pet rehoming and adoption features planned after establishing core cat care functionality._
 
-Dockerized • Laravel 12 • React 19 • Vite 7 • PostgreSQL 14 • Filament 3
+Dockerized • Laravel 12 • React 19 • Vite 7 • PostgreSQL 14 • Filament 3 • E2E Email Testing
 
 ## Quick Start (Docker)
 
@@ -80,6 +80,7 @@ cd meo-mai-moi
 2. Read the Development Guide
 
 - Start here for local setup, daily workflow, testing, and Git practices to avoid merge conflicts: `docs/development.md`
+- For comprehensive e2e testing with email verification: `docs/e2e-testing-guide.md`
 
 3. Create a branch and code
 
@@ -99,12 +100,17 @@ cd backend && ./vendor/bin/pint
 # Frontend
 cd frontend && npm test
 cd frontend && npm run lint && npm run typecheck
+
+# E2E Tests (with email verification)
+cd frontend && npm run test:e2e
+cd frontend && npm run test:e2e:keep  # Keep services running for debugging
 ```
 
 5. Open a Pull Request
 
 - Push your branch and open a PR to `dev`. Keep PRs small when possible.
 - Include screenshots for UI changes and mention tests added/updated.
+- For email-related features, use e2e tests to verify the complete flow with MailHog.
 
 For architecture context, see `GEMINI.md` (AI Agent Guide).
 

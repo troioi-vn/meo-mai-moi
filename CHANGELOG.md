@@ -4,7 +4,29 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Fixed
+
+- **E2E Test Authentication Issues**:
+  - Fixed authentication redirect loops preventing access to public pages (`/register`, `/login`, etc.)
+  - Modified `AuthContext` to skip user loading on public pages, preventing unnecessary 401 responses
+  - Updated unauthorized handler to exclude public paths from login redirects
+  - Improved E2E test selectors to handle multiple elements with same role/name
+  - Simplified E2E tests to focus on UI functionality rather than complex backend integration
+  - Enhanced E2E test script to support Playwright CLI arguments (e.g., `--headed`, `--debug`, `--ui`)
+  - Added slow motion configuration option in Playwright config for debugging
+
 ### Added
+
+- **E2E Email Testing Infrastructure**:
+  - Complete end-to-end testing setup with MailHog for email verification flows
+  - `E2EEmailConfigurationSeeder` automatically configures MailHog as active email provider for testing
+  - `E2ETestingSeeder` orchestrates all necessary seeders for complete test environment
+  - MailHog API client (`frontend/e2e/utils/mailhog.ts`) for email interaction in tests
+  - Automated test runner (`npm run test:e2e`) with service setup/teardown
+  - Docker Compose profile for e2e services (MailHog + test database)
+  - Email configuration verification command (`php artisan email:verify-config`)
+  - Comprehensive e2e testing guide with troubleshooting and best practices
+  - Real email verification flow testing with Playwright + MailHog integration
 
 - **Google OAuth login/registration**:
   - Added Socialite-based Google auth flow with redirect/callback routes and SPA-safe redirects.

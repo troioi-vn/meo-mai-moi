@@ -82,6 +82,16 @@ services:
       retries: 5
     restart: unless-stopped
 
+  mailhog:
+    image: mailhog/mailhog:latest
+    profiles:
+      - testing
+      - e2e
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web UI
+    restart: unless-stopped
+
 volumes:
   pgdata:
   uploads_data:

@@ -15,6 +15,17 @@ export default defineConfig({
     // External files outside docs directory - match various patterns
     /\.\.\/.*GEMINI/,
   ],
+  markdown: {
+    config: (md) => {
+      const shiki = md.options.highlight;
+      md.options.highlight = (str, lang, attrs) => {
+        if (lang === "env") {
+          lang = "sh"; // or 'bash' or any other language you want to map to
+        }
+        return shiki(str, lang, attrs);
+      };
+    },
+  },
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [

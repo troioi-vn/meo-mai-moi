@@ -730,6 +730,71 @@ db_snapshot "after-migrate"
 
 ## (Removed) post-deployment DB summary for simplicity
 
+# --- Deployment Logfile Cleanup (keep last N logfiles) ---
+deploy_cleanup_logfiles() {
+    local deploy_dir="$PROJECT_ROOT/.deploy"
+    local keep_count=10
+    
+    if [ ! -d "$deploy_dir" ]; then
+        note "ℹ️  .deploy folder does not exist, skipping logfile cleanup"
+        return 0
+    fi
+    
+    note "🧹 Cleaning up old logfiles in .deploy..."
+    log_info "Starting logfile cleanup" "dir=$deploy_dir keep=$keep_count"
+    
+    # Find all log and json files, sorted by modification time (newest first)
+    # Use subshell to prevent ERR trap from triggering on empty results
+    local logfiles
+    logfiles=$(find "$deploy_dir" -maxdepth 1 -type f \( -name "*.log" -o -name "*.json" \) -printf '%T@ %p\n' 2>/dev/null | sort -rn | cut -d' ' -f2- || echo "")
+    
+    if [ -z "$logfiles" ]; then
+        note "ℹ️  No logfiles found in $deploy_dir"
+        return 0
+    fi
+    
+    local total_count
+    total_count=$(printf '%s\n' "$logfiles" | grep -c . || echo "0")
+    
+    if [ "$total_count" -le "$keep_count" ]; then
+        note "ℹ️  $total_count logfiles in .deploy (keeping all, threshold is $keep_count)"
+        return 0
+    fi
+    
+    # Files to delete are those beyond the keep threshold
+    local files_to_delete
+    files_to_delete=$(printf '%s\n' "$logfiles" | tail -n $((total_count - keep_count)) || echo "")
+    
+    if [ -z "$files_to_delete" ]; then
+        return 0
+    fi
+    
+    local deleted_count=0
+    local recovered_size=0
+    
+    while IFS= read -r filepath; do
+        if [ -n "$filepath" ] && [ -f "$filepath" ]; then
+            local file_size
+            file_size=$(stat -c%s "$filepath" 2>/dev/null || echo "0")
+            recovered_size=$((recovered_size + file_size))
+            
+            rm -f "$filepath" 2>/dev/null || true
+            deleted_count=$((deleted_count + 1))
+        fi
+    done <<< "$files_to_delete"
+    
+    if [ "$deleted_count" -gt 0 ]; then
+        local readable_size
+        readable_size=$(numfmt --to=iec "$recovered_size" 2>/dev/null || echo "${recovered_size}B")
+        note "✓ Removed $deleted_count old logfiles from .deploy (freed ~$readable_size)"
+        log_info "Logfile cleanup completed" "deleted=$deleted_count size=$readable_size"
+    else
+        note "ℹ️  No logfiles needed cleanup"
+    fi
+    
+    return 0
+}
+
 # --- Docker Cleanup (if requested) ---
 deploy_cleanup_docker() {
     note "🧹 Cleaning up old Docker images and containers..."
@@ -800,6 +865,7 @@ deploy_cleanup_docker() {
 
 if [ "$CLEAN_UP" = "true" ]; then
     echo ""
+    deploy_cleanup_logfiles
     deploy_cleanup_docker
 fi
 

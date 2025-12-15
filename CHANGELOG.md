@@ -6,6 +6,39 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Fixed
 
+- **E2E Testing and Playwright Configuration Improvements**:
+
+  - Fixed Playwright env file loading to correctly prioritize `frontend/` directory env files when tests are run from workspace root
+  - Improved e2e-test.sh to detect existing services and avoid redundant startup (checks ports 8000 and 8025)
+  - Added prerequisite validation in e2e-test.sh (docker, curl, npx commands)
+  - Removed `-T` flag from initial docker compose exec commands in test setup, added back only where needed
+  - Added proper error handling and exit codes in e2e-test.sh for better CI/CD integration
+  - Fixed slowMo configuration in Playwright config to be environment-driven (PLAYWRIGHT_SLOWMO env var)
+  - Moved e2e global setup logic from Playwright config to `global-setup.ts` for cleaner separation
+  - Added `SKIP_E2E_SETUP=true` flag to use e2e-test.sh setup instead of Playwright's auto-setup
+
+- **E2E Test Suite Refactoring and New Utilities**:
+
+  - Created shared `frontend/e2e/utils/app.ts` with common test utilities: `gotoApp()`, `login()`, `openUserMenu()`
+  - Refactored all e2e tests to use shared utilities instead of duplicated test helpers
+  - Updated auth.spec.ts to use shared utilities and improved login flow testing
+  - Updated registration-with-email-verification.spec.ts to use shared utilities and fixed email verification tests
+  - Added new settings-account.spec.ts with comprehensive account settings tests (avatar upload, password change, account deletion)
+  - Improved MailHog client with environment-driven API URL configuration
+
+- **Frontend Package Scripts and Dependencies**:
+
+  - Updated e2e and e2e:ui scripts to use e2e-test.sh wrapper for proper environment setup
+  - Added e2e:direct script for direct Playwright execution (useful when services are already running)
+  - Removed test:e2e:keep script in favor of e2e-test.sh --keep-running approach
+  - Fixed Playwright config comment to reflect new default baseURL (http://localhost:8000 instead of localhost:5173)
+
+- **Backend Authentication Rate Limiting**:
+
+  - Enhanced FortifyServiceProvider to allow higher login/registration rate limits in dev/testing environments
+  - Development environments (local, development, e2e, testing) now allow 100 login attempts per minute (up from 5)
+  - Testing environments allow 10 registration attempts per minute for easier test execution
+
 - **E2E Test Authentication Issues**:
   - Fixed authentication redirect loops preventing access to public pages (`/register`, `/login`, etc.)
   - Modified `AuthContext` to skip user loading on public pages, preventing unnecessary 401 responses
@@ -18,6 +51,7 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Added
 
 - **E2E Email Testing Infrastructure**:
+
   - Complete end-to-end testing setup with MailHog for email verification flows
   - `E2EEmailConfigurationSeeder` automatically configures MailHog as active email provider for testing
   - `E2ETestingSeeder` orchestrates all necessary seeders for complete test environment

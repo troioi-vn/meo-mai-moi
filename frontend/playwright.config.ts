@@ -8,11 +8,14 @@ import dotenv from 'dotenv'
 // In ESM, __dirname is not defined. Derive a root directory safely.
 const __filename = fileURLToPath(import.meta.url)
 const __dirnameShim = path.dirname(__filename)
-// Prefer project root (frontend/) as base for env files
-const baseDir = process.cwd() || __dirnameShim
-const envFiles = ['.env.e2e.local', '.env.e2e', '.env.local', '.env'].map((f) =>
-  path.resolve(baseDir, f)
-)
+// Prefer frontend/ (where this config lives) for env files.
+// If the repo runs Playwright from the workspace root, fall back to CWD only when no frontend env files exist.
+const configDir = __dirnameShim
+const cwdDir = process.cwd()
+const envFileNames = ['.env.e2e.local', '.env.e2e', '.env.local', '.env']
+const hasFrontendEnvFile = envFileNames.some((f) => fs.existsSync(path.resolve(configDir, f)))
+const baseDir = hasFrontendEnvFile ? configDir : cwdDir
+const envFiles = envFileNames.map((f) => path.resolve(baseDir, f))
 
 for (const f of envFiles) {
   if (fs.existsSync(f)) {
@@ -21,7 +24,7 @@ for (const f of envFiles) {
 }
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:8000'
-const isLocalhost = /localhost|127\.0\.0\.1/.test(baseURL)
+const slowMo = Number(process.env.PLAYWRIGHT_SLOWMO || 0)
 
 export default defineConfig({
   testDir: './e2e',
@@ -31,14 +34,15 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 2 : undefined,
   reporter: [['list'], ['html', { open: 'never' }]],
+  globalSetup: './e2e/global-setup.ts',
   use: {
     baseURL,
     trace: 'on-first-retry',
     video: 'retain-on-failure',
     screenshot: 'only-on-failure',
     viewport: { width: 1280, height: 800 },
-    // Uncomment the line below to slow down tests for debugging
-    launchOptions: { slowMo: 500 },
+    // Slow down tests for debugging (e.g. PLAYWRIGHT_SLOWMO=250)
+    launchOptions: slowMo > 0 ? { slowMo } : undefined,
   },
   projects: [
     {

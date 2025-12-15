@@ -33,7 +33,7 @@ export interface MailHogResponse {
 export class MailHogClient {
   private baseUrl: string
 
-  constructor(baseUrl = 'http://localhost:8025/api/v2') {
+  constructor(baseUrl = process.env.MAILHOG_API_URL || 'http://localhost:8025/api/v2') {
     this.baseUrl = baseUrl
   }
 
@@ -72,7 +72,7 @@ export class MailHogClient {
    */
   extractVerificationUrl(message: MailHogMessage): string | null {
     const body = message.Content.Body
-    
+
     // Look for verification URL patterns
     const urlPatterns = [
       /https?:\/\/[^\/\s]+\/email\/verify\/\d+\/[a-zA-Z0-9]+\?expires=\d+&signature=[a-zA-Z0-9%]+/g,
@@ -102,17 +102,18 @@ export class MailHogClient {
 
     while (Date.now() - startTime < timeout) {
       const messages = await this.getMessagesForEmail(email)
-      
+
       let targetMessage = messages[0] // Get latest message
-      
+
       // Filter by subject if provided
       if (subject && targetMessage) {
         const messageSubject = targetMessage.Content.Headers['Subject']?.[0] || ''
         if (!messageSubject.includes(subject)) {
-          targetMessage = messages.find(msg => {
-            const msgSubject = msg.Content.Headers['Subject']?.[0] || ''
-            return msgSubject.includes(subject)
-          }) || null
+          targetMessage =
+            messages.find((msg) => {
+              const msgSubject = msg.Content.Headers['Subject']?.[0] || ''
+              return msgSubject.includes(subject)
+            }) || null
         }
       }
 
@@ -123,7 +124,9 @@ export class MailHogClient {
       await new Promise((resolve) => setTimeout(resolve, interval))
     }
 
-    throw new Error(`Timeout waiting for email to ${email}${subject ? ` with subject "${subject}"` : ''}`)
+    throw new Error(
+      `Timeout waiting for email to ${email}${subject ? ` with subject "${subject}"` : ''}`
+    )
   }
 
   /**

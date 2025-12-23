@@ -47,7 +47,7 @@ export const CategorySelect: React.FC<Props> = ({
     try {
       const result = await getCategories({ pet_type_id: petTypeId })
       setCategories(result)
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to load categories:', err)
       toast.error('Failed to load categories')
     } finally {
@@ -106,7 +106,7 @@ export const CategorySelect: React.FC<Props> = ({
       }
       setSearchValue('')
       toast.success('Category created')
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to create category:', err)
       toast.error('Failed to create category')
     } finally {
@@ -118,7 +118,7 @@ export const CategorySelect: React.FC<Props> = ({
   const exactMatch = categories.some(
     (c) => c.name.toLowerCase() === searchValue.toLowerCase().trim()
   )
-  const canCreate = searchValue.trim().length > 0 && !exactMatch && petTypeId && !creating
+  const canCreate = searchValue.trim().length > 0 && !exactMatch && petTypeId
 
   if (!petTypeId) {
     return (
@@ -143,7 +143,12 @@ export const CategorySelect: React.FC<Props> = ({
       <Tags className="w-full">
         <TagsTrigger disabled={disabled || selectedCategories.length >= maxCategories}>
           {selectedCategories.map((category) => (
-            <TagsValue key={category.id} onRemove={() => { handleRemove(category.id); }}>
+            <TagsValue
+              key={category.id}
+              onRemove={() => {
+                handleRemove(category.id)
+              }}
+            >
               {category.name}
               {!category.approved_at && (
                 <Badge variant="outline" className="ml-1 text-[10px] px-1 py-0">

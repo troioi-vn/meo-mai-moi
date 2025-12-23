@@ -65,7 +65,7 @@ const RequestsPage = () => {
         setPets(petsResponse)
         setPetTypes(petTypesResponse)
         setError(null)
-      } catch (err) {
+      } catch (err: unknown) {
         setError('Failed to fetch data. Please try again later.')
         console.error(err)
       } finally {
@@ -85,11 +85,14 @@ const RequestsPage = () => {
       return
     }
 
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev)
-      next.set('sort', 'newest')
-      return next
-    }, { replace: true })
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.set('sort', 'newest')
+        return next
+      },
+      { replace: true }
+    )
   }, [createdSortDirection, searchParams, setSearchParams])
 
   // Get unique countries from pets for the country filter

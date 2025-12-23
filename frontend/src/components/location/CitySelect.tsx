@@ -22,6 +22,7 @@ interface Props {
   onChange: (city: City | null) => void
   disabled?: boolean
   allowCreate?: boolean
+  error?: string
 }
 
 export const CitySelect: React.FC<Props> = ({
@@ -30,6 +31,7 @@ export const CitySelect: React.FC<Props> = ({
   onChange,
   disabled = false,
   allowCreate = true,
+  error,
 }) => {
   const [cities, setCities] = useState<City[]>([])
   const [loading, setLoading] = useState(false)
@@ -46,7 +48,7 @@ export const CitySelect: React.FC<Props> = ({
     try {
       const result = await getCities({ country })
       setCities(result)
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to load cities:', err)
       toast.error('Failed to load cities')
     } finally {
@@ -87,7 +89,7 @@ export const CitySelect: React.FC<Props> = ({
       onChange(newCity)
       setSearchValue('')
       toast.success('City created (pending approval)')
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to create city:', err)
       toast.error('Failed to create city')
     } finally {
@@ -106,20 +108,21 @@ export const CitySelect: React.FC<Props> = ({
   if (!country) {
     return (
       <div className="space-y-2">
-        <label className="text-sm font-medium">City</label>
+        <label className={`text-sm font-medium ${error ? 'text-destructive' : ''}`}>City</label>
         <div className="text-sm text-muted-foreground">Select a country first to choose a city</div>
+        {error && <p className="text-xs text-destructive mt-1">{error}</p>}
       </div>
     )
   }
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium" htmlFor={inputId}>
+      <label className={`text-sm font-medium ${error ? 'text-destructive' : ''}`} htmlFor={inputId}>
         City
       </label>
       <input id={inputId} className="sr-only" readOnly value={value?.name ?? ''} />
       <Tags className="w-full">
-        <TagsTrigger disabled={disabled}>
+        <TagsTrigger disabled={disabled} className={error ? 'border-destructive' : ''}>
           {value ? (
             <TagsValue onRemove={handleClear}>
               {value.name}
@@ -131,7 +134,7 @@ export const CitySelect: React.FC<Props> = ({
             </TagsValue>
           ) : (
             <TagsValue onRemove={() => undefined}>
-              <span className="text-muted-foreground">Select city</span>
+              <span className="text-muted-foreground"></span>
               <X className="hidden" />
             </TagsValue>
           )}
@@ -193,6 +196,7 @@ export const CitySelect: React.FC<Props> = ({
           </TagsList>
         </TagsContent>
       </Tags>
+      {error && <p className="text-xs text-destructive mt-1">{error}</p>}
     </div>
   )
 }

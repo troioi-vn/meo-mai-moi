@@ -29,7 +29,7 @@ export default function MyPetsPage() {
         const response = await getMyPetsSections()
         setSections(response)
         setError(null)
-      } catch (err) {
+      } catch (err: unknown) {
         setError('Failed to fetch your pets. Please try again later.')
         console.error(err)
       } finally {

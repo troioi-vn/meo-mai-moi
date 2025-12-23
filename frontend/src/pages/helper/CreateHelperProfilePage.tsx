@@ -25,7 +25,7 @@ const CreateHelperProfilePage: React.FC = () => {
       try {
         const types = await getPetTypes()
         setPetTypes(types)
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Failed to load pet types:', err)
         toast.error('Failed to load pet types. Please try again.')
       } finally {

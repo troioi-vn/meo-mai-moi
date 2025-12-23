@@ -14,6 +14,19 @@ vi.mock('@/api/pets', () => ({
   getPetTypes: vi.fn() as unknown as MockedFunction<() => Promise<PetType[]>>,
 }))
 
+// Mock CitySelect to simplify testing
+vi.mock('@/components/location/CitySelect', () => ({
+  CitySelect: ({ onChange, error }: any) => (
+    <div data-testid="mock-city-select">
+      <label htmlFor="city-mock">City</label>
+      <button id="city-mock" onClick={() => onChange({ id: 1, name: 'Hanoi', country: 'VN' })}>
+        Select Hanoi
+      </button>
+      {error && <span>{error}</span>}
+    </div>
+  ),
+}))
+
 // Mock react-router-dom navigation
 const mockNavigate = vi.fn()
 vi.mock('react-router-dom', async () => {
@@ -113,12 +126,14 @@ describe('CreatePetPage', () => {
     await waitFor(() => {
       expect(screen.getByLabelText('Birthday')).toBeInTheDocument()
     })
-    // Location fields: Country is always shown (required), but other location fields
-    // and Description are hidden in create mode (showOptionalFields=false)
+    // Location fields: Country is always shown (required)
     expect(screen.getByText(/Country/)).toBeInTheDocument()
-    // City, State, Address, Description not shown in create mode
-    expect(screen.queryByLabelText('City')).not.toBeInTheDocument()
+    // City and State are now shown in create mode as they are part of location
+    expect(screen.getByLabelText('City')).toBeInTheDocument()
+    expect(screen.getByLabelText('State/Province')).toBeInTheDocument()
+    // Description and Address are still hidden in create mode (showOptionalFields=false)
     expect(screen.queryByLabelText('Description')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Address')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Create Pet' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
   })
@@ -175,6 +190,7 @@ describe('CreatePetPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Name is required')).toBeInTheDocument()
+      expect(screen.getByText('City is required')).toBeInTheDocument()
       // Birthday no longer universally required
       expect(screen.queryByText('Birthday is required')).not.toBeInTheDocument()
       // Country defaults to 'VN' so it won't show validation error
@@ -215,7 +231,9 @@ describe('CreatePetPage', () => {
     fireEvent.change(screen.getByLabelText('Birthday Precision'), { target: { value: 'day' } })
     await waitFor(() => expect(screen.getByLabelText('Birthday')).toBeInTheDocument())
     fireEvent.change(screen.getByLabelText('Birthday'), { target: { value: '2020-01-01' } })
-    // Country defaults to VN, City/Description are not available in create mode
+    // Country defaults to VN
+    // Select city (using our mock)
+    fireEvent.click(screen.getByText('Select Hanoi'))
 
     // Submit form
     const submitButton = screen.getByRole('button', { name: 'Create Pet' })
@@ -228,6 +246,7 @@ describe('CreatePetPage', () => {
           birthday: '2020-01-01',
           birthday_precision: 'day',
           country: 'VN',
+          city_id: 1,
           pet_type_id: 1,
         })
       )
@@ -245,6 +264,7 @@ describe('CreatePetPage', () => {
 
     // Fill required fields
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Test Pet' } })
+    fireEvent.click(screen.getByText('Select Hanoi'))
     fireEvent.change(screen.getByLabelText('Birthday Precision'), { target: { value: 'month' } })
     // Provide year+month components
     fireEvent.change(screen.getByLabelText('Birth Year'), { target: { value: '2022' } })
@@ -275,9 +295,11 @@ describe('CreatePetPage', () => {
     })
 
     // Fill required fields
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Test Pet' } })
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Error Pet' } })
+    fireEvent.click(screen.getByText('Select Hanoi'))
     fireEvent.change(screen.getByLabelText('Birthday Precision'), { target: { value: 'year' } })
-    fireEvent.change(screen.getByLabelText('Birth Year'), { target: { value: '2023' } })
+    // Provide year component
+    fireEvent.change(screen.getByLabelText('Birth Year'), { target: { value: '2020' } })
     // Country defaults to VN, Description not available in create mode
 
     const submitButton = screen.getByRole('button', { name: 'Create Pet' })
@@ -310,6 +332,7 @@ describe('CreatePetPage', () => {
     )
 
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ghost' } })
+    fireEvent.click(screen.getByText('Select Hanoi'))
     // Country defaults to VN, Description not available in create mode
 
     const submitButton = screen.getByRole('button', { name: 'Create Pet' })
@@ -320,6 +343,7 @@ describe('CreatePetPage', () => {
         expect.objectContaining({
           name: 'Ghost',
           birthday_precision: 'unknown',
+          city_id: 1,
         })
       )
     })

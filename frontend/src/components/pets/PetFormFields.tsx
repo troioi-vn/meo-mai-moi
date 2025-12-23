@@ -156,15 +156,7 @@ export const PetFormFields: React.FC<Props> = ({
       </div>
 
       {/* Location */}
-      <div className="grid grid-cols-2 gap-4">
-        <FormField
-          id="state"
-          label="State/Province"
-          value={formData.state ?? ''}
-          onChange={updateField('state')}
-          error={errors.state}
-          placeholder="Enter state or province"
-        />
+      <div className="grid grid-cols-1 gap-4">
         <CitySelect
           country={formData.country || null}
           value={cityValue ?? null}

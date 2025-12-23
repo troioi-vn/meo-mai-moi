@@ -128,9 +128,8 @@ describe('CreatePetPage', () => {
     })
     // Location fields: Country is always shown (required)
     expect(screen.getByText(/Country/)).toBeInTheDocument()
-    // City and State are now shown in create mode as they are part of location
+    // City is now shown in create mode as it is part of location
     expect(screen.getByLabelText('City')).toBeInTheDocument()
-    expect(screen.getByLabelText('State/Province')).toBeInTheDocument()
     // Description and Address are still hidden in create mode (showOptionalFields=false)
     expect(screen.queryByLabelText('Description')).not.toBeInTheDocument()
     expect(screen.queryByLabelText('Address')).not.toBeInTheDocument()

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState, useId } from 'react'
-import { CheckIcon, Loader2, PlusIcon, X } from 'lucide-react'
+import { CheckIcon, Loader2, PlusIcon } from 'lucide-react'
 import {
   Tags,
   TagsContent,
@@ -122,8 +122,12 @@ export const CitySelect: React.FC<Props> = ({
       </label>
       <input id={inputId} className="sr-only" readOnly value={value?.name ?? ''} />
       <Tags className="w-full">
-        <TagsTrigger disabled={disabled} className={error ? 'border-destructive' : ''}>
-          {value ? (
+        <TagsTrigger
+          disabled={disabled}
+          className={error ? 'border-destructive' : ''}
+          placeholder="Select city"
+        >
+          {value && (
             <TagsValue onRemove={handleClear}>
               {value.name}
               {!value.approved_at && (
@@ -131,11 +135,6 @@ export const CitySelect: React.FC<Props> = ({
                   Pending
                 </Badge>
               )}
-            </TagsValue>
-          ) : (
-            <TagsValue onRemove={() => undefined}>
-              <span className="text-muted-foreground"></span>
-              <X className="hidden" />
             </TagsValue>
           )}
         </TagsTrigger>

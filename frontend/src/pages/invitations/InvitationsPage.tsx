@@ -38,7 +38,8 @@ export default function InvitationsPage() {
   const [error, setError] = useState<string | null>(null)
   const isRefreshingRef = useRef(false)
 
-  const loadData = useCallback(async ({ showLoading = true }: { showLoading?: boolean } = {}) => {
+  const loadData = useCallback(async (params?: { showLoading?: boolean }) => {
+    const { showLoading = true } = params ?? {}
     if (isRefreshingRef.current) {
       return
     }

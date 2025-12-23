@@ -123,7 +123,7 @@ Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
 // Password reset routes - Fortify registers these at root level:
 // POST /forgot-password and POST /reset-password
 // We add API-prefixed aliases for compatibility with existing tests
-Route::post('/password/email', function (\Illuminate\Http\Request $request) {
+Route::post('/password/email', function (\Laravel\Fortify\Http\Requests\SendPasswordResetLinkRequest $request) {
     return app(\Laravel\Fortify\Http\Controllers\PasswordResetLinkController::class)->store($request);
 });
 

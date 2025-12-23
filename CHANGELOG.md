@@ -24,6 +24,7 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Fixed
 
+- **Backend**: Fixed type mismatch in password reset email route by using `SendPasswordResetLinkRequest` instead of generic `Request` in `backend/routes/api.php`.
 - **Tests**: Updated `CreatePetPage` test to reflect changes in location fields visibility.
 - **E2E Testing and Playwright Configuration Improvements**:
 

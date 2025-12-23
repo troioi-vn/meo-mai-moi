@@ -6,10 +6,25 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Pet Creation and Selection**: Enhanced form validation and error handling for pet creation and selection.
+- **Type Safety and Error Handling**: Improved type safety and error handling across various frontend components and hooks.
 - **Deployment Script Logfile Cleanup**: Added `deploy_cleanup_logfiles()` function to clean up old logfiles in `.deploy` folder when using `--clean-up` flag. Keeps only the last 10 logfiles by modification time, freeing up disk space while preserving recent deployment history.
+
+### Changed
+
+- **Frontend Layout and Styling**:
+  - Refactored `CitySelect` and `PetFormFields` for improved layout.
+  - Updated class names for consistent styling in placement and invitations pages.
+  - Adjusted button width in `DatePicker` component.
+- **Frontend Hooks and Components**:
+  - Enhanced type safety in hooks by specifying parameter types.
+  - Updated `InvitationsPage` `loadData` function to handle optional parameters.
+  - Adjusted placeholder in `TagsTrigger`.
+- **Dependencies**: Updated npm packages and fixed `package-lock.json` dependencies.
 
 ### Fixed
 
+- **Tests**: Updated `CreatePetPage` test to reflect changes in location fields visibility.
 - **E2E Testing and Playwright Configuration Improvements**:
 
   - Fixed Playwright env file loading to correctly prioritize `frontend/` directory env files when tests are run from workspace root

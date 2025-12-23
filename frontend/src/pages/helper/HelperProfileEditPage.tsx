@@ -59,20 +59,20 @@ const HelperProfileEditPage: React.FC = () => {
             id: data.data.city_id ?? -1,
             name: data.data.city,
             slug: data.data.city.toLowerCase().replace(/\s+/g, '-'),
-            country: data.data.country ?? '',
+            country: data.data.country,
             description: null,
             created_by: null,
-            approved_at: data.data.approved_at ?? null,
+            approved_at: data.data.approved_at,
             created_at: '',
             updated_at: '',
           }
-        : ((data.data.city as unknown as City) ?? null)
+        : (data.data.city as unknown as City)
 
     return {
       country: data.data.country ?? '',
       address: data.data.address ?? '',
-      city: typeof data.data.city === 'string' ? data.data.city : (data.data.city?.name ?? ''),
-      city_id: data.data.city_id ?? (cityValue ? cityValue.id : null),
+      city: cityValue.name,
+      city_id: data.data.city_id ?? cityValue.id,
       city_selected: cityValue,
       state: data.data.state ?? '',
       phone_number: data.data.phone_number ?? data.data.phone ?? '',
@@ -85,7 +85,7 @@ const HelperProfileEditPage: React.FC = () => {
       photos: [],
       pet_type_ids: data.data.pet_types?.map((pt) => pt.id) ?? [],
     }
-  }, [data?.data])
+  }, [data])
 
   // Initialize the form hook with proper initial data
   const { formData, errors, isSubmitting, updateField, updateCity, handleSubmit, handleCancel } =

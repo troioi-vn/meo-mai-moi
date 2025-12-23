@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createHelperProfile, updateHelperProfile } from '@/api/helper-profiles'
@@ -51,28 +51,29 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [prevInitialData, setPrevInitialData] = useState(initialData)
 
-  useEffect(() => {
-    if (profileId && initialData) {
-      setFormData({
-        country: '',
-        address: '',
-        city: '',
-        city_id: null,
-        city_selected: null,
-        state: '',
-        phone_number: '',
-        contact_info: '',
-        experience: '',
-        has_pets: false,
-        has_children: false,
-        request_types: [],
-        photos: [],
-        pet_type_ids: [],
-        ...initialData,
-      })
-    }
-  }, [initialData, profileId])
+  // Reset form data when initialData changes
+  if (profileId && initialData !== prevInitialData) {
+    setPrevInitialData(initialData)
+    setFormData({
+      country: '',
+      address: '',
+      city: '',
+      city_id: null,
+      city_selected: null,
+      state: '',
+      phone_number: '',
+      contact_info: '',
+      experience: '',
+      has_pets: false,
+      has_children: false,
+      request_types: [],
+      photos: [],
+      pet_type_ids: [],
+      ...initialData,
+    })
+  }
 
   const createMutation = useMutation({
     mutationFn: createHelperProfile,
@@ -147,8 +148,9 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
     }))
     if (errors.city) {
       setErrors((prev) => {
-        const { city: _cityError, ...rest } = prev
-        return rest
+        const newErrors = { ...prev }
+        delete newErrors.city
+        return newErrors
       })
     }
   }
@@ -160,10 +162,10 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
     // address, state are now optional
     if (!formData.phone_number) newErrors.phone_number = 'Phone number is required'
     if (!formData.experience) newErrors.experience = 'Experience is required'
-    if (!formData.request_types || formData.request_types.length === 0) {
+    if (formData.request_types.length === 0) {
       newErrors.request_types = 'At least one request type is required'
     }
-    if (!formData.pet_type_ids || formData.pet_type_ids.length === 0) {
+    if (formData.pet_type_ids.length === 0) {
       newErrors.pet_type_ids = 'Select at least one pet type'
     }
     setErrors(newErrors)

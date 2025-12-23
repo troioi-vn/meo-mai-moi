@@ -63,7 +63,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
       if (found) return found
     }
     return undefined
-  }, [pet.placement_requests, user?.id])
+  }, [pet.placement_requests, user])
 
   // Prefer photos[0].url, then photo_url, then placeholder
   const imageUrl =
@@ -184,7 +184,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
                     petId={pet.id}
                     placementRequestId={activePlacementRequestId}
                     requestType={activePlacementRequest?.request_type ?? ''}
-                    petCity={typeof pet.city === 'string' ? pet.city : pet.city?.name ?? ''}
+                    petCity={typeof pet.city === 'string' ? pet.city : (pet.city?.name ?? '')}
                     petCountry={pet.country}
                   />
                 )}

@@ -18,6 +18,15 @@ import { deriveImageUrl } from '@/utils/petImages'
 import { PlacementRequestsSection } from '@/components/placement/pet-profile/PlacementRequestsSection'
 import { api } from '@/api/axios'
 import { toast } from 'sonner'
+import type { Pet } from '@/types/pet'
+
+// Check if pet is publicly viewable (lost or has active placement request)
+const isPubliclyViewable = (petData: Pet | null): boolean => {
+  if (!petData) return false
+  if (petData.status === 'lost') return true
+  const placementRequests = petData.placement_requests ?? []
+  return placementRequests.some((pr) => pr.status === 'open')
+}
 
 const PetProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -48,14 +57,6 @@ const PetProfilePage: React.FC = () => {
     } catch {
       toast.error('Failed to delete placement request')
     }
-  }
-
-  // Check if pet is publicly viewable (lost or has active placement request)
-  const isPubliclyViewable = (petData: typeof pet): boolean => {
-    if (!petData) return false
-    if (petData.status === 'lost') return true
-    const placementRequests = petData.placement_requests ?? []
-    return placementRequests.some((pr) => pr.status === 'open')
   }
 
   // Check if user is owner

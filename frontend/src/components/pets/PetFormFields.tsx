@@ -59,7 +59,7 @@ export const PetFormFields: React.FC<Props> = ({
         <select
           id="sex"
           className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          value={formData.sex ?? 'not_specified'}
+          value={formData.sex}
           onChange={updateField('sex')}
         >
           <option value="not_specified">Not Specified</option>
@@ -168,7 +168,7 @@ export const PetFormFields: React.FC<Props> = ({
         <CitySelect
           country={formData.country || null}
           value={cityValue ?? null}
-          onChange={onCityChange ?? (() => {})}
+          onChange={onCityChange ?? (() => undefined)}
           disabled={false}
           error={errors.city}
         />

@@ -1,5 +1,5 @@
 import { useCreatePlacementRequest } from '@/hooks/useCreatePlacementRequest'
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -48,7 +48,6 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
 }) => {
   const [requestType, setRequestType] = useState(initialValues?.request_type ?? '')
   const [notes, setNotes] = useState(initialValues?.notes ?? '')
-  const [expiresAt, setExpiresAt] = useState<Date | undefined>(undefined)
   const [startDate, setStartDate] = useState<Date | undefined>(
     initialValues?.start_date ?? undefined
   )
@@ -60,6 +59,13 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
   // Date validation
   const today = useMemo(() => startOfDay(new Date()), [])
 
+  const expiresAt = useMemo(() => {
+    if (requestType === 'permanent') {
+      return addMonths(new Date(), 6)
+    }
+    return startDate
+  }, [requestType, startDate])
+
   const isStartDateValid = useMemo(() => {
     if (!startDate) return true // No date selected yet, no error
     return !isBefore(startOfDay(startDate), today)
@@ -70,15 +76,6 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
     if (requestType === 'permanent') return true // End date not used for permanent
     return !isBefore(startOfDay(endDate), startOfDay(startDate))
   }, [endDate, startDate, requestType])
-
-  useEffect(() => {
-    if (requestType === 'permanent') {
-      const sixMonthsFromNow = addMonths(new Date(), 6)
-      setExpiresAt(sixMonthsFromNow)
-    } else {
-      setExpiresAt(startDate)
-    }
-  }, [requestType, startDate])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -225,7 +222,9 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
               <Checkbox
                 id="public-profile-accepted"
                 checked={publicProfileAccepted}
-                onCheckedChange={(checked) => { setPublicProfileAccepted(checked === true); }}
+                onCheckedChange={(checked) => {
+                  setPublicProfileAccepted(checked === true)
+                }}
                 className="mt-1"
               />
               <Label
@@ -241,7 +240,9 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
               <Checkbox
                 id="terms-accepted"
                 checked={termsAccepted}
-                onCheckedChange={(checked) => { setTermsAccepted(checked === true); }}
+                onCheckedChange={(checked) => {
+                  setTermsAccepted(checked === true)
+                }}
                 className="mt-1"
               />
               <Label

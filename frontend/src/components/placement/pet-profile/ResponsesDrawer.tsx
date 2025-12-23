@@ -199,7 +199,13 @@ export function ResponsesDrawer({
                   </p>
                   <p>
                     <span className="text-muted-foreground">Location:</span>{' '}
-                    {[profileData.city, profileData.state, profileData.country]
+                    {[
+                      typeof profileData.city === 'object'
+                        ? profileData.city.name
+                        : profileData.city,
+                      profileData.state,
+                      profileData.country,
+                    ]
                       .filter(Boolean)
                       .join(', ') || 'N/A'}
                   </p>

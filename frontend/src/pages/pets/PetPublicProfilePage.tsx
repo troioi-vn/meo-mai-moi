@@ -108,7 +108,9 @@ const PetPublicProfilePage: React.FC = () => {
         if (err && typeof err === 'object' && 'response' in err) {
           const axiosErr = err as { response?: { status?: number; data?: { message?: string } } }
           if (axiosErr.response?.status === 403) {
-            setError(axiosErr.response.data?.message ?? 'This pet profile is not publicly available.')
+            setError(
+              axiosErr.response.data?.message ?? 'This pet profile is not publicly available.'
+            )
           } else if (axiosErr.response?.status === 404) {
             setError('Pet not found')
           } else {
@@ -163,7 +165,9 @@ const PetPublicProfilePage: React.FC = () => {
   const ageDisplay = formatPublicPetAge(pet)
   const isLost = pet.status === 'lost'
   const isDeceased = pet.status === 'deceased'
-  const hasActivePlacementRequests = (pet.placement_requests ?? []).some((pr) => pr.status === 'open')
+  const hasActivePlacementRequests = (pet.placement_requests ?? []).some(
+    (pr) => pr.status === 'open'
+  )
 
   return (
     <div className="min-h-screen">
@@ -189,9 +193,7 @@ const PetPublicProfilePage: React.FC = () => {
           {isOwner && (
             <Alert variant="info">
               <Eye className="h-4 w-4" />
-              <AlertDescription>
-                You are viewing the public profile of your pet.
-              </AlertDescription>
+              <AlertDescription>You are viewing the public profile of your pet.</AlertDescription>
             </Alert>
           )}
 
@@ -200,7 +202,8 @@ const PetPublicProfilePage: React.FC = () => {
             <Alert variant="warning">
               <Info className="h-4 w-4" />
               <AlertDescription>
-                This pet has been reported as lost. If you have any information, please contact the owner.
+                This pet has been reported as lost. If you have any information, please contact the
+                owner.
               </AlertDescription>
             </Alert>
           )}
@@ -217,11 +220,9 @@ const PetPublicProfilePage: React.FC = () => {
             <div className="flex flex-col gap-1">
               <h1 className="text-2xl font-bold text-foreground">{pet.name}</h1>
               <p className="text-muted-foreground">{ageDisplay}</p>
-              {pet.pet_type && (
-                <Badge variant="secondary" className="w-fit">
-                  {pet.pet_type.name}
-                </Badge>
-              )}
+              <Badge variant="secondary" className="w-fit">
+                {pet.pet_type.name}
+              </Badge>
             </div>
           </section>
 
@@ -281,5 +282,3 @@ const PetPublicProfilePage: React.FC = () => {
 }
 
 export default PetPublicProfilePage
-
-

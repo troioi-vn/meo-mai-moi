@@ -7,18 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { PlusCircle, MapPin, ChevronLeft, ChevronRight, Home, Heart } from 'lucide-react'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
-import type { PlacementRequestType } from '@/types/helper-profile'
-
-interface HelperProfile {
-  id: number
-  city?: string
-  state?: string
-  country?: string
-  request_types?: PlacementRequestType[]
-  user?: {
-    name?: string
-  }
-}
+import type { HelperProfile } from '@/types/helper-profile'
 
 export default function HelperProfilePage() {
   const navigate = useNavigate()
@@ -46,7 +35,7 @@ export default function HelperProfilePage() {
     )
   }
 
-  const profiles = (data?.data as HelperProfile[] | undefined) ?? []
+  const profiles = data?.data ?? []
 
   return (
     <div className="min-h-screen">
@@ -96,8 +85,8 @@ export default function HelperProfilePage() {
                 <div className="space-y-2">
                   <h2 className="text-lg font-semibold text-foreground">No helper profiles yet</h2>
                   <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                    Create a helper profile to let pet owners know you&apos;re available to foster or
-                    adopt pets.
+                    Create a helper profile to let pet owners know you&apos;re available to foster
+                    or adopt pets.
                   </p>
                 </div>
                 <Button

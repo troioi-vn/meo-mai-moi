@@ -58,7 +58,7 @@ export default function InvitationsPage() {
       setInvitations(invitationsData)
       setStats(statsData)
       setError(null)
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to load invitations:', err)
       if (showLoading) {
         setError('Failed to load invitations. Please try again.')
@@ -92,7 +92,7 @@ export default function InvitationsPage() {
         prev ? { ...prev, total: prev.total + 1, pending: prev.pending + 1 } : null
       )
       toast.success('Invitation generated successfully!')
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to generate invitation:', err)
       toast.error('Failed to generate invitation. You may have reached your daily limit.')
     } finally {
@@ -104,7 +104,7 @@ export default function InvitationsPage() {
     try {
       await navigator.clipboard.writeText(invitation.invitation_url)
       toast.success('Invitation link copied to clipboard!')
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to copy:', err)
       toast.error('Failed to copy invitation link')
     }
@@ -126,7 +126,7 @@ export default function InvitationsPage() {
           : null
       )
       toast.success('Invitation revoked successfully')
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to revoke invitation:', err)
       toast.error('Failed to revoke invitation')
     }

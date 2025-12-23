@@ -85,7 +85,9 @@ export default function HelperProfileViewPage() {
       const petPhoto =
         (Array.isArray((pet as { photos?: { url?: string }[] }).photos)
           ? (pet as { photos?: { url?: string }[] }).photos?.[0]?.url
-          : undefined) ?? pet.photo_url ?? placeholderAvatar
+          : undefined) ??
+        pet.photo_url ??
+        placeholderAvatar
 
       const placementStatus = placement?.status ?? ''
       const transferStatus = tr.status ?? ''
@@ -208,7 +210,7 @@ export default function HelperProfileViewPage() {
                     <div className="flex items-center justify-between gap-2">
                       <p className="font-semibold text-foreground truncate">{item.pet.name}</p>
                       <Badge variant="outline" className="shrink-0">
-                        {item.pet.pet_type?.name ?? 'Pet'}
+                        {item.pet.pet_type.name}
                       </Badge>
                     </div>
                     <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">

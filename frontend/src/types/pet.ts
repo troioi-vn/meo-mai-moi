@@ -128,6 +128,7 @@ export interface PlacementRequest {
   start_date?: string
   end_date?: string
   transfer_requests?: TransferRequest[]
+  pet?: Pet
   created_at?: string
   updated_at?: string
 }
@@ -143,6 +144,8 @@ export interface TransferRequest {
   fostering_type?: string | null
   price?: number | null
   status?: string
+  pet?: Pet
+  placement_request?: PlacementRequest
   created_at?: string
   updated_at?: string
   helper_profile?: {

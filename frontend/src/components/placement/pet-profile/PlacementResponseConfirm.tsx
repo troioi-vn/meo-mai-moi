@@ -18,11 +18,13 @@ export function PlacementResponseConfirm({
   price,
 }: Props) {
   const selected = helperProfiles.find((hp) => String(hp.id) === selectedProfile)
+  const cityName = typeof selected?.city === 'object' ? selected.city.name : (selected?.city ?? '')
+
   return (
     <div className="py-4">
       <p>Are you sure you want to submit this response?</p>
       <p>Pet: {petName}</p>
-      <p>Helper Profile: {selected ? `${selected.city ?? ''}, ${selected.state ?? ''}` : ''}</p>
+      <p>Helper Profile: {selected ? `${cityName}, ${selected.state ?? ''}` : ''}</p>
       <p>
         Relationship Type:{' '}
         {requestedRelationshipType ? requestedRelationshipType.replace('_', ' ').toUpperCase() : ''}

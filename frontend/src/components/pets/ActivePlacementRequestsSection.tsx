@@ -32,7 +32,7 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
 
         // Show "Show more" button if there are more than 4 pets with active placement requests
         setShowMoreVisible(response.length > 4)
-      } catch (err) {
+      } catch (err: unknown) {
         setError('Failed to load placement requests. Please try again later.')
         console.error('Error fetching placement requests:', err)
       } finally {
@@ -59,7 +59,7 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
 
       // Show "Show more" button if there are more than 4 pets with active placement requests
       setShowMoreVisible(response.length > 4)
-    } catch (err) {
+    } catch (err: unknown) {
       setError('Failed to load placement requests. Please try again later.')
       console.error('Error fetching placement requests:', err)
     } finally {
@@ -104,8 +104,8 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
         <div className="text-center space-y-4">
           <p className="text-destructive text-lg">{error}</p>
           <p className="text-muted-foreground">
-            We&apos;re having trouble loading the placement requests. Please check your connection and
-            try again.
+            We&apos;re having trouble loading the placement requests. Please check your connection
+            and try again.
           </p>
           <Button
             onClick={() => {

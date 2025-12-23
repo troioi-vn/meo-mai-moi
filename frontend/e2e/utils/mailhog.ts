@@ -6,7 +6,7 @@
 export interface MailHogMessage {
   ID: string
   From: { Relays: null; Mailbox: string; Domain: string; Params: string }
-  To: Array<{ Relays: null; Mailbox: string; Domain: string; Params: string }>
+  To: { Relays: null; Mailbox: string; Domain: string; Params: string }[]
   Content: {
     Headers: Record<string, string[]>
     Body: string
@@ -33,7 +33,7 @@ export interface MailHogResponse {
 export class MailHogClient {
   private baseUrl: string
 
-  constructor(baseUrl = process.env.MAILHOG_API_URL || 'http://localhost:8025/api/v2') {
+  constructor(baseUrl = process.env.MAILHOG_API_URL ?? 'http://localhost:8025/api/v2') {
     this.baseUrl = baseUrl
   }
 
@@ -43,9 +43,9 @@ export class MailHogClient {
   async getMessages(): Promise<MailHogResponse> {
     const response = await fetch(`${this.baseUrl}/messages`)
     if (!response.ok) {
-      throw new Error(`MailHog API error: ${response.status} ${response.statusText}`)
+      throw new Error(`MailHog API error: ${String(response.status)} ${response.statusText}`)
     }
-    return response.json()
+    return (await response.json()) as MailHogResponse
   }
 
   /**
@@ -75,8 +75,8 @@ export class MailHogClient {
 
     // Look for verification URL patterns
     const urlPatterns = [
-      /https?:\/\/[^\/\s]+\/email\/verify\/\d+\/[a-zA-Z0-9]+\?expires=\d+&signature=[a-zA-Z0-9%]+/g,
-      /https?:\/\/[^\/\s]+\/verify-email\/[a-zA-Z0-9]+/g,
+      /https?:\/\/[^/\s]+\/email\/verify\/\d+\/[a-zA-Z0-9]+\?expires=\d+&signature=[a-zA-Z0-9%]+/g,
+      /https?:\/\/[^/\s]+\/verify-email\/[a-zA-Z0-9]+/g,
     ]
 
     for (const pattern of urlPatterns) {
@@ -107,13 +107,13 @@ export class MailHogClient {
 
       // Filter by subject if provided
       if (subject && targetMessage) {
-        const messageSubject = targetMessage.Content.Headers['Subject']?.[0] || ''
+        const messageSubject = targetMessage.Content.Headers.Subject?.[0] ?? ''
         if (!messageSubject.includes(subject)) {
           targetMessage =
             messages.find((msg) => {
-              const msgSubject = msg.Content.Headers['Subject']?.[0] || ''
+              const msgSubject = msg.Content.Headers.Subject?.[0] ?? ''
               return msgSubject.includes(subject)
-            }) || null
+            }) ?? null
         }
       }
 
@@ -139,7 +139,7 @@ export class MailHogClient {
       })
       // MailHog may return 404 if no messages exist, which is fine
       if (!response.ok && response.status !== 404) {
-        throw new Error(`Failed to clear MailHog messages: ${response.status}`)
+        throw new Error(`Failed to clear MailHog messages: ${String(response.status)}`)
       }
     } catch (error) {
       // If MailHog is not available or endpoint doesn't exist, just log and continue
@@ -155,7 +155,7 @@ export class MailHogClient {
       method: 'DELETE',
     })
     if (!response.ok) {
-      throw new Error(`Failed to delete message ${messageId}: ${response.status}`)
+      throw new Error(`Failed to delete message ${messageId}: ${String(response.status)}`)
     }
   }
 }

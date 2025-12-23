@@ -119,7 +119,7 @@ const RequestsPage = () => {
       // Hide pets with no visible placement requests
       const visibleStatuses = ['open', 'fulfilled', 'pending_transfer', 'active', 'finalized']
       const hasVisiblePlacementRequest = prs.some((pr) =>
-        visibleStatuses.includes((pr.status ?? '').toLowerCase())
+        visibleStatuses.includes(pr.status.toLowerCase())
       )
       if (!hasVisiblePlacementRequest) return false
 
@@ -137,7 +137,7 @@ const RequestsPage = () => {
       const matchesRequestType =
         requestTypeFilter === 'all' ||
         prs.some((pr) => {
-          const prType = (pr.request_type ?? '').toLowerCase()
+          const prType = pr.request_type.toLowerCase()
           return prType === requestTypeFilter
         })
 
@@ -300,7 +300,9 @@ const RequestsPage = () => {
             <span className="text-sm text-muted-foreground shrink-0">Pickup</span>
             <Select
               value={pickupDateComparison}
-              onValueChange={(v) => setPickupDateComparison(v as DateComparison)}
+              onValueChange={(v) => {
+                setPickupDateComparison(v as DateComparison)
+              }}
             >
               <SelectTrigger className="w-[80px]" aria-label="Pickup Date Comparison">
                 <SelectValue />
@@ -322,7 +324,9 @@ const RequestsPage = () => {
               <span className="text-sm text-muted-foreground shrink-0">Drop-off</span>
               <Select
                 value={dropoffDateComparison}
-                onValueChange={(v) => setDropoffDateComparison(v as DateComparison)}
+                onValueChange={(v) => {
+                  setDropoffDateComparison(v as DateComparison)
+                }}
               >
                 <SelectTrigger className="w-[80px]" aria-label="Drop-off Date Comparison">
                   <SelectValue />

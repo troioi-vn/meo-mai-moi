@@ -318,7 +318,7 @@ export const useCreatePetForm = (petId?: string) => {
         const axiosErr = err as {
           response: { status: number; data: { errors?: Record<string, string[]> } }
         }
-        if (axiosErr.response?.status === 422 && axiosErr.response.data?.errors) {
+        if (axiosErr.response.status === 422 && axiosErr.response.data.errors) {
           const backendErrors = axiosErr.response.data.errors
           const newFormErrors: FormErrors = {}
           Object.keys(backendErrors).forEach((key) => {

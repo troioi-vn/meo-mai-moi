@@ -230,7 +230,7 @@ const RequestsPage = () => {
               setRequestTypeFilter(v as PlacementRequestType)
             }}
           >
-            <SelectTrigger className="w-full sm:w-[180px]" aria-label="Request Type Filter">
+            <SelectTrigger className="w-full sm:w-180px" aria-label="Request Type Filter">
               <SelectValue placeholder="All Types" />
             </SelectTrigger>
             <SelectContent>
@@ -244,7 +244,7 @@ const RequestsPage = () => {
             </SelectContent>
           </Select>
           <Select value={petTypeFilter} onValueChange={setPetTypeFilter}>
-            <SelectTrigger className="w-full sm:w-[180px]" aria-label="Pet Type Filter">
+            <SelectTrigger className="w-full sm:w-45" aria-label="Pet Type Filter">
               <SelectValue placeholder="All Pet Types" />
             </SelectTrigger>
             <SelectContent>
@@ -257,7 +257,7 @@ const RequestsPage = () => {
             </SelectContent>
           </Select>
           <Select value={countryFilter} onValueChange={setCountryFilter}>
-            <SelectTrigger className="w-full sm:w-[180px]" aria-label="Country Filter">
+            <SelectTrigger className="w-full sm:w-45" aria-label="Country Filter">
               <SelectValue placeholder="All Countries" />
             </SelectTrigger>
             <SelectContent>
@@ -281,7 +281,7 @@ const RequestsPage = () => {
               })
             }}
           >
-            <SelectTrigger className="w-full sm:w-[180px]" aria-label="Created Date Sort">
+            <SelectTrigger className="w-full sm:w-45" aria-label="Created Date Sort">
               <SelectValue placeholder="Sort by Created Date" />
             </SelectTrigger>
             <SelectContent>
@@ -304,7 +304,7 @@ const RequestsPage = () => {
                 setPickupDateComparison(v as DateComparison)
               }}
             >
-              <SelectTrigger className="w-[80px]" aria-label="Pickup Date Comparison">
+              <SelectTrigger className="w-20" aria-label="Pickup Date Comparison">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -315,7 +315,7 @@ const RequestsPage = () => {
                 ))}
               </SelectContent>
             </Select>
-            <DatePicker date={pickupDate} setDate={setPickupDate} className="w-[130px]" />
+            <DatePicker date={pickupDate} setDate={setPickupDate} className="w-32.5" />
           </div>
 
           {/* Drop-off Date filter - hidden for permanent requests */}
@@ -328,7 +328,7 @@ const RequestsPage = () => {
                   setDropoffDateComparison(v as DateComparison)
                 }}
               >
-                <SelectTrigger className="w-[80px]" aria-label="Drop-off Date Comparison">
+                <SelectTrigger className="w-20" aria-label="Drop-off Date Comparison">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -339,7 +339,7 @@ const RequestsPage = () => {
                   ))}
                 </SelectContent>
               </Select>
-              <DatePicker date={dropoffDate} setDate={setDropoffDate} className="w-[130px]" />
+              <DatePicker date={dropoffDate} setDate={setDropoffDate} className="w-32.5" />
             </div>
           )}
         </div>

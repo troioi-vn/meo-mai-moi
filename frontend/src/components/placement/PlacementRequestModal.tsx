@@ -104,7 +104,7 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
           <DialogTitle>Create Placement Request</DialogTitle>
           <DialogDescription>

@@ -153,7 +153,7 @@ export default function InvitationsPage() {
   if (isLoading) {
     return (
       <div className="container mx-auto py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center justify-center min-h-400px">
           <div className="text-center space-y-4">
             <Loader2 className="h-8 w-8 animate-spin mx-auto" />
             <p className="text-muted-foreground">Loading your invitations...</p>
@@ -314,7 +314,7 @@ export default function InvitationsPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 sm:flex-shrink-0">
+                    <div className="flex items-center gap-2 sm:shrink-0">
                       <Button
                         variant="outline"
                         size="sm"

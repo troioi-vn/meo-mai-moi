@@ -42,7 +42,7 @@ ARG INSTALL_DEV=false
 RUN apt-get update && apt-get install -y \
 	libpng-dev libjpeg62-turbo-dev libfreetype6-dev libonig-dev libzip-dev \
 	libpq-dev libicu-dev locales zip unzip curl nginx supervisor procps net-tools postgresql-client \
-	libwebp-dev libgmp-dev \
+	libwebp-dev libgmp-dev git \
  && if [ "$INSTALL_XDEBUG" = "true" ]; then pecl install xdebug >/dev/null 2>&1 && docker-php-ext-enable xdebug; fi
 
 # Install PHP extensions

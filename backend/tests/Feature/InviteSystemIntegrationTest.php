@@ -10,6 +10,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Laravel\Socialite\Contracts\Provider;
+use Laravel\Socialite\Contracts\User as GoogleUser;
+use Laravel\Socialite\Facades\Socialite;
+use Mockery;
 use Tests\TestCase;
 use Tests\Traits\CreatesUsers;
 
@@ -358,5 +362,44 @@ class InviteSystemIntegrationTest extends TestCase
         $this->assertEquals(2, WaitlistEntry::count());
         $this->assertEquals(1, WaitlistEntry::where('status', 'pending')->count());
         $this->assertEquals(1, WaitlistEntry::where('status', 'invited')->count());
+    }
+
+    public function test_google_registration_with_invitation_code()
+    {
+        Settings::set('invite_only_enabled', 'true');
+
+        // Step 1: Generate invitation
+        $inviter = User::factory()->create();
+        $invitation = Invitation::create([
+            'code' => 'GOOGLE_INVITE',
+            'inviter_user_id' => $inviter->id,
+            'status' => 'pending',
+        ]);
+
+        // Step 2: Mock Google user
+        $googleUser = Mockery::mock(GoogleUser::class);
+        $googleUser->shouldReceive('getId')->andReturn('google-999');
+        $googleUser->shouldReceive('getEmail')->andReturn('google-invited@example.com');
+        $googleUser->shouldReceive('getName')->andReturn('Google Invited User');
+        $googleUser->shouldReceive('getAvatar')->andReturn('https://example.com/avatar.png');
+        $googleUser->token = 'token-123';
+        $googleUser->refreshToken = 'refresh-123';
+
+        $provider = Mockery::mock(Provider::class);
+        $provider->shouldReceive('user')->andReturn($googleUser);
+        Socialite::shouldReceive('driver')->with('google')->andReturn($provider);
+
+        // Step 3: Callback with invitation code in session
+        $response = $this->withSession(['google_invitation_code' => 'GOOGLE_INVITE'])
+            ->get('/auth/google/callback');
+
+        // Step 4: Verify user created and invitation accepted
+        $user = User::where('email', 'google-invited@example.com')->first();
+        $this->assertNotNull($user);
+        $this->assertAuthenticatedAs($user);
+
+        $invitation->refresh();
+        $this->assertEquals('accepted', $invitation->status);
+        $this->assertEquals($user->id, $invitation->recipient_user_id);
     }
 }

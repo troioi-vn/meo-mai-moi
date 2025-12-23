@@ -6,12 +6,19 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Google OAuth & Invitation System Integration**:
+  - Added "Sign in with Google" button to the registration page, allowing invited users to register via Google while preserving their invitation code.
+  - Added automatic waitlist enrollment when attempting to register via Google in invite-only mode without a valid invitation.
+  - Added frontend notifications for Google OAuth status: "Added to waitlist", "Already on waitlist", and "Waitlist failed".
 - **Pet Creation and Selection**: Enhanced form validation and error handling for pet creation and selection.
 - **Type Safety and Error Handling**: Improved type safety and error handling across various frontend components and hooks.
 - **Deployment Script Logfile Cleanup**: Added `deploy_cleanup_logfiles()` function to clean up old logfiles in `.deploy` folder when using `--clean-up` flag. Keeps only the last 10 logfiles by modification time, freeing up disk space while preserving recent deployment history.
 
 ### Changed
 
+- **Google OAuth Flow**:
+  - Updated `GoogleAuthController` to enforce invite-only registration rules and automatically accept invitations for new Google users.
+  - Enhanced `LoginForm` to preserve `invitation_code` and `redirect` parameters during Google OAuth redirects.
 - **Frontend Layout and Styling**:
   - Refactored `CitySelect` and `PetFormFields` for improved layout.
   - Updated class names for consistent styling in placement and invitations pages.
@@ -24,6 +31,7 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Fixed
 
+- **Invite-Only Registration**: Fixed a bug where Google login could bypass invite-only registration restrictions.
 - **Backend**: Fixed type mismatch in password reset email route by using `SendPasswordResetLinkRequest` instead of generic `Request` in `backend/routes/api.php`.
 - **Tests**: Updated `CreatePetPage` test to reflect changes in location fields visibility.
 - **E2E Testing and Playwright Configuration Improvements**:

@@ -43,9 +43,14 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
   }
 
   const redirectPath = getRedirectPath()
-  const googleRedirectQuery =
-    redirectPath !== '/' ? `?redirect=${encodeURIComponent(redirectPath)}` : ''
-  const googleLoginHref = `/auth/google/redirect${googleRedirectQuery}`
+  const params = new URLSearchParams(location.search)
+  const invitationCode = params.get('invitation_code')
+
+  const googleQueryParams = new URLSearchParams()
+  if (redirectPath !== '/') googleQueryParams.set('redirect', redirectPath)
+  if (invitationCode) googleQueryParams.set('invitation_code', invitationCode)
+  const googleQueryString = googleQueryParams.toString()
+  const googleLoginHref = `/auth/google/redirect${googleQueryString ? `?${googleQueryString}` : ''}`
 
   const handleEmailSubmit = async (event: React.FormEvent) => {
     event.preventDefault()

@@ -3,6 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Models\Settings;
+use App\Models\WaitlistEntry;
+use App\Models\Invitation;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\RedirectResponse;
 use Laravel\Socialite\Contracts\Provider;
@@ -13,6 +17,14 @@ use Tests\TestCase;
 
 class GoogleAuthTest extends TestCase
 {
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        config(['app.frontend_url' => 'https://frontend.test']);
+    }
+
     protected function tearDown(): void
     {
         Mockery::close();
@@ -35,10 +47,20 @@ class GoogleAuthTest extends TestCase
         $this->assertEquals('/account/pets', session('google_redirect'));
     }
 
+    public function test_redirect_route_stores_invitation_code(): void
+    {
+        $provider = Mockery::mock(Provider::class);
+        $provider->shouldReceive('scopes')->andReturnSelf();
+        $provider->shouldReceive('redirect')->andReturn(new RedirectResponse('https://google.com'));
+        Socialite::shouldReceive('driver')->with('google')->andReturn($provider);
+
+        $this->get('/auth/google/redirect?invitation_code=CODE123');
+
+        $this->assertEquals('CODE123', session('google_invitation_code'));
+    }
+
     public function test_callback_creates_new_user_and_logs_in(): void
     {
-        config(['app.frontend_url' => 'https://frontend.test']);
-
         $tinyPng = base64_decode(
             'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO3Z1WQAAAAASUVORK5CYII='
         );
@@ -73,8 +95,6 @@ class GoogleAuthTest extends TestCase
 
     public function test_callback_updates_existing_google_user(): void
     {
-        config(['app.frontend_url' => 'https://frontend.test']);
-
         $user = User::factory()->create([
             'google_id' => 'google-123',
             'google_token' => 'old-token',
@@ -104,8 +124,6 @@ class GoogleAuthTest extends TestCase
 
     public function test_callback_links_google_to_existing_email_user(): void
     {
-        config(['app.frontend_url' => 'https://frontend.test']);
-
         $existing = User::factory()->create([
             'email' => 'taken@example.com',
             'google_id' => null,
@@ -138,8 +156,6 @@ class GoogleAuthTest extends TestCase
 
     public function test_callback_redirects_when_google_returns_no_email(): void
     {
-        config(['app.frontend_url' => 'https://frontend.test']);
-
         $this->mockGoogleUser([
             'id' => 'google-no-email',
             'email' => null,
@@ -151,6 +167,65 @@ class GoogleAuthTest extends TestCase
         $response->assertRedirect('https://frontend.test/login?error=missing_email');
         $this->assertGuest();
         $this->assertEquals(0, User::count());
+    }
+
+    public function test_callback_adds_to_waitlist_when_invite_only_enabled(): void
+    {
+        Settings::set('invite_only_enabled', 'true');
+
+        $this->mockGoogleUser([
+            'email' => 'waitlist@example.com',
+        ]);
+
+        $response = $this->get('/auth/google/callback');
+
+        $response->assertRedirect('https://frontend.test/login?status=added_to_waitlist');
+        $this->assertDatabaseHas('waitlist_entries', ['email' => 'waitlist@example.com']);
+        $this->assertGuest();
+    }
+
+    public function test_callback_shows_already_on_waitlist_error(): void
+    {
+        Settings::set('invite_only_enabled', 'true');
+        WaitlistEntry::create(['email' => 'already@example.com', 'status' => 'pending']);
+
+        $this->mockGoogleUser([
+            'email' => 'already@example.com',
+        ]);
+
+        $response = $this->get('/auth/google/callback');
+
+        $response->assertRedirect('https://frontend.test/login?error=already_on_waitlist');
+        $this->assertGuest();
+    }
+
+    public function test_callback_accepts_invitation_when_valid_code_provided(): void
+    {
+        Settings::set('invite_only_enabled', 'true');
+
+        $inviter = User::factory()->create();
+        $invitation = Invitation::create([
+            'code' => 'VALID_CODE',
+            'inviter_user_id' => $inviter->id,
+            'status' => 'pending',
+        ]);
+
+        $this->mockGoogleUser([
+            'email' => 'invited@example.com',
+        ]);
+
+        $response = $this->withSession(['google_invitation_code' => 'VALID_CODE'])
+            ->get('/auth/google/callback');
+
+        $response->assertRedirect('https://frontend.test/account/pets');
+
+        $user = User::where('email', 'invited@example.com')->first();
+        $this->assertNotNull($user);
+        $this->assertAuthenticatedAs($user);
+
+        $invitation->refresh();
+        $this->assertEquals('accepted', $invitation->status);
+        $this->assertEquals($user->id, $invitation->recipient_user_id);
     }
 
     private function mockGoogleUser(array $overrides = []): void

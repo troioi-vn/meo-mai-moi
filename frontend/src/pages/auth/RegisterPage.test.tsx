@@ -55,6 +55,32 @@ describe('RegisterPage', () => {
     })
   })
 
+  it('shows the Google login button on the register page', async () => {
+    renderWithRouter(<RegisterPage />, { route: '/register' })
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: /sign in with google/i })).toBeInTheDocument()
+    })
+
+    expect(screen.getByRole('link', { name: /sign in with google/i })).toHaveAttribute(
+      'href',
+      '/auth/google/redirect'
+    )
+  })
+
+  it('includes invitation_code on Google login button on register page', async () => {
+    renderWithRouter(<RegisterPage />, { route: '/register?invitation_code=CODE123' })
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: /sign in with google/i })).toBeInTheDocument()
+    })
+
+    expect(screen.getByRole('link', { name: /sign in with google/i })).toHaveAttribute(
+      'href',
+      '/auth/google/redirect?invitation_code=CODE123'
+    )
+  })
+
   it('renders waitlist form when invite-only mode is enabled without invitation code', async () => {
     // Mock invite-only mode
     server.use(

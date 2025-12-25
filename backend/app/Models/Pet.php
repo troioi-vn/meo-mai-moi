@@ -42,7 +42,9 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  */
 class Pet extends Model implements HasMedia
 {
-    use HasFactory, InteractsWithMedia, SoftDeletes;
+    use HasFactory;
+    use InteractsWithMedia;
+    use SoftDeletes;
 
     protected $fillable = [
         'pet_type_id',

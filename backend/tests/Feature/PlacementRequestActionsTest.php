@@ -24,7 +24,7 @@ class PlacementRequestActionsTest extends TestCase
         $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
 
         // Create placement request DIRECTLY without factory to ensure explicit control
-        $placementRequest = new PlacementRequest;
+        $placementRequest = new PlacementRequest();
         $placementRequest->pet_id = $pet->id;
         $placementRequest->user_id = $owner->id;  // Explicitly set user_id
         $placementRequest->request_type = PlacementRequestType::PERMANENT;

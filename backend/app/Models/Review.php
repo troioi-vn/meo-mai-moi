@@ -11,7 +11,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 // ...existing code...
 class Review extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
         'reviewer_user_id',

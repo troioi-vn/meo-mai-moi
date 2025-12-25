@@ -70,7 +70,8 @@ class StoreTransferRequestController extends Controller
 
     public function __construct(
         protected NotificationService $notificationService
-    ) {}
+    ) {
+    }
 
     public function __invoke(Request $request)
     {
@@ -91,6 +92,7 @@ class StoreTransferRequestController extends Controller
             return $this->sendError('Pet not found.', 404);
         }
 
+        /** @var \App\Models\Pet $pet */
         if ($pet->user_id === $user->id) {
             return $this->sendError('You cannot create a transfer request for your own pet.', 403);
         }

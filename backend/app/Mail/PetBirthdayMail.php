@@ -17,6 +17,7 @@ class PetBirthdayMail extends NotificationMail
         if (isset($this->data['pet_id'])) {
             $pet = Pet::find($this->data['pet_id']);
             if ($pet) {
+                /** @var \App\Models\Pet $pet */
                 $petName = $pet->name;
             }
         }

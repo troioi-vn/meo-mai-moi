@@ -28,11 +28,13 @@ class GetImpersonationStatusController extends Controller
             'is_impersonating' => true,
             'impersonator' => $impersonator ? [
                 'id' => $impersonator->id,
+                /** @var \App\Models\User $impersonator */
                 'name' => $impersonator->name,
                 'can_access_admin' => $impersonator->hasRole(['admin', 'super_admin']),
             ] : null,
             'impersonated_user' => $currentUser ? [
                 'id' => $currentUser->id,
+                /** @var \App\Models\User $currentUser */
                 'name' => $currentUser->name,
             ] : null,
         ]);

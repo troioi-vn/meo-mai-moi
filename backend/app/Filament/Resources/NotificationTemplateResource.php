@@ -319,9 +319,10 @@ class NotificationTemplateResource extends Resource
                         $html = $rendered['html'] ?? '<p>(no content)</p>';
 
                         // Send using a lightweight anonymous mailable
-                        Mail::to($user->email)->send(new class($subject, $html) extends Mailable
-                        {
-                            public function __construct(private string $s, private string $h) {}
+                        Mail::to($user->email)->send(new class ($subject, $html) extends Mailable {
+                            public function __construct(private string $s, private string $h)
+                            {
+                            }
 
                             public function build(): self
                             {

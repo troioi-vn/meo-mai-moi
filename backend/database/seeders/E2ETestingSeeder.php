@@ -8,7 +8,7 @@ class E2ETestingSeeder extends Seeder
 {
     /**
      * Run the database seeds for E2E testing environment.
-     * 
+     *
      * This seeder orchestrates all necessary seeders for a complete
      * E2E testing environment with proper email configuration.
      */

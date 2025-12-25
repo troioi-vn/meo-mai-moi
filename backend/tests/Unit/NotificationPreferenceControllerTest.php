@@ -21,7 +21,7 @@ class NotificationPreferenceControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->controller = new GetNotificationPreferencesController;
+        $this->controller = new GetNotificationPreferencesController();
         $this->user = User::factory()->create();
         Auth::login($this->user);
     }

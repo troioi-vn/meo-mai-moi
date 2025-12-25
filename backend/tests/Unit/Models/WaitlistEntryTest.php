@@ -139,7 +139,7 @@ class WaitlistEntryTest extends TestCase
 
     public function test_fillable_attributes_are_correct()
     {
-        $entry = new WaitlistEntry;
+        $entry = new WaitlistEntry();
         $fillable = $entry->getFillable();
 
         $this->assertContains('email', $fillable);

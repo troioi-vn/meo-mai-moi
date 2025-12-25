@@ -126,6 +126,8 @@ class UpdateHelperProfileController extends Controller
             if (! $city) {
                 return response()->json(['message' => 'City not found'], 422);
             }
+
+            /** @var \App\Models\City $city */
             if ($city->country !== strtoupper($country)) {
                 return response()->json(['message' => 'Selected city does not belong to the specified country.'], 422);
             }

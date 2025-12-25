@@ -10,7 +10,7 @@ class E2EEmailConfigurationSeeder extends Seeder
 {
     /**
      * Run the database seeds for E2E testing environment.
-     * 
+     *
      * This seeder configures MailHog as the active email provider
      * for end-to-end testing with real email verification flows.
      */
@@ -21,7 +21,7 @@ class E2EEmailConfigurationSeeder extends Seeder
 
         // Delete any existing MailHog configuration and create fresh
         EmailConfiguration::where('name', 'MailHog E2E Testing')->delete();
-        
+
         // Create and activate MailHog SMTP configuration for E2E testing
         $mailhogConfig = EmailConfiguration::create([
             'provider' => 'smtp',

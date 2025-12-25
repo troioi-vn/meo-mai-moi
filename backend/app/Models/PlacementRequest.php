@@ -30,7 +30,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class PlacementRequest extends Model
 {
     // ...existing code...
-    use HasFactory, SoftDeletes;
+    use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
         'pet_id',

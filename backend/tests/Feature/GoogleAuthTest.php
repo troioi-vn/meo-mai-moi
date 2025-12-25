@@ -2,13 +2,13 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Settings;
-use App\Models\WaitlistEntry;
 use App\Models\Invitation;
+use App\Models\Settings;
+use App\Models\User;
+use App\Models\WaitlistEntry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Http;
 use Laravel\Socialite\Contracts\Provider;
 use Laravel\Socialite\Contracts\User as GoogleUser;
 use Laravel\Socialite\Facades\Socialite;

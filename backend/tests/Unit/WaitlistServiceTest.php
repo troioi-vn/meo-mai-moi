@@ -27,7 +27,7 @@ class WaitlistServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->invitationService = new InvitationService;
+        $this->invitationService = new InvitationService();
         $this->service = new WaitlistService($this->invitationService);
         $this->user = User::factory()->create();
     }

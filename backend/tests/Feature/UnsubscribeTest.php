@@ -21,7 +21,7 @@ class UnsubscribeTest extends TestCase
     {
         parent::setUp();
         $this->user = User::factory()->create();
-        $this->unsubscribeService = new UnsubscribeService;
+        $this->unsubscribeService = new UnsubscribeService();
     }
 
     public function test_unsubscribe_page_displays_with_valid_parameters()

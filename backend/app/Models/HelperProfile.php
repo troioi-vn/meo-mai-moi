@@ -114,7 +114,8 @@ use OpenApi\Annotations as OA;
  */
 class HelperProfile extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
         'user_id',

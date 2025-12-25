@@ -36,7 +36,10 @@ class GoogleAuthController extends Controller
             $request->session()->put('google_invitation_code', $invitationCode);
         }
 
-        return Socialite::driver('google')
+        /** @var \Laravel\Socialite\Contracts\Provider $provider */
+        $provider = Socialite::driver('google');
+
+        return $provider
             ->scopes(['openid', 'profile', 'email'])
             ->redirect();
     }

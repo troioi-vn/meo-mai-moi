@@ -28,10 +28,10 @@ class VerifyEmailConfigCommand extends Command
 
         $activeConfig = EmailConfiguration::getActive();
 
-        if (!$activeConfig) {
+        if (! $activeConfig) {
             $this->error('❌ No active email configuration found');
             $this->info('💡 Available configurations:');
-            
+
             $configs = EmailConfiguration::all();
             if ($configs->isEmpty()) {
                 $this->warn('   No email configurations exist');
@@ -42,18 +42,19 @@ class VerifyEmailConfigCommand extends Command
                     $this->info("   - {$config->name} ({$config->provider}) - {$status}");
                 }
             }
+
             return 1;
         }
 
         $this->info("✅ Active Configuration: {$activeConfig->name}");
         $this->info("   Provider: {$activeConfig->provider}");
         $this->info("   Status: {$activeConfig->status->value}");
-        
+
         $config = $activeConfig->config;
         if ($activeConfig->provider === 'smtp') {
             $this->info("   SMTP Host: {$config['host']}:{$config['port']}");
             $this->info("   From: {$config['from_address']}");
-            $this->info("   Encryption: " . ($config['encryption'] ?: 'none'));
+            $this->info('   Encryption: '.($config['encryption'] ?: 'none'));
         }
 
         // Validate configuration
@@ -71,11 +72,11 @@ class VerifyEmailConfigCommand extends Command
         if ($this->option('test')) {
             $this->info('');
             $this->info('🔍 Testing email configuration...');
-            
+
             try {
                 $service = app(EmailConfigurationService::class);
                 $canConnect = $activeConfig->canConnect();
-                
+
                 if ($canConnect) {
                     $this->info('✅ Email configuration test successful');
                 } else {

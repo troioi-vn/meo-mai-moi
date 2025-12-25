@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { PlacementResponseModal } from './PlacementResponseModal'
 import { server } from '@/testing/mocks/server'
@@ -27,7 +28,11 @@ describe('PlacementResponseModal', () => {
   }
 
   it('loads helper profiles and auto-selects when only one profile exists', async () => {
-    render(<PlacementResponseModal {...baseProps} />)
+    render(
+      <MemoryRouter>
+        <PlacementResponseModal {...baseProps} />
+      </MemoryRouter>
+    )
 
     // Wait for profile to be loaded and auto-selected (only one profile in mock data)
     await waitFor(() => {
@@ -43,7 +48,11 @@ describe('PlacementResponseModal', () => {
   })
 
   it('shows confirmation step after selecting profile', async () => {
-    render(<PlacementResponseModal {...baseProps} />)
+    render(
+      <MemoryRouter>
+        <PlacementResponseModal {...baseProps} />
+      </MemoryRouter>
+    )
 
     // Wait for profile to be loaded
     await waitFor(() => {
@@ -54,7 +63,7 @@ describe('PlacementResponseModal', () => {
     await user.click(screen.getByRole('button', { name: /submit/i }))
 
     await waitFor(async () => {
-      expect(await screen.findByText(/are you sure you want to submit/i)).toBeInTheDocument()
+      expect(await screen.findByText(/please review your response details/i)).toBeInTheDocument()
     })
   })
 
@@ -68,7 +77,11 @@ describe('PlacementResponseModal', () => {
       })
     )
 
-    render(<PlacementResponseModal {...baseProps} onClose={onClose} />)
+    render(
+      <MemoryRouter>
+        <PlacementResponseModal {...baseProps} onClose={onClose} />
+      </MemoryRouter>
+    )
 
     // Wait for profile to be loaded
     await waitFor(() => {
@@ -89,7 +102,11 @@ describe('PlacementResponseModal', () => {
 
   it('shows warning when request type does not match helper profile allowed types', async () => {
     // Use a request type that's not in the mock helper profile's allowed types
-    render(<PlacementResponseModal {...baseProps} requestType="foster_payed" />)
+    render(
+      <MemoryRouter>
+        <PlacementResponseModal {...baseProps} requestType="foster_payed" />
+      </MemoryRouter>
+    )
 
     // Wait for profile to be loaded
     await waitFor(() => {
@@ -107,7 +124,11 @@ describe('PlacementResponseModal', () => {
   })
 
   it('shows warning when city does not match', async () => {
-    render(<PlacementResponseModal {...baseProps} petCity="Other City" />)
+    render(
+      <MemoryRouter>
+        <PlacementResponseModal {...baseProps} petCity="Other City" />
+      </MemoryRouter>
+    )
 
     // Wait for profile to be loaded
     await waitFor(() => {
@@ -125,7 +146,11 @@ describe('PlacementResponseModal', () => {
   })
 
   it('shows serious warning when country does not match', async () => {
-    render(<PlacementResponseModal {...baseProps} petCountry="US" />)
+    render(
+      <MemoryRouter>
+        <PlacementResponseModal {...baseProps} petCountry="US" />
+      </MemoryRouter>
+    )
 
     // Wait for profile to be loaded
     await waitFor(() => {

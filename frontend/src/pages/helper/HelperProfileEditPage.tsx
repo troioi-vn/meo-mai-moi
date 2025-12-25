@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FileInput } from '@/components/ui/FileInput'
 import useHelperProfileForm from '@/hooks/useHelperProfileForm'
 import { getPetTypes } from '@/api/pets'
@@ -29,7 +29,14 @@ import { PetTypesSelector } from '@/components/helper/PetTypesSelector'
 import { PhotosGrid } from '@/components/helper/PhotosGrid'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
-import { ChevronLeft, Trash2 } from 'lucide-react'
+import { ChevronLeft, Trash2, Heart, Camera, UserCog } from 'lucide-react'
+
+const FormSectionHeader = ({ icon: Icon, title }: { icon: React.ElementType; title: string }) => (
+  <div className="flex items-center gap-2 pb-2 border-b mb-4">
+    <Icon className="h-5 w-5 text-primary" />
+    <h3 className="text-lg font-semibold">{title}</h3>
+  </div>
+)
 
 const HelperProfileEditPage: React.FC = () => {
   const { id } = useParams()
@@ -150,18 +157,18 @@ const HelperProfileEditPage: React.FC = () => {
   const photos = data.data.photos as { id: number; path: string }[]
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <div className="px-4 py-3">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
+      <div className="px-4 py-4">
+        <div className="max-w-3xl mx-auto flex items-center justify-between">
           <Button
             variant="ghost"
-            size="default"
+            size="sm"
             onClick={handleBack}
-            className="flex items-center gap-1 -ml-2 text-base"
+            className="flex items-center gap-1 -ml-2 text-muted-foreground hover:text-foreground transition-colors"
           >
-            <ChevronLeft className="h-6 w-6" />
-            Back
+            <ChevronLeft className="h-4 w-4" />
+            Back to profile
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -198,81 +205,103 @@ const HelperProfileEditPage: React.FC = () => {
         </div>
       </div>
 
-      <main className="px-4 pb-8">
-        <div className="max-w-2xl mx-auto space-y-6">
-          {/* Photos Section */}
-          {photos.length > 0 && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg font-semibold">Current Photos</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <PhotosGrid
-                  photos={photos}
-                  onDelete={(photoId) => {
-                    deletePhotoMutation.mutate(photoId)
-                  }}
-                  deleting={deletePhotoMutation.isPending}
-                />
+      <main className="px-4 pb-12">
+        <div className="max-w-3xl mx-auto">
+          <div className="mb-8 text-center">
+            <div className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-full mb-4">
+              <UserCog className="h-8 w-8 text-primary" />
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight mb-2">Edit Helper Profile</h1>
+            <p className="text-muted-foreground max-w-lg mx-auto">
+              Keep your profile up to date to help pet owners find the best match for their pets.
+            </p>
+          </div>
+
+          <div className="space-y-8">
+            {/* Photos Section */}
+            {photos.length > 0 && (
+              <Card className="border-none shadow-lg bg-card/50 backdrop-blur-sm">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                    <Camera className="h-5 w-5 text-primary" />
+                    Current Photos
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <PhotosGrid
+                    photos={photos}
+                    onDelete={(photoId) => {
+                      deletePhotoMutation.mutate(photoId)
+                    }}
+                    deleting={deletePhotoMutation.isPending}
+                  />
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Edit Form */}
+            <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm">
+              <CardContent className="p-6 sm:p-8">
+                <form onSubmit={handleSubmit} className="space-y-10" noValidate>
+                  <HelperProfileFormFields
+                    formData={formData}
+                    errors={errors}
+                    updateField={updateField}
+                    cityValue={formData.city_selected as City | null}
+                    onCityChange={updateCity}
+                  />
+
+                  <section>
+                    <FormSectionHeader icon={Heart} title="Pet Preferences" />
+                    <PetTypesSelector
+                      petTypes={petTypes ?? []}
+                      selectedPetTypeIds={formData.pet_type_ids}
+                      onChangePetTypeIds={(ids) => {
+                        updateField('pet_type_ids')(ids)
+                      }}
+                      label="Pet Types Available for Placement Requests"
+                      error={errors.pet_type_ids}
+                    />
+                  </section>
+
+                  <section>
+                    <FormSectionHeader icon={Camera} title="Add More Photos" />
+                    <div className="bg-muted/30 rounded-lg p-4 border-2 border-dashed border-muted-foreground/20">
+                      <FileInput
+                        id="photos"
+                        label="Upload Photos"
+                        onChange={updateField('photos')}
+                        error={errors.photos}
+                        multiple
+                      />
+                    </div>
+                  </section>
+
+                  <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t">
+                    <Button
+                      type="submit"
+                      aria-label="Update Helper Profile"
+                      disabled={isSubmitting}
+                      className="flex-1 h-12 text-lg font-semibold"
+                    >
+                      {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        handleCancel()
+                      }}
+                      disabled={isSubmitting}
+                      className="h-12 px-8"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
               </CardContent>
             </Card>
-          )}
-
-          {/* Edit Form */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">Edit Helper Profile</CardTitle>
-              <CardDescription>Update your profile information</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-                <HelperProfileFormFields
-                  formData={formData}
-                  errors={errors}
-                  updateField={updateField}
-                  cityValue={formData.city_selected as City | null}
-                  onCityChange={updateCity}
-                />
-                <PetTypesSelector
-                  petTypes={petTypes ?? []}
-                  selectedPetTypeIds={formData.pet_type_ids}
-                  onChangePetTypeIds={(ids) => {
-                    updateField('pet_type_ids')(ids)
-                  }}
-                  label="Pet Types"
-                  error={errors.pet_type_ids}
-                />
-                <FileInput
-                  id="photos"
-                  label="Add Photos"
-                  onChange={updateField('photos')}
-                  error={errors.photos}
-                  multiple
-                />
-
-                <div className="flex gap-3 pt-4">
-                  <Button
-                    type="submit"
-                    aria-label="Update Helper Profile"
-                    disabled={isSubmitting}
-                    className="flex-1 sm:flex-none"
-                  >
-                    {isSubmitting ? 'Saving...' : 'Save Changes'}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      handleCancel()
-                    }}
-                    disabled={isSubmitting}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+          </div>
         </div>
       </main>
     </div>

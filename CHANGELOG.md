@@ -16,6 +16,9 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Changed
 
+- **Helper Profile Form**:
+  - Removed "State/Province" field from the UI in `HelperProfileFormFields`.
+  - Updated layout to display "Country" and "City" fields in a single row.
 - **Google OAuth Flow**:
   - Updated `GoogleAuthController` to enforce invite-only registration rules and automatically accept invitations for new Google users.
   - Enhanced `LoginForm` to preserve `invitation_code` and `redirect` parameters during Google OAuth redirects.

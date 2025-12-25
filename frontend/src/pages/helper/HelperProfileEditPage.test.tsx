@@ -50,7 +50,6 @@ describe('HelperProfileEditPage', () => {
       expect(screen.getByTestId('country-select')).toBeInTheDocument()
       expect(screen.getByLabelText(/address/i)).toHaveValue(mockHelperProfile.address)
       expect(screen.getByLabelText(/city/i)).toHaveValue(mockHelperProfile.city)
-      expect(screen.getByLabelText(/state/i)).toHaveValue(mockHelperProfile.state)
       expect(screen.getByLabelText(/phone number/i)).toHaveValue(mockHelperProfile.phone_number)
       expect(screen.getByLabelText(/experience/i)).toHaveValue(mockHelperProfile.experience)
       expect(screen.getByLabelText(/has pets/i)).toBeChecked()

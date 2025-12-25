@@ -7,6 +7,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { useNavigate } from 'react-router-dom'
 // toast handled inside hook
 import { usePlacementResponse } from '@/hooks/usePlacementResponse'
 import { PlacementResponseForm } from '@/components/placement/pet-profile/PlacementResponseForm'
@@ -35,6 +36,7 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({
   petCountry,
   onSuccess,
 }) => {
+  const navigate = useNavigate()
   const {
     actualPetName,
     helperProfiles,
@@ -68,12 +70,13 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
           <DialogTitle>Respond to Placement Request for {actualPetName}</DialogTitle>
           <DialogDescription>
-            Select your helper profile and the relationship type to respond. You can confirm before
-            submitting.
+            {helperProfiles.length === 0 && !loading
+              ? 'You need a helper profile to respond to this request.'
+              : 'Select your helper profile to respond. You can confirm before submitting.'}
           </DialogDescription>
         </DialogHeader>
         {!showConfirmation ? (
@@ -90,9 +93,6 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({
             requestTypeWarning={requestTypeWarning}
             cityWarning={cityWarning}
             countryWarning={countryWarning}
-            onCreateHelperProfile={() => {
-              window.location.href = '/helper/create'
-            }}
           />
         ) : (
           <PlacementResponseConfirm
@@ -108,7 +108,15 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({
           <Button variant="outline" onClick={onClose} disabled={submitting}>
             Cancel
           </Button>
-          {!showConfirmation ? (
+          {helperProfiles.length === 0 && !loading ? (
+            <Button
+              onClick={() => {
+                navigate('/helper/create')
+              }}
+            >
+              Create Helper Profile
+            </Button>
+          ) : !showConfirmation ? (
             <Button onClick={handleInitialSubmit} disabled={!canSubmit || submitting}>
               Submit
             </Button>

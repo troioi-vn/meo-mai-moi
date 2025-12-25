@@ -21,20 +21,40 @@ export function PlacementResponseConfirm({
   const cityName = typeof selected?.city === 'object' ? selected.city.name : (selected?.city ?? '')
 
   return (
-    <div className="py-4">
-      <p>Are you sure you want to submit this response?</p>
-      <p>Pet: {petName}</p>
-      <p>Helper Profile: {selected ? `${cityName}, ${selected.state ?? ''}` : ''}</p>
-      <p>
-        Relationship Type:{' '}
-        {requestedRelationshipType ? requestedRelationshipType.replace('_', ' ').toUpperCase() : ''}
+    <div className="space-y-4 py-4">
+      <p className="text-sm text-muted-foreground">
+        Please review your response details before confirming.
       </p>
-      {requestedRelationshipType === 'fostering' && (
-        <>
-          <p>Fostering Type: {fosteringType.toUpperCase()}</p>
-          {fosteringType === 'paid' && <p>Price: {price}</p>}
-        </>
-      )}
+      <div className="space-y-2 rounded-lg border bg-muted/50 p-4 text-sm">
+        <div className="flex justify-between">
+          <span className="font-medium">Pet:</span>
+          <span>{petName}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="font-medium">Helper Profile:</span>
+          <span>{selected ? `${cityName}, ${selected.state ?? ''}` : 'N/A'}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="font-medium">Type:</span>
+          <span className="capitalize">
+            {requestedRelationshipType ? requestedRelationshipType.replace('_', ' ') : ''}
+          </span>
+        </div>
+        {requestedRelationshipType === 'fostering' && (
+          <>
+            <div className="flex justify-between">
+              <span className="font-medium">Fostering:</span>
+              <span className="capitalize">{fosteringType}</span>
+            </div>
+            {fosteringType === 'paid' && (
+              <div className="flex justify-between">
+                <span className="font-medium">Price:</span>
+                <span>{price}</span>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   )
 }

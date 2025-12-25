@@ -52,7 +52,7 @@ export function usePlacementResponse({
   const actualPetId = petId
 
   const [helperProfiles, setHelperProfiles] = useState<HelperProfile[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [selectedProfile, setSelectedProfile] = useState<string>('')
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [price, setPrice] = useState<string>('')
@@ -71,11 +71,16 @@ export function usePlacementResponse({
 
   // Load helper profiles when opened
   useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen) {
+      setLoading(false)
+      return
+    }
     ;(async () => {
       try {
         setLoading(true)
-        const response = await api.get<{ data: HelperProfile[] }>('helper-profiles')
+        const response = await api.get<{ data: HelperProfile[] }>('helper-profiles', {
+          params: { _t: Date.now() },
+        })
         const profiles = response.data.data
         setHelperProfiles(profiles)
 

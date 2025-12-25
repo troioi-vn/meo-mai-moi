@@ -5,7 +5,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertTriangle, XCircle } from 'lucide-react'
 import type { HelperProfile } from '@/types/helper-profile'
@@ -24,7 +23,6 @@ interface Props {
   requestTypeWarning?: string
   cityWarning?: string
   countryWarning?: string
-  onCreateHelperProfile: () => void
 }
 
 export function PlacementResponseForm({
@@ -40,14 +38,18 @@ export function PlacementResponseForm({
   requestTypeWarning,
   cityWarning,
   countryWarning,
-  onCreateHelperProfile,
 }: Props) {
-  if (loading) return <p>Loading helper profiles...</p>
+  if (loading) return <p className="py-4 text-center">Loading helper profiles...</p>
   if (helperProfiles.length === 0)
     return (
-      <div className="text-center">
-        <p className="mb-4">You must have a helper profile to respond to a placement request.</p>
-        <Button onClick={onCreateHelperProfile}>Create Helper Profile</Button>
+      <div className="flex flex-col items-center justify-center py-10 text-center">
+        <div className="mb-4 rounded-full bg-muted p-3">
+          <AlertTriangle className="h-6 w-6 text-muted-foreground" />
+        </div>
+        <p className="text-sm text-muted-foreground">
+          You don&apos;t have any helper profiles yet.
+        </p>
+        <p className="text-xs text-muted-foreground">Create one to start helping pets.</p>
       </div>
     )
 

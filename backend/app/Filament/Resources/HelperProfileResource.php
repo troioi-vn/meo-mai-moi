@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\HelperProfileStatus;
 use App\Enums\PlacementRequestType;
 use App\Filament\Resources\HelperProfileResource\Pages;
 use App\Filament\Resources\HelperProfileResource\RelationManagers;
@@ -114,7 +115,30 @@ class HelperProfileResource extends Resource
                             ])
                             ->default('pending')
                             ->required(),
-                    ]),
+
+                        Forms\Components\Select::make('status')
+                            ->label('Profile Status')
+                            ->options([
+                                HelperProfileStatus::ACTIVE->value => 'Active',
+                                HelperProfileStatus::ARCHIVED->value => 'Archived',
+                                HelperProfileStatus::DELETED->value => 'Deleted',
+                            ])
+                            ->default(HelperProfileStatus::ACTIVE->value)
+                            ->required(),
+
+                        Forms\Components\DateTimePicker::make('archived_at')
+                            ->label('Archived At')
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->visible(fn ($record) => $record && $record->archived_at),
+
+                        Forms\Components\DateTimePicker::make('restored_at')
+                            ->label('Restored At')
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->visible(fn ($record) => $record && $record->restored_at),
+                    ])
+                    ->columns(2),
             ]);
     }
 
@@ -161,7 +185,7 @@ class HelperProfileResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('approval_status')
-                    ->label('Status')
+                    ->label('Approval')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'approved' => 'success',
@@ -169,6 +193,15 @@ class HelperProfileResource extends Resource
                         'rejected' => 'danger',
                         'suspended' => 'gray',
                         default => 'gray',
+                    }),
+
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn (HelperProfileStatus $state): string => match ($state) {
+                        HelperProfileStatus::ACTIVE => 'success',
+                        HelperProfileStatus::ARCHIVED => 'warning',
+                        HelperProfileStatus::DELETED => 'danger',
                     }),
 
                 Tables\Columns\TextColumn::make('created_at')
@@ -185,12 +218,20 @@ class HelperProfileResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('approval_status')
-                    ->label('Status')
+                    ->label('Approval Status')
                     ->options([
                         'pending' => 'Pending',
                         'approved' => 'Approved',
                         'rejected' => 'Rejected',
                         'suspended' => 'Suspended',
+                    ]),
+
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Profile Status')
+                    ->options([
+                        HelperProfileStatus::ACTIVE->value => 'Active',
+                        HelperProfileStatus::ARCHIVED->value => 'Archived',
+                        HelperProfileStatus::DELETED->value => 'Deleted',
                     ]),
 
                 Tables\Filters\SelectFilter::make('request_types')

@@ -111,7 +111,7 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({
           {helperProfiles.length === 0 && !loading ? (
             <Button
               onClick={() => {
-                navigate('/helper/create')
+                void navigate('/helper/create')
               }}
             >
               Create Helper Profile

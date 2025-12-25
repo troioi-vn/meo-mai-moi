@@ -166,4 +166,149 @@ describe('PlacementResponseModal', () => {
     // Submit button should still be enabled (country warning doesn't block)
     expect(screen.getByRole('button', { name: /submit/i })).toBeEnabled()
   })
+
+  it('shows "Create Helper Profile" button when user has only archived profiles', async () => {
+    // Override mock to return only archived profiles
+    server.use(
+      http.get('http://localhost:3000/api/helper-profiles', () => {
+        return HttpResponse.json({
+          data: [
+            {
+              id: 1,
+              user_id: 1,
+              country: 'VN',
+              address: '123 Test St',
+              city: 'Testville',
+              state: 'TS',
+              phone_number: '123-456-7890',
+              request_types: ['foster_free'],
+              status: 'archived',
+            },
+          ],
+        })
+      })
+    )
+
+    render(
+      <MemoryRouter>
+        <PlacementResponseModal {...baseProps} />
+      </MemoryRouter>
+    )
+
+    // Wait for profiles to be loaded
+    await waitFor(() => {
+      // Should show message about needing a helper profile
+      expect(
+        screen.getByText(/you need a helper profile to respond to this request/i)
+      ).toBeInTheDocument()
+    })
+
+    // Should show "Create Helper Profile" button instead of Submit
+    expect(screen.getByRole('button', { name: /create helper profile/i })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /submit/i })).not.toBeInTheDocument()
+  })
+
+  it('filters out archived profiles and only shows active ones', async () => {
+    // Override mock to return both active and archived profiles
+    server.use(
+      http.get('http://localhost:3000/api/helper-profiles', () => {
+        return HttpResponse.json({
+          data: [
+            {
+              id: 1,
+              user_id: 1,
+              country: 'VN',
+              address: '123 Test St',
+              city: 'Testville',
+              state: 'TS',
+              phone_number: '123-456-7890',
+              request_types: ['foster_free', 'permanent'],
+              status: 'active',
+            },
+            {
+              id: 2,
+              user_id: 1,
+              country: 'VN',
+              address: '456 Other St',
+              city: 'Otherville',
+              state: 'TS',
+              phone_number: '987-654-3210',
+              request_types: ['foster_free'],
+              status: 'archived',
+            },
+          ],
+        })
+      })
+    )
+
+    render(
+      <MemoryRouter>
+        <PlacementResponseModal {...baseProps} />
+      </MemoryRouter>
+    )
+
+    // Wait for profiles to be loaded
+    await waitFor(() => {
+      const combos = screen.getAllByRole('combobox')
+      expect(combos.length).toBeGreaterThanOrEqual(1)
+    })
+
+    // Should show the form (not "Create Helper Profile" button)
+    expect(screen.getByRole('button', { name: /submit/i })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /create helper profile/i })).not.toBeInTheDocument()
+
+    // Should show message about selecting a profile (not needing to create one)
+    expect(screen.getByText(/select your helper profile to respond/i)).toBeInTheDocument()
+    expect(screen.queryByText(/you need a helper profile to respond/i)).not.toBeInTheDocument()
+  })
+
+  it('filters out deleted profiles and only shows active ones', async () => {
+    // Override mock to return both active and deleted profiles
+    server.use(
+      http.get('http://localhost:3000/api/helper-profiles', () => {
+        return HttpResponse.json({
+          data: [
+            {
+              id: 1,
+              user_id: 1,
+              country: 'VN',
+              address: '123 Test St',
+              city: 'Testville',
+              state: 'TS',
+              phone_number: '123-456-7890',
+              request_types: ['foster_free', 'permanent'],
+              status: 'active',
+            },
+            {
+              id: 2,
+              user_id: 1,
+              country: 'VN',
+              address: '456 Other St',
+              city: 'Otherville',
+              state: 'TS',
+              phone_number: '987-654-3210',
+              request_types: ['foster_free'],
+              status: 'deleted',
+            },
+          ],
+        })
+      })
+    )
+
+    render(
+      <MemoryRouter>
+        <PlacementResponseModal {...baseProps} />
+      </MemoryRouter>
+    )
+
+    // Wait for profiles to be loaded
+    await waitFor(() => {
+      const combos = screen.getAllByRole('combobox')
+      expect(combos.length).toBeGreaterThanOrEqual(1)
+    })
+
+    // Should show the form (not "Create Helper Profile" button)
+    expect(screen.getByRole('button', { name: /submit/i })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /create helper profile/i })).not.toBeInTheDocument()
+  })
 })

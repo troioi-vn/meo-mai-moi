@@ -75,6 +75,19 @@ export default function HelperProfileViewPage() {
     ? (firstPhoto.url ?? `/storage/${firstPhoto.path}`)
     : placeholderAvatar
 
+  const getStatusBadge = (status?: string) => {
+    switch (status) {
+      case 'active':
+        return <Badge className="bg-green-500">Active</Badge>
+      case 'archived':
+        return <Badge variant="secondary">Archived</Badge>
+      case 'deleted':
+        return <Badge variant="destructive">Deleted</Badge>
+      default:
+        return null
+    }
+  }
+
   // Normalize pet/placement data from transfer requests
   const petPlacements = transferRequests
     .map((tr) => {
@@ -144,9 +157,12 @@ export default function HelperProfileViewPage() {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <h1 className="text-2xl font-bold text-foreground">
-                {profile.user?.name ?? 'Helper'}
-              </h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold text-foreground">
+                  {profile.user?.name ?? 'Helper'}
+                </h1>
+                {getStatusBadge(profile.status)}
+              </div>
               <div className="flex items-center gap-1 text-muted-foreground">
                 <MapPin className="h-4 w-4" />
                 <span className="text-sm">{location}</span>

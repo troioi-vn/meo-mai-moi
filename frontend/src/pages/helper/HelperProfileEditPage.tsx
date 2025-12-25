@@ -10,6 +10,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getHelperProfile,
   deleteHelperProfile,
+  archiveHelperProfile,
+  restoreHelperProfile,
   deleteHelperProfilePhoto,
 } from '@/api/helper-profiles'
 import { toast } from 'sonner'
@@ -105,9 +107,36 @@ const HelperProfileEditPage: React.FC = () => {
       void queryClient.invalidateQueries({ queryKey: ['helper-profiles'] })
       void navigate('/helper')
     },
-    onError: (error) => {
-      console.error('Delete error:', error)
-      toast.error('Failed to delete helper profile. Please try again.')
+    onError: (error: any) => {
+      const message = error.response?.data?.message || 'Failed to delete helper profile'
+      toast.error(message)
+    },
+  })
+
+  const archiveMutation = useMutation({
+    mutationFn: () => (id ? archiveHelperProfile(id) : Promise.reject(new Error('missing id'))),
+    onSuccess: () => {
+      toast.success('Helper profile archived successfully!')
+      void queryClient.invalidateQueries({ queryKey: ['helper-profiles'] })
+      void queryClient.invalidateQueries({ queryKey: ['helper-profile', id] })
+      void navigate('/helper')
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.message || 'Failed to archive helper profile'
+      toast.error(message)
+    },
+  })
+
+  const restoreMutation = useMutation({
+    mutationFn: () => (id ? restoreHelperProfile(id) : Promise.reject(new Error('missing id'))),
+    onSuccess: () => {
+      toast.success('Helper profile restored successfully!')
+      void queryClient.invalidateQueries({ queryKey: ['helper-profiles'] })
+      void queryClient.invalidateQueries({ queryKey: ['helper-profile', id] })
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.message || 'Failed to restore helper profile'
+      toast.error(message)
     },
   })
 
@@ -170,38 +199,6 @@ const HelperProfileEditPage: React.FC = () => {
             <ChevronLeft className="h-4 w-4" />
             Back to profile
           </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="default"
-                className="text-destructive hover:text-destructive"
-              >
-                <Trash2 className="h-5 w-5" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete Helper Profile</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete your helper profile and
-                  all associated data.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => {
-                    deleteMutation.mutate()
-                  }}
-                  disabled={deleteMutation.isPending}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                >
-                  {deleteMutation.isPending ? 'Deleting...' : 'Delete Profile'}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
         </div>
       </div>
 
@@ -276,6 +273,71 @@ const HelperProfileEditPage: React.FC = () => {
                       />
                     </div>
                   </section>
+
+                  {data?.data && (
+                    <section className="pt-6 border-t space-y-4">
+                      <FormSectionHeader icon={UserCog} title="Profile Status" />
+                      <div className="flex flex-wrap gap-4">
+                        {data.data.status === 'active' && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => archiveMutation.mutate()}
+                            disabled={archiveMutation.isPending}
+                          >
+                            {archiveMutation.isPending ? 'Archiving...' : 'Archive Profile'}
+                          </Button>
+                        )}
+                        {data.data.status === 'archived' && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => restoreMutation.mutate()}
+                            disabled={restoreMutation.isPending}
+                          >
+                            {restoreMutation.isPending ? 'Restoring...' : 'Restore Profile'}
+                          </Button>
+                        )}
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              disabled={deleteMutation.isPending}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              {deleteMutation.isPending ? 'Deleting...' : 'Delete Profile'}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete your
+                                helper profile and remove your data from our servers.
+                                {data.data.transfer_requests &&
+                                  data.data.transfer_requests.length > 0 && (
+                                    <p className="mt-2 font-semibold text-destructive">
+                                      Note: Profiles with associated placement requests cannot be
+                                      deleted.
+                                    </p>
+                                  )}
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteMutation.mutate()}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </section>
+                  )}
 
                   <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t">
                     <Button

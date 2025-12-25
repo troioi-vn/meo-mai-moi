@@ -82,11 +82,13 @@ export function usePlacementResponse({
           params: { _t: Date.now() },
         })
         const profiles = response.data.data
-        setHelperProfiles(profiles)
+        // Filter to only include active profiles (status === 'active' or undefined)
+        const activeProfiles = profiles.filter((p) => p.status === 'active' || !p.status)
+        setHelperProfiles(activeProfiles)
 
-        // Auto-select if only one profile exists
-        if (profiles.length === 1) {
-          setSelectedProfile(String(profiles[0].id))
+        // Auto-select if only one active profile exists
+        if (activeProfiles.length === 1 && activeProfiles[0]) {
+          setSelectedProfile(String(activeProfiles[0].id))
         }
       } catch (error) {
         console.error('Failed to fetch helper profiles', error)

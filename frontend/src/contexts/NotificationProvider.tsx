@@ -144,6 +144,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
       const list = Array.from(byId.values())
       setNotifications(list)
       emitToastsForNew(list)
+    } catch (error) {
+      console.error('Error fetching notifications:', error)
     } finally {
       setLoading(false)
     }

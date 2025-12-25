@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\HelperProfileStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,7 +31,7 @@ use OpenApi\Annotations as OA;
  *     @OA\Property(
  *         property="status",
  *         type="string",
- *         enum={"active", "cancelled", "deleted"},
+ *         enum={"active", "archived", "deleted"},
  *         description="Status of the helper profile"
  *     ),
  *     @OA\Property(
@@ -87,6 +88,27 @@ use OpenApi\Annotations as OA;
  *         type="string",
  *         format="date-time",
  *         description="Timestamp of last helper profile update"
+ *     ),
+ *     @OA\Property(
+ *         property="archived_at",
+ *         type="string",
+ *         format="date-time",
+ *         nullable=true,
+ *         description="Timestamp when the profile was archived"
+ *     ),
+ *     @OA\Property(
+ *         property="restored_at",
+ *         type="string",
+ *         format="date-time",
+ *         nullable=true,
+ *         description="Timestamp when the profile was restored"
+ *     ),
+ *     @OA\Property(
+ *         property="deleted_at",
+ *         type="string",
+ *         format="date-time",
+ *         nullable=true,
+ *         description="Timestamp when the profile was deleted"
  *     )
  * )
  */
@@ -109,12 +131,18 @@ class HelperProfile extends Model
         'has_children',
         'request_types',
         'approval_status',
+        'status',
+        'archived_at',
+        'restored_at',
     ];
 
     protected $casts = [
         'has_pets' => 'boolean',
         'has_children' => 'boolean',
         'request_types' => 'array',
+        'status' => HelperProfileStatus::class,
+        'archived_at' => 'datetime',
+        'restored_at' => 'datetime',
     ];
 
     public function user(): BelongsTo
@@ -140,6 +168,14 @@ class HelperProfile extends Model
     public function transferRequests(): HasMany
     {
         return $this->hasMany(TransferRequest::class);
+    }
+
+    /**
+     * Check if the profile has any associated placement requests.
+     */
+    public function hasPlacementRequests(): bool
+    {
+        return $this->transferRequests()->whereNotNull('placement_request_id')->exists();
     }
 
     /**

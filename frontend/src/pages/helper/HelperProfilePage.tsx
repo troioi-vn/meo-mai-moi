@@ -36,6 +36,8 @@ export default function HelperProfilePage() {
   }
 
   const profiles = data?.data ?? []
+  const activeProfiles = profiles.filter((p) => p.status === 'active' || !p.status)
+  const archivedProfiles = profiles.filter((p) => p.status === 'archived')
 
   return (
     <div className="min-h-screen">
@@ -101,16 +103,33 @@ export default function HelperProfilePage() {
               </CardContent>
             </Card>
           ) : (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg font-semibold">Your Profiles</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {profiles.map((profile) => (
-                  <HelperProfileListItem key={profile.id} profile={profile} />
-                ))}
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              {activeProfiles.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-semibold">Active Profiles</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {activeProfiles.map((profile) => (
+                      <HelperProfileListItem key={profile.id} profile={profile} />
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+
+              {archivedProfiles.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-semibold">Archived Profiles</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {archivedProfiles.map((profile) => (
+                      <HelperProfileListItem key={profile.id} profile={profile} />
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           )}
         </div>
       </main>
@@ -130,10 +149,17 @@ function HelperProfileListItem({ profile }: { profile: HelperProfile }) {
     >
       <div className="p-4 flex items-center gap-4">
         <div className="flex-1 min-w-0">
-          {/* Location */}
-          <div className="flex items-center gap-2 mb-2">
-            <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="font-medium text-foreground truncate">{location}</span>
+          {/* Location and Status */}
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+              <span className="font-medium text-foreground truncate">{location}</span>
+            </div>
+            {profile.status === 'archived' && (
+              <Badge variant="secondary" className="text-[10px] h-5">
+                Archived
+              </Badge>
+            )}
           </div>
 
           {/* Tags */}

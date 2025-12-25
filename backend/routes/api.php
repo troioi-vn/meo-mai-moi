@@ -242,6 +242,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::patch('/helper-profiles/{helperProfile}', UpdateHelperProfileController::class);
     Route::post('/helper-profiles/{helperProfile}', UpdateHelperProfileController::class);
     Route::delete('/helper-profiles/{helperProfile}', DeleteHelperProfileController::class);
+    Route::post('/helper-profiles/{helperProfile}/archive', \App\Http\Controllers\HelperProfile\ArchiveHelperProfileController::class);
+    Route::post('/helper-profiles/{helperProfile}/restore', \App\Http\Controllers\HelperProfile\RestoreHelperProfileController::class);
     Route::delete('/helper-profiles/{helperProfile}/photos/{photo}', DeleteHelperProfilePhotoController::class);
 
     // Pet health data write routes (read routes are public with optional.auth)

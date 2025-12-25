@@ -38,25 +38,6 @@ export default defineConfig(({ mode }) => ({
         skipWaiting: true,
         clientsClaim: true,
         runtimeCaching: [
-          // Exclude /api/users/me from caching - always fetch fresh user data
-          // This ensures avatar and user info are always up-to-date after cache clear/deployment
-          {
-            urlPattern: /\/api\/users\/me/,
-            handler: 'NetworkOnly',
-            options: {
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-          {
-            urlPattern: /\/api\//,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              networkTimeoutSeconds: 8,
-              cacheableResponse: { statuses: [0, 200] },
-              expiration: { maxEntries: 100, maxAgeSeconds: 3600 },
-            },
-          },
           {
             urlPattern: /\.(?:png|jpg|jpeg|svg|webp)$/,
             handler: 'CacheFirst',

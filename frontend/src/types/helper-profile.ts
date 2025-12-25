@@ -7,6 +7,7 @@ export interface HelperProfileUser {
 }
 
 export type PlacementRequestType = 'foster_payed' | 'foster_free' | 'permanent'
+export type HelperProfileStatus = 'active' | 'archived' | 'deleted'
 
 export interface HelperProfile {
   id: number
@@ -27,7 +28,7 @@ export interface HelperProfile {
   request_types?: PlacementRequestType[]
   approval_status?: string
   approved_at?: string | null
-  status?: string
+  status?: HelperProfileStatus
   user?: HelperProfileUser
   photos?: unknown[]
   pet_types?: { id: number; name: string; placement_requests_allowed: boolean }[]
@@ -37,4 +38,6 @@ export interface HelperProfile {
   })[]
   created_at?: string
   updated_at?: string
+  archived_at?: string
+  restored_at?: string
 }

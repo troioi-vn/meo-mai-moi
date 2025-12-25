@@ -117,7 +117,7 @@ describe('HelperProfileEditPage', () => {
   it('deletes a photo', async () => {
     server.use(
       http.delete(
-        `http://localhost:3000/api/helper-profiles/${mockHelperProfile.id}/photos/${mockHelperProfile.photos[0].id}`,
+        `http://localhost:3000/api/helper-profiles/${mockHelperProfile.id}/photos/${mockHelperProfile.photos[0]?.id}`,
         () => {
           return new HttpResponse(null, { status: 204 })
         }
@@ -129,7 +129,7 @@ describe('HelperProfileEditPage', () => {
       expect(screen.getAllByAltText(/helper profile photo/i)).toHaveLength(2)
     })
 
-    const deleteButton = screen.getByLabelText(`Delete photo ${mockHelperProfile.photos[0].id}`)
+    const deleteButton = screen.getByLabelText(`Delete photo ${mockHelperProfile.photos[0]?.id}`)
     fireEvent.click(deleteButton)
 
     await waitFor(() => {
@@ -149,21 +149,16 @@ describe('HelperProfileEditPage', () => {
       expect(screen.getByText(/edit helper profile/i)).toBeInTheDocument()
     })
 
-    // Find the delete button in the header (ghost button with trash icon)
-    // It's a button inside an AlertDialogTrigger
-    const allButtons = screen.getAllByRole('button')
-    // The profile delete button is in the navigation area, not in the form
-    // It triggers an AlertDialog
-    const deleteButton = allButtons.find(
-      (btn) =>
-        btn.classList.contains('text-destructive') || btn.className.includes('text-destructive')
-    )
-    expect(deleteButton).toBeDefined()
-    fireEvent.click(deleteButton!)
+    // Find the delete button by its accessible name
+    // It's a button inside an AlertDialogTrigger with text "Delete Profile"
+    const deleteButton = screen.getByRole('button', { name: /delete profile/i })
+    fireEvent.click(deleteButton)
 
-    await screen.findByText(/delete helper profile/i)
+    // Wait for the confirmation dialog to appear
+    await screen.findByText(/are you absolutely sure/i)
 
-    const confirmDeleteButton = screen.getByRole('button', { name: /delete profile/i })
+    // The confirmation button in the dialog says "Delete" (not "Delete Profile")
+    const confirmDeleteButton = screen.getByRole('button', { name: /^delete$/i })
     fireEvent.click(confirmDeleteButton)
 
     await waitFor(() => {

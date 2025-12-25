@@ -6,6 +6,14 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Helper Profile Status Management**:
+  - Added `status` field to `HelperProfile` model with `active`, `archived`, and `deleted` states.
+  - Added `archived_at` and `restored_at` timestamps to track profile status changes.
+  - Implemented backend routes for archiving and restoring helper profiles.
+  - Added "Archive" and "Delete" (with confirmation) buttons to the helper profile edit page.
+  - Added status badges to helper profile view and list pages.
+  - Implemented "Archived Profiles" section on the helper profiles list page.
+  - Updated Filament admin panel to support viewing and managing helper profile status.
 - **Google OAuth & Invitation System Integration**:
   - Added "Sign in with Google" button to the registration page, allowing invited users to register via Google while preserving their invitation code.
   - Added automatic waitlist enrollment when attempting to register via Google in invite-only mode without a valid invitation.

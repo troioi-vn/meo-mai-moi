@@ -879,6 +879,44 @@
                 ]
             }
         },
+        "/helper-profiles/{id}/archive": {
+            "post": {
+                "tags": [
+                    "Helper Profiles"
+                ],
+                "summary": "Archive a helper profile",
+                "operationId": "b3d2d285335d02a9978780f1ebca9ad5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the helper profile",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Helper profile archived successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HelperProfile"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Cannot archive profile with associated placement requests"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
         "/helper-profiles/{id}": {
             "get": {
                 "tags": [
@@ -1028,6 +1066,9 @@
                     "204": {
                         "description": "Helper profile deleted successfully"
                     },
+                    "400": {
+                        "description": "Cannot delete profile with associated placement requests"
+                    },
                     "403": {
                         "description": "Unauthorized"
                     }
@@ -1086,6 +1127,41 @@
                     },
                     "422": {
                         "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/helper-profiles/{id}/restore": {
+            "post": {
+                "tags": [
+                    "Helper Profiles"
+                ],
+                "summary": "Restore an archived helper profile",
+                "operationId": "5a18258779fef9ae6250b857fd554860",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the helper profile",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Helper profile restored successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HelperProfile"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized"
                     }
                 }
             }
@@ -6108,7 +6184,7 @@
                         "type": "string",
                         "enum": [
                             "active",
-                            "cancelled",
+                            "archived",
                             "deleted"
                         ]
                     },
@@ -6162,6 +6238,24 @@
                         "description": "Timestamp of last helper profile update",
                         "type": "string",
                         "format": "date-time"
+                    },
+                    "archived_at": {
+                        "description": "Timestamp when the profile was archived",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "restored_at": {
+                        "description": "Timestamp when the profile was restored",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "deleted_at": {
+                        "description": "Timestamp when the profile was deleted",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
                     }
                 },
                 "type": "object"

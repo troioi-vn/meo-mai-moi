@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\HelperProfile;
 
+use App\Enums\HelperProfileStatus;
 use App\Http\Controllers\Controller;
 use App\Models\HelperProfile;
 use Illuminate\Http\Request;
@@ -30,11 +31,14 @@ class ListHelperProfilesController extends Controller
     {
         $user = $request->user();
 
-        // Get helper profiles owned by the user
-        $ownedProfileIds = HelperProfile::where('user_id', $user->id)->pluck('id');
+        // Get helper profiles owned by the user (excluding deleted)
+        $ownedProfileIds = HelperProfile::where('user_id', $user->id)
+            ->where('status', '!=', HelperProfileStatus::DELETED)
+            ->pluck('id');
 
-        // Get helper profiles that responded to user's placement requests
+        // Get helper profiles that responded to user's placement requests (excluding deleted)
         $respondedProfileIds = HelperProfile::query()
+            ->where('status', '!=', HelperProfileStatus::DELETED)
             ->whereHas('transferRequests', function ($query) use ($user) {
                 $query->whereHas('placementRequest', function ($prQuery) use ($user) {
                     $prQuery->whereHas('pet', function ($petQuery) use ($user) {

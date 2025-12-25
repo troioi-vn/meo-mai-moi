@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\HelperProfile;
 
+use App\Enums\HelperProfileStatus;
 use App\Http\Controllers\Controller;
 use App\Models\HelperProfile;
 use Illuminate\Support\Facades\Log;
@@ -27,6 +28,10 @@ use Illuminate\Support\Facades\Storage;
  *         description="Helper profile deleted successfully"
  *     ),
  *     @OA\Response(
+ *         response=400,
+ *         description="Cannot delete profile with associated placement requests"
+ *     ),
+ *     @OA\Response(
  *         response=403,
  *         description="Unauthorized"
  *     )
@@ -37,6 +42,12 @@ class DeleteHelperProfileController extends Controller
     public function __invoke(HelperProfile $helperProfile)
     {
         $this->authorize('delete', $helperProfile);
+
+        if ($helperProfile->hasPlacementRequests()) {
+            return response()->json([
+                'message' => 'Cannot delete profile with associated placement requests.',
+            ], 400);
+        }
 
         // Delete stored photo files first to avoid orphans
         $helperProfile->loadMissing('photos');
@@ -52,6 +63,10 @@ class DeleteHelperProfileController extends Controller
                 ]);
             }
         }
+
+        $helperProfile->update([
+            'status' => HelperProfileStatus::DELETED,
+        ]);
 
         $helperProfile->delete();
 

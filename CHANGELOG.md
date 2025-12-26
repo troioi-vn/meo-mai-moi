@@ -14,6 +14,14 @@ All notable changes to this project are documented here, following the [Keep a C
   - Added status badges to helper profile view and list pages.
   - Implemented "Archived Profiles" section on the helper profiles list page.
   - Updated Filament admin panel to support viewing and managing helper profile status.
+- **Multiple Cities per Helper Profile**:
+  - Added `cities` many-to-many relationship to `HelperProfile` model, allowing helpers to specify multiple cities they serve.
+  - Created `helper_profile_city` pivot table with migration that migrates existing single-city data.
+  - Updated API endpoints (`POST`, `PUT`, `GET`) to handle `city_ids` array instead of single `city_id`.
+  - Enhanced `CitySelect` component to support multiple city selection with tags interface.
+  - Maintained backward compatibility by preserving `city` and `city_id` fields as comma-separated string and first city ID.
+  - Updated form validation to require at least one city and ensure all cities belong to the selected country.
+  - Added comprehensive tests for multiple cities functionality in `HelperProfileApiTest`.
 - **Google OAuth & Invitation System Integration**:
   - Added "Sign in with Google" button to the registration page, allowing invited users to register via Google while preserving their invitation code.
   - Added automatic waitlist enrollment when attempting to register via Google in invite-only mode without a valid invitation.
@@ -42,6 +50,7 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Fixed
 
+- **Helper Profile Restore**: Fixed `RestoreHelperProfileController` to load `cities` relationship instead of deprecated `city` relationship.
 - **Invite-Only Registration**: Fixed a bug where Google login could bypass invite-only registration restrictions.
 - **Backend**: Fixed type mismatch in password reset email route by using `SendPasswordResetLinkRequest` instead of generic `Request` in `backend/routes/api.php`.
 - **Tests**: Updated `CreatePetPage` test to reflect changes in location fields visibility.

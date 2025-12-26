@@ -52,6 +52,6 @@ class RestoreHelperProfileController extends Controller
             'restored_at' => now(),
         ]);
 
-        return response()->json(['data' => $helperProfile->load('photos', 'city')]);
+        return response()->json(['data' => $helperProfile->load('photos', 'cities')]);
     }
 }

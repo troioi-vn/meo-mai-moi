@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use App\Models\Pet;
 use App\Models\PetType;
 use App\Models\User;
+use App\Models\PlacementRequest;
+use App\Enums\PlacementRequestType;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -20,7 +22,6 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class, // Add categories after pet types
             RolesAndPermissionsSeeder::class,
             UserSeeder::class,
-            PlacementRequestSeeder::class,
             ShieldSeeder::class,
             ReviewSeeder::class,
             NotificationPreferenceSeeder::class,
@@ -138,6 +139,44 @@ class DatabaseSeeder extends Seeder
                         echo "Failed to create dog photo for pet {$dog->id}: ".$e->getMessage().PHP_EOL;
                     }
                 }
+            }
+        }
+
+        // Create placement requests for regular users
+        $regularUsers = User::whereNotIn('email', ['admin@catarchy.space', 'user1@catarchy.space'])->get();
+        foreach ($regularUsers as $user) {
+            $pets = Pet::where('user_id', $user->id)->get();
+
+            if ($pets->isNotEmpty()) {
+                // Create a permanent placement request for the first pet
+                PlacementRequest::create([
+                    'user_id' => $user->id,
+                    'pet_id' => $pets->first()->id,
+                    'request_type' => PlacementRequestType::PERMANENT,
+                    'status' => \App\Enums\PlacementRequestStatus::OPEN,
+                    'notes' => 'Looking for a permanent home for my pet',
+                    'expires_at' => now()->addMonths(3),
+                    'start_date' => now()->addWeek(),
+                    'end_date' => now()->addMonths(6),
+                    'fulfilled_at' => null,
+                    'fulfilled_by_transfer_request_id' => null,
+                ]);
+            }
+
+            if ($pets->count() > 1) {
+                // Create a foster (temporary) placement request for the second pet
+                PlacementRequest::create([
+                    'user_id' => $user->id,
+                    'pet_id' => $pets[1]->id,
+                    'request_type' => PlacementRequestType::FOSTER_FREE,
+                    'status' => \App\Enums\PlacementRequestStatus::OPEN,
+                    'notes' => 'Need temporary care for my pet',
+                    'expires_at' => now()->addMonths(2),
+                    'start_date' => now()->addDays(3),
+                    'end_date' => now()->addMonths(1),
+                    'fulfilled_at' => null,
+                    'fulfilled_by_transfer_request_id' => null,
+                ]);
             }
         }
     }

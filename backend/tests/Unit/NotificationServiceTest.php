@@ -23,7 +23,7 @@ class NotificationServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new NotificationService();
+        $this->service = new NotificationService;
         $this->user = User::factory()->create();
     }
 

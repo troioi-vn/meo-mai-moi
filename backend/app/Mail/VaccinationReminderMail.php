@@ -16,7 +16,7 @@ class VaccinationReminderMail extends NotificationMail
         $petName = 'your pet';
         if (isset($this->data['pet_id'])) {
             $pet = Pet::find($this->data['pet_id']);
-            if ($pet) {
+            if ($pet instanceof Pet) {
                 $petName = $pet->name;
             }
         }

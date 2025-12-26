@@ -20,8 +20,7 @@ class GoogleAuthController extends Controller
     public function __construct(
         private readonly InvitationService $invitationService,
         private readonly WaitlistService $waitlistService,
-    ) {
-    }
+    ) {}
 
     public function redirect(Request $request): RedirectResponse
     {
@@ -36,7 +35,7 @@ class GoogleAuthController extends Controller
             $request->session()->put('google_invitation_code', $invitationCode);
         }
 
-        /** @var \Laravel\Socialite\Contracts\Provider $provider */
+        /** @var \Laravel\Socialite\Two\GoogleProvider $provider */
         $provider = Socialite::driver('google');
 
         return $provider

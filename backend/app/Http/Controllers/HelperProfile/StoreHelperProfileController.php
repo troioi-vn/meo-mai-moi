@@ -41,7 +41,8 @@ class StoreHelperProfileController extends Controller
         $validatedData = $request->validate([
             'country' => 'required|string|size:2',
             'state' => 'nullable|string|max:255',
-            'city_id' => 'required|integer|exists:cities,id',
+            'city_ids' => 'required|array|min:1',
+            'city_ids.*' => 'integer|exists:cities,id',
             'address' => 'nullable|string|max:255',
             'zip_code' => 'nullable|string|max:20',
             'phone_number' => 'required|string|max:20',
@@ -59,20 +60,24 @@ class StoreHelperProfileController extends Controller
 
         $validatedData['country'] = strtoupper($validatedData['country']);
 
-        $city = City::find($validatedData['city_id']);
-        if (! $city) {
-            return response()->json(['message' => 'City not found'], 422);
+        $cities = City::whereIn('id', $validatedData['city_ids'])->get();
+        if ($cities->count() !== count($validatedData['city_ids'])) {
+            return response()->json(['message' => 'One or more cities not found'], 422);
         }
 
-        /** @var \App\Models\City $city */
-        if ($city->country !== $validatedData['country']) {
-            return response()->json(['message' => 'Selected city does not belong to the specified country.'], 422);
+        foreach ($cities as $city) {
+            if ($city->country !== $validatedData['country']) {
+                return response()->json(['message' => "City {$city->name} does not belong to the specified country."], 422);
+            }
         }
 
         /** @var \App\Models\HelperProfile $helperProfile */
         $helperProfile = Auth::user()->helperProfiles()->create($validatedData);
+        $helperProfile->cities()->sync($validatedData['city_ids']);
+
         $helperProfile->update([
-            'city' => $city->name,
+            'city' => $cities->pluck('name')->implode(', '),
+            'city_id' => $cities->first()->id,
         ]);
 
         if (isset($validatedData['pet_type_ids'])) {
@@ -86,6 +91,6 @@ class StoreHelperProfileController extends Controller
             }
         }
 
-        return response()->json(['data' => $helperProfile->load('photos', 'city')], 201);
+        return response()->json(['data' => $helperProfile->load('photos', 'cities')], 201);
     }
 }

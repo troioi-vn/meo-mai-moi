@@ -65,8 +65,13 @@ export default function HelperProfileViewPage() {
   const transferRequests = profile.transfer_requests ?? []
 
   // Get location string
-  const cityName = typeof profile.city === 'string' ? profile.city : profile.city?.name
-  const locationParts = [cityName, profile.state, profile.country].filter(Boolean)
+  const cityNames =
+    profile.cities && profile.cities.length > 0
+      ? profile.cities.map((c) => c.name).join(', ')
+      : typeof profile.city === 'string'
+        ? profile.city
+        : profile.city?.name
+  const locationParts = [cityNames, profile.state, profile.country].filter(Boolean)
   const location = locationParts.join(', ') || 'Location not specified'
 
   // Get first photo URL for avatar

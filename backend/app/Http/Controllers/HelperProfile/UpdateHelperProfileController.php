@@ -98,7 +98,8 @@ class UpdateHelperProfileController extends Controller
         $validatedData = $request->validate([
             'country' => 'sometimes|string|size:2',
             'state' => 'sometimes|string|max:255|nullable',
-            'city_id' => 'sometimes|required|integer|exists:cities,id',
+            'city_ids' => 'sometimes|required|array|min:1',
+            'city_ids.*' => 'integer|exists:cities,id',
             'address' => 'sometimes|string|max:255|nullable',
             'zip_code' => 'sometimes|string|max:20|nullable',
             'phone_number' => 'sometimes|string|max:20',
@@ -120,19 +121,23 @@ class UpdateHelperProfileController extends Controller
         }
 
         $helperProfile->update($validatedData);
-        if (isset($validatedData['city_id'])) {
+        if (isset($validatedData['city_ids'])) {
             $country = $validatedData['country'] ?? $helperProfile->country;
-            $city = City::find($validatedData['city_id']);
-            if (! $city) {
-                return response()->json(['message' => 'City not found'], 422);
+            $cities = City::whereIn('id', $validatedData['city_ids'])->get();
+            if ($cities->count() !== count($validatedData['city_ids'])) {
+                return response()->json(['message' => 'One or more cities not found'], 422);
             }
 
-            /** @var \App\Models\City $city */
-            if ($city->country !== strtoupper($country)) {
-                return response()->json(['message' => 'Selected city does not belong to the specified country.'], 422);
+            foreach ($cities as $city) {
+                if ($city->country !== strtoupper($country)) {
+                    return response()->json(['message' => "City {$city->name} does not belong to the specified country."], 422);
+                }
             }
+
+            $helperProfile->cities()->sync($validatedData['city_ids']);
             $helperProfile->update([
-                'city' => $city->name,
+                'city' => $cities->pluck('name')->implode(', '),
+                'city_id' => $cities->first()->id,
                 'country' => strtoupper($country),
             ]);
         } elseif (isset($validatedData['country'])) {
@@ -156,6 +161,6 @@ class UpdateHelperProfileController extends Controller
             Log::info('No photos found in request');
         }
 
-        return response()->json(['data' => $helperProfile->load('photos', 'city')]);
+        return response()->json(['data' => $helperProfile->load('photos', 'cities')]);
     }
 }

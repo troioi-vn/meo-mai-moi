@@ -17,7 +17,7 @@ class SettingsServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new SettingsService();
+        $this->service = new SettingsService;
         Cache::flush(); // Clear cache before each test
     }
 

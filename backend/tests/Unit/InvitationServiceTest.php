@@ -23,7 +23,7 @@ class InvitationServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new InvitationService();
+        $this->service = new InvitationService;
         $this->user = User::factory()->create();
     }
 

@@ -37,4 +37,14 @@ class HelperProfileFactory extends Factory
             'approval_status' => 'approved',
         ];
     }
+
+    public function configure()
+    {
+        return $this->afterCreating(function (\Illuminate\Database\Eloquent\Model $helperProfile) {
+            /** @var HelperProfile $helperProfile */
+            if ($helperProfile->city_id) {
+                $helperProfile->cities()->sync([$helperProfile->city_id]);
+            }
+        });
+    }
 }

@@ -33,6 +33,14 @@ import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { ChevronLeft, Trash2, Heart, Camera, UserCog } from 'lucide-react'
 
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string
+    }
+  }
+}
+
 const FormSectionHeader = ({ icon: Icon, title }: { icon: React.ElementType; title: string }) => (
   <div className="flex items-center gap-2 pb-2 border-b mb-4">
     <Icon className="h-5 w-5 text-primary" />
@@ -62,27 +70,33 @@ const HelperProfileEditPage: React.FC = () => {
   const initialFormData = useMemo(() => {
     if (!data?.data) return {}
 
-    const cityValue =
-      typeof data.data.city === 'string'
-        ? {
-            id: data.data.city_id ?? -1,
-            name: data.data.city,
-            slug: data.data.city.toLowerCase().replace(/\s+/g, '-'),
-            country: data.data.country,
-            description: null,
-            created_by: null,
-            approved_at: data.data.approved_at,
-            created_at: '',
-            updated_at: '',
-          }
-        : (data.data.city as unknown as City)
+    const citiesSelected = data.data.cities ?? []
+
+    // Fallback for old data if cities is empty but city_id exists
+    if (citiesSelected.length === 0 && data.data.city_id) {
+      const cityValue =
+        typeof data.data.city === 'string'
+          ? {
+              id: data.data.city_id,
+              name: data.data.city,
+              slug: data.data.city.toLowerCase().replace(/\s+/g, '-'),
+              country: data.data.country ?? '',
+              description: null,
+              created_by: null,
+              approved_at: null,
+              created_at: '',
+              updated_at: '',
+            }
+          : (data.data.city as unknown as City)
+      citiesSelected.push(cityValue)
+    }
 
     return {
       country: data.data.country ?? '',
       address: data.data.address ?? '',
-      city: cityValue.name,
-      city_id: data.data.city_id ?? cityValue.id,
-      city_selected: cityValue,
+      city: citiesSelected.map((c) => c.name).join(', '),
+      city_ids: citiesSelected.map((c) => c.id),
+      cities_selected: citiesSelected,
       state: data.data.state ?? '',
       phone_number: data.data.phone_number ?? data.data.phone ?? '',
       contact_info: data.data.contact_info ?? '',
@@ -97,7 +111,7 @@ const HelperProfileEditPage: React.FC = () => {
   }, [data])
 
   // Initialize the form hook with proper initial data
-  const { formData, errors, isSubmitting, updateField, updateCity, handleSubmit, handleCancel } =
+  const { formData, errors, isSubmitting, updateField, updateCities, handleSubmit, handleCancel } =
     useHelperProfileForm(numericId, initialFormData)
 
   const deleteMutation = useMutation({
@@ -107,8 +121,9 @@ const HelperProfileEditPage: React.FC = () => {
       void queryClient.invalidateQueries({ queryKey: ['helper-profiles'] })
       void navigate('/helper')
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to delete helper profile'
+    onError: (error: unknown) => {
+      const message =
+        (error as ApiError).response?.data?.message ?? 'Failed to delete helper profile'
       toast.error(message)
     },
   })
@@ -121,8 +136,9 @@ const HelperProfileEditPage: React.FC = () => {
       void queryClient.invalidateQueries({ queryKey: ['helper-profile', id] })
       void navigate('/helper')
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to archive helper profile'
+    onError: (error: unknown) => {
+      const message =
+        (error as ApiError).response?.data?.message ?? 'Failed to archive helper profile'
       toast.error(message)
     },
   })
@@ -134,8 +150,9 @@ const HelperProfileEditPage: React.FC = () => {
       void queryClient.invalidateQueries({ queryKey: ['helper-profiles'] })
       void queryClient.invalidateQueries({ queryKey: ['helper-profile', id] })
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to restore helper profile'
+    onError: (error: unknown) => {
+      const message =
+        (error as ApiError).response?.data?.message ?? 'Failed to restore helper profile'
       toast.error(message)
     },
   })
@@ -244,8 +261,8 @@ const HelperProfileEditPage: React.FC = () => {
                     formData={formData}
                     errors={errors}
                     updateField={updateField}
-                    cityValue={formData.city_selected as City | null}
-                    onCityChange={updateCity}
+                    citiesValue={formData.cities_selected}
+                    onCitiesChange={updateCities}
                   />
 
                   <section>
@@ -274,70 +291,74 @@ const HelperProfileEditPage: React.FC = () => {
                     </div>
                   </section>
 
-                  {data?.data && (
-                    <section className="pt-6 border-t space-y-4">
-                      <FormSectionHeader icon={UserCog} title="Profile Status" />
-                      <div className="flex flex-wrap gap-4">
-                        {data.data.status === 'active' && (
+                  <section className="pt-6 border-t space-y-4">
+                    <FormSectionHeader icon={UserCog} title="Profile Status" />
+                    <div className="flex flex-wrap gap-4">
+                      {data.data.status === 'active' && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            archiveMutation.mutate()
+                          }}
+                          disabled={archiveMutation.isPending}
+                        >
+                          {archiveMutation.isPending ? 'Archiving...' : 'Archive Profile'}
+                        </Button>
+                      )}
+                      {data.data.status === 'archived' && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            restoreMutation.mutate()
+                          }}
+                          disabled={restoreMutation.isPending}
+                        >
+                          {restoreMutation.isPending ? 'Restoring...' : 'Restore Profile'}
+                        </Button>
+                      )}
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
                           <Button
                             type="button"
-                            variant="outline"
-                            onClick={() => archiveMutation.mutate()}
-                            disabled={archiveMutation.isPending}
+                            variant="destructive"
+                            disabled={deleteMutation.isPending}
                           >
-                            {archiveMutation.isPending ? 'Archiving...' : 'Archive Profile'}
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            {deleteMutation.isPending ? 'Deleting...' : 'Delete Profile'}
                           </Button>
-                        )}
-                        {data.data.status === 'archived' && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => restoreMutation.mutate()}
-                            disabled={restoreMutation.isPending}
-                          >
-                            {restoreMutation.isPending ? 'Restoring...' : 'Restore Profile'}
-                          </Button>
-                        )}
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              disabled={deleteMutation.isPending}
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will permanently delete your helper
+                              profile and remove your data from our servers.
+                              {data.data.transfer_requests &&
+                                data.data.transfer_requests.length > 0 && (
+                                  <p className="mt-2 font-semibold text-destructive">
+                                    Note: Profiles with associated placement requests cannot be
+                                    deleted.
+                                  </p>
+                                )}
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => {
+                                deleteMutation.mutate()
+                              }}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                             >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              {deleteMutation.isPending ? 'Deleting...' : 'Delete Profile'}
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete your
-                                helper profile and remove your data from our servers.
-                                {data.data.transfer_requests &&
-                                  data.data.transfer_requests.length > 0 && (
-                                    <p className="mt-2 font-semibold text-destructive">
-                                      Note: Profiles with associated placement requests cannot be
-                                      deleted.
-                                    </p>
-                                  )}
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => deleteMutation.mutate()}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </section>
-                  )}
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </section>
 
                   <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t">
                     <Button

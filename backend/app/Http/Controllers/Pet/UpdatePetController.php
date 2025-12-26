@@ -193,7 +193,7 @@ class UpdatePetController extends Controller
         if (isset($data['city_id'])) {
             $countryForCity = $data['country'] ?? $pet->country;
             $city = City::find($data['city_id']);
-            if (! $city) {
+            if (! ($city instanceof City)) {
                 return $this->sendError('City not found.', 422);
             }
             if ($city->country !== $countryForCity) {

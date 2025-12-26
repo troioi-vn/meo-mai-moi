@@ -16,7 +16,7 @@ class WebPushDispatcherTest extends TestCase
         config()->set('app.push_icon', '/brand/icon.png');
         config()->set('app.push_badge', 'brand/badge.png');
 
-        $notification = new Notification();
+        $notification = new Notification;
         $notification->forceFill([
             'id' => 42,
             'message' => 'Test notification body',

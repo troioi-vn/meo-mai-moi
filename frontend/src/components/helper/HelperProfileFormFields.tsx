@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { MapPin, Phone, Briefcase, ClipboardList, CircleHelp } from 'lucide-react'
-import type { PlacementRequestType } from '@/types/helper-profile'
+import { PlacementRequestType } from '@/types/helper-profile'
 import { CitySelect } from '@/components/location/CitySelect'
 import type { City } from '@/types/pet'
 
@@ -29,7 +29,7 @@ interface Props {
   formData: {
     country: string
     address: string
-    city_id?: number | null
+    city_ids?: number[]
     city: string
     state: string
     phone_number: string
@@ -41,16 +41,16 @@ interface Props {
   }
   errors: Record<string, string>
   updateField: (field: keyof Props['formData']) => (value: unknown) => void
-  cityValue?: City | null
-  onCityChange?: (city: City | null) => void
+  citiesValue?: City[]
+  onCitiesChange?: (cities: City[]) => void
 }
 
 export const HelperProfileFormFields: React.FC<Props> = ({
   formData,
   errors,
   updateField,
-  cityValue,
-  onCityChange,
+  citiesValue = [],
+  onCitiesChange,
 }) => {
   return (
     <div className="space-y-8">
@@ -62,27 +62,47 @@ export const HelperProfileFormFields: React.FC<Props> = ({
             <Label htmlFor="country" className={errors.country ? 'text-destructive' : ''}>
               Country
             </Label>
-            <CountrySelect
-              value={formData.country}
-              onValueChange={(value) => {
-                updateField('country')(value)
-              }}
-              data-testid="country-select"
-            />
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="w-full">
+                    <CountrySelect
+                      value={formData.country}
+                      onValueChange={(value) => {
+                        updateField('country')(value)
+                      }}
+                      disabled={citiesValue.length > 0}
+                      data-testid="country-select"
+                    />
+                  </div>
+                </TooltipTrigger>
+                {citiesValue.length > 0 && (
+                  <TooltipContent>
+                    <p>Clear selected cities to change country</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
             {errors.country && (
               <p className="text-sm font-medium text-destructive">{errors.country}</p>
             )}
           </div>
-          <CitySelect
-            country={formData.country || null}
-            value={cityValue ?? null}
-            onChange={
-              onCityChange ??
-              (() => {
-                /* noop */
-              })
-            }
-          />
+          <div className="space-y-2">
+            <CitySelect
+              id="cities"
+              label="Cities"
+              multiple
+              country={formData.country || null}
+              value={citiesValue}
+              onChange={
+                onCitiesChange ??
+                (() => {
+                  /* noop */
+                })
+              }
+              error={errors.city}
+            />
+          </div>
         </div>
         <div className="mt-4">
           <FormField

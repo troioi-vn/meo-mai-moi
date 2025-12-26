@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Enums\PlacementRequestType;
 use App\Models\Pet;
 use App\Models\PetType;
-use App\Models\User;
 use App\Models\PlacementRequest;
-use App\Enums\PlacementRequestType;
+use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 

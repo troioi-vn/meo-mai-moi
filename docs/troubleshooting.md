@@ -44,6 +44,12 @@ This guide provides solutions to common issues encountered during development.
 - Radix/shadcn components may need polyfills in `setupTests.ts`.
 - MSW handlers must use absolute URLs.
 
+**Network Errors (ERR_NETWORK / AxiosError)**
+
+- **Symptom**: API requests (especially `/api/notifications`) fail with "Network Error" in the console.
+- **Cause**: Adblockers (like uBlock Origin or AdBlock Plus) often block URLs containing the word "notification".
+- **Solution**: Disable your adblocker for `localhost` or the development domain.
+
 ## Docker Issues
 
 **Container Won't Start**

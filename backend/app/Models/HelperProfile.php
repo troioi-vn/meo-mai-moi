@@ -156,6 +156,11 @@ class HelperProfile extends Model
         return $this->belongsTo(City::class);
     }
 
+    public function cities(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(City::class, 'helper_profile_city');
+    }
+
     public function photos(): HasMany
     {
         return $this->hasMany(HelperProfilePhoto::class);

@@ -26,11 +26,12 @@ class PetCapabilityServiceTest extends TestCase
     public function placement_capability_returns_error_code_for_unsupported_pet_type()
     {
         $user = User::factory()->create();
-        $dog = Pet::factory()->create(['user_id' => $user->id, 'pet_type_id' => 2]);
+        // Bird (ID 3) does not support placement
+        $bird = Pet::factory()->create(['user_id' => $user->id, 'pet_type_id' => 3]);
 
         $this->expectException(ValidationException::class);
         try {
-            PetCapabilityService::ensure($dog, 'placement');
+            PetCapabilityService::ensure($bird, 'placement');
         } catch (ValidationException $ex) {
             $response = $ex->response ?: response()->json([]);
             $payload = $response->getData(true);
@@ -52,14 +53,14 @@ class PetCapabilityServiceTest extends TestCase
         $this->assertTrue(PetCapabilityService::supports($cat, 'status_update'));
     }
 
-    public function test_dog_supports_only_photos()
+    public function test_dog_supports_specific_capabilities()
     {
         $dog = Pet::factory()->create(['pet_type_id' => 2]);
         $this->assertTrue(PetCapabilityService::supports($dog, 'photos'));
         $this->assertFalse(PetCapabilityService::supports($dog, 'comments'));
         $this->assertFalse(PetCapabilityService::supports($dog, 'medical'));
-        $this->assertFalse(PetCapabilityService::supports($dog, 'weight'));
-        $this->assertFalse(PetCapabilityService::supports($dog, 'placement'));
+        $this->assertTrue(PetCapabilityService::supports($dog, 'weight'));
+        $this->assertTrue(PetCapabilityService::supports($dog, 'placement'));
         $this->assertFalse(PetCapabilityService::supports($dog, 'fostering'));
         $this->assertFalse(PetCapabilityService::supports($dog, 'ownership'));
         $this->assertFalse(PetCapabilityService::supports($dog, 'status_update'));
@@ -67,9 +68,9 @@ class PetCapabilityServiceTest extends TestCase
 
     public function test_ensure_throws_exception_for_unsupported_capability()
     {
-        $dog = Pet::factory()->create(['pet_type_id' => 2]);
+        $bird = Pet::factory()->create(['pet_type_id' => 3]);
         $this->expectException(ValidationException::class);
-        PetCapabilityService::ensure($dog, 'placement');
+        PetCapabilityService::ensure($bird, 'placement');
     }
 
     public function test_ensure_passes_for_supported_capability()
@@ -98,8 +99,8 @@ class PetCapabilityServiceTest extends TestCase
         $this->assertTrue($capabilities['photos']);
         $this->assertFalse($capabilities['comments']);
         $this->assertFalse($capabilities['medical']);
-        $this->assertFalse($capabilities['weight']);
-        $this->assertFalse($capabilities['placement']);
+        $this->assertTrue($capabilities['weight']);
+        $this->assertTrue($capabilities['placement']);
         $this->assertFalse($capabilities['fostering']);
         $this->assertFalse($capabilities['ownership']);
         $this->assertFalse($capabilities['status_update']);
@@ -114,6 +115,6 @@ class PetCapabilityServiceTest extends TestCase
         $this->assertContains('cat', $matrix['photos']);
         $this->assertContains('dog', $matrix['photos']);
         $this->assertContains('cat', $matrix['placement']);
-        $this->assertNotContains('dog', $matrix['placement']);
+        $this->assertContains('dog', $matrix['placement']);
     }
 }

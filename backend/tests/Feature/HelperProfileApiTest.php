@@ -53,7 +53,7 @@ class HelperProfileApiTest extends TestCase
         $data = [
             'country' => 'VN',
             'address' => '123 Test St',
-            'city_id' => $city->id,
+            'city_ids' => [$city->id],
             'state' => 'TS',
             'phone_number' => '123-456-7890',
             'contact_info' => 'You can also reach me on Telegram @testhelper',
@@ -79,6 +79,86 @@ class HelperProfileApiTest extends TestCase
     }
 
     #[Test]
+    public function can_create_a_helper_profile_with_multiple_cities()
+    {
+        $user = User::factory()->create();
+        $city1 = City::factory()->create(['country' => 'VN', 'name' => 'City 1']);
+        $city2 = City::factory()->create(['country' => 'VN', 'name' => 'City 2']);
+        $petType = PetType::factory()->create(['name' => 'Cat', 'slug' => 'cat', 'is_system' => true]);
+
+        $data = [
+            'country' => 'VN',
+            'address' => '123 Test St',
+            'city_ids' => [$city1->id, $city2->id],
+            'state' => 'TS',
+            'phone_number' => '123-456-7890',
+            'contact_info' => 'Contact info',
+            'experience' => 'Experience',
+            'has_pets' => true,
+            'has_children' => false,
+            'request_types' => [PlacementRequestType::FOSTER_FREE->value],
+            'zip_code' => '12345',
+            'pet_type_ids' => [$petType->id],
+        ];
+
+        $response = $this->actingAs($user)->postJson('/api/helper-profiles', $data);
+
+        $response->assertStatus(201);
+
+        $profileId = $response->json('data.id');
+        $this->assertDatabaseHas('helper_profile_city', [
+            'helper_profile_id' => $profileId,
+            'city_id' => $city1->id,
+        ]);
+        $this->assertDatabaseHas('helper_profile_city', [
+            'helper_profile_id' => $profileId,
+            'city_id' => $city2->id,
+        ]);
+
+        // The 'city' field should contain both names
+        $this->assertDatabaseHas('helper_profiles', [
+            'id' => $profileId,
+            'city' => 'City 1, City 2',
+        ]);
+    }
+
+    #[Test]
+    public function can_update_a_helper_profile_with_multiple_cities()
+    {
+        $user = User::factory()->create();
+        $city1 = City::factory()->create(['country' => 'VN', 'name' => 'City 1']);
+        $city2 = City::factory()->create(['country' => 'VN', 'name' => 'City 2']);
+        $profile = HelperProfile::factory()->for($user)->create([
+            'country' => 'VN',
+            'city_id' => $city1->id,
+            'city' => $city1->name,
+        ]);
+        $profile->cities()->sync([$city1->id]);
+
+        $data = [
+            'city_ids' => [$city1->id, $city2->id],
+        ];
+
+        $response = $this->actingAs($user)->putJson("/api/helper-profiles/{$profile->id}", $data);
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('helper_profile_city', [
+            'helper_profile_id' => $profile->id,
+            'city_id' => $city1->id,
+        ]);
+        $this->assertDatabaseHas('helper_profile_city', [
+            'helper_profile_id' => $profile->id,
+            'city_id' => $city2->id,
+        ]);
+
+        $this->assertDatabaseHas('helper_profiles', [
+            'id' => $profile->id,
+            'city' => 'City 1, City 2',
+        ]);
+    }
+
+    #[Test]
     public function cannot_create_helper_profile_without_request_types()
     {
         $user = User::factory()->create();
@@ -88,7 +168,7 @@ class HelperProfileApiTest extends TestCase
         $data = [
             'country' => 'VN',
             'address' => '123 Test St',
-            'city_id' => $city->id,
+            'city_ids' => [$city->id],
             'state' => 'TS',
             'phone_number' => '123-456-7890',
             'experience' => 'Lots of experience',

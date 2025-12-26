@@ -39,8 +39,7 @@ class CompleteHandoverController extends Controller
 
     public function __construct(
         protected NotificationService $notificationService
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, TransferHandover $handover)
     {
@@ -178,7 +177,7 @@ class CompleteHandoverController extends Controller
             try {
                 $rejectedHelper = User::find($rejectedRequest->initiator_user_id);
                 $pet = $rejectedRequest->pet ?: Pet::find($rejectedRequest->pet_id);
-                if ($rejectedHelper && $pet) {
+                if ($rejectedHelper && ($pet instanceof Pet)) {
                     $this->notificationService->send(
                         $rejectedHelper,
                         NotificationType::HELPER_RESPONSE_REJECTED->value,

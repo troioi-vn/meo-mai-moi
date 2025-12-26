@@ -62,22 +62,23 @@ class ListNotificationsController extends Controller
         $items = $query->get();
 
         // Map to frontend contract without altering DB schema yet
-        $data = $items->map(function (Notification $n) {
+        $data = [];
+        foreach ($items as $n) {
             // Extract title and body from data JSON if available
             $title = $n->data['title'] ?? $n->message;
             $body = $n->data['body'] ?? null;
             $level = $n->data['level'] ?? 'info';
 
-            return [
+            $data[] = [
                 'id' => (string) $n->id,
                 'level' => $level,
                 'title' => $title,
                 'body' => $body,
                 'url' => $n->link,
-                'created_at' => optional($n->created_at)->toISOString(),
-                'read_at' => optional($n->read_at)->toISOString(),
+                'created_at' => $n->created_at?->toISOString(),
+                'read_at' => $n->read_at?->toISOString(),
             ];
-        });
+        }
 
         return $this->sendSuccess($data);
     }

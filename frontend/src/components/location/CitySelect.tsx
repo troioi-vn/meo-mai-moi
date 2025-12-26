@@ -16,28 +16,47 @@ import { getCities, createCity } from '@/api/cities'
 import type { City } from '@/types/pet'
 import { toast } from 'sonner'
 
-interface Props {
+interface BaseProps {
   country: string | null
-  value: City | null
-  onChange: (city: City | null) => void
   disabled?: boolean
   allowCreate?: boolean
   error?: string
+  id?: string
+  label?: string | null
 }
 
-export const CitySelect: React.FC<Props> = ({
-  country,
-  value,
-  onChange,
-  disabled = false,
-  allowCreate = true,
-  error,
-}) => {
+interface SingleProps extends BaseProps {
+  multiple?: false
+  value: City | null
+  onChange: (city: City | null) => void
+}
+
+interface MultiProps extends BaseProps {
+  multiple: true
+  value: City[]
+  onChange: (cities: City[]) => void
+  maxCities?: number
+}
+
+type Props = SingleProps | MultiProps
+
+export const CitySelect: React.FC<Props> = (props) => {
+  const {
+    country,
+    disabled = false,
+    allowCreate = true,
+    error,
+    multiple = false,
+    id,
+    label = 'City',
+  } = props
+
   const [cities, setCities] = useState<City[]>([])
   const [loading, setLoading] = useState(false)
   const [searchValue, setSearchValue] = useState('')
   const [creating, setCreating] = useState(false)
-  const inputId = useId()
+  const generatedId = useId()
+  const inputId = id ?? generatedId
 
   const loadCities = useCallback(async () => {
     if (!country) {
@@ -62,19 +81,60 @@ export const CitySelect: React.FC<Props> = ({
 
   // Clear selected city if country changes
   useEffect(() => {
-    if (country && value && value.country !== country) {
-      onChange(null)
+    if (country) {
+      if (multiple) {
+        const value = (props as MultiProps).value
+        const validCities = value.filter((c) => c.country === country)
+        if (validCities.length !== value.length) {
+          ;(props as MultiProps).onChange(validCities)
+        }
+      } else {
+        const value = (props as SingleProps).value
+        if (value && value.country !== country) {
+          ;(props as SingleProps).onChange(null)
+        }
+      }
     }
-  }, [country, value, onChange])
+  }, [country, multiple, props])
 
   const handleSelect = (cityId: string) => {
     const city = cities.find((c) => String(c.id) === cityId)
     if (!city) return
-    onChange(city)
+
+    if (multiple) {
+      const multiProps = props as MultiProps
+      const value = multiProps.value
+      const maxCities = multiProps.maxCities ?? 10
+      const isSelected = value.some((c) => c.id === city.id)
+      if (isSelected) {
+        multiProps.onChange(value.filter((c) => c.id !== city.id))
+      } else if (value.length < maxCities) {
+        multiProps.onChange([...value, city])
+      } else {
+        toast.error(`Maximum ${String(maxCities)} cities allowed`)
+      }
+    } else {
+      const singleProps = props as SingleProps
+      singleProps.onChange(city)
+    }
   }
 
   const handleClear = () => {
-    onChange(null)
+    if (multiple) {
+      ;(props as MultiProps).onChange([])
+    } else {
+      ;(props as SingleProps).onChange(null)
+    }
+  }
+
+  const handleRemove = (cityId: number) => {
+    if (multiple) {
+      const multiProps = props as MultiProps
+      const value = multiProps.value
+      multiProps.onChange(value.filter((c) => c.id !== cityId))
+    } else {
+      ;(props as SingleProps).onChange(null)
+    }
   }
 
   const handleCreateCity = async () => {
@@ -86,7 +146,18 @@ export const CitySelect: React.FC<Props> = ({
         country,
       })
       setCities((prev) => [...prev, newCity])
-      onChange(newCity)
+
+      if (multiple) {
+        const multiProps = props as MultiProps
+        const value = multiProps.value
+        const maxCities = multiProps.maxCities ?? 10
+        if (value.length < maxCities) {
+          multiProps.onChange([...value, newCity])
+        }
+      } else {
+        ;(props as SingleProps).onChange(newCity)
+      }
+
       setSearchValue('')
       toast.success('City created (pending approval)')
     } catch (err: unknown) {
@@ -108,7 +179,11 @@ export const CitySelect: React.FC<Props> = ({
   if (!country) {
     return (
       <div className="space-y-2">
-        <label className={`text-sm font-medium ${error ? 'text-destructive' : ''}`}>City</label>
+        {label && (
+          <label className={`text-sm font-medium ${error ? 'text-destructive' : ''}`}>
+            {label}
+          </label>
+        )}
         <div className="text-sm text-muted-foreground">Select a country first to choose a city</div>
         {error && <p className="text-xs text-destructive mt-1">{error}</p>}
       </div>
@@ -117,26 +192,58 @@ export const CitySelect: React.FC<Props> = ({
 
   return (
     <div className="space-y-2">
-      <label className={`text-sm font-medium ${error ? 'text-destructive' : ''}`} htmlFor={inputId}>
-        City
-      </label>
-      <input id={inputId} className="sr-only" readOnly value={value?.name ?? ''} />
+      {label && (
+        <label
+          className={`text-sm font-medium ${error ? 'text-destructive' : ''}`}
+          htmlFor={inputId}
+        >
+          {label}
+        </label>
+      )}
+      <input
+        className="sr-only"
+        readOnly
+        value={
+          multiple
+            ? (props.value as City[]).map((c) => c.name).join(', ')
+            : ((props.value as City | null)?.name ?? '')
+        }
+      />
       <Tags className="w-full">
         <TagsTrigger
+          id={inputId}
           disabled={disabled}
           className={error ? 'border-destructive' : ''}
-          placeholder="Select city"
+          placeholder={multiple ? 'Select cities' : 'Select city'}
         >
-          {value && (
-            <TagsValue onRemove={handleClear}>
-              {value.name}
-              {!value.approved_at && (
-                <Badge variant="outline" className="ml-1 text-[10px] px-1 py-0">
-                  Pending
-                </Badge>
+          {multiple
+            ? (props.value as City[]).map((city) => {
+                return (
+                  <TagsValue
+                    key={city.id}
+                    onRemove={() => {
+                      handleRemove(city.id)
+                    }}
+                  >
+                    {city.name}
+                    {!city.approved_at && (
+                      <Badge variant="outline" className="ml-1 text-[10px] px-1 py-0">
+                        Pending
+                      </Badge>
+                    )}
+                  </TagsValue>
+                )
+              })
+            : props.value && (
+                <TagsValue onRemove={handleClear}>
+                  {(props.value as City).name}
+                  {!(props.value as City).approved_at && (
+                    <Badge variant="outline" className="ml-1 text-[10px] px-1 py-0">
+                      Pending
+                    </Badge>
+                  )}
+                </TagsValue>
               )}
-            </TagsValue>
-          )}
         </TagsTrigger>
         <TagsContent>
           <TagsInput
@@ -155,7 +262,9 @@ export const CitySelect: React.FC<Props> = ({
                   {canCreate ? (
                     <button
                       className="mx-auto flex cursor-pointer items-center gap-2 text-sm"
-                      onClick={() => void handleCreateCity()}
+                      onClick={() => {
+                        void handleCreateCity()
+                      }}
                       type="button"
                       disabled={creating}
                     >
@@ -172,7 +281,9 @@ export const CitySelect: React.FC<Props> = ({
                 </TagsEmpty>
                 <TagsGroup>
                   {cities.map((city) => {
-                    const isSelected = value?.id === city.id
+                    const isSelected = multiple
+                      ? (props.value as City[]).some((c) => c.id === city.id)
+                      : (props.value as City | null)?.id === city.id
                     return (
                       <TagsItem key={city.id} value={String(city.id)} onSelect={handleSelect}>
                         <div className="flex flex-col">

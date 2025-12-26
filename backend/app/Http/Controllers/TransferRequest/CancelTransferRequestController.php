@@ -59,8 +59,7 @@ class CancelTransferRequestController extends Controller
 
     public function __construct(
         protected NotificationService $notificationService
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, TransferRequest $transferRequest)
     {
@@ -77,7 +76,7 @@ class CancelTransferRequestController extends Controller
         // Notify owner (recipient) that the helper canceled their response
         try {
             $pet = $transferRequest->pet ?: Pet::find($transferRequest->pet_id);
-            if ($pet) {
+            if ($pet instanceof Pet) {
                 $owner = User::find($transferRequest->recipient_user_id);
                 if ($owner) {
                     $this->notificationService->send(

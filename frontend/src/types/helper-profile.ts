@@ -16,6 +16,7 @@ export interface HelperProfile {
   address?: string
   city_id?: number | null
   city?: string | City
+  cities?: City[]
   state?: string
   zip_code?: string
   phone_number?: string

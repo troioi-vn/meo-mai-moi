@@ -42,9 +42,9 @@ class PetViewerEditorAccessTest extends TestCase
 
         $response->assertStatus(201)->assertJson(
             fn (AssertableJson $json) => $json
-            ->where('data.viewers.0.id', $viewer->id)
-            ->where('data.editors.0.id', $editor->id)
-            ->etc()
+                ->where('data.viewers.0.id', $viewer->id)
+                ->where('data.editors.0.id', $editor->id)
+                ->etc()
         );
 
         $petId = $response->json('data.id');

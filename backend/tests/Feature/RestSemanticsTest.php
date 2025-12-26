@@ -173,7 +173,7 @@ class RestSemanticsTest extends TestCase
     public function helper_profile_update_supports_both_put_and_post_for_compatibility()
     {
         $newCity = City::factory()->create(['country' => 'VN']);
-        $updateData = ['city_id' => $newCity->id];
+        $updateData = ['city_ids' => [$newCity->id]];
 
         // PUT should work (preferred method)
         $response = $this->putJson("/api/helper-profiles/{$this->helperProfile->id}", $updateData);

@@ -55,8 +55,7 @@ class RejectTransferRequestController extends Controller
 
     public function __construct(
         protected NotificationService $notificationService
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, TransferRequest $transferRequest)
     {
@@ -74,7 +73,7 @@ class RejectTransferRequestController extends Controller
         // Notify helper (initiator) on rejection using NotificationService
         try {
             $pet = $transferRequest->pet ?: Pet::find($transferRequest->pet_id);
-            if ($pet) {
+            if ($pet instanceof Pet) {
                 $helper = User::find($transferRequest->initiator_user_id);
                 if ($helper) {
                     $this->notificationService->send(

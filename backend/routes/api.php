@@ -40,6 +40,15 @@ use App\Http\Controllers\MedicalRecord\ListMedicalRecordsController;
 use App\Http\Controllers\MedicalRecord\ShowMedicalRecordController;
 use App\Http\Controllers\MedicalRecord\StoreMedicalRecordController;
 use App\Http\Controllers\MedicalRecord\UpdateMedicalRecordController;
+use App\Http\Controllers\Messaging\DeleteChatController;
+use App\Http\Controllers\Messaging\DeleteMessageController;
+use App\Http\Controllers\Messaging\GetUnreadChatsCountController;
+use App\Http\Controllers\Messaging\ListChatsController;
+use App\Http\Controllers\Messaging\ListMessagesController;
+use App\Http\Controllers\Messaging\MarkChatReadController;
+use App\Http\Controllers\Messaging\ShowChatController;
+use App\Http\Controllers\Messaging\StoreChatController;
+use App\Http\Controllers\Messaging\StoreMessageController;
 use App\Http\Controllers\Notification\ListNotificationsController;
 use App\Http\Controllers\Notification\MarkAllNotificationsReadController;
 use App\Http\Controllers\Notification\MarkAsReadLegacyController;
@@ -295,12 +304,23 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/foster-return-handovers/{handover}/complete', CompleteReturnHandoverController::class);
     // Route::post('/reviews', [ReviewController::class, 'store']);
 
-    // Message Routes
-    // Route::post('/messages', [MessageController::class, 'store']);
-    // Route::get('/messages', [MessageController::class, 'index']);
-    // Route::get('/messages/{message}', [MessageController::class, 'show']);
-    // Route::put('/messages/{message}/read', [MessageController::class, 'markAsRead']);
-    // Route::delete('/messages/{message}', [MessageController::class, 'destroy']);
+    // Messaging Routes (prefix: /msg)
+    Route::prefix('msg')->group(function () {
+        // Chats
+        Route::get('/chats', ListChatsController::class);
+        Route::post('/chats', StoreChatController::class);
+        Route::get('/chats/{chat}', ShowChatController::class);
+        Route::delete('/chats/{chat}', DeleteChatController::class);
+        Route::post('/chats/{chat}/read', MarkChatReadController::class);
+
+        // Messages
+        Route::get('/chats/{chat}/messages', ListMessagesController::class);
+        Route::post('/chats/{chat}/messages', StoreMessageController::class);
+        Route::delete('/messages/{message}', DeleteMessageController::class);
+
+        // Unread count for nav badge
+        Route::get('/unread-count', GetUnreadChatsCountController::class);
+    });
 });
 
 // New pet routes (public)

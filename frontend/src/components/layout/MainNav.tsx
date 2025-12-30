@@ -1,5 +1,5 @@
 import React from 'react'
-import { Cat, PawPrint } from 'lucide-react'
+import { Cat, PawPrint, MessageCircle } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
@@ -8,6 +8,31 @@ import { UserMenu } from '@/components/user/UserMenu'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ImpersonationIndicator } from '@/components/layout/ImpersonationBanner'
 import { AdminPanelLink } from '@/components/user/AdminPanelLink'
+import { useUnreadChatsCount } from '@/hooks/useMessaging'
+import { Badge } from '@/components/ui/badge'
+
+const MessagesLink: React.FC = () => {
+  const { count } = useUnreadChatsCount()
+
+  return (
+    <Link
+      to="/messages"
+      className="relative text-foreground hover:text-primary transition-colors"
+      title="Messages"
+    >
+      <MessageCircle className="h-6 w-6" />
+      <span className="sr-only">Messages</span>
+      {count > 0 && (
+        <Badge
+          variant="destructive"
+          className="absolute -top-1.5 -right-1.5 h-4.5 min-w-4.5 px-1 text-[10px] flex items-center justify-center"
+        >
+          {count > 99 ? '99+' : count}
+        </Badge>
+      )}
+    </Link>
+  )
+}
 
 const MainNav: React.FC = () => {
   const { isAuthenticated, isLoading, user } = useAuth()
@@ -46,6 +71,7 @@ const MainNav: React.FC = () => {
             <>
               {isVerified && <ImpersonationIndicator />}
               {isVerified && <AdminPanelLink />}
+              {isVerified && <MessagesLink />}
               {isVerified && <NotificationBell />}
               <UserMenu />
             </>

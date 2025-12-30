@@ -14,6 +14,7 @@ enum NotificationType: string
     case VACCINATION_REMINDER = 'vaccination_reminder';
     case PET_BIRTHDAY = 'pet_birthday';
     case EMAIL_VERIFICATION = 'email_verification';
+    case NEW_MESSAGE = 'new_message';
 
     public function getGroup(): string
     {
@@ -28,6 +29,7 @@ enum NotificationType: string
             self::VACCINATION_REMINDER,
             self::PET_BIRTHDAY => 'pet_health',
             self::EMAIL_VERIFICATION => 'account_security',
+            self::NEW_MESSAGE => 'messaging',
         };
     }
 
@@ -44,6 +46,7 @@ enum NotificationType: string
             self::VACCINATION_REMINDER => 'Vaccination Due Soon',
             self::PET_BIRTHDAY => 'Pet Birthday',
             self::EMAIL_VERIFICATION => 'Email Verification Required',
+            self::NEW_MESSAGE => 'New Message',
         };
     }
 }

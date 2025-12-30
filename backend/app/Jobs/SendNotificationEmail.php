@@ -6,6 +6,7 @@ use App\Enums\NotificationType;
 use App\Mail\EmailVerificationMail;
 use App\Mail\HelperResponseAcceptedMail;
 use App\Mail\HelperResponseRejectedMail;
+use App\Mail\NewMessageMail;
 use App\Mail\PetBirthdayMail;
 use App\Mail\PlacementRequestAcceptedMail;
 use App\Mail\PlacementRequestResponseMail;
@@ -269,6 +270,7 @@ class SendNotificationEmail implements ShouldQueue
             NotificationType::VACCINATION_REMINDER => new VaccinationReminderMail($this->user, $notificationType, $this->data),
             NotificationType::PET_BIRTHDAY => new PetBirthdayMail($this->user, $notificationType, $this->data),
             NotificationType::EMAIL_VERIFICATION => new EmailVerificationMail($this->user, $notificationType, $this->data),
+            NotificationType::NEW_MESSAGE => new NewMessageMail($this->user, $notificationType, $this->data),
             default => null,
         };
     }

@@ -5,10 +5,15 @@ services:
       context: .
       dockerfile: ./backend/Dockerfile
       args:
-        VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+        VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+        VITE_REVERB_APP_KEY: ${VITE_REVERB_APP_KEY:-}
+        VITE_REVERB_HOST: ${VITE_REVERB_HOST:-}
+        VITE_REVERB_PORT: ${VITE_REVERB_PORT:-}
+        VITE_REVERB_SCHEME: ${VITE_REVERB_SCHEME:-}
     image: meomaimoi/backend
     ports:
       - "8000:80"
+      - "8080:8080" # Reverb WebSocket server
     env_file:
       - ./backend/.env
     environment:
@@ -88,8 +93,8 @@ services:
       - testing
       - e2e
     ports:
-      - "1025:1025"  # SMTP server
-      - "8025:8025"  # Web UI
+      - "1025:1025" # SMTP server
+      - "8025:8025" # Web UI
     restart: unless-stopped
 
 volumes:

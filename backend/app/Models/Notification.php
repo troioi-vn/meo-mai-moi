@@ -67,6 +67,7 @@ class Notification extends Model
             'profile_rejected' => 'Profile Rejected',
             'system_announcement' => 'System Announcement',
             'deployment' => 'Deployment',
+            'new_message' => 'New Message',
             default => ucfirst(str_replace('_', ' ', $this->type ?? 'notification')),
         };
     }

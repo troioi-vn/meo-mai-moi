@@ -410,6 +410,13 @@ setup_initialize() {
             MAILGUN_WEBHOOK_SIGNING_KEY_INPUT="$MAILGUN_WEBHOOK_SIGNING_KEY_RAW"
         fi
 
+        REVERB_APP_ID_INPUT=$(prompt_with_default "REVERB_APP_ID" "836270")
+        REVERB_APP_KEY_INPUT=$(prompt_with_default "REVERB_APP_KEY" "mgyigyotlxz3rse8xcu4")
+        REVERB_APP_SECRET_INPUT=$(prompt_with_default "REVERB_APP_SECRET" "o2eqgfdsoxhmzo3u6l6i")
+        REVERB_HOST_INPUT=$(prompt_with_default "REVERB_HOST" "localhost")
+        REVERB_PORT_INPUT=$(prompt_with_default "REVERB_PORT" "8080")
+        REVERB_SCHEME_INPUT=$(prompt_with_default "REVERB_SCHEME" "http")
+
         # Apply values to the env file
         sed -i "s|^APP_NAME=.*|APP_NAME=\"${APP_NAME_INPUT}\"|" "$ENV_FILE"
         sed -i "s|^APP_ENV=.*|APP_ENV=${APP_ENV_INPUT}|" "$ENV_FILE"
@@ -438,6 +445,36 @@ setup_initialize() {
             sed -i "s|^MAILGUN_WEBHOOK_SIGNING_KEY=.*|MAILGUN_WEBHOOK_SIGNING_KEY=${MAILGUN_WEBHOOK_SIGNING_KEY_INPUT}|" "$ENV_FILE"
         else
             echo "MAILGUN_WEBHOOK_SIGNING_KEY=${MAILGUN_WEBHOOK_SIGNING_KEY_INPUT}" >> "$ENV_FILE"
+        fi
+
+        sed -i "s|^REVERB_APP_ID=.*|REVERB_APP_ID=${REVERB_APP_ID_INPUT}|" "$ENV_FILE"
+        sed -i "s|^REVERB_APP_KEY=.*|REVERB_APP_KEY=${REVERB_APP_KEY_INPUT}|" "$ENV_FILE"
+        sed -i "s|^REVERB_APP_SECRET=.*|REVERB_APP_SECRET=${REVERB_APP_SECRET_INPUT}|" "$ENV_FILE"
+        sed -i "s|^REVERB_HOST=.*|REVERB_HOST=\"${REVERB_HOST_INPUT}\"|" "$ENV_FILE"
+        sed -i "s|^REVERB_PORT=.*|REVERB_PORT=${REVERB_PORT_INPUT}|" "$ENV_FILE"
+        sed -i "s|^REVERB_SCHEME=.*|REVERB_SCHEME=${REVERB_SCHEME_INPUT}|" "$ENV_FILE"
+
+        sed -i "s|^VITE_REVERB_APP_KEY=.*|VITE_REVERB_APP_KEY=\"\${REVERB_APP_KEY}\"|" "$ENV_FILE"
+        sed -i "s|^VITE_REVERB_HOST=.*|VITE_REVERB_HOST=\"\${REVERB_HOST}\"|" "$ENV_FILE"
+        sed -i "s|^VITE_REVERB_PORT=.*|VITE_REVERB_PORT=\"\${REVERB_PORT}\"|" "$ENV_FILE"
+        sed -i "s|^VITE_REVERB_SCHEME=.*|VITE_REVERB_SCHEME=\"\${REVERB_SCHEME}\"|" "$ENV_FILE"
+
+        # Sync VITE_REVERB variables to root .env for Docker build args
+        if [ -f "$ROOT_ENV_FILE" ]; then
+            for var in VITE_REVERB_APP_KEY VITE_REVERB_HOST VITE_REVERB_PORT VITE_REVERB_SCHEME; do
+                val=$(grep "^${var}=" "$ENV_FILE" | cut -d'=' -f2- | tr -d '"' | tr -d "'")
+                # If it's a reference like ${REVERB_APP_KEY}, resolve it
+                if [[ "$val" =~ \$\{([A-Z0-9_]+)\} ]]; then
+                    ref_var="${BASH_REMATCH[1]}"
+                    val=$(grep "^${ref_var}=" "$ENV_FILE" | cut -d'=' -f2- | tr -d '"' | tr -d "'")
+                fi
+                
+                if grep -q "^${var}=" "$ROOT_ENV_FILE"; then
+                    sed -i "s|^${var}=.*|${var}=${val}|" "$ROOT_ENV_FILE"
+                else
+                    echo "${var}=${val}" >> "$ROOT_ENV_FILE"
+                fi
+            done
         fi
 
         # ENABLE_HTTPS default: false (opt-in) to avoid dev port conflicts and proxy issues
@@ -512,6 +549,23 @@ setup_initialize() {
             echo "   Both .env and backend/.env need VAPID keys for push notifications"
             echo "   Generate with: npx web-push generate-vapid-keys"
             log_warn "No VAPID keys in root env to sync"
+        fi
+
+        # Sync Reverb keys from backend/.env to root .env (for Docker build args)
+        echo ""
+        if grep -q "^REVERB_APP_KEY=" "$ENV_FILE"; then
+            echo "Syncing Reverb keys from backend/.env to .env..."
+            for var in REVERB_APP_KEY REVERB_HOST REVERB_PORT REVERB_SCHEME; do
+                val=$(grep "^${var}=" "$ENV_FILE" | cut -d'=' -f2- | tr -d '"' | tr -d "'")
+                vite_var="VITE_${var}"
+                if grep -q "^${vite_var}=" "$ROOT_ENV_FILE"; then
+                    sed -i "s|^${vite_var}=.*|${vite_var}=${val}|" "$ROOT_ENV_FILE"
+                else
+                    echo "${vite_var}=${val}" >> "$ROOT_ENV_FILE"
+                fi
+            done
+            echo "✓ Reverb keys synced to .env"
+            log_success "Reverb keys synced from backend env to root env"
         fi
         
         # Setup Telegram Bot notifications (optional)

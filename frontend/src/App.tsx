@@ -26,6 +26,7 @@ import CreateHelperProfilePage from './pages/helper/CreateHelperProfilePage'
 import HelperProfileViewPage from './pages/helper/HelperProfileViewPage'
 import NotFoundPage from './pages/errors/NotFoundPage'
 import RequestsPage from './pages/placement/RequestsPage'
+import MessagesPage from './pages/messages/MessagesPage'
 import './App.css'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -144,6 +145,25 @@ export function AppRoutes() {
         }
       />
       <Route path="/helper/:id" element={<HelperProfileViewPage />} />
+
+      {/* Messages routes */}
+      <Route
+        path="/messages"
+        element={
+          <PrivateRoute>
+            <MessagesPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/messages/:chatId"
+        element={
+          <PrivateRoute>
+            <MessagesPage />
+          </PrivateRoute>
+        }
+      />
+
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )

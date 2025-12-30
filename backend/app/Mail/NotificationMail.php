@@ -153,6 +153,7 @@ abstract class NotificationMail extends Mailable
             NotificationType::PLACEMENT_REQUEST_ACCEPTED => $baseUrl.'/requests',
             NotificationType::HELPER_RESPONSE_ACCEPTED => $baseUrl.'/requests',
             NotificationType::HELPER_RESPONSE_REJECTED => $baseUrl.'/requests',
+            NotificationType::NEW_MESSAGE => $baseUrl.'/messages/'.($this->data['chat_id'] ?? ''),
             default => $baseUrl,
         };
     }

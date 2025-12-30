@@ -11,12 +11,14 @@ mkdir -p /var/www/storage/logs
 mkdir -p /var/www/storage/app/public
 mkdir -p /var/log
 
-# Create log files for scheduler and queue worker (supervisor needs them to exist)
+# Create log files for scheduler, queue worker, and reverb (supervisor needs them to exist)
 touch /var/www/storage/logs/scheduler.log
 touch /var/www/storage/logs/scheduler-stdout.log
 touch /var/www/storage/logs/scheduler-stderr.log
 touch /var/www/storage/logs/queue-worker-stdout.log
 touch /var/www/storage/logs/queue-worker-stderr.log
+touch /var/www/storage/logs/reverb-stdout.log
+touch /var/www/storage/logs/reverb-stderr.log
 echo "Directories created."
 
 echo "[Step 1.5] Waiting for database to be ready..."

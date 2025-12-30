@@ -4,6 +4,7 @@ import App from './App'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './components/shared/theme-provider'
 import './index.css'
+// Note: Echo is lazy-loaded in useMessaging hook to avoid WebSocket errors when Reverb isn't running
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { NotificationProvider } from './contexts/NotificationProvider'
 import { registerSW } from 'virtual:pwa-register'

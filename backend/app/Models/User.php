@@ -125,6 +125,36 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
     }
 
     /**
+     * Get the chats this user participates in.
+     */
+    public function chats(): BelongsToMany
+    {
+        return $this->belongsToMany(Chat::class, 'chat_users')
+            ->withPivot(['role', 'joined_at', 'left_at', 'last_read_at'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the active chats (not left).
+     */
+    public function activeChats(): BelongsToMany
+    {
+        return $this->chats()->whereNull('chat_users.left_at');
+    }
+
+    /**
+     * Get the count of chats with unread messages.
+     */
+    public function getUnreadChatsCountAttribute(): int
+    {
+        return Chat::forUser($this)
+            ->withUnreadCount($this)
+            ->get()
+            ->filter(fn ($chat) => $chat->unread_count > 0)
+            ->count();
+    }
+
+    /**
      * Invitations sent by this user
      */
     public function sentInvitations(): HasMany

@@ -1,15 +1,17 @@
 import React, { useCallback, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Clock, X, Info, CheckCircle2, Loader2 } from 'lucide-react'
+import { Clock, X, Info, CheckCircle2, Loader2, MessageCircle } from 'lucide-react'
 import { PlacementResponseModal } from '@/components/placement/PlacementResponseModal'
 import { api } from '@/api/axios'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
 import type { PublicPet } from '@/api/pets'
 import { getTransferHandover, completeHandover } from '@/api/handovers'
+import { useCreateChat } from '@/hooks/useMessaging'
 
 type PlacementRequest = NonNullable<PublicPet['placement_requests']>[number]
 type TransferRequest = NonNullable<PlacementRequest['transfer_requests']>[number]
@@ -70,9 +72,10 @@ const formatStatus = (status: string): string => {
 
 export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh }) => {
   const { user } = useAuth()
+  const navigate = useNavigate()
+  const { create: createChat, creating: creatingChat } = useCreateChat()
   const [respondingToRequest, setRespondingToRequest] = useState<PlacementRequest | null>(null)
   const [confirmingRehomingId, setConfirmingRehomingId] = useState<number | null>(null)
-
   const placementRequests = pet.placement_requests ?? []
   // Show open and fulfilled placement requests (fulfilled means awaiting helper confirmation)
   const visiblePlacementRequests = placementRequests.filter(
@@ -108,6 +111,16 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
       }
     },
     [onRefresh]
+  )
+
+  const handleMessageOwner = useCallback(
+    async (recipientId: number, placementRequestId: number) => {
+      const chat = await createChat(recipientId, 'PlacementRequest', placementRequestId)
+      if (chat) {
+        void navigate(`/messages/${String(chat.id)}`)
+      }
+    },
+    [createChat, navigate]
   )
 
   const handleConfirmRehoming = useCallback(
@@ -236,14 +249,27 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                         </Button>
                       </div>
                     ) : (
-                      <Button
-                        onClick={() => {
-                          setRespondingToRequest(request)
-                        }}
-                        className="w-full"
-                      >
-                        Respond to Placement Request
-                      </Button>
+                      <div className="space-y-2">
+                        <Button
+                          onClick={() => {
+                            setRespondingToRequest(request)
+                          }}
+                          className="w-full"
+                        >
+                          Respond to Placement Request
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            void handleMessageOwner(request.user_id, request.id)
+                          }}
+                          disabled={creatingChat}
+                          className="w-full"
+                        >
+                          <MessageCircle className="h-4 w-4 mr-2" />
+                          {creatingChat ? 'Starting chat...' : 'Message Owner'}
+                        </Button>
+                      </div>
                     )
                   ) : (
                     <div className="text-sm text-muted-foreground text-center py-2">

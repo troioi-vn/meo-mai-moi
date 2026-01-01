@@ -9,12 +9,12 @@ use App\Enums\TransferRequestStatus;
 use App\Http\Controllers\Controller;
 use App\Models\FosterAssignment;
 use App\Models\Notification;
-use App\Models\OwnershipHistory;
 use App\Models\Pet;
 use App\Models\TransferHandover;
 use App\Models\TransferRequest;
 use App\Models\User;
 use App\Services\NotificationService;
+use App\Services\PetRelationshipService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -54,7 +54,7 @@ class CompleteHandoverController extends Controller
 
         $tr = $handover->transferRequest()->with(['pet', 'placementRequest'])->first();
 
-        DB::transaction(function () use ($handover, $tr) {
+        DB::transaction(function () use ($handover, $tr, $request) {
             $handover->status = 'completed';
             $handover->completed_at = now();
             $handover->save();
@@ -80,33 +80,19 @@ class CompleteHandoverController extends Controller
 
             // Finalize transfer effects depending on relationship type
             if ($relationshipType === 'permanent') {
-                // Close previous ownership record for current owner; backfill if missing
-                $closed = OwnershipHistory::where('pet_id', $tr->pet_id)
-                    ->where('user_id', $tr->recipient_user_id)
-                    ->whereNull('to_ts')
-                    ->update(['to_ts' => now()]);
+                // Use PetRelationshipService to handle ownership transfer
+                $relationshipService = app(PetRelationshipService::class);
+                $currentOwner = User::find($tr->recipient_user_id);
+                $newOwner = User::find($tr->initiator_user_id);
 
-                if ($closed === 0) {
-                    // No open record to close; create a backfilled one starting from earliest known timestamp
-                    $from = optional($tr->pet)->created_at ?? (optional($tr->placementRequest)->created_at ?? now());
-                    OwnershipHistory::create([
-                        'pet_id' => $tr->pet_id,
-                        'user_id' => $tr->recipient_user_id,
-                        'from_ts' => $from,
-                        'to_ts' => now(),
-                    ]);
+                if ($currentOwner && $newOwner && $tr->pet) {
+                    $relationshipService->transferOwnership(
+                        $tr->pet,
+                        $currentOwner,
+                        $newOwner,
+                        $request->user()
+                    );
                 }
-
-                // Assign new owner
-                optional($tr->pet)->update(['user_id' => $tr->initiator_user_id]);
-
-                // Create new ownership history for new owner
-                OwnershipHistory::create([
-                    'pet_id' => $tr->pet_id,
-                    'user_id' => $tr->initiator_user_id,
-                    'from_ts' => now(),
-                    'to_ts' => null,
-                ]);
 
                 // For permanent rehoming, set status to finalized
                 if ($placementRequest) {
@@ -124,6 +110,18 @@ class CompleteHandoverController extends Controller
                     'expected_end_date' => optional($tr->placementRequest)->end_date,
                     'status' => 'active',
                 ]);
+
+                // Also create a pet relationship for fostering access
+                $relationshipService = app(PetRelationshipService::class);
+                $fosterUser = User::find($tr->initiator_user_id);
+                if ($fosterUser && $tr->pet) {
+                    $relationshipService->createRelationship(
+                        $fosterUser,
+                        $tr->pet,
+                        \App\Enums\PetRelationshipType::FOSTER,
+                        $request->user()
+                    );
+                }
 
                 // For temporary fostering, set status to active
                 if ($placementRequest) {

@@ -6268,7 +6268,7 @@
                     "country",
                     "description",
                     "status",
-                    "user_id",
+                    "created_by",
                     "pet_type_id"
                 ],
                 "properties": {
@@ -6355,7 +6355,8 @@
                         "type": "string",
                         "example": "active"
                     },
-                    "user_id": {
+                    "created_by": {
+                        "description": "ID of user who created this pet",
                         "type": "integer",
                         "example": 5
                     },

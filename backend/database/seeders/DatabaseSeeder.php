@@ -99,7 +99,7 @@ class DatabaseSeeder extends Seeder
             // Create one cat and one dog per user with photos
             if ($catType) {
                 $cat = Pet::factory()->create([
-                    'user_id' => $user->id,
+                    'created_by' => $user->id,
                     'pet_type_id' => $catType->id,
                 ]);
 
@@ -121,7 +121,7 @@ class DatabaseSeeder extends Seeder
 
             if ($dogType) {
                 $dog = Pet::factory()->create([
-                    'user_id' => $user->id,
+                    'created_by' => $user->id,
                     'pet_type_id' => $dogType->id,
                 ]);
 
@@ -145,7 +145,7 @@ class DatabaseSeeder extends Seeder
         // Create placement requests for regular users
         $regularUsers = User::whereNotIn('email', ['admin@catarchy.space', 'user1@catarchy.space'])->get();
         foreach ($regularUsers as $user) {
-            $pets = Pet::where('user_id', $user->id)->get();
+            $pets = $user->ownedPets()->get();
 
             if ($pets->isNotEmpty()) {
                 // Create a permanent placement request for the first pet

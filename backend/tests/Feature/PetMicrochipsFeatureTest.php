@@ -34,7 +34,7 @@ class PetMicrochipsFeatureTest extends TestCase
         $this->owner->assignRole('pet_owner');
 
         $this->pet = Pet::factory()->create([
-            'user_id' => $this->owner->id,
+            'created_by' => $this->owner->id,
         ]);
 
         $this->admin = User::factory()->create();
@@ -346,7 +346,7 @@ class PetMicrochipsFeatureTest extends TestCase
         // If the capability service changes to support other types, this test should be updated
         $petType = \App\Models\PetType::factory()->create(['slug' => 'bird']);
         $bird = Pet::factory()->create([
-            'user_id' => $this->owner->id,
+            'created_by' => $this->owner->id,
             'pet_type_id' => $petType->id,
         ]);
 

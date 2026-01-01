@@ -27,7 +27,7 @@ class PetRemovalTest extends TestCase
         ]);
 
         $this->pet = Pet::factory()->create([
-            'user_id' => $this->user->id,
+            'created_by' => $this->user->id,
             'status' => PetStatus::ACTIVE,
         ]);
     }

@@ -7,7 +7,6 @@ use App\Enums\PlacementRequestStatus;
 use App\Enums\PlacementRequestType;
 use App\Enums\TransferRequestStatus;
 use App\Models\HelperProfile;
-use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Models\TransferRequest;
 use App\Models\User;
@@ -22,7 +21,7 @@ class TransferAcceptanceLifecycleTest extends TestCase
     public function test_accept_permanent_foster_transfers_ownership_and_fulfills_request(): void
     {
         $owner = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id]);
+        $pet = $this->createPetWithOwner($owner);
         $placement = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
@@ -62,7 +61,7 @@ class TransferAcceptanceLifecycleTest extends TestCase
         $response->assertStatus(200);
 
         // After accept, a handover should be created; ownership not yet transferred
-        $this->assertEquals($owner->id, $pet->fresh()->user_id);
+        $this->assertPetOwnedBy($pet->fresh(), $owner);
 
         $handover = \App\Models\TransferHandover::where('transfer_request_id', $accepted->id)->first();
         $this->assertNotNull($handover);
@@ -81,7 +80,7 @@ class TransferAcceptanceLifecycleTest extends TestCase
         $complete->assertStatus(200);
 
         // Ownership transferred to helper now
-        $this->assertEquals($helper->id, $pet->fresh()->user_id);
+        $this->assertPetOwnedBy($pet->fresh(), $helper);
 
         // Placement finalized and inactive (for permanent rehoming)
         $this->assertFalse($placement->fresh()->isActive());
@@ -95,7 +94,7 @@ class TransferAcceptanceLifecycleTest extends TestCase
     public function test_accept_fostering_creates_assignment_and_keeps_owner(): void
     {
         $owner = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id]);
+        $pet = $this->createPetWithOwner($owner);
         $placement = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
@@ -121,7 +120,7 @@ class TransferAcceptanceLifecycleTest extends TestCase
         $response->assertStatus(200);
 
         // After accept, handover exists and owner remains
-        $this->assertEquals($owner->id, $pet->fresh()->user_id);
+        $this->assertPetOwnedBy($pet->fresh(), $owner);
 
         $handover = \App\Models\TransferHandover::where('transfer_request_id', $accepted->id)->first();
         $this->assertNotNull($handover);
@@ -135,7 +134,7 @@ class TransferAcceptanceLifecycleTest extends TestCase
         $this->postJson("/api/transfer-handovers/{$handover->id}/complete")->assertStatus(200);
 
         // Owner remains for fostering handover
-        $this->assertEquals($owner->id, $pet->fresh()->user_id);
+        $this->assertPetOwnedBy($pet->fresh(), $owner);
 
         // Placement active (for temporary fostering)
         $this->assertEquals(PlacementRequestStatus::ACTIVE, $placement->fresh()->status);
@@ -152,7 +151,7 @@ class TransferAcceptanceLifecycleTest extends TestCase
     public function test_fostering_uses_placement_request_type_even_if_transfer_requests_permanent(): void
     {
         $owner = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id]);
+        $pet = $this->createPetWithOwner($owner);
         $placement = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
@@ -190,7 +189,7 @@ class TransferAcceptanceLifecycleTest extends TestCase
         $this->postJson("/api/transfer-handovers/{$handover->id}/complete")->assertStatus(200);
 
         // Owner remains; helper is foster via assignment
-        $this->assertEquals($owner->id, $pet->fresh()->user_id);
+        $this->assertPetOwnedBy($pet->fresh(), $owner);
         $this->assertEquals(PlacementRequestStatus::ACTIVE, $placement->fresh()->status);
         $this->assertDatabaseHas('foster_assignments', [
             'pet_id' => $pet->id,

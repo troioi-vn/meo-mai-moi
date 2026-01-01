@@ -51,7 +51,7 @@ class EmailNotificationDeliveryTest extends TestCase
         $helper = User::factory()->create(['email' => 'helper@test.com']);
 
         $pet = Pet::factory()->create([
-            'user_id' => $owner->id,
+            'created_by' => $owner->id,
             'status' => \App\Enums\PetStatus::ACTIVE,
             'name' => 'Fluffy',
         ]);
@@ -112,7 +112,7 @@ class EmailNotificationDeliveryTest extends TestCase
         $helper = User::factory()->create(['email' => 'helper@test.com']);
 
         $pet = Pet::factory()->create([
-            'user_id' => $owner->id,
+            'created_by' => $owner->id,
             'status' => \App\Enums\PetStatus::ACTIVE,
             'name' => 'Whiskers',
         ]);
@@ -165,7 +165,7 @@ class EmailNotificationDeliveryTest extends TestCase
         $helper = User::factory()->create(['email' => 'helper@test.com']);
 
         $pet = Pet::factory()->create([
-            'user_id' => $owner->id,
+            'created_by' => $owner->id,
             'status' => \App\Enums\PetStatus::ACTIVE,
             'name' => 'Mittens',
         ]);
@@ -216,7 +216,7 @@ class EmailNotificationDeliveryTest extends TestCase
         $helper = User::factory()->create(['email' => 'helper@test.com']);
 
         $pet = Pet::factory()->create([
-            'user_id' => $owner->id,
+            'created_by' => $owner->id,
             'status' => \App\Enums\PetStatus::ACTIVE,
         ]);
 
@@ -316,7 +316,7 @@ class EmailNotificationDeliveryTest extends TestCase
         $helper1 = User::factory()->create();
         $helper2 = User::factory()->create();
 
-        $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
         $placementRequest = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,

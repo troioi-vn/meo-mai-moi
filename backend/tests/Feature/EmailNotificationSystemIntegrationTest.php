@@ -57,7 +57,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
 
         // Create pet and placement request
         $pet = Pet::factory()->create([
-            'user_id' => $owner->id,
+            'created_by' => $owner->id,
             'status' => \App\Enums\PetStatus::ACTIVE,
             'name' => 'Fluffy',
         ]);

@@ -2,7 +2,10 @@
 
 namespace Tests;
 
+use App\Enums\PetRelationshipType;
+use App\Models\Pet;
 use App\Models\Settings;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\File;
@@ -50,5 +53,61 @@ abstract class TestCase extends BaseTestCase
         File::deleteDirectory(storage_path('media-library'));
 
         parent::tearDown();
+    }
+
+    /**
+     * Helper method to create a pet with owner relationship
+     * Replaces the old $this->createPetWithOwner($owner) pattern
+     */
+    protected function createPetWithOwner(User $owner, array $attributes = []): Pet
+    {
+        $attributes['created_by'] = $owner->id;
+
+        $pet = Pet::factory()->create($attributes);
+
+        // Verify ownership relationship was created
+        $this->assertDatabaseHas('pet_relationships', [
+            'pet_id' => $pet->id,
+            'user_id' => $owner->id,
+            'relationship_type' => PetRelationshipType::OWNER->value,
+            'end_at' => null,
+        ]);
+
+        return $pet;
+    }
+
+    /**
+     * Assert pet ownership using new relationship system
+     * Replaces: $this->assertPetOwnedBy($pet, $user)
+     */
+    protected function assertPetOwnedBy(Pet $pet, User $user): void
+    {
+        $this->assertTrue($pet->isOwnedBy($user), "Pet {$pet->id} should be owned by user {$user->id}");
+    }
+
+    /**
+     * Assert pet editing permissions using new relationship system
+     * Replaces: $this->assertTrue($pet->isOwnedBy($user) || $pet->editors->contains($user))
+     */
+    protected function assertPetEditableBy(Pet $pet, User $user): void
+    {
+        $this->assertTrue($pet->canBeEditedBy($user), "Pet {$pet->id} should be editable by user {$user->id}");
+    }
+
+    /**
+     * Assert pet viewing permissions using new relationship system
+     */
+    protected function assertPetViewableBy(Pet $pet, User $user): void
+    {
+        $this->assertTrue($pet->canBeViewedBy($user), "Pet {$pet->id} should be viewable by user {$user->id}");
+    }
+
+    /**
+     * Assert pet is NOT owned by user
+     * Replaces: $this->assertPetNotOwnedBy($pet, $user)
+     */
+    protected function assertPetNotOwnedBy(Pet $pet, User $user): void
+    {
+        $this->assertFalse($pet->isOwnedBy($user), "Pet {$pet->id} should NOT be owned by user {$user->id}");
     }
 }

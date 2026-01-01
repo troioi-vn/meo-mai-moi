@@ -241,7 +241,7 @@ class HelperProfileApiTest extends TestCase
         $profile = HelperProfile::factory()->for($helperOwner)->create(['approval_status' => 'pending']);
 
         // Create pet with placement request
-        $pet = \App\Models\Pet::factory()->for($petOwner)->create();
+        $pet = \App\Models\Pet::factory()->create(['created_by' => $petOwner->id]);
         $placementRequest = \App\Models\PlacementRequest::factory()->for($pet)->create([
             'request_type' => \App\Enums\PlacementRequestType::FOSTER_FREE->value,
         ]);

@@ -205,10 +205,8 @@ class HelperProfile extends Model
         // Check if user has a pet with a PlacementRequest that has a response from this helper profile
         return TransferRequest::query()
             ->where('helper_profile_id', $this->id)
-            ->whereHas('placementRequest', function ($query) use ($user) {
-                $query->whereHas('pet', function ($petQuery) use ($user) {
-                    $petQuery->where('user_id', $user->id);
-                });
+            ->whereHas('placementRequest.pet.owners', function ($query) use ($user) {
+                $query->where('users.id', $user->id);
             })
             ->exists();
     }

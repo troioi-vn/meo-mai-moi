@@ -2,10 +2,11 @@
 
 namespace Tests\Unit;
 
+use App\Enums\PetRelationshipType;
 use App\Http\Controllers\TransferHandover\CompleteHandoverController;
 use App\Models\HelperProfile;
-use App\Models\OwnershipHistory;
 use App\Models\Pet;
+use App\Models\PetRelationship;
 use App\Models\TransferHandover;
 use App\Models\TransferRequest;
 use App\Models\User;
@@ -21,15 +22,9 @@ class TransferHandoverCompletionTest extends TestCase
     {
         $owner = User::factory()->create();
         $helper = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id]);
+        $pet = $this->createPetWithOwner($owner);
 
-        // Existing open history for owner
-        OwnershipHistory::create([
-            'pet_id' => $pet->id,
-            'user_id' => $owner->id,
-            'from_ts' => now()->subDays(5),
-            'to_ts' => null,
-        ]);
+        // Pet already has ownership relationship from createPetWithOwner helper
 
         $helperProfile = HelperProfile::factory()->create(['user_id' => $helper->id]);
         $tr = TransferRequest::create([
@@ -59,23 +54,32 @@ class TransferHandoverCompletionTest extends TestCase
         $this->assertNotNull($responseData);
 
         $pet->refresh();
-        $this->assertEquals($helper->id, $pet->user_id, 'Pet owner should now be helper');
+        $this->assertPetOwnedBy($pet, $helper);
 
-        $prev = OwnershipHistory::where('pet_id', $pet->id)->where('user_id', $owner->id)->orderByDesc('id')->first();
+        $prev = PetRelationship::where('pet_id', $pet->id)
+            ->where('user_id', $owner->id)
+            ->where('relationship_type', PetRelationshipType::OWNER->value)
+            ->whereNotNull('end_at')
+            ->orderByDesc('id')
+            ->first();
         $this->assertNotNull($prev);
-        $this->assertNotNull($prev->to_ts, 'Previous owner period should be closed');
+        $this->assertNotNull($prev->end_at, 'Previous owner relationship should be ended');
 
-        $new = OwnershipHistory::where('pet_id', $pet->id)->where('user_id', $helper->id)->whereNull('to_ts')->first();
-        $this->assertNotNull($new, 'New owner should have an open period');
+        $new = PetRelationship::where('pet_id', $pet->id)
+            ->where('user_id', $helper->id)
+            ->where('relationship_type', PetRelationshipType::OWNER->value)
+            ->whereNull('end_at')
+            ->first();
+        $this->assertNotNull($new, 'New owner should have an active relationship');
     }
 
     public function test_complete_handover_backfills_when_no_previous_open_history(): void
     {
         $owner = User::factory()->create();
         $helper = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id]);
+        $pet = $this->createPetWithOwner($owner);
 
-        // Intentionally no open OwnershipHistory for owner (simulate legacy data)
+        // Test scenario where ownership transfer happens without existing relationship data
 
         $helperProfile = HelperProfile::factory()->create(['user_id' => $helper->id]);
         $tr = TransferRequest::create([
@@ -101,15 +105,24 @@ class TransferHandoverCompletionTest extends TestCase
         $controller($request, $handover);
 
         $pet->refresh();
-        $this->assertEquals($helper->id, $pet->user_id);
+        $this->assertPetOwnedBy($pet, $helper);
 
-        // previous owner should now have a closed backfilled period
-        $prev = OwnershipHistory::where('pet_id', $pet->id)->where('user_id', $owner->id)->orderByDesc('id')->first();
+        // previous owner should now have a closed relationship
+        $prev = PetRelationship::where('pet_id', $pet->id)
+            ->where('user_id', $owner->id)
+            ->where('relationship_type', PetRelationshipType::OWNER->value)
+            ->whereNotNull('end_at')
+            ->orderByDesc('id')
+            ->first();
         $this->assertNotNull($prev);
-        $this->assertNotNull($prev->to_ts);
+        $this->assertNotNull($prev->end_at);
 
-        // new owner should have an open period
-        $new = OwnershipHistory::where('pet_id', $pet->id)->where('user_id', $helper->id)->whereNull('to_ts')->first();
+        // new owner should have an active relationship
+        $new = PetRelationship::where('pet_id', $pet->id)
+            ->where('user_id', $helper->id)
+            ->where('relationship_type', PetRelationshipType::OWNER->value)
+            ->whereNull('end_at')
+            ->first();
         $this->assertNotNull($new);
     }
 }

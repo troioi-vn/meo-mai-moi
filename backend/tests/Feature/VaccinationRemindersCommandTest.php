@@ -29,7 +29,7 @@ class VaccinationRemindersCommandTest extends TestCase
     {
         $user = User::factory()->create();
         $petType = PetType::where('slug', 'cat')->first();
-        $pet = Pet::factory()->create(['user_id' => $user->id, 'pet_type_id' => $petType->id]);
+        $pet = Pet::factory()->create(['created_by' => $user->id, 'pet_type_id' => $petType->id]);
 
         $record = VaccinationRecord::factory()->create([
             'pet_id' => $pet->id,
@@ -60,7 +60,7 @@ class VaccinationRemindersCommandTest extends TestCase
     {
         $user = User::factory()->create();
         $petType = PetType::where('slug', 'cat')->first();
-        $pet = Pet::factory()->create(['user_id' => $user->id, 'pet_type_id' => $petType->id]);
+        $pet = Pet::factory()->create(['created_by' => $user->id, 'pet_type_id' => $petType->id]);
 
         $record = VaccinationRecord::factory()->create([
             'pet_id' => $pet->id,
@@ -89,7 +89,7 @@ class VaccinationRemindersCommandTest extends TestCase
     {
         $user = User::factory()->create();
         $dogType = PetType::where('slug', 'dog')->first();
-        $pet = Pet::factory()->create(['user_id' => $user->id, 'pet_type_id' => $dogType->id]);
+        $pet = Pet::factory()->create(['created_by' => $user->id, 'pet_type_id' => $dogType->id]);
 
         $record = VaccinationRecord::factory()->create([
             'pet_id' => $pet->id,

@@ -18,7 +18,7 @@ class OwnershipPermissionTest extends TestCase
     public function test_pet_owner_has_edit_permissions_on_their_pet(): void
     {
         $owner = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id]);
+        $pet = $this->createPetWithOwner($owner);
         Sanctum::actingAs($owner);
 
         $response = $this->getJson("/api/pets/{$pet->id}");
@@ -32,7 +32,7 @@ class OwnershipPermissionTest extends TestCase
     {
         $owner = User::factory()->create();
         $otherUser = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id]);
+        $pet = $this->createPetWithOwner($owner);
         Sanctum::actingAs($otherUser);
 
         $response = $this->getJson("/api/pets/{$pet->id}");
@@ -45,7 +45,7 @@ class OwnershipPermissionTest extends TestCase
     {
         $owner = User::factory()->create();
         $viewer = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id]);
+        $pet = $this->createPetWithOwner($owner);
         Sanctum::actingAs($viewer);
 
         $response = $this->getJson("/api/pets/{$pet->id}");
@@ -58,7 +58,7 @@ class OwnershipPermissionTest extends TestCase
     {
         $owner = User::factory()->create();
         $helper = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id]);
+        $pet = $this->createPetWithOwner($owner);
         Sanctum::actingAs($helper);
 
         $response = $this->getJson("/api/pets/{$pet->id}");
@@ -70,7 +70,7 @@ class OwnershipPermissionTest extends TestCase
     public function test_owner_can_edit_their_own_pet(): void
     {
         $petOwner = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $petOwner->id]);
+        $pet = $this->createPetWithOwner($petOwner);
         Sanctum::actingAs($petOwner);
 
         $response = $this->getJson("/api/pets/{$pet->id}");
@@ -87,7 +87,7 @@ class OwnershipPermissionTest extends TestCase
         $admin = User::factory()->create();
         Role::firstOrCreate(['name' => 'admin']);
         $admin->assignRole('admin');
-        $pet = Pet::factory()->create(['user_id' => $owner->id]);
+        $pet = $this->createPetWithOwner($owner);
         Sanctum::actingAs($admin);
 
         $response = $this->getJson("/api/pets/{$pet->id}");
@@ -102,8 +102,8 @@ class OwnershipPermissionTest extends TestCase
     {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
-        $pet1 = Pet::factory()->create(['user_id' => $user1->id, 'name' => 'User1 Pet']);
-        $pet2 = Pet::factory()->create(['user_id' => $user2->id, 'name' => 'User2 Pet']);
+        $pet1 = Pet::factory()->create(['created_by' => $user1->id, 'name' => 'User1 Pet']);
+        $pet2 = Pet::factory()->create(['created_by' => $user2->id, 'name' => 'User2 Pet']);
 
         // User1 can edit their own cat
         Sanctum::actingAs($user1);
@@ -130,7 +130,7 @@ class OwnershipPermissionTest extends TestCase
     public function test_ownership_persists_across_user_role_changes_for_pet(): void
     {
         $user = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $user->id]);
+        $pet = $this->createPetWithOwner($user);
 
         Sanctum::actingAs($user);
 
@@ -156,7 +156,7 @@ class OwnershipPermissionTest extends TestCase
     {
         $owner = User::factory()->create();
         $nonOwner = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id, 'name' => 'Original Name']);
+        $pet = Pet::factory()->create(['created_by' => $owner->id, 'name' => 'Original Name']);
 
         // Owner should be able to update their cat
         Sanctum::actingAs($owner);

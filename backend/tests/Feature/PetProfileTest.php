@@ -36,7 +36,7 @@ class PetProfileTest extends TestCase
     public function test_custodian_can_update_pet_profile(): void
     {
         $custodian = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $custodian->id]);
+        $pet = $this->createPetWithOwner($custodian);
         Sanctum::actingAs($custodian);
 
         $updateData = ['name' => 'Updated Name'];
@@ -87,7 +87,7 @@ class PetProfileTest extends TestCase
     public function test_pet_owner_can_view_pet_profile_with_edit_permissions(): void
     {
         $owner = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id, 'name' => 'Owner Pet']);
+        $pet = Pet::factory()->create(['created_by' => $owner->id, 'name' => 'Owner Pet']);
         Sanctum::actingAs($owner);
 
         $response = $this->getJson("/api/pets/{$pet->id}");

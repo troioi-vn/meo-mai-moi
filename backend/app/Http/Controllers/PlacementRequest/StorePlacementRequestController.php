@@ -91,7 +91,7 @@ class StorePlacementRequestController extends Controller
         // Ensure this pet type supports placement requests
         $this->capabilityService->ensure($pet, 'placement');
 
-        if ($pet->user_id !== Auth::id()) {
+        if (! $pet->isOwnedBy(Auth::user())) {
             return $this->sendError('You are not authorized to create a placement request for this pet.', 403);
         }
 

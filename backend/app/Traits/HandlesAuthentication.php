@@ -50,7 +50,13 @@ trait HandlesAuthentication
             return false;
         }
 
-        $isOwner = $resource->{$ownerField} === $user->id;
+        // Special handling for Pet model with new relationship system
+        if ($resource instanceof \App\Models\Pet) {
+            $isOwner = $resource->isOwnedBy($user);
+        } else {
+            $isOwner = $resource->{$ownerField} === $user->id;
+        }
+
         $isAdmin = method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
 
         return $isOwner || $isAdmin;

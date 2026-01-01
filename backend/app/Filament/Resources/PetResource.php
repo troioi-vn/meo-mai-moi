@@ -224,6 +224,6 @@ class PetResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['petType', 'user']);
+            ->with(['petType', 'creator']);
     }
 }

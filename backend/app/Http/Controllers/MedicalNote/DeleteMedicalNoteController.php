@@ -35,7 +35,7 @@ class DeleteMedicalNoteController extends Controller
         if (! $user) {
             return $this->sendError('Unauthenticated.', 401);
         }
-        $isOwner = $user->id === $pet->user_id;
+        $isOwner = $pet->isOwnedBy($user);
         $isAdmin = method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
         if (! $isOwner && ! $isAdmin) {
             return $this->sendError('Forbidden.', 403);

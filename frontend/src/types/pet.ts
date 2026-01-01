@@ -56,6 +56,23 @@ export interface PetPhoto {
   is_primary: boolean
 }
 
+export interface PetRelationship {
+  id: number
+  user_id: number
+  pet_id: number
+  relationship_type: 'owner' | 'foster' | 'editor' | 'viewer'
+  start_at: string
+  end_at: string | null
+  created_by: number
+  created_at: string
+  updated_at: string
+  user?: {
+    id: number
+    name: string
+    email?: string
+  }
+}
+
 export interface Pet {
   id: number
   name: string
@@ -93,6 +110,7 @@ export interface Pet {
     can_delete?: boolean
   }
   placement_requests?: PlacementRequest[]
+  relationships?: PetRelationship[]
   // Convenience flag from backend (optional) used by PetCard
   placement_request_active?: boolean
   foster_assignment?: {

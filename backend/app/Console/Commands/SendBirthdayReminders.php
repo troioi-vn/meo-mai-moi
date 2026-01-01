@@ -28,7 +28,7 @@ class SendBirthdayReminders extends Command
         // Note: We match on month and day only since we may not know the exact year for some pets
         $query = Pet::query()
             ->whereNotNull('birthday')
-            ->with(['user', 'petType'])
+            ->with(['owners', 'petType'])
             ->where(function ($q) use ($month, $day) {
                 // For pets with exact birthday (precision = day)
                 $q->whereRaw('EXTRACT(MONTH FROM birthday) = ? AND EXTRACT(DAY FROM birthday) = ?', [$month, $day]);
@@ -39,34 +39,38 @@ class SendBirthdayReminders extends Command
 
         $query->chunkById(100, function ($pets) use (&$count, $service) {
             foreach ($pets as $pet) {
-                if (! $pet->user) {
-                    continue;
-                }
-
-                $owner = $pet->user;
-                if (! $owner instanceof User) {
+                // Get current owners of the pet
+                $owners = $pet->owners;
+                if ($owners->isEmpty()) {
                     continue;
                 }
 
                 // Calculate age
                 $age = $pet->getAge();
 
-                $data = [
-                    'message' => sprintf(
-                        '🎂 Happy Birthday %s! Today %s turns %s',
-                        $pet->name,
-                        $pet->name,
-                        $age
-                    ),
-                    'link' => url('/pets/'.$pet->id),
-                    'pet_id' => $pet->id,
-                    'pet_name' => $pet->name,
-                    'birthday' => optional($pet->birthday)->toDateString(),
-                    'age' => $age,
-                ];
+                // Send birthday reminder to all current owners
+                foreach ($owners as $owner) {
+                    if (! $owner instanceof User) {
+                        continue;
+                    }
 
-                // Respect user preferences via NotificationService
-                $service->send($owner, NotificationType::PET_BIRTHDAY->value, $data);
+                    $data = [
+                        'message' => sprintf(
+                            '🎂 Happy Birthday %s! Today %s turns %s',
+                            $pet->name,
+                            $pet->name,
+                            $age
+                        ),
+                        'link' => url('/pets/'.$pet->id),
+                        'pet_id' => $pet->id,
+                        'pet_name' => $pet->name,
+                        'birthday' => optional($pet->birthday)->toDateString(),
+                        'age' => $age,
+                    ];
+
+                    // Respect user preferences via NotificationService
+                    $service->send($owner, NotificationType::PET_BIRTHDAY->value, $data);
+                }
 
                 $count++;
             }

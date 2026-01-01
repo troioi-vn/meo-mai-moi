@@ -249,7 +249,7 @@ class CategoryTest extends TestCase
         Sanctum::actingAs($this->user);
 
         $pet = Pet::factory()->create([
-            'user_id' => $this->user->id,
+            'created_by' => $this->user->id,
             'pet_type_id' => $this->catType->id,
         ]);
 
@@ -294,7 +294,7 @@ class CategoryTest extends TestCase
 
         // Create pets with this category
         $pets = Pet::factory()->count(3)->create([
-            'user_id' => $this->user->id,
+            'created_by' => $this->user->id,
             'pet_type_id' => $this->catType->id,
         ]);
 
@@ -345,7 +345,7 @@ class CategoryTest extends TestCase
         Sanctum::actingAs($this->user);
 
         $pet = Pet::factory()->create([
-            'user_id' => $this->user->id,
+            'created_by' => $this->user->id,
             'pet_type_id' => $this->catType->id,
         ]);
 

@@ -48,7 +48,7 @@ class MedicalNotesFeatureTest extends TestCase
         ]);
 
         $this->pet = Pet::factory()->create([
-            'user_id' => $this->owner->id,
+            'created_by' => $this->owner->id,
             'pet_type_id' => $this->catType->id,
         ]);
     }

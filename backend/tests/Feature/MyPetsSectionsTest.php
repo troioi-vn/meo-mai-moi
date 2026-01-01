@@ -2,8 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\OwnershipHistory;
+use App\Enums\PetRelationshipType;
 use App\Models\Pet;
+use App\Models\PetRelationship;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -12,27 +13,25 @@ class MyPetsSectionsTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_transferred_away_uses_ownership_history(): void
+    public function test_transferred_away_uses_pet_relationships(): void
     {
         $me = User::factory()->create();
         $other = User::factory()->create();
 
         // Currently owned pet by me (should be in owned, not in transferred_away)
-        $ownedPet = Pet::factory()->create(['user_id' => $me->id]);
-        OwnershipHistory::create([
-            'pet_id' => $ownedPet->id,
-            'user_id' => $me->id,
-            'from_ts' => now()->subDays(5),
-            'to_ts' => null,
-        ]);
+        $ownedPet = $this->createPetWithOwner($me);
 
         // A pet I used to own, now owned by someone else
-        $transferredPet = Pet::factory()->create(['user_id' => $other->id]);
-        OwnershipHistory::create([
+        $transferredPet = $this->createPetWithOwner($other);
+
+        // Create a past ownership relationship for me (ended)
+        PetRelationship::create([
             'pet_id' => $transferredPet->id,
             'user_id' => $me->id,
-            'from_ts' => now()->subDays(10),
-            'to_ts' => now()->subDays(1),
+            'relationship_type' => PetRelationshipType::OWNER,
+            'start_at' => now()->subDays(10),
+            'end_at' => now()->subDays(1),
+            'created_by' => $me->id,
         ]);
 
         $this->actingAs($me, 'sanctum');

@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\HelperProfile;
-use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Models\TransferHandover;
 use App\Models\TransferRequest;
@@ -43,7 +42,7 @@ class TransferRequestResourceTest extends TestCase
 
         // Create test data
         $owner = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id]);
+        $pet = $this->createPetWithOwner($owner);
         $placementRequest = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
@@ -68,7 +67,7 @@ class TransferRequestResourceTest extends TestCase
     {
         // Create test data
         $owner = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id]);
+        $pet = $this->createPetWithOwner($owner);
         $placementRequest = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
@@ -96,7 +95,7 @@ class TransferRequestResourceTest extends TestCase
     {
         // Create test data
         $owner = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id]);
+        $pet = $this->createPetWithOwner($owner);
         $placementRequest = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,

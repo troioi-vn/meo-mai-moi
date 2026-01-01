@@ -92,7 +92,7 @@ class StoreTransferRequestController extends Controller
         }
 
         /** @var \App\Models\Pet $pet */
-        if ($pet->user_id === $user->id) {
+        if ($pet->isOwnedBy($user)) {
             return $this->sendError('You cannot create a transfer request for your own pet.', 403);
         }
 
@@ -110,16 +110,21 @@ class StoreTransferRequestController extends Controller
             return $this->sendError('You have already responded to this placement request and it is pending.', 409);
         }
 
+        // Get the pet owner from relationships
+        $petOwner = $pet->owners()->first();
+        if (! $petOwner) {
+            return $this->sendError('Pet has no owner.', 422);
+        }
+
         $transferRequest = TransferRequest::create(array_merge($validatedData, [
             'pet_id' => $pet->id,
             'initiator_user_id' => $user->id,
-            'recipient_user_id' => $pet->user_id, // Pet owner is the recipient
+            'recipient_user_id' => $petOwner->id, // Pet owner is the recipient
             'requester_id' => $user->id, // User making the request
             'status' => TransferRequestStatus::PENDING,
         ]));
 
         // Send notification to pet owner using NotificationService
-        $petOwner = User::find($pet->user_id);
         if ($petOwner) {
             $this->notificationService->send(
                 $petOwner,

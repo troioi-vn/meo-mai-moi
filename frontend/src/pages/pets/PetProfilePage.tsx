@@ -11,6 +11,7 @@ import { WeightHistoryCard } from '@/components/pet-health/weights/WeightHistory
 import { UpcomingVaccinationsSection } from '@/components/pet-health/vaccinations/UpcomingVaccinationsSection'
 import { VaccinationStatusBadge } from '@/components/pet-health/vaccinations/VaccinationStatusBadge'
 import { MedicalRecordsSection } from '@/components/pet-health/medical/MedicalRecordsSection'
+import { PetRelationshipsSection } from '@/components/pets/PetRelationshipsSection'
 import { useVaccinations } from '@/hooks/useVaccinations'
 import { calculateVaccinationStatus } from '@/utils/vaccinationStatus'
 import { petSupportsCapability, formatPetAge } from '@/types/pet'
@@ -208,6 +209,11 @@ const PetProfilePage: React.FC = () => {
           {/* Medical Records */}
           {supportsMedical && (
             <MedicalRecordsSection petId={pet.id} canEdit={canEdit} mode="view" />
+          )}
+
+          {/* People & History */}
+          {canEdit && pet.relationships && (
+            <PetRelationshipsSection relationships={pet.relationships} />
           )}
 
           {/* Placement Requests Section */}

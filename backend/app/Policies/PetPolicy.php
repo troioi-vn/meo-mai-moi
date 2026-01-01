@@ -38,15 +38,12 @@ class PetPolicy
         }
 
         // Owner can view
-        if ($pet->user_id === $user->id) {
+        if ($pet->isOwnedBy($user)) {
             return true;
         }
 
         // Explicit viewer/editor access
-        if (
-            $pet->viewers()->where('user_id', $user->id)->exists()
-            || $pet->editors()->where('user_id', $user->id)->exists()
-        ) {
+        if ($pet->canBeViewedBy($user)) {
             return true;
         }
 
@@ -84,11 +81,11 @@ class PetPolicy
      */
     public function update(User $user, Pet $pet): bool
     {
-        if ($this->isAdmin($user) || $pet->user_id === $user->id) {
+        if ($this->isAdmin($user)) {
             return true;
         }
 
-        return $pet->editors()->where('user_id', $user->id)->exists();
+        return $pet->canBeEditedBy($user);
     }
 
     /**
@@ -96,7 +93,7 @@ class PetPolicy
      */
     public function delete(User $user, Pet $pet): bool
     {
-        return $this->isAdmin($user) || $pet->user_id === $user->id;
+        return $this->isAdmin($user) || $pet->isOwnedBy($user);
     }
 
     /**

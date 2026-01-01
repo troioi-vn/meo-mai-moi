@@ -48,15 +48,14 @@ class ShowPetController extends Controller
             'placementRequests.transferRequests.helperProfile.user',
             'petType',
             'categories',
-            'viewers',
-            'editors',
+            'relationships.user',
         ]);
 
         // Resolve user and authorize access
         $user = $this->authorizeUser($request, 'view', $pet);
-        $isOwner = $this->isOwnerOrAdmin($user, $pet);
         $isAdmin = $this->hasRole($user, ['admin', 'super_admin']);
-        $isEditor = $user ? $pet->editors->contains($user->id) : false;
+        $isOwner = $user ? $pet->isOwnedBy($user) : false;
+        $isEditor = $user ? $pet->canBeEditedBy($user) : false;
 
         $viewerPermissions = [
             'can_edit' => $isOwner || $isAdmin || $isEditor,

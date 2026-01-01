@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\HelperProfile;
-use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Models\TransferRequest;
 use App\Models\User;
@@ -19,7 +18,7 @@ class TransferRequestRelationshipTest extends TestCase
     public function a_transfer_request_belongs_to_a_placement_request()
     {
         $owner = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id]);
+        $pet = $this->createPetWithOwner($owner);
         $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'user_id' => $owner->id]);
         $helper = User::factory()->create();
         $helperProfile = HelperProfile::factory()->create(['user_id' => $helper->id]);
@@ -38,7 +37,7 @@ class TransferRequestRelationshipTest extends TestCase
     public function a_placement_request_can_have_many_transfer_requests()
     {
         $owner = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id]);
+        $pet = $this->createPetWithOwner($owner);
         $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'user_id' => $owner->id]);
         $helper1 = User::factory()->create();
         $helperProfile1 = HelperProfile::factory()->create(['user_id' => $helper1->id]);

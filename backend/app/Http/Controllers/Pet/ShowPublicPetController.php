@@ -111,7 +111,7 @@ class ShowPublicPetController extends Controller
 
         // Resolve user to determine if viewer is owner
         $user = $this->resolveUser($request);
-        $isOwner = $user && $pet->user_id === $user->id;
+        $isOwner = $user && $pet->isOwnedBy($user);
 
         // Build public response with whitelisted fields
         $publicData = $pet->only(self::PUBLIC_FIELDS);

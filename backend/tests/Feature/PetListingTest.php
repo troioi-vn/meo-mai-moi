@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\City;
-use App\Models\Pet;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -18,7 +17,7 @@ class PetListingTest extends TestCase
     public function can_get_single_pet_profile(): void
     {
         $user = $this->createUserAndLogin();
-        $pet = Pet::factory()->create(['user_id' => $user->id]);
+        $pet = $this->createPetWithOwner($user);
 
         $response = $this->getJson("/api/pets/{$pet->id}");
         $response->assertStatus(200)->assertJson(['data' => ['id' => $pet->id]]);

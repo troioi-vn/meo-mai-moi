@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\PlacementRequest;
 
+use App\Enums\PetRelationshipType;
 use App\Enums\PlacementRequestStatus;
 use App\Enums\PlacementRequestType;
 use App\Http\Controllers\Controller;
 use App\Models\FosterAssignment;
 use App\Models\Notification;
+use App\Models\PetRelationship;
 use App\Models\PlacementRequest;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
@@ -55,7 +57,8 @@ class FinalizePlacementRequestController extends Controller
         $user = $request->user();
 
         // Only the pet owner can finalize
-        if ($placementRequest->user_id !== $user->id) {
+        $pet = $placementRequest->pet;
+        if (! $pet->isOwnedBy($user)) {
             return $this->sendError('Only the pet owner can finalize this placement request.', 403);
         }
 
@@ -89,6 +92,12 @@ class FinalizePlacementRequestController extends Controller
                         'actual_end_date' => now()->toDateString(),
                     ]);
             }
+
+            // Also end the foster relationship
+            PetRelationship::where('pet_id', $placementRequest->pet_id)
+                ->where('relationship_type', PetRelationshipType::FOSTER)
+                ->whereNull('end_at')
+                ->update(['end_at' => now()]);
 
             // Find the accepted transfer request to notify the helper
             $acceptedTransfer = $placementRequest->transferRequests()

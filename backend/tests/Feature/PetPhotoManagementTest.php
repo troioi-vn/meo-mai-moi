@@ -28,7 +28,7 @@ class PetPhotoManagementTest extends TestCase
         }
 
         $this->owner = User::factory()->create();
-        $this->pet = Pet::factory()->create(['user_id' => $this->owner->id]);
+        $this->pet = Pet::factory()->create(['created_by' => $this->owner->id]);
     }
 
     #[Test]

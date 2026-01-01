@@ -99,7 +99,7 @@ class PublicPetProfileTest extends TestCase
     public function test_owner_sees_is_owner_flag_on_public_endpoint(): void
     {
         $owner = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => 'lost']);
+        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => 'lost']);
         Sanctum::actingAs($owner);
 
         $response = $this->getJson("/api/pets/{$pet->id}/public");
@@ -113,7 +113,7 @@ class PublicPetProfileTest extends TestCase
     {
         $owner = User::factory()->create();
         $viewer = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => 'lost']);
+        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => 'lost']);
         Sanctum::actingAs($viewer);
 
         $response = $this->getJson("/api/pets/{$pet->id}/public");

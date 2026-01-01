@@ -72,7 +72,7 @@ class MediaLibraryIntegrationTest extends TestCase
         Sanctum::actingAs($this->user);
 
         $pet = Pet::factory()->create([
-            'user_id' => $this->user->id,
+            'created_by' => $this->user->id,
             'pet_type_id' => $this->catType->id,
         ]);
 
@@ -130,7 +130,7 @@ class MediaLibraryIntegrationTest extends TestCase
         Sanctum::actingAs($this->user);
 
         $pet = Pet::factory()->create([
-            'user_id' => $this->user->id,
+            'created_by' => $this->user->id,
             'pet_type_id' => $this->catType->id,
         ]);
 
@@ -157,7 +157,7 @@ class MediaLibraryIntegrationTest extends TestCase
         Sanctum::actingAs($this->user);
 
         $pet = Pet::factory()->create([
-            'user_id' => $this->user->id,
+            'created_by' => $this->user->id,
             'pet_type_id' => $this->catType->id,
         ]);
 

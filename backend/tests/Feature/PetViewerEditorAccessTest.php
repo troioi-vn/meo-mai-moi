@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\City;
 use App\Models\Pet;
+use App\Models\PetRelationship;
 use App\Models\PetType;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -48,8 +49,8 @@ class PetViewerEditorAccessTest extends TestCase
         );
 
         $petId = $response->json('data.id');
-        $this->assertDatabaseHas('pet_viewers', ['pet_id' => $petId, 'user_id' => $viewer->id]);
-        $this->assertDatabaseHas('pet_editors', ['pet_id' => $petId, 'user_id' => $editor->id]);
+        $this->assertDatabaseHas('pet_relationships', ['pet_id' => $petId, 'user_id' => $viewer->id, 'relationship_type' => 'viewer', 'end_at' => null]);
+        $this->assertDatabaseHas('pet_relationships', ['pet_id' => $petId, 'user_id' => $editor->id, 'relationship_type' => 'editor', 'end_at' => null]);
     }
 
     #[Test]
@@ -57,8 +58,14 @@ class PetViewerEditorAccessTest extends TestCase
     {
         $owner = User::factory()->create();
         $viewer = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id]);
-        $pet->viewers()->attach($viewer->id);
+        $pet = $this->createPetWithOwner($owner);
+        PetRelationship::create([
+            'pet_id' => $pet->id,
+            'user_id' => $viewer->id,
+            'relationship_type' => \App\Enums\PetRelationshipType::VIEWER,
+            'start_at' => now(),
+            'created_by' => $owner->id,
+        ]);
 
         Sanctum::actingAs($viewer);
         $response = $this->getJson("/api/pets/{$pet->id}");
@@ -71,7 +78,7 @@ class PetViewerEditorAccessTest extends TestCase
     {
         $owner = User::factory()->create();
         $otherUser = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id]);
+        $pet = $this->createPetWithOwner($owner);
 
         Sanctum::actingAs($otherUser);
         $response = $this->getJson("/api/pets/{$pet->id}");
@@ -84,8 +91,14 @@ class PetViewerEditorAccessTest extends TestCase
     {
         $owner = User::factory()->create();
         $editor = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id, 'name' => 'Old Name']);
-        $pet->editors()->attach($editor->id);
+        $pet = Pet::factory()->create(['created_by' => $owner->id, 'name' => 'Old Name']);
+        PetRelationship::create([
+            'pet_id' => $pet->id,
+            'user_id' => $editor->id,
+            'relationship_type' => \App\Enums\PetRelationshipType::EDITOR,
+            'start_at' => now(),
+            'created_by' => $owner->id,
+        ]);
 
         Sanctum::actingAs($editor);
         $response = $this->putJson("/api/pets/{$pet->id}", ['name' => 'New Name']);

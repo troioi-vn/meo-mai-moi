@@ -27,7 +27,7 @@ class PetCapabilityServiceTest extends TestCase
     {
         $user = User::factory()->create();
         // Bird (ID 3) does not support placement
-        $bird = Pet::factory()->create(['user_id' => $user->id, 'pet_type_id' => 3]);
+        $bird = $this->createPetWithOwner($user, ['pet_type_id' => 3]);
 
         $this->expectException(ValidationException::class);
         try {

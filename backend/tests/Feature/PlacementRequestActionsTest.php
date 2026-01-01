@@ -21,7 +21,7 @@ class PlacementRequestActionsTest extends TestCase
         $owner = User::factory()->create();
 
         // Create pet explicitly
-        $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
 
         // Create placement request DIRECTLY without factory to ensure explicit control
         $placementRequest = new PlacementRequest;
@@ -33,8 +33,9 @@ class PlacementRequestActionsTest extends TestCase
         // Status is already set to OPEN by default in factory
         $placementRequest->save();
 
-        // Verify the user_id was actually saved
+        // Verify the user_id was actually saved and pet ownership exists
         $this->assertEquals($owner->id, $placementRequest->fresh()->user_id, 'PlacementRequest user_id should match owner id');
+        $this->assertTrue($pet->isOwnedBy($owner), 'Pet should be owned by the user');
 
         Sanctum::actingAs($owner);
 
@@ -48,7 +49,7 @@ class PlacementRequestActionsTest extends TestCase
     public function test_non_owner_cannot_delete_a_placement_request()
     {
         $owner = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
         $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'user_id' => $owner->id]);
         $nonOwner = User::factory()->create();
 

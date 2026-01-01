@@ -3,7 +3,6 @@
 namespace Tests\Unit\Policies;
 
 use App\Enums\PlacementRequestStatus;
-use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Models\TransferRequest;
 use App\Models\User;
@@ -17,7 +16,7 @@ class TransferRequestPolicyTest extends TestCase
     public function test_owner_can_accept_and_reject_transfer_request(): void
     {
         $owner = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id]);
+        $pet = $this->createPetWithOwner($owner);
         $placement = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'user_id' => $owner->id, 'status' => PlacementRequestStatus::OPEN]);
         $transfer = TransferRequest::factory()->create([
             'pet_id' => $pet->id,
@@ -35,7 +34,7 @@ class TransferRequestPolicyTest extends TestCase
     {
         $owner = User::factory()->create();
         $other = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id]);
+        $pet = $this->createPetWithOwner($owner);
         $placement = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'user_id' => $owner->id, 'status' => PlacementRequestStatus::OPEN]);
         $transfer = TransferRequest::factory()->create([
             'pet_id' => $pet->id,

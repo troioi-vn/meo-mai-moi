@@ -21,7 +21,7 @@ class TransferRequestCreationTest extends TestCase
         $owner = User::factory()->create();
         $helper = User::factory()->create();
         $helperProfile = \App\Models\HelperProfile::factory()->create(['user_id' => $helper->id]);
-        $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
         $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'status' => \App\Enums\PlacementRequestStatus::OPEN]);
 
         Sanctum::actingAs($helper);
@@ -49,7 +49,7 @@ class TransferRequestCreationTest extends TestCase
     {
         $owner = User::factory()->create();
         $user = User::factory()->create(); // No helper profile
-        $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
         $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'status' => \App\Enums\PlacementRequestStatus::OPEN]);
 
         Sanctum::actingAs($user);
@@ -71,7 +71,7 @@ class TransferRequestCreationTest extends TestCase
     public function test_owner_cannot_create_transfer_request_for_own_cat(): void
     {
         $owner = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
         $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'status' => \App\Enums\PlacementRequestStatus::OPEN]);
 
         Sanctum::actingAs($owner);
@@ -92,7 +92,7 @@ class TransferRequestCreationTest extends TestCase
     {
         $owner = User::factory()->create();
         $helper = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
         $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'status' => \App\Enums\PlacementRequestStatus::OPEN]);
         $transferRequest = TransferRequest::factory()->create([
             'pet_id' => $pet->id,

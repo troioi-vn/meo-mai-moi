@@ -41,9 +41,7 @@ class ListHelperProfilesController extends Controller
             ->where('status', '!=', HelperProfileStatus::DELETED)
             ->whereHas('transferRequests', function ($query) use ($user) {
                 $query->whereHas('placementRequest', function ($prQuery) use ($user) {
-                    $prQuery->whereHas('pet', function ($petQuery) use ($user) {
-                        $petQuery->where('user_id', $user->id);
-                    });
+                    $prQuery->where('user_id', $user->id);
                 });
             })
             ->pluck('id');

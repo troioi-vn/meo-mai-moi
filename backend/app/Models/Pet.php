@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PetRelationshipType;
 use App\Enums\PetSex;
 use App\Enums\PetStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,7 +21,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  *     schema="Pet",
  *     type="object",
  *     title="Pet",
- *     required={"id", "name", "country", "description", "status", "user_id", "pet_type_id"},
+ *     required={"id", "name", "country", "description", "status", "created_by", "pet_type_id"},
  *
  *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="name", type="string", example="Whiskers"),
@@ -36,7 +37,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  *     @OA\Property(property="address", type="string", example="123 Main St", nullable=true),
  *     @OA\Property(property="description", type="string", example="A friendly pet."),
  *     @OA\Property(property="status", type="string", example="active"),
- *     @OA\Property(property="user_id", type="integer", example=5),
+ *     @OA\Property(property="created_by", type="integer", example=5, description="ID of user who created this pet"),
  *     @OA\Property(property="pet_type_id", type="integer", example=1)
  * )
  */
@@ -56,7 +57,7 @@ class Pet extends Model implements HasMedia
         'city',
         'address',
         'description',
-        'user_id',
+        'created_by',
         'status',
         'birthday',
         'birthday_year',
@@ -107,27 +108,114 @@ class Pet extends Model implements HasMedia
     }
 
     /**
-     * Get the user who owns this pet
+     * Get the user who created this pet
      */
-    public function user(): BelongsTo
+    public function creator(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**
-     * Users who can view this pet (in addition to owner/admin/public rules)
+     * Get all relationships for this pet
      */
-    public function viewers(): BelongsToMany
+    public function relationships(): HasMany
     {
-        return $this->belongsToMany(User::class, 'pet_viewers')->withTimestamps();
+        return $this->hasMany(PetRelationship::class);
     }
 
     /**
-     * Users who can edit this pet (in addition to owner/admin)
+     * Get active relationships for this pet
+     */
+    public function activeRelationships(): HasMany
+    {
+        return $this->hasMany(PetRelationship::class)->whereNull('end_at');
+    }
+
+    /**
+     * Get current owners of this pet
+     */
+    public function owners(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'pet_relationships')
+            ->wherePivot('relationship_type', PetRelationshipType::OWNER->value)
+            ->wherePivotNull('end_at')
+            ->withPivot(['relationship_type', 'start_at', 'end_at', 'created_by'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get current fosters of this pet
+     */
+    public function fosters(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'pet_relationships')
+            ->wherePivot('relationship_type', PetRelationshipType::FOSTER->value)
+            ->wherePivotNull('end_at')
+            ->withPivot(['relationship_type', 'start_at', 'end_at', 'created_by'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get current editors of this pet
      */
     public function editors(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'pet_editors')->withTimestamps();
+        return $this->belongsToMany(User::class, 'pet_relationships')
+            ->wherePivot('relationship_type', PetRelationshipType::EDITOR->value)
+            ->wherePivotNull('end_at')
+            ->withPivot(['relationship_type', 'start_at', 'end_at', 'created_by'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get current viewers of this pet
+     */
+    public function viewers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'pet_relationships')
+            ->wherePivot('relationship_type', PetRelationshipType::VIEWER->value)
+            ->wherePivotNull('end_at')
+            ->withPivot(['relationship_type', 'start_at', 'end_at', 'created_by'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Check if user has specific relationship type with this pet
+     */
+    public function hasRelationshipWith(User $user, PetRelationshipType $type): bool
+    {
+        return $this->relationships()
+            ->where('user_id', $user->id)
+            ->where('relationship_type', $type)
+            ->whereNull('end_at')
+            ->exists();
+    }
+
+    /**
+     * Check if user is an owner of this pet
+     */
+    public function isOwnedBy(User $user): bool
+    {
+        return $this->hasRelationshipWith($user, PetRelationshipType::OWNER);
+    }
+
+    /**
+     * Check if user can edit this pet (owner or editor)
+     */
+    public function canBeEditedBy(User $user): bool
+    {
+        return $this->hasRelationshipWith($user, PetRelationshipType::OWNER) ||
+               $this->hasRelationshipWith($user, PetRelationshipType::EDITOR);
+    }
+
+    /**
+     * Check if user can view this pet (owner, editor, or viewer)
+     */
+    public function canBeViewedBy(User $user): bool
+    {
+        return $this->hasRelationshipWith($user, PetRelationshipType::OWNER) ||
+               $this->hasRelationshipWith($user, PetRelationshipType::EDITOR) ||
+               $this->hasRelationshipWith($user, PetRelationshipType::VIEWER);
     }
 
     /**
@@ -242,11 +330,13 @@ class Pet extends Model implements HasMedia
     }
 
     /**
-     * Get ownership history for this pet
+     * Get ownership history for this pet (via relationships)
      */
     public function ownershipHistory(): HasMany
     {
-        return $this->hasMany(OwnershipHistory::class);
+        return $this->hasMany(PetRelationship::class)
+            ->where('relationship_type', PetRelationshipType::OWNER)
+            ->orderBy('start_at', 'desc');
     }
 
     /**
@@ -311,6 +401,29 @@ class Pet extends Model implements HasMedia
     {
         static::addGlobalScope('not_deleted', function ($query) {
             $query->where('status', '!=', PetStatus::DELETED->value);
+        });
+
+        // Create ownership relationship when pet is created
+        static::created(function (Pet $pet) {
+            if ($pet->created_by) {
+                // Check if relationship already exists (to avoid duplicates from factory)
+                $exists = PetRelationship::where('pet_id', $pet->id)
+                    ->where('user_id', $pet->created_by)
+                    ->where('relationship_type', PetRelationshipType::OWNER)
+                    ->whereNull('end_at')
+                    ->exists();
+
+                if (! $exists) {
+                    PetRelationship::create([
+                        'user_id' => $pet->created_by,
+                        'pet_id' => $pet->id,
+                        'relationship_type' => PetRelationshipType::OWNER,
+                        'start_at' => now(),
+                        'end_at' => null,
+                        'created_by' => $pet->created_by,
+                    ]);
+                }
+            }
         });
     }
 }

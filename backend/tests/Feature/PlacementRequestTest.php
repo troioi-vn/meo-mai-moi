@@ -20,7 +20,7 @@ class PlacementRequestTest extends TestCase
     {
         $user = User::factory()->create();
         $petType = PetType::factory()->create(['placement_requests_allowed' => true]);
-        $pet = Pet::factory()->create(['user_id' => $user->id, 'pet_type_id' => $petType->id]);
+        $pet = Pet::factory()->create(['created_by' => $user->id, 'pet_type_id' => $petType->id]);
         $this->actingAs($user);
 
         $data = [
@@ -50,7 +50,7 @@ class PlacementRequestTest extends TestCase
     {
         $user = User::factory()->create();
         $petType = PetType::factory()->create(['placement_requests_allowed' => true]);
-        $pet = Pet::factory()->create(['user_id' => $user->id, 'pet_type_id' => $petType->id]);
+        $pet = Pet::factory()->create(['created_by' => $user->id, 'pet_type_id' => $petType->id]);
         $this->actingAs($user);
 
         $data = [

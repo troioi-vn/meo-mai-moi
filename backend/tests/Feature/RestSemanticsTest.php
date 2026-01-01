@@ -32,7 +32,7 @@ class RestSemanticsTest extends TestCase
 
         $this->user = User::factory()->create();
         $this->city = City::factory()->create(['country' => 'VN']);
-        $this->pet = Pet::factory()->create(['user_id' => $this->user->id]);
+        $this->pet = Pet::factory()->create(['created_by' => $this->user->id]);
         $this->helperProfile = HelperProfile::factory()->create([
             'user_id' => $this->user->id,
             'country' => $this->city->country,
@@ -245,7 +245,7 @@ class RestSemanticsTest extends TestCase
         $response->assertStatus(204);
 
         // Create another pet for testing other methods
-        $pet2 = Pet::factory()->create(['user_id' => $this->user->id]);
+        $pet2 = Pet::factory()->create(['created_by' => $this->user->id]);
 
         // POST should return 405 Method Not Allowed for delete endpoint
         $response = $this->postJson("/api/pets/{$pet2->id}/delete");

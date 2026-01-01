@@ -6,6 +6,13 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Pet Relationship System**:
+  - Introduced a flexible relationship system supporting multiple relationship types: `owner`, `foster`, `editor`, and `viewer`.
+  - Added `PetRelationship` model and `PetRelationshipType` enum for managing pet-user connections.
+  - Implemented `PetRelationshipService` for handling relationship lifecycle (creation, ending, ownership transfer).
+  - Added `pet-relationship-system.md` documentation detailing the new system.
+  - Added `PetRelationshipFactory` and `CreatesPetsWithRelationships` trait for testing.
+  - Added comprehensive unit and feature tests for the relationship system.
 - **Helper Profile Status Management**:
   - Added `status` field to `HelperProfile` model with `active`, `archived`, and `deleted` states.
   - Added `archived_at` and `restored_at` timestamps to track profile status changes.
@@ -32,6 +39,15 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Changed
 
+- **Pet Ownership Refactoring**:
+  - Renamed `user_id` to `created_by` in `pets` table to distinguish between pet creator and current owners.
+  - Replaced simple ownership model with the new relationship system.
+  - Migrated existing ownership, editor, viewer, and foster data to the new `pet_relationships` table.
+  - Dropped legacy tables: `ownership_history`, `pet_viewers`, and `pet_editors`.
+  - Updated `PetPolicy` to use relationship-based authorization.
+  - Updated `PetResource` and API documentation to reflect schema changes.
+  - Refactored numerous feature tests to use the new relationship-based helpers.
+  - Updated documentation (`architecture.md`, `pet-profiles.md`, `rehoming-flow.md`) to reflect the new relationship model.
 - **Helper Profile Form**:
   - Removed "State/Province" field from the UI in `HelperProfileFormFields`.
   - Updated layout to display "Country" and "City" fields in a single row.

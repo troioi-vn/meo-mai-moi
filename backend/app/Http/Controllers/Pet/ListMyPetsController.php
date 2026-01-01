@@ -44,7 +44,11 @@ class ListMyPetsController extends Controller
         if (! $request->user()) {
             return $this->handleUnauthorized();
         }
-        $query = Pet::where('user_id', $request->user()->id)->with('petType');
+
+        // Get pets where the user is an owner
+        $query = Pet::whereHas('owners', function ($q) use ($request) {
+            $q->where('users.id', $request->user()->id);
+        })->with('petType');
 
         if ($request->filled('pet_type')) {
             $slug = $request->query('pet_type');

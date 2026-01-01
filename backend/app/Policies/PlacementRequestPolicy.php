@@ -17,7 +17,7 @@ class PlacementRequestPolicy
 
     public function view(User $user, PlacementRequest $placementRequest): bool
     {
-        return $this->isAdmin($user) || $placementRequest->user_id === $user->id;
+        return $this->isAdmin($user) || $placementRequest->pet->isOwnedBy($user);
     }
 
     public function create(User $user): bool
@@ -27,23 +27,23 @@ class PlacementRequestPolicy
 
     public function update(User $user, PlacementRequest $placementRequest): bool
     {
-        return $this->isAdmin($user) || $placementRequest->user_id === $user->id;
+        return $this->isAdmin($user) || $placementRequest->pet->isOwnedBy($user);
     }
 
     public function delete(User $user, PlacementRequest $placementRequest): bool
     {
-        return $this->isAdmin($user) || $placementRequest->user_id === $user->id;
+        return $this->isAdmin($user) || $placementRequest->pet->isOwnedBy($user);
     }
 
     // Custom abilities for owner actions
     public function confirm(User $user, PlacementRequest $placementRequest): bool
     {
-        return $this->isAdmin($user) || $placementRequest->user_id === $user->id;
+        return $this->isAdmin($user) || $placementRequest->pet->isOwnedBy($user);
     }
 
     public function reject(User $user, PlacementRequest $placementRequest): bool
     {
-        return $this->isAdmin($user) || $placementRequest->user_id === $user->id;
+        return $this->isAdmin($user) || $placementRequest->pet->isOwnedBy($user);
     }
 
     // Admin-only for bulk/advanced actions

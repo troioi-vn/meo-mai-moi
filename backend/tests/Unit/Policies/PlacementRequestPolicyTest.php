@@ -2,7 +2,6 @@
 
 namespace Tests\Unit\Policies;
 
-use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,7 +14,7 @@ class PlacementRequestPolicyTest extends TestCase
     public function test_owner_can_confirm_and_reject_placement_request(): void
     {
         $owner = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id]);
+        $pet = $this->createPetWithOwner($owner);
         $placement = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
@@ -31,7 +30,7 @@ class PlacementRequestPolicyTest extends TestCase
     {
         $owner = User::factory()->create();
         $other = User::factory()->create();
-        $pet = Pet::factory()->create(['user_id' => $owner->id]);
+        $pet = $this->createPetWithOwner($owner);
         $placement = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,

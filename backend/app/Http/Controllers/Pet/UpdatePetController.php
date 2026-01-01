@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Pet;
 
+use App\Enums\PetRelationshipType;
 use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\Pet;
+use App\Services\PetRelationshipService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use Carbon\Carbon;
@@ -55,6 +57,10 @@ class UpdatePetController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+
+    public function __construct(
+        protected PetRelationshipService $relationshipService
+    ) {}
 
     public function __invoke(Request $request, Pet $pet)
     {
@@ -227,22 +233,20 @@ class UpdatePetController extends Controller
 
         // Sync viewers / editors if provided
         if (isset($data['viewer_user_ids'])) {
-            $pet->viewers()->sync($data['viewer_user_ids']);
+            $this->relationshipService->syncRelationships($pet, $data['viewer_user_ids'], PetRelationshipType::VIEWER, $request->user());
         }
         if (isset($data['editor_user_ids'])) {
-            $pet->editors()->sync($data['editor_user_ids']);
+            $this->relationshipService->syncRelationships($pet, $data['editor_user_ids'], PetRelationshipType::EDITOR, $request->user());
         }
 
         $pet->load(['petType', 'categories', 'viewers', 'editors', 'city']);
 
         // Build viewer permission flags for response
-        $isOwner = $this->isOwnerOrAdmin($user, $pet);
-        $isAdmin = $this->hasRole($user, ['admin', 'super_admin']);
-        $isEditor = $user ? $pet->editors->contains($user->id) : false;
-        $pet->setAttribute('viewer_permissions', [
-            'can_edit' => $isOwner || $isAdmin || $isEditor,
-            'can_view_contact' => $isAdmin || ($user && ! $isOwner),
-        ]);
+        $viewerPermissions = [
+            'can_edit' => $pet->canBeEditedBy($user) || $this->hasRole($user, ['admin', 'super_admin']),
+            'can_view_contact' => $this->hasRole($user, ['admin', 'super_admin']) || ($user && ! $pet->isOwnedBy($user)),
+        ];
+        $pet->setAttribute('viewer_permissions', $viewerPermissions);
 
         return $this->sendSuccess($pet);
     }

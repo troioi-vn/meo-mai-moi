@@ -285,7 +285,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::delete('/transfer-requests/{transferRequest}', CancelTransferRequestController::class);
     Route::post('/transfer-requests/{transferRequest}/accept', AcceptTransferRequestController::class);
     Route::post('/transfer-requests/{transferRequest}/reject', RejectTransferRequestController::class);
-    
+
     // TODO: probably remove this routes later
     // Owner-only: view responder's helper profile for a transfer request
     Route::get('/transfer-requests/{transferRequest}/responder-profile', GetResponderProfileController::class);

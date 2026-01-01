@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PetRelationshipType;
 use App\Notifications\CustomPasswordReset;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -91,12 +92,17 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
     // Relationship: User owns many pets
     public function pets(): HasMany
     {
-        return $this->hasMany(\App\Models\Pet::class);
+        return $this->hasMany(\App\Models\Pet::class, 'created_by');
     }
 
+    /**
+     * Get ownership history for this user (via relationships)
+     */
     public function ownershipHistory(): HasMany
     {
-        return $this->hasMany(\App\Models\OwnershipHistory::class);
+        return $this->hasMany(PetRelationship::class)
+            ->where('relationship_type', PetRelationshipType::OWNER->value)
+            ->orderBy('start_at', 'desc');
     }
 
     public function notifications(): HasMany
@@ -104,14 +110,76 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         return $this->hasMany(Notification::class);
     }
 
-    public function viewablePets(): BelongsToMany
+    /**
+     * Get pets created by this user
+     */
+    public function createdPets(): HasMany
     {
-        return $this->belongsToMany(Pet::class, 'pet_viewers')->withTimestamps();
+        return $this->hasMany(Pet::class, 'created_by');
     }
 
+    /**
+     * Get all pet relationships for this user
+     */
+    public function petRelationships(): HasMany
+    {
+        return $this->hasMany(PetRelationship::class);
+    }
+
+    /**
+     * Get active pet relationships for this user
+     */
+    public function activePetRelationships(): HasMany
+    {
+        return $this->hasMany(PetRelationship::class)->whereNull('end_at');
+    }
+
+    /**
+     * Get pets this user owns
+     */
+    public function ownedPets(): BelongsToMany
+    {
+        return $this->belongsToMany(Pet::class, 'pet_relationships')
+            ->wherePivot('relationship_type', PetRelationshipType::OWNER->value)
+            ->wherePivotNull('end_at')
+            ->withPivot(['relationship_type', 'start_at', 'end_at', 'created_by'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get pets this user fosters
+     */
+    public function fosteredPets(): BelongsToMany
+    {
+        return $this->belongsToMany(Pet::class, 'pet_relationships')
+            ->wherePivot('relationship_type', PetRelationshipType::FOSTER->value)
+            ->wherePivotNull('end_at')
+            ->withPivot(['relationship_type', 'start_at', 'end_at', 'created_by'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get pets this user can edit
+     */
     public function editablePets(): BelongsToMany
     {
-        return $this->belongsToMany(Pet::class, 'pet_editors')->withTimestamps();
+        return $this->belongsToMany(Pet::class, 'pet_relationships')
+            ->wherePivot('relationship_type', PetRelationshipType::EDITOR->value)
+            ->wherePivotNull('end_at')
+            ->withPivot(['relationship_type', 'start_at', 'end_at', 'created_by'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get pets this user can view
+     */
+    public function viewablePets(): BelongsToMany
+    {
+        return $this->belongsToMany(Pet::class, 'pet_relationships')
+            ->wherePivot('relationship_type', PetRelationshipType::VIEWER->value)
+            ->wherePivotNull('end_at')
+            ->withPivot(['relationship_type', 'start_at', 'end_at', 'created_by'])
+            ->withTimestamps();
     }
 
     public function notificationPreferences(): HasMany

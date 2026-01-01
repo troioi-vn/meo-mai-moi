@@ -35,7 +35,9 @@ class TransferRequest extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'pet_id', // Updated from cat_id
+        'placement_request_id',
+        // TODO: remove pet_id. Pets are stored in placement requests
+        'pet_id',
         'initiator_user_id',
         'recipient_user_id',
         'requester_id',
@@ -45,7 +47,6 @@ class TransferRequest extends Model
         'price',
         'accepted_at',
         'rejected_at',
-        'placement_request_id',
         'helper_profile_id',
     ];
 

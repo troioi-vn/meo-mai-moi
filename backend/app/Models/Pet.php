@@ -75,7 +75,7 @@ class Pet extends Model implements HasMedia
         'birthday_day' => 'integer',
     ];
 
-    protected $appends = ['photo_url', 'photos'];
+    protected $appends = ['photo_url', 'photos', 'user_id'];
 
     /**
      * Override delete to implement status-based soft delete for business logic.
@@ -216,6 +216,15 @@ class Pet extends Model implements HasMedia
         return $this->hasRelationshipWith($user, PetRelationshipType::OWNER) ||
                $this->hasRelationshipWith($user, PetRelationshipType::EDITOR) ||
                $this->hasRelationshipWith($user, PetRelationshipType::VIEWER);
+    }
+
+    /**
+     * Get user_id attribute for backward compatibility.
+     * Returns the ID of the user who created the pet.
+     */
+    public function getUserIdAttribute(): int
+    {
+        return $this->created_by;
     }
 
     /**

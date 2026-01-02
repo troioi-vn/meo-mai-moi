@@ -93,7 +93,8 @@ class PetProfileTest extends TestCase
         $response = $this->getJson("/api/pets/{$pet->id}");
         $response->assertStatus(200)
             ->assertJsonPath('data.name', 'Owner Pet')
-            ->assertJsonPath('data.viewer_permissions.can_edit', true);
+            ->assertJsonPath('data.viewer_permissions.can_edit', true)
+            ->assertJsonPath('data.viewer_permissions.is_owner', true);
     }
 
     #[Test]

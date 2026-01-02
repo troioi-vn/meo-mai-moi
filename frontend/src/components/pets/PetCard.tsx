@@ -51,6 +51,12 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
   // Check if this pet type supports vaccinations
   const supportsVaccinations = petSupportsCapability(pet.pet_type, 'vaccinations')
 
+  // Check if current user is an owner of this pet
+  const isOwner =
+    pet.viewer_permissions?.is_owner ||
+    pet.relationships?.some((r) => r.relationship_type === 'owner' && r.user_id === user?.id) ||
+    (user?.id !== undefined && pet.user_id === user.id)
+
   // Check if current user has a pending response
   const myPendingTransfer = React.useMemo(() => {
     if (!user?.id || !pet.placement_requests) return undefined
@@ -135,7 +141,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
       <CardContent className="flex grow flex-col justify-between p-4">
         <div className="mt-4">
           {/* Show Respond button for all users (except pet owner) when there's an active placement request */}
-          {(!isAuthenticated || user?.id !== pet.user_id) &&
+          {(!isAuthenticated || !isOwner) &&
             supportsPlacement &&
             // Prefer backend convenience flag; fallback to derived active/open state
             (pet.placement_request_active ?? hasActivePlacementRequests) &&

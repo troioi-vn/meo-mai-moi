@@ -181,6 +181,17 @@ describe('PetCard', () => {
     expect(screen.getByText('Modal for Fluffy')).toBeInTheDocument()
   })
 
+  it('does not show respond button for owners', () => {
+    const ownerUser = {
+      id: 1,
+      name: 'John Doe',
+      email: 'john@example.com',
+    }
+    renderWithProviders(<PetCard pet={mockCat} />, ownerUser)
+
+    expect(screen.queryByText('Respond')).not.toBeInTheDocument()
+  })
+
   it('navigates to unified pet route on card click', () => {
     const { container } = renderWithProviders(<PetCard pet={mockCat} />)
 

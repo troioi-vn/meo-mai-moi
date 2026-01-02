@@ -60,6 +60,7 @@ class ShowPetController extends Controller
         $viewerPermissions = [
             'can_edit' => $isOwner || $isAdmin || $isEditor,
             'can_view_contact' => $isAdmin || ($user && ! $isOwner),
+            'is_owner' => $isOwner,
         ];
         $pet->setAttribute('viewer_permissions', $viewerPermissions);
 

@@ -104,6 +104,7 @@ All notable changes to this project are documented here, following the [Keep a C
   - Testing environments allow 10 registration attempts per minute for easier test execution
 
 - **E2E Test Authentication Issues**:
+
   - Fixed authentication redirect loops preventing access to public pages (`/register`, `/login`, etc.)
   - Modified `AuthContext` to skip user loading on public pages, preventing unnecessary 401 responses
   - Updated unauthorized handler to exclude public paths from login redirects
@@ -111,6 +112,11 @@ All notable changes to this project are documented here, following the [Keep a C
   - Simplified E2E tests to focus on UI functionality rather than complex backend integration
   - Enhanced E2E test script to support Playwright CLI arguments (e.g., `--headed`, `--debug`, `--ui`)
   - Added slow motion configuration option in Playwright config for debugging
+
+- **Owners cannot respond to their own placement requests**:
+  - **Backend**: `StoreTransferRequestController` now returns `403 Forbidden` when a pet owner attempts to create a transfer request for their own pet; added/updated feature test `TransferRequestCreationTest::test_owner_cannot_create_transfer_request_for_own_cat`.
+  - **Frontend**: `PetCard` and `PublicPlacementRequestSection` now hide or disable the "Respond" action for pet owners to avoid confusion; added UI test `PetCard.test.tsx` asserting owners do not see the "Respond" button.
+  - **API / Compatibility**: `ShowPetController` and `ShowPublicPetController` include a `viewer_permissions.is_owner` flag and the `Pet` model exposes a backward-compatible `user_id` accessor where needed.
 
 ### Added
 

@@ -20,7 +20,7 @@ const FormSectionHeader = ({ icon: Icon, title }: { icon: React.ElementType; tit
 )
 
 const REQUEST_TYPE_OPTIONS: { value: PlacementRequestType; label: string }[] = [
-  { value: 'foster_payed', label: 'Foster (Paid)' },
+  { value: 'foster_paid', label: 'Foster (Paid)' },
   { value: 'foster_free', label: 'Foster (Free)' },
   { value: 'permanent', label: 'Permanent Adoption' },
 ]

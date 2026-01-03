@@ -258,7 +258,7 @@ export default function HelperProfileViewPage() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
-                {profile.request_types?.includes('foster_payed') && (
+                {profile.request_types?.includes('foster_paid') && (
                   <Badge variant="default" className="text-sm">
                     <Home className="h-3 w-3 mr-1" />
                     Foster (Paid)

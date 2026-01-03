@@ -28,7 +28,7 @@ interface ResponsesDrawerProps {
 const formatRequestType = (type: string): string => {
   const labels: Record<string, string> = {
     foster_free: 'Foster (Free)',
-    foster_payed: 'Foster (Paid)',
+    foster_paid: 'Foster (Paid)',
     permanent: 'Permanent Adoption',
   }
   return labels[type] ?? type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())

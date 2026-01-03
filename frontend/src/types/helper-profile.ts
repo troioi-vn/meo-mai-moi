@@ -6,7 +6,7 @@ export interface HelperProfileUser {
   email?: string
 }
 
-export type PlacementRequestType = 'foster_payed' | 'foster_free' | 'permanent'
+export type PlacementRequestType = 'foster_paid' | 'foster_free' | 'permanent'
 export type HelperProfileStatus = 'active' | 'archived' | 'deleted'
 
 export interface HelperProfile {

@@ -122,7 +122,7 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
                   <SelectValue placeholder="Select a request type" />
                 </SelectTrigger>
                 <SelectContent className="bg-background">
-                  <SelectItem value="foster_payed">Foster (Paid)</SelectItem>
+                  <SelectItem value="foster_paid">Foster (Paid)</SelectItem>
                   <SelectItem value="foster_free">Foster (Free)</SelectItem>
                   <SelectItem value="permanent">Permanent</SelectItem>
                 </SelectContent>

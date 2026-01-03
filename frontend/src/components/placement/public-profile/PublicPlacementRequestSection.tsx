@@ -4,17 +4,15 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Clock, X, Info, CheckCircle2, Loader2, MessageCircle } from 'lucide-react'
+import { Clock, X, Info, CheckCircle2, MessageCircle } from 'lucide-react'
 import { PlacementResponseModal } from '@/components/placement/PlacementResponseModal'
 import { api } from '@/api/axios'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
 import type { PublicPet } from '@/api/pets'
-import { getTransferHandover, completeHandover } from '@/api/handovers'
 import { useCreateChat } from '@/hooks/useMessaging'
 
 type PlacementRequest = NonNullable<PublicPet['placement_requests']>[number]
-type TransferRequest = NonNullable<PlacementRequest['transfer_requests']>[number]
 
 interface Props {
   pet: PublicPet
@@ -24,7 +22,7 @@ interface Props {
 const formatRequestType = (type: string): string => {
   const labels: Record<string, string> = {
     foster_free: 'Foster (Free)',
-    foster_payed: 'Foster (Paid)',
+    foster_paid: 'Foster (Paid)',
     permanent: 'Permanent Adoption',
   }
   return labels[type] ?? type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
@@ -75,7 +73,6 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
   const navigate = useNavigate()
   const { create: createChat, creating: creatingChat } = useCreateChat()
   const [respondingToRequest, setRespondingToRequest] = useState<PlacementRequest | null>(null)
-  const [confirmingRehomingId, setConfirmingRehomingId] = useState<number | null>(null)
   const placementRequests = pet.placement_requests ?? []
   // Show open and fulfilled placement requests (fulfilled means awaiting helper confirmation)
   const visiblePlacementRequests = placementRequests.filter(
@@ -123,30 +120,7 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
     [createChat, navigate]
   )
 
-  const handleConfirmRehoming = useCallback(
-    async (transferRequest: TransferRequest) => {
-      setConfirmingRehomingId(transferRequest.id)
-      try {
-        // First, get the handover for this transfer request
-        const handover = await getTransferHandover(transferRequest.id)
-        if (!handover) {
-          toast.error('No handover found for this transfer request')
-          return
-        }
-
-        // Complete the handover
-        await completeHandover(handover.id)
-        toast.success('Rehoming confirmed successfully!')
-        onRefresh?.()
-      } catch (error) {
-        console.error('Failed to confirm rehoming', error)
-        toast.error('Failed to confirm rehoming. Please try again.')
-      } finally {
-        setConfirmingRehomingId(null)
-      }
-    },
-    [onRefresh]
-  )
+  // TODO: Rehoming flow removed - handleConfirmRehoming needs to be reimplemented
 
   if (visiblePlacementRequests.length === 0) {
     return null
@@ -161,7 +135,6 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
         {visiblePlacementRequests.map((request) => {
           const myPendingTransfer = findMyPendingTransfer(request)
           const myAcceptedTransfer = findMyAcceptedTransfer(request)
-          const isConfirming = confirmingRehomingId === myAcceptedTransfer?.id
 
           return (
             <div key={request.id} className="rounded-lg border p-4 bg-muted/50 space-y-3">
@@ -190,31 +163,15 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                 </div>
               )}
 
-              {/* Show Confirm Rehoming button for accepted helper when status is fulfilled */}
+              {/* TODO: Rehoming flow removed - Confirm Rehoming button needs to be reimplemented */}
               {request.status === 'fulfilled' && myAcceptedTransfer && (
                 <div className="rounded-md bg-background border p-3 space-y-3">
                   <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
                     <CheckCircle2 className="h-4 w-4" />
                     <span>Your response was accepted!</span>
                   </div>
-                  <Button
-                    onClick={() => {
-                      void handleConfirmRehoming(myAcceptedTransfer)
-                    }}
-                    disabled={isConfirming}
-                    className="w-full"
-                  >
-                    {isConfirming ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Confirming...
-                      </>
-                    ) : (
-                      'Confirm Rehoming'
-                    )}
-                  </Button>
                   <p className="text-xs text-muted-foreground text-center">
-                    Click to confirm you have received the pet
+                    Handover confirmation coming soon
                   </p>
                 </div>
               )}

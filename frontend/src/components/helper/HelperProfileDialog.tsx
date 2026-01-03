@@ -87,8 +87,8 @@ export const HelperProfileDialog: React.FC<HelperProfileDialogProps> = ({
             <p>
               <strong>City:</strong>{' '}
               {typeof profile.city === 'string'
-                ? profile.city ?? 'N/A'
-                : profile.city?.name ?? 'N/A'}
+                ? (profile.city ?? 'N/A')
+                : (profile.city?.name ?? 'N/A')}
             </p>
             <p>
               <strong>State:</strong> {profile.state ?? 'N/A'}
@@ -110,7 +110,7 @@ export const HelperProfileDialog: React.FC<HelperProfileDialogProps> = ({
               {profile.request_types?.length
                 ? profile.request_types
                     .map((t) =>
-                      t === 'foster_payed'
+                      t === 'foster_paid'
                         ? 'Foster (Paid)'
                         : t === 'foster_free'
                           ? 'Foster (Free)'

@@ -104,7 +104,7 @@ describe('PlacementResponseModal', () => {
     // Use a request type that's not in the mock helper profile's allowed types
     render(
       <MemoryRouter>
-        <PlacementResponseModal {...baseProps} requestType="foster_payed" />
+        <PlacementResponseModal {...baseProps} requestType="foster_paid" />
       </MemoryRouter>
     )
 

@@ -114,23 +114,6 @@ export interface Pet {
   relationships?: PetRelationship[]
   // Convenience flag from backend (optional) used by PetCard
   placement_request_active?: boolean
-  foster_assignment?: {
-    id: number
-    status: string
-    expected_end_date?: string
-    foster_user?: {
-      id: number
-      name: string
-    }
-  }
-  ownership_transfers?: {
-    id: number
-    occurred_at: string
-    to_user?: {
-      id: number
-      name: string
-    }
-  }[]
 }
 
 export interface PlacementRequest {
@@ -180,8 +163,6 @@ export interface TransferRequest {
     created_at?: string
     updated_at?: string
   }
-  placement_request?: PlacementRequest
-  pet?: Pet
 }
 
 // Helper function to calculate age from birthday

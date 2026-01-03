@@ -371,31 +371,6 @@ const transferRequestHandlers = [
   http.post('http://localhost:3000/api/transfer-requests/:id/reject', () => {
     return HttpResponse.json({})
   }),
-  http.get('http://localhost:3000/api/transfer-requests/:id/handover', () => {
-    return HttpResponse.json({
-      data: {
-        id: 1,
-        transfer_request_id: 1,
-        owner_user_id: 99,
-        helper_user_id: 1,
-        status: 'pending',
-      },
-    })
-  }),
-  http.post('http://localhost:3000/api/transfer-requests/:id/handover', () => {
-    return HttpResponse.json({ data: { id: 1, status: 'pending' } }, { status: 201 })
-  }),
-  http.post('http://localhost:3000/api/transfer-handovers/:id/confirm', async ({ request }) => {
-    const body = await request.json()
-    const confirmed = Boolean((body as { condition_confirmed?: boolean }).condition_confirmed)
-    return HttpResponse.json({ data: { id: 1, status: confirmed ? 'confirmed' : 'disputed' } })
-  }),
-  http.post('http://localhost:3000/api/transfer-handovers/:id/cancel', () => {
-    return HttpResponse.json({ data: { id: 1, status: 'canceled' } })
-  }),
-  http.post('http://localhost:3000/api/transfer-handovers/:id/complete', () => {
-    return HttpResponse.json({ data: { id: 1, status: 'completed' } })
-  }),
 ]
 
 const versionHandlers = [

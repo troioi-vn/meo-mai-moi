@@ -30,7 +30,7 @@ interface Props {
 const formatRequestType = (type: string): string => {
   const labels: Record<string, string> = {
     foster_free: 'Foster (Free)',
-    foster_payed: 'Foster (Paid)',
+    foster_paid: 'Foster (Paid)',
     permanent: 'Permanent Adoption',
   }
   return labels[type] ?? type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
@@ -77,7 +77,7 @@ const formatStatus = (status: string): string => {
 }
 
 const isFosteringType = (type: string): boolean => {
-  return type === 'foster_free' || type === 'foster_payed'
+  return type === 'foster_free' || type === 'foster_paid'
 }
 
 export const PlacementRequestsSection: React.FC<Props> = ({

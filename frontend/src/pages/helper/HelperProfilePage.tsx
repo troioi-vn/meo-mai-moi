@@ -164,7 +164,7 @@ function HelperProfileListItem({ profile }: { profile: HelperProfile }) {
 
           {/* Tags */}
           <div className="flex flex-wrap gap-2">
-            {profile.request_types?.includes('foster_payed') && (
+            {profile.request_types?.includes('foster_paid') && (
               <Badge variant="outline" className="text-xs">
                 <Home className="h-3 w-3 mr-1" />
                 Foster (Paid)

@@ -26,7 +26,7 @@ function deriveFromRequestType(requestType: string): {
   fosteringType: FosteringType
 } {
   switch (requestType) {
-    case 'foster_payed':
+    case 'foster_paid':
       return { relationshipType: 'fostering', fosteringType: 'paid' }
     case 'foster_free':
       return { relationshipType: 'fostering', fosteringType: 'free' }

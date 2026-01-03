@@ -6,6 +6,190 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Placement Request System Complete Migration (Phase 4)**:
+
+  - **New Type System**: Introduced comprehensive type definitions in `frontend/src/types/placement.ts` for the new placement request data model:
+
+    - `PlacementRequestResponse` - Helper responses to placement requests with status lifecycle (responded → accepted/rejected/cancelled)
+    - `TransferRequest` - Physical handover confirmation objects for accepted responses
+    - `PlacementRequestStatus` and `PlacementResponseStatus` enums with proper status transitions
+    - Helper functions for formatting, status checking, and UI display
+
+  - **API Layer Overhaul**: Complete replacement of legacy transfer_request-based APIs with clean response-based endpoints:
+
+    - `getPlacementResponses()` - List responses for owner view
+    - `submitPlacementResponse()` - Submit new helper response
+    - `acceptPlacementResponse()` - Owner accepts response (creates TransferRequest for non-pet_sitting)
+    - `rejectPlacementResponse()` - Owner rejects response
+    - `cancelPlacementResponse()` - Helper cancels response
+    - `confirmTransfer()` - Helper confirms physical handover
+    - `rejectTransfer()` - Owner cancels accepted response
+
+  - **Frontend Component Migration**: Complete UI migration from transfer_requests to responses:
+
+    - **Owner View**: `PlacementRequestsSection.tsx` now shows responses with accept/reject actions and pending_transfer status
+    - **Helper View**: `PlacementResponseSection.tsx` handles all response states (pending, accepted, active)
+    - **Public Profile**: `PublicPlacementRequestSection.tsx` includes handover confirmation for accepted helpers
+    - **Pet Card**: Updated to show user's response involvement status
+    - **Responses Drawer**: Redesigned to show response details with message, timestamps, and profile access
+
+  - **Backend Resource Updates**:
+
+    - `PlacementRequestResponseResource.php` now includes `transfer_request` when response is accepted
+    - New `TransferRequestResource.php` for clean transfer request serialization
+    - Updated controllers to load both responses and transfer_requests relationships
+
+  - **Data Model Consistency**: All mock data and test files updated to use new `responses` structure instead of legacy `transfer_requests`
+  - **Type Safety**: Full TypeScript migration with proper type checking across all placement-related components
+
+### Added
+
+- **Notification System Complete Overhaul**:
+
+  - **Restructured Notification Types**: Complete reorganization of notification types with clearer groupings:
+
+    - `placement_owner`: Notifications for pet owners about their placement requests (new responses, cancellations, transfer confirmations)
+    - `placement_helper`: Notifications for helpers about their responses (acceptance, rejection, placement ending)
+    - `pet_reminders`: Pet health reminders (vaccinations, birthdays)
+    - `account`: Account security notifications (email verification)
+    - `messaging`: Chat/message notifications
+
+  - **Improved Notification Labels & Descriptions**: Each notification type now has human-readable labels and detailed descriptions for better user understanding
+
+  - **Enhanced Frontend Notification Settings Page**: Complete UI redesign with grouped, card-based layout:
+
+    - Notifications grouped by category with icons (Heart for placement, Bell for reminders, etc.)
+    - Each notification shows description explaining when it's triggered
+    - Responsive design with proper mobile support
+    - Visual hierarchy with group headers and consistent styling
+
+  - **Context-Aware Notification Messages**: All placement-related notifications now provide clear, actionable messages:
+
+    - **Owner receives**: "Someone wants to help with [pet name]. Review their response!"
+    - **Helper receives**: "Great news! Your response was accepted. Please confirm when you receive the pet." (with handover context)
+    - **Helper receives**: "Your offer for [pet] was declined. Thank you for your interest in helping!" (gentle rejection)
+    - **Owner receives**: "[Helper] withdrew their response for [pet]." (clear cancellation notice)
+    - **Owner receives**: "[Helper] has confirmed receiving [pet]. The placement is now active." (context-aware for permanent vs foster)
+    - **Helper receives**: "The placement for [pet] has ended. Thank you for your help!" (gracious completion)
+
+  - **Proper Notification Links**: Each notification links to the most relevant page:
+
+    - Owner notifications → Pet profile page (`/pets/:id`)
+    - Helper notifications → Public pet profile page (`/pets/:id/public`) for ongoing placements
+    - Placement ended notifications → Requests page for browsing new opportunities
+
+  - **Email Template Updates**: Created comprehensive email templates for all new notification types with:
+
+    - Professional styling consistent with app branding
+    - Clear call-to-action buttons linking to relevant pages
+    - Contextual information about the pet and placement details
+    - Helpful guidance and next steps for users
+
+  - **In-App Notification Templates**: Bell notification templates for immediate alerts with concise, actionable messages
+
+  - **Backend Infrastructure**: Complete update of notification service integration:
+    - New Mail classes for `HelperResponseCanceledMail`, `TransferConfirmedMail`, `PlacementEndedMail`
+    - Updated `SendNotificationEmail` job with proper mail class routing
+    - Enhanced `NotificationMail` base class with smart URL resolution
+    - Proper notification variable passing to templates
+
+### Added
+
+- **E2E Testing Infrastructure**:
+
+  - Added comprehensive end-to-end test suite for pet creation functionality
+  - Created `pet-creation.spec.ts` with full coverage of the pet creation user flow
+  - Fixed global setup health check to work with actual backend endpoints (removed dependency on `/api/health`)
+  - Improved login utility function to properly wait for authentication redirects
+  - Updated `docs/e2e-testing-guide.md` with lessons learned from test development:
+    - Added section on ensuring login functions wait for redirects
+    - Documented complex form interaction patterns (city selection, dynamic components)
+    - Included form validation testing examples
+    - Added guidance on cleaning up debug artifacts
+    - Provided real-world test example from pet creation
+  - Tests validate complete pet creation workflow: form submission, backend processing, and UI updates
+
+- **Placement Finalization & Relationship Updates**:
+
+  - Implemented automatic relationship updates upon transfer confirmation:
+    - **Permanent**: Ends former owner's relationship, creates new owner relationship for helper, and grants viewer access to former owner.
+    - **Foster**: Creates new foster relationship for helper starting at confirmation time.
+  - Added idempotency to transfer confirmation to prevent duplicate relationships on retries.
+  - Updated foster finalization endpoint (`/api/placement-requests/{id}/finalize`) to end active foster relationships and support the refactored TransferRequest schema.
+  - Integrated `NotificationService` for transfer confirmation and foster finalization notifications.
+  - Added comprehensive feature tests for relationship transitions and finalization logic.
+
+- **Transfer Request Refactoring**:
+  - TransferRequest now belongs to PlacementRequest (not directly to Pet), enabling future support for multiple pets per placement request
+  - Removed redundant `pet_id` and `requester_id` fields from TransferRequest (pet data accessible via placement request)
+  - Renamed user fields for clarity: `initiator_user_id` → `from_user_id`, `recipient_user_id` → `to_user_id`
+  - Renamed status and timestamp: `accepted` → `confirmed`, `accepted_at` → `confirmed_at`
+  - New flow logic: TransferRequest created with `PENDING` status when owner accepts response for fostering/permanent placements
+  - Helper confirms physical transfer receipt via new `/api/transfer-requests/{id}/confirm` endpoint
+  - Pet sitting bypasses transfer entirely (goes directly to `ACTIVE` status)
+  - Auto-rejection of other responses now happens at appropriate times: pet sitting (immediate) or transfer confirmation (fostering/permanent)
+  - Added `TRANSFER_CONFIRMED` notification type for owner notifications
+  - Updated all related controllers, policies, factories, tests, and Filament admin panels
+
+### Added
+
+- **Placement Request Response System**:
+  - Introduced dedicated `placement_request_responses` table to track helper responses to placement requests
+  - New `PlacementRequestResponse` model with state machine for response lifecycle: `responded` → `accepted`/`rejected`/`cancelled` (terminal states)
+  - Response tracking includes timestamps for each state transition (`responded_at`, `accepted_at`, `rejected_at`, `cancelled_at`)
+  - Helper can respond again after cancelling their response, but not after rejection
+  - New `PlacementResponseStatus` enum with state transition validation methods
+  - Updated `PlacementRequest` model with `responses()` relationship and helper methods for checking response eligibility
+  - Updated `HelperProfile` model with `placementResponses()` relationship
+  - Removed obsolete fields from `TransferRequest`: `helper_profile_id`, `requested_relationship_type`, `fostering_type`, `price`
+  - Linked `TransferRequest` to `PlacementRequestResponse` via `placement_request_response_id` for better tracking.
+  - New Filament admin relation manager for managing placement responses
+  - Updated database seeders to create sample placement responses
+  - New policy `PlacementRequestResponsePolicy` for authorization
+
+### Fixed
+
+- Fixed global typo in `PlacementRequestType` enum (`foster_payed` -> `foster_paid`).
+- Fixed API contract mismatch caused by the typo.
+- Fixed 41 ESLint errors across the frontend (e2e tests and multiple components). Key files updated include:
+
+  - `frontend/e2e/pet-creation.spec.ts` (template literal numeric values made explicit)
+  - `frontend/src/api/placement.ts` (added Axios response generics to avoid `any`)
+  - `frontend/src/components/messaging/ChatWindow.tsx` (optional chaining improvements)
+  - `frontend/src/components/notifications/NotificationPreferences.tsx` (nullish coalescing and grouping logic)
+  - `frontend/src/components/pets/PetCard.tsx`, `PetRelationshipsSection.tsx` (removed non-null assertions and improved null checks)
+  - `frontend/src/components/placement/pet-profile/PlacementResponseForm.tsx` (fixed void expression in arrow handler)
+  - `frontend/src/components/placement/public-profile/PublicPlacementRequestSection.tsx` (removed force-non-null assertions)
+  - `frontend/src/hooks/usePlacementResponse.ts` (template literal and API call stringification)
+  - `frontend/src/pages/helper/HelperProfileViewPage.tsx` (normalized nullable fields)
+
+  All changes are lint-compliant; `npm run lint -- --max-warnings 0` now passes.
+
+### Removed
+
+- Deprecated `StoreTransferRequestController` and associated `/api/transfer-requests` POST endpoint in favor of the new placement response system.
+  - Comprehensive documentation updates for the new response flow
+
+### Changed
+
+- **TransferRequest Model**: Cleaned up model by removing deprecated helper profile and relationship type fields
+- **Placement Request Logic**: Response counting now uses `placement_request_responses` table instead of transfer requests
+- **Filament Admin Panels**: Updated transfer request forms and relation managers to remove obsolete fields
+
+### Removed
+
+- **Rehoming Flow Models and Related Code**:
+  - Removed `OwnershipTransfer`, `FosterAssignment`, `FosterReturnHandover`, and `TransferHandover` models
+  - Removed `FosterAssignmentStatus` enum
+  - Removed related controllers: `FosterAssignmentController`, `FosterReturnHandoverController`, `TransferHandoverController`
+  - Removed `FosterAssignmentPolicy` and related Filament admin resources
+  - Removed frontend API file `handovers.ts` and related components (`AcceptedSection`, `ScheduleHandoverModal`)
+  - Removed API routes for handover lifecycle management
+  - Added database migration to drop the related tables: `foster_assignments`, `foster_return_handovers`, `transfer_handovers`, `ownership_transfers`
+  - Added TODO comments in affected code where the rehoming flow will need to be reimplemented when rebuilt
+
+### Added
+
 - **Pet Relationship System**:
   - Introduced a flexible relationship system supporting multiple relationship types: `owner`, `foster`, `editor`, and `viewer`.
   - Added `PetRelationship` model and `PetRelationshipType` enum for managing pet-user connections.
@@ -47,7 +231,7 @@ All notable changes to this project are documented here, following the [Keep a C
   - Updated `PetPolicy` to use relationship-based authorization.
   - Updated `PetResource` and API documentation to reflect schema changes.
   - Refactored numerous feature tests to use the new relationship-based helpers.
-  - Updated documentation (`architecture.md`, `pet-profiles.md`, `rehoming-flow.md`) to reflect the new relationship model.
+  - Updated documentation (`architecture.md`, `pet-profiles.md`, `placement-request-lifecycle.md`) to reflect the new relationship model.
 - **Helper Profile Form**:
   - Removed "State/Province" field from the UI in `HelperProfileFormFields`.
   - Updated layout to display "Country" and "City" fields in a single row.
@@ -199,7 +383,7 @@ All notable changes to this project are documented here, following the [Keep a C
   - Updated web route view helpers to use typed view strings for safer rendering in SPA stubs.
 - **Temporary fostering no longer transfers ownership**:
   - Handover completion now keys off `placement_request.request_type` (canonical) to decide between permanent vs fostering flows
-  - Temporary fostering (`foster_free` / `foster_payed`) keeps the pet owner unchanged, creates/ensures a foster assignment, and sets placement status to `active`
+  - Temporary fostering (`foster_free` / `foster_paid`) keeps the pet owner unchanged, creates/ensures a foster assignment, and sets placement status to `active`
   - Permanent rehoming still transfers ownership, closes prior ownership history, and finalizes the placement
   - Admin pet view continues to show the original owner for temporary fostering cases
 
@@ -223,7 +407,7 @@ All notable changes to this project are documented here, following the [Keep a C
     - City mismatch: Shows warning (non-blocking)
     - Country mismatch: Shows serious/destructive warning (non-blocking)
   - Automatically derive fostering type and price requirements from placement request type:
-    - `foster_payed` → Fostering with "Paid" type (requires price input)
+    - `foster_paid` → Fostering with "Paid" type (requires price input)
     - `foster_free` → Fostering with "Free" type
     - `permanent` → Permanent Foster
 
@@ -239,7 +423,7 @@ All notable changes to this project are documented here, following the [Keep a C
   - Updated `CompleteHandoverController` to properly set PlacementRequest status based on rehoming type
   - New `FinalizePlacementRequestController` endpoint: `POST /api/placement-requests/{id}/finalize`
   - Status badges and visual indicators throughout the UI showing current placement request state
-  - Comprehensive status flow documentation updated in `docs/rehoming-flow.md`
+  - Comprehensive status flow documentation updated in `docs/placement-request-lifecycle.md`
 
 - **Helper Profile Pages UI Modernization**:
 
@@ -252,7 +436,7 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Helper Profile Request Types & Visibility**:
 
   - Removed legacy boolean fields `is_public`, `can_foster`, and `can_adopt` from helper profiles.
-  - Added new `request_types` array field on `helper_profiles` backed by the `PlacementRequestType` enum (`foster_payed`, `foster_free`, `permanent`).
+  - Added new `request_types` array field on `helper_profiles` backed by the `PlacementRequestType` enum (`foster_paid`, `foster_free`, `permanent`).
   - Enforced validation so that helper profiles must have at least one `request_type` selected on create and update.
   - Updated backend model, controllers, factories, policies, Filament resource, and API schema to use `request_types`.
   - Updated frontend types, forms, pages, and tests to surface `request_types` as selectable chips/badges.

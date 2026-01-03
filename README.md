@@ -17,7 +17,7 @@ Meo Mai Moi is a comprehensive pet care platform designed to help cat owners (an
 - **Health-Conscious Pet Parents**: Owners who want to track trends and catch health issues early
 - **Busy Pet Owners**: People who need automated reminders and organized records
 
-_Future expansion: Pet rehoming and adoption features planned after establishing core cat care functionality._
+**Pet Rehoming & Adoption**: Complete placement request system supporting permanent adoption, foster care (paid/free), and pet sitting with automated relationship management and handover tracking.
 
 Dockerized • Laravel 12 • React 19 • Vite 7 • PostgreSQL 14 • Filament 3 • E2E Email Testing
 
@@ -134,5 +134,13 @@ For architecture context, see `GEMINI.md` (AI Agent Guide).
 - Care schedule templates and customization
 - Health alert configuration and monitoring
 - RBAC: Spatie Permission + Filament Shield
+- Placement request oversight and relationship management
 
-_Future Features_: Pet rehoming, foster networks, and adoption workflows will be added after establishing the core cat care platform.
+**Pet Rehoming & Adoption**:
+
+- **Placement Requests**: Owners can create requests for permanent adoption, foster care (paid/free), or pet sitting
+- **Helper Responses**: Community helpers can respond to placement requests with messages and profile information
+- **Handover Management**: Automated physical handover confirmation for foster/permanent placements with relationship tracking
+- **Relationship System**: Automatic creation and management of ownership, foster, and sitter relationships
+- **Public Profiles**: Lost pets and pets with active placement requests are publicly viewable for wider adoption reach
+- **Chat Integration**: Built-in messaging between owners and helpers throughout the placement process

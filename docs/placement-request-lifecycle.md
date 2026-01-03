@@ -46,8 +46,8 @@ Placement request types:
    - `permanent` → ownership transfers via PetRelationship; request becomes `finalized`.
    - `foster_*` → foster relationship begins at confirm-time; request becomes `active`.
    - other pending responses auto-rejected.
-5. Owner finalizes temporary fostering ("Pet is Returned"):
-   - `foster_*` only: ends foster relationship; request becomes `finalized`.
+5. Owner finalizes temporary placement ("Pet is Returned"):
+   - `foster_*` or `pet_sitting`: ends `foster` or `sitter` relationship; request becomes `finalized`.
 
 ## 1) Create a Placement Request (Owner)
 
@@ -79,6 +79,7 @@ Effects:
 ### `request_type = pet_sitting`
 
 - Sets PlacementRequest status to `active` immediately.
+- Creates/ensures an active `sitter` relationship for the helper.
 - Auto-rejects all other `responded` responses.
 - No TransferRequest is created.
 
@@ -124,27 +125,32 @@ For `foster_free` / `foster_paid`:
 - Pet ownership remains with the original owner.
 - Sets PlacementRequest status to `active`.
 
+For `pet_sitting` (happens at acceptance time):
+
+- Creates/ensures an active `sitter` relationship for the helper.
+- Sets PlacementRequest status to `active`.
+
 TransferRequest related endpoints:
 
-- Reject transfer (recipient): POST `/api/transfer-requests/{transferRequest}/reject`
+- Reject transfer (owner / `from_user`): POST `/api/transfer-requests/{transferRequest}/reject`
 - Cancel transfer (either party): DELETE `/api/transfer-requests/{transferRequest}`
 - Responder profile: GET `/api/transfer-requests/{transferRequest}/responder-profile`
 
-## 5) Finalize Temporary Fostering (Owner)
+## 5) Finalize Temporary Placement (Owner)
 
-Action: owner clicks "Pet is Returned" when fostering ends.
+Action: owner clicks "Pet is Returned" when fostering or sitting ends.
 
 - Endpoint: POST `/api/placement-requests/{placementRequest}/finalize`
 - Requirements:
   - PlacementRequest status must be `active`
-  - PlacementRequest type must be `foster_free` or `foster_paid`
+  - PlacementRequest type must be `foster_free`, `foster_paid`, or `pet_sitting`
   - Only the current pet owner can call this endpoint
 
 Effects:
 
 - Sets PlacementRequest status to `finalized`.
-- Ends the active `foster` relationship for the helper associated with this placement’s confirmed transfer (sets `end_at = now()`).
-- Notifies the helper that fostering has ended.
+- Ends the active `foster` or `sitter` relationship for the helper associated with this placement.
+- Notifies the helper that the placement has ended.
 
 ## Permissions
 
@@ -152,7 +158,7 @@ Effects:
 - Accept/Reject placement response: pet owner
 - Cancel placement response: helper (response author)
 - Confirm transfer (physical handover): helper (TransferRequest `to_user`)
-- Reject transfer: TransferRequest `to_user`
+- Reject transfer: owner (TransferRequest `from_user`)
 - Cancel transfer: either party
 - Finalize placement (Pet is Returned): owner (only for `active` fostering)
 
@@ -161,7 +167,7 @@ Effects:
 - **PlacementRequest**: status ∈ {`open`, `fulfilled`, `pending_transfer`, `active`, `finalized`, `expired`, `cancelled`}
 - **PlacementRequestResponse**: status ∈ {`responded`, `accepted`, `rejected`, `cancelled`}
 - **TransferRequest**: status ∈ {`pending`, `confirmed`, `rejected`, `expired`, `canceled`}
-- **PetRelationship**: relationship_type ∈ {`owner`, `foster`, `editor`, `viewer`}; uses `start_at` / `end_at`.
+- **PetRelationship**: relationship_type ∈ {`owner`, `foster`, `sitter`, `editor`, `viewer`}; uses `start_at` / `end_at`.
 
 ## Client UX (Frontend) – Current
 

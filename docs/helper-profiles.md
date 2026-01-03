@@ -22,7 +22,7 @@ Helper profiles allow users to register as helpers who can respond to placement 
 ## Visibility
 
 - **Owner visibility**: A user can always view their own helper profiles, regardless of approval status.
-- **Placement request visibility**: A pet owner can view a helper's profile if that helper has responded (via a transfer request) to one of their placement requests for that pet.
+- **Placement request visibility**: A pet owner can view a helper's profile if that helper has responded (via a placement response) to one of their placement requests for that pet.
 - **Admin visibility**: Admin users can view all helper profiles.
 - When a helper responds to a placement request, the pet owner can view the helper's **phone number** and **contact info** to facilitate communication.
 

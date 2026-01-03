@@ -117,7 +117,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             {/* Messages */}
             {messages.map((message, index) => {
               const prevMessage = messages[index - 1]
-              const showAvatar = !prevMessage || prevMessage.sender.id !== message.sender.id
+              const showAvatar = prevMessage?.sender.id !== message.sender.id
               const showTimestamp =
                 !prevMessage ||
                 new Date(message.created_at).getTime() -
@@ -164,6 +164,3 @@ const MessageSkeleton: React.FC<{ isOwn: boolean }> = ({ isOwn }) => (
     <Skeleton className={cn('h-12 rounded-2xl', isOwn ? 'w-48' : 'w-64')} />
   </div>
 )
-
-
-

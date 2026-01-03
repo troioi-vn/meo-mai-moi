@@ -30,7 +30,7 @@ test.describe('Pet Creation', () => {
     await expect(page.getByRole('heading', { name: /add a new pet/i })).toBeVisible()
 
     // Generate unique pet name to avoid conflicts
-    const petName = `Test Pet ${Date.now()}`
+    const petName = `Test Pet ${String(Date.now())}`
 
     // Fill out the pet creation form
     // Name (required)
@@ -69,7 +69,7 @@ test.describe('Pet Creation', () => {
       console.log('Form errors:', errorMessages)
 
       // Take a screenshot for debugging
-      await page.screenshot({ path: `debug-submission-error-${Date.now()}.png` })
+      await page.screenshot({ path: `debug-submission-error-${String(Date.now())}.png` })
 
       throw new Error(
         `Form submission failed. Current URL: ${currentUrl}. Errors: ${errorMessages.join(', ')}`
@@ -130,7 +130,7 @@ test.describe('Pet Creation', () => {
     await expect(page.getByRole('heading', { name: /add a new pet/i })).toBeVisible()
 
     // Fill only the absolute minimum required fields
-    const minimalPetName = `Minimal Pet ${Date.now()}`
+    const minimalPetName = `Minimal Pet ${String(Date.now())}`
     await page.getByLabel('Name').fill(minimalPetName)
 
     // Select city (required)
@@ -159,7 +159,7 @@ test.describe('Pet Creation', () => {
     // Verify we're on the create pet page
     await expect(page.getByRole('heading', { name: /add a new pet/i })).toBeVisible()
 
-    const dogName = `Test Dog ${Date.now()}`
+    const dogName = `Test Dog ${String(Date.now())}`
 
     // Fill basic info
     await page.getByLabel('Name').fill(dogName)

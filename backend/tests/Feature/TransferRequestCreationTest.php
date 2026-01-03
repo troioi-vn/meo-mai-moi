@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Pet;
 use App\Models\PlacementRequest;
-use App\Models\TransferRequest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -16,7 +15,7 @@ class TransferRequestCreationTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function test_helper_can_create_transfer_request_for_placement_request(): void
+    public function test_helper_can_respond_to_placement_request(): void
     {
         $owner = User::factory()->create();
         $helper = User::factory()->create();
@@ -28,24 +27,19 @@ class TransferRequestCreationTest extends TestCase
 
         $this->assertTrue($helper->helperProfiles()->exists());
 
-        $this->assertTrue($helper->helperProfiles()->exists());
-
-        $response = $this->postJson('/api/transfer-requests', [
-            'pet_id' => $pet->id,
-            'placement_request_id' => $placementRequest->id,
-            'helper_profile_id' => $helperProfile->id,
-            'requested_relationship_type' => 'fostering',
-            'fostering_type' => 'free',
+        $response = $this->postJson("/api/placement-requests/{$placementRequest->id}/responses", [
+            'message' => 'I want to help!',
         ]);
 
         $response->assertStatus(201);
-        $this->assertDatabaseHas('transfer_requests', [
+        $this->assertDatabaseHas('placement_request_responses', [
             'placement_request_id' => $placementRequest->id,
+            'helper_profile_id' => $helperProfile->id,
         ]);
     }
 
     #[Test]
-    public function test_user_without_helper_profile_cannot_create_transfer_request(): void
+    public function test_user_without_helper_profile_cannot_respond_to_placement_request(): void
     {
         $owner = User::factory()->create();
         $user = User::factory()->create(); // No helper profile
@@ -56,19 +50,15 @@ class TransferRequestCreationTest extends TestCase
 
         $this->assertFalse($user->helperProfiles()->exists());
 
-        $response = $this->postJson('/api/transfer-requests', [
-            'pet_id' => $pet->id,
-            'placement_request_id' => $placementRequest->id,
-            'helper_profile_id' => 999, // Non-existent helper profile
-            'requested_relationship_type' => 'fostering',
-            'fostering_type' => 'free',
+        $response = $this->postJson("/api/placement-requests/{$placementRequest->id}/responses", [
+            'message' => 'I want to help!',
         ]);
 
         $response->assertStatus(403);
     }
 
     #[Test]
-    public function test_owner_cannot_create_transfer_request_for_own_cat(): void
+    public function test_owner_cannot_respond_to_own_placement_request(): void
     {
         $owner = User::factory()->create();
         $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
@@ -76,41 +66,85 @@ class TransferRequestCreationTest extends TestCase
 
         Sanctum::actingAs($owner);
 
-        $response = $this->postJson('/api/transfer-requests', [
-            'pet_id' => $pet->id,
-            'placement_request_id' => $placementRequest->id,
-            'helper_profile_id' => 999, // Non-existent helper profile
-            'requested_relationship_type' => 'fostering',
-            'fostering_type' => 'free',
+        $response = $this->postJson("/api/placement-requests/{$placementRequest->id}/responses", [
+            'message' => 'I want to help!',
         ]);
 
         $response->assertStatus(403);
     }
 
     #[Test]
-    public function test_accepting_transfer_request_deactivates_placement_request(): void
+    public function test_accepting_response_for_permanent_creates_pending_transfer(): void
     {
         $owner = User::factory()->create();
         $helper = User::factory()->create();
+        $helperProfile = \App\Models\HelperProfile::factory()->create(['user_id' => $helper->id]);
         $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
-        $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'status' => \App\Enums\PlacementRequestStatus::OPEN]);
-        $transferRequest = TransferRequest::factory()->create([
+        $placementRequest = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
-            'initiator_user_id' => $helper->id,
-            'recipient_user_id' => $owner->id,
+            'user_id' => $owner->id,
+            'status' => \App\Enums\PlacementRequestStatus::OPEN,
+            'request_type' => \App\Enums\PlacementRequestType::PERMANENT,
+        ]);
+        $placementResponse = \App\Models\PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest->id,
-            'status' => 'pending',
-        ])->load('placementRequest');
+            'helper_profile_id' => $helperProfile->id,
+            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
+        ]);
 
-        $this->be($owner);
+        Sanctum::actingAs($owner);
 
-        $response = $this->postJson("/api/transfer-requests/{$transferRequest->id}/accept");
+        $response = $this->postJson("/api/placement-responses/{$placementResponse->id}/accept");
 
         $response->assertStatus(200);
-        // After accepting, placement request is fulfilled (not finalized - that happens after handover completion)
+        // After accepting, placement request is pending_transfer (not fulfilled yet)
         $this->assertDatabaseHas('placement_requests', [
             'id' => $placementRequest->id,
-            'status' => \App\Enums\PlacementRequestStatus::FULFILLED->value,
+            'status' => \App\Enums\PlacementRequestStatus::PENDING_TRANSFER->value,
+        ]);
+
+        // And a transfer request is created with PENDING status
+        $this->assertDatabaseHas('transfer_requests', [
+            'placement_request_id' => $placementRequest->id,
+            'from_user_id' => $owner->id,
+            'to_user_id' => $helper->id,
+            'status' => \App\Enums\TransferRequestStatus::PENDING->value,
+        ]);
+    }
+
+    #[Test]
+    public function test_accepting_response_for_pet_sitting_goes_directly_to_active(): void
+    {
+        $owner = User::factory()->create();
+        $helper = User::factory()->create();
+        $helperProfile = \App\Models\HelperProfile::factory()->create(['user_id' => $helper->id]);
+        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $placementRequest = PlacementRequest::factory()->create([
+            'pet_id' => $pet->id,
+            'user_id' => $owner->id,
+            'status' => \App\Enums\PlacementRequestStatus::OPEN,
+            'request_type' => \App\Enums\PlacementRequestType::PET_SITTING,
+        ]);
+        $placementResponse = \App\Models\PlacementRequestResponse::factory()->create([
+            'placement_request_id' => $placementRequest->id,
+            'helper_profile_id' => $helperProfile->id,
+            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
+        ]);
+
+        Sanctum::actingAs($owner);
+
+        $response = $this->postJson("/api/placement-responses/{$placementResponse->id}/accept");
+
+        $response->assertStatus(200);
+        // For pet_sitting, placement request goes directly to active
+        $this->assertDatabaseHas('placement_requests', [
+            'id' => $placementRequest->id,
+            'status' => \App\Enums\PlacementRequestStatus::ACTIVE->value,
+        ]);
+
+        // No transfer request is created for pet_sitting
+        $this->assertDatabaseMissing('transfer_requests', [
+            'placement_request_id' => $placementRequest->id,
         ]);
     }
 }

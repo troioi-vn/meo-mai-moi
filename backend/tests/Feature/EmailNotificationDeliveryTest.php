@@ -11,7 +11,6 @@ use App\Models\Notification;
 use App\Models\NotificationPreference;
 use App\Models\Pet;
 use App\Models\PlacementRequest;
-use App\Models\TransferRequest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -71,16 +70,12 @@ class EmailNotificationDeliveryTest extends TestCase
             'in_app_enabled' => true,
         ]);
 
-        $response = $this->actingAs($helper)->postJson('/api/transfer-requests', [
-            'pet_id' => $pet->id,
-            'placement_request_id' => $placementRequest->id,
-            'helper_profile_id' => $helperProfile->id,
-            'requested_relationship_type' => 'fostering',
-            'fostering_type' => 'free',
+        $response = $this->actingAs($helper)->postJson("/api/placement-requests/{$placementRequest->id}/responses", [
+            'message' => 'I want to help!',
         ]);
         $response->assertStatus(201);
 
-        $transferRequest = TransferRequest::latest()->first();
+        $placementResponse = \App\Models\PlacementRequestResponse::latest()->first();
 
         $notifications = Notification::where('user_id', $owner->id)
             ->where('type', NotificationType::PLACEMENT_REQUEST_RESPONSE->value)
@@ -101,7 +96,7 @@ class EmailNotificationDeliveryTest extends TestCase
         });
 
         $this->assertEquals($pet->id, $emailNotification->data['pet_id']);
-        $this->assertEquals($transferRequest->id, $emailNotification->data['transfer_request_id']);
+        $this->assertEquals($placementResponse->id, $emailNotification->data['placement_response_id']);
     }
 
     public function test_helper_response_accepted_notification_flow(): void
@@ -125,14 +120,10 @@ class EmailNotificationDeliveryTest extends TestCase
 
         $helperProfile = HelperProfile::factory()->create(['user_id' => $helper->id]);
 
-        $transferRequest = TransferRequest::factory()->create([
-            'pet_id' => $pet->id,
+        $placementResponse = \App\Models\PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $helperProfile->id,
-            'initiator_user_id' => $helper->id,
-            'recipient_user_id' => $owner->id,
-            'requester_id' => $helper->id,
-            'status' => 'pending',
+            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
         ]);
 
         NotificationPreference::create([
@@ -142,7 +133,7 @@ class EmailNotificationDeliveryTest extends TestCase
             'in_app_enabled' => false,
         ]);
 
-        $this->actingAs($owner)->postJson("/api/transfer-requests/{$transferRequest->id}/accept")
+        $this->actingAs($owner)->postJson("/api/placement-responses/{$placementResponse->id}/accept")
             ->assertStatus(200);
 
         $notifications = Notification::where('user_id', $helper->id)
@@ -178,14 +169,10 @@ class EmailNotificationDeliveryTest extends TestCase
 
         $helperProfile = HelperProfile::factory()->create(['user_id' => $helper->id]);
 
-        $transferRequest = TransferRequest::factory()->create([
-            'pet_id' => $pet->id,
+        $placementResponse = \App\Models\PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $helperProfile->id,
-            'initiator_user_id' => $helper->id,
-            'recipient_user_id' => $owner->id,
-            'requester_id' => $helper->id,
-            'status' => 'pending',
+            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
         ]);
 
         NotificationPreference::create([
@@ -195,7 +182,7 @@ class EmailNotificationDeliveryTest extends TestCase
             'in_app_enabled' => true,
         ]);
 
-        $this->actingAs($owner)->postJson("/api/transfer-requests/{$transferRequest->id}/reject")
+        $this->actingAs($owner)->postJson("/api/placement-responses/{$placementResponse->id}/reject")
             ->assertStatus(200);
 
         $notifications = Notification::where('user_id', $helper->id)
@@ -235,12 +222,9 @@ class EmailNotificationDeliveryTest extends TestCase
             'in_app_enabled' => false,
         ]);
 
-        $this->actingAs($helper)->postJson('/api/transfer-requests', [
-            'pet_id' => $pet->id,
-            'placement_request_id' => $placementRequest->id,
+        $this->actingAs($helper)->postJson("/api/placement-requests/{$placementRequest->id}/responses", [
             'helper_profile_id' => $helperProfile->id,
-            'requested_relationship_type' => 'fostering',
-            'fostering_type' => 'free',
+            'notes' => 'I can help!',
         ])->assertStatus(201);
 
         $this->assertDatabaseMissing('notifications', [
@@ -338,27 +322,19 @@ class EmailNotificationDeliveryTest extends TestCase
             'in_app_enabled' => true,
         ]);
 
-        $transferRequest1 = TransferRequest::factory()->create([
-            'pet_id' => $pet->id,
+        $placementResponse1 = \App\Models\PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $helperProfile1->id,
-            'initiator_user_id' => $helper1->id,
-            'recipient_user_id' => $owner->id,
-            'requester_id' => $helper1->id,
-            'status' => 'pending',
+            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
         ]);
-        $transferRequest2 = TransferRequest::factory()->create([
-            'pet_id' => $pet->id,
+        $placementResponse2 = \App\Models\PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $helperProfile2->id,
-            'initiator_user_id' => $helper2->id,
-            'recipient_user_id' => $owner->id,
-            'requester_id' => $helper2->id,
-            'status' => 'pending',
+            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
         ]);
 
-        $this->actingAs($owner)->postJson("/api/transfer-requests/{$transferRequest1->id}/accept");
-        $this->actingAs($owner)->postJson("/api/transfer-requests/{$transferRequest2->id}/reject");
+        $this->actingAs($owner)->postJson("/api/placement-responses/{$placementResponse1->id}/accept");
+        $this->actingAs($owner)->postJson("/api/placement-responses/{$placementResponse2->id}/reject");
 
         $helper1Notifications = Notification::where('user_id', $helper1->id)->get();
         $this->assertCount(1, $helper1Notifications);

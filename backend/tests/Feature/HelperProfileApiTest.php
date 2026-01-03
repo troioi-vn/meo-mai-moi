@@ -245,11 +245,11 @@ class HelperProfileApiTest extends TestCase
         $placementRequest = \App\Models\PlacementRequest::factory()->for($pet)->create([
             'request_type' => \App\Enums\PlacementRequestType::FOSTER_FREE->value,
         ]);
-        // Create transfer request (helper applied to placement request)
-        \App\Models\TransferRequest::factory()->create([
+        // Create placement response (helper applied to placement request)
+        \App\Models\PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $profile->id,
-            'status' => \App\Enums\TransferRequestStatus::PENDING->value,
+            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
         ]);
 
         $response = $this->actingAs($petOwner)->getJson("/api/helper-profiles/{$profile->id}");

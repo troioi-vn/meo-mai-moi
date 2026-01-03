@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\HelperProfile;
 use App\Models\PlacementRequest;
-use App\Models\TransferRequest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -21,10 +20,10 @@ class PetProfileResponseDataTest extends TestCase
         $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'user_id' => $owner->id]);
         $helper = User::factory()->create();
         $helperProfile = HelperProfile::factory()->create(['user_id' => $helper->id]);
-        TransferRequest::factory()->create([
+        \App\Models\PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $helperProfile->id,
-            'requester_id' => $helper->id,
+            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
         ]);
 
         Sanctum::actingAs($owner);
@@ -39,7 +38,7 @@ class PetProfileResponseDataTest extends TestCase
                     'placement_requests' => [
                         '*' => [
                             'id',
-                            'transfer_requests' => [
+                            'responses' => [
                                 '*' => [
                                     'id',
                                     'helper_profile' => [

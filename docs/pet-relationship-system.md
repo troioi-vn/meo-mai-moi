@@ -237,5 +237,5 @@ $fosteredPets = PetRelationshipService::getPetsByRelationshipType($user, PetRela
 ## Related Documentation
 
 - [Pet Profiles](./pet-profiles.md) - How relationships affect profile access
-- [Rehoming Flow](./rehoming-flow.md) - How relationships work in placement scenarios
+- [Placement Request Lifecycle](./placement-request-lifecycle.md) - How relationships work in placement scenarios
 - [Architecture](./architecture.md) - Technical implementation details

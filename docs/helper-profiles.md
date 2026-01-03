@@ -66,4 +66,4 @@ DELETE /api/helper-profiles/{id}
 3. When responding, the helper selects one of their helper profiles.
 4. The pet owner can view the helper's profile details, including phone number and contact info.
 5. The owner can accept or reject the response.
-6. Upon acceptance, the handover process begins (see [Rehoming Flow](./rehoming-flow.md)).
+6. Upon acceptance, the handover process begins (see [Placement Request Lifecycle](./placement-request-lifecycle.md)).

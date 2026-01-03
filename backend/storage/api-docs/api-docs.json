@@ -735,150 +735,6 @@
                 }
             }
         },
-        "/api/foster-assignments/{assignment}/cancel": {
-            "post": {
-                "tags": [
-                    "Foster Assignments"
-                ],
-                "summary": "Cancel a foster assignment (early return)",
-                "operationId": "879ed6322a25731c94525fb2cf184dd7",
-                "parameters": [
-                    {
-                        "name": "assignment",
-                        "in": "path",
-                        "description": "ID of the foster assignment",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": false,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "reason": {
-                                        "type": "string",
-                                        "example": "Emergency situation"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Foster assignment canceled successfully"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Foster assignment not found"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/foster-assignments/{assignment}/complete": {
-            "post": {
-                "tags": [
-                    "Foster Assignments"
-                ],
-                "summary": "Complete a foster assignment",
-                "operationId": "a9e2cb77cb2663b67254a9616afca585",
-                "parameters": [
-                    {
-                        "name": "assignment",
-                        "in": "path",
-                        "description": "ID of the foster assignment",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Foster assignment completed successfully"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Foster assignment not found"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/foster-assignments/{assignment}/extend": {
-            "post": {
-                "tags": [
-                    "Foster Assignments"
-                ],
-                "summary": "Extend the end date of a foster assignment",
-                "operationId": "b5b68607605943101653b982d1915c63",
-                "parameters": [
-                    {
-                        "name": "assignment",
-                        "in": "path",
-                        "description": "ID of the foster assignment",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "expected_end_date"
-                                ],
-                                "properties": {
-                                    "expected_end_date": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2024-12-31"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Foster assignment extended successfully"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Foster assignment not found"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
         "/helper-profiles/{id}/archive": {
             "post": {
                 "tags": [
@@ -3990,9 +3846,10 @@
                                     "request_type": {
                                         "type": "string",
                                         "enum": [
-                                            "foster_payed",
+                                            "foster_paid",
                                             "foster_free",
-                                            "permanent"
+                                            "permanent",
+                                            "pet_sitting"
                                         ],
                                         "example": "permanent"
                                     },
@@ -4057,6 +3914,309 @@
                 ]
             }
         },
+        "/api/placement-responses/{id}/accept": {
+            "post": {
+                "tags": [
+                    "Placement Request Responses"
+                ],
+                "summary": "Accept a response to a placement request",
+                "operationId": "c09e6eb363d86b1997526fc5faa37fd7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the placement response",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response accepted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/PlacementRequestResponse"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Response accepted successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Not authorized or invalid state transition"
+                    },
+                    "404": {
+                        "description": "Placement response not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/placement-responses/{id}/cancel": {
+            "post": {
+                "tags": [
+                    "Placement Request Responses"
+                ],
+                "summary": "Cancel a response to a placement request",
+                "operationId": "210524bcb15d6e348d8139789986608b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the placement response",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response cancelled successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/PlacementRequestResponse"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Response cancelled successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Not authorized or invalid state transition"
+                    },
+                    "404": {
+                        "description": "Placement response not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/placement-requests/{id}/responses": {
+            "get": {
+                "tags": [
+                    "Placement Request Responses"
+                ],
+                "summary": "List responses for a placement request",
+                "operationId": "d97c3d5abf2fb82408ef13b911a50964",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the placement request",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of responses",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PlacementRequestResponse"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Responses retrieved successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Not authorized to view responses"
+                    },
+                    "404": {
+                        "description": "Placement request not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Placement Request Responses"
+                ],
+                "summary": "Respond to a placement request",
+                "operationId": "4673f5c6acbb77decf1f92c951649a75",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the placement request",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "message": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "example": "I can help with this pet!"
+                                    },
+                                    "helper_profile_id": {
+                                        "description": "Optional helper profile ID if user has multiple",
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Response submitted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/PlacementRequestResponse"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Response submitted successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Request not active or helper blocked"
+                    },
+                    "404": {
+                        "description": "Placement request not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/placement-responses/{id}/reject": {
+            "post": {
+                "tags": [
+                    "Placement Request Responses"
+                ],
+                "summary": "Reject a response to a placement request",
+                "operationId": "fe418cbb1bb0136d0a1c585c0354762b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the placement response",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response rejected successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/PlacementRequestResponse"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Response rejected successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Not authorized or invalid state transition"
+                    },
+                    "404": {
+                        "description": "Placement response not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/settings/public": {
             "get": {
                 "tags": [
@@ -4106,301 +4266,6 @@
                 }
             }
         },
-        "/api/transfer-handovers/{id}/cancel": {
-            "post": {
-                "tags": [
-                    "Transfer Handover"
-                ],
-                "summary": "Cancel a handover (owner or helper)",
-                "operationId": "84470aff87a4dd7f5b519236d26a9d64",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/TransferHandover"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/transfer-handovers/{id}/complete": {
-            "post": {
-                "tags": [
-                    "Transfer Handover"
-                ],
-                "summary": "Complete handover and finalize transfer effects",
-                "operationId": "cff24b5a38d7a2fb56b4d1beb520d46f",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/TransferHandover"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/transfer-handovers/{id}/confirm": {
-            "post": {
-                "tags": [
-                    "Transfer Handover"
-                ],
-                "summary": "Helper confirms pet condition at handover",
-                "operationId": "267036f1bc1934b602197fd7f6522348",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "condition_confirmed"
-                                ],
-                                "properties": {
-                                    "condition_confirmed": {
-                                        "type": "boolean"
-                                    },
-                                    "condition_notes": {
-                                        "type": "string",
-                                        "nullable": true
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/TransferHandover"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/transfer-requests/{id}/handover": {
-            "get": {
-                "tags": [
-                    "Transfer Handover"
-                ],
-                "summary": "Get the latest handover for a transfer request (owner or helper)",
-                "operationId": "ee646bcecb27cabfc08ae9e87b017600",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/TransferHandover"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "Transfer Handover"
-                ],
-                "summary": "Initiate a handover for an accepted transfer request (owner only)",
-                "operationId": "7774c147dbcfbc6919a8afba5a7866d4",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "scheduled_at": {
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "nullable": true
-                                    },
-                                    "location": {
-                                        "type": "string",
-                                        "nullable": true
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/TransferHandover"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/transfer-requests/{id}/accept": {
-            "post": {
-                "tags": [
-                    "Transfer Requests"
-                ],
-                "summary": "Accept a transfer request for a pet",
-                "operationId": "6db3c5fc1798fe2abc38302ab7f55446",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID of the transfer request to accept",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Transfer request accepted successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/TransferRequest"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Transfer request not found"
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "403": {
-                        "description": "Forbidden: You are not the recipient of this request or the request is not pending."
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
         "/api/transfer-requests/{id}": {
             "delete": {
                 "tags": [
@@ -4441,6 +4306,60 @@
                     },
                     "409": {
                         "description": "Only pending requests can be canceled."
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/transfer-requests/{id}/confirm": {
+            "post": {
+                "tags": [
+                    "Transfer Requests"
+                ],
+                "summary": "Confirm a transfer request (helper confirms receipt of pet)",
+                "operationId": "eadb2c4cb28f21a1659e878c28272ac7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the transfer request to confirm",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transfer request confirmed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/TransferRequest"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Transfer request not found"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden: You are not the recipient of this transfer or the transfer is not pending."
+                    },
+                    "409": {
+                        "description": "Conflict: Only pending transfers can be confirmed."
                     }
                 },
                 "security": [
@@ -4530,108 +4449,6 @@
                     },
                     "403": {
                         "description": "Forbidden: You are not the recipient of this request or the request is not pending."
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/transfer-requests": {
-            "post": {
-                "tags": [
-                    "Transfer Requests"
-                ],
-                "summary": "Initiate a transfer request for a pet (by a helper)",
-                "operationId": "7ee474c3692aced31f4bb5a5331368a4",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "pet_id",
-                                    "requested_relationship_type"
-                                ],
-                                "properties": {
-                                    "pet_id": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "requested_relationship_type": {
-                                        "type": "string",
-                                        "enum": [
-                                            "fostering",
-                                            "permanent_foster"
-                                        ],
-                                        "example": "fostering"
-                                    },
-                                    "fostering_type": {
-                                        "type": "string",
-                                        "enum": [
-                                            "free",
-                                            "paid"
-                                        ],
-                                        "example": "free",
-                                        "nullable": true
-                                    },
-                                    "price": {
-                                        "type": "number",
-                                        "format": "float",
-                                        "example": 50,
-                                        "nullable": true
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Transfer request created successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/TransferRequest"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Validation Error"
-                                        },
-                                        "errors": {
-                                            "type": "object",
-                                            "example": {
-                                                "pet_id": [
-                                                    "The pet id field is required."
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "403": {
-                        "description": "Forbidden: Only helpers can initiate transfer requests or pet is not available."
-                    },
-                    "404": {
-                        "description": "Pet not found"
                     }
                 },
                 "security": [
@@ -6194,7 +6011,7 @@
                         "items": {
                             "type": "string",
                             "enum": [
-                                "foster_payed",
+                                "foster_paid",
                                 "foster_free",
                                 "permanent"
                             ]
@@ -6461,72 +6278,70 @@
                 },
                 "type": "object"
             },
-            "TransferHandover": {
-                "title": "TransferHandover",
+            "PlacementRequestResponse": {
+                "title": "PlacementRequestResponse",
+                "description": "Tracks a helper's response to a placement request",
                 "properties": {
                     "id": {
-                        "type": "integer"
+                        "description": "Response ID",
+                        "type": "integer",
+                        "format": "int64"
                     },
-                    "transfer_request_id": {
-                        "type": "integer"
+                    "placement_request_id": {
+                        "description": "ID of the placement request",
+                        "type": "integer",
+                        "format": "int64"
                     },
-                    "owner_user_id": {
-                        "type": "integer"
-                    },
-                    "helper_user_id": {
-                        "type": "integer"
-                    },
-                    "scheduled_at": {
-                        "type": "string",
-                        "format": "date-time",
-                        "nullable": true
-                    },
-                    "location": {
-                        "type": "string",
-                        "nullable": true
+                    "helper_profile_id": {
+                        "description": "ID of the helper profile",
+                        "type": "integer",
+                        "format": "int64"
                     },
                     "status": {
+                        "description": "Current status of the response",
                         "type": "string",
                         "enum": [
-                            "pending",
-                            "confirmed",
-                            "completed",
-                            "canceled",
-                            "disputed"
+                            "responded",
+                            "accepted",
+                            "rejected",
+                            "cancelled"
                         ]
                     },
-                    "owner_initiated_at": {
+                    "message": {
+                        "description": "Optional message from the helper",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "responded_at": {
+                        "description": "When the helper responded",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "accepted_at": {
+                        "description": "When the owner accepted",
                         "type": "string",
                         "format": "date-time",
                         "nullable": true
                     },
-                    "helper_confirmed_at": {
+                    "rejected_at": {
+                        "description": "When the owner rejected",
                         "type": "string",
                         "format": "date-time",
                         "nullable": true
                     },
-                    "condition_confirmed": {
-                        "type": "boolean"
-                    },
-                    "condition_notes": {
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "completed_at": {
-                        "type": "string",
-                        "format": "date-time",
-                        "nullable": true
-                    },
-                    "canceled_at": {
+                    "cancelled_at": {
+                        "description": "When the helper cancelled",
                         "type": "string",
                         "format": "date-time",
                         "nullable": true
                     },
                     "created_at": {
+                        "description": "Creation timestamp",
                         "type": "string",
                         "format": "date-time"
                     },
                     "updated_at": {
+                        "description": "Last update timestamp",
                         "type": "string",
                         "format": "date-time"
                     }
@@ -6535,25 +6350,30 @@
             },
             "TransferRequest": {
                 "title": "TransferRequest",
-                "description": "Transfer Request model",
+                "description": "Transfer Request model - represents physical transfer of pet(s) between users",
                 "properties": {
                     "id": {
                         "description": "Transfer Request ID",
                         "type": "integer",
                         "format": "int64"
                     },
-                    "pet_id": {
-                        "description": "ID of the pet being transferred",
+                    "placement_request_id": {
+                        "description": "ID of the parent placement request",
                         "type": "integer",
                         "format": "int64"
                     },
-                    "initiator_user_id": {
-                        "description": "ID of the user initiating the transfer",
+                    "placement_request_response_id": {
+                        "description": "ID of the accepted response",
                         "type": "integer",
                         "format": "int64"
                     },
-                    "recipient_user_id": {
-                        "description": "ID of the user intended to receive the pet",
+                    "from_user_id": {
+                        "description": "ID of the user transferring the pet (sender)",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "to_user_id": {
+                        "description": "ID of the user receiving the pet (recipient)",
                         "type": "integer",
                         "format": "int64"
                     },
@@ -6562,35 +6382,14 @@
                         "type": "string",
                         "enum": [
                             "pending",
-                            "accepted",
-                            "rejected"
+                            "confirmed",
+                            "rejected",
+                            "expired",
+                            "canceled"
                         ]
                     },
-                    "requested_relationship_type": {
-                        "description": "Type of custodianship requested",
-                        "type": "string",
-                        "enum": [
-                            "fostering",
-                            "permanent_foster"
-                        ]
-                    },
-                    "fostering_type": {
-                        "description": "Type of fostering (free or paid)",
-                        "type": "string",
-                        "enum": [
-                            "free",
-                            "paid"
-                        ],
-                        "nullable": true
-                    },
-                    "price": {
-                        "description": "Price for paid fostering",
-                        "type": "number",
-                        "format": "float",
-                        "nullable": true
-                    },
-                    "accepted_at": {
-                        "description": "Timestamp when the request was accepted",
+                    "confirmed_at": {
+                        "description": "Timestamp when the transfer was confirmed",
                         "type": "string",
                         "format": "date-time",
                         "nullable": true
@@ -6832,10 +6631,6 @@
             "description": "Email Verification"
         },
         {
-            "name": "Foster Assignments",
-            "description": "Foster Assignments"
-        },
-        {
             "name": "Helper Profiles",
             "description": "Helper Profiles"
         },
@@ -6880,12 +6675,12 @@
             "description": "Placement Requests"
         },
         {
-            "name": "Settings",
-            "description": "Settings"
+            "name": "Placement Request Responses",
+            "description": "Placement Request Responses"
         },
         {
-            "name": "Transfer Handover",
-            "description": "Transfer Handover"
+            "name": "Settings",
+            "description": "Settings"
         },
         {
             "name": "Transfer Requests",

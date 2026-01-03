@@ -180,5 +180,5 @@ Response includes:
 
 ## Related Documentation
 
-- [Rehoming Flow](./rehoming-flow.md) - How placement requests and transfers work
+- [Placement Request Lifecycle](./placement-request-lifecycle.md) - How placement requests and transfers work
 - [Categories System](./categories.md) - Pet categorization

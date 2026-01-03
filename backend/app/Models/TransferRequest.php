@@ -6,24 +6,21 @@ use App\Enums\TransferRequestStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @OA\Schema(
  *     schema="TransferRequest",
  *     title="TransferRequest",
- *     description="Transfer Request model",
+ *     description="Transfer Request model - represents physical transfer of pet(s) between users",
  *
  *     @OA\Property(property="id", type="integer", format="int64", description="Transfer Request ID"),
- *     @OA\Property(property="pet_id", type="integer", format="int64", description="ID of the pet being transferred"),
- *     @OA\Property(property="initiator_user_id", type="integer", format="int64", description="ID of the user initiating the transfer"),
- *     @OA\Property(property="recipient_user_id", type="integer", format="int64", description="ID of the user intended to receive the pet"),
- *     @OA\Property(property="status", type="string", enum={"pending", "accepted", "rejected"}, description="Current status of the transfer request"),
- *     @OA\Property(property="requested_relationship_type", type="string", enum={"fostering", "permanent_foster"}, description="Type of custodianship requested"),
- *     @OA\Property(property="fostering_type", type="string", enum={"free", "paid"}, nullable=true, description="Type of fostering (free or paid)"),
- *     @OA\Property(property="price", type="number", format="float", nullable=true, description="Price for paid fostering"),
- *     @OA\Property(property="accepted_at", type="string", format="date-time", nullable=true, description="Timestamp when the request was accepted"),
+ *     @OA\Property(property="placement_request_id", type="integer", format="int64", description="ID of the parent placement request"),
+ *     @OA\Property(property="placement_request_response_id", type="integer", format="int64", description="ID of the accepted response"),
+ *     @OA\Property(property="from_user_id", type="integer", format="int64", description="ID of the user transferring the pet (sender)"),
+ *     @OA\Property(property="to_user_id", type="integer", format="int64", description="ID of the user receiving the pet (recipient)"),
+ *     @OA\Property(property="status", type="string", enum={"pending", "confirmed", "rejected", "expired", "canceled"}, description="Current status of the transfer request"),
+ *     @OA\Property(property="confirmed_at", type="string", format="date-time", nullable=true, description="Timestamp when the transfer was confirmed"),
  *     @OA\Property(property="rejected_at", type="string", format="date-time", nullable=true, description="Timestamp when the request was rejected"),
  *     @OA\Property(property="created_at", type="string", format="date-time", description="Timestamp of transfer request creation"),
  *     @OA\Property(property="updated_at", type="string", format="date-time", description="Timestamp of last transfer request update")
@@ -36,58 +33,66 @@ class TransferRequest extends Model
 
     protected $fillable = [
         'placement_request_id',
-        // TODO: remove pet_id. Pets are stored in placement requests
-        'pet_id',
-        'initiator_user_id',
-        'recipient_user_id',
-        'requester_id',
+        'placement_request_response_id',
+        'from_user_id',
+        'to_user_id',
         'status',
-        'requested_relationship_type',
-        'fostering_type',
-        'price',
-        'accepted_at',
+        'confirmed_at',
         'rejected_at',
-        'helper_profile_id',
     ];
 
     protected $casts = [
-        'accepted_at' => 'datetime',
+        'confirmed_at' => 'datetime',
         'rejected_at' => 'datetime',
         'status' => TransferRequestStatus::class,
     ];
 
-    public function pet(): BelongsTo
+    /**
+     * Get the user transferring the pet (sender).
+     */
+    public function fromUser(): BelongsTo
     {
-        return $this->belongsTo(Pet::class);
+        return $this->belongsTo(User::class, 'from_user_id');
     }
 
-    public function initiator(): BelongsTo
+    /**
+     * Get the user receiving the pet (recipient).
+     */
+    public function toUser(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'initiator_user_id');
+        return $this->belongsTo(User::class, 'to_user_id');
     }
 
-    public function recipient(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'recipient_user_id');
-    }
-
-    public function requester(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'requester_id');
-    }
-
-    public function helperProfile(): BelongsTo
-    {
-        return $this->belongsTo(HelperProfile::class);
-    }
-
+    /**
+     * Get the placement request this transfer belongs to.
+     */
     public function placementRequest(): BelongsTo
     {
         return $this->belongsTo(PlacementRequest::class);
     }
 
-    public function transferHandover(): HasOne
+    /**
+     * Get the accepted response that triggered this transfer.
+     */
+    public function placementRequestResponse(): BelongsTo
     {
-        return $this->hasOne(TransferHandover::class);
+        return $this->belongsTo(PlacementRequestResponse::class);
+    }
+
+    /**
+     * Get the helper profile associated with this transfer request.
+     * This is retrieved via the placement request response.
+     */
+    public function getHelperProfileAttribute()
+    {
+        return $this->placementRequestResponse?->helperProfile;
+    }
+
+    /**
+     * Get the pet being transferred via the placement request.
+     */
+    public function getPetAttribute()
+    {
+        return $this->placementRequest?->pet;
     }
 }

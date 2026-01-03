@@ -38,7 +38,7 @@ use OpenApi\Annotations as OA;
  *         property="request_types",
  *         type="array",
  *
- *         @OA\Items(type="string", enum={"foster_payed", "foster_free", "permanent"}),
+ *         @OA\Items(type="string", enum={"foster_paid", "foster_free", "permanent"}),
  *         description="Types of placement requests this helper can respond to"
  *     ),
  *
@@ -171,9 +171,12 @@ class HelperProfile extends Model
         return $this->belongsToMany(PetType::class, 'helper_profile_pet_type');
     }
 
-    public function transferRequests(): HasMany
+    /**
+     * Get all responses made with this helper profile.
+     */
+    public function placementResponses(): HasMany
     {
-        return $this->hasMany(TransferRequest::class);
+        return $this->hasMany(PlacementRequestResponse::class);
     }
 
     /**
@@ -181,7 +184,7 @@ class HelperProfile extends Model
      */
     public function hasPlacementRequests(): bool
     {
-        return $this->transferRequests()->whereNotNull('placement_request_id')->exists();
+        return $this->placementResponses()->exists();
     }
 
     /**
@@ -189,7 +192,7 @@ class HelperProfile extends Model
      *
      * A user can view a helper profile if:
      * - They are the owner of the helper profile
-     * - They own a pet that has a PlacementRequest with a response (TransferRequest) from this helper profile
+     * - They own a pet that has a PlacementRequest with a response from this helper profile
      */
     public function isVisibleToUser(?User $user): bool
     {
@@ -203,7 +206,7 @@ class HelperProfile extends Model
         }
 
         // Check if user has a pet with a PlacementRequest that has a response from this helper profile
-        return TransferRequest::query()
+        return PlacementRequestResponse::query()
             ->where('helper_profile_id', $this->id)
             ->whereHas('placementRequest.pet.owners', function ($query) use ($user) {
                 $query->where('users.id', $user->id);

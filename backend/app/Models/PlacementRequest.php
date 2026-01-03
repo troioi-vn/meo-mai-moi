@@ -4,9 +4,11 @@ namespace App\Models;
 
 use App\Enums\PlacementRequestStatus;
 use App\Enums\PlacementRequestType;
+use App\Enums\PlacementResponseStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -26,6 +28,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  *     @OA\Property(property="start_date", type="string", format="date", example="2025-08-05"),
  *     @OA\Property(property="end_date", type="string", format="date", example="2025-08-20")
  * )
+ *
+ * @property-read \App\Models\Pet $pet
  */
 class PlacementRequest extends Model
 {
@@ -70,11 +74,72 @@ class PlacementRequest extends Model
     }
 
     /**
+     * Get all responses to this placement request.
+     */
+    public function responses(): HasMany
+    {
+        return $this->hasMany(PlacementRequestResponse::class);
+    }
+
+    /**
      * Get the response count attribute for admin display
      */
     public function getResponseCountAttribute(): int
     {
-        return $this->transferRequests()->count();
+        return $this->responses()->count();
+    }
+
+    /**
+     * Get the accepted response for this placement request.
+     */
+    public function acceptedResponse()
+    {
+        return PlacementRequestResponse::where('placement_request_id', $this->id)
+            ->accepted()
+            ->first();
+    }
+
+    /**
+     * Check if a helper profile has already responded to this placement request.
+     */
+    public function hasResponseFrom(int $helperProfileId): bool
+    {
+        return $this->responses()
+            ->where('helper_profile_id', $helperProfileId)
+            ->exists();
+    }
+
+    /**
+     * Check if a helper profile is blocked from responding (was rejected before).
+     */
+    public function isHelperBlocked(int $helperProfileId): bool
+    {
+        return PlacementRequestResponse::where('placement_request_id', $this->id)
+            ->blockingReResponse()
+            ->where('helper_profile_id', $helperProfileId)
+            ->exists();
+    }
+
+    /**
+     * Check if a helper profile can respond to this placement request.
+     * They can respond if:
+     * - They have never responded, OR
+     * - Their previous response was cancelled (not rejected)
+     */
+    public function canHelperRespond(int $helperProfileId): bool
+    {
+        // If blocked (rejected), cannot respond
+        if ($this->isHelperBlocked($helperProfileId)) {
+            return false;
+        }
+
+        // Check if there's an active response already
+        $activeResponse = PlacementRequestResponse::where('placement_request_id', $this->id)
+            ->active()
+            ->where('helper_profile_id', $helperProfileId)
+            ->exists();
+
+        return ! $activeResponse;
     }
 
     /**
@@ -99,6 +164,20 @@ class PlacementRequest extends Model
     public function markAsCancelled(): void
     {
         $this->update(['status' => PlacementRequestStatus::CANCELLED]);
+    }
+
+    /**
+     * Reject all other pending responses to this placement request.
+     */
+    public function rejectOtherResponses(int $acceptedResponseId): void
+    {
+        $this->responses()
+            ->where('id', '!=', $acceptedResponseId)
+            ->where('status', PlacementResponseStatus::RESPONDED)
+            ->update([
+                'status' => PlacementResponseStatus::REJECTED,
+                'rejected_at' => now(),
+            ]);
     }
 
     /**

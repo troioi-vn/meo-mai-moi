@@ -197,5 +197,3 @@ class Chat extends Model
         }]);
     }
 }
-
-

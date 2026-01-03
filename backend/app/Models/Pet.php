@@ -116,6 +116,14 @@ class Pet extends Model implements HasMedia
     }
 
     /**
+     * Alias for creator() - get the user who created this pet
+     */
+    public function user(): BelongsTo
+    {
+        return $this->creator();
+    }
+
+    /**
      * Get all relationships for this pet
      */
     public function relationships(): HasMany
@@ -150,6 +158,18 @@ class Pet extends Model implements HasMedia
     {
         return $this->belongsToMany(User::class, 'pet_relationships')
             ->wherePivot('relationship_type', PetRelationshipType::FOSTER->value)
+            ->wherePivotNull('end_at')
+            ->withPivot(['relationship_type', 'start_at', 'end_at', 'created_by'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get current sitters of this pet
+     */
+    public function sitters(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'pet_relationships')
+            ->wherePivot('relationship_type', PetRelationshipType::SITTER->value)
             ->wherePivotNull('end_at')
             ->withPivot(['relationship_type', 'start_at', 'end_at', 'created_by'])
             ->withTimestamps();
@@ -209,13 +229,15 @@ class Pet extends Model implements HasMedia
     }
 
     /**
-     * Check if user can view this pet (owner, editor, or viewer)
+     * Check if user can view this pet (owner, editor, viewer, foster, or sitter)
      */
     public function canBeViewedBy(User $user): bool
     {
         return $this->hasRelationshipWith($user, PetRelationshipType::OWNER) ||
                $this->hasRelationshipWith($user, PetRelationshipType::EDITOR) ||
-               $this->hasRelationshipWith($user, PetRelationshipType::VIEWER);
+               $this->hasRelationshipWith($user, PetRelationshipType::VIEWER) ||
+               $this->hasRelationshipWith($user, PetRelationshipType::FOSTER) ||
+               $this->hasRelationshipWith($user, PetRelationshipType::SITTER);
     }
 
     /**
@@ -348,21 +370,9 @@ class Pet extends Model implements HasMedia
             ->orderBy('start_at', 'desc');
     }
 
-    /**
-     * Get foster assignments for this pet
-     */
-    public function fosterAssignments(): HasMany
-    {
-        return $this->hasMany(FosterAssignment::class);
-    }
-
-    /**
-     * Get active foster assignment for this pet
-     */
-    public function activeFosterAssignment(): HasOne
-    {
-        return $this->hasOne(FosterAssignment::class)->where('status', 'active');
-    }
+    // TODO: Foster assignments removed - reimplment when rehoming flow is rebuilt
+    // public function fosterAssignments(): HasMany
+    // public function activeFosterAssignment(): HasOne
 
     /**
      * Calculate the age of the pet in years.

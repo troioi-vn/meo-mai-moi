@@ -15,5 +15,3 @@ enum ChatUserRole: string
         };
     }
 }
-
-

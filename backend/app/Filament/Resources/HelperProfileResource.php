@@ -47,7 +47,7 @@ class HelperProfileResource extends Resource
                         Forms\Components\CheckboxList::make('request_types')
                             ->label('Request Types')
                             ->options([
-                                PlacementRequestType::FOSTER_PAYED->value => 'Foster (Paid)',
+                                PlacementRequestType::FOSTER_PAID->value => 'Foster (Paid)',
                                 PlacementRequestType::FOSTER_FREE->value => 'Foster (Free)',
                                 PlacementRequestType::PERMANENT->value => 'Permanent Adoption',
                             ])
@@ -162,7 +162,7 @@ class HelperProfileResource extends Resource
                         $types = $record->request_types ?? [];
                         $labels = array_map(function ($type) {
                             return match ($type) {
-                                'foster_payed' => 'Foster (Paid)',
+                                'foster_paid' => 'Foster (Paid)',
                                 'foster_free' => 'Foster (Free)',
                                 'permanent' => 'Permanent',
                                 default => $type,
@@ -238,7 +238,7 @@ class HelperProfileResource extends Resource
                     ->label('Request Types')
                     ->multiple()
                     ->options([
-                        PlacementRequestType::FOSTER_PAYED->value => 'Foster (Paid)',
+                        PlacementRequestType::FOSTER_PAID->value => 'Foster (Paid)',
                         PlacementRequestType::FOSTER_FREE->value => 'Foster (Free)',
                         PlacementRequestType::PERMANENT->value => 'Permanent',
                     ])

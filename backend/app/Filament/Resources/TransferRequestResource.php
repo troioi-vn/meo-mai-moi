@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TransferRequestResource\Pages;
-use App\Filament\Resources\TransferRequestResource\RelationManagers;
 use App\Models\TransferRequest;
 use Filament\Forms;
 use Filament\Forms\Components\DateTimePicker;
@@ -52,17 +51,16 @@ class TransferRequestResource extends Resource
                     ->preload()
                     ->required(),
 
-                Select::make('helper_profile_id')
-                    ->label('Helper Profile')
-                    ->relationship('helperProfile', 'id')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->user->name." ({$record->country})")
+                Select::make('from_user_id')
+                    ->label('From User (Owner)')
+                    ->relationship('fromUser', 'name')
                     ->searchable()
                     ->preload()
                     ->required(),
 
-                Select::make('requester_id')
-                    ->label('Requester')
-                    ->relationship('requester', 'name')
+                Select::make('to_user_id')
+                    ->label('To User (Helper)')
+                    ->relationship('toUser', 'name')
                     ->searchable()
                     ->preload()
                     ->required(),
@@ -71,41 +69,16 @@ class TransferRequestResource extends Resource
                     ->label('Status')
                     ->options([
                         'pending' => 'Pending',
-                        'accepted' => 'Accepted',
+                        'confirmed' => 'Confirmed',
                         'rejected' => 'Rejected',
-                        'completed' => 'Completed',
-                        'cancelled' => 'Cancelled',
+                        'expired' => 'Expired',
+                        'canceled' => 'Canceled',
                     ])
                     ->required()
                     ->default('pending'),
 
-                Select::make('requested_relationship_type')
-                    ->label('Relationship Type')
-                    ->options([
-                        'foster' => 'Foster',
-                        'adopt' => 'Adopt',
-                        'temporary' => 'Temporary Care',
-                    ])
-                    ->required(),
-
-                Select::make('fostering_type')
-                    ->label('Fostering Type')
-                    ->options([
-                        'short_term' => 'Short Term',
-                        'long_term' => 'Long Term',
-                        'emergency' => 'Emergency',
-                        'medical' => 'Medical Foster',
-                    ])
-                    ->visible(fn (Forms\Get $get) => $get('requested_relationship_type') === 'foster'),
-
-                Forms\Components\TextInput::make('price')
-                    ->label('Price')
-                    ->numeric()
-                    ->prefix('$')
-                    ->nullable(),
-
-                DateTimePicker::make('accepted_at')
-                    ->label('Accepted At')
+                DateTimePicker::make('confirmed_at')
+                    ->label('Confirmed At')
                     ->nullable(),
 
                 DateTimePicker::make('rejected_at')
@@ -131,42 +104,28 @@ class TransferRequestResource extends Resource
                     ->description(fn ($record) => $record->placementRequest?->pet?->petType?->name)
                     ->url(fn ($record) => $record->placementRequest?->pet ? route('filament.admin.resources.pets.edit', $record->placementRequest->pet) : null),
 
-                TextColumn::make('helperProfile.user.name')
-                    ->label('Helper')
-                    ->sortable()
-                    ->searchable()
-                    ->url(fn ($record) => $record->helperProfile ? route('filament.admin.resources.helper-profiles.view', $record->helperProfile) : null),
-
-                TextColumn::make('requester.name')
-                    ->label('Requester')
+                TextColumn::make('fromUser.name')
+                    ->label('From (Owner)')
                     ->sortable()
                     ->searchable(),
 
-                BadgeColumn::make('requested_relationship_type')
-                    ->label('Type')
-                    ->colors([
-                        'primary' => 'foster',
-                        'success' => 'adopt',
-                        'warning' => 'temporary',
-                    ]),
+                TextColumn::make('toUser.name')
+                    ->label('To (Helper)')
+                    ->sortable()
+                    ->searchable(),
 
                 BadgeColumn::make('status')
                     ->label('Status')
                     ->colors([
                         'warning' => 'pending',
-                        'success' => 'accepted',
+                        'success' => 'confirmed',
                         'danger' => 'rejected',
-                        'primary' => 'completed',
-                        'secondary' => 'cancelled',
+                        'secondary' => 'expired',
+                        'gray' => 'canceled',
                     ]),
 
-                TextColumn::make('price')
-                    ->label('Price')
-                    ->money('USD')
-                    ->sortable(),
-
-                TextColumn::make('accepted_at')
-                    ->label('Response Date')
+                TextColumn::make('confirmed_at')
+                    ->label('Confirmed Date')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(),
@@ -187,18 +146,10 @@ class TransferRequestResource extends Resource
                 SelectFilter::make('status')
                     ->options([
                         'pending' => 'Pending',
-                        'accepted' => 'Accepted',
+                        'confirmed' => 'Confirmed',
                         'rejected' => 'Rejected',
-                        'completed' => 'Completed',
-                        'cancelled' => 'Cancelled',
-                    ]),
-
-                SelectFilter::make('requested_relationship_type')
-                    ->label('Request Type')
-                    ->options([
-                        'foster' => 'Foster',
-                        'adopt' => 'Adopt',
-                        'temporary' => 'Temporary Care',
+                        'expired' => 'Expired',
+                        'canceled' => 'Canceled',
                     ]),
 
                 Tables\Filters\Filter::make('created_from')
@@ -231,20 +182,20 @@ class TransferRequestResource extends Resource
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
 
-                Action::make('approve')
-                    ->label('Approve')
+                Action::make('confirm')
+                    ->label('Confirm Transfer')
                     ->icon('heroicon-o-check')
                     ->color('success')
-                    ->visible(fn ($record) => $record->status === 'pending')
+                    ->visible(fn ($record) => $record->status->value === 'pending')
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
-                            'status' => 'accepted',
-                            'accepted_at' => now(),
+                            'status' => 'confirmed',
+                            'confirmed_at' => now(),
                         ]);
 
                         Notification::make()
-                            ->title('Transfer request approved')
+                            ->title('Transfer confirmed')
                             ->success()
                             ->send();
                     }),
@@ -253,7 +204,7 @@ class TransferRequestResource extends Resource
                     ->label('Reject')
                     ->icon('heroicon-o-x-mark')
                     ->color('danger')
-                    ->visible(fn ($record) => $record->status === 'pending')
+                    ->visible(fn ($record) => $record->status->value === 'pending')
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -266,47 +217,30 @@ class TransferRequestResource extends Resource
                             ->success()
                             ->send();
                     }),
-
-                Action::make('complete')
-                    ->label('Mark Complete')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('primary')
-                    ->visible(fn ($record) => $record->status === 'accepted')
-                    ->requiresConfirmation()
-                    ->action(function ($record) {
-                        $record->update([
-                            'status' => 'completed',
-                        ]);
-
-                        Notification::make()
-                            ->title('Transfer request marked as completed')
-                            ->success()
-                            ->send();
-                    }),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
 
-                    Tables\Actions\BulkAction::make('approve_selected')
-                        ->label('Approve Selected')
+                    Tables\Actions\BulkAction::make('confirm_selected')
+                        ->label('Confirm Selected')
                         ->icon('heroicon-o-check')
                         ->color('success')
                         ->requiresConfirmation()
                         ->action(function ($records) {
                             $count = 0;
                             foreach ($records as $record) {
-                                if ($record->status === 'pending') {
+                                if ($record->status->value === 'pending') {
                                     $record->update([
-                                        'status' => 'accepted',
-                                        'accepted_at' => now(),
+                                        'status' => 'confirmed',
+                                        'confirmed_at' => now(),
                                     ]);
                                     $count++;
                                 }
                             }
 
                             Notification::make()
-                                ->title("{$count} transfer requests approved")
+                                ->title("{$count} transfers confirmed")
                                 ->success()
                                 ->send();
                         }),
@@ -319,7 +253,7 @@ class TransferRequestResource extends Resource
                         ->action(function ($records) {
                             $count = 0;
                             foreach ($records as $record) {
-                                if ($record->status === 'pending') {
+                                if ($record->status->value === 'pending') {
                                     $record->update([
                                         'status' => 'rejected',
                                         'rejected_at' => now(),
@@ -340,9 +274,8 @@ class TransferRequestResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            RelationManagers\TransferHandoverRelationManager::class,
-        ];
+        // TODO: TransferHandoverRelationManager removed - reimplment when rehoming flow is rebuilt
+        return [];
     }
 
     public static function getPages(): array

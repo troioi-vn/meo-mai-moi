@@ -200,7 +200,7 @@ class PetResource extends Resource
     {
         return [
             RelationManagers\WeightHistoriesRelationManager::class,
-            RelationManagers\FosterAssignmentsRelationManager::class,
+            // TODO: FosterAssignmentsRelationManager removed - reimplment when rehoming flow is rebuilt
             RelationManagers\PlacementRequestsRelationManager::class,
         ];
     }

@@ -130,5 +130,3 @@ class ChatResource extends Resource
         ];
     }
 }
-
-

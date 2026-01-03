@@ -29,7 +29,7 @@ class PlacementRequestExporter extends Exporter
             ExportColumn::make('request_type')
                 ->label('Request Type')
                 ->formatStateUsing(fn (PlacementRequestType $state): string => match ($state) {
-                    PlacementRequestType::FOSTER_PAYED => 'Foster (Paid)',
+                    PlacementRequestType::FOSTER_PAID => 'Foster (Paid)',
                     PlacementRequestType::FOSTER_FREE => 'Foster (Free)',
                     PlacementRequestType::PERMANENT => 'Permanent',
                     default => $state->value,

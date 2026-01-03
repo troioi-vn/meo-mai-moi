@@ -55,7 +55,7 @@ class PlacementRequestResource extends Resource
         return [
             'Owner' => $record->user->name,
             'Type' => match ($record->request_type) {
-                PlacementRequestType::FOSTER_PAYED => 'Foster (Paid)',
+                PlacementRequestType::FOSTER_PAID => 'Foster (Paid)',
                 PlacementRequestType::FOSTER_FREE => 'Foster (Free)',
                 PlacementRequestType::PERMANENT => 'Permanent',
                 default => $record->request_type->value ?? $record->request_type,
@@ -99,7 +99,7 @@ class PlacementRequestResource extends Resource
                 Select::make('request_type')
                     ->label('Request Type')
                     ->options([
-                        PlacementRequestType::FOSTER_PAYED->value => 'Foster (Paid)',
+                        PlacementRequestType::FOSTER_PAID->value => 'Foster (Paid)',
                         PlacementRequestType::FOSTER_FREE->value => 'Foster (Free)',
                         PlacementRequestType::PERMANENT->value => 'Permanent Adoption',
                     ])
@@ -160,14 +160,14 @@ class PlacementRequestResource extends Resource
                 BadgeColumn::make('request_type')
                     ->label('Type')
                     ->formatStateUsing(fn (PlacementRequestType $state): string => match ($state) {
-                        PlacementRequestType::FOSTER_PAYED => 'Foster (Paid)',
+                        PlacementRequestType::FOSTER_PAID => 'Foster (Paid)',
                         PlacementRequestType::FOSTER_FREE => 'Foster (Free)',
                         PlacementRequestType::PERMANENT => 'Permanent',
                         default => $state->value,
                     })
                     ->colors([
                         'success' => PlacementRequestType::PERMANENT->value,
-                        'warning' => PlacementRequestType::FOSTER_PAYED->value,
+                        'warning' => PlacementRequestType::FOSTER_PAID->value,
                         'info' => PlacementRequestType::FOSTER_FREE->value,
                     ]),
 
@@ -200,9 +200,9 @@ class PlacementRequestResource extends Resource
                     })
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                TextColumn::make('transfer_requests_count')
+                TextColumn::make('responses_count')
                     ->label('Responses')
-                    ->counts('transferRequests')
+                    ->counts('responses')
                     ->sortable(),
 
                 TextColumn::make('created_at')
@@ -258,7 +258,7 @@ class PlacementRequestResource extends Resource
                 SelectFilter::make('request_type')
                     ->label('Request Type')
                     ->options([
-                        PlacementRequestType::FOSTER_PAYED->value => 'Foster (Paid)',
+                        PlacementRequestType::FOSTER_PAID->value => 'Foster (Paid)',
                         PlacementRequestType::FOSTER_FREE->value => 'Foster (Free)',
                         PlacementRequestType::PERMANENT->value => 'Permanent',
                     ])
@@ -362,11 +362,11 @@ class PlacementRequestResource extends Resource
 
                 Filter::make('has_responses')
                     ->label('Has Responses')
-                    ->query(fn (Builder $query): Builder => $query->has('transferRequests')),
+                    ->query(fn (Builder $query): Builder => $query->has('responses')),
 
                 Filter::make('no_responses')
                     ->label('No Responses')
-                    ->query(fn (Builder $query): Builder => $query->doesntHave('transferRequests')),
+                    ->query(fn (Builder $query): Builder => $query->doesntHave('responses')),
 
                 Filter::make('expiring_soon')
                     ->label('Expiring Soon (7 days)')
@@ -408,6 +408,7 @@ class PlacementRequestResource extends Resource
     public static function getRelations(): array
     {
         return [
+            RelationManagers\ResponsesRelationManager::class,
             RelationManagers\TransferRequestsRelationManager::class,
         ];
     }

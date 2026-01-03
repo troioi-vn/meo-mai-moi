@@ -23,6 +23,7 @@ use Filament\Tables\Columns\BooleanColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
 class PetTypeResource extends Resource
 {
@@ -45,7 +46,7 @@ class PetTypeResource extends Resource
                     ->live(onBlur: true)
                     ->afterStateUpdated(function (string $context, $state, callable $set) {
                         if ($context === 'create') {
-                            $set('slug', \Str::slug($state));
+                            $set('slug', Str::slug($state));
                         }
                     }),
 

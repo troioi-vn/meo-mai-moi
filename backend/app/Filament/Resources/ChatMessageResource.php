@@ -134,5 +134,3 @@ class ChatMessageResource extends Resource
         ];
     }
 }
-
-

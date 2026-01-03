@@ -3,9 +3,12 @@
 namespace Database\Seeders;
 
 use App\Enums\PlacementRequestType;
+use App\Enums\PlacementResponseStatus;
+use App\Models\HelperProfile;
 use App\Models\Pet;
 use App\Models\PetType;
 use App\Models\PlacementRequest;
+use App\Models\PlacementRequestResponse;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -176,6 +179,59 @@ class DatabaseSeeder extends Seeder
                     'end_date' => now()->addMonths(1),
                     'fulfilled_at' => null,
                     'fulfilled_by_transfer_request_id' => null,
+                ]);
+            }
+        }
+
+        // Create helper profiles for users who don't have one
+        $usersWithoutHelperProfile = User::whereDoesntHave('helperProfiles')->get();
+        foreach ($usersWithoutHelperProfile as $user) {
+            HelperProfile::factory()->create(['user_id' => $user->id]);
+        }
+
+        // Create some placement responses
+        $placementRequests = PlacementRequest::where('status', \App\Enums\PlacementRequestStatus::OPEN)->get();
+        $helperProfiles = HelperProfile::all();
+
+        foreach ($placementRequests as $placementRequest) {
+            // Get helper profiles that don't belong to the placement request owner
+            $availableHelpers = $helperProfiles->filter(fn ($hp) => $hp->user_id !== $placementRequest->user_id);
+
+            if ($availableHelpers->isEmpty()) {
+                continue;
+            }
+
+            // Create 1-3 responses per placement request
+            $responseCount = min(rand(1, 3), $availableHelpers->count());
+            $selectedHelpers = $availableHelpers->random($responseCount);
+
+            foreach ($selectedHelpers as $index => $helperProfile) {
+                $status = PlacementResponseStatus::RESPONDED;
+                $acceptedAt = null;
+                $rejectedAt = null;
+                $cancelledAt = null;
+
+                // Make some responses have different statuses for variety
+                if ($index === 0 && rand(0, 1)) {
+                    $status = PlacementResponseStatus::ACCEPTED;
+                    $acceptedAt = now()->subDays(rand(1, 5));
+                } elseif ($index === 1 && rand(0, 1)) {
+                    $status = PlacementResponseStatus::REJECTED;
+                    $rejectedAt = now()->subDays(rand(1, 5));
+                } elseif ($index === 2 && rand(0, 1)) {
+                    $status = PlacementResponseStatus::CANCELLED;
+                    $cancelledAt = now()->subDays(rand(1, 5));
+                }
+
+                PlacementRequestResponse::create([
+                    'placement_request_id' => $placementRequest->id,
+                    'helper_profile_id' => $helperProfile->id,
+                    'status' => $status,
+                    'message' => "I would love to help with {$placementRequest->pet->name}!",
+                    'responded_at' => now()->subDays(rand(5, 10)),
+                    'accepted_at' => $acceptedAt,
+                    'rejected_at' => $rejectedAt,
+                    'cancelled_at' => $cancelledAt,
                 ]);
             }
         }

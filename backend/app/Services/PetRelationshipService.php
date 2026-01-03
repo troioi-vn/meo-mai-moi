@@ -6,8 +6,8 @@ use App\Enums\PetRelationshipType;
 use App\Models\Pet;
 use App\Models\PetRelationship;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Collection;
 use DateTimeInterface;
+use Illuminate\Database\Eloquent\Collection;
 
 class PetRelationshipService
 {
@@ -44,11 +44,49 @@ class PetRelationshipService
     }
 
     /**
+     * End all active relationships for a user and pet.
+     */
+    public function endAllActiveRelationships(User $user, Pet $pet, ?DateTimeInterface $endAt = null): void
+    {
+        PetRelationship::where('user_id', $user->id)
+            ->where('pet_id', $pet->id)
+            ->whereNull('end_at')
+            ->update(['end_at' => $endAt ?? now()]);
+    }
+
+    /**
+     * End active relationships for a user and pet, limited to given types.
+     *
+     * @param  array<PetRelationshipType>  $types
+     */
+    public function endActiveRelationshipsByTypes(
+        User $user,
+        Pet $pet,
+        array $types,
+        ?DateTimeInterface $endAt = null
+    ): void {
+        $typeValues = collect($types)
+            ->map(fn (PetRelationshipType $t) => $t->value)
+            ->values()
+            ->all();
+
+        PetRelationship::where('user_id', $user->id)
+            ->where('pet_id', $pet->id)
+            ->whereNull('end_at')
+            ->whereIn('relationship_type', $typeValues)
+            ->update(['end_at' => $endAt ?? now()]);
+    }
+
+    /**
      * Transfer ownership from one user to another
      */
     public function transferOwnership(Pet $pet, User $fromUser, User $toUser, User $createdBy): void
     {
-        // End current ownership
+        if ($fromUser->id === $toUser->id) {
+            return;
+        }
+
+        // End current ownership for the source user
         $currentOwnership = PetRelationship::where('pet_id', $pet->id)
             ->where('user_id', $fromUser->id)
             ->where('relationship_type', PetRelationshipType::OWNER)
@@ -59,8 +97,56 @@ class PetRelationshipService
             $this->endRelationship($currentOwnership);
         }
 
+        // End ANY active relationship the recipient has (foster, sitter, viewer)
+        // before making them the owner to keep things clean.
+        $this->endAllActiveRelationships($toUser, $pet);
+
         // Create new ownership
         $this->createRelationship($toUser, $pet, PetRelationshipType::OWNER, $createdBy);
+    }
+
+    /**
+     * Add foster access to a pet (idempotent).
+     */
+    public function addFoster(
+        Pet $pet,
+        User $foster,
+        User $createdBy,
+        ?DateTimeInterface $startAt = null
+    ): PetRelationship {
+        $existing = PetRelationship::where('pet_id', $pet->id)
+            ->where('user_id', $foster->id)
+            ->where('relationship_type', PetRelationshipType::FOSTER)
+            ->whereNull('end_at')
+            ->first();
+
+        if ($existing) {
+            return $existing;
+        }
+
+        return $this->createRelationship($foster, $pet, PetRelationshipType::FOSTER, $createdBy, $startAt);
+    }
+
+    /**
+     * Add sitter access to a pet (idempotent).
+     */
+    public function addSitter(
+        Pet $pet,
+        User $sitter,
+        User $createdBy,
+        ?DateTimeInterface $startAt = null
+    ): PetRelationship {
+        $existing = PetRelationship::where('pet_id', $pet->id)
+            ->where('user_id', $sitter->id)
+            ->where('relationship_type', PetRelationshipType::SITTER)
+            ->whereNull('end_at')
+            ->first();
+
+        if ($existing) {
+            return $existing;
+        }
+
+        return $this->createRelationship($sitter, $pet, PetRelationshipType::SITTER, $createdBy, $startAt);
     }
 
     /**

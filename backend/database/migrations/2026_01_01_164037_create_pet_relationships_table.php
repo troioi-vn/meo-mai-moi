@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('pet_id')->constrained()->onDelete('cascade');
-            $table->enum('relationship_type', ['owner', 'foster', 'editor', 'viewer']);
+            $table->enum('relationship_type', ['owner', 'foster', 'sitter', 'editor', 'viewer']);
             $table->timestampTz('start_at');
             $table->timestampTz('end_at')->nullable();
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
@@ -30,10 +30,10 @@ return new class extends Migration
 
         // Prevent duplicate active relationships for the same pet/user/type.
         // Postgres partial unique index.
-        DB::statement("CREATE UNIQUE INDEX pet_relationships_unique_active_pet_user_type ON pet_relationships (pet_id, user_id, relationship_type) WHERE end_at IS NULL");
+        DB::statement('CREATE UNIQUE INDEX pet_relationships_unique_active_pet_user_type ON pet_relationships (pet_id, user_id, relationship_type) WHERE end_at IS NULL');
 
         // Ensure end_at is not before start_at (allow equal for immediate end).
-        DB::statement("ALTER TABLE pet_relationships ADD CONSTRAINT pet_relationships_end_at_gte_start_at CHECK (end_at IS NULL OR end_at >= start_at)");
+        DB::statement('ALTER TABLE pet_relationships ADD CONSTRAINT pet_relationships_end_at_gte_start_at CHECK (end_at IS NULL OR end_at >= start_at)');
     }
 
     /**

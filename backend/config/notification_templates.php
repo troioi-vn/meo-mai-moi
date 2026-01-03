@@ -18,6 +18,7 @@ return [
 
     // Per-notification type registry
     'types' => [
+        // Owner receives: when someone responds to their placement request
         NotificationType::PLACEMENT_REQUEST_RESPONSE->value => [
             'slug' => 'placement-request-response',
             'channels' => ['email', 'in_app'],
@@ -30,26 +31,84 @@ return [
                 ['name' => 'unsubscribeUrl', 'type' => 'string', 'required' => true],
             ],
         ],
-        NotificationType::PLACEMENT_REQUEST_ACCEPTED->value => [
-            'slug' => 'placement-request-accepted',
-            'channels' => ['email', 'in_app'],
-            'variables' => [],
-        ],
+
+        // Helper receives: when owner accepts their response
         NotificationType::HELPER_RESPONSE_ACCEPTED->value => [
             'slug' => 'helper-response-accepted',
             'channels' => ['email', 'in_app'],
-            'variables' => [],
+            'variables' => [
+                ['name' => 'pet_name', 'type' => 'string', 'required' => true],
+                ['name' => 'pet_id', 'type' => 'integer', 'required' => true],
+                ['name' => 'link', 'type' => 'string', 'required' => true],
+            ],
         ],
+
+        // Helper receives: when owner rejects their response
         NotificationType::HELPER_RESPONSE_REJECTED->value => [
             'slug' => 'helper-response-rejected',
             'channels' => ['email', 'in_app'],
-            'variables' => [],
+            'variables' => [
+                ['name' => 'pet_name', 'type' => 'string', 'required' => true],
+                ['name' => 'pet_id', 'type' => 'integer', 'required' => true],
+                ['name' => 'link', 'type' => 'string', 'required' => true],
+            ],
         ],
+
+        // Owner receives: when helper cancels their response
+        NotificationType::HELPER_RESPONSE_CANCELED->value => [
+            'slug' => 'helper-response-canceled',
+            'channels' => ['email', 'in_app'],
+            'variables' => [
+                ['name' => 'helper_name', 'type' => 'string', 'required' => false],
+                ['name' => 'pet_name', 'type' => 'string', 'required' => true],
+                ['name' => 'pet_id', 'type' => 'integer', 'required' => true],
+                ['name' => 'link', 'type' => 'string', 'required' => true],
+            ],
+        ],
+
+        // Owner receives: when helper confirms physical handover
+        NotificationType::TRANSFER_CONFIRMED->value => [
+            'slug' => 'transfer-confirmed',
+            'channels' => ['email', 'in_app'],
+            'variables' => [
+                ['name' => 'pet_name', 'type' => 'string', 'required' => true],
+                ['name' => 'pet_id', 'type' => 'integer', 'required' => true],
+                ['name' => 'link', 'type' => 'string', 'required' => true],
+            ],
+        ],
+
+        // Helper receives: when placement ends (pet returned)
+        NotificationType::PLACEMENT_ENDED->value => [
+            'slug' => 'placement-ended',
+            'channels' => ['email', 'in_app'],
+            'variables' => [
+                ['name' => 'pet_name', 'type' => 'string', 'required' => true],
+                ['name' => 'pet_id', 'type' => 'integer', 'required' => true],
+                ['name' => 'link', 'type' => 'string', 'required' => true],
+            ],
+        ],
+
+        // Pet reminders
         NotificationType::VACCINATION_REMINDER->value => [
             'slug' => 'vaccination-reminder',
             'channels' => ['email', 'in_app'],
-            'variables' => [],
+            'variables' => [
+                ['name' => 'pet_name', 'type' => 'string', 'required' => true],
+                ['name' => 'vaccination_name', 'type' => 'string', 'required' => true],
+                ['name' => 'due_date', 'type' => 'string', 'required' => true],
+            ],
         ],
+
+        NotificationType::PET_BIRTHDAY->value => [
+            'slug' => 'pet-birthday',
+            'channels' => ['email', 'in_app'],
+            'variables' => [
+                ['name' => 'pet_name', 'type' => 'string', 'required' => true],
+                ['name' => 'age', 'type' => 'integer', 'required' => false],
+            ],
+        ],
+
+        // Account
         NotificationType::EMAIL_VERIFICATION->value => [
             'slug' => 'email-verification',
             'channels' => ['email'],
@@ -57,6 +116,17 @@ return [
                 ['name' => 'user', 'type' => 'App\\Models\\User', 'required' => true],
                 ['name' => 'verificationUrl', 'type' => 'string', 'required' => true],
                 ['name' => 'appName', 'type' => 'string', 'required' => true],
+            ],
+        ],
+
+        // Messaging
+        NotificationType::NEW_MESSAGE->value => [
+            'slug' => 'new-message',
+            'channels' => ['email', 'in_app'],
+            'variables' => [
+                ['name' => 'sender_name', 'type' => 'string', 'required' => true],
+                ['name' => 'message_preview', 'type' => 'string', 'required' => false],
+                ['name' => 'link', 'type' => 'string', 'required' => true],
             ],
         ],
     ],

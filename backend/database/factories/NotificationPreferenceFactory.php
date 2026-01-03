@@ -120,14 +120,6 @@ class NotificationPreferenceFactory extends Factory
     }
 
     /**
-     * Create preference for placement request accepted type.
-     */
-    public function placementRequestAccepted(): static
-    {
-        return $this->forType(NotificationType::PLACEMENT_REQUEST_ACCEPTED);
-    }
-
-    /**
      * Create preference for helper response accepted type.
      */
     public function helperResponseAccepted(): static

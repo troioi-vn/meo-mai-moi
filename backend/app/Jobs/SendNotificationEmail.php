@@ -5,11 +5,13 @@ namespace App\Jobs;
 use App\Enums\NotificationType;
 use App\Mail\EmailVerificationMail;
 use App\Mail\HelperResponseAcceptedMail;
+use App\Mail\HelperResponseCanceledMail;
 use App\Mail\HelperResponseRejectedMail;
 use App\Mail\NewMessageMail;
 use App\Mail\PetBirthdayMail;
-use App\Mail\PlacementRequestAcceptedMail;
+use App\Mail\PlacementEndedMail;
 use App\Mail\PlacementRequestResponseMail;
+use App\Mail\TransferConfirmedMail;
 use App\Mail\VaccinationReminderMail;
 use App\Models\EmailLog;
 use App\Models\Notification;
@@ -264,9 +266,11 @@ class SendNotificationEmail implements ShouldQueue
     {
         return match ($notificationType) {
             NotificationType::PLACEMENT_REQUEST_RESPONSE => new PlacementRequestResponseMail($this->user, $notificationType, $this->data),
-            NotificationType::PLACEMENT_REQUEST_ACCEPTED => new PlacementRequestAcceptedMail($this->user, $notificationType, $this->data),
             NotificationType::HELPER_RESPONSE_ACCEPTED => new HelperResponseAcceptedMail($this->user, $notificationType, $this->data),
             NotificationType::HELPER_RESPONSE_REJECTED => new HelperResponseRejectedMail($this->user, $notificationType, $this->data),
+            NotificationType::HELPER_RESPONSE_CANCELED => new HelperResponseCanceledMail($this->user, $notificationType, $this->data),
+            NotificationType::TRANSFER_CONFIRMED => new TransferConfirmedMail($this->user, $notificationType, $this->data),
+            NotificationType::PLACEMENT_ENDED => new PlacementEndedMail($this->user, $notificationType, $this->data),
             NotificationType::VACCINATION_REMINDER => new VaccinationReminderMail($this->user, $notificationType, $this->data),
             NotificationType::PET_BIRTHDAY => new PetBirthdayMail($this->user, $notificationType, $this->data),
             NotificationType::EMAIL_VERIFICATION => new EmailVerificationMail($this->user, $notificationType, $this->data),

@@ -17,10 +17,10 @@ class TransferRequestPolicy
 
     public function view(User $user, TransferRequest $transferRequest): bool
     {
-        // Participants (owner/recipient or initiator) and admins can view
+        // Participants (from_user or to_user) and admins can view
         return $this->isAdmin($user)
-            || $transferRequest->initiator_user_id === $user->id
-            || $transferRequest->recipient_user_id === $user->id;
+            || $transferRequest->from_user_id === $user->id
+            || $transferRequest->to_user_id === $user->id;
     }
 
     public function create(User $user): bool
@@ -33,8 +33,8 @@ class TransferRequestPolicy
     {
         // Only participants or admins can update
         return $this->isAdmin($user)
-            || $transferRequest->initiator_user_id === $user->id
-            || $transferRequest->recipient_user_id === $user->id;
+            || $transferRequest->from_user_id === $user->id
+            || $transferRequest->to_user_id === $user->id;
     }
 
     public function delete(User $user, TransferRequest $transferRequest): bool
@@ -42,28 +42,30 @@ class TransferRequestPolicy
         return $this->update($user, $transferRequest);
     }
 
-    public function accept(User $user, TransferRequest $transferRequest): bool
+    public function confirm(User $user, TransferRequest $transferRequest): bool
     {
-        // Only the recipient (pet owner) or admin can accept
-        return $this->isAdmin($user) || $transferRequest->recipient_user_id === $user->id;
+        // Only the to_user (helper receiving the pet) or admin can confirm
+        return $this->isAdmin($user) || $transferRequest->to_user_id === $user->id;
     }
 
     public function reject(User $user, TransferRequest $transferRequest): bool
     {
-        // Only the recipient (pet owner) or admin can reject
-        return $this->isAdmin($user) || $transferRequest->recipient_user_id === $user->id;
+        // Only the from_user (pet owner) or admin can reject
+        return $this->isAdmin($user) || $transferRequest->from_user_id === $user->id;
     }
 
     public function cancel(User $user, TransferRequest $transferRequest): bool
     {
-        // Only the initiator (helper) or admin can cancel their own pending request
-        return $this->isAdmin($user) || $transferRequest->initiator_user_id === $user->id;
+        // Either party or admin can cancel a pending transfer
+        return $this->isAdmin($user)
+            || $transferRequest->from_user_id === $user->id
+            || $transferRequest->to_user_id === $user->id;
     }
 
     public function viewResponderProfile(User $user, TransferRequest $transferRequest): bool
     {
-        // Owner/recipient and admin can view responder profile
-        return $this->isAdmin($user) || $transferRequest->recipient_user_id === $user->id;
+        // Owner (from_user) and admin can view responder profile
+        return $this->isAdmin($user) || $transferRequest->from_user_id === $user->id;
     }
 
     // Admin-only for bulk/advanced actions

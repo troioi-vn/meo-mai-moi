@@ -79,3 +79,5 @@ class ListChatsController extends Controller
         return $this->sendSuccess($data);
     }
 }
+
+

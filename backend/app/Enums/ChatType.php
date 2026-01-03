@@ -17,3 +17,5 @@ enum ChatType: string
         };
     }
 }
+
+

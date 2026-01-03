@@ -90,3 +90,5 @@ class StoreChatController extends Controller
         return $this->sendError('Group chats are not yet implemented.', 501);
     }
 }
+
+

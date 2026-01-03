@@ -5,6 +5,7 @@ namespace App\Channels;
 use App\Jobs\SendNotificationEmail;
 use App\Models\Notification;
 use Illuminate\Notifications\Notification as LaravelNotification;
+use Illuminate\Support\Facades\Log;
 
 class NotificationEmailChannel
 {
@@ -32,7 +33,7 @@ class NotificationEmailChannel
                 ->where('created_at', '>=', now()->subSeconds($window))
                 ->exists();
             if ($recent) {
-                \Log::info('Skipped duplicate email verification notification (idempotency window)', [
+                Log::info('Skipped duplicate email verification notification (idempotency window)', [
                     'user_id' => $notifiable->id,
                 ]);
 

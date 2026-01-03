@@ -89,3 +89,5 @@ class ChatMessage extends Model
         return $query->where('created_at', '<', $date);
     }
 }
+
+

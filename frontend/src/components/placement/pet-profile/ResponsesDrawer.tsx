@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -10,28 +11,31 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer'
-import { User, Eye, Check, X, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
-import type { TransferRequest } from '@/types/pet'
+import {
+  User,
+  Eye,
+  Check,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  MessageCircle,
+} from 'lucide-react'
+import type { PlacementRequestResponse } from '@/types/placement'
+import { formatRequestType } from '@/types/placement'
 import type { HelperProfile } from '@/types/helper-profile'
 import { api } from '@/api/axios'
 import { toast } from 'sonner'
+import { useCreateChat } from '@/hooks/useMessaging'
 
 interface ResponsesDrawerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  responses: TransferRequest[]
+  responses: PlacementRequestResponse[]
   requestType: string
-  onConfirm: (transferId: number) => void | Promise<void>
-  onReject: (transferId: number) => void | Promise<void>
-}
-
-const formatRequestType = (type: string): string => {
-  const labels: Record<string, string> = {
-    foster_free: 'Foster (Free)',
-    foster_paid: 'Foster (Paid)',
-    permanent: 'Permanent Adoption',
-  }
-  return labels[type] ?? type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+  placementRequestId: number
+  onAccept: (responseId: number) => void | Promise<void>
+  onReject: (responseId: number) => void | Promise<void>
 }
 
 export function ResponsesDrawer({
@@ -39,14 +43,17 @@ export function ResponsesDrawer({
   onOpenChange,
   responses,
   requestType,
-  onConfirm,
+  placementRequestId,
+  onAccept,
   onReject,
 }: ResponsesDrawerProps) {
+  const navigate = useNavigate()
+  const { create: createChat, creating: creatingChat } = useCreateChat()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [viewingProfile, setViewingProfile] = useState(false)
   const [loadingProfile, setLoadingProfile] = useState(false)
   const [profileData, setProfileData] = useState<HelperProfile | null>(null)
-  const [actionLoading, setActionLoading] = useState<'confirm' | 'reject' | null>(null)
+  const [actionLoading, setActionLoading] = useState<'accept' | 'reject' | null>(null)
 
   const currentResponse = responses[currentIndex]
   const hasMultiple = responses.length > 1
@@ -80,11 +87,30 @@ export function ResponsesDrawer({
     }
   }, [currentResponse?.helper_profile_id])
 
-  const handleConfirm = async () => {
+  const handleChatWithHelper = useCallback(async () => {
+    const helperUserId = currentResponse?.helper_profile?.user?.id
+    if (!helperUserId) {
+      toast.error('Cannot start chat: helper information not available')
+      return
+    }
+    const chat = await createChat(helperUserId, 'PlacementRequest', placementRequestId)
+    if (chat) {
+      onOpenChange(false)
+      void navigate(`/messages/${String(chat.id)}`)
+    }
+  }, [
+    currentResponse?.helper_profile?.user?.id,
+    placementRequestId,
+    createChat,
+    navigate,
+    onOpenChange,
+  ])
+
+  const handleAccept = async () => {
     if (!currentResponse) return
-    setActionLoading('confirm')
+    setActionLoading('accept')
     try {
-      await onConfirm(currentResponse.id)
+      await onAccept(currentResponse.id)
       // If there are more responses, move to next; otherwise close
       if (responses.length === 1) {
         onOpenChange(false)
@@ -160,27 +186,13 @@ export function ResponsesDrawer({
           {viewingProfile && profileData ? (
             // Profile view
             <div className="space-y-4">
-              {/* Response details */}
-              <div className="rounded-lg border p-3 bg-muted/50">
-                <p className="font-semibold mb-2 text-sm">Response Details</p>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <p>
-                    <span className="text-muted-foreground">Relationship:</span>{' '}
-                    {currentResponse.requested_relationship_type?.replace(/_/g, ' ') ?? 'N/A'}
-                  </p>
-                  {currentResponse.fostering_type && (
-                    <p>
-                      <span className="text-muted-foreground">Fostering:</span>{' '}
-                      {currentResponse.fostering_type}
-                    </p>
-                  )}
-                  {currentResponse.price !== undefined && currentResponse.price !== null && (
-                    <p>
-                      <span className="text-muted-foreground">Price:</span> {currentResponse.price}
-                    </p>
-                  )}
+              {/* Response message from helper */}
+              {currentResponse.message && (
+                <div className="rounded-lg border p-3 bg-muted/50">
+                  <p className="font-semibold mb-2 text-sm">Message from Helper</p>
+                  <p className="text-sm whitespace-pre-line">{currentResponse.message}</p>
                 </div>
-              </div>
+              )}
 
               {/* Profile details */}
               <div className="space-y-3">
@@ -291,43 +303,57 @@ export function ResponsesDrawer({
                   </div>
                 </div>
 
-                {/* Response details */}
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <p>
-                    <span className="text-muted-foreground">Relationship:</span>{' '}
-                    {currentResponse.requested_relationship_type?.replace(/_/g, ' ') ?? 'N/A'}
-                  </p>
-                  {currentResponse.fostering_type && (
-                    <p>
-                      <span className="text-muted-foreground">Type:</span>{' '}
-                      {currentResponse.fostering_type}
-                    </p>
-                  )}
-                  {currentResponse.price !== undefined && currentResponse.price !== null && (
-                    <p>
-                      <span className="text-muted-foreground">Price:</span> {currentResponse.price}
-                    </p>
-                  )}
-                </div>
+                {/* Response message */}
+                {currentResponse.message && (
+                  <div className="rounded-md bg-muted/50 p-3">
+                    <p className="text-sm text-muted-foreground mb-1">Message:</p>
+                    <p className="text-sm whitespace-pre-line">{currentResponse.message}</p>
+                  </div>
+                )}
 
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => void handleViewProfile()}
-                  disabled={loadingProfile}
-                >
-                  {loadingProfile ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Loading...
-                    </>
-                  ) : (
-                    <>
-                      <Eye className="h-4 w-4 mr-2" />
-                      View Full Profile
-                    </>
-                  )}
-                </Button>
+                {/* Response timestamp */}
+                <p className="text-xs text-muted-foreground">
+                  Responded {new Date(currentResponse.responded_at).toLocaleDateString()}
+                </p>
+
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => void handleViewProfile()}
+                    disabled={loadingProfile}
+                  >
+                    {loadingProfile ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Profile
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => void handleChatWithHelper()}
+                    disabled={creatingChat || !currentResponse.helper_profile?.user?.id}
+                  >
+                    {creatingChat ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Starting...
+                      </>
+                    ) : (
+                      <>
+                        <MessageCircle className="h-4 w-4 mr-2" />
+                        Chat
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
           )}
@@ -338,10 +364,10 @@ export function ResponsesDrawer({
             <Button
               variant="default"
               className="flex-1"
-              onClick={() => void handleConfirm()}
+              onClick={() => void handleAccept()}
               disabled={actionLoading !== null}
             >
-              {actionLoading === 'confirm' ? (
+              {actionLoading === 'accept' ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : (
                 <Check className="h-4 w-4 mr-2" />

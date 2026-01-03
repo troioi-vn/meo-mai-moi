@@ -49,13 +49,15 @@ export function usePlacementResponse({
   onClose,
 }: Params) {
   const actualPetName = petName || 'Pet'
-  const actualPetId = petId
+  // petId is used in the placementRequestId parameter but kept here for future use
+  void petId
 
   const [helperProfiles, setHelperProfiles] = useState<HelperProfile[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedProfile, setSelectedProfile] = useState<string>('')
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [price, setPrice] = useState<string>('')
+  const [message, setMessage] = useState<string>('')
   const [submitting, setSubmitting] = useState(false)
 
   // Derive relationship type and fostering type from request type
@@ -171,16 +173,9 @@ export function usePlacementResponse({
     if (submitting) return
     try {
       setSubmitting(true)
-      await api.post('transfer-requests', {
-        pet_id: actualPetId,
-        placement_request_id: placementRequestId,
+      await api.post(`placement-requests/${String(placementRequestId)}/responses`, {
         helper_profile_id: selectedProfile ? Number(selectedProfile) : undefined,
-        requested_relationship_type: requestedRelationshipType || undefined,
-        fostering_type: requestedRelationshipType === 'fostering' ? fosteringType : undefined,
-        price:
-          requestedRelationshipType === 'fostering' && fosteringType === 'paid'
-            ? parseFloat(price)
-            : undefined,
+        message: message || undefined,
       })
       toast.success('Placement response submitted successfully!')
       if (onSuccess) onSuccess()
@@ -225,6 +220,8 @@ export function usePlacementResponse({
     setFosteringType,
     price,
     setPrice,
+    message,
+    setMessage,
     // warnings
     requestTypeWarning,
     cityWarning,

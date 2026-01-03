@@ -116,10 +116,31 @@ export interface Pet {
   placement_request_active?: boolean
 }
 
+// Re-export placement types for convenience
+export type {
+  PlacementRequestResponse,
+  PlacementResponseStatus,
+  PlacementRequestStatus,
+  PlacementRequestType,
+  TransferRequestStatus,
+  TransferRequest,
+} from './placement'
+export {
+  formatRequestType,
+  formatStatus,
+  isFosteringType,
+  isTemporaryType,
+  requiresHandover,
+  PlacementRequestStatusLabels,
+  PlacementResponseStatusLabels,
+  PlacementRequestTypeLabels,
+} from './placement'
+
+import type { PlacementRequestResponse } from './placement'
+
 export interface PlacementRequest {
   id: number
   pet_id: number
-
   user_id?: number
   // Support backend enums and allow arbitrary strings to avoid redundant type constituents rule
   request_type: string
@@ -129,40 +150,11 @@ export interface PlacementRequest {
   // Optional date-range fields used by filters/tests
   start_date?: string
   end_date?: string
-  transfer_requests?: TransferRequest[]
+  // New: responses from helpers
+  responses?: PlacementRequestResponse[]
   pet?: Pet
   created_at?: string
   updated_at?: string
-}
-
-export interface TransferRequest {
-  id: number
-  pet_id?: number
-  placement_request_id?: number
-
-  helper_profile_id?: number
-  initiator_user_id?: number
-  requested_relationship_type?: string
-  fostering_type?: string | null
-  price?: number | null
-  status?: string
-  pet?: Pet
-  placement_request?: PlacementRequest
-  created_at?: string
-  updated_at?: string
-  helper_profile?: {
-    id?: number
-    city?: string
-    state?: string
-    address?: string
-    zip_code?: string
-    phone?: string
-    user?: { id?: number; name?: string; email?: string }
-    photos?: unknown[]
-    about?: string
-    created_at?: string
-    updated_at?: string
-  }
 }
 
 // Helper function to calculate age from birthday

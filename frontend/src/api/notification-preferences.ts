@@ -3,7 +3,9 @@ import { api } from '@/api/axios'
 export interface NotificationPreference {
   type: string
   label: string
+  description: string
   group: string
+  group_label: string
   email_enabled: boolean
   in_app_enabled: boolean
 }

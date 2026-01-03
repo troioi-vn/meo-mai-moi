@@ -48,6 +48,8 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({
     setFosteringType,
     price,
     setPrice,
+    message,
+    setMessage,
     showConfirmation,
     submitting,
     handleInitialSubmit,
@@ -90,6 +92,8 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({
             setFosteringType={setFosteringType}
             price={price}
             setPrice={setPrice}
+            message={message}
+            setMessage={setMessage}
             requestTypeWarning={requestTypeWarning}
             cityWarning={cityWarning}
             countryWarning={countryWarning}
@@ -99,9 +103,7 @@ export const PlacementResponseModal: React.FC<PlacementResponseModalProps> = ({
             petName={actualPetName}
             helperProfiles={helperProfiles}
             selectedProfile={selectedProfile}
-            requestedRelationshipType={requestedRelationshipType}
-            fosteringType={fosteringType}
-            price={price}
+            message={message}
           />
         )}
         <DialogFooter>

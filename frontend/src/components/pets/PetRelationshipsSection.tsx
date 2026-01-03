@@ -18,8 +18,8 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
 
   const activeRelationships = relevantRelationships.filter((r) => !r.end_at)
   const pastRelationships = relevantRelationships
-    .filter((r) => r.end_at)
-    .sort((a, b) => new Date(b.end_at!).getTime() - new Date(a.end_at!).getTime())
+    .filter((r): r is PetRelationship & { end_at: string } => !!r.end_at)
+    .sort((a, b) => new Date(b.end_at).getTime() - new Date(a.end_at).getTime())
 
   const renderRelationship = (rel: PetRelationship) => (
     <div key={rel.id} className="flex items-start gap-3 py-3 border-b last:border-0">
@@ -28,7 +28,7 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
-          <p className="text-sm font-medium truncate">{rel.user?.name || 'Unknown User'}</p>
+          <p className="text-sm font-medium truncate">{rel.user?.name ?? 'Unknown User'}</p>
           <Badge variant="outline" className="capitalize text-[10px] h-5 px-1.5">
             {rel.relationship_type}
           </Badge>

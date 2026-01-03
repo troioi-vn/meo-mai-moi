@@ -1,17 +1,9 @@
-import { useState, useEffect, useCallback, type ReactNode } from 'react'
+import { useState, useEffect, useCallback, useMemo, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import { Switch } from '@/components/ui/switch'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, Bell, Mail, MessageSquare, Heart, Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   getNotificationPreferences,
@@ -25,6 +17,14 @@ import {
   normaliseSubscriptionJSON,
   urlBase64ToUint8Array,
 } from '@/lib/web-push'
+
+const groupIcons: Record<string, React.ElementType> = {
+  placement_owner: Heart,
+  placement_helper: Heart,
+  pet_reminders: Bell,
+  account: Shield,
+  messaging: MessageSquare,
+}
 
 interface NotificationPreferencesState {
   preferences: NotificationPreference[]
@@ -295,6 +295,16 @@ export function NotificationPreferences() {
     void subscribeDevice({ silent: true })
   }, [supportsDeviceNotifications, permission, pushStatus, subscribeDevice])
 
+  // Group preferences by group
+  const groupedPreferences = useMemo(() => {
+    const groups: Record<string, { label: string; preferences: NotificationPreference[] }> = {}
+    for (const pref of state.preferences) {
+      groups[pref.group] ??= { label: pref.group_label, preferences: [] }
+      groups[pref.group].preferences.push(pref)
+    }
+    return groups
+  }, [state.preferences])
+
   const deviceStatusMessage = (() => {
     if (permission === 'unsupported' || !supportsDeviceNotifications) {
       return 'This browser does not support push notifications. Try using a modern browser like Chrome, Edge, or Firefox.'
@@ -413,31 +423,29 @@ export function NotificationPreferences() {
             Control how you receive notifications for different events.
           </p>
         </div>
-        <div className="border rounded-lg">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Notification Type</TableHead>
-                <TableHead className="text-center">Email</TableHead>
-                <TableHead className="text-center">In-App</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {[1, 2, 3, 4].map((i) => (
-                <TableRow key={i}>
-                  <TableCell>
-                    <Skeleton className="h-4 w-48" />
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Skeleton className="h-6 w-11 mx-auto" />
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Skeleton className="h-6 w-11 mx-auto" />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <div className="space-y-6">
+          {[1, 2, 3].map((groupIdx) => (
+            <div key={groupIdx} className="border rounded-lg overflow-hidden">
+              <div className="flex items-center gap-2 px-4 py-3 bg-muted/50 border-b">
+                <Skeleton className="h-4 w-4 rounded" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+              <div className="divide-y">
+                {[1, 2].map((itemIdx) => (
+                  <div key={itemIdx} className="px-4 py-3 flex items-center gap-4">
+                    <div className="flex-1">
+                      <Skeleton className="h-4 w-40 mb-1" />
+                      <Skeleton className="h-3 w-56" />
+                    </div>
+                    <div className="flex gap-4">
+                      <Skeleton className="h-6 w-11" />
+                      <Skeleton className="h-6 w-11" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     )
@@ -504,44 +512,71 @@ export function NotificationPreferences() {
         </Alert>
       )}
 
-      {state.preferences.length > 0 ? (
-        <div className="border rounded-lg">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Notification Type</TableHead>
-                <TableHead className="text-center">Email</TableHead>
-                <TableHead className="text-center">In-App</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {state.preferences.map((preference) => (
-                <TableRow key={preference.type}>
-                  <TableCell className="font-medium">{preference.label}</TableCell>
-                  <TableCell className="text-center">
-                    <Switch
-                      checked={preference.email_enabled}
-                      onCheckedChange={(value) =>
-                        void updatePreference(preference.type, 'email_enabled', value)
-                      }
-                      disabled={state.updating}
-                      aria-label={`Toggle email notifications for ${preference.label}`}
-                    />
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Switch
-                      checked={preference.in_app_enabled}
-                      onCheckedChange={(value) =>
-                        void updatePreference(preference.type, 'in_app_enabled', value)
-                      }
-                      disabled={state.updating}
-                      aria-label={`Toggle in-app notifications for ${preference.label}`}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+      {Object.keys(groupedPreferences).length > 0 ? (
+        <div className="space-y-6">
+          {Object.entries(groupedPreferences).map(([groupKey, group]) => {
+            const GroupIcon = groupIcons[groupKey] ?? Bell
+            return (
+              <div key={groupKey} className="border rounded-lg overflow-hidden">
+                {/* Group Header */}
+                <div className="flex items-center gap-2 px-4 py-3 bg-muted/50 border-b">
+                  <GroupIcon className="h-4 w-4 text-muted-foreground" />
+                  <h4 className="font-medium text-sm">{group.label}</h4>
+                </div>
+
+                {/* Group Items */}
+                <div className="divide-y">
+                  {group.preferences.map((preference) => (
+                    <div
+                      key={preference.type}
+                      className="px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4"
+                    >
+                      {/* Label and Description */}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm">{preference.label}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {preference.description}
+                        </p>
+                      </div>
+
+                      {/* Toggle Controls */}
+                      <div className="flex items-center gap-4 sm:gap-6 shrink-0">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <Mail className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground hidden sm:inline">
+                            Email
+                          </span>
+                          <Switch
+                            checked={preference.email_enabled}
+                            onCheckedChange={(value) =>
+                              void updatePreference(preference.type, 'email_enabled', value)
+                            }
+                            disabled={state.updating}
+                            aria-label={`Toggle email notifications for ${preference.label}`}
+                          />
+                        </label>
+
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <Bell className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground hidden sm:inline">
+                            In-App
+                          </span>
+                          <Switch
+                            checked={preference.in_app_enabled}
+                            onCheckedChange={(value) =>
+                              void updatePreference(preference.type, 'in_app_enabled', value)
+                            }
+                            disabled={state.updating}
+                            aria-label={`Toggle in-app notifications for ${preference.label}`}
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
         </div>
       ) : (
         <p className="text-sm text-muted-foreground text-center py-4">

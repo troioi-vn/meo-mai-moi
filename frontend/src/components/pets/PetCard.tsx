@@ -53,23 +53,39 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
 
   // Check if current user is an owner of this pet
   const isOwner =
-    pet.viewer_permissions?.is_owner ||
-    pet.relationships?.some((r) => r.relationship_type === 'owner' && r.user_id === user?.id) ||
+    (pet.viewer_permissions?.is_owner ?? false) ||
+    (pet.relationships?.some((r) => r.relationship_type === 'owner' && r.user_id === user?.id) ??
+      false) ||
     (user?.id !== undefined && pet.user_id === user.id)
 
-  // Check if current user has a pending response
-  const myPendingTransfer = React.useMemo(() => {
+  // Check if current user has a pending response (status='responded')
+  const myPendingResponse = React.useMemo(() => {
     if (!user?.id || !pet.placement_requests) return undefined
     for (const pr of pet.placement_requests) {
-      const found = pr.transfer_requests?.find((tr) => {
-        if (tr.status !== 'pending') return false
-        if (tr.initiator_user_id && tr.initiator_user_id === user.id) return true
-        return tr.helper_profile?.user?.id === user.id
+      const found = pr.responses?.find((r) => {
+        if (r.status !== 'responded') return false
+        return r.helper_profile?.user?.id === user.id
       })
       if (found) return found
     }
     return undefined
   }, [pet.placement_requests, user])
+
+  // Check if current user has an accepted response (status='accepted')
+  const myAcceptedResponse = React.useMemo(() => {
+    if (!user?.id || !pet.placement_requests) return undefined
+    for (const pr of pet.placement_requests) {
+      const found = pr.responses?.find((r) => {
+        if (r.status !== 'accepted') return false
+        return r.helper_profile?.user?.id === user.id
+      })
+      if (found) return found
+    }
+    return undefined
+  }, [pet.placement_requests, user])
+
+  // User has any active involvement with this placement
+  const hasActiveInvolvement = Boolean(myPendingResponse ?? myAcceptedResponse)
 
   // Prefer photos[0].url, then photo_url, then placeholder
   const imageUrl =
@@ -147,23 +163,38 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
             (pet.placement_request_active ?? hasActivePlacementRequests) &&
             activePlacementRequestId !== undefined && (
               <>
-                {isAuthenticated && myPendingTransfer ? (
+                {isAuthenticated && hasActiveInvolvement ? (
                   <div className="space-y-2">
                     <p className="text-sm text-muted-foreground text-center">
-                      You responded... Waiting for approval
+                      {myAcceptedResponse
+                        ? 'Your response was accepted!'
+                        : 'You responded... Waiting for approval'}
                     </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        // TODO: Add cancel functionality
-                        console.log('Cancel response for transfer:', myPendingTransfer.id)
-                      }}
-                    >
-                      Cancel Response
-                    </Button>
+                    {myPendingResponse && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          void navigate(`/pets/${String(pet.id)}`)
+                        }}
+                      >
+                        View Details
+                      </Button>
+                    )}
+                    {myAcceptedResponse && (
+                      <Button
+                        size="sm"
+                        className="w-full"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          void navigate(`/pets/${String(pet.id)}`)
+                        }}
+                      >
+                        View Details
+                      </Button>
+                    )}
                   </div>
                 ) : (
                   <Button

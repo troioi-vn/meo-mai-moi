@@ -14,8 +14,7 @@ import { getCountryName } from '@/components/ui/CountrySelect'
 interface PetDetailsProps {
   pet: Pet
   onDeletePlacementRequest: (id: number) => void | Promise<void>
-  onCancelTransferRequest?: (id: number) => void | Promise<void>
-  onTransferResponseSuccess?: () => void
+  onRefresh?: () => void
   onOpenPlacementRequest?: () => void
   onPetUpdate?: (updatedPet: Pet) => void
 }
@@ -23,8 +22,7 @@ interface PetDetailsProps {
 const PetDetails: React.FC<PetDetailsProps> = ({
   pet,
   onDeletePlacementRequest,
-  onCancelTransferRequest,
-  onTransferResponseSuccess,
+  onRefresh,
   onOpenPlacementRequest,
   onPetUpdate,
 }) => {
@@ -39,6 +37,8 @@ const PetDetails: React.FC<PetDetailsProps> = ({
     supportsPlacement,
     hasActivePlacementRequest,
     activePlacementRequest,
+    myPendingResponse,
+    myAcceptedResponse,
     myPendingTransfer,
   } = placementInfo
 
@@ -147,9 +147,10 @@ const PetDetails: React.FC<PetDetailsProps> = ({
               <PlacementResponseSection
                 pet={pet}
                 activePlacementRequest={activePlacementRequest}
+                myPendingResponse={myPendingResponse}
+                myAcceptedResponse={myAcceptedResponse}
                 myPendingTransfer={myPendingTransfer}
-                onCancelTransferRequest={onCancelTransferRequest}
-                onTransferResponseSuccess={onTransferResponseSuccess}
+                onRefresh={onRefresh}
               />
             )}
           {!supportsPlacement && (

@@ -72,7 +72,7 @@ describe('PlacementResponseModal', () => {
 
     // Ensure POST succeeds
     server.use(
-      http.post('http://localhost:3000/api/transfer-requests', () => {
+      http.post('http://localhost:3000/api/placement-requests/101/responses', () => {
         return HttpResponse.json({ id: 999 }, { status: 201 })
       })
     )

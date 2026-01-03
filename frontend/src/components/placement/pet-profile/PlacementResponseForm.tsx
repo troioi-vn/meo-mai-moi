@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertTriangle, XCircle } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
 import type { HelperProfile } from '@/types/helper-profile'
 import type { FosteringType, RelationshipType } from '@/hooks/usePlacementResponse'
 
@@ -20,6 +21,8 @@ interface Props {
   setFosteringType: (v: FosteringType) => void
   price: string
   setPrice: (v: string) => void
+  message: string
+  setMessage: (v: string) => void
   requestTypeWarning?: string
   cityWarning?: string
   countryWarning?: string
@@ -30,15 +33,23 @@ export function PlacementResponseForm({
   helperProfiles,
   selectedProfile,
   setSelectedProfile,
-  requestedRelationshipType,
-  fosteringType,
-  setFosteringType,
-  price,
-  setPrice,
+  requestedRelationshipType: _requestedRelationshipType,
+  fosteringType: _fosteringType,
+  setFosteringType: _setFosteringType,
+  price: _price,
+  setPrice: _setPrice,
+  message,
+  setMessage,
   requestTypeWarning,
   cityWarning,
   countryWarning,
 }: Props) {
+  // These variables are retained for interface compatibility but not used in current UI
+  void _requestedRelationshipType
+  void _fosteringType
+  void _setFosteringType
+  void _price
+  void _setPrice
   if (loading) return <p className="py-4 text-center">Loading helper profiles...</p>
   if (helperProfiles.length === 0)
     return (
@@ -94,48 +105,21 @@ export function PlacementResponseForm({
         </Alert>
       )}
 
-      {requestedRelationshipType === 'fostering' && (
-        <>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="fostering-type" className="text-right">
-              Fostering Type
-            </label>
-            <Select
-              onValueChange={(v) => {
-                setFosteringType(v as FosteringType)
-              }}
-              value={fosteringType}
-            >
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Select fostering type..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="free">Free</SelectItem>
-                <SelectItem value="paid">Paid</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          {fosteringType === 'paid' && (
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="price" className="text-right">
-                Price
-              </label>
-              <input
-                id="price"
-                type="number"
-                min="0"
-                step="0.01"
-                className="col-span-3 rounded-md border bg-background px-3 py-2"
-                value={price}
-                onChange={(e) => {
-                  setPrice(e.target.value)
-                }}
-                placeholder="Enter price"
-              />
-            </div>
-          )}
-        </>
-      )}
+      <div className="grid grid-cols-4 items-start gap-4">
+        <label htmlFor="message" className="text-right pt-2">
+          Message
+        </label>
+        <Textarea
+          id="message"
+          placeholder="Optional message to the owner..."
+          className="col-span-3"
+          value={message}
+          onChange={(e) => {
+            setMessage(e.target.value)
+          }}
+          rows={4}
+        />
+      </div>
     </div>
   )
 }

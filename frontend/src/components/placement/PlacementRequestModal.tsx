@@ -125,6 +125,7 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
                   <SelectItem value="foster_paid">Foster (Paid)</SelectItem>
                   <SelectItem value="foster_free">Foster (Free)</SelectItem>
                   <SelectItem value="permanent">Permanent</SelectItem>
+                  <SelectItem value="pet_sitting">Pet Sitting</SelectItem>
                 </SelectContent>
               </Select>
             </div>

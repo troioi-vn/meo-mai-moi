@@ -61,7 +61,7 @@ const mockPublicPet: PublicPet = {
       pet_id: 1,
       request_type: 'permanent',
       status: 'open',
-      transfer_requests: [],
+      responses: [],
     },
   ],
   viewer_permissions: {

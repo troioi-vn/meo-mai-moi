@@ -182,6 +182,12 @@ function HelperProfileListItem({ profile }: { profile: HelperProfile }) {
                 Permanent
               </Badge>
             )}
+            {profile.request_types?.includes('pet_sitting') && (
+              <Badge variant="outline" className="text-xs">
+                <Heart className="h-3 w-3 mr-1" />
+                Pet Sitting
+              </Badge>
+            )}
           </div>
         </div>
 

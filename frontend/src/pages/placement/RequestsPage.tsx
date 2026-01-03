@@ -14,13 +14,14 @@ import type { Pet, PetType } from '@/types/pet'
 import { getCountryName } from '@/components/ui/CountrySelect'
 
 // Placement request type values matching backend enum
-type PlacementRequestType = 'all' | 'foster_paid' | 'foster_free' | 'permanent'
+type PlacementRequestType = 'all' | 'foster_paid' | 'foster_free' | 'permanent' | 'pet_sitting'
 
 const PLACEMENT_REQUEST_TYPE_LABELS: Record<PlacementRequestType, string> = {
   all: 'All Request Types',
   foster_paid: 'Foster (Paid)',
   foster_free: 'Foster (Free)',
   permanent: 'Permanent',
+  pet_sitting: 'Pet Sitting',
 }
 
 type SortDirection = 'newest' | 'oldest'

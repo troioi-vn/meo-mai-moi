@@ -335,8 +335,8 @@ const HelperProfileEditPage: React.FC = () => {
                             <AlertDialogDescription>
                               This action cannot be undone. This will permanently delete your helper
                               profile and remove your data from our servers.
-                              {data.data.transfer_requests &&
-                                data.data.transfer_requests.length > 0 && (
+                              {data.data.placement_responses &&
+                                data.data.placement_responses.length > 0 && (
                                   <p className="mt-2 font-semibold text-destructive">
                                     Note: Profiles with associated placement requests cannot be
                                     deleted.

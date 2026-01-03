@@ -62,7 +62,7 @@ export default function HelperProfileViewPage() {
   const profile = data.data
   const photos = (profile.photos as Photo[] | undefined) ?? []
   const petTypes = profile.pet_types ?? []
-  const transferRequests = profile.transfer_requests ?? []
+  const placementResponses = profile.placement_responses ?? []
 
   // Get location string
   const cityNames =
@@ -93,11 +93,11 @@ export default function HelperProfileViewPage() {
     }
   }
 
-  // Normalize pet/placement data from transfer requests
-  const petPlacements = transferRequests
-    .map((tr) => {
-      const placement = tr.placement_request
-      const pet = tr.pet ?? placement?.pet
+  // Normalize pet/placement data from placement responses
+  const petPlacements = placementResponses
+    .map((response) => {
+      const placement = response.placement_request
+      const pet = response.pet ?? placement?.pet
       if (!pet) return null
 
       const petPhoto =
@@ -108,15 +108,15 @@ export default function HelperProfileViewPage() {
         placeholderAvatar
 
       const placementStatus = placement?.status ?? ''
-      const transferStatus = tr.status ?? ''
+      const responseStatus = response.status
       const requestType = placement?.request_type ?? ''
 
       return {
-        id: `${String(tr.id)}-${String(pet.id)}`,
+        id: `${String(response.id)}-${String(pet.id)}`,
         pet,
         petPhoto,
         placementStatus,
-        transferStatus,
+        responseStatus,
         requestType,
       }
     })
@@ -125,7 +125,7 @@ export default function HelperProfileViewPage() {
     pet: Pet
     petPhoto: string
     placementStatus: string
-    transferStatus: string
+    responseStatus: string
     requestType: string
   }[]
 
@@ -242,7 +242,7 @@ export default function HelperProfileViewPage() {
                         Placement: {formatLabel(item.placementStatus, 'Unknown')}
                       </Badge>
                       <Badge variant="outline" className="rounded-full">
-                        Transfer: {formatLabel(item.transferStatus, 'Unknown')}
+                        Response: {formatLabel(item.responseStatus, 'Unknown')}
                       </Badge>
                     </div>
                   </div>
@@ -274,6 +274,12 @@ export default function HelperProfileViewPage() {
                   <Badge variant="default" className="text-sm">
                     <Heart className="h-3 w-3 mr-1" />
                     Permanent Adoption
+                  </Badge>
+                )}
+                {profile.request_types?.includes('pet_sitting') && (
+                  <Badge variant="default" className="text-sm">
+                    <Heart className="h-3 w-3 mr-1" />
+                    Pet Sitting
                   </Badge>
                 )}
                 {(!profile.request_types || profile.request_types.length === 0) && (

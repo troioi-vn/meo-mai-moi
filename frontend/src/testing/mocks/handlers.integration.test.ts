@@ -37,7 +37,7 @@ describe('MSW Pet Handlers Integration', () => {
       expect(response.ok).toBe(true)
       expect(data.data).toHaveLength(1)
       expect(data.data[0].name).toBe('Fluffy')
-      expect(data.data[0].placement_requests[0].request_type).toBe('fostering')
+      expect(data.data[0].placement_requests[0].request_type).toBe('foster_free')
     })
 
     it('should return 2 pets for two scenario', async () => {
@@ -86,8 +86,8 @@ describe('MSW Pet Handlers Integration', () => {
       expect(data.data).toHaveLength(4)
 
       const requestTypes = data.data.map((pet: any) => pet.placement_requests[0].request_type)
-      expect(requestTypes).toContain('fostering')
-      expect(requestTypes).toContain('adoption')
+      expect(requestTypes).toContain('foster_free')
+      expect(requestTypes).toContain('permanent')
     })
 
     it('should use default scenario when no scenario parameter is provided', async () => {
@@ -155,7 +155,7 @@ describe('MSW Pet Handlers Integration', () => {
               'expired',
               'cancelled',
             ]).toContain(request.status)
-            expect(request.request_type).toMatch(/^(fostering|adoption)$/)
+            expect(request.request_type).toMatch(/^(foster_paid|foster_free|permanent|pet_sitting)$/)
           })
         })
       }

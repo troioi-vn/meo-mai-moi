@@ -25,13 +25,18 @@ const renderWithRouter = (profileId = mockHelperProfile.id) => {
 }
 
 describe('HelperProfileViewPage - Pets section', () => {
-  it('shows linked pets with request, placement, and transfer statuses', async () => {
+  it('shows linked pets with request, placement, and response statuses', async () => {
     const profileWithPets = {
       ...mockHelperProfile,
-      transfer_requests: [
+      placement_responses: [
         {
           id: 101,
-          status: 'pending',
+          placement_request_id: 201,
+          helper_profile_id: 1,
+          status: 'responded',
+          responded_at: '2025-08-05T10:00:00Z',
+          created_at: '2025-08-05T10:00:00Z',
+          updated_at: '2025-08-05T10:00:00Z',
           placement_request: {
             id: 201,
             request_type: 'foster_free',
@@ -68,13 +73,13 @@ describe('HelperProfileViewPage - Pets section', () => {
     expect(screen.getByText('Fluffy')).toBeInTheDocument()
     expect(screen.getByText('Request: Foster Free')).toBeInTheDocument()
     expect(screen.getByText('Placement: Open')).toBeInTheDocument()
-    expect(screen.getByText('Transfer: Pending')).toBeInTheDocument()
+    expect(screen.getByText('Response: Responded')).toBeInTheDocument()
   })
 
   it('shows empty state when no pets are linked', async () => {
     server.use(
       http.get('http://localhost:3000/api/helper-profiles/:id', () => {
-        return HttpResponse.json({ data: { ...mockHelperProfile, transfer_requests: [] } })
+        return HttpResponse.json({ data: { ...mockHelperProfile, placement_responses: [] } })
       })
     )
 

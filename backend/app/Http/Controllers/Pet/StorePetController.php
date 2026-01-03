@@ -7,7 +7,6 @@ use App\Enums\PetStatus;
 use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\Pet;
-use App\Models\PetRelationship;
 use App\Models\PetType;
 use App\Services\PetRelationshipService;
 use App\Traits\ApiResponseTrait;

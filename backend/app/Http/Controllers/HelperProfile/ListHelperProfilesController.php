@@ -39,7 +39,7 @@ class ListHelperProfilesController extends Controller
         // Get helper profiles that responded to user's placement requests (excluding deleted)
         $respondedProfileIds = HelperProfile::query()
             ->where('status', '!=', HelperProfileStatus::DELETED)
-            ->whereHas('transferRequests', function ($query) use ($user) {
+            ->whereHas('placementResponses', function ($query) use ($user) {
                 $query->whereHas('placementRequest', function ($prQuery) use ($user) {
                     $prQuery->where('user_id', $user->id);
                 });

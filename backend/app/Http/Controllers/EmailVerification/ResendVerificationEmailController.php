@@ -5,6 +5,7 @@ namespace App\Http\Controllers\EmailVerification;
 use App\Http\Controllers\Controller;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Resend the email verification notification.
@@ -76,7 +77,7 @@ class ResendVerificationEmailController extends Controller
             ]);
         } catch (\Exception $e) {
             // Log the error for admin visibility
-            \Log::warning('Email verification resend failed', [
+            Log::warning('Email verification resend failed', [
                 'user_id' => $request->user()->id,
                 'email' => $request->user()->email,
                 'error' => $e->getMessage(),

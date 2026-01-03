@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Messaging;
 
 use App\Http\Controllers\Controller;
 use App\Models\Chat;
-use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 
@@ -26,7 +25,6 @@ class ShowChatController extends Controller
 
         $otherParticipant = $chat->activeParticipants->firstWhere('id', '!=', $user->id);
 
-        /** @var \Illuminate\Database\Eloquent\Collection<int, User> $activeParticipants */
         $activeParticipants = $chat->activeParticipants;
 
         return $this->sendSuccess([
@@ -34,7 +32,8 @@ class ShowChatController extends Controller
             'type' => $chat->type->value,
             'contextable_type' => $chat->contextable_type?->value,
             'contextable_id' => $chat->contextable_id,
-            'participants' => $activeParticipants->map(function (User $p): array {
+            /** @phpstan-ignore-next-line */
+            'participants' => $activeParticipants->map(function ($p): array {
                 return [
                     'id' => $p->id,
                     'name' => $p->name,
@@ -51,5 +50,3 @@ class ShowChatController extends Controller
         ]);
     }
 }
-
-

@@ -8,6 +8,7 @@ use App\Http\Responses\Auth\RegisterResponse;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @OA\Post(
@@ -76,7 +77,7 @@ class RegisterController extends Controller
             } catch (\Exception $e) {
                 // Session login is optional in API context - continue silently
                 // Log for debugging but don't fail registration
-                \Log::debug('Session login failed during registration', ['error' => $e->getMessage()]);
+                Log::debug('Session login failed during registration', ['error' => $e->getMessage()]);
             }
         }
 

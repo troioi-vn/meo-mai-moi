@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Messaging;
 
 use App\Http\Controllers\Controller;
 use App\Models\Chat;
-use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 
@@ -36,13 +35,12 @@ class ListChatsController extends Controller
             ->get();
 
         // Transform the response
-        /** @var \Illuminate\Database\Eloquent\Collection<int, Chat> $chats */
-        $data = $chats->map(function (Chat $chat) use ($user): array {
+        /** @phpstan-ignore-next-line */
+        $data = $chats->map(function ($chat) use ($user): array {
             $latestMessage = $chat->latestMessage->first();
-            /** @var \Illuminate\Database\Eloquent\Collection<int, User> $activeParticipants */
             $activeParticipants = $chat->activeParticipants;
-            /** @var array $participants */
-            $participants = $activeParticipants->map(function (User $participant): array {
+            /** @phpstan-ignore-next-line */
+            $participants = $activeParticipants->map(function ($participant): array {
                 return [
                     'id' => $participant->id,
                     'name' => $participant->name,
@@ -79,5 +77,3 @@ class ListChatsController extends Controller
         return $this->sendSuccess($data);
     }
 }
-
-

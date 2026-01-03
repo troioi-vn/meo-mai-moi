@@ -9,12 +9,6 @@ use App\Http\Controllers\EmailConfigurationStatusController;
 use App\Http\Controllers\EmailVerification\GetVerificationStatusController;
 use App\Http\Controllers\EmailVerification\ResendVerificationEmailController;
 use App\Http\Controllers\EmailVerification\VerifyEmailController;
-use App\Http\Controllers\FosterAssignment\CancelFosterAssignmentController;
-use App\Http\Controllers\FosterAssignment\CompleteFosterAssignmentController;
-use App\Http\Controllers\FosterAssignment\ExtendFosterAssignmentController;
-use App\Http\Controllers\FosterReturnHandover\CompleteReturnHandoverController;
-use App\Http\Controllers\FosterReturnHandover\OwnerConfirmReturnController;
-use App\Http\Controllers\FosterReturnHandover\StoreFosterReturnHandoverController;
 use App\Http\Controllers\HelperProfile\DeleteHelperProfileController;
 use App\Http\Controllers\HelperProfile\DeleteHelperProfilePhotoController;
 use App\Http\Controllers\HelperProfile\ListHelperProfilesController;
@@ -80,21 +74,20 @@ use App\Http\Controllers\PlacementRequest\DeletePlacementRequestController;
 use App\Http\Controllers\PlacementRequest\FinalizePlacementRequestController;
 use App\Http\Controllers\PlacementRequest\RejectPlacementRequestController;
 use App\Http\Controllers\PlacementRequest\StorePlacementRequestController;
+use App\Http\Controllers\PlacementRequestResponse\AcceptPlacementRequestResponseController;
+use App\Http\Controllers\PlacementRequestResponse\CancelPlacementRequestResponseController;
+use App\Http\Controllers\PlacementRequestResponse\ListPlacementRequestResponsesController;
+use App\Http\Controllers\PlacementRequestResponse\RejectPlacementRequestResponseController;
+use App\Http\Controllers\PlacementRequestResponse\StorePlacementRequestResponseController;
 use App\Http\Controllers\PushSubscription\DeletePushSubscriptionController;
 use App\Http\Controllers\PushSubscription\ListPushSubscriptionsController;
 use App\Http\Controllers\PushSubscription\StorePushSubscriptionController;
 use App\Http\Controllers\Settings\GetInviteOnlyStatusController;
 use App\Http\Controllers\Settings\GetPublicSettingsController;
-use App\Http\Controllers\TransferHandover\CancelHandoverController;
-use App\Http\Controllers\TransferHandover\CompleteHandoverController;
-use App\Http\Controllers\TransferHandover\HelperConfirmHandoverController;
-use App\Http\Controllers\TransferHandover\ShowHandoverForTransferController;
-use App\Http\Controllers\TransferHandover\StoreTransferHandoverController;
-use App\Http\Controllers\TransferRequest\AcceptTransferRequestController;
 use App\Http\Controllers\TransferRequest\CancelTransferRequestController;
+use App\Http\Controllers\TransferRequest\ConfirmTransferRequestController;
 use App\Http\Controllers\TransferRequest\GetResponderProfileController;
 use App\Http\Controllers\TransferRequest\RejectTransferRequestController;
-use App\Http\Controllers\TransferRequest\StoreTransferRequestController;
 use App\Http\Controllers\Unsubscribe\ProcessUnsubscribeController;
 use App\Http\Controllers\UserProfile\DeleteAccountController;
 use App\Http\Controllers\UserProfile\DeleteAvatarController;
@@ -243,6 +236,13 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/placement-requests/{placementRequest}/reject', RejectPlacementRequestController::class);
     Route::post('/placement-requests/{placementRequest}/finalize', FinalizePlacementRequestController::class);
 
+    // Placement Request Responses
+    Route::get('/placement-requests/{placementRequest}/responses', ListPlacementRequestResponsesController::class);
+    Route::post('/placement-requests/{placementRequest}/responses', StorePlacementRequestResponseController::class);
+    Route::post('/placement-responses/{id}/accept', AcceptPlacementRequestResponseController::class);
+    Route::post('/placement-responses/{id}/reject', RejectPlacementRequestResponseController::class);
+    Route::post('/placement-responses/{id}/cancel', CancelPlacementRequestResponseController::class);
+
     // Helper profiles
     Route::get('/helper-profiles', ListHelperProfilesController::class);
     Route::post('/helper-profiles', StoreHelperProfileController::class);
@@ -281,29 +281,17 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::put('/pets/{pet}/microchips/{microchip}', UpdatePetMicrochipController::class)->whereNumber('microchip');
     Route::delete('/pets/{pet}/microchips/{microchip}', DeletePetMicrochipController::class)->whereNumber('microchip');
 
-    Route::post('/transfer-requests', StoreTransferRequestController::class);
     Route::delete('/transfer-requests/{transferRequest}', CancelTransferRequestController::class);
-    Route::post('/transfer-requests/{transferRequest}/accept', AcceptTransferRequestController::class);
+    Route::post('/transfer-requests/{transferRequest}/confirm', ConfirmTransferRequestController::class);
     Route::post('/transfer-requests/{transferRequest}/reject', RejectTransferRequestController::class);
 
-    // TODO: probably remove this routes later
     // Owner-only: view responder's helper profile for a transfer request
     Route::get('/transfer-requests/{transferRequest}/responder-profile', GetResponderProfileController::class);
-    // Transfer handover lifecycle
-    Route::get('/transfer-requests/{transferRequest}/handover', ShowHandoverForTransferController::class);
-    Route::post('/transfer-requests/{transferRequest}/handover', StoreTransferHandoverController::class);
-    Route::post('/transfer-handovers/{handover}/confirm', HelperConfirmHandoverController::class);
-    Route::post('/transfer-handovers/{handover}/complete', CompleteHandoverController::class);
-    Route::post('/transfer-handovers/{handover}/cancel', CancelHandoverController::class);
-    // Foster assignment lifecycle
-    Route::post('/foster-assignments/{assignment}/complete', CompleteFosterAssignmentController::class);
-    Route::post('/foster-assignments/{assignment}/cancel', CancelFosterAssignmentController::class);
-    Route::post('/foster-assignments/{assignment}/extend', ExtendFosterAssignmentController::class);
 
-    // Foster return handover lifecycle
-    Route::post('/foster-assignments/{assignment}/return-handover', StoreFosterReturnHandoverController::class);
-    Route::post('/foster-return-handovers/{handover}/confirm', OwnerConfirmReturnController::class);
-    Route::post('/foster-return-handovers/{handover}/complete', CompleteReturnHandoverController::class);
+    // TODO: Rehoming flow removed. These routes need to be reimplemented:
+    // - Transfer handover lifecycle (schedule meeting, confirm, complete handover)
+    // - Foster assignment lifecycle (complete, cancel, extend fostering)
+    // - Foster return handover lifecycle (return pet from foster)
     // Route::post('/reviews', [ReviewController::class, 'store']);
 
     // Messaging Routes (prefix: /msg)

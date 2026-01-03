@@ -105,11 +105,8 @@ class StorePlacementRequestController extends Controller
             return $this->sendError('An active placement request of this type already exists for this pet.', 409);
         }
 
-        // Business rule: Block creating new placement requests while foster assignment is active
-        $activeFosterAssignment = $pet->activeFosterAssignment()->exists();
-        if ($activeFosterAssignment) {
-            return $this->sendError('Cannot create placement requests while the pet has an active foster assignment.', 409);
-        }
+        // TODO: FosterAssignment removed - this check needs to be reimplemented
+        // Previously blocked creating placement requests while foster assignment was active
 
         $placementRequest = PlacementRequest::create([
             'pet_id' => $pet->id,

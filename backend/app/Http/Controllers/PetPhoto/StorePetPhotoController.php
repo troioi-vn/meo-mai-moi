@@ -10,6 +10,7 @@ use App\Traits\HandlesAuthentication;
 use App\Traits\HandlesPetResources;
 use App\Traits\HandlesValidation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
@@ -83,7 +84,7 @@ class StorePetPhotoController extends Controller
 
     public function __invoke(Request $request, Pet $pet)
     {
-        \Log::info('Pet photo upload request received', [
+        Log::info('Pet photo upload request received', [
             'pet_id' => $pet->id,
             'user_id' => $request->user()->id,
             'has_file' => $request->hasFile('photo'),
@@ -97,7 +98,7 @@ class StorePetPhotoController extends Controller
             'photo' => $this->imageValidationRules(),
         ]);
 
-        \Log::info('Pet photo validation passed', [
+        Log::info('Pet photo validation passed', [
             'pet_id' => $pet->id,
             'file_info' => $request->file('photo') ? [
                 'name' => $request->file('photo')->getClientOriginalName(),
@@ -110,7 +111,7 @@ class StorePetPhotoController extends Controller
         $media = $pet->addMediaFromRequest('photo')
             ->toMediaCollection('photos');
 
-        \Log::info('Pet photo uploaded successfully', [
+        Log::info('Pet photo uploaded successfully', [
             'pet_id' => $pet->id,
             'media_id' => $media->id,
             'media_url' => $media->getUrl(),

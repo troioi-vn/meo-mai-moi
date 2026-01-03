@@ -107,11 +107,18 @@ class ShowPublicPetController extends Controller
         }
 
         // Load relations needed for public view
-        $pet->load(['placementRequests.transferRequests.helperProfile.user', 'petType', 'categories', 'city']);
+        $pet->load([
+            'placementRequests.responses.helperProfile.user',
+            'placementRequests.responses.transferRequest',
+            'petType',
+            'categories',
+            'city',
+        ]);
 
         // Resolve user to determine if viewer is owner
+        /** @var \App\Models\User|null $user */
         $user = $this->resolveUser($request);
-        $isOwner = $user && $pet->isOwnedBy($user);
+        $isOwner = $user instanceof \App\Models\User && $pet->isOwnedBy($user);
 
         // Build public response with whitelisted fields
         $publicData = $pet->only(self::PUBLIC_FIELDS);

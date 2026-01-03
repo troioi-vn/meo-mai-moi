@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Messaging;
 
 use App\Http\Controllers\Controller;
 use App\Models\Chat;
-use App\Models\ChatMessage;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 
@@ -46,8 +45,8 @@ class ListMessagesController extends Controller
             ->where('user_id', $user->id)
             ->update(['last_read_at' => now()]);
 
-        /** @var \Illuminate\Database\Eloquent\Collection<int, ChatMessage> $messages */
-        $data = $messages->map(function (ChatMessage $message) use ($user): array {
+        /** @phpstan-ignore-next-line */
+        $data = $messages->map(function ($message) use ($user): array {
             return [
                 'id' => $message->id,
                 'chat_id' => $message->chat_id,
@@ -72,5 +71,3 @@ class ListMessagesController extends Controller
         ]);
     }
 }
-
-

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 /**
@@ -83,7 +84,7 @@ class PasswordResetController extends Controller
         }
 
         // Get the stored token record
-        $tokenRecord = \DB::table('password_reset_tokens')
+        $tokenRecord = DB::table('password_reset_tokens')
             ->where('email', $request->email)
             ->where('created_at', '>', now()->subHours(1)) // Token expires after 1 hour
             ->first();

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @OA\Post(
@@ -55,7 +56,7 @@ class CheckEmailController extends Controller
         $exists = User::where('email', $request->email)->exists();
 
         // Audit log without leaking existence
-        \Log::info('Auth email pre-check', [
+        Log::info('Auth email pre-check', [
             'ip' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);

@@ -47,10 +47,9 @@ class ShowHelperProfileController extends Controller
                 'user',
                 'petTypes',
                 'cities',
-                'transferRequests' => function ($query) {
+                'placementResponses' => function ($query) {
                     $query->with([
                         'placementRequest.pet',
-                        'pet',
                     ]);
                 },
             ]);

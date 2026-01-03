@@ -55,7 +55,9 @@ class GetNotificationPreferencesController extends Controller
             $preferences[] = [
                 'type' => $type->value,
                 'label' => $type->getLabel(),
+                'description' => $type->getDescription(),
                 'group' => $type->getGroup(),
+                'group_label' => $type->getGroupLabel(),
                 'email_enabled' => $preference->email_enabled,
                 'in_app_enabled' => $preference->in_app_enabled,
             ];

@@ -45,13 +45,15 @@ class ShowPetController extends Controller
     {
         // Load placement requests and nested relations needed for the view
         $pet->load([
-            'placementRequests.transferRequests.helperProfile.user',
+            'placementRequests.responses.helperProfile.user',
+            'placementRequests.responses.transferRequest',
             'petType',
             'categories',
             'relationships.user',
         ]);
 
         // Resolve user and authorize access
+        /** @var \App\Models\User|null $user */
         $user = $this->authorizeUser($request, 'view', $pet);
         $isAdmin = $this->hasRole($user, ['admin', 'super_admin']);
         $isOwner = $user ? $pet->isOwnedBy($user) : false;

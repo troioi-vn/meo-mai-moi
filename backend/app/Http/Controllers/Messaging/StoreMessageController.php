@@ -82,5 +82,3 @@ class StoreMessageController extends Controller
         ], 201);
     }
 }
-
-

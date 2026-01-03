@@ -5,12 +5,12 @@ namespace App\Http\Controllers\TransferRequest;
 use App\Enums\NotificationType;
 use App\Enums\TransferRequestStatus;
 use App\Http\Controllers\Controller;
-use App\Models\Pet;
 use App\Models\TransferRequest;
 use App\Models\User;
 use App\Services\NotificationService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @OA\Delete(
@@ -73,18 +73,30 @@ class CancelTransferRequestController extends Controller
         $transferRequest->status = TransferRequestStatus::CANCELED;
         $transferRequest->save();
 
-        // Notify owner (recipient) that the helper canceled their response
+        // Cancel the associated response (which handles placement request reset and relationship cleanup)
+        /** @var \App\Models\PlacementRequestResponse|null $response */
+        $response = $transferRequest->placementRequestResponse;
+        if ($response) {
+            $response->cancel();
+        }
+
+        // Notify owner (from_user) that the helper canceled their response
         try {
-            $pet = $transferRequest->pet ?: Pet::find($transferRequest->pet_id);
-            if ($pet instanceof Pet) {
-                $owner = User::find($transferRequest->recipient_user_id);
+            $pet = $transferRequest->pet;
+            if ($pet) {
+                /** @var \App\Models\User|null $owner */
+                $owner = User::find($transferRequest->from_user_id);
                 if ($owner) {
+                    /** @var \App\Models\User|null $helper */
+                    $helper = User::find($transferRequest->to_user_id);
+                    $helperName = $helper ? $helper->name : 'A helper';
                     $this->notificationService->send(
                         $owner,
                         NotificationType::HELPER_RESPONSE_CANCELED->value,
                         [
-                            'message' => 'A helper has canceled their response for '.$pet->name.'.',
+                            'message' => $helperName.' cancelled the pending transfer for '.$pet->name.'. The placement request is open again.',
                             'link' => '/pets/'.$pet->id,
+                            'helper_name' => $helperName,
                             'pet_name' => $pet->name,
                             'pet_id' => $pet->id,
                             'transfer_request_id' => $transferRequest->id,
@@ -94,7 +106,7 @@ class CancelTransferRequestController extends Controller
             }
         } catch (\Throwable $e) {
             // Notification failure is non-fatal; log and continue
-            \Log::debug('Failed to send transfer request cancellation notification', ['error' => $e->getMessage()]);
+            Log::debug('Failed to send transfer request cancellation notification', ['error' => $e->getMessage()]);
         }
 
         return $this->sendSuccess($transferRequest);

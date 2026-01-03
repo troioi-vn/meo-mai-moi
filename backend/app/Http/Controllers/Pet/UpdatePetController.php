@@ -64,6 +64,7 @@ class UpdatePetController extends Controller
 
     public function __invoke(Request $request, Pet $pet)
     {
+        /** @var \App\Models\User|null $user */
         $user = $this->authorizeUser($request, 'update', $pet);
 
         $rules = [
@@ -242,9 +243,12 @@ class UpdatePetController extends Controller
         $pet->load(['petType', 'categories', 'viewers', 'editors', 'city']);
 
         // Build viewer permission flags for response
+        $canEdit = ($user instanceof \App\Models\User && $pet->canBeEditedBy($user)) || $this->hasRole($user, ['admin', 'super_admin']);
+        $isOwner = $user instanceof \App\Models\User && $pet->isOwnedBy($user);
+
         $viewerPermissions = [
-            'can_edit' => $pet->canBeEditedBy($user) || $this->hasRole($user, ['admin', 'super_admin']),
-            'can_view_contact' => $this->hasRole($user, ['admin', 'super_admin']) || ($user && ! $pet->isOwnedBy($user)),
+            'can_edit' => $canEdit,
+            'can_view_contact' => $this->hasRole($user, ['admin', 'super_admin']) || ($user && ! $isOwner),
         ];
         $pet->setAttribute('viewer_permissions', $viewerPermissions);
 

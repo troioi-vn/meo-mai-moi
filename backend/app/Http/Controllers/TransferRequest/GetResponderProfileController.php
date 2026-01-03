@@ -48,7 +48,11 @@ class GetResponderProfileController extends Controller
     {
         $this->authorize('viewResponderProfile', $transferRequest);
 
-        $profile = $transferRequest->helperProfile?->load(['photos', 'user']);
+        // Load via the new response relation
+        $transferRequest->load('placementRequestResponse.helperProfile.photos', 'placementRequestResponse.helperProfile.user');
+
+        $profile = $transferRequest->helperProfile;
+
         if (! $profile) {
             return $this->sendError('Helper profile not found.', 404);
         }

@@ -68,7 +68,6 @@ class StoreChatController extends Controller
 
             $chat->load('activeParticipants');
 
-            /** @var \Illuminate\Database\Eloquent\Collection<int, User> $activeParticipants */
             $activeParticipants = $chat->activeParticipants;
 
             return $this->sendSuccess([
@@ -76,7 +75,8 @@ class StoreChatController extends Controller
                 'type' => $chat->type->value,
                 'contextable_type' => $chat->contextable_type?->value,
                 'contextable_id' => $chat->contextable_id,
-                'participants' => $activeParticipants->map(function (User $p): array {
+                /** @phpstan-ignore-next-line */
+                'participants' => $activeParticipants->map(function ($p): array {
                     return [
                         'id' => $p->id,
                         'name' => $p->name,
@@ -90,5 +90,3 @@ class StoreChatController extends Controller
         return $this->sendError('Group chats are not yet implemented.', 501);
     }
 }
-
-

@@ -5,12 +5,12 @@ namespace App\Http\Controllers\TransferRequest;
 use App\Enums\NotificationType;
 use App\Enums\TransferRequestStatus;
 use App\Http\Controllers\Controller;
-use App\Models\Pet;
 use App\Models\TransferRequest;
 use App\Models\User;
 use App\Services\NotificationService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @OA\Post(
@@ -70,18 +70,25 @@ class RejectTransferRequestController extends Controller
         $transferRequest->rejected_at = now();
         $transferRequest->save();
 
-        // Notify helper (initiator) on rejection using NotificationService
+        // Reject the associated response (which handles placement request reset and relationship cleanup)
+        /** @var \App\Models\PlacementRequestResponse|null $response */
+        $response = $transferRequest->placementRequestResponse;
+        if ($response) {
+            $response->reject();
+        }
+
+        // Notify helper (to_user) on rejection using NotificationService
         try {
-            $pet = $transferRequest->pet ?: Pet::find($transferRequest->pet_id);
-            if ($pet instanceof Pet) {
-                $helper = User::find($transferRequest->initiator_user_id);
+            $pet = $transferRequest->pet;
+            if ($pet) {
+                $helper = User::find($transferRequest->to_user_id);
                 if ($helper) {
                     $this->notificationService->send(
                         $helper,
                         NotificationType::HELPER_RESPONSE_REJECTED->value,
                         [
-                            'message' => 'Your request for '.$pet->name.' was rejected by the owner.',
-                            'link' => '/pets/'.$pet->id,
+                            'message' => 'The transfer for '.$pet->name.' was cancelled by the owner.',
+                            'link' => '/pets/'.$pet->id.'/public',
                             'pet_name' => $pet->name,
                             'pet_id' => $pet->id,
                             'transfer_request_id' => $transferRequest->id,

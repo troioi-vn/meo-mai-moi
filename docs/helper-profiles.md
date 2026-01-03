@@ -17,7 +17,7 @@ Helper profiles allow users to register as helpers who can respond to placement 
 | experience    | text      | Yes      | Description of the helper's experience with pets                                                                                                                                                         |
 | has_pets      | boolean   | Yes      | Whether the helper currently has pets                                                                                                                                                                    |
 | has_children  | boolean   | Yes      | Whether the helper has children                                                                                                                                                                          |
-| request_types | string[]  | Yes      | Types of placement requests this helper can respond to. Must contain at least one of: `foster_payed`, `foster_free`, or `permanent`.                                                                     |
+| request_types | string[]  | Yes      | Types of placement requests this helper can respond to. Must contain at least one of: `foster_paid`, `foster_free`, or `permanent`.                                                                      |
 
 ## Visibility
 

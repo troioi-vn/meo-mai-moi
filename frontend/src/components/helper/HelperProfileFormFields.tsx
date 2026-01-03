@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { MapPin, Phone, Briefcase, ClipboardList, CircleHelp } from 'lucide-react'
-import { PlacementRequestType } from '@/types/helper-profile'
+import { type PlacementRequestType } from '@/types/helper-profile'
 import { CitySelect } from '@/components/location/CitySelect'
 import type { City } from '@/types/pet'
 

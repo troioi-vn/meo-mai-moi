@@ -23,7 +23,8 @@ async function globalSetup() {
     const maxRetries = 30
     while (retries < maxRetries) {
       try {
-        execSync('curl -f http://localhost:8000/api/health >/dev/null 2>&1', { stdio: 'pipe' })
+        // Check if the web server responds (not a specific API endpoint)
+        execSync('curl -f -I http://localhost:8000 >/dev/null 2>&1', { stdio: 'pipe' })
         break
       } catch {
         retries++

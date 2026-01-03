@@ -16,6 +16,9 @@ export async function login(page: Page, email: string, password: string) {
   await expect(page.getByLabel('Password', { exact: true })).toBeVisible()
   await page.getByLabel('Password', { exact: true }).fill(password)
   await page.locator('form').getByRole('button', { name: 'Login', exact: true }).click()
+
+  // Wait for successful login and redirect to home
+  await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?(\?.*)?$/, { timeout: 10000 })
 }
 
 export async function openUserMenu(page: Page) {

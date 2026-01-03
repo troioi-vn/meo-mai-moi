@@ -62,7 +62,30 @@ services:
 
 ## Best Practices
 
-### 1. **Use Real Email Services in Tests**
+### 1. **Ensure Login Functions Wait for Redirects**
+
+Always ensure your login utility functions wait for the authentication redirect to complete:
+
+```typescript
+// ✅ Good: Login function waits for redirect
+export async function login(page: Page, email: string, password: string) {
+  await gotoApp(page, '/login')
+  // ... login form filling ...
+  await page.locator('form').getByRole('button', { name: 'Login', exact: true }).click()
+  // Wait for successful login and redirect to home
+  await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?(\?.*)?$/, { timeout: 10000 })
+}
+
+// ❌ Bad: Login function doesn't wait for redirect
+export async function login(page: Page, email: string, password: string) {
+  // ... login form filling and submit ...
+  // Missing: No wait for redirect completion!
+}
+```
+
+**Why this matters**: Tests will fail if they navigate immediately after login without waiting for the redirect.
+
+### 2. **Use Real Email Services in Tests**
 
 ✅ **Good**: Test with actual email sending
 ```typescript
@@ -79,7 +102,24 @@ const email = await mailhog.waitForEmail(user.email, {
 await page.route('**/verify-email', () => ({ status: 200 }))
 ```
 
-### 2. **Clean State Between Tests**
+### 2. **Use Real Email Services in Tests**
+
+✅ **Good**: Test with actual email sending
+```typescript
+// Wait for real email from MailHog
+const email = await mailhog.waitForEmail(user.email, {
+  timeout: 15000,
+  subject: 'Verify'
+})
+```
+
+❌ **Avoid**: Mocking email verification entirely
+```typescript
+// This doesn't test the real flow
+await page.route('**/verify-email', () => ({ status: 200 }))
+```
+
+### 3. **Clean State Between Tests**
 
 ```typescript
 test.beforeEach(async () => {
@@ -88,14 +128,14 @@ test.beforeEach(async () => {
 })
 ```
 
-### 3. **Use Dedicated Test Database**
+### 4. **Use Dedicated Test Database**
 
 ```bash
 # E2E tests use separate database
 DB_DATABASE=meo_mai_moi_test
 ```
 
-### 4. **Handle Timing Issues**
+### 6. **Handle Timing Issues**
 
 ```typescript
 // Wait for email with reasonable timeout
@@ -106,7 +146,7 @@ const email = await mailhog.waitForEmail(userEmail, {
 })
 ```
 
-### 5. **Test Edge Cases**
+### 8. **Test Edge Cases**
 
 ```typescript
 test('handles invalid verification link', async ({ page }) => {
@@ -114,6 +154,63 @@ test('handles invalid verification link', async ({ page }) => {
   await expect(page.getByText(/invalid|expired/i)).toBeVisible()
 })
 ```
+
+### 10. **Handle Complex Form Interactions**
+
+For forms with dynamic components like city selection that allow creating new entries:
+
+```typescript
+// City selection with creation
+test('creates pet with new city', async ({ page }) => {
+  await login(page, TEST_USER.email, TEST_USER.password)
+  await page.goto('/pets/create')
+
+  // Fill basic pet info
+  await page.getByLabel('Name').fill('Test Pet')
+
+  // Handle city selection - create new city if needed
+  await page.getByText('Select city').click()
+  await page.getByPlaceholder('Search cities...').fill('New Test City')
+  await page.getByText('Create: "New Test City"').click()
+
+  await page.getByRole('button', { name: 'Create Pet' }).click()
+  await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?$/)
+})
+```
+
+**Note**: Components like `CitySelect` may have complex interactions involving dropdowns, search, and creation. Test these thoroughly.
+
+### 12. **Test Form Validation**
+
+Validate that required fields show appropriate error messages:
+
+```typescript
+test('validates required fields', async ({ page }) => {
+  await login(page, TEST_USER.email, TEST_USER.password)
+  await page.goto('/pets/create')
+
+  // Submit empty form
+  await page.getByRole('button', { name: 'Create Pet' }).click()
+
+  // Check for validation errors
+  await expect(page.getByText('Name is required')).toBeVisible()
+  await expect(page.getByText('City is required')).toBeVisible()
+})
+```
+
+### 13. **Clean Up Debug Artifacts**
+
+Remove debug files generated during development:
+
+```bash
+# Remove debug screenshots and files
+rm frontend/debug-*.png
+
+# Update .gitignore to prevent future commits
+echo "debug-*.png" >> frontend/.gitignore
+```
+
+**Tip**: Add `debug-*.png` to `.gitignore` to prevent accidentally committing debug screenshots.
 
 ## Environment Configuration
 
@@ -254,7 +351,16 @@ npm run test:e2e -- --headed auth.spec.ts
 
 ## Common Issues & Solutions
 
-### 1. **Authentication Redirect Loops**
+### 1. **Login Function Not Waiting for Redirects**
+
+**Problem**: Login utility functions don't wait for authentication redirects, causing subsequent navigation to fail
+
+**Solutions**:
+- Always wait for URL changes after login: `await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?/)`
+- Ensure login functions return only after successful authentication
+- Test login functions independently to verify they complete properly
+
+### 2. **Authentication Redirect Loops**
 
 **Problem**: Tests fail because `/register` redirects to `/login`
 
@@ -263,7 +369,7 @@ npm run test:e2e -- --headed auth.spec.ts
 - Ensure `AuthContext.tsx` has proper public path handling
 - Check that `loadUser()` is not called on public pages
 
-### 2. **Email Not Received**
+### 3. **Email Not Received**
 
 **Problem**: Test times out waiting for email
 
@@ -273,7 +379,7 @@ npm run test:e2e -- --headed auth.spec.ts
 - Check queue is set to `sync` for immediate processing
 - Increase timeout in test
 
-### 3. **Verification URL Not Found**
+### 4. **Verification URL Not Found**
 
 **Problem**: Cannot extract verification URL from email
 
@@ -282,7 +388,7 @@ npm run test:e2e -- --headed auth.spec.ts
 - Update regex patterns in `extractVerificationUrl()`
 - Log email body for debugging: `console.log(email.Content.Body)`
 
-### 4. **Database State Issues**
+### 5. **Database State Issues**
 
 **Problem**: Tests fail due to existing data
 
@@ -291,7 +397,7 @@ npm run test:e2e -- --headed auth.spec.ts
 - Run `migrate:fresh --seed` before e2e tests
 - Use unique email addresses per test run
 
-### 5. **Service Startup Race Conditions**
+### 6. **Service Startup Race Conditions**
 
 **Problem**: Tests start before services are ready
 
@@ -299,6 +405,73 @@ npm run test:e2e -- --headed auth.spec.ts
 - Add health checks to docker-compose.yml
 - Use `waitUntil` in Playwright navigation
 - Add explicit waits for service availability
+
+### 7. **Global Setup Health Check Issues**
+
+**Problem**: `global-setup.ts` checks for `/api/health` endpoint that may not exist
+
+**Solutions**:
+```typescript
+// ✅ Good: Check actual web server response
+execSync('curl -f -I http://localhost:8000 >/dev/null 2>&1', { stdio: 'pipe' })
+
+// ❌ Bad: Assume /api/health exists
+execSync('curl -f http://localhost:8000/api/health >/dev/null 2>&1', { stdio: 'pipe' })
+```
+
+**Note**: Use `curl -I` (HEAD request) to check if the web server is responding, rather than assuming specific API endpoints exist.
+
+## Real-World Example: Pet Creation Test
+
+Here's a complete example from our pet creation test that demonstrates multiple best practices:
+
+```typescript
+import { test, expect } from '@playwright/test'
+import { login } from './utils/app'
+import { MailHogClient } from './utils/mailhog'
+
+const TEST_USER = { email: 'user1@catarchy.space', password: 'password' }
+
+test.describe('Pet Creation', () => {
+  let mailhog: MailHogClient
+
+  test.beforeEach(async () => {
+    mailhog = new MailHogClient()
+    await mailhog.clearMessages() // Clean state between tests
+  })
+
+  test('allows authenticated user to create a new pet', async ({ page }) => {
+    // Login with proper redirect waiting
+    await login(page, TEST_USER.email, TEST_USER.password)
+
+    // Navigate to protected route
+    await page.goto('/pets/create')
+    await expect(page.locator('#root')).toBeVisible()
+
+    // Fill form with complex interactions
+    await page.getByLabel('Name').fill('Test Pet')
+    await page.getByLabel('Birthday Precision').selectOption('day')
+    await page.locator('#birthday').fill('2020-06-15')
+
+    // Handle dynamic city creation
+    await page.getByText('Select city').click()
+    await page.getByPlaceholder('Search cities...').fill('Test City')
+    await page.getByText('Create: "Test City"').click()
+
+    // Submit and verify success
+    await page.getByRole('button', { name: 'Create Pet' }).click()
+    await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?$/, { timeout: 10000 })
+    await expect(page.getByText('Test Pet')).toBeVisible()
+  })
+})
+```
+
+This example shows:
+- Proper login with redirect waiting
+- Complex form interactions (city selection)
+- State cleanup between tests
+- Realistic timeouts and expectations
+- Complete user flow testing
 
 ## Integration with CI/CD
 

@@ -5,7 +5,6 @@ namespace Tests\Unit;
 use App\Enums\NotificationType;
 use App\Mail\HelperResponseAcceptedMail;
 use App\Mail\HelperResponseRejectedMail;
-use App\Mail\PlacementRequestAcceptedMail;
 use App\Mail\PlacementRequestResponseMail;
 use App\Models\HelperProfile;
 use App\Models\Pet;
@@ -43,19 +42,6 @@ class NotificationMailTest extends TestCase
         $this->assertStringContainsString('New response to your placement request', $mail->envelope()->subject);
         $this->assertStringContainsString($this->pet->name, $mail->envelope()->subject);
         $this->assertEquals('emails.notifications.placement-request-response', $mail->content()->view);
-    }
-
-    public function test_placement_request_accepted_mail_has_correct_subject_and_template()
-    {
-        $mail = new PlacementRequestAcceptedMail(
-            $this->user,
-            NotificationType::PLACEMENT_REQUEST_ACCEPTED,
-            ['pet_id' => $this->pet->id]
-        );
-
-        $this->assertStringContainsString('accepted', $mail->envelope()->subject);
-        $this->assertStringContainsString($this->pet->name, $mail->envelope()->subject);
-        $this->assertEquals('emails.notifications.placement-request-accepted', $mail->content()->view);
     }
 
     public function test_helper_response_accepted_mail_has_correct_subject_and_template()
@@ -138,7 +124,21 @@ class NotificationMailTest extends TestCase
         $this->assertStringContainsString('token=', $unsubscribeUrl);
     }
 
-    public function test_action_url_points_to_requests_page()
+    public function test_action_url_uses_link_from_notification_data()
+    {
+        $mail = new PlacementRequestResponseMail(
+            $this->user,
+            NotificationType::PLACEMENT_REQUEST_RESPONSE,
+            ['link' => '/pets/123']
+        );
+
+        $templateData = $mail->content()->with;
+        $actionUrl = $templateData['actionUrl'];
+
+        $this->assertStringContainsString('/pets/123', $actionUrl);
+    }
+
+    public function test_action_url_falls_back_to_default_when_no_link_provided()
     {
         $mail = new PlacementRequestResponseMail(
             $this->user,
@@ -148,6 +148,7 @@ class NotificationMailTest extends TestCase
         $templateData = $mail->content()->with;
         $actionUrl = $templateData['actionUrl'];
 
-        $this->assertStringContainsString('/requests', $actionUrl);
+        // Should default to /pets/{pet_id} for placement responses
+        $this->assertStringContainsString('/pets/', $actionUrl);
     }
 }

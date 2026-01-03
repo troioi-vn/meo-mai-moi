@@ -149,9 +149,9 @@ class EmailNotificationJobIntegrationTest extends TestCase
 
         $notificationTypes = [
             NotificationType::PLACEMENT_REQUEST_RESPONSE,
-            NotificationType::PLACEMENT_REQUEST_ACCEPTED,
             NotificationType::HELPER_RESPONSE_ACCEPTED,
             NotificationType::HELPER_RESPONSE_REJECTED,
+            NotificationType::HELPER_RESPONSE_CANCELED,
         ];
 
         foreach ($notificationTypes as $type) {

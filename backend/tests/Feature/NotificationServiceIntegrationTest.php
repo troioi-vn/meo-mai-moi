@@ -28,15 +28,15 @@ class NotificationServiceIntegrationTest extends TestCase
 
         // Test with a real notification scenario
         $data = [
-            'message' => 'Your placement request has been accepted!',
-            'link' => '/placement-requests/123',
-            'placement_request_id' => 123,
-            'cat_name' => 'Fluffy',
+            'message' => 'Your response has been accepted!',
+            'link' => '/pets/123/public',
+            'pet_id' => 123,
+            'pet_name' => 'Fluffy',
         ];
 
         $service->send(
             $user,
-            NotificationType::PLACEMENT_REQUEST_ACCEPTED->value,
+            NotificationType::HELPER_RESPONSE_ACCEPTED->value,
             $data
         );
 
@@ -61,8 +61,8 @@ class NotificationServiceIntegrationTest extends TestCase
         // Verify data integrity
         $this->assertEquals($data['message'], $inAppNotification->message);
         $this->assertEquals($data['link'], $inAppNotification->link);
-        $this->assertEquals($data['placement_request_id'], $inAppNotification->data['placement_request_id']);
-        $this->assertEquals($data['cat_name'], $inAppNotification->data['cat_name']);
+        $this->assertEquals($data['pet_id'], $inAppNotification->data['pet_id']);
+        $this->assertEquals($data['pet_name'], $inAppNotification->data['pet_name']);
     }
 
     public function test_notification_service_respects_user_preferences_across_multiple_types()
@@ -148,7 +148,7 @@ class NotificationServiceIntegrationTest extends TestCase
         // Create notifications using the service
         $service->send(
             $user,
-            NotificationType::PLACEMENT_REQUEST_ACCEPTED->value,
+            NotificationType::HELPER_RESPONSE_ACCEPTED->value,
             ['message' => 'Test notification', 'link' => '/test']
         );
 

@@ -111,7 +111,7 @@ class UnsubscribeIntegrationTest extends TestCase
     public function test_unsubscribe_only_affects_specific_notification_type()
     {
         $type1 = NotificationType::PLACEMENT_REQUEST_RESPONSE;
-        $type2 = NotificationType::PLACEMENT_REQUEST_ACCEPTED;
+        $type2 = NotificationType::HELPER_RESPONSE_ACCEPTED;
 
         // Generate token for type1 and unsubscribe
         $token = $this->unsubscribeService->generateToken($this->user, $type1);

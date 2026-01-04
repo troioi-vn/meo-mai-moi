@@ -29,7 +29,7 @@ class NotificationServiceIntegrationTest extends TestCase
         // Test with a real notification scenario
         $data = [
             'message' => 'Your response has been accepted!',
-            'link' => '/pets/123/public',
+            'link' => '/pets/123/view',
             'pet_id' => 123,
             'pet_name' => 'Fluffy',
         ];

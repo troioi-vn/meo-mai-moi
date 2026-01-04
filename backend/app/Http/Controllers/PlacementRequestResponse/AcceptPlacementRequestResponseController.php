@@ -77,7 +77,7 @@ class AcceptPlacementRequestResponseController extends Controller
                 NotificationType::HELPER_RESPONSE_ACCEPTED->value,
                 [
                     'message' => $message,
-                    'link' => '/pets/'.$pet->id.'/public',
+                    'link' => '/pets/'.$pet->id.'/view',
                     'pet_name' => $pet->name,
                     'pet_id' => $pet->id,
                     'placement_response_id' => $response->id,

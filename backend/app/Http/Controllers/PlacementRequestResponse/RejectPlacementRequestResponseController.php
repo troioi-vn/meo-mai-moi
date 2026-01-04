@@ -70,7 +70,7 @@ class RejectPlacementRequestResponseController extends Controller
                 NotificationType::HELPER_RESPONSE_REJECTED->value,
                 [
                     'message' => 'Your offer to help with '.$pet->name.' was declined. Thank you for reaching out!',
-                    'link' => '/pets/'.$pet->id.'/public',
+                    'link' => '/pets/'.$pet->id.'/view',
                     'pet_name' => $pet->name,
                     'pet_id' => $pet->id,
                     'placement_response_id' => $response->id,

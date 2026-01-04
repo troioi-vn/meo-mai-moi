@@ -55,14 +55,17 @@ Users with viewer relationships can access the pet profile but cannot make chang
 - Cannot edit information or manage relationships
 - Cannot perform ownership transfers
 
-### Public View (`/pets/:id/public`)
+### View Page (`/pets/:id/view`)
 
-A limited public profile is accessible when the pet is **publicly viewable**. A pet is publicly viewable if:
+A limited profile view is accessible based on several conditions. The view page is accessible if:
 
-1. **Pet status is "lost"** - Lost pets are always publicly viewable to help find them
-2. **Pet has an active placement request** - Pets up for adoption/fostering are publicly viewable
+1. **User is the pet owner** - Owners can always view their pets
+2. **User has a PetRelationship** - Users with 'owner' or 'viewer' relationship type can view
+3. **Pet status is "lost"** - Lost pets are publicly viewable to help find them
+4. **Pet has an active placement request** - Pets up for adoption/fostering (status: 'open') are publicly viewable
+5. **User is involved in a pending transfer** - Helpers who are recipients of a pending transfer request (placement request status: 'pending_transfer') can view
 
-Public view includes (whitelisted fields only):
+View page includes (whitelisted fields only):
 
 - Basic info: name, sex, age, species
 - Location: country, state, city (no street address)
@@ -72,7 +75,7 @@ Public view includes (whitelisted fields only):
 - Active placement requests
 - Viewer permission flags (relationship awareness, no edit controls)
 
-Public view **excludes**:
+View page **excludes**:
 
 - User/relationship information
 - Exact address
@@ -89,15 +92,15 @@ Does user have edit relationship (owner/foster/editor) with pet?
 └── NO → Does user have viewer relationship?
     ├── YES → Show viewer view (read-only full profile)
     └── NO → Is pet publicly viewable (lost OR active placement)?
-        ├── YES → Redirect to /pets/:id/public
+        ├── YES → Redirect to /pets/:id/view
         └── NO → Show "Access Restricted" message
 ```
 
-When a user visits `/pets/:id/public`:
+When a user visits `/pets/:id/view`:
 
 ```
-Is pet publicly viewable?
-├── YES → Show public view (PetPublicProfilePage)
+Can user view the pet? (owner, viewer relationship, pending transfer recipient, or publicly viewable)
+├── YES → Show view page (PetPublicProfilePage)
 │   └── Does user have relationship with pet? → Show info banner
 └── NO → Show "Not publicly available" error
 ```
@@ -124,12 +127,16 @@ Full pet profile endpoint (existing).
     - `can_transfer_ownership` (owner/admin)
     - `can_view_contact` (admin or authenticated users with relationships)
 
-### GET /api/pets/{id}/public
+### GET /api/pets/{id}/view
 
-Public pet profile endpoint (new).
+View pet profile endpoint.
 
 - **Auth**: Optional
-- **Access**: Anyone, but only for publicly viewable pets
+- **Access**: 
+  - Pet owner (always)
+  - Users with 'owner' or 'viewer' PetRelationship
+  - Helpers involved in pending transfers (PlacementRequest status: 'pending_transfer')
+  - Anyone for publicly viewable pets (lost OR active placement request)
 - **Returns**: Whitelisted fields only
 
 Response includes:

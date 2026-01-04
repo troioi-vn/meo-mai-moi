@@ -67,7 +67,7 @@ export function AppRoutes() {
 
       {/* Pet routes */}
       <Route path="/pets/:id" element={<PetProfilePage />} />
-      <Route path="/pets/:id/public" element={<PetPublicProfilePage />} />
+      <Route path="/pets/:id/view" element={<PetPublicProfilePage />} />
       <Route
         path="/pets/:id/edit"
         element={

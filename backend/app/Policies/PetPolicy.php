@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Enums\PetStatus;
 use App\Enums\PlacementRequestStatus;
+use App\Enums\TransferRequestStatus;
 use App\Models\Pet;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
@@ -42,8 +43,13 @@ class PetPolicy
             return true;
         }
 
-        // Explicit viewer/editor access
+        // Explicit viewer/editor access via PetRelationship
         if ($pet->canBeViewedBy($user)) {
+            return true;
+        }
+
+        // Helper involved in pending transfer can view
+        if ($this->isPendingTransferRecipient($pet, $user)) {
             return true;
         }
 
@@ -61,9 +67,25 @@ class PetPolicy
             return true;
         }
 
-        // Pet has active placement request
+        // Pet has active placement request (OPEN status)
         return $pet->placementRequests()
             ->where('status', PlacementRequestStatus::OPEN)
+            ->exists();
+    }
+
+    /**
+     * Check if user is a recipient of a pending transfer for this pet.
+     * This allows helpers to view the pet profile when the placement request
+     * is in 'pending_transfer' status.
+     */
+    public function isPendingTransferRecipient(Pet $pet, User $user): bool
+    {
+        return $pet->placementRequests()
+            ->where('status', PlacementRequestStatus::PENDING_TRANSFER)
+            ->whereHas('transferRequests', function ($query) use ($user) {
+                $query->where('to_user_id', $user->id)
+                    ->where('status', TransferRequestStatus::PENDING);
+            })
             ->exists();
     }
 

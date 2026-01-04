@@ -162,7 +162,7 @@ abstract class NotificationMail extends Mailable
             // Helper-side placement notifications
             NotificationType::HELPER_RESPONSE_ACCEPTED,
             NotificationType::HELPER_RESPONSE_REJECTED,
-            NotificationType::PLACEMENT_ENDED => $baseUrl.'/pets/'.($this->data['pet_id'] ?? '').'/public',
+            NotificationType::PLACEMENT_ENDED => $baseUrl.'/pets/'.($this->data['pet_id'] ?? '').'/view',
 
             // Messaging
             NotificationType::NEW_MESSAGE => $baseUrl.'/messages/'.($this->data['chat_id'] ?? ''),

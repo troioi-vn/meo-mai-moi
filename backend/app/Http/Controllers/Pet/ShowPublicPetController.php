@@ -11,9 +11,9 @@ use Illuminate\Http\Request;
 
 /**
  * @OA\Get(
- *     path="/api/pets/{id}/public",
- *     summary="Get public profile of a specific pet",
- *     description="Returns whitelisted fields for public view. Only accessible for pets that are lost or have active placement requests.",
+ *     path="/api/pets/{id}/view",
+ *     summary="Get viewable profile of a specific pet",
+ *     description="Returns whitelisted fields for view. Accessible to: pet owner, users with viewer/owner PetRelationship, helpers involved in pending transfers, and anyone when pet is lost or has active placement requests.",
  *     tags={"Pets"},
  *
  *     @OA\Parameter(
@@ -27,7 +27,7 @@ use Illuminate\Http\Request;
  *
  *     @OA\Response(
  *         response=200,
- *         description="The pet public profile",
+ *         description="The pet view profile",
  *
  *         @OA\JsonContent(
  *             type="object",
@@ -60,7 +60,7 @@ use Illuminate\Http\Request;
  *
  *     @OA\Response(
  *         response=403,
- *         description="Pet is not publicly viewable"
+ *         description="Pet is not viewable by the current user"
  *     ),
  *     @OA\Response(
  *         response=404,

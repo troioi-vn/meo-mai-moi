@@ -17,10 +17,10 @@ const renderPetPublicProfilePage = (
     : { user: null, isLoading: false, isAuthenticated: false }
 
   return render(
-    <MemoryRouter initialEntries={[`/pets/${petId}/public`]}>
+    <MemoryRouter initialEntries={[`/pets/${petId}/view`]}>
       <AllTheProviders initialAuthState={initialAuthState}>
         <Routes>
-          <Route path="/pets/:id/public" element={<PetPublicProfilePage />} />
+          <Route path="/pets/:id/view" element={<PetPublicProfilePage />} />
         </Routes>
       </AllTheProviders>
     </MemoryRouter>
@@ -86,7 +86,7 @@ describe('PetPublicProfilePage', () => {
 
   it('renders public pet profile with placement request section', async () => {
     server.use(
-      http.get('http://localhost:3000/api/pets/:id/public', () => {
+      http.get('http://localhost:3000/api/pets/:id/view', () => {
         return HttpResponse.json({ data: mockPublicPet })
       })
     )
@@ -104,7 +104,7 @@ describe('PetPublicProfilePage', () => {
 
   it('shows owner banner when owner views public profile', async () => {
     server.use(
-      http.get('http://localhost:3000/api/pets/:id/public', () => {
+      http.get('http://localhost:3000/api/pets/:id/view', () => {
         return HttpResponse.json({
           data: {
             ...mockPublicPet,
@@ -125,7 +125,7 @@ describe('PetPublicProfilePage', () => {
 
   it('shows lost pet banner for lost pets', async () => {
     server.use(
-      http.get('http://localhost:3000/api/pets/:id/public', () => {
+      http.get('http://localhost:3000/api/pets/:id/view', () => {
         return HttpResponse.json({ data: mockLostPet })
       })
     )
@@ -141,7 +141,7 @@ describe('PetPublicProfilePage', () => {
 
   it('shows error message when pet is not publicly available', async () => {
     server.use(
-      http.get('http://localhost:3000/api/pets/:id/public', () => {
+      http.get('http://localhost:3000/api/pets/:id/view', () => {
         return HttpResponse.json(
           { message: 'This pet profile is not publicly available.' },
           { status: 403 }
@@ -175,7 +175,7 @@ describe('PetPublicProfilePage', () => {
     }
 
     server.use(
-      http.get('http://localhost:3000/api/pets/:id/public', () => {
+      http.get('http://localhost:3000/api/pets/:id/view', () => {
         return HttpResponse.json({ data: petWithCategories })
       })
     )
@@ -192,7 +192,7 @@ describe('PetPublicProfilePage', () => {
 
   it('shows description section when pet has description', async () => {
     server.use(
-      http.get('http://localhost:3000/api/pets/:id/public', () => {
+      http.get('http://localhost:3000/api/pets/:id/view', () => {
         return HttpResponse.json({ data: mockPublicPet })
       })
     )
@@ -208,7 +208,7 @@ describe('PetPublicProfilePage', () => {
 
   it('shows message when owner tries to respond to their own pet placement request', async () => {
     server.use(
-      http.get('http://localhost:3000/api/pets/:id/public', () => {
+      http.get('http://localhost:3000/api/pets/:id/view', () => {
         return HttpResponse.json({
           data: {
             ...mockPublicPet,

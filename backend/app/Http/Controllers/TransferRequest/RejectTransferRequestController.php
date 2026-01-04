@@ -88,7 +88,7 @@ class RejectTransferRequestController extends Controller
                         NotificationType::HELPER_RESPONSE_REJECTED->value,
                         [
                             'message' => 'The transfer for '.$pet->name.' was cancelled by the owner.',
-                            'link' => '/pets/'.$pet->id.'/public',
+                            'link' => '/pets/'.$pet->id.'/view',
                             'pet_name' => $pet->name,
                             'pet_id' => $pet->id,
                             'transfer_request_id' => $transferRequest->id,

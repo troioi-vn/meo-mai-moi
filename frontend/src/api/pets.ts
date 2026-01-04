@@ -141,7 +141,7 @@ export interface PublicPet {
 }
 
 export const getPetPublic = async (id: string): Promise<PublicPet> => {
-  const response = await api.get<{ data: PublicPet }>(`/pets/${id}/public`)
+  const response = await api.get<{ data: PublicPet }>(`/pets/${id}/view`)
   return response.data.data
 }
 

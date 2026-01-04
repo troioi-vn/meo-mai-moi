@@ -668,3 +668,10 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Pet Location Structure**: Replaced single `location` text field with structured `country`, `state`, `city`, and `address` fields
 - **HelperProfile Location Fields**: Made `state`, `city`, `address`, and `zip_code` fields optional (previously some were required)
 - Description and location fields are hidden from pet creation form (accessible via edit page).
+- **Pet Profile Public Page Renamed**: Renamed `/pets/:id/public` route to `/pets/:id/view` with expanded access control:
+  - **Pet owners** can now always view their pet profiles (previously required active placement requests)
+  - **Users with PetRelationship** (`owner` or `viewer` types) can view pet profiles
+  - **Helpers involved in pending transfers** can view pet profiles when placement request status is `pending_transfer`
+  - **Public access** preserved for lost pets and pets with active placement requests
+  - Updated all notification links and frontend routing to use the new `/view` endpoint
+  - Enhanced `PetPolicy` with `isPendingTransferRecipient()` method for transfer-based access control

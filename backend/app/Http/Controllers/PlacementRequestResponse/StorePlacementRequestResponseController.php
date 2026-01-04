@@ -102,6 +102,11 @@ class StorePlacementRequestResponseController extends Controller
 
         /** @phpstan-ignore-next-line */
         if (! $placementRequest->canHelperRespond($helperProfile->id)) {
+            // If they already responded and it's active, return 409 for frontend to handle
+            if ($placementRequest->hasResponseFrom($helperProfile->id)) {
+                return $this->sendError('You have already responded to this placement request.', 409);
+            }
+
             return $this->sendError('You cannot respond to this placement request at this time.', 403);
         }
 

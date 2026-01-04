@@ -2902,14 +2902,14 @@
                 }
             }
         },
-        "/api/pets/{id}/public": {
+        "/api/pets/{id}/view": {
             "get": {
                 "tags": [
                     "Pets"
                 ],
-                "summary": "Get public profile of a specific pet",
-                "description": "Returns whitelisted fields for public view. Only accessible for pets that are lost or have active placement requests.",
-                "operationId": "d3818cb5a32260a751e5bba5937d2295",
+                "summary": "Get viewable profile of a specific pet",
+                "description": "Returns whitelisted fields for view. Accessible to: pet owner, users with viewer/owner PetRelationship, helpers involved in pending transfers, and anyone when pet is lost or has active placement requests.",
+                "operationId": "b322a3f36ecb60da84d399ce1815a16d",
                 "parameters": [
                     {
                         "name": "id",
@@ -2923,7 +2923,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "The pet public profile",
+                        "description": "The pet view profile",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3012,7 +3012,7 @@
                         }
                     },
                     "403": {
-                        "description": "Pet is not publicly viewable"
+                        "description": "Pet is not viewable by the current user"
                     },
                     "404": {
                         "description": "Pet not found"

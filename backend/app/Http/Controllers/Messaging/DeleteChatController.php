@@ -34,3 +34,4 @@ class DeleteChatController extends Controller
         return $this->sendSuccess(['message' => 'Chat deleted successfully.']);
     }
 }
+

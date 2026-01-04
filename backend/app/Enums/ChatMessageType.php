@@ -13,3 +13,4 @@ enum ChatMessageType: string
         };
     }
 }
+

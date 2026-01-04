@@ -14,3 +14,4 @@ class ListChats extends ListRecords
         return [];
     }
 }
+

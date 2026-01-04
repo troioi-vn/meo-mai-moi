@@ -66,3 +66,4 @@ class ChatUser extends Model
         $this->update(['last_read_at' => now()]);
     }
 }
+

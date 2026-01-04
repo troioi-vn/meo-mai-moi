@@ -40,3 +40,4 @@ class ChatMessagePolicy
         return method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
     }
 }
+

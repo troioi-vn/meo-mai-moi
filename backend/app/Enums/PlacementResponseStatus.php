@@ -51,3 +51,4 @@ enum PlacementResponseStatus: string
         return in_array($status, $this->allowedTransitions());
     }
 }
+

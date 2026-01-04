@@ -106,3 +106,4 @@ class PlacementRequestResponsePolicy
         return method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
     }
 }
+

@@ -256,6 +256,22 @@ class HelperProfileApiTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.id', $profile->id);
+        $response->assertJsonStructure([
+            'data' => [
+                'placement_responses' => [
+                    '*' => [
+                        'placement_request' => [
+                            'pet' => [
+                                'pet_type' => [
+                                    'id',
+                                    'name',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
     }
 
     #[Test]

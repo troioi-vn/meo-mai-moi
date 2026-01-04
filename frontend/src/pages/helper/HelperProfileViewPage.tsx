@@ -230,9 +230,11 @@ export default function HelperProfileViewPage() {
                   <div className="flex-1 min-w-0 space-y-1">
                     <div className="flex items-center justify-between gap-2">
                       <p className="font-semibold text-foreground truncate">{item.pet.name}</p>
-                      <Badge variant="outline" className="shrink-0">
-                        {item.pet.pet_type.name}
-                      </Badge>
+                      {item.pet.pet_type && (
+                        <Badge variant="outline" className="shrink-0">
+                          {item.pet.pet_type.name}
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                       <Badge variant="secondary" className="rounded-full">

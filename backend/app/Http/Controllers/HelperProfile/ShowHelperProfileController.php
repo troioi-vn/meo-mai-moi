@@ -49,7 +49,7 @@ class ShowHelperProfileController extends Controller
                 'cities',
                 'placementResponses' => function ($query) {
                     $query->with([
-                        'placementRequest.pet',
+                        'placementRequest.pet.petType',
                     ]);
                 },
             ]);

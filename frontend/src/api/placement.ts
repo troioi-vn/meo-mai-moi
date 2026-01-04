@@ -98,3 +98,4 @@ export async function rejectTransfer(transferId: number): Promise<TransferReques
 export async function cancelTransfer(transferId: number): Promise<void> {
   await api.delete(`/transfer-requests/${String(transferId)}`)
 }
+

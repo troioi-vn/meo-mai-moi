@@ -137,6 +137,7 @@ export {
 } from './placement'
 
 import type { PlacementRequestResponse } from './placement'
+import type { TransferRequest } from './placement'
 
 export interface PlacementRequest {
   id: number
@@ -152,6 +153,8 @@ export interface PlacementRequest {
   end_date?: string
   // New: responses from helpers
   responses?: PlacementRequestResponse[]
+  // New: up to 2 transfer requests (handover/return)
+  transfer_requests?: TransferRequest[]
   pet?: Pet
   created_at?: string
   updated_at?: string

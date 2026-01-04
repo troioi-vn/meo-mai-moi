@@ -82,6 +82,7 @@ export interface PlacementRequest {
   created_at: string
   updated_at: string
   responses?: PlacementRequestResponse[]
+  transfer_requests?: TransferRequest[]
   pet?: Pet
 }
 
@@ -100,6 +101,14 @@ export const PlacementResponseStatusLabels: Record<string, string> = {
   accepted: 'Accepted',
   rejected: 'Rejected',
   cancelled: 'Cancelled',
+}
+
+export const TransferRequestStatusLabels: Record<string, string> = {
+  pending: 'Pending',
+  confirmed: 'Confirmed',
+  rejected: 'Rejected',
+  expired: 'Expired',
+  canceled: 'Cancelled',
 }
 
 export const PlacementRequestTypeLabels: Record<string, string> = {

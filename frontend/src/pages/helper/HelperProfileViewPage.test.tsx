@@ -5,26 +5,29 @@ import { http, HttpResponse } from 'msw'
 import HelperProfileViewPage from './HelperProfileViewPage'
 import { mockHelperProfile } from '@/testing/mocks/data/helper-profiles'
 import { server } from '@/testing/mocks/server'
+import { TestAuthProvider } from '@/contexts/TestAuthProvider'
 
 const createQueryClient = () =>
   new QueryClient({
     defaultOptions: { queries: { retry: false } },
   })
 
-const renderWithRouter = (profileId = mockHelperProfile.id) => {
+const renderWithRouter = (profileId = mockHelperProfile.id, authUser = null) => {
   const queryClient = createQueryClient()
   return render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[`/helper/${String(profileId)}`]}>
-        <Routes>
-          <Route path="/helper/:id" element={<HelperProfileViewPage />} />
-        </Routes>
-      </MemoryRouter>
+      <TestAuthProvider mockValues={{ user: authUser }}>
+        <MemoryRouter initialEntries={[`/helper/${String(profileId)}`]}>
+          <Routes>
+            <Route path="/helper/:id" element={<HelperProfileViewPage />} />
+          </Routes>
+        </MemoryRouter>
+      </TestAuthProvider>
     </QueryClientProvider>
   )
 }
 
-describe('HelperProfileViewPage - Pets section', () => {
+describe('HelperProfileViewPage - Placement Responses section', () => {
   it('shows linked pets with request, placement, and response statuses', async () => {
     const profileWithPets = {
       ...mockHelperProfile,
@@ -67,13 +70,13 @@ describe('HelperProfileViewPage - Pets section', () => {
     renderWithRouter(profileWithPets.id)
 
     await waitFor(() => {
-      expect(screen.getByText('Pets')).toBeInTheDocument()
+      expect(screen.getByText('Placement Responses')).toBeInTheDocument()
     })
 
     expect(screen.getByText('Fluffy')).toBeInTheDocument()
-    expect(screen.getByText('Request: Foster Free')).toBeInTheDocument()
+    expect(screen.getByText('Request: Foster (Free)')).toBeInTheDocument()
     expect(screen.getByText('Placement: Open')).toBeInTheDocument()
-    expect(screen.getByText('Response: Responded')).toBeInTheDocument()
+    expect(screen.getByText('Response: Pending Review')).toBeInTheDocument()
   })
 
   it('shows empty state when no pets are linked', async () => {
@@ -86,10 +89,9 @@ describe('HelperProfileViewPage - Pets section', () => {
     renderWithRouter()
 
     await waitFor(() => {
-      expect(screen.getByText('Pets')).toBeInTheDocument()
+      expect(screen.getByText('Placement Responses')).toBeInTheDocument()
     })
 
-    expect(screen.getByText('No pets linked to this profile yet.')).toBeInTheDocument()
+    expect(screen.getByText('No placement responses yet.')).toBeInTheDocument()
   })
 })
-

@@ -1,10 +1,30 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { getHelperProfile } from '@/api/helper-profiles'
+import { confirmTransfer } from '@/api/placement'
+import { useState } from 'react'
+import { useAuth } from '@/hooks/use-auth'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import type { Pet } from '@/types/pet'
+import {
+  PlacementResponseStatusLabels,
+  PlacementRequestStatusLabels,
+  PlacementRequestTypeLabels,
+  TransferRequestStatusLabels,
+} from '@/types/placement'
+import type { TransferRequest } from '@/types/placement'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import {
@@ -14,7 +34,18 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel'
-import { ChevronLeft, MapPin, PawPrint, Baby, Home, Heart, User } from 'lucide-react'
+import {
+  ChevronLeft,
+  MapPin,
+  PawPrint,
+  Baby,
+  Home,
+  Heart,
+  User,
+  ArrowRightLeft,
+  ArrowRight,
+  ArrowLeft,
+} from 'lucide-react'
 import placeholderAvatar from '@/assets/images/default-avatar.webp'
 
 const formatLabel = (value: string, fallback = 'Unknown') =>
@@ -29,11 +60,26 @@ interface Photo {
 export default function HelperProfileViewPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
+
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
+  const [selectedTransferId, setSelectedTransferId] = useState<number | null>(null)
+  const [selectedPetName, setSelectedPetName] = useState<string>('')
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['helper-profile', id],
     queryFn: () => getHelperProfile(id ?? ''),
     enabled: Boolean(id),
+  })
+
+  const confirmTransferMutation = useMutation({
+    mutationFn: (transferId: number) => confirmTransfer(transferId),
+    onSuccess: () => {
+      setConfirmDialogOpen(false)
+      setSelectedTransferId(null)
+      setSelectedPetName('')
+      void refetch()
+    },
   })
 
   const handleBack = () => {
@@ -63,6 +109,7 @@ export default function HelperProfileViewPage() {
   const photos = (profile.photos as Photo[] | undefined) ?? []
   const petTypes = profile.pet_types ?? []
   const placementResponses = profile.placement_responses ?? []
+  const isHelperViewingOwnProfile = Boolean(user?.id) && profile.user_id === user?.id
 
   // Get location string
   const cityNames =
@@ -110,6 +157,7 @@ export default function HelperProfileViewPage() {
       const placementStatus = placement?.status ?? ''
       const responseStatus = response.status
       const requestType = placement?.request_type ?? ''
+      const transferRequests = placement?.transfer_requests ?? []
 
       return {
         id: `${String(response.id)}-${String(pet.id)}`,
@@ -118,6 +166,9 @@ export default function HelperProfileViewPage() {
         placementStatus,
         responseStatus,
         requestType,
+        message: response.message,
+        respondedAt: response.responded_at,
+        transferRequests,
       }
     })
     .filter(Boolean) as {
@@ -127,6 +178,9 @@ export default function HelperProfileViewPage() {
     placementStatus: string
     responseStatus: string
     requestType: string
+    message?: string | null
+    respondedAt?: string
+    transferRequests: TransferRequest[]
   }[]
 
   return (
@@ -207,51 +261,169 @@ export default function HelperProfileViewPage() {
             </Card>
           )}
 
-          {/* Pets via placement requests */}
+          {/* Placement Responses */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg font-semibold">Pets</CardTitle>
+              <CardTitle className="text-lg font-semibold">Placement Responses</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {petPlacements.length === 0 && (
-                <p className="text-sm text-muted-foreground">No pets linked to this profile yet.</p>
+                <p className="text-sm text-muted-foreground">No placement responses yet.</p>
               )}
               {petPlacements.map((item) => (
                 <Link
                   key={item.id}
                   to={`/pets/${String(item.pet.id)}`}
-                  className="flex items-center gap-3 rounded-lg border p-3 hover:bg-accent/60 transition-colors"
+                  className="flex flex-col gap-3 rounded-lg border p-3 hover:bg-accent/60 transition-colors"
                 >
-                  <img
-                    src={item.petPhoto}
-                    alt={item.pet.name}
-                    className="h-12 w-12 rounded-md object-cover border"
-                  />
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="font-semibold text-foreground truncate">{item.pet.name}</p>
-                      {item.pet.pet_type && (
-                        <Badge variant="outline" className="shrink-0">
-                          {item.pet.pet_type.name}
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={item.petPhoto}
+                      alt={item.pet.name}
+                      className="h-12 w-12 rounded-md object-cover border"
+                    />
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-semibold text-foreground truncate">{item.pet.name}</p>
+                        {item.pet.pet_type && (
+                          <Badge variant="outline" className="shrink-0">
+                            {item.pet.pet_type.name}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                        <Badge variant="secondary" className="rounded-full">
+                          Request:{' '}
+                          {PlacementRequestTypeLabels[item.requestType] ||
+                            formatLabel(item.requestType)}
                         </Badge>
-                      )}
-                    </div>
-                    <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                      <Badge variant="secondary" className="rounded-full">
-                        Request: {formatLabel(item.requestType, 'N/A')}
-                      </Badge>
-                      <Badge variant="default" className="rounded-full">
-                        Placement: {formatLabel(item.placementStatus, 'Unknown')}
-                      </Badge>
-                      <Badge variant="outline" className="rounded-full">
-                        Response: {formatLabel(item.responseStatus, 'Unknown')}
-                      </Badge>
+                        <Badge variant="default" className="rounded-full">
+                          Placement:{' '}
+                          {PlacementRequestStatusLabels[item.placementStatus] ||
+                            formatLabel(item.placementStatus)}
+                        </Badge>
+                        <Badge variant="outline" className="rounded-full">
+                          Response:{' '}
+                          {PlacementResponseStatusLabels[item.responseStatus] ||
+                            formatLabel(item.responseStatus)}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
+                  {item.message && (
+                    <div className="text-sm text-muted-foreground bg-muted/30 p-2 rounded border-l-2 border-primary/30 italic">
+                      "{item.message}"
+                    </div>
+                  )}
+                  {item.respondedAt && (
+                    <div className="text-[10px] text-muted-foreground text-right">
+                      Responded on {new Date(item.respondedAt).toLocaleDateString()}
+                    </div>
+                  )}
+
+                  {/* Transfer Requests */}
+                  {item.transferRequests.length > 0 && (
+                    <div className="mt-2 pt-2 border-t space-y-2">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                        <ArrowRightLeft className="h-3 w-3" />
+                        Transfers
+                      </p>
+                      <div className="grid gap-2">
+                        {item.transferRequests.map((transfer) => {
+                          const isToHelper = transfer.to_user_id === profile.user_id
+                          const canConfirmReceived =
+                            Boolean(profile.user_id) &&
+                            isHelperViewingOwnProfile &&
+                            isToHelper &&
+                            transfer.status === 'pending' &&
+                            !confirmTransferMutation.isPending
+
+                          return (
+                            <div
+                              key={transfer.id}
+                              className="flex items-center justify-between text-xs bg-muted/50 p-2 rounded"
+                            >
+                              <div className="flex items-center gap-2">
+                                {isToHelper ? (
+                                  <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                                ) : (
+                                  <ArrowLeft className="h-3 w-3 text-muted-foreground" />
+                                )}
+                                <span className="font-medium">
+                                  {isToHelper ? 'Handover to Helper' : 'Return to Owner'}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge
+                                  variant={transfer.status === 'confirmed' ? 'default' : 'outline'}
+                                  className="text-[10px] h-5"
+                                >
+                                  {TransferRequestStatusLabels[transfer.status] || transfer.status}
+                                </Badge>
+
+                                {canConfirmReceived && (
+                                  <Button
+                                    size="sm"
+                                    variant="default"
+                                    className="h-7 px-2 text-[10px]"
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      e.stopPropagation()
+                                      setSelectedTransferId(transfer.id)
+                                      setSelectedPetName(item.pet.name)
+                                      setConfirmDialogOpen(true)
+                                    }}
+                                  >
+                                    Confirm
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </Link>
               ))}
             </CardContent>
           </Card>
+
+          <AlertDialog
+            open={confirmDialogOpen}
+            onOpenChange={(open) => {
+              if (confirmTransferMutation.isPending) return
+              setConfirmDialogOpen(open)
+              if (!open) {
+                setSelectedTransferId(null)
+                setSelectedPetName('')
+              }
+            }}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Are you sure you have received the pet {selectedPetName}?
+                </AlertDialogTitle>
+                <AlertDialogDescription />
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={confirmTransferMutation.isPending}>
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  disabled={selectedTransferId == null || confirmTransferMutation.isPending}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    if (selectedTransferId == null) return
+                    confirmTransferMutation.mutate(selectedTransferId)
+                  }}
+                >
+                  Confirm
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           {/* Request Types */}
           <Card>

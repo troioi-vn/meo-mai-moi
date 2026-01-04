@@ -146,4 +146,3 @@ class ResponsesRelationManager extends RelationManager
             ->defaultSort('responded_at', 'desc');
     }
 }
-

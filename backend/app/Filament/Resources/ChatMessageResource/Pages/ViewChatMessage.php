@@ -9,4 +9,3 @@ class ViewChatMessage extends ViewRecord
 {
     protected static string $resource = ChatMessageResource::class;
 }
-

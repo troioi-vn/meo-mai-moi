@@ -59,4 +59,3 @@ class PlacementRequestResponseFactory extends Factory
         ]);
     }
 }
-

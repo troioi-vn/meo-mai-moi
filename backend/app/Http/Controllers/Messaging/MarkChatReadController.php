@@ -24,4 +24,3 @@ class MarkChatReadController extends Controller
         return $this->sendSuccess(['message' => 'Chat marked as read.']);
     }
 }
-

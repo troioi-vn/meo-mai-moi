@@ -103,15 +103,17 @@ describe('PetProfilePage redirect logic', () => {
   })
 
   it('redirects to public view if user is a viewer', async () => {
-    mockPetData.viewer_permissions = { 
+    mockPetData.viewer_permissions = {
       can_edit: false,
       is_owner: false,
-      is_viewer: true 
+      is_viewer: true,
     }
 
     renderWithRouter(<PetProfilePage />, {
       initialEntries: ['/pets/1'],
-      routes: [{ path: '/pets/:id/view', element: <div data-testid="public-view">Public View Page</div> }],
+      routes: [
+        { path: '/pets/:id/view', element: <div data-testid="public-view">Public View Page</div> },
+      ],
     })
 
     await waitFor(() => {
@@ -120,18 +122,18 @@ describe('PetProfilePage redirect logic', () => {
   })
 
   it('redirects to public view if pet has active placement request and user is not owner', async () => {
-    mockPetData.viewer_permissions = { 
+    mockPetData.viewer_permissions = {
       can_edit: false,
       is_owner: false,
-      is_viewer: false 
+      is_viewer: false,
     }
-    mockPetData.placement_requests = [
-      { id: 1, status: 'open', request_type: 'permanent' } as any
-    ]
+    mockPetData.placement_requests = [{ id: 1, status: 'open', request_type: 'permanent' } as any]
 
     renderWithRouter(<PetProfilePage />, {
       initialEntries: ['/pets/1'],
-      routes: [{ path: '/pets/:id/view', element: <div data-testid="public-view">Public View Page</div> }],
+      routes: [
+        { path: '/pets/:id/view', element: <div data-testid="public-view">Public View Page</div> },
+      ],
     })
 
     await waitFor(() => {
@@ -141,18 +143,18 @@ describe('PetProfilePage redirect logic', () => {
 
   it('does NOT redirect if user is owner even with active placement request', async () => {
     mockPetData.name = 'Owner Pet'
-    mockPetData.viewer_permissions = { 
+    mockPetData.viewer_permissions = {
       can_edit: true,
       is_owner: true,
-      is_viewer: false 
+      is_viewer: false,
     }
-    mockPetData.placement_requests = [
-      { id: 1, status: 'open', request_type: 'permanent' } as any
-    ]
+    mockPetData.placement_requests = [{ id: 1, status: 'open', request_type: 'permanent' } as any]
 
     renderWithRouter(<PetProfilePage />, {
       initialEntries: ['/pets/1'],
-      routes: [{ path: '/pets/:id/view', element: <div data-testid="public-view">Public View Page</div> }],
+      routes: [
+        { path: '/pets/:id/view', element: <div data-testid="public-view">Public View Page</div> },
+      ],
     })
 
     // Should show the pet name, not redirect

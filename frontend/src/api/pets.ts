@@ -133,6 +133,7 @@ export interface PublicPet {
   pet_type: Pet['pet_type']
   categories?: Pet['categories']
   placement_requests?: Pet['placement_requests']
+  relationships?: Pet['relationships']
   viewer_permissions?: {
     is_owner?: boolean
     is_viewer?: boolean

@@ -12,9 +12,11 @@ interface PetRelationshipsSectionProps {
 export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = ({
   relationships,
 }) => {
-  // Filter out 'viewer' relationships as they are usually less relevant for history
-  // and focus on owners, editors, and fosters.
-  const relevantRelationships = relationships.filter((r) => r.relationship_type !== 'viewer')
+  // Filter out past 'viewer' relationships as they are usually less relevant for history.
+  // We keep current viewers as requested.
+  const relevantRelationships = relationships.filter(
+    (r) => r.relationship_type !== 'viewer' || !r.end_at
+  )
 
   const activeRelationships = relevantRelationships.filter((r) => !r.end_at)
   const pastRelationships = relevantRelationships

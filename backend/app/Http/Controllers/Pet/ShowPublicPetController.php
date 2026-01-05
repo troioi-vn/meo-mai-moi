@@ -114,6 +114,7 @@ class ShowPublicPetController extends Controller
             'petType',
             'categories',
             'city',
+            'relationships.user',
         ]);
 
         // Resolve user to determine if viewer is owner
@@ -129,6 +130,7 @@ class ShowPublicPetController extends Controller
         $publicData['pet_type'] = $pet->petType;
         $publicData['categories'] = $pet->categories;
         $publicData['placement_requests'] = $pet->placementRequests;
+        $publicData['relationships'] = $pet->relationships;
 
         // Add viewer permissions
         $publicData['viewer_permissions'] = [

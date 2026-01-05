@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { PublicPlacementRequestSection } from '@/components/placement/public-profile/PublicPlacementRequestSection'
+import { PetRelationshipsSection } from '@/components/pets/PetRelationshipsSection'
 import { getPetPublic, type PublicPet } from '@/api/pets'
 import placeholderImage from '@/assets/images/default-avatar.webp'
 
@@ -275,6 +276,9 @@ const PetPublicProfilePage: React.FC = () => {
               </CardContent>
             </Card>
           )}
+
+          {/* People & History */}
+          {pet.relationships && <PetRelationshipsSection relationships={pet.relationships} />}
         </div>
       </main>
     </div>

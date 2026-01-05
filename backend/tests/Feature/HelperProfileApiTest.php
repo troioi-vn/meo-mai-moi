@@ -275,6 +275,40 @@ class HelperProfileApiTest extends TestCase
     }
 
     #[Test]
+    public function helper_profile_view_only_returns_latest_response_per_placement_request()
+    {
+        $petOwner = User::factory()->create();
+        $helperOwner = User::factory()->create();
+        $profile = HelperProfile::factory()->for($helperOwner)->create(['approval_status' => 'pending']);
+
+        $pet = \App\Models\Pet::factory()->create(['created_by' => $petOwner->id]);
+        $placementRequest = \App\Models\PlacementRequest::factory()->for($pet)->create([
+            'request_type' => \App\Enums\PlacementRequestType::FOSTER_FREE->value,
+        ]);
+
+        $old = \App\Models\PlacementRequestResponse::factory()->create([
+            'placement_request_id' => $placementRequest->id,
+            'helper_profile_id' => $profile->id,
+            'status' => \App\Enums\PlacementResponseStatus::CANCELLED,
+        ]);
+
+        $latest = \App\Models\PlacementRequestResponse::factory()->create([
+            'placement_request_id' => $placementRequest->id,
+            'helper_profile_id' => $profile->id,
+            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
+        ]);
+
+        $response = $this->actingAs($petOwner)->getJson("/api/helper-profiles/{$profile->id}");
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data.placement_responses');
+
+        $ids = collect($response->json('data.placement_responses'))->pluck('id')->all();
+        $this->assertContains($latest->id, $ids);
+        $this->assertNotContains($old->id, $ids);
+    }
+
+    #[Test]
     public function user_cannot_view_pending_helper_profile_without_relationship()
     {
         $helperOwner = User::factory()->create();

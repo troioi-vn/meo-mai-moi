@@ -5,6 +5,7 @@ namespace App\Http\Controllers\PlacementRequestResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PlacementRequestResponseResource;
 use App\Models\PlacementRequest;
+use App\Models\PlacementRequestResponse;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 
@@ -61,7 +62,15 @@ class ListPlacementRequestResponsesController extends Controller
             return $this->sendError('You are not authorized to view responses for this placement request.', 403);
         }
 
+        // Helpers can cancel and re-respond, which creates multiple rows per helper.
+        // For UI purposes we only want the latest response per helper profile.
+        $latestResponseIds = PlacementRequestResponse::query()
+            ->selectRaw('MAX(id)')
+            ->where('placement_request_id', $placementRequest->id)
+            ->groupBy('helper_profile_id');
+
         $responses = $placementRequest->responses()
+            ->whereIn('id', $latestResponseIds)
             ->with('helperProfile.user')
             ->latest()
             ->get();

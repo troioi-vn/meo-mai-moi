@@ -47,7 +47,16 @@ class ShowHelperProfileController extends Controller
                 'user',
                 'petTypes',
                 'cities',
-                'placementResponses' => function ($query) {
+                'placementResponses' => function ($query) use ($helperProfile) {
+                    // Helpers can cancel and re-respond, which creates multiple rows for the same
+                    // placement_request_id. For profile views, only show the latest response per request.
+                    $query->whereIn('id', function ($subQuery) use ($helperProfile) {
+                        $subQuery
+                            ->selectRaw('MAX(id)')
+                            ->from('placement_request_responses')
+                            ->where('helper_profile_id', $helperProfile->id)
+                            ->groupBy('placement_request_id');
+                    });
                     $query->with([
                         'placementRequest.pet.petType',
                         'placementRequest.transferRequests',

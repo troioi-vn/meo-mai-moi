@@ -85,6 +85,41 @@ class PlacementRequestResponseApiTest extends TestCase
             ->assertJsonCount(3, 'data');
     }
 
+    public function test_owner_list_responses_shows_only_latest_per_helper_profile()
+    {
+        $otherHelper = User::factory()->create();
+        $otherHelperProfile = HelperProfile::factory()->create(['user_id' => $otherHelper->id]);
+
+        $old = PlacementRequestResponse::factory()->create([
+            'placement_request_id' => $this->placementRequest->id,
+            'helper_profile_id' => $this->helperProfile->id,
+            'status' => PlacementResponseStatus::CANCELLED,
+        ]);
+
+        $latest = PlacementRequestResponse::factory()->create([
+            'placement_request_id' => $this->placementRequest->id,
+            'helper_profile_id' => $this->helperProfile->id,
+            'status' => PlacementResponseStatus::RESPONDED,
+        ]);
+
+        PlacementRequestResponse::factory()->create([
+            'placement_request_id' => $this->placementRequest->id,
+            'helper_profile_id' => $otherHelperProfile->id,
+            'status' => PlacementResponseStatus::RESPONDED,
+        ]);
+
+        $this->actingAs($this->owner);
+
+        $response = $this->getJson("/api/placement-requests/{$this->placementRequest->id}/responses");
+
+        $response->assertStatus(200)
+            ->assertJsonCount(2, 'data');
+
+        $ids = collect($response->json('data'))->pluck('id')->all();
+        $this->assertContains($latest->id, $ids);
+        $this->assertNotContains($old->id, $ids);
+    }
+
     public function test_helper_cannot_list_all_responses()
     {
         $this->actingAs($this->helper);
@@ -242,7 +277,7 @@ class PlacementRequestResponseApiTest extends TestCase
             'message' => 'Second response',
         ]);
 
-        $response->assertStatus(403);
+        $response->assertStatus(409);
     }
 
     public function test_helper_can_respond_again_if_cancelled()

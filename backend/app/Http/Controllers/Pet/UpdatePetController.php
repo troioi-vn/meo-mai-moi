@@ -245,10 +245,13 @@ class UpdatePetController extends Controller
         // Build viewer permission flags for response
         $canEdit = ($user instanceof \App\Models\User && $pet->canBeEditedBy($user)) || $this->hasRole($user, ['admin', 'super_admin']);
         $isOwner = $user instanceof \App\Models\User && $pet->isOwnedBy($user);
+        $isViewer = $user instanceof \App\Models\User && $pet->hasRelationshipWith($user, PetRelationshipType::VIEWER);
 
         $viewerPermissions = [
             'can_edit' => $canEdit,
             'can_view_contact' => $this->hasRole($user, ['admin', 'super_admin']) || ($user && ! $isOwner),
+            'is_owner' => $isOwner,
+            'is_viewer' => $isViewer,
         ];
         $pet->setAttribute('viewer_permissions', $viewerPermissions);
 

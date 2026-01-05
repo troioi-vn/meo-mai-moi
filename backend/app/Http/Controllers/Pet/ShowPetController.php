@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Pet;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
+use App\Enums\PetRelationshipType;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use Illuminate\Http\Request;
@@ -58,11 +59,13 @@ class ShowPetController extends Controller
         $isAdmin = $this->hasRole($user, ['admin', 'super_admin']);
         $isOwner = $user ? $pet->isOwnedBy($user) : false;
         $isEditor = $user ? $pet->canBeEditedBy($user) : false;
+        $isViewer = $user ? $pet->hasRelationshipWith($user, PetRelationshipType::VIEWER) : false;
 
         $viewerPermissions = [
             'can_edit' => $isOwner || $isAdmin || $isEditor,
             'can_view_contact' => $isAdmin || ($user && ! $isOwner),
             'is_owner' => $isOwner,
+            'is_viewer' => $isViewer,
         ];
         $pet->setAttribute('viewer_permissions', $viewerPermissions);
 

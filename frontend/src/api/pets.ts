@@ -135,6 +135,7 @@ export interface PublicPet {
   placement_requests?: Pet['placement_requests']
   viewer_permissions?: {
     is_owner?: boolean
+    is_viewer?: boolean
   }
   created_at: string
   updated_at: string

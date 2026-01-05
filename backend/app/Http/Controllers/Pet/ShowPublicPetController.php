@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Pet;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
+use App\Enums\PetRelationshipType;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -119,6 +120,7 @@ class ShowPublicPetController extends Controller
         /** @var \App\Models\User|null $user */
         $user = $this->resolveUser($request);
         $isOwner = $user instanceof \App\Models\User && $pet->isOwnedBy($user);
+        $isViewer = $user instanceof \App\Models\User && $pet->hasRelationshipWith($user, PetRelationshipType::VIEWER);
 
         // Build public response with whitelisted fields
         $publicData = $pet->only(self::PUBLIC_FIELDS);
@@ -131,6 +133,7 @@ class ShowPublicPetController extends Controller
         // Add viewer permissions
         $publicData['viewer_permissions'] = [
             'is_owner' => $isOwner,
+            'is_viewer' => $isViewer,
         ];
 
         return $this->sendSuccess($publicData);

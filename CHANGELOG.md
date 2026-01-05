@@ -259,6 +259,7 @@ All notable changes to this project are documented here, following the [Keep a C
   - Updated `InvitationsPage` `loadData` function to handle optional parameters.
   - Adjusted placeholder in `TagsTrigger`.
 - **Dependencies**: Updated npm packages and fixed `package-lock.json` dependencies.
+- **Pet Profile Redirect Logic**: Users with viewer relationships are now redirected to the public pet profile page (`/pets/:id/view`), similar to pets with active placement requests. Added `is_viewer` flag to viewer permissions API response.
 
 ### Fixed
 

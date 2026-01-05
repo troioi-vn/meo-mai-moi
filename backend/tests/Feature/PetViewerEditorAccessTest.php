@@ -108,4 +108,48 @@ class PetViewerEditorAccessTest extends TestCase
 
         $this->assertDatabaseHas('pets', ['id' => $pet->id, 'name' => 'New Name']);
     }
+
+    #[Test]
+    public function viewer_gets_is_viewer_permission_flag(): void
+    {
+        $owner = User::factory()->create();
+        $viewer = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+        PetRelationship::create([
+            'pet_id' => $pet->id,
+            'user_id' => $viewer->id,
+            'relationship_type' => \App\Enums\PetRelationshipType::VIEWER,
+            'start_at' => now(),
+            'created_by' => $owner->id,
+        ]);
+
+        Sanctum::actingAs($viewer);
+        $response = $this->getJson("/api/pets/{$pet->id}");
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.viewer_permissions.is_viewer', true)
+            ->assertJsonPath('data.viewer_permissions.is_owner', false)
+            ->assertJsonPath('data.viewer_permissions.can_edit', false);
+    }
+
+    #[Test]
+    public function viewer_can_view_pet_via_public_view_route(): void
+    {
+        $owner = User::factory()->create();
+        $viewer = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+        PetRelationship::create([
+            'pet_id' => $pet->id,
+            'user_id' => $viewer->id,
+            'relationship_type' => \App\Enums\PetRelationshipType::VIEWER,
+            'start_at' => now(),
+            'created_by' => $owner->id,
+        ]);
+
+        Sanctum::actingAs($viewer);
+        $response = $this->getJson("/api/pets/{$pet->id}/view");
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.viewer_permissions.is_viewer', true);
+    }
 }

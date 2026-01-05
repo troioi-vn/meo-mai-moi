@@ -109,6 +109,7 @@ export interface Pet {
     can_view_contact?: boolean
     can_delete?: boolean
     is_owner?: boolean
+    is_viewer?: boolean
   }
   placement_requests?: PlacementRequest[]
   relationships?: PetRelationship[]

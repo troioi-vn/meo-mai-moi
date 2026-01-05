@@ -63,12 +63,14 @@ const PetProfilePage: React.FC = () => {
   // Check if user is owner
   const canEdit = pet ? Boolean(pet.viewer_permissions?.can_edit) : false
 
-  // Redirect non-owners to public view if pet is publicly viewable
+  // Redirect non-owners to public view if pet is publicly viewable or user is a viewer
   useEffect(() => {
     if (loading || !pet || !id) return
 
-    // If user is not owner but pet is publicly viewable, redirect to view page
-    if (!canEdit && isPubliclyViewable(pet)) {
+    const isViewer = Boolean(pet.viewer_permissions?.is_viewer)
+
+    // If user is not owner but pet is publicly viewable, or if user is specifically a viewer, redirect to view page
+    if (!canEdit && (isPubliclyViewable(pet) || isViewer)) {
       void navigate(`/pets/${id}/view`, { replace: true })
     }
   }, [loading, pet, canEdit, id, navigate])

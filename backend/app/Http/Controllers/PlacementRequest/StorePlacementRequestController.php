@@ -98,7 +98,7 @@ class StorePlacementRequestController extends Controller
         // Implement the business rule: One active placement request per type per pet.
         $existingRequest = PlacementRequest::where('pet_id', $pet->id)
             ->where('request_type', $validatedData['request_type'])
-            ->whereIn('status', ['open', 'finalized'])
+            ->whereIn('status', ['open', 'pending_transfer', 'active'])
             ->exists();
 
         if ($existingRequest) {

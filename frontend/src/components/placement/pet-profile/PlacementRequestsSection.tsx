@@ -254,14 +254,14 @@ export const PlacementRequestsSection: React.FC<Props> = ({
                   <Clock className="h-4 w-4" />
                   <span>Waiting for {helperName} to confirm handover</span>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   {helperUserId && (
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => void handleMessageHelper(helperUserId, request.id)}
                       disabled={creatingChat}
-                      className="flex-1"
+                      className="w-full sm:flex-1"
                     >
                       <MessageCircle className="h-4 w-4 mr-1" />
                       {creatingChat ? 'Starting...' : 'Chat with Helper'}
@@ -273,7 +273,7 @@ export const PlacementRequestsSection: React.FC<Props> = ({
                       size="sm"
                       onClick={() => void handleCancelTransfer(pendingTransfer.id)}
                       disabled={cancellingTransferId === pendingTransfer.id}
-                      className="flex-1 text-destructive hover:text-destructive"
+                      className="w-full sm:flex-1 text-destructive hover:text-destructive"
                     >
                       {cancellingTransferId === pendingTransfer.id ? (
                         <Loader2 className="h-4 w-4 mr-1 animate-spin" />

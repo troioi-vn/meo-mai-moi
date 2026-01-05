@@ -285,26 +285,24 @@ export default function HelperProfileViewPage() {
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center justify-between gap-2">
                         <p className="font-semibold text-foreground truncate">{item.pet.name}</p>
-                        {item.pet.pet_type && (
-                          <Badge variant="outline" className="shrink-0">
-                            {item.pet.pet_type.name}
-                          </Badge>
-                        )}
+                        <Badge variant="outline" className="shrink-0">
+                          {item.pet.pet_type.name}
+                        </Badge>
                       </div>
                       <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                         <Badge variant="secondary" className="rounded-full">
                           Request:{' '}
-                          {PlacementRequestTypeLabels[item.requestType] ||
+                          {PlacementRequestTypeLabels[item.requestType] ??
                             formatLabel(item.requestType)}
                         </Badge>
                         <Badge variant="default" className="rounded-full">
                           Placement:{' '}
-                          {PlacementRequestStatusLabels[item.placementStatus] ||
+                          {PlacementRequestStatusLabels[item.placementStatus] ??
                             formatLabel(item.placementStatus)}
                         </Badge>
                         <Badge variant="outline" className="rounded-full">
                           Response:{' '}
-                          {PlacementResponseStatusLabels[item.responseStatus] ||
+                          {PlacementResponseStatusLabels[item.responseStatus] ??
                             formatLabel(item.responseStatus)}
                         </Badge>
                       </div>
@@ -312,7 +310,7 @@ export default function HelperProfileViewPage() {
                   </div>
                   {item.message && (
                     <div className="text-sm text-muted-foreground bg-muted/30 p-2 rounded border-l-2 border-primary/30 italic">
-                      "{item.message}"
+                      &ldquo;{item.message}&rdquo;
                     </div>
                   )}
                   {item.respondedAt && (
@@ -358,7 +356,7 @@ export default function HelperProfileViewPage() {
                                   variant={transfer.status === 'confirmed' ? 'default' : 'outline'}
                                   className="text-[10px] h-5"
                                 >
-                                  {TransferRequestStatusLabels[transfer.status] || transfer.status}
+                                  {TransferRequestStatusLabels[transfer.status] ?? transfer.status}
                                 </Badge>
 
                                 {canConfirmReceived && (

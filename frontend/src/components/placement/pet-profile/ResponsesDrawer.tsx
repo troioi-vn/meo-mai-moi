@@ -316,10 +316,10 @@ export function ResponsesDrawer({
                   Responded {new Date(currentResponse.responded_at).toLocaleDateString()}
                 </p>
 
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Button
                     variant="outline"
-                    className="flex-1"
+                    className="w-full sm:flex-1"
                     onClick={() => void handleViewProfile()}
                     disabled={loadingProfile}
                   >
@@ -337,7 +337,7 @@ export function ResponsesDrawer({
                   </Button>
                   <Button
                     variant="outline"
-                    className="flex-1"
+                    className="w-full sm:flex-1"
                     onClick={() => void handleChatWithHelper()}
                     disabled={creatingChat || !currentResponse.helper_profile?.user?.id}
                   >
@@ -360,10 +360,10 @@ export function ResponsesDrawer({
         </div>
 
         <DrawerFooter className="border-t">
-          <div className="flex gap-2 w-full">
+          <div className="flex flex-col sm:flex-row gap-2 w-full">
             <Button
               variant="default"
-              className="flex-1"
+              className="w-full sm:flex-1"
               onClick={() => void handleAccept()}
               disabled={actionLoading !== null}
             >
@@ -376,7 +376,7 @@ export function ResponsesDrawer({
             </Button>
             <Button
               variant="destructive"
-              className="flex-1"
+              className="w-full sm:flex-1"
               onClick={() => void handleReject()}
               disabled={actionLoading !== null}
             >

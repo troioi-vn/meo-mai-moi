@@ -123,7 +123,7 @@ const CreateHelperProfilePage: React.FC = () => {
                     type="submit"
                     aria-label="Create Helper Profile"
                     disabled={isSubmitting || loadingPetTypes}
-                    className="flex-1 h-12 text-lg font-semibold"
+                    className="flex-1"
                   >
                     {isSubmitting ? 'Creating Profile...' : 'Create Helper Profile'}
                   </Button>
@@ -134,7 +134,6 @@ const CreateHelperProfilePage: React.FC = () => {
                       handleCancel()
                     }}
                     disabled={isSubmitting}
-                    className="h-12 px-8"
                   >
                     Cancel
                   </Button>

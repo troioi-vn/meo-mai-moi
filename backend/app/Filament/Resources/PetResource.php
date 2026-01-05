@@ -72,26 +72,12 @@ class PetResource extends Resource
                     ->required()
                     ->default('active'),
 
-                Select::make('user_id')
-                    ->label('Owner')
-                    ->relationship('user', 'name')
+                Select::make('created_by')
+                    ->label('Creator')
+                    ->relationship('creator', 'name')
                     ->searchable()
                     ->preload()
                     ->required(),
-
-                Select::make('viewers')
-                    ->label('Viewers (can view)')
-                    ->relationship('viewers', 'name')
-                    ->multiple()
-                    ->searchable()
-                    ->preload(),
-
-                Select::make('editors')
-                    ->label('Editors (can edit)')
-                    ->relationship('editors', 'name')
-                    ->multiple()
-                    ->searchable()
-                    ->preload(),
             ]);
     }
 
@@ -152,10 +138,16 @@ class PetResource extends Resource
                         'danger' => 'deleted',
                     ]),
 
-                TextColumn::make('user.name')
-                    ->label('Owner')
+                TextColumn::make('owners.name')
+                    ->label('Owners')
+                    ->badge()
+                    ->searchable(),
+
+                TextColumn::make('creator.name')
+                    ->label('Creator')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('created_at')
                     ->dateTime()
@@ -178,9 +170,9 @@ class PetResource extends Resource
                     ->options(PetStatus::class)
                     ->searchable(),
 
-                SelectFilter::make('user_id')
-                    ->label('Owner')
-                    ->relationship('user', 'name')
+                SelectFilter::make('created_by')
+                    ->label('Creator')
+                    ->relationship('creator', 'name')
                     ->searchable()
                     ->preload(),
             ])
@@ -199,6 +191,7 @@ class PetResource extends Resource
     public static function getRelations(): array
     {
         return [
+            RelationManagers\RelationshipsRelationManager::class,
             RelationManagers\WeightHistoriesRelationManager::class,
             // TODO: FosterAssignmentsRelationManager removed - reimplment when rehoming flow is rebuilt
             RelationManagers\PlacementRequestsRelationManager::class,
@@ -224,6 +217,6 @@ class PetResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['petType', 'creator']);
+            ->with(['petType', 'creator', 'owners', 'fosters', 'sitters']);
     }
 }

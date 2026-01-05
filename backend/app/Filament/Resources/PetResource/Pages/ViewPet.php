@@ -100,12 +100,33 @@ class ViewPet extends ViewRecord
                                         PetStatus::DECEASED => 'primary',
                                         PetStatus::DELETED => 'danger',
                                     }),
-                                TextEntry::make('user.name')
-                                    ->label('Owner'),
+                                TextEntry::make('creator.name')
+                                    ->label('Creator'),
                             ])
                             ->columnSpan(2),
                     ])
                     ->columns(3),
+
+                Section::make('Current Relationships')
+                    ->schema([
+                        TextEntry::make('owners.name')
+                            ->label('Owners')
+                            ->badge()
+                            ->color('primary')
+                            ->placeholder('No active owners'),
+                        TextEntry::make('fosters.name')
+                            ->label('Fosters')
+                            ->badge()
+                            ->color('success')
+                            ->placeholder('No active fosters'),
+                        TextEntry::make('sitters.name')
+                            ->label('Sitters')
+                            ->badge()
+                            ->color('warning')
+                            ->placeholder('No active sitters'),
+                    ])
+                    ->columns(3)
+                    ->collapsible(),
 
                 Section::make('Description')
                     ->schema([

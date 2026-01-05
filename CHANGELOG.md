@@ -6,6 +6,18 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Admin Panel Pet Relationships Management**:
+
+  - **Full Relationship Representation**: Updated the "View Pet" page in admin panel to display all PetRelationships records (including expired ones) instead of just showing the creator as "Owner"
+  - **RelationshipsRelationManager**: New relation manager for managing all pet relationships (Owner, Foster, Sitter, Editor, Viewer) with full CRUD operations
+  - **Transfer Ownership**: Added bulk action to transfer ownership from current owners to a new owner with proper end/start dates
+  - **End Relationship**: Added action to end active relationships (e.g., when foster period ends) while preserving historical records
+  - **Streamlined Pet Form**: Removed redundant "Viewers" and "Editors" multiple-select fields from main pet form, now managed exclusively through relationships section
+  - **Enhanced ViewPet Page**: Added "Current Relationships" section showing active Owners, Fosters, and Sitters with color-coded badges
+  - **Updated PetResource Table**: Renamed "Owner" to "Creator" for clarity, added "Owners" column showing current active owners
+
+### Added
+
 - **Placement Request System Complete Migration (Phase 4)**:
 
   - **New Type System**: Introduced comprehensive type definitions in `frontend/src/types/placement.ts` for the new placement request data model:

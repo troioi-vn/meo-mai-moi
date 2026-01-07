@@ -11,6 +11,7 @@ export interface RegisterResponse {
     id: number
     name: string
     email: string
+    has_password?: boolean
     email_verified_at?: string | null
   }
   email_verified: boolean
@@ -30,6 +31,7 @@ export interface LoginResponse {
     id: number
     name: string
     email: string
+    has_password?: boolean
     email_verified_at?: string | null
   }
   two_factor: boolean
@@ -39,5 +41,6 @@ export interface User {
   id: number
   name: string
   email: string
+  has_password?: boolean
   email_verified_at?: string | null
 }

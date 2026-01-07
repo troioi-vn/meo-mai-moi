@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { ChangePasswordDialog } from '@/components/auth/ChangePasswordDialog'
+import { SetPasswordComponent } from '@/components/auth/SetPasswordComponent'
 import { DeleteAccountDialog } from '@/components/auth/DeleteAccountDialog'
 
 const TAB_VALUES = ['account', 'notifications', 'contact-us'] as const
@@ -107,12 +108,16 @@ function AccountTabContent() {
           <CardDescription>Sign out or remove your account.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              Update your password to keep your account secure.
-            </p>
-            <ChangePasswordDialog />
-          </div>
+          {user.has_password ? (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Update your password to keep your account secure.
+              </p>
+              <ChangePasswordDialog />
+            </div>
+          ) : (
+            <SetPasswordComponent />
+          )}
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
               Sign out of this session. You can always log back in later.

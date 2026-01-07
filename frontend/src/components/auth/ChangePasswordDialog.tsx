@@ -20,12 +20,16 @@ export function ChangePasswordDialog() {
           Change password
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-125">
         <DialogHeader>
           <DialogTitle>Change password</DialogTitle>
           <DialogDescription>Update your password to keep your account secure.</DialogDescription>
         </DialogHeader>
-        <ChangePasswordForm onSuccess={() => { setOpen(false) }} />
+        <ChangePasswordForm
+          onSuccess={() => {
+            setOpen(false)
+          }}
+        />
       </DialogContent>
     </Dialog>
   )

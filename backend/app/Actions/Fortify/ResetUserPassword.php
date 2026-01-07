@@ -25,8 +25,9 @@ class ResetUserPassword implements ResetsUserPasswords
         ])->validate();
 
         // Update password and remember token (matching existing behavior)
+        // With 'hashed' cast on User model, we should not manually hash here to avoid double-hashing
         $user->forceFill([
-            'password' => Hash::make($input['password']),
+            'password' => $input['password'],
         ])->setRememberToken(Str::random(60));
 
         $user->save();

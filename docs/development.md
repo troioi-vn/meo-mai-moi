@@ -126,6 +126,16 @@ npm run e2e:report     # open last HTML report
 
 ## Static Analysis & Quality Gates
 
+### Code Quality (Formatting)
+
+Run Laravel Pint to automatically format code according to PSR-12 and Laravel conventions.
+
+```bash
+# From the backend directory
+cd backend
+./vendor/bin/pint
+```
+
 ### PHPStan (Backend Type Analysis)
 
 PHPStan enforces type safety and catches bugs at write-time using static analysis. Currently configured at **Level 5**.

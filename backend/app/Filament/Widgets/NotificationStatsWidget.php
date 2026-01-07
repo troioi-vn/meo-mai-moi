@@ -19,9 +19,7 @@ class NotificationStatsWidget extends BaseWidget
     {
         // Basic notification stats
         $totalNotifications = Notification::count();
-        $unreadNotifications = Notification::unread()->count();
         $deliveredNotifications = Notification::delivered()->count();
-        $failedNotifications = Notification::failed()->count();
         $pendingNotifications = Notification::pending()->count();
 
         // Email-specific stats (last 24 hours)

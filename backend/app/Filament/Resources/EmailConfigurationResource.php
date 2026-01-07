@@ -604,7 +604,7 @@ class EmailConfigurationResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+
         ];
     }
 

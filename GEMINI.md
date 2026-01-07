@@ -10,6 +10,7 @@ Meo Mai Moi is a comprehensive cat care management platform that helps cat owner
 
 **Core Features (MVP Focus)**:
 **Cat Care Management**:
+
 - Cat profiles with photos, sex information, and personality traits
 - Health tracking with medical records and vaccination schedules
 - Weight monitoring with visual charts and trend analysis
@@ -18,6 +19,7 @@ Meo Mai Moi is a comprehensive cat care management platform that helps cat owner
 - Multi-cat household support with individual care plans
 
 **System Features**:
+
 - Role-based access control (RBAC) via Spatie Permission
 - User impersonation system for admin support and testing
 - Email notification system for health reminders and alerts
@@ -25,8 +27,6 @@ Meo Mai Moi is a comprehensive cat care management platform that helps cat owner
 - Photo timeline tracking for growth and memorable moments
 
 ## 2) Tech and architecture
-
-
 
 - **Backend**: Laravel 12 + PHP 8.4
 
@@ -40,8 +40,6 @@ Meo Mai Moi is a comprehensive cat care management platform that helps cat owner
 
 - **Admin Panel**: Filament 3 with comprehensive pet and user management.
 
-
-
 ### Key Technical Decisions
 
 - **Authentication**: Session-based with Sanctum
@@ -50,11 +48,7 @@ Meo Mai Moi is a comprehensive cat care management platform that helps cat owner
 
 - **Quality Gates**: PHPStan Level 5, Deptrac architecture enforcement
 
-
-
 ### Backend Architecture (Laravel)
-
-
 
 #### Layer Structure (Enforced by Deptrac)
 
@@ -72,8 +66,6 @@ Domain (Models, Enums)
 
 ```
 
-
-
 **Key Patterns**:
 
 - Controllers are thin - delegate to Services
@@ -86,11 +78,7 @@ Domain (Models, Enums)
 
 - Use Spatie Permission as single source of truth for RBAC
 
-
-
 ### Frontend Architecture (React + TypeScript)
-
-
 
 #### Component Structure
 
@@ -114,8 +102,6 @@ src/
 
 ```
 
-
-
 **State Management**:
 
 - **React Query** for server state
@@ -125,8 +111,6 @@ src/
 - **AuthProvider** for authentication context
 
 - Local state with `useState` for UI state
-
-
 
 ### Security Patterns
 
@@ -140,23 +124,15 @@ src/
 
 - Input validation via Form Requests
 
-
-
 ## 2a) Coding Standards & Best Practices
 
-
-
 ### PHP/Laravel Standards
-
-
 
 **Code Style**:
 
 - **Laravel Pint** enforces PSR-12 with Laravel conventions
 
 - Run before commit: `./vendor/bin/pint`
-
-
 
 **Naming Conventions**:
 
@@ -168,11 +144,7 @@ src/
 
 - **Methods**: camelCase (`createPet`, `updateStatus`)
 
-
-
 ### TypeScript/React Standards
-
-
 
 **Code Style**:
 
@@ -180,11 +152,7 @@ src/
 
 - Run before commit: `npm run lint && npm run typecheck`
 
-
-
 ### Documentation Standards
-
-
 
 **Code Comments**:
 
@@ -192,19 +160,16 @@ src/
 
 - Document complex business logic
 
-
-
 **API Documentation**:
 
 - OpenAPI annotations on all endpoints
 
 - Keep swagger docs up to date
 
-
-
 ## 3) Development basics (quick)
 
 **Quick Start Commands**
+
 ```bash
 # Start development environment (recommended)
 ./utils/deploy.sh
@@ -219,33 +184,39 @@ docker compose exec backend php artisan storage:link
 ```
 
 **Access Points**
+
 - **Main App**: http://localhost:8000
 - **Admin Panel**: http://localhost:8000/admin (admin@catarchy.space / password)
 - **API Docs**: http://localhost:8000/api/documentation
 
 **Test Users (Seeded Data)**
+
 - **Super Admin**: admin@catarchy.space / password
-- **Admin**: user1@catarchy.space / password  
+- **Admin**: user1@catarchy.space / password
 - **Regular Users**: 3 users with factory-generated names/emails / password
 
 **Admin Features**
+
 - **User Impersonation**: Click 👤 icon in Users table to impersonate any user
 - **Stop Impersonating**: Use navbar indicator or admin panel to return
 
 ## 4) Testing
 
 **Backend (Pest/PHPUnit)**:
+
 ```bash
-docker compose exec backend php artisan test
+cd backend && php artisan test --parallel
 ```
 
 **Frontend (Vitest + RTL)**:
+
 ```bash
 cd frontend && npm test
 cd frontend && npm run typecheck
 ```
 
 **E2E Tests (Playwright + MailHog)**:
+
 ```bash
 cd frontend && npm run test:e2e
 cd frontend && npm run test:e2e:keep  # Keep services running for debugging
@@ -283,43 +254,43 @@ cd frontend && npm run test:e2e:keep  # Keep services running for debugging
 
 **Backend Issues**
 
-*   **Database Connection Errors**: 
-    *   Check PostgreSQL is running: `docker compose ps db`
-    *   Reset database using deploy script (recommended): `./utils/deploy.sh --fresh --seed`
-*   **Login Issues (Admin Password Corruption)**:
-    *   Use deploy script (includes automatic password verification): `./utils/deploy.sh`
-*   **Test Failures with RefreshDatabase**:
-    *   Install `postgresql-client` if `psql` command missing.
-    *   Ensure `PetTypeSeeder` runs before pet-related tests.
-    *   Clear caches: `php artisan optimize:clear`
+- **Database Connection Errors**:
+  - Check PostgreSQL is running: `docker compose ps db`
+  - Reset database using deploy script (recommended): `./utils/deploy.sh --fresh --seed`
+- **Login Issues (Admin Password Corruption)**:
+  - Use deploy script (includes automatic password verification): `./utils/deploy.sh`
+- **Test Failures with RefreshDatabase**:
+  - Install `postgresql-client` if `psql` command missing.
+  - Ensure `PetTypeSeeder` runs before pet-related tests.
+  - Clear caches: `php artisan optimize:clear`
 
 **Frontend Issues**
 
-*   **Build Failures**:
-    *   Clear node_modules: `rm -rf node_modules && npm install`
-    *   Check TypeScript errors: `npm run typecheck`
-*   **Test Environment Issues**:
-    *   Radix/shadcn components need polyfills in `setupTests.ts`
-    *   MSW handlers must use absolute URLs
+- **Build Failures**:
+  - Clear node_modules: `rm -rf node_modules && npm install`
+  - Check TypeScript errors: `npm run typecheck`
+- **Test Environment Issues**:
+  - Radix/shadcn components need polyfills in `setupTests.ts`
+  - MSW handlers must use absolute URLs
 
 **Docker Issues**
 
-*   **Container Won't Start**:
-    *   Check logs: `docker compose logs backend`
-    *   Use deploy script: `./utils/deploy.sh --no-cache`
+- **Container Won't Start**:
+  - Check logs: `docker compose logs backend`
+  - Use deploy script: `./utils/deploy.sh --no-cache`
 
 **E2E Testing Issues**
 
-*   **MailHog Not Accessible**:
-    *   Ensure e2e profile is running: `docker compose --profile e2e ps`
-    *   Check MailHog API: `curl http://localhost:8025/api/v2/messages`
-    *   Restart services: `docker compose --profile e2e down && docker compose --profile e2e up -d`
-*   **Email Configuration Errors**:
-    *   Verify config: `docker compose exec backend php artisan email:verify-config --env=e2e`
-    *   Reset email config: `docker compose exec backend php artisan db:seed --class=E2EEmailConfigurationSeeder --env=e2e`
-*   **Test Database Issues**:
-    *   Use test database: `DB_DATABASE=meo_mai_moi_test` in backend/.env.e2e
-    *   Fresh setup: `docker compose exec backend php artisan migrate:fresh --env=e2e`
+- **MailHog Not Accessible**:
+  - Ensure e2e profile is running: `docker compose --profile e2e ps`
+  - Check MailHog API: `curl http://localhost:8025/api/v2/messages`
+  - Restart services: `docker compose --profile e2e down && docker compose --profile e2e up -d`
+- **Email Configuration Errors**:
+  - Verify config: `docker compose exec backend php artisan email:verify-config --env=e2e`
+  - Reset email config: `docker compose exec backend php artisan db:seed --class=E2EEmailConfigurationSeeder --env=e2e`
+- **Test Database Issues**:
+  - Use test database: `DB_DATABASE=meo_mai_moi_test` in backend/.env.e2e
+  - Fresh setup: `docker compose exec backend php artisan migrate:fresh --env=e2e`
 
 ## 8) Linting & formatting
 
@@ -329,12 +300,12 @@ cd frontend && npm run test:e2e:keep  # Keep services running for debugging
 ## 9) Quick commands
 
 - Start (Docker): `docker compose up -d --build`
-- Backend tests: `docker compose exec backend php artisan test`
+- Backend tests: `cd backend && php artisan test --parallel`
 - Frontend tests: `cd frontend && npm test`
 - E2E tests: `cd frontend && npm run test:e2e`
 - E2E debug: `cd frontend && npm run test:e2e:keep` (keeps services running)
 - Migrate/seed (Docker): `docker compose exec backend php artisan migrate --seed`
-- Generate API docs: `docker compose exec backend php artisan l5-swagger:generate`
+- Generate API docs: `php artisan l5-swagger:generate` (generates automatically alongside the openapi spec tests)
 - Admin panel: http://localhost:8000/admin
 - MailHog UI: http://localhost:8025 (during e2e tests)
 

@@ -198,7 +198,9 @@ class PetRelationshipService
             $query->where('user_id', $user->id)
                 ->where('relationship_type', $type)
                 ->whereNull('end_at');
-        }])->get();
+        },
+        ])
+            ->get();
     }
 
     /**

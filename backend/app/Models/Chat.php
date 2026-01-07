@@ -195,5 +195,6 @@ class Chat extends Model
                         ->orWhere('chat_messages.created_at', '>', \DB::raw('chat_users.last_read_at'));
                 });
         }]);
+
     }
 }

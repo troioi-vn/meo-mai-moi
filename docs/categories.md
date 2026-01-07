@@ -569,13 +569,13 @@ updateCategories(categories: Category[]): void
 
 ```bash
 # Run all category tests
-php artisan test --filter CategoryTest
+php artisan test --parallel --filter CategoryTest
 
 # Run with verbose output
-php artisan test --filter CategoryTest -v
+php artisan test --parallel --filter CategoryTest -v
 
 # Run specific test
-php artisan test --filter test_can_list_categories_by_pet_type
+php artisan test --parallel --filter test_can_list_categories_by_pet_type
 ```
 
 **All 18 tests passing** (100% pass rate):

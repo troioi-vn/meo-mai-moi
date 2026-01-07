@@ -6,6 +6,17 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Parallel Testing**: Enabled parallel testing for backend using ParaTest, significantly reducing test execution time.
+- **Improved Testing Stability**: Added logic to skip heavy media conversions during testing to avoid lock contention and race conditions in parallel runs.
+- **Documentation Updates**: Updated `GEMINI.md`, `README.md`, and developer guides with latest local development workflows and testing commands.
+
+### Fixed
+
+- **Notification Template Syntax**: Fixed a syntax error in `NotificationTemplateResource` that prevented the admin panel from loading.
+- **Intermittent Test Failures**: Fixed a race condition/logic error in `EmailNotificationDeliveryTest` caused by random `PET_SITTING` request types in factories.
+
+### Added
+
 - **OAuth User Password Management**:
 
   - **`has_password` Flag**: Added `has_password` boolean to user profile response to indicate whether a user has a password set (relevant for OAuth/SSO users)

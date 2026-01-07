@@ -44,7 +44,7 @@ class NotificationTemplateResource extends Resource
                                 if ($channel && isset($cfg['channels']) && is_array($cfg['channels']) && ! in_array($channel, $cfg['channels'], true)) {
                                     return [];
                                 }
-                                $label = \Illuminate\Support\Str::headline($slug)." ($key)";
+                                $label = \Illuminate\Support\Str::headline($slug)." ({$key})";
 
                                 return [$key => $label];
                             })
@@ -104,7 +104,7 @@ class NotificationTemplateResource extends Resource
                                     $req = ! empty($v['required']) ? ' (required)' : '';
                                     $type = $v['type'] ?? 'mixed';
 
-                                    return "- {{$v['name']}}: $type$req";
+                                    return "- {{$v['name']}}: {$type}{$req}";
                                 }, $vars);
 
                                 return new HtmlString(nl2br(e(implode("\n", $lines))));
@@ -150,7 +150,6 @@ class NotificationTemplateResource extends Resource
                         ->modalSubmitAction(false)
                         ->modalCancelActionLabel('Close')
                         ->modalContent(function (Get $get) {
-                            $type = (string) $get('type');
                             $channel = (string) $get('channel');
                             $locale = (string) $get('locale');
                             $subject = $get('subject_template');
@@ -251,22 +250,22 @@ class NotificationTemplateResource extends Resource
                         $fileBody = '';
 
                         if ($channel === 'in_app' && $slug) {
-                            $path = resource_path("templates/notifications/bell/$locale/$slug.md");
+                            $path = resource_path("templates/notifications/bell/{$locale}/{$slug}.md");
                             if (is_file($path)) {
                                 $fileBody = file_get_contents($path) ?: '';
-                                $defaultLabel = "File: $path";
+                                $defaultLabel = "File: {$path}";
                             } else {
                                 $defaultLabel = 'No file default found.';
                             }
                         } elseif ($channel === 'email' && $slug) {
-                            $view = "emails.notifications.$locale.$slug";
-                            $legacy = "emails.notifications.$slug";
+                            $view = "emails.notifications.{$locale}.{$slug}";
+                            $legacy = "emails.notifications.{$slug}";
                             if (view()->exists($view)) {
-                                $fileBody = "@include('$view')";
-                                $defaultLabel = "View: $view";
+                                $fileBody = "@include('{$view}')";
+                                $defaultLabel = "View: {$view}";
                             } elseif (view()->exists($legacy)) {
-                                $fileBody = "@include('$legacy')";
-                                $defaultLabel = "View: $legacy (legacy)";
+                                $fileBody = "@include('{$legacy}')";
+                                $defaultLabel = "View: {$legacy} (legacy)";
                             } else {
                                 $defaultLabel = 'No view default found.';
                             }
@@ -363,7 +362,7 @@ class NotificationTemplateResource extends Resource
         }
 
         if ($channel === 'in_app') {
-            $path = resource_path("templates/notifications/bell/$locale/$slug.md");
+            $path = resource_path("templates/notifications/bell/{$locale}/{$slug}.md");
             if (is_file($path)) {
                 $set('engine', 'markdown');
                 $set('body_template', file_get_contents($path) ?: '');
@@ -373,24 +372,24 @@ class NotificationTemplateResource extends Resource
         }
 
         if ($channel === 'email') {
-            $view = "emails.notifications.$locale.$slug";
-            $legacy = "emails.notifications.$slug";
+            $view = "emails.notifications.{$locale}.{$slug}";
+            $legacy = "emails.notifications.{$slug}";
             if (view()->exists($view)) {
                 $set('engine', 'blade');
-                $set('body_template', "@include('$view')");
+                $set('body_template', "@include('{$view}')");
 
                 return;
             }
             if (view()->exists($legacy)) {
                 $set('engine', 'blade');
-                $set('body_template', "@include('$legacy')");
+                $set('body_template', "@include('{$legacy}')");
 
                 return;
             }
         }
 
         // Fallback: set engine default by channel if nothing found
-        $defaultEngine = config("notification_templates.channels.$channel.engine", 'blade');
+        $defaultEngine = config("notification_templates.channels.{$channel}.engine", 'blade');
         $set('engine', $defaultEngine);
     }
 

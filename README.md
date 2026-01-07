@@ -94,7 +94,7 @@ git add -p && git commit -m "feat: do one thing"
 
 ```bash
 # Backend
-docker compose exec backend php artisan test
+cd backend && php artisan test --parallel
 cd backend && ./vendor/bin/pint
 
 # Frontend

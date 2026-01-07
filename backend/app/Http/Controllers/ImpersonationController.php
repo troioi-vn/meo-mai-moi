@@ -26,12 +26,12 @@ class ImpersonationController extends Controller
 
         return response()->json([
             'is_impersonating' => true,
-            'impersonator' => ($impersonator instanceof \App\Models\User) ? [
+            'impersonator' => $impersonator instanceof \App\Models\User ? [
                 'id' => $impersonator->id,
                 'name' => $impersonator->name,
                 'can_access_admin' => $impersonator->hasRole(['admin', 'super_admin']),
             ] : null,
-            'impersonated_user' => ($currentUser instanceof \App\Models\User) ? [
+            'impersonated_user' => $currentUser instanceof \App\Models\User ? [
                 'id' => $currentUser->id,
                 'name' => $currentUser->name,
             ] : null,

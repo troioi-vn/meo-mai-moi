@@ -264,7 +264,7 @@ class PetTypeResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+
         ];
     }
 

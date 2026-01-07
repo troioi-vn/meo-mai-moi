@@ -90,10 +90,8 @@ class ManagePhotos extends ManageRelatedRecords
                     ->sortable(),
             ])
             ->filters([
-                //
             ])
             ->headerActions([
-                //
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()

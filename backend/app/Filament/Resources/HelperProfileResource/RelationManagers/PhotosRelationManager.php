@@ -58,7 +58,6 @@ class PhotosRelationManager extends RelationManager
                     ->toggleable(),
             ])
             ->filters([
-                //
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()

@@ -200,7 +200,7 @@ class UpdatePetController extends Controller
         if (isset($data['city_id'])) {
             $countryForCity = $data['country'] ?? $pet->country;
             $city = City::find($data['city_id']);
-            if (! ($city instanceof City)) {
+            if (! $city instanceof City) {
                 return $this->sendError('City not found.', 422);
             }
             if ($city->country !== $countryForCity) {
@@ -243,7 +243,7 @@ class UpdatePetController extends Controller
         $pet->load(['petType', 'categories', 'viewers', 'editors', 'city']);
 
         // Build viewer permission flags for response
-        $canEdit = ($user instanceof \App\Models\User && $pet->canBeEditedBy($user)) || $this->hasRole($user, ['admin', 'super_admin']);
+        $canEdit = $user instanceof \App\Models\User && $pet->canBeEditedBy($user) || $this->hasRole($user, ['admin', 'super_admin']);
         $isOwner = $user instanceof \App\Models\User && $pet->isOwnedBy($user);
         $isViewer = $user instanceof \App\Models\User && $pet->hasRelationshipWith($user, PetRelationshipType::VIEWER);
 

@@ -305,6 +305,7 @@ class EmailNotificationDeliveryTest extends TestCase
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
             'status' => PlacementRequestStatus::OPEN->value,
+            'request_type' => \App\Enums\PlacementRequestType::FOSTER_FREE,
         ]);
         $helperProfile1 = HelperProfile::factory()->create(['user_id' => $helper1->id]);
         $helperProfile2 = HelperProfile::factory()->create(['user_id' => $helper2->id]);

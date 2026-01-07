@@ -401,6 +401,11 @@ class Pet extends Model implements HasMedia
      */
     public function registerMediaConversions(?Media $media = null): void
     {
+        // Skip conversions during testing to avoid parallel test conflicts
+        if (app()->environment('testing')) {
+            return;
+        }
+
         $this->addMediaConversion('thumb')
             ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256);
 

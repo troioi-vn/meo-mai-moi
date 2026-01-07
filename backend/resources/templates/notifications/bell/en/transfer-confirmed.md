@@ -3,4 +3,3 @@
 The placement is now active.
 
 {{ $link ?? '/' }}
-

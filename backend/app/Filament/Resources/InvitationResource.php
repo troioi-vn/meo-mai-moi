@@ -263,7 +263,7 @@ class InvitationResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+
         ];
     }
 

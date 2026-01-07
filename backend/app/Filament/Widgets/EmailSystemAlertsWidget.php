@@ -85,7 +85,11 @@ class EmailSystemAlertsWidget extends Widget
                 ];
             }
         } catch (\Exception $e) {
-            // Ignore if jobs table doesn't exist
+            // Log the exception but don't fail the widget
+            // This commonly happens when the jobs table doesn't exist during setup
+            \Illuminate\Support\Facades\Log::debug('EmailSystemAlertsWidget: Failed to get queued jobs count', [
+                'error' => $e->getMessage(),
+            ]);
         }
 
         // Check for notifications pending delivery for too long

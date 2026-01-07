@@ -228,7 +228,7 @@ class WaitlistEntryResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+
         ];
     }
 

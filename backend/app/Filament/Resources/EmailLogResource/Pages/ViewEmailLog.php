@@ -12,7 +12,7 @@ class ViewEmailLog extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            //
+
         ];
     }
 }

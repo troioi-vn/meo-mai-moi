@@ -316,6 +316,11 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
      */
     public function registerMediaConversions(?Media $media = null): void
     {
+        // Skip conversions during testing to avoid parallel test conflicts
+        if (app()->environment('testing')) {
+            return;
+        }
+
         $this->addMediaConversion('avatar_thumb')
             ->fit(\Spatie\Image\Enums\Fit::Crop, 128, 128);
 

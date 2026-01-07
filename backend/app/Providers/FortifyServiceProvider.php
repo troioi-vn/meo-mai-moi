@@ -66,6 +66,11 @@ class FortifyServiceProvider extends ServiceProvider
             Log::info('Login attempt', [
                 'email' => $email,
                 'password_length' => strlen($password ?? ''),
+                'accepts_json' => $request->expectsJson(),
+                'accept_header' => $request->header('Accept'),
+                'content_type' => $request->header('Content-Type'),
+                'x_requested_with' => $request->header('X-Requested-With'),
+                'user_agent' => Str::limit($request->userAgent(), 50),
             ]);
 
             $user = User::where('email', $email)->first();

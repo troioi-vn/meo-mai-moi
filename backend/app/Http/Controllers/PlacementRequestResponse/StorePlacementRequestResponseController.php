@@ -100,7 +100,7 @@ class StorePlacementRequestResponseController extends Controller
             return $this->sendError($message, 403);
         }
 
-        /** @phpstan-ignore-next-line */
+        /** @var \App\Models\HelperProfile $helperProfile */
         if (! $placementRequest->canHelperRespond($helperProfile->id)) {
             // If blocked (rejected), treat as forbidden rather than conflict
             if ($placementRequest->isHelperBlocked($helperProfile->id)) {

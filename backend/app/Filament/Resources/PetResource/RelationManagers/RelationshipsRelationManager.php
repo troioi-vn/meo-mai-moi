@@ -113,6 +113,7 @@ class RelationshipsRelationManager extends RelationManager
                             ->required(),
                     ])
                     ->action(function (RelationManager $livewire, array $data) {
+                        /** @var \App\Models\Pet $pet */
                         $pet = $livewire->getOwnerRecord();
 
                         // End current ownerships

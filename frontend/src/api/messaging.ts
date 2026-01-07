@@ -110,7 +110,3 @@ export async function createDirectChat(
   }
   return createChat(payload)
 }
-
-
-
-

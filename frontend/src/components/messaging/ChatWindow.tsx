@@ -164,4 +164,3 @@ const MessageSkeleton: React.FC<{ isOwn: boolean }> = ({ isOwn }) => (
     <Skeleton className={cn('h-12 rounded-2xl', isOwn ? 'w-48' : 'w-64')} />
   </div>
 )
-

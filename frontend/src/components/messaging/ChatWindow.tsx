@@ -64,14 +64,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     <div className="h-full flex flex-col">
       {/* Header */}
       <div className="flex items-center gap-3 p-4 border-b bg-background">
-        <Button variant="ghost" size="icon" onClick={onBack} className="md:hidden flex-shrink-0">
+        <Button variant="ghost" size="icon" onClick={onBack} className="md:hidden shrink-0">
           <ChevronLeft className="h-5 w-5" />
         </Button>
 
         {loading ? (
           <Skeleton className="h-10 w-10 rounded-full" />
         ) : (
-          <Avatar className="h-10 w-10 flex-shrink-0">
+          <Avatar className="h-10 w-10 shrink-0">
             <AvatarImage src={avatarUrl} alt={displayName} />
             <AvatarFallback className="bg-primary/10 text-primary font-medium">
               {initials}
@@ -160,7 +160,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
 const MessageSkeleton: React.FC<{ isOwn: boolean }> = ({ isOwn }) => (
   <div className={cn('flex gap-2', isOwn ? 'flex-row-reverse' : 'flex-row')}>
-    <Skeleton className="h-8 w-8 rounded-full flex-shrink-0" />
+    <Skeleton className="h-8 w-8 rounded-full shrink-0" />
     <Skeleton className={cn('h-12 rounded-2xl', isOwn ? 'w-48' : 'w-64')} />
   </div>
 )

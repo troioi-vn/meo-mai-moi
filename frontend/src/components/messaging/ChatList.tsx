@@ -100,7 +100,7 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onClick }
       )}
     >
       <div className="flex items-start gap-3">
-        <Avatar className="h-12 w-12 flex-shrink-0">
+        <Avatar className="h-12 w-12 shrink-0">
           <AvatarImage src={avatarUrl} alt={displayName} />
           <AvatarFallback className="bg-primary/10 text-primary font-medium">
             {initials}
@@ -113,7 +113,7 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onClick }
               {displayName}
             </span>
             {lastMessage && (
-              <span className="text-xs text-muted-foreground flex-shrink-0">
+              <span className="text-xs text-muted-foreground shrink-0">
                 {formatRelativeTime(lastMessage.created_at)}
               </span>
             )}
@@ -135,7 +135,7 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onClick }
             )}
 
             {hasUnread && (
-              <Badge variant="default" className="h-5 min-w-5 px-1.5 text-xs flex-shrink-0">
+              <Badge variant="default" className="h-5 min-w-5 px-1.5 text-xs shrink-0">
                 {chat.unread_count > 99 ? '99+' : chat.unread_count}
               </Badge>
             )}
@@ -154,7 +154,7 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onClick }
 
 const ChatListItemSkeleton: React.FC = () => (
   <div className="flex items-start gap-3">
-    <Skeleton className="h-12 w-12 rounded-full flex-shrink-0" />
+    <Skeleton className="h-12 w-12 rounded-full shrink-0" />
     <div className="flex-1 space-y-2">
       <Skeleton className="h-4 w-1/3" />
       <Skeleton className="h-3 w-2/3" />

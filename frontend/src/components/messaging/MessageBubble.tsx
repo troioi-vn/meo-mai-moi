@@ -27,7 +27,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   return (
     <div className={cn('flex gap-2 group', isOwn ? 'flex-row-reverse' : 'flex-row')}>
       {/* Avatar placeholder for alignment */}
-      <div className="w-8 flex-shrink-0">
+      <div className="w-8 shrink-0">
         {showAvatar && !isOwn && (
           <Avatar className="h-8 w-8">
             <AvatarImage src={sender.avatar_url ?? undefined} alt={sender.name} />
@@ -49,7 +49,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         {/* Message bubble */}
         <div
           className={cn(
-            'px-4 py-2 rounded-2xl break-words whitespace-pre-wrap',
+            'px-4 py-2 rounded-2xl wrap-break-word whitespace-pre-wrap',
             isOwn
               ? 'bg-primary text-primary-foreground rounded-br-md'
               : 'bg-muted text-foreground rounded-bl-md'

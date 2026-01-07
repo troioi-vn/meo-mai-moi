@@ -45,7 +45,7 @@ const MessagesPage: React.FC = () => {
         {/* Chat list - hidden on mobile when a chat is selected */}
         <div
           className={cn(
-            'w-full md:w-80 lg:w-96 border-r flex-shrink-0',
+            'w-full md:w-80 lg:w-96 border-r shrink-0',
             selectedChatId ? 'hidden md:block' : 'block'
           )}
         >

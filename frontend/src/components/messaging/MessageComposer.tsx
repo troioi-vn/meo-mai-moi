@@ -65,14 +65,14 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         disabled={disabled}
-        className="min-h-[44px] max-h-[120px] resize-none"
+        className="min-h-11 max-h-30 resize-none"
         rows={1}
       />
       <Button
         type="submit"
         size="icon"
         disabled={disabled || !content.trim()}
-        className="h-11 w-11 flex-shrink-0"
+        className="h-11 w-11 shrink-0"
       >
         <Send className="h-5 w-5" />
         <span className="sr-only">Send message</span>

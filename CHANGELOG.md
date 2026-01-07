@@ -6,6 +6,17 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **OAuth User Password Management**:
+
+  - **`has_password` Flag**: Added `has_password` boolean to user profile response to indicate whether a user has a password set (relevant for OAuth/SSO users)
+  - **Smart Password UI**: Settings page now shows context-aware password management:
+    - Users with a password see the existing "Change password" dialog
+    - OAuth users (no password set) see a "Set password" component with email-based setup flow
+  - **Improved Error Messages**: Enhanced `UpdatePasswordRequest` validator to detect users without a password and provide clear guidance: "This account has no password set. Please use the password reset option to set one."
+  - **Seamless Password Setup**: OAuth users can now set their first password through the existing forgot-password flow (email link → set password)
+
+### Added
+
 - **Admin Panel Pet Relationships Management**:
 
   - **Full Relationship Representation**: Updated the "View Pet" page in admin panel to display all PetRelationships records (including expired ones) instead of just showing the creator as "Owner"

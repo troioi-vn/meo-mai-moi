@@ -2,10 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Enums\PetRelationshipType;
 use App\Enums\PlacementRequestType;
 use App\Models\Pet;
-use App\Models\PetRelationship;
 use App\Models\PetType;
 use App\Models\PlacementRequest;
 use App\Models\User;
@@ -93,11 +91,11 @@ class DatabaseSeeder extends Seeder
 
             // User 3: 2 cats, 2 dogs, 1 bird
             for ($i = 1; $i <= 2; $i++) {
-                $pet = $this->createPet($user3, $catType, "cat-".($i + 2).".png");
+                $pet = $this->createPet($user3, $catType, 'cat-'.($i + 2).'.png');
                 $this->addWeightHistory($pet, rand(3, 5));
             }
             for ($i = 1; $i <= 2; $i++) {
-                $pet = $this->createPet($user3, $dogType, "dog-".($i + 2).".png");
+                $pet = $this->createPet($user3, $dogType, 'dog-'.($i + 2).'.png');
                 $this->addWeightHistory($pet, rand(3, 5));
             }
             $this->createPet($user3, $birdType, 'bird.png');

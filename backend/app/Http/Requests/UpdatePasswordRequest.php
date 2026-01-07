@@ -27,7 +27,14 @@ class UpdatePasswordRequest extends FormRequest
                 'required',
                 'string',
                 function ($attribute, $value, $fail) {
-                    if (! Hash::check($value, $this->user()->password)) {
+                    $user = $this->user();
+                    // Check if user has no password set (e.g., OAuth user)
+                    if (empty($user->password)) {
+                        $fail('This account has no password set. Please use the password reset option to set one.');
+
+                        return;
+                    }
+                    if (! Hash::check($value, $user->password)) {
                         $fail('The provided password does not match your current password.');
                     }
                 },

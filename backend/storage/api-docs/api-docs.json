@@ -6436,6 +6436,10 @@
                         "type": "string",
                         "nullable": true
                     },
+                    "has_password": {
+                        "description": "Whether the user has a local password set",
+                        "type": "boolean"
+                    },
                     "created_at": {
                         "description": "Timestamp of user creation",
                         "type": "string",

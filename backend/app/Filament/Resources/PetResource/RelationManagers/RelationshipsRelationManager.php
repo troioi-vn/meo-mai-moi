@@ -3,18 +3,16 @@
 namespace App\Filament\Resources\PetResource\RelationManagers;
 
 use App\Enums\PetRelationshipType;
-use Filament\Forms;
+use App\Models\PetRelationship;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Notifications\Notification;
-use App\Models\Pet;
-use App\Models\PetRelationship;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 
 class RelationshipsRelationManager extends RelationManager
 {
@@ -95,6 +93,7 @@ class RelationshipsRelationManager extends RelationManager
                     ->label('Add Relationship')
                     ->mutateFormDataUsing(function (array $data): array {
                         $data['created_by'] = auth()->id();
+
                         return $data;
                     }),
                 Tables\Actions\Action::make('transfer_ownership')

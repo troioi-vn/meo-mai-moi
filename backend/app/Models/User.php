@@ -29,6 +29,7 @@ use Spatie\Permission\Traits\HasRoles;
  *     @OA\Property(property="name", type="string", description="User's name"),
  *     @OA\Property(property="email", type="string", format="email", description="User's email address"),
  *     @OA\Property(property="avatar_url", type="string", nullable=true, description="URL to the user's avatar image"),
+ *     @OA\Property(property="has_password", type="boolean", description="Whether the user has a local password set"),
  *     @OA\Property(property="created_at", type="string", format="date-time", description="Timestamp of user creation"),
  *     @OA\Property(property="updated_at", type="string", format="date-time", description="Timestamp of last user update")
  * )
@@ -57,6 +58,16 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         'google_id',
         'google_token',
         'google_refresh_token',
+    ];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var list<string>
+     */
+    protected $appends = [
+        'avatar_url',
+        'has_password',
     ];
 
     /**
@@ -331,6 +342,14 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         }
 
         return $convertedUrl ?: null;
+    }
+
+    /**
+     * Get has_password attribute - returns true if user has a password set.
+     */
+    public function getHasPasswordAttribute(): bool
+    {
+        return ! empty($this->password);
     }
 
     /**

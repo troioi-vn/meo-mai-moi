@@ -83,6 +83,14 @@ Notes:
   - The modal uses the same backend `changePassword` flow as the legacy account page
   - On success, the user is logged out and redirected to `/login` for security
 
+### OAuth Users (No Password)
+
+- Users registered via Google OAuth initially have no local password set (`password` is null).
+- The `GET /api/users/me` endpoint returns a `has_password` boolean.
+- If `has_password` is `false`, the Settings page replaces the "Change password" button with a "Set password" prompt.
+- This prompt guides the user to use the **Forgot Password** flow to set their initial password via a secure email link.
+- Authenticated users attempting to use the password change API without a password set will receive a 422 validation error directing them to the password reset flow.
+
 ## Tokens (Programmatic Access)
 
 - Use Sanctum Personal Access Tokens when the client can’t use cookies (CLI/mobile)

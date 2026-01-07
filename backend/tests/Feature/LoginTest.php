@@ -61,6 +61,41 @@ class LoginTest extends TestCase
     }
 
     #[Test]
+    public function test_login_with_remember_sets_remember_cookie_and_token()
+    {
+        $user = User::factory()->create([
+            'email' => 'test@example.com',
+            'password' => Hash::make('password'),
+            'remember_token' => null,
+        ]);
+
+        $response = $this->withoutMiddleware([
+            \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+        ])->postJson('/login', [
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'remember' => true,
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertAuthenticated();
+
+        $user->refresh();
+        $this->assertNotEmpty($user->getRememberToken());
+
+        $cookies = $response->headers->getCookies();
+        $hasRememberCookie = false;
+        foreach ($cookies as $cookie) {
+            if (str_starts_with($cookie->getName(), 'remember_web')) {
+                $hasRememberCookie = true;
+                break;
+            }
+        }
+
+        $this->assertTrue($hasRememberCookie, 'Expected a remember_web* cookie to be set when remember=true.');
+    }
+
+    #[Test]
     public function test_user_cannot_login_with_invalid_credentials()
     {
         $user = User::factory()->create([

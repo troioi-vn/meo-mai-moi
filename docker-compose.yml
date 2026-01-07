@@ -28,6 +28,7 @@ services:
       db:
         condition: service_healthy
     volumes:
+      - ./backend/.env:/var/www/.env:ro
       - uploads_data:/var/www/storage/app/public
       - logs_data:/var/www/storage/logs
       # Mount built docs into public path to serve at /docs

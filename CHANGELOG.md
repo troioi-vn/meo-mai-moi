@@ -25,6 +25,7 @@ All notable changes to this project are documented here, following the [Keep a C
     - OAuth users (no password set) see a "Set password" component with email-based setup flow
   - **Improved Error Messages**: Enhanced `UpdatePasswordRequest` validator to detect users without a password and provide clear guidance: "This account has no password set. Please use the password reset option to set one."
   - **Seamless Password Setup**: OAuth users can now set their first password through the existing forgot-password flow (email link → set password)
+  - **Inline Password Setup**: Improved UX for OAuth users by triggering password reset email directly from the "Set password" component without redirecting to the forgot-password page, showing success/error messages inline
 
 ### Added
 

@@ -56,7 +56,7 @@
     "embla-carousel-react": "^8.6.0",
     "i18n-iso-countries": "^7.14.0",
     "laravel-echo": "^2.2.7",
-    "lucide-react": "^0.561.0",
+    "lucide-react": "^0.562.0",
     "pusher-js": "^8.4.0",
     "qrcode": "^1.5.4",
     "radix-ui": "^1.4.3",
@@ -87,7 +87,7 @@
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.2",
-    "@vitest/coverage-v8": "4.0.15",
+    "@vitest/coverage-v8": "4.0.16",
     "autoprefixer": "^10.4.22",
     "dependency-cruiser": "^17.3.3",
     "dotenv": "^17.2.3",
@@ -99,12 +99,12 @@
     "eslint-plugin-react-refresh": "^0.4.24",
     "eslint-plugin-react-x": "^2.3.13",
     "fs-extra": "^11.3.2",
-    "globals": "^16.5.0",
+    "globals": "^17.0.0",
     "jsdom": "^27.3.0",
     "msw": "^2.12.4",
     "postcss": "^8.5.6",
     "prettier": "^3.7.4",
-    "shadcn": "^3.6.2",
+    "shadcn": "^3.6.3",
     "tailwindcss": "^4.1.18",
     "tailwindcss-animate": "^1.0.7",
     "ts-prune": "^0.10.3",
@@ -113,7 +113,7 @@
     "typescript-eslint": "^8.49.0",
     "vite": "^7.2.7",
     "vite-plugin-pwa": "^1.2.0",
-    "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "4.0.15"
+    "vite-tsconfig-paths": "^6.0.3",
+    "vitest": "4.0.16"
   }
 }

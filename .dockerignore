@@ -8,6 +8,13 @@ frontend/node_modules
 npm-debug.log
 yarn-error.log
 
+# Frontend build artifacts & caches
+frontend/dist
+frontend/.vite
+frontend/coverage
+frontend/test-results
+frontend/playwright-report
+
 # Python virtual environment
 .venv
 
@@ -19,9 +26,19 @@ yarn-error.log
 .env
 backend/.env
 
+# Laravel runtime artifacts (generated at runtime)
+backend/vendor
+backend/storage
+backend/bootstrap/cache
+
+# Docs build output
+docs/.vitepress/cache
+docs/.vitepress/dist
+
 # Project-specific build artifacts & logs
 backups/
 tmp/
+.deploy/
 entrypoint-*.log
 docker_error.md
 

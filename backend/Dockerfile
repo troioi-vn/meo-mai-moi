@@ -33,7 +33,6 @@ COPY ./backend /app/backend
 
 # Build the frontend SPA (copies to /app/backend/public/build via script)
 WORKDIR /app/frontend
-RUN npm ci
 RUN npm run build:docker
 
 ##
@@ -96,7 +95,7 @@ RUN install -d -o www-data -g www-data \
 # pass --build-arg INSTALL_DEV=true to include dev packages (phpunit, pest, etc.).
 ##
 USER www-data
-RUN rm -f bootstrap/cache/packages.php && if [ "$INSTALL_DEV" = "true" ]; then composer install --no-interaction --prefer-dist; else composer install --no-dev --optimize-autoloader; fi
+RUN rm -f bootstrap/cache/packages.php && if [ "$INSTALL_DEV" = "true" ]; then composer install --no-interaction --prefer-dist --no-scripts; else composer install --no-dev --optimize-autoloader --no-interaction --no-scripts; fi
 
 # Switch back to root for final setup
 USER root

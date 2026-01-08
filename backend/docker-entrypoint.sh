@@ -87,6 +87,25 @@ fi
 
 echo "APP_KEY is present in environment."
 
+echo "[Step 4.5] Ensuring Laravel package discovery and Filament assets..."
+
+# Docker image build installs composer deps with --no-scripts to avoid running
+# artisan without runtime env. Do the minimum runtime setup here.
+if [ ! -f /var/www/bootstrap/cache/packages.php ]; then
+    echo "bootstrap/cache/packages.php missing; running package:discover..."
+    su -s /bin/sh -c "php artisan package:discover --ansi" www-data
+else
+    echo "Package discovery cache present; skipping package:discover."
+fi
+
+# Filament assets are expected under public/js/filament...
+if [ ! -f /var/www/public/js/filament/filament/app.js ]; then
+    echo "Filament assets missing; running filament:upgrade..."
+    su -s /bin/sh -c "php artisan filament:upgrade" www-data
+else
+    echo "Filament assets present; skipping filament:upgrade."
+fi
+
 # --- MIGRATION CONTROL ---
 # By default, migrations are DISABLED in the entrypoint (RUN_MIGRATIONS=false).
 # This prevents race conditions when multiple containers start simultaneously

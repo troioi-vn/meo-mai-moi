@@ -84,6 +84,7 @@ function AccountTabContent() {
 
   return (
     <div className="space-y-6">
+      {/* Profile Card */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col gap-6 md:flex-row md:items-center">
@@ -102,36 +103,42 @@ function AccountTabContent() {
         </CardContent>
       </Card>
 
+      {/* Password Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Account actions</CardTitle>
-          <CardDescription>Sign out or remove your account.</CardDescription>
+          <CardTitle>Password</CardTitle>
+          <CardDescription>
+            {user.has_password
+              ? 'Update your password to keep your account secure.'
+              : 'Set a password to sign in directly without third-party authentication.'}
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {user.has_password ? (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Update your password to keep your account secure.
-              </p>
-              <ChangePasswordDialog />
-            </div>
-          ) : (
-            <SetPasswordComponent />
-          )}
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              Sign out of this session. You can always log back in later.
-            </p>
-            <Button variant="outline" onClick={handleLogout} className="w-full sm:w-auto">
-              Log out
-            </Button>
-          </div>
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              Permanently delete your account and all associated data.
-            </p>
-            <DeleteAccountDialog onAccountDeleted={handleAccountDeleted} />
-          </div>
+        <CardContent>
+          {user.has_password ? <ChangePasswordDialog /> : <SetPasswordComponent />}
+        </CardContent>
+      </Card>
+
+      {/* Session Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Session</CardTitle>
+          <CardDescription>Sign out of this session. You can always log back in later.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button variant="outline" onClick={handleLogout}>
+            Log out
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Danger Zone */}
+      <Card className="border-destructive/50">
+        <CardHeader>
+          <CardTitle className="text-destructive">Danger zone</CardTitle>
+          <CardDescription>Permanently delete your account and all associated data.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DeleteAccountDialog onAccountDeleted={handleAccountDeleted} />
         </CardContent>
       </Card>
     </div>

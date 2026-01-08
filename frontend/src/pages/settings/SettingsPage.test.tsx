@@ -25,7 +25,7 @@ function renderSettings(route: string) {
 describe('SettingsPage routing tabs', () => {
   it('renders account tab content for /settings/account', () => {
     renderSettings('/settings/account')
-    expect(screen.getByText(/account actions/i)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /password/i })).toBeInTheDocument()
     expect(screen.getByText(mockUser.name)).toBeInTheDocument()
     expect(screen.getByText(mockUser.email)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /log out/i })).toBeInTheDocument()

@@ -36,9 +36,9 @@ test.describe('Settings Account Page', () => {
     // Check that user information is displayed
     await expect(page.getByText('user1@catarchy.space')).toBeVisible()
 
-    // Check that account overview section exists
-    await expect(page.getByText('Account actions')).toBeVisible()
-    await expect(page.getByText('Sign out or remove your account.')).toBeVisible()
+    // Check that account sections exist
+    await expect(page.getByRole('heading', { name: 'Password' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Session' })).toBeVisible()
   })
 
   test('displays avatar with upload controls', async ({ page }) => {
@@ -373,7 +373,7 @@ test.describe('Settings Account Page', () => {
       await page.setViewportSize({ width: 375, height: 667 })
 
       // All main elements should still be visible
-      await expect(page.getByText('Account actions')).toBeVisible()
+      await expect(page.getByRole('heading', { name: 'Password' })).toBeVisible()
       await expect(page.getByRole('button', { name: /upload avatar/i })).toBeVisible()
       await expect(page.getByRole('button', { name: /change password/i })).toBeVisible()
       await expect(page.getByRole('button', { name: /log out/i })).toBeVisible()
@@ -389,7 +389,7 @@ test.describe('Settings Account Page', () => {
       await page.setViewportSize({ width: 768, height: 1024 })
 
       // All elements should be visible and properly laid out
-      await expect(page.getByText('Account actions')).toBeVisible()
+      await expect(page.getByRole('heading', { name: 'Password' })).toBeVisible()
       await expect(page.getByRole('button', { name: /upload avatar/i })).toBeVisible()
 
       // User info should be visible

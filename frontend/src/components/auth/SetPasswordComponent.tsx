@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { AlertCircle, Loader2 } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { api } from '@/api/axios'
 import { useAuth } from '@/hooks/use-auth'
+
+const RESEND_COOLDOWN_SECONDS = 60
 
 /**
  * SetPasswordComponent
@@ -17,6 +18,32 @@ export function SetPasswordComponent() {
   const [isLoading, setIsLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
   const [error, setError] = useState('')
+  const [cooldownSeconds, setCooldownSeconds] = useState(0)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+      }
+    }
+  }, [])
+
+  const startCooldown = () => {
+    setCooldownSeconds(RESEND_COOLDOWN_SECONDS)
+    intervalRef.current = setInterval(() => {
+      setCooldownSeconds((prev) => {
+        if (prev <= 1) {
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current)
+            intervalRef.current = null
+          }
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+  }
 
   const handleSetPassword = async () => {
     setIsLoading(true)
@@ -31,6 +58,7 @@ export function SetPasswordComponent() {
 
       await api.post('/password/email', { email })
       setEmailSent(true)
+      startCooldown()
     } catch (error: unknown) {
       if (error instanceof Error && 'response' in error) {
         const axiosError = error as { response?: { data?: { message?: string } } }
@@ -45,55 +73,53 @@ export function SetPasswordComponent() {
     }
   }
 
+  const isButtonDisabled = isLoading || cooldownSeconds > 0
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Set password</CardTitle>
-        <CardDescription>Secure your account with a password</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
+    <div className="space-y-4">
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          Your account doesn&apos;t have a password set yet. To add one, we&apos;ll send a secure
+          link to your email.
+        </AlertDescription>
+      </Alert>
+
+      {emailSent && (
+        <Alert variant="success">
+          <CheckCircle2 className="h-4 w-4" />
           <AlertDescription>
-            Your account doesn&apos;t have a password set yet. To add one, we&apos;ll send a secure
-            link to your email.
+            We have sent you an email with password reset instructions
           </AlertDescription>
         </Alert>
+      )}
 
-        {emailSent && (
-          <Alert variant="success">
-            <AlertDescription>
-              We have sent you an email with password reset instructions
-            </AlertDescription>
-          </Alert>
-        )}
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
+      <Button
+        onClick={() => {
+          void handleSetPassword()
+        }}
+        variant="secondary"
+        disabled={isButtonDisabled}
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Sending...
+          </>
+        ) : cooldownSeconds > 0 ? (
+          `Resend in ${String(cooldownSeconds)}s`
+        ) : emailSent ? (
+          'Resend email'
+        ) : (
+          'Set password via email'
         )}
-        <p className="text-sm text-muted-foreground">
-          Setting a password allows you to sign in directly without relying on third-party
-          authentication.
-        </p>
-        <Button
-          onClick={() => {
-            void handleSetPassword()
-          }}
-          className="w-full sm:w-auto"
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Sending...
-            </>
-          ) : (
-            'Set password via email'
-          )}
-        </Button>
-      </CardContent>
-    </Card>
+      </Button>
+    </div>
   )
 }

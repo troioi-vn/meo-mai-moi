@@ -21,7 +21,7 @@ _deploy_docker_build_docs() {
     note "Building documentation (VitePress)..."
     (
         cd "$PROJECT_ROOT" && \
-        npm --prefix docs install && \
+        npm --prefix docs install --no-fund --no-audit && \
         npm --prefix docs run docs:build
     ) || {
         note "⚠️  Failed to build docs. Continuing without updated docs."
@@ -60,26 +60,18 @@ deploy_docker_prepare() {
     
     note "Pre-building Docker images..."
     if [ "$no_cache" = "true" ]; then
-        run_cmd_with_console docker compose build --no-cache
+        run_cmd_with_console docker compose --progress=plain build --no-cache
     else
-        run_cmd_with_console docker compose build
+        run_cmd_with_console docker compose --progress=plain build
     fi
 }
 
 deploy_docker_start() {
-    local no_cache="${1:-false}"
+    local no_cache="${1:-false}" # This is no longer used but kept for signature compatibility
 
     note "Starting containers..."
     note "ℹ️  Using root .env for Docker Compose and backend/.env for Laravel runtime"
 
-    local build_args=()
-    if [ "$no_cache" = "true" ]; then
-        build_args+=(-d)
-    else
-        build_args+=(--build -d)
-    fi
-
-    _deploy_docker_build_docs
     _deploy_docker_ensure_dev_certs
 
     local compose_profiles_val=""
@@ -91,9 +83,9 @@ deploy_docker_start() {
     fi
 
     if [ -n "$compose_profiles_val" ]; then
-        COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose up "${build_args[@]}"
+        COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose up -d
     else
-        run_cmd_with_console docker compose up "${build_args[@]}"
+        run_cmd_with_console docker compose up -d
     fi
 }
 
@@ -106,6 +98,8 @@ deploy_docker_wait_for_backend() {
     local elapsed=0
     while [ "$elapsed" -lt "$timeout" ]; do
         if docker compose ps backend 2>/dev/null | grep -q '(healthy)'; then
+            # Clear the progress line before printing success
+            printf "\r\033[K"
             note "✓ Backend is healthy"
             return 0
         fi

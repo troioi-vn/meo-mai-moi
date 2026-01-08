@@ -24,6 +24,14 @@ services:
       # Telegram notification config for monitoring scripts (from root .env)
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - CHAT_ID=${CHAT_ID}
+      # Set default pusher values to avoid docker compose warnings
+      - PUSHER_APP_ID=${PUSHER_APP_ID:-}
+      - PUSHER_APP_KEY=${PUSHER_APP_KEY:-}
+      - PUSHER_APP_SECRET=${PUSHER_APP_SECRET:-}
+      - PUSHER_HOST=${PUSHER_HOST:-}
+      - PUSHER_PORT=${PUSHER_PORT:-}
+      - PUSHER_SCHEME=${PUSHER_SCHEME:-}
+      - PUSHER_APP_CLUSTER=${PUSHER_APP_CLUSTER:-}
     depends_on:
       db:
         condition: service_healthy

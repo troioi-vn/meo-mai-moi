@@ -52,16 +52,28 @@ _deploy_docker_ensure_dev_certs() {
     fi
 }
 
+deploy_docker_prepare() {
+    local no_cache="${1:-false}"
+    
+    _deploy_docker_build_docs
+    _deploy_docker_ensure_dev_certs
+    
+    note "Pre-building Docker images..."
+    if [ "$no_cache" = "true" ]; then
+        run_cmd_with_console docker compose build --no-cache
+    else
+        run_cmd_with_console docker compose build
+    fi
+}
+
 deploy_docker_start() {
     local no_cache="${1:-false}"
 
-    note "Building and starting containers..."
+    note "Starting containers..."
     note "ℹ️  Using root .env for Docker Compose and backend/.env for Laravel runtime"
 
     local build_args=()
     if [ "$no_cache" = "true" ]; then
-        echo "Building without cache..."
-        run_cmd_with_console docker compose build --no-cache
         build_args+=(-d)
     else
         build_args+=(--build -d)

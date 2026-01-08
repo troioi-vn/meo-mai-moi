@@ -346,8 +346,8 @@ sync_repository_with_remote() {
         log_warn "Uncommitted changes detected"
     fi
 
-    # Add configurable delay to handle rapid commits (default: 3 seconds)
-    local fetch_delay="${DEPLOY_GIT_FETCH_DELAY:-3}"
+    # Add configurable delay to handle rapid commits (default: 0 seconds)
+    local fetch_delay="${DEPLOY_GIT_FETCH_DELAY:-0}"
     if [ "$fetch_delay" -gt 0 ]; then
         note "ℹ️  Waiting ${fetch_delay}s to allow rapid commits to settle on remote..."
         log_info "Git fetch delay" "seconds=$fetch_delay"
@@ -675,6 +675,11 @@ else
     echo ""
     note "ℹ️  Standard deployment (data preservation mode)"
     note "ℹ️  Data preservation: Docker volumes will be preserved (no data loss)"
+    
+    # Pre-build to minimize downtime
+    # (Documentation and Docker images are built while old containers are still running)
+    deploy_docker_prepare "$NO_CACHE"
+    
     note "Stopping containers..."
     docker compose stop 2>/dev/null || true
 fi

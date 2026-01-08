@@ -1,5 +1,5 @@
 # Multi-stage build: First stage for building the entire application
-FROM node:25.2.1 AS app-build
+FROM node:24 AS app-build
 
 ARG VAPID_PUBLIC_KEY
 ENV VAPID_PUBLIC_KEY=$VAPID_PUBLIC_KEY
@@ -17,8 +17,6 @@ ENV VITE_REVERB_SCHEME=$VITE_REVERB_SCHEME
 # Set the working directory for the entire application
 WORKDIR /app
 
-# Update npm to the latest version
-RUN npm install -g npm@11.7.0
 ##
 # Build Frontend SPA assets
 ##

@@ -7,13 +7,8 @@ use App\Listeners\CreateHelperProfileNotification;
 use App\Listeners\UpdateEmailLogOnSent;
 use App\Models\Notification;
 use App\Observers\NotificationObserver;
-use Illuminate\Auth\Events\Attempting;
-use Illuminate\Auth\Events\Authenticated;
-use Illuminate\Auth\Events\Failed;
-use Illuminate\Auth\Events\Login;
 use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -46,38 +41,6 @@ class AppServiceProvider extends ServiceProvider
             HelperProfileStatusUpdated::class,
             CreateHelperProfileNotification::class
         );
-
-        // DEBUG: Log all authentication events
-        Event::listen(Attempting::class, function ($event) {
-            Log::info('DEBUG: Auth Attempting', [
-                'guard' => $event->guard,
-                'email' => $event->credentials['email'] ?? 'no-email',
-                'has_password' => isset($event->credentials['password']),
-            ]);
-        });
-
-        Event::listen(Authenticated::class, function ($event) {
-            Log::info('DEBUG: Auth Authenticated', [
-                'guard' => $event->guard,
-                'user_id' => $event->user->id,
-            ]);
-        });
-
-        Event::listen(Failed::class, function ($event) {
-            Log::info('DEBUG: Auth Failed', [
-                'guard' => $event->guard,
-                'email' => $event->credentials['email'] ?? 'no-email',
-                'user_found' => $event->user ? 'yes' : 'no',
-            ]);
-        });
-
-        Event::listen(Login::class, function ($event) {
-            Log::info('DEBUG: Auth Login Success', [
-                'guard' => $event->guard,
-                'user_id' => $event->user->id,
-                'remember' => $event->remember,
-            ]);
-        });
 
         // Listen for successful email sending to update EmailLog entries
         Event::listen(

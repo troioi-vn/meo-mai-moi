@@ -89,6 +89,7 @@ Notes:
 - The `GET /api/users/me` endpoint returns a `has_password` boolean.
 - If `has_password` is `false`, the Settings page replaces the "Change password" button with a "Set password" prompt.
 - This prompt guides the user to use the **Forgot Password** flow to set their initial password via a secure email link.
+- **After password reset**, OAuth users are automatically logged out and their session is invalidated to ensure a clean login with the new password.
 - Authenticated users attempting to use the password change API without a password set will receive a 422 validation error directing them to the password reset flow.
 
 ## Tokens (Programmatic Access)

@@ -2,7 +2,6 @@
 
 namespace App\Http\Responses\Auth;
 
-use Illuminate\Support\Facades\Log;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
 
 class LoginResponse implements LoginResponseContract
@@ -17,13 +16,6 @@ class LoginResponse implements LoginResponseContract
     {
         /** @var \App\Models\User|null $user */
         $user = $request->user();
-
-        Log::info('LoginResponse::toResponse', [
-            'has_user' => $user !== null,
-            'user_id' => $user?->id,
-            'expects_json' => $request->expectsJson(),
-            'accept_header' => $request->header('Accept'),
-        ]);
 
         // For JSON requests (SPA): return user data
         if ($request->expectsJson()) {

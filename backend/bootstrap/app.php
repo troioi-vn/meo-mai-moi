@@ -21,7 +21,6 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->web(append: [
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
-            \App\Http\Middleware\DebugLoginRequests::class, // DEBUG: Log auth requests
         ]);
 
         // For API requests, don't redirect unauthenticated users to a login route.

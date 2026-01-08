@@ -12,7 +12,12 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Fixed
 
-- **OAuth User Password Reset & Login**: Fixed critical issue where OAuth users could not login after setting their first password via the password reset flow. The problem was caused by custom Fortify authentication logic that duplicated credential validation, leading to authentication failures. Resolved by removing the custom `authenticateUsing` callback and simplifying the password reset implementation to use standard Laravel Fortify patterns.
+- **OAuth User Password Reset & Login**: Fixed critical issue where OAuth users could not login after setting their first password via the password reset flow. The root cause was that users remained logged in via OAuth sessions after password reset, causing Fortify to return 302 redirects instead of JSON responses. Resolved by:
+  - Removing custom `authenticateUsing` callback that duplicated credential validation
+  - Adding session invalidation and logout in `PasswordResetResponse` after successful password reset
+  - Regenerating CSRF tokens to prevent stale session data
+  - Updating CORS configuration to include all Fortify routes (`register`, `forgot-password`, `reset-password`)
+  - Simplifying password reset implementation to use standard Laravel Fortify patterns
 - **Notification Template Syntax**: Fixed a syntax error in `NotificationTemplateResource` that prevented the admin panel from loading.
 - **Intermittent Test Failures**: Fixed a race condition/logic error in `EmailNotificationDeliveryTest` caused by random `PET_SITTING` request types in factories.
 

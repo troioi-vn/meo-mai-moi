@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdatePasswordRequest;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 
 /**
  * @OA\Put(
@@ -61,32 +60,9 @@ class UpdatePasswordController extends Controller
     public function __invoke(UpdatePasswordRequest $request)
     {
         $user = $request->user();
-        $plainPassword = $request->new_password;
 
-        Log::info('UpdatePasswordController: Before setting password', [
-            'user_id' => $user->id,
-            'email' => $user->email,
-            'password_length' => strlen($plainPassword),
-            'current_password_hash' => $user->password ? substr($user->password, 0, 20) . '...' : 'null',
-        ]);
-
-        $user->password = Hash::make($plainPassword);
-
-        Log::info('UpdatePasswordController: After Hash::make, before save', [
-            'user_id' => $user->id,
-            'new_password_hash_prefix' => substr($user->password, 0, 20) . '...',
-            'hash_check_result' => Hash::check($plainPassword, $user->password),
-        ]);
-
+        $user->password = Hash::make($request->new_password);
         $user->save();
-
-        // Refresh and verify
-        $user->refresh();
-        Log::info('UpdatePasswordController: After save and refresh', [
-            'user_id' => $user->id,
-            'saved_password_hash_prefix' => substr($user->password, 0, 20) . '...',
-            'hash_check_after_save' => Hash::check($plainPassword, $user->password),
-        ]);
 
         return $this->sendSuccess(null, 204);
     }

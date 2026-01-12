@@ -37,7 +37,7 @@ class NotificationTemplateResource extends Resource
                     ->options(function (Get $get) {
                         $types = config('notification_templates.types', []);
                         $channel = (string) $get('channel');
-                        $opts = collect($types)
+                        return collect($types)
                             ->mapWithKeys(function ($cfg, $key) use ($channel) {
                                 $slug = $cfg['slug'] ?? $key;
                                 // If a channel is selected, only include types that support it
@@ -49,8 +49,6 @@ class NotificationTemplateResource extends Resource
                                 return [$key => $label];
                             })
                             ->toArray();
-
-                        return $opts;
                     })
                     ->preload()
                     ->searchable()
@@ -126,11 +124,9 @@ class NotificationTemplateResource extends Resource
                                 $slug = $cfg['slug'] ?? $key;
                                 $label = \Illuminate\Support\Str::headline($slug);
                                 $channels = implode(', ', $cfg['channels'] ?? []);
-                                $rows .= '<tr>'
-                                    .'<td style="padding:6px 8px; border-bottom:1px solid #eee"><code>'.e($key).'</code></td>'
+                                $rows .= '<tr><td style="padding:6px 8px; border-bottom:1px solid #eee"><code>'.e($key).'</code></td>'
                                     .'<td style="padding:6px 8px; border-bottom:1px solid #eee">'.e($label).'</td>'
-                                    .'<td style="padding:6px 8px; border-bottom:1px solid #eee">'.e($channels).'</td>'
-                                    .'</tr>';
+                                    .'<td style="padding:6px 8px; border-bottom:1px solid #eee">'.e($channels).'</td></tr>';
                             }
                             $html = '<div style="max-height:70vh; overflow:auto">'
                                 .'<table style="width:100%; border-collapse:collapse">'
@@ -273,14 +269,12 @@ class NotificationTemplateResource extends Resource
 
                         $tpl = fn ($title, $content) => '<div style="width:48%; display:inline-block; vertical-align:top;">'
                             .'<div style="font-weight:600; margin-bottom:6px">'.e($title).'</div>'
-                            .'<pre style="white-space:pre-wrap; border:1px solid #e5e7eb; padding:10px; background:#f8fafc; max-height:60vh; overflow:auto">'.e($content).'</pre>'
-                            .'</div>';
+                            .'<pre style="white-space:pre-wrap; border:1px solid #e5e7eb; padding:10px; background:#f8fafc; max-height:60vh; overflow:auto">'.e($content).'</pre></div>';
 
                         $html = '<div style="display:flex; gap:4%; align-items:flex-start">'
                             .$tpl('DB Subject', $dbSubject)
                             .$tpl('Default Subject', $fileSubject)
-                            .'</div>'
-                            .'<div style="height:8px"></div>'
+                            .'</div><div style="height:8px"></div>'
                             .'<div style="display:flex; gap:4%; align-items:flex-start">'
                             .$tpl('DB Body', $dbBody)
                             .$tpl('Default ('.$defaultLabel.')', $fileBody)

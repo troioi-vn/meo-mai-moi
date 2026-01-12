@@ -31,8 +31,13 @@ class SendNotificationEmail implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    // Laravel uses the public $tries property to determine max attempts. Keep public.
-    public int $tries = 3;
+    /**
+     * The number of times the job may be attempted.
+     */
+    public function tries(): int
+    {
+        return 3;
+    }
 
     // Replace public $backoff property with method to avoid forbidden public property rule.
     // 1 min, 5 min, 15 min
@@ -242,7 +247,7 @@ class SendNotificationEmail implements ShouldQueue
 
         // Mark email log as failed if it exists
         if ($this->emailLog && $this->emailLog->status !== 'failed') {
-            $this->emailLog->markAsFailed('Job failed permanently after '.$this->tries.' attempts: '.$exception->getMessage());
+            $this->emailLog->markAsFailed('Job failed permanently after '.$this->tries().' attempts: '.$exception->getMessage());
         }
 
         Log::error('Email notification job failed permanently', [
@@ -325,7 +330,7 @@ class SendNotificationEmail implements ShouldQueue
                 $fallbackData = array_merge($this->data, [
                     'is_fallback' => true,
                     'original_channel' => 'email',
-                    'fallback_reason' => 'Email delivery failed after '.$this->tries.' attempts',
+                    'fallback_reason' => 'Email delivery failed after '.$this->tries().' attempts',
                     'original_error' => $this->truncateFailureReason($exception->getMessage()),
                 ]);
 

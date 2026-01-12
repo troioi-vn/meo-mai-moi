@@ -7,7 +7,6 @@ use App\Models\Notification;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Queue;
 
 class NotificationStatsWidget extends BaseWidget
 {
@@ -37,7 +36,7 @@ class NotificationStatsWidget extends BaseWidget
             : 0;
 
         $engagementRate = $deliveredNotifications > 0
-            ? round((Notification::read()->count() / $deliveredNotifications) * 100, 1)
+            ? round(Notification::read()->count() / $deliveredNotifications * 100, 1)
             : 0;
 
         // Email configuration status
@@ -50,7 +49,7 @@ class NotificationStatsWidget extends BaseWidget
         // Recent failure rate (last 24h)
         $recentTotal = $emailsSent24h + $emailsFailed24h;
         $recentFailureRate = $recentTotal > 0
-            ? round(($emailsFailed24h / $recentTotal) * 100, 1)
+            ? round($emailsFailed24h / $recentTotal * 100, 1)
             : 0;
 
         return [
@@ -111,7 +110,7 @@ class NotificationStatsWidget extends BaseWidget
             $total = Notification::whereBetween('created_at', [$date, $endDate])
                 ->count();
 
-            $rate = $total > 0 ? round(($delivered / $total) * 100, 1) : 0;
+            $rate = $total > 0 ? round($delivered / $total * 100, 1) : 0;
             $data[] = $rate;
         }
 

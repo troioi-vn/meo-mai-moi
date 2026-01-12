@@ -219,7 +219,9 @@ class GoogleAuthController extends Controller
             }
 
             $tmpFile = $tmpPath.'.'.$extension;
-            @rename($tmpPath, $tmpFile);
+            if (! rename($tmpPath, $tmpFile)) {
+                return;
+            }
 
             file_put_contents($tmpFile, $body);
 
@@ -229,8 +231,8 @@ class GoogleAuthController extends Controller
         } catch (Exception $exception) {
             report($exception);
         } finally {
-            if ($tmpFile && file_exists($tmpFile)) {
-                @unlink($tmpFile);
+            if (isset($tmpFile) && file_exists($tmpFile)) {
+                unlink($tmpFile);
             }
         }
     }

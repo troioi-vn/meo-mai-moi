@@ -5,13 +5,13 @@ namespace App\Services\PetCapability;
 use App\Models\Pet;
 use Illuminate\Validation\ValidationException;
 
-class CapabilityValidator
+final class CapabilityValidator
 {
     private CapabilityChecker $checker;
 
     public function __construct(?CapabilityChecker $checker = null)
     {
-        $this->checker = $checker ?? new CapabilityChecker;
+        $this->checker = $checker ?? new CapabilityChecker();
     }
 
     /**

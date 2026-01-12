@@ -58,8 +58,6 @@ class CreateEmailConfiguration extends CreateRecord
     {
         // Validate configuration before creating
         if (! empty($data['config'])) {
-            $service = app(EmailConfigurationService::class);
-
             // Remove empty values from config
             $data['config'] = array_filter($data['config'], function ($value) {
                 return $value !== null && $value !== '';

@@ -5,7 +5,7 @@ namespace App\Services\Waitlist;
 use App\Models\User;
 use App\Models\WaitlistEntry;
 
-class WaitlistValidator
+final class WaitlistValidator
 {
     /**
      * Validate email for waitlist (comprehensive check).

@@ -74,7 +74,6 @@ class VerifyEmailConfigCommand extends Command
             $this->info('🔍 Testing email configuration...');
 
             try {
-                $service = app(EmailConfigurationService::class);
                 $canConnect = $activeConfig->canConnect();
 
                 if ($canConnect) {

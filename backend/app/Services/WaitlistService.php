@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
-class WaitlistService
+final class WaitlistService
 {
     private InvitationService $invitationService;
 
@@ -31,9 +31,9 @@ class WaitlistService
         ?BulkInvitationProcessor $bulkProcessor = null
     ) {
         $this->invitationService = $invitationService;
-        $this->validator = $validator ?? new WaitlistValidator;
-        $this->statsCalculator = $statsCalculator ?? new WaitlistStatsCalculator;
-        $this->bulkProcessor = $bulkProcessor ?? new BulkInvitationProcessor;
+        $this->validator = $validator ?? new WaitlistValidator();
+        $this->statsCalculator = $statsCalculator ?? new WaitlistStatsCalculator();
+        $this->bulkProcessor = $bulkProcessor ?? new BulkInvitationProcessor();
     }
 
     /**

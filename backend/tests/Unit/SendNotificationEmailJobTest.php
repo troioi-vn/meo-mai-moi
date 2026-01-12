@@ -352,7 +352,7 @@ class SendNotificationEmailJobTest extends TestCase
             $this->notification->id
         );
 
-        $this->assertEquals(3, $job->tries);
+        $this->assertEquals(3, $job->tries());
         $this->assertEquals([60, 300, 900], $job->backoff());
     }
 

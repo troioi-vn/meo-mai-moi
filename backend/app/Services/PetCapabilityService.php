@@ -7,7 +7,7 @@ use App\Services\PetCapability\CapabilityChecker;
 use App\Services\PetCapability\CapabilityMatrixBuilder;
 use App\Services\PetCapability\CapabilityValidator;
 
-class PetCapabilityService
+final class PetCapabilityService
 {
     private static ?CapabilityChecker $checker = null;
 
@@ -49,16 +49,16 @@ class PetCapabilityService
 
     private static function getChecker(): CapabilityChecker
     {
-        return self::$checker ??= new CapabilityChecker;
+        return self::$checker ??= new CapabilityChecker();
     }
 
     private static function getValidator(): CapabilityValidator
     {
-        return self::$validator ??= new CapabilityValidator;
+        return self::$validator ??= new CapabilityValidator();
     }
 
     private static function getMatrixBuilder(): CapabilityMatrixBuilder
     {
-        return self::$matrixBuilder ??= new CapabilityMatrixBuilder;
+        return self::$matrixBuilder ??= new CapabilityMatrixBuilder();
     }
 }

@@ -165,8 +165,21 @@ class InvitationResource extends Resource
                     ->label('Copy URL')
                     ->icon('heroicon-o-clipboard')
                     ->color('info')
-                    ->action(function (Invitation $record): void {
+                    ->action(function (Invitation $record, $livewire): void {
                         $url = $record->getInvitationUrl();
+
+                        // Livewire v3: execute JS on the client to copy to clipboard.
+                        // Fallback to prompt() when Clipboard API is unavailable/blocked.
+                        $livewire->js(
+                            '(() => {'
+                            .'const url = '.json_encode($url).';'
+                            .'if (navigator.clipboard && navigator.clipboard.writeText) {'
+                            .'  navigator.clipboard.writeText(url).catch(() => window.prompt("Copy invitation URL:", url));'
+                            .'} else {'
+                            .'  window.prompt("Copy invitation URL:", url);'
+                            .'}'
+                            .'})()'
+                        );
 
                         Notification::make()
                             ->title('Invitation URL Copied')

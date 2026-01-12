@@ -123,7 +123,7 @@ class PetResource extends Resource
                         }
                         $age = $state->age;
 
-                        return $state->format('M j, Y') . " ({$age}y)";
+                        return $state->format('M j, Y')." ({$age}y)";
                     }),
 
                 TextColumn::make('location')

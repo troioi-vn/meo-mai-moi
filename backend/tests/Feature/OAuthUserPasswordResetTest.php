@@ -147,4 +147,3 @@ class OAuthUserPasswordResetTest extends TestCase
         $loginResponse->assertOk();
     }
 }
-

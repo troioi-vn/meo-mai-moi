@@ -89,7 +89,7 @@ class ViewPet extends ViewRecord
                                         }
                                         $age = $state->age;
 
-                                        return $state->format('M j, Y') . " ({$age}y)";
+                                        return $state->format('M j, Y')." ({$age}y)";
                                     }),
                                 TextEntry::make('location'),
                                 TextEntry::make('status')

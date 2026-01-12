@@ -22,6 +22,10 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Intermittent Test Failures**: Fixed a race condition/logic error in `EmailNotificationDeliveryTest` caused by random `PET_SITTING` request types in factories.
 - **Birthday / Age display**: Fixed the birthday column and age calculation in the admin panel and related emails where ages were displayed as negative fractional values (e.g. `-12.637657205655y`). Dates are now rendered as `M j, Y` with the age shown as a positive integer (e.g. `May 25, 2013 (12y)`). Changes were made in `backend/app/Filament/Resources/PetResource.php`, `backend/app/Filament/Resources/PetResource/Pages/ViewPet.php`, `backend/app/Models/Pet.php` (`getAge()`), and relevant email templates (`resources/views/emails/notifications/*`).
 
+### Fixed
+
+- **Chrome PWA Meta**: Added the standard `mobile-web-app-capable` meta tag to `frontend/index.html` and `backend/resources/views/welcome.blade.php.template` to address a deprecation warning shown in Chrome when running the site (the `apple-mobile-web-app-capable` tag is still preserved for compatibility).
+
 ### Added
 
 - **OAuth User Password Management**:

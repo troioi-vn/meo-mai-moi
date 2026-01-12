@@ -121,9 +121,9 @@ class PetResource extends Resource
                         if (! $state) {
                             return '-';
                         }
-                        $age = now()->diffInYears($state);
+                        $age = $state->age;
 
-                        return $state->format('M j, Y')." ({$age}y)";
+                        return $state->format('M j, Y') . " ({$age}y)";
                     }),
 
                 TextColumn::make('location')

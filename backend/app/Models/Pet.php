@@ -384,7 +384,7 @@ class Pet extends Model implements HasMedia
             return 0;
         }
 
-        return now()->year - $this->birthday->year;
+        return $this->birthday->age;
     }
 
     /**

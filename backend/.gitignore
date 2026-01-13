@@ -19,6 +19,9 @@
 /public/build
 /public/hot
 /public/storage
+/public/sw.js
+/public/workbox-*.js
+/public/assets
 /storage/*.key
 /storage/pail
 /vendor

@@ -223,15 +223,15 @@ const RequestsPage = () => {
 
       {/* Filters */}
       <div className="mb-6 flex flex-col gap-4">
-        {/* First row: Request Type, Pet Type, Country */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        {/* First row: Request Type, Pet Type, Country, Sort */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
           <Select
             value={requestTypeFilter}
             onValueChange={(v) => {
               setRequestTypeFilter(v as PlacementRequestType)
             }}
           >
-            <SelectTrigger className="w-full sm:w-180px" aria-label="Request Type Filter">
+            <SelectTrigger className="w-full lg:col-span-3" aria-label="Request Type Filter">
               <SelectValue placeholder="All Types" />
             </SelectTrigger>
             <SelectContent>
@@ -245,7 +245,7 @@ const RequestsPage = () => {
             </SelectContent>
           </Select>
           <Select value={petTypeFilter} onValueChange={setPetTypeFilter}>
-            <SelectTrigger className="w-full sm:w-45" aria-label="Pet Type Filter">
+            <SelectTrigger className="w-full lg:col-span-1" aria-label="Pet Type Filter">
               <SelectValue placeholder="All Pet Types" />
             </SelectTrigger>
             <SelectContent>
@@ -258,7 +258,7 @@ const RequestsPage = () => {
             </SelectContent>
           </Select>
           <Select value={countryFilter} onValueChange={setCountryFilter}>
-            <SelectTrigger className="w-full sm:w-45" aria-label="Country Filter">
+            <SelectTrigger className="w-full lg:col-span-1" aria-label="Country Filter">
               <SelectValue placeholder="All Countries" />
             </SelectTrigger>
             <SelectContent>
@@ -282,7 +282,7 @@ const RequestsPage = () => {
               })
             }}
           >
-            <SelectTrigger className="w-full sm:w-45" aria-label="Created Date Sort">
+            <SelectTrigger className="w-full lg:col-span-1" aria-label="Created Date Sort">
               <SelectValue placeholder="Sort by Created Date" />
             </SelectTrigger>
             <SelectContent>
@@ -295,9 +295,9 @@ const RequestsPage = () => {
           </Select>
         </div>
         {/* Second row: Date filters */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
           {/* Pickup Date filter */}
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center flex-wrap">
             <span className="text-sm text-muted-foreground shrink-0">Pickup</span>
             <Select
               value={pickupDateComparison}
@@ -305,7 +305,7 @@ const RequestsPage = () => {
                 setPickupDateComparison(v as DateComparison)
               }}
             >
-              <SelectTrigger className="w-20" aria-label="Pickup Date Comparison">
+              <SelectTrigger className="w-22.5" aria-label="Pickup Date Comparison">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -316,12 +316,12 @@ const RequestsPage = () => {
                 ))}
               </SelectContent>
             </Select>
-            <DatePicker date={pickupDate} setDate={setPickupDate} className="w-32.5" />
+            <DatePicker date={pickupDate} setDate={setPickupDate} className="w-full sm:w-45" />
           </div>
 
           {/* Drop-off Date filter - hidden for permanent requests */}
           {requestTypeFilter !== 'permanent' && (
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-2 items-center flex-wrap">
               <span className="text-sm text-muted-foreground shrink-0">Drop-off</span>
               <Select
                 value={dropoffDateComparison}
@@ -329,7 +329,7 @@ const RequestsPage = () => {
                   setDropoffDateComparison(v as DateComparison)
                 }}
               >
-                <SelectTrigger className="w-20" aria-label="Drop-off Date Comparison">
+                <SelectTrigger className="w-22.5" aria-label="Drop-off Date Comparison">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -340,7 +340,7 @@ const RequestsPage = () => {
                   ))}
                 </SelectContent>
               </Select>
-              <DatePicker date={dropoffDate} setDate={setDropoffDate} className="w-32.5" />
+              <DatePicker date={dropoffDate} setDate={setDropoffDate} className="w-full sm:w-45" />
             </div>
           )}
         </div>

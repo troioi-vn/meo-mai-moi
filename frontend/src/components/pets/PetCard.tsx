@@ -107,7 +107,8 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
       target.closest('button') ||
       target.closest('a') ||
       target.closest('[role="button"]') ||
-      target.closest('.modal')
+      target.closest('[role="dialog"]') ||
+      target.closest('[role="alertdialog"]')
     ) {
       return
     }

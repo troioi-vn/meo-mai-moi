@@ -9,34 +9,33 @@ use App\Models\PetRelationship;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Get(
- *     path="/api/my-pets/sections",
- *     summary="Get the pets of the authenticated user, organized by section",
- *     tags={"Pets"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\Response(
- *         response=200,
- *         description="A list of the user's pets, organized by section",
- *
- *         @OA\JsonContent(
- *             type="object",
- *
- *             @OA\Property(property="owned", type="array", @OA\Items(ref="#/components/schemas/Pet")),
- *             @OA\Property(property="fostering_active", type="array", @OA\Items(ref="#/components/schemas/Pet")),
- *             @OA\Property(property="fostering_past", type="array", @OA\Items(ref="#/components/schemas/Pet")),
- *             @OA\Property(property="transferred_away", type="array", @OA\Items(ref="#/components/schemas/Pet"))
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=401,
- *         description="Unauthenticated"
- *     )
- * )
- */
+#[OA\Get(
+    path: "/api/my-pets/sections",
+    summary: "Get the pets of the authenticated user, organized by section",
+    tags: ["Pets"],
+    security: [["sanctum" => []]],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "A list of the user's pets, organized by section",
+            content: new OA\JsonContent(
+                type: "object",
+                properties: [
+                    new OA\Property(property: "owned", type: "array", items: new OA\Items(ref: "#/components/schemas/Pet")),
+                    new OA\Property(property: "fostering_active", type: "array", items: new OA\Items(ref: "#/components/schemas/Pet")),
+                    new OA\Property(property: "fostering_past", type: "array", items: new OA\Items(ref: "#/components/schemas/Pet")),
+                    new OA\Property(property: "transferred_away", type: "array", items: new OA\Items(ref: "#/components/schemas/Pet")),
+                ]
+            )
+        ),
+        new OA\Response(
+            response: 401,
+            description: "Unauthenticated"
+        ),
+    ]
+)]
 class ListMyPetsSectionsController extends Controller
 {
     use ApiResponseTrait;

@@ -6,37 +6,34 @@ use App\Http\Controllers\Controller;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use OpenApi\Attributes as OA;
 
-/**
- * Resend the email verification notification.
- *
- * @OA\Post(
- *     path="/api/email/verification-notification",
- *     summary="Resend verification email",
- *     description="Resend email verification notification to the authenticated user.",
- *     tags={"Email Verification"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\Response(
- *         response=200,
- *         description="Verification email sent",
- *
- *         @OA\JsonContent(
- *
- *             @OA\Property(property="message", type="string", example="Verification email sent")
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=400,
- *         description="Email already verified"
- *     ),
- *     @OA\Response(
- *         response=429,
- *         description="Too many requests"
- *     )
- * )
- */
+#[OA\Post(
+    path: "/api/email/verification-notification",
+    summary: "Resend verification email",
+    description: "Resend email verification notification to the authenticated user.",
+    tags: ["Email Verification"],
+    security: [["sanctum" => []]],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "Verification email sent",
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "message", type: "string", example: "Verification email sent"),
+                ]
+            )
+        ),
+        new OA\Response(
+            response: 400,
+            description: "Email already verified"
+        ),
+        new OA\Response(
+            response: 429,
+            description: "Too many requests"
+        ),
+    ]
+)]
 class ResendVerificationEmailController extends Controller
 {
     use ApiResponseTrait;

@@ -8,23 +8,24 @@ use App\Models\Pet;
 use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Get(
- *     path="/api/pets/{pet}/medical-notes/{note}",
- *     summary="Get a single medical note",
- *     tags={"Pets"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\Parameter(name="pet", in="path", required=true, @OA\Schema(type="integer")),
- *     @OA\Parameter(name="note", in="path", required=true, @OA\Schema(type="integer")),
- *
- *     @OA\Response(response=200, description="OK", @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/MedicalNote"))),
- *     @OA\Response(response=401, description="Unauthenticated"),
- *     @OA\Response(response=403, description="Forbidden"),
- *     @OA\Response(response=404, description="Not found")
- * )
- */
+#[OA\Get(
+    path: "/api/pets/{pet}/medical-notes/{note}",
+    summary: "Get a single medical note",
+    tags: ["Pets"],
+    security: [["sanctum" => []]],
+    parameters: [
+        new OA\Parameter(name: "pet", in: "path", required: true, schema: new OA\Schema(type: "integer")),
+        new OA\Parameter(name: "note", in: "path", required: true, schema: new OA\Schema(type: "integer")),
+    ],
+    responses: [
+        new OA\Response(response: 200, description: "OK", content: new OA\JsonContent(properties: [new OA\Property(property: "data", ref: "#/components/schemas/MedicalNote")])),
+        new OA\Response(response: 401, description: "Unauthenticated"),
+        new OA\Response(response: 403, description: "Forbidden"),
+        new OA\Response(response: 404, description: "Not found"),
+    ]
+)]
 class ShowMedicalNoteController extends Controller
 {
     use ApiResponseTrait;

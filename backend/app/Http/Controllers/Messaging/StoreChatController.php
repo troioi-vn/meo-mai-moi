@@ -31,10 +31,10 @@ class StoreChatController extends Controller
 
         // For direct chats
         if ($type === ChatType::DIRECT) {
-            $recipientId = $validated['recipient_id'];
+            $recipientId = (int) $validated['recipient_id'];
 
             // Can't message yourself
-            if ($recipientId == $user->id) {
+            if ($recipientId === (int) $user->id) {
                 return $this->sendError('Cannot create a chat with yourself.', 422);
             }
 

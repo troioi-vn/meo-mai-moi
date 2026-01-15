@@ -4,38 +4,39 @@ namespace App\Http\Controllers\Legal;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\File;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Get(
- *     path="/api/legal/placement-terms",
- *     summary="Get placement terms and conditions",
- *     description="Retrieve the placement terms and conditions document in markdown format.",
- *     tags={"Legal"},
- *
- *     @OA\Response(
- *         response=200,
- *         description="Placement terms retrieved successfully",
- *
- *         @OA\JsonContent(
- *
- *             @OA\Property(property="data", type="object",
- *                 @OA\Property(property="content", type="string", description="Markdown content of the placement terms"),
- *                 @OA\Property(property="version", type="string", example="2025-12-02", description="Version date of the terms")
- *             )
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=404,
- *         description="Terms document not found",
- *
- *         @OA\JsonContent(
- *
- *             @OA\Property(property="message", type="string", example="Placement terms not found")
- *         )
- *     )
- * )
- */
+#[OA\Get(
+    path: "/api/legal/placement-terms",
+    summary: "Get placement terms and conditions",
+    description: "Retrieve the placement terms and conditions document in markdown format.",
+    tags: ["Legal"],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "Placement terms retrieved successfully",
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "data", type: "object",
+                        properties: [
+                            new OA\Property(property: "content", type: "string", description: "Markdown content of the placement terms"),
+                            new OA\Property(property: "version", type: "string", example: "2025-12-02", description: "Version date of the terms"),
+                        ]
+                    ),
+                ]
+            )
+        ),
+        new OA\Response(
+            response: 404,
+            description: "Terms document not found",
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "message", type: "string", example: "Placement terms not found")
+                ]
+            )
+        ),
+    ]
+)]
 class GetPlacementTermsController extends Controller
 {
     public function __invoke()

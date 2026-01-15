@@ -14,33 +14,29 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Post(
- *     path="/api/pets",
- *     summary="Create a new pet",
- *     tags={"Pets"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\RequestBody(
- *         required=true,
- *
- *         @OA\JsonContent(ref="#/components/schemas/Pet")
- *     ),
- *
- *     @OA\Response(
- *         response=201,
- *         description="Pet created successfully",
- *
- *         @OA\JsonContent(ref="#/components/schemas/Pet")
- *     ),
- *
- *     @OA\Response(
- *         response=422,
- *         description="Validation error"
- *     )
- * )
- */
+#[OA\Post(
+    path: "/api/pets",
+    summary: "Create a new pet",
+    tags: ["Pets"],
+    security: [["sanctum" => []]],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(ref: "#/components/schemas/Pet")
+    ),
+    responses: [
+        new OA\Response(
+            response: 201,
+            description: "Pet created successfully",
+            content: new OA\JsonContent(ref: "#/components/schemas/Pet")
+        ),
+        new OA\Response(
+            response: 422,
+            description: "Validation error"
+        ),
+    ]
+)]
 class StorePetController extends Controller
 {
     use ApiResponseTrait;
@@ -135,7 +131,7 @@ class StorePetController extends Controller
                         try {
                             $parsed = Carbon::parse($legacyBirthday);
                             if ($parsed->isFuture()) {
-                                $v->errors()->add('birthday', 'Birthday cannot be in the future.');
+                                $v->errors()->add('birthday', 'Invalid birthday date.');
                             }
                         } catch (Exception $e) {
                             $v->errors()->add('birthday', 'Invalid birthday date.');

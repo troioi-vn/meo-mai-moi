@@ -85,7 +85,9 @@ class SanctumAuthenticateSession
         }
 
         return tap($next($request), function () use ($request, $guards) {
-            if (! is_null($guard = $this->getFirstGuardWithUser($guards->keys()))) {
+            $guard = $this->getFirstGuardWithUser($guards->keys());
+
+            if ($guard !== null) {
                 $this->storePasswordHashInSession($request, $guard);
             }
         });

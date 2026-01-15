@@ -5,30 +5,29 @@ namespace App\Http\Controllers\UserProfile;
 use App\Http\Controllers\Controller;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Get(
- *     path="/api/users/me",
- *     summary="Get authenticated user's profile",
- *     tags={"User Profile"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\Response(
- *         response=200,
- *         description="Successful operation",
- *
- *         @OA\JsonContent(
- *
- *             @OA\Property(property="data", ref="#/components/schemas/User")
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=401,
- *         description="Unauthenticated"
- *     )
- * )
- */
+#[OA\Get(
+    path: "/api/users/me",
+    summary: "Get authenticated user's profile",
+    tags: ["User Profile"],
+    security: [["sanctum" => []]],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "Successful operation",
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "data", ref: "#/components/schemas/User")
+                ]
+            )
+        ),
+        new OA\Response(
+            response: 401,
+            description: "Unauthenticated"
+        )
+    ]
+)]
 class ShowProfileController extends Controller
 {
     use ApiResponseTrait;

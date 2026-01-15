@@ -9,84 +9,76 @@ use App\Models\HelperProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Put(
- *     path="/helper-profiles/{id}",
- *     summary="Update a helper profile",
- *     tags={"Helper Profiles"},
- *
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         required=true,
- *         description="ID of the helper profile",
- *
- *         @OA\Schema(type="integer")
- *     ),
- *
- *     @OA\RequestBody(
- *         required=true,
- *
- *         @OA\JsonContent(ref="#/components/schemas/HelperProfile")
- *     ),
- *
- *     @OA\Response(
- *         response=200,
- *         description="Helper profile updated successfully",
- *
- *         @OA\JsonContent(ref="#/components/schemas/HelperProfile")
- *     ),
- *
- *     @OA\Response(
- *         response=403,
- *         description="Unauthorized"
- *     ),
- *     @OA\Response(
- *         response=422,
- *         description="Validation error"
- *     )
- * )
- *
- * @OA\Post(
- *     path="/helper-profiles/{id}",
- *     summary="Update a helper profile (DEPRECATED - use PUT instead)",
- *     deprecated=true,
- *     tags={"Helper Profiles"},
- *     description="This endpoint is deprecated. Use PUT /helper-profiles/{id} instead. Kept for HTML form compatibility.",
- *
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         required=true,
- *         description="ID of the helper profile",
- *
- *         @OA\Schema(type="integer")
- *     ),
- *
- *     @OA\RequestBody(
- *         required=true,
- *
- *         @OA\JsonContent(ref="#/components/schemas/HelperProfile")
- *     ),
- *
- *     @OA\Response(
- *         response=200,
- *         description="Helper profile updated successfully",
- *
- *         @OA\JsonContent(ref="#/components/schemas/HelperProfile")
- *     ),
- *
- *     @OA\Response(
- *         response=403,
- *         description="Unauthorized"
- *     ),
- *     @OA\Response(
- *         response=422,
- *         description="Validation error"
- *     )
- * )
- */
+#[OA\Put(
+    path: "/helper-profiles/{id}",
+    summary: "Update a helper profile",
+    tags: ["Helper Profiles"],
+    parameters: [
+        new OA\Parameter(
+            name: "id",
+            in: "path",
+            required: true,
+            description: "ID of the helper profile",
+            schema: new OA\Schema(type: "integer")
+        ),
+    ],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(ref: "#/components/schemas/HelperProfile")
+    ),
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "Helper profile updated successfully",
+            content: new OA\JsonContent(ref: "#/components/schemas/HelperProfile")
+        ),
+        new OA\Response(
+            response: 403,
+            description: "Unauthorized"
+        ),
+        new OA\Response(
+            response: 422,
+            description: "Validation error"
+        ),
+    ]
+)]
+#[OA\Post(
+    path: "/helper-profiles/{id}",
+    summary: "Update a helper profile (DEPRECATED - use PUT instead)",
+    deprecated: true,
+    tags: ["Helper Profiles"],
+    description: "This endpoint is deprecated. Use PUT /helper-profiles/{id} instead. Kept for HTML form compatibility.",
+    parameters: [
+        new OA\Parameter(
+            name: "id",
+            in: "path",
+            required: true,
+            description: "ID of the helper profile",
+            schema: new OA\Schema(type: "integer")
+        ),
+    ],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(ref: "#/components/schemas/HelperProfile")
+    ),
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "Helper profile updated successfully",
+            content: new OA\JsonContent(ref: "#/components/schemas/HelperProfile")
+        ),
+        new OA\Response(
+            response: 403,
+            description: "Unauthorized"
+        ),
+        new OA\Response(
+            response: 422,
+            description: "Validation error"
+        ),
+    ]
+)]
 class UpdateHelperProfileController extends Controller
 {
     public function __invoke(Request $request, HelperProfile $helperProfile)

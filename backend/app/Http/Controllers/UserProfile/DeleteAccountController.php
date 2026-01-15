@@ -5,51 +5,43 @@ namespace App\Http\Controllers\UserProfile;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DeleteAccountRequest;
 use App\Traits\ApiResponseTrait;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Delete(
- *     path="/api/users/me",
- *     summary="Delete authenticated user's account",
- *     tags={"User Profile"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\RequestBody(
- *         required=true,
- *
- *         @OA\JsonContent(
- *             required={"password"},
- *
- *             @OA\Property(property="password", type="string", format="password", example="your_current_password")
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=200,
- *         description="Account deleted successfully",
- *
- *         @OA\JsonContent(
- *
- *             @OA\Property(property="message", type="string", example="Account deleted successfully.")
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=422,
- *         description="Validation error",
- *
- *         @OA\JsonContent(
- *
- *             @OA\Property(property="message", type="string", example="Validation Error"),
- *             @OA\Property(property="errors", type="object", example={"password": {"The provided password does not match your current password."}})
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=401,
- *         description="Unauthenticated"
- *     )
- * )
- */
+#[OA\Delete(
+    path: "/api/users/me",
+    summary: "Delete authenticated user's account",
+    tags: ["User Profile"],
+    security: [["sanctum" => []]],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ["password"],
+            properties: [
+                new OA\Property(property: "password", type: "string", format: "password", example: "your_current_password")
+            ]
+        )
+    ),
+    responses: [
+        new OA\Response(
+            response: 204,
+            description: "Account deleted successfully"
+        ),
+        new OA\Response(
+            response: 422,
+            description: "Validation error",
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "message", type: "string", example: "Validation Error"),
+                    new OA\Property(property: "errors", type: "object", example: ["password" => ["The provided password does not match your current password."]])
+                ]
+            )
+        ),
+        new OA\Response(
+            response: 401,
+            description: "Unauthenticated"
+        )
+    ]
+)]
 class DeleteAccountController extends Controller
 {
     use ApiResponseTrait;

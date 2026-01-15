@@ -6,43 +6,42 @@ use App\Http\Controllers\Controller;
 use App\Services\InvitationService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Get(
- *     path="/api/invitations",
- *     summary="Get user's sent invitations",
- *     description="Retrieve all invitations sent by the authenticated user.",
- *     tags={"Invitations"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\Response(
- *         response=200,
- *         description="List of sent invitations",
- *
- *         @OA\JsonContent(
- *
- *             @OA\Property(property="data", type="array",
- *
- *                 @OA\Items(type="object",
- *
- *                     @OA\Property(property="id", type="integer"),
- *                     @OA\Property(property="code", type="string"),
- *                     @OA\Property(property="status", type="string"),
- *                     @OA\Property(property="expires_at", type="string", format="datetime", nullable=true),
- *                     @OA\Property(property="created_at", type="string", format="datetime"),
- *                     @OA\Property(property="invitation_url", type="string"),
- *                     @OA\Property(property="recipient", type="object", nullable=true)
- *                 )
- *             )
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=401,
- *         description="Unauthenticated"
- *     )
- * )
- */
+#[OA\Get(
+    path: "/api/invitations",
+    summary: "Get user's sent invitations",
+    description: "Retrieve all invitations sent by the authenticated user.",
+    tags: ["Invitations"],
+    security: [["sanctum" => []]],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "List of sent invitations",
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "data", type: "array",
+                        items: new OA\Items(type: "object",
+                            properties: [
+                                new OA\Property(property: "id", type: "integer"),
+                                new OA\Property(property: "code", type: "string"),
+                                new OA\Property(property: "status", type: "string"),
+                                new OA\Property(property: "expires_at", type: "string", format: "datetime", nullable: true),
+                                new OA\Property(property: "created_at", type: "string", format: "datetime"),
+                                new OA\Property(property: "invitation_url", type: "string"),
+                                new OA\Property(property: "recipient", type: "object", nullable: true),
+                            ]
+                        )
+                    ),
+                ]
+            )
+        ),
+        new OA\Response(
+            response: 401,
+            description: "Unauthenticated"
+        ),
+    ]
+)]
 class ListInvitationsController extends Controller
 {
     use ApiResponseTrait;

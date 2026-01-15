@@ -7,6 +7,7 @@ use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use OpenApi\Attributes as OA;
 
 /**
  * Password Reset Token Validation Controller
@@ -24,50 +25,44 @@ class PasswordResetController extends Controller
         $this->middleware('throttle:6,1');
     }
 
-    /**
-     * Validate password reset token.
-     *
-     * @OA\Get(
-     *     path="/api/password/reset/{token}",
-     *     summary="Validate password reset token",
-     *     description="Check if password reset token is valid.",
-     *     tags={"Password Reset"},
-     *
-     *     @OA\Parameter(
-     *         name="token",
-     *         in="path",
-     *         required=true,
-     *
-     *         @OA\Schema(type="string"),
-     *         description="Reset token"
-     *     ),
-     *
-     *     @OA\Parameter(
-     *         name="email",
-     *         in="query",
-     *         required=true,
-     *
-     *         @OA\Schema(type="string", format="email"),
-     *         description="User email"
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=200,
-     *         description="Token is valid",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="valid", type="boolean", example=true),
-     *             @OA\Property(property="email", type="string", example="user@example.com")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=422,
-     *         description="Invalid token"
-     *     )
-     * )
-     */
+    #[OA\Get(
+        path: "/api/password/reset/{token}",
+        summary: "Validate password reset token",
+        description: "Check if password reset token is valid.",
+        tags: ["Password Reset"],
+        parameters: [
+            new OA\Parameter(
+                name: "token",
+                in: "path",
+                required: true,
+                schema: new OA\Schema(type: "string"),
+                description: "Reset token"
+            ),
+            new OA\Parameter(
+                name: "email",
+                in: "query",
+                required: true,
+                schema: new OA\Schema(type: "string", format: "email"),
+                description: "User email"
+            ),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Token is valid",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "valid", type: "boolean", example: true),
+                        new OA\Property(property: "email", type: "string", example: "user@example.com"),
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 422,
+                description: "Invalid token"
+            ),
+        ]
+    )]
     public function validateToken(Request $request, string $token)
     {
         $request->validate([

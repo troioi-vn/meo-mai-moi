@@ -14,40 +14,38 @@ use App\Services\PetRelationshipService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Post(
- *     path="/api/placement-requests/{id}/finalize",
- *     summary="Finalize an active placement request (mark pet as returned for temporary fostering)",
- *     tags={"Placement Requests"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         required=true,
- *         description="ID of the placement request to finalize",
- *
- *         @OA\Schema(type="integer")
- *     ),
- *
- *     @OA\Response(
- *         response=200,
- *         description="Placement request finalized successfully",
- *
- *         @OA\JsonContent(ref="#/components/schemas/PlacementRequest")
- *     ),
- *
- *     @OA\Response(
- *         response=403,
- *         description="Forbidden - Only owner can finalize"
- *     ),
- *     @OA\Response(
- *         response=409,
- *         description="Conflict - Placement request is not in active status"
- *     )
- * )
- */
+#[OA\Post(
+    path: "/api/placement-requests/{id}/finalize",
+    summary: "Finalize an active placement request (mark pet as returned for temporary fostering)",
+    tags: ["Placement Requests"],
+    security: [["sanctum" => []]],
+    parameters: [
+        new OA\Parameter(
+            name: "id",
+            in: "path",
+            required: true,
+            description: "ID of the placement request to finalize",
+            schema: new OA\Schema(type: "integer")
+        ),
+    ],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "Placement request finalized successfully",
+            content: new OA\JsonContent(ref: "#/components/schemas/PlacementRequest")
+        ),
+        new OA\Response(
+            response: 403,
+            description: "Forbidden - Only owner can finalize"
+        ),
+        new OA\Response(
+            response: 409,
+            description: "Conflict - Placement request is not in active status"
+        ),
+    ]
+)]
 class FinalizePlacementRequestController extends Controller
 {
     use ApiResponseTrait;

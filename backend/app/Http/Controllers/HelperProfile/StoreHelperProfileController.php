@@ -8,32 +8,28 @@ use App\Models\City;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Post(
- *     path="/helper-profiles",
- *     summary="Create a helper profile",
- *     tags={"Helper Profiles"},
- *
- *     @OA\RequestBody(
- *         required=true,
- *
- *         @OA\JsonContent(ref="#/components/schemas/HelperProfile")
- *     ),
- *
- *     @OA\Response(
- *         response=201,
- *         description="Helper profile created successfully",
- *
- *         @OA\JsonContent(ref="#/components/schemas/HelperProfile")
- *     ),
- *
- *     @OA\Response(
- *         response=422,
- *         description="Validation error"
- *     )
- * )
- */
+#[OA\Post(
+    path: "/helper-profiles",
+    summary: "Create a helper profile",
+    tags: ["Helper Profiles"],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(ref: "#/components/schemas/HelperProfile")
+    ),
+    responses: [
+        new OA\Response(
+            response: 201,
+            description: "Helper profile created successfully",
+            content: new OA\JsonContent(ref: "#/components/schemas/HelperProfile")
+        ),
+        new OA\Response(
+            response: 422,
+            description: "Validation error"
+        ),
+    ]
+)]
 class StoreHelperProfileController extends Controller
 {
     public function __invoke(Request $request)

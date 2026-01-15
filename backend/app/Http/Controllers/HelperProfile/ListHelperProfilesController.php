@@ -6,25 +6,23 @@ use App\Enums\HelperProfileStatus;
 use App\Http\Controllers\Controller;
 use App\Models\HelperProfile;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Get(
- *     path="/helper-profiles",
- *     summary="List helper profiles",
- *     tags={"Helper Profiles"},
- *
- *     @OA\Response(
- *         response=200,
- *         description="A list of helper profiles",
- *
- *         @OA\JsonContent(
- *             type="array",
- *
- *             @OA\Items(ref="#/components/schemas/HelperProfile")
- *         )
- *     )
- * )
- */
+#[OA\Get(
+    path: "/helper-profiles",
+    summary: "List helper profiles",
+    tags: ["Helper Profiles"],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "A list of helper profiles",
+            content: new OA\JsonContent(
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/HelperProfile")
+            )
+        ),
+    ]
+)]
 class ListHelperProfilesController extends Controller
 {
     public function __invoke(Request $request)

@@ -10,37 +10,36 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use OpenApi\Attributes as OA;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-/**
- * @OA\Schema(
- *     schema="Pet",
- *     type="object",
- *     title="Pet",
- *     required={"id", "name", "country", "description", "status", "created_by", "pet_type_id"},
- *
- *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="Whiskers"),
- *     @OA\Property(property="sex", type="string", enum={"male","female","not_specified"}, example="male", description="Sex of the pet"),
- *     @OA\Property(property="birthday", type="string", format="date", example="2020-01-01", nullable=true, description="Exact birthday (present only when birthday_precision=day). Deprecated: prefer component fields.", deprecated=true),
- *     @OA\Property(property="birthday_year", type="integer", example=2020, nullable=true, description="Birth year when known (year/month/day precision)."),
- *     @OA\Property(property="birthday_month", type="integer", example=5, nullable=true, description="Birth month when known (month/day precision)."),
- *     @OA\Property(property="birthday_day", type="integer", example=12, nullable=true, description="Birth day when known (day precision)."),
- *     @OA\Property(property="birthday_precision", type="string", enum={"day","month","year","unknown"}, example="month", description="Precision level for birthday components."),
- *     @OA\Property(property="country", type="string", example="VN", description="ISO 3166-1 alpha-2 country code"),
- *     @OA\Property(property="state", type="string", example="Hanoi", nullable=true),
- *     @OA\Property(property="city", type="string", example="Hanoi", nullable=true),
- *     @OA\Property(property="address", type="string", example="123 Main St", nullable=true),
- *     @OA\Property(property="description", type="string", example="A friendly pet."),
- *     @OA\Property(property="status", type="string", example="active"),
- *     @OA\Property(property="created_by", type="integer", example=5, description="ID of user who created this pet"),
- *     @OA\Property(property="pet_type_id", type="integer", example=1)
- * )
- */
+#[OA\Schema(
+    schema: 'Pet',
+    type: 'object',
+    title: 'Pet',
+    required: ['id', 'name', 'country', 'description', 'status', 'created_by', 'pet_type_id'],
+    properties: [
+        new OA\Property(property: 'id', type: 'integer', example: 1),
+        new OA\Property(property: 'name', type: 'string', example: 'Whiskers'),
+        new OA\Property(property: 'sex', type: 'string', enum: ['male', 'female', 'not_specified'], example: 'male', description: 'Sex of the pet'),
+        new OA\Property(property: 'birthday', type: 'string', format: 'date', example: '2020-01-01', nullable: true, description: 'Exact birthday (present only when birthday_precision=day). Deprecated: prefer component fields.', deprecated: true),
+        new OA\Property(property: 'birthday_year', type: 'integer', example: 2020, nullable: true, description: 'Birth year when known (year/month/day precision).'),
+        new OA\Property(property: 'birthday_month', type: 'integer', example: 5, nullable: true, description: 'Birth month when known (month/day precision).'),
+        new OA\Property(property: 'birthday_day', type: 'integer', example: 12, nullable: true, description: 'Birth day when known (day precision).'),
+        new OA\Property(property: 'birthday_precision', type: 'string', enum: ['day', 'month', 'year', 'unknown'], example: 'month', description: 'Precision level for birthday components.'),
+        new OA\Property(property: 'country', type: 'string', example: 'VN', description: 'ISO 3166-1 alpha-2 country code'),
+        new OA\Property(property: 'state', type: 'string', example: 'Hanoi', nullable: true),
+        new OA\Property(property: 'city', type: 'string', example: 'Hanoi', nullable: true),
+        new OA\Property(property: 'address', type: 'string', example: '123 Main St', nullable: true),
+        new OA\Property(property: 'description', type: 'string', example: 'A friendly pet.'),
+        new OA\Property(property: 'status', type: 'string', example: 'active'),
+        new OA\Property(property: 'created_by', type: 'integer', example: 5, description: 'ID of user who created this pet'),
+        new OA\Property(property: 'pet_type_id', type: 'integer', example: 1),
+    ]
+)]
 class Pet extends Model implements HasMedia
 {
     use HasFactory;

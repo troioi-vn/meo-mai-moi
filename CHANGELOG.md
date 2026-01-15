@@ -6,7 +6,14 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Changed
 
-- **Switch to Bun**: Migrated the entire frontend development and build toolchain from npm to [Bun](https://bun.sh/). 
+- **OpenAPI Migration Complete**: Completed migration from `@OA` docblock annotations to PHP 8 attributes:
+  - Migrated all 19 OpenAPI controllers from deprecated docblock format to native PHP 8 attributes
+  - Upgraded `darkaonline/l5-swagger` from v9.0 to v10.0
+  - **Removed dependency**: `doctrine/annotations` (marked abandoned) is no longer required
+  - All API endpoints now use modern attribute-based OpenAPI documentation
+  - OpenAPI spec generation verified and working with `zircote/swagger-php` v5.7.8
+
+- **Switch to Bun**: Migrated the entire frontend development and build toolchain from npm to [Bun](https://bun.sh/).
   - Replaced `package-lock.json` with `bun.lock` across the workspace (root, frontend, and docs).
   - Updated all `package.json` scripts to use `bun run` and `bun x`.
   - Switched Docker builds to use `oven/bun:1` as the base image for the app-build stage.

@@ -6,72 +6,63 @@ use App\Http\Controllers\Controller;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
-/**
- * Mark the user's email address as verified.
- *
- * @OA\Get(
- *     path="/api/email/verify/{id}/{hash}",
- *     summary="Verify email address",
- *     description="Verify user's email address using signed URL from verification email.",
- *     tags={"Email Verification"},
- *
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         required=true,
- *
- *         @OA\Schema(type="string"),
- *         description="User ID"
- *     ),
- *
- *     @OA\Parameter(
- *         name="hash",
- *         in="path",
- *         required=true,
- *
- *         @OA\Schema(type="string"),
- *         description="Email hash"
- *     ),
- *
- *     @OA\Parameter(
- *         name="expires",
- *         in="query",
- *         required=true,
- *
- *         @OA\Schema(type="integer"),
- *         description="Expiration timestamp"
- *     ),
- *
- *     @OA\Parameter(
- *         name="signature",
- *         in="query",
- *         required=true,
- *
- *         @OA\Schema(type="string"),
- *         description="URL signature"
- *     ),
- *
- *     @OA\Response(
- *         response=200,
- *         description="Email verified successfully",
- *
- *         @OA\JsonContent(
- *
- *             @OA\Property(property="message", type="string", example="Email verified successfully")
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=400,
- *         description="Email already verified or invalid request"
- *     ),
- *     @OA\Response(
- *         response=403,
- *         description="Invalid or expired verification link"
- *     )
- * )
- */
+#[OA\Get(
+    path: "/api/email/verify/{id}/{hash}",
+    summary: "Verify email address",
+    description: "Verify user's email address using signed URL from verification email.",
+    tags: ["Email Verification"],
+    parameters: [
+        new OA\Parameter(
+            name: "id",
+            in: "path",
+            required: true,
+            schema: new OA\Schema(type: "string"),
+            description: "User ID"
+        ),
+        new OA\Parameter(
+            name: "hash",
+            in: "path",
+            required: true,
+            schema: new OA\Schema(type: "string"),
+            description: "Email hash"
+        ),
+        new OA\Parameter(
+            name: "expires",
+            in: "query",
+            required: true,
+            schema: new OA\Schema(type: "integer"),
+            description: "Expiration timestamp"
+        ),
+        new OA\Parameter(
+            name: "signature",
+            in: "query",
+            required: true,
+            schema: new OA\Schema(type: "string"),
+            description: "URL signature"
+        ),
+    ],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "Email verified successfully",
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "message", type: "string", example: "Email verified successfully"),
+                ]
+            )
+        ),
+        new OA\Response(
+            response: 400,
+            description: "Email already verified or invalid request"
+        ),
+        new OA\Response(
+            response: 403,
+            description: "Invalid or expired verification link"
+        ),
+    ]
+)]
 class VerifyEmailController extends Controller
 {
     use ApiResponseTrait;

@@ -11,7 +11,7 @@
     "require": {
         "php": "^8.2",
         "bezhansalleh/filament-shield": "^3.3",
-        "darkaonline/l5-swagger": "^9.0",
+        "darkaonline/l5-swagger": "^10.0",
         "fakerphp/faker": "^1.24",
         "filament/filament": "^3.3",
         "intervention/image": "^3.11",

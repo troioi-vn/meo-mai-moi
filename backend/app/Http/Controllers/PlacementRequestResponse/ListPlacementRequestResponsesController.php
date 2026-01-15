@@ -8,45 +8,44 @@ use App\Models\PlacementRequest;
 use App\Models\PlacementRequestResponse;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Get(
- *     path="/api/placement-requests/{id}/responses",
- *     summary="List responses for a placement request",
- *     tags={"Placement Request Responses"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         required=true,
- *         description="ID of the placement request",
- *
- *         @OA\Schema(type="integer")
- *     ),
- *
- *     @OA\Response(
- *         response=200,
- *         description="List of responses",
- *
- *         @OA\JsonContent(
- *
- *             @OA\Property(property="success", type="boolean", example=true),
- *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/PlacementRequestResponse")),
- *             @OA\Property(property="message", type="string", example="Responses retrieved successfully.")
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=403,
- *         description="Forbidden - Not authorized to view responses"
- *     ),
- *     @OA\Response(
- *         response=404,
- *         description="Placement request not found"
- *     )
- * )
- */
+#[OA\Get(
+    path: "/api/placement-requests/{id}/responses",
+    summary: "List responses for a placement request",
+    tags: ["Placement Request Responses"],
+    security: [["sanctum" => []]],
+    parameters: [
+        new OA\Parameter(
+            name: "id",
+            in: "path",
+            required: true,
+            description: "ID of the placement request",
+            schema: new OA\Schema(type: "integer")
+        ),
+    ],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "List of responses",
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "success", type: "boolean", example: true),
+                    new OA\Property(property: "data", type: "array", items: new OA\Items(ref: "#/components/schemas/PlacementRequestResponse")),
+                    new OA\Property(property: "message", type: "string", example: "Responses retrieved successfully."),
+                ]
+            )
+        ),
+        new OA\Response(
+            response: 403,
+            description: "Forbidden - Not authorized to view responses"
+        ),
+        new OA\Response(
+            response: 404,
+            description: "Placement request not found"
+        ),
+    ]
+)]
 class ListPlacementRequestResponsesController extends Controller
 {
     use ApiResponseTrait;

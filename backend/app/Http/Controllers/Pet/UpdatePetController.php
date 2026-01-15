@@ -13,46 +13,42 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Put(
- *     path="/api/pets/{id}",
- *     summary="Update a pet",
- *     tags={"Pets"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         required=true,
- *         description="ID of the pet to update",
- *
- *         @OA\Schema(type="integer")
- *     ),
- *
- *     @OA\RequestBody(
- *         required=true,
- *
- *         @OA\JsonContent(ref="#/components/schemas/Pet")
- *     ),
- *
- *     @OA\Response(
- *         response=200,
- *         description="Pet updated successfully",
- *
- *         @OA\JsonContent(ref="#/components/schemas/Pet")
- *     ),
- *
- *     @OA\Response(
- *         response=403,
- *         description="Forbidden"
- *     ),
- *     @OA\Response(
- *         response=422,
- *         description="Validation error"
- *     )
- * )
- */
+#[OA\Put(
+    path: "/api/pets/{id}",
+    summary: "Update a pet",
+    tags: ["Pets"],
+    security: [["sanctum" => []]],
+    parameters: [
+        new OA\Parameter(
+            name: "id",
+            in: "path",
+            required: true,
+            description: "ID of the pet to update",
+            schema: new OA\Schema(type: "integer")
+        ),
+    ],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(ref: "#/components/schemas/Pet")
+    ),
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "Pet updated successfully",
+            content: new OA\JsonContent(ref: "#/components/schemas/Pet")
+        ),
+        new OA\Response(
+            response: 403,
+            description: "Forbidden"
+        ),
+        new OA\Response(
+            response: 422,
+            description: "Validation error"
+        ),
+    ]
+)]
 class UpdatePetController extends Controller
 {
     use ApiResponseTrait;

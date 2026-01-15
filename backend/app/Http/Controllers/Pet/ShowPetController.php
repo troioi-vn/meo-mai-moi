@@ -8,35 +8,33 @@ use App\Models\Pet;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Get(
- *     path="/api/pets/{id}",
- *     summary="Get a specific pet",
- *     tags={"Pets"},
- *
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         required=true,
- *         description="ID of the pet",
- *
- *         @OA\Schema(type="integer")
- *     ),
- *
- *     @OA\Response(
- *         response=200,
- *         description="The pet",
- *
- *         @OA\JsonContent(ref="#/components/schemas/Pet")
- *     ),
- *
- *     @OA\Response(
- *         response=404,
- *         description="Pet not found"
- *     )
- * )
- */
+#[OA\Get(
+    path: "/api/pets/{id}",
+    summary: "Get a specific pet",
+    tags: ["Pets"],
+    parameters: [
+        new OA\Parameter(
+            name: "id",
+            in: "path",
+            required: true,
+            description: "ID of the pet",
+            schema: new OA\Schema(type: "integer")
+        ),
+    ],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "The pet",
+            content: new OA\JsonContent(ref: "#/components/schemas/Pet")
+        ),
+        new OA\Response(
+            response: 404,
+            description: "Pet not found"
+        ),
+    ]
+)]
 class ShowPetController extends Controller
 {
     use ApiResponseTrait;

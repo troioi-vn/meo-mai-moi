@@ -10,45 +10,33 @@ use App\Models\User;
 use App\Services\NotificationService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Post(
- *     path="/api/transfer-requests/{id}/reject",
- *     summary="Reject a transfer request for a pet",
- *     tags={"Transfer Requests"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         required=true,
- *         description="ID of the transfer request to reject",
- *
- *         @OA\Schema(type="integer")
- *     ),
- *
- *     @OA\Response(
- *         response=200,
- *         description="Transfer request rejected successfully",
- *
- *         @OA\JsonContent(ref="#/components/schemas/TransferRequest")
- *     ),
- *
- *     @OA\Response(
- *         response=404,
- *         description="Transfer request not found"
- *     ),
- *     @OA\Response(
- *         response=401,
- *         description="Unauthenticated"
- *     ),
- *     @OA\Response(
- *         response=403,
- *         description="Forbidden: You are not the recipient of this request or the request is not pending."
- *     )
- * )
- */
+#[OA\Post(
+    path: "/api/transfer-requests/{id}/reject",
+    summary: "Reject a transfer request for a pet",
+    tags: ["Transfer Requests"],
+    security: [["sanctum" => []]],
+    parameters: [
+        new OA\Parameter(
+            name: "id",
+            in: "path",
+            required: true,
+            description: "ID of the transfer request to reject",
+            schema: new OA\Schema(type: "integer")
+        )
+    ],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "Transfer request rejected successfully",
+            content: new OA\JsonContent(ref: "#/components/schemas/TransferRequest")
+        ),
+        new OA\Response(response: 404, description: "Transfer request not found"),
+        new OA\Response(response: 401, description: "Unauthenticated"),
+        new OA\Response(response: 403, description: "Forbidden: You are not the recipient of this request or the request is not pending.")
+    ]
+)]
 class RejectTransferRequestController extends Controller
 {
     use ApiResponseTrait;

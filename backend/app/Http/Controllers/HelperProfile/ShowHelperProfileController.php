@@ -5,35 +5,33 @@ namespace App\Http\Controllers\HelperProfile;
 use App\Http\Controllers\Controller;
 use App\Models\HelperProfile;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Get(
- *     path="/helper-profiles/{id}",
- *     summary="Get a specific helper profile",
- *     tags={"Helper Profiles"},
- *
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         required=true,
- *         description="ID of the helper profile",
- *
- *         @OA\Schema(type="integer")
- *     ),
- *
- *     @OA\Response(
- *         response=200,
- *         description="The helper profile",
- *
- *         @OA\JsonContent(ref="#/components/schemas/HelperProfile")
- *     ),
- *
- *     @OA\Response(
- *         response=404,
- *         description="Helper profile not found"
- *     )
- * )
- */
+#[OA\Get(
+    path: "/helper-profiles/{id}",
+    summary: "Get a specific helper profile",
+    tags: ["Helper Profiles"],
+    parameters: [
+        new OA\Parameter(
+            name: "id",
+            in: "path",
+            required: true,
+            description: "ID of the helper profile",
+            schema: new OA\Schema(type: "integer")
+        ),
+    ],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "The helper profile",
+            content: new OA\JsonContent(ref: "#/components/schemas/HelperProfile")
+        ),
+        new OA\Response(
+            response: 404,
+            description: "Helper profile not found"
+        ),
+    ]
+)]
 class ShowHelperProfileController extends Controller
 {
     public function __invoke(Request $request, HelperProfile $helperProfile)

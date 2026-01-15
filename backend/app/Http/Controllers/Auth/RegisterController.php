@@ -9,54 +9,52 @@ use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Post(
- *     path="/api/register",
- *     summary="Register a new user",
- *     description="Registers a new user and returns an authentication token. May require invitation code when invite-only mode is active.",
- *     tags={"Authentication"},
- *
- *     @OA\RequestBody(
- *         required=true,
- *         description="User registration details",
- *
- *         @OA\JsonContent(
- *             required={"name", "email", "password", "password_confirmation"},
- *
- *             @OA\Property(property="name", type="string", example="John Doe"),
- *             @OA\Property(property="email", type="string", format="email", example="john.doe@example.com"),
- *             @OA\Property(property="password", type="string", format="password", example="password123"),
- *             @OA\Property(property="password_confirmation", type="string", format="password", example="password123"),
- *             @OA\Property(property="invitation_code", type="string", nullable=true, example="abc123def456", description="Required when invite-only mode is active")
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=201,
- *         description="User registered successfully",
- *
- *         @OA\JsonContent(
- *
- *             @OA\Property(property="message", type="string", example="We have sent you verification email, please check your inbox and click the link to verify your email address."),
- *             @OA\Property(property="access_token", type="string", example="2|aBcDeFgHiJkLmNoPqRsTuVwXyZ"),
- *             @OA\Property(property="token_type", type="string", example="Bearer"),
- *             @OA\Property(property="email_verified", type="boolean", example=false),
- *             @OA\Property(property="email_sent", type="boolean", example=true),
- *             @OA\Property(property="requires_verification", type="boolean", example=true)
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=422,
- *         description="Validation error"
- *     ),
- *     @OA\Response(
- *         response=403,
- *         description="Registration not allowed (invite-only mode active without valid invitation)"
- *     )
- * )
- */
+#[OA\Post(
+    path: "/api/register",
+    summary: "Register a new user",
+    description: "Registers a new user and returns an authentication token. May require invitation code when invite-only mode is active.",
+    tags: ["Authentication"],
+    requestBody: new OA\RequestBody(
+        required: true,
+        description: "User registration details",
+        content: new OA\JsonContent(
+            required: ["name", "email", "password", "password_confirmation"],
+            properties: [
+                new OA\Property(property: "name", type: "string", example: "John Doe"),
+                new OA\Property(property: "email", type: "string", format: "email", example: "john.doe@example.com"),
+                new OA\Property(property: "password", type: "string", format: "password", example: "password123"),
+                new OA\Property(property: "password_confirmation", type: "string", format: "password", example: "password123"),
+                new OA\Property(property: "invitation_code", type: "string", nullable: true, example: "abc123def456", description: "Required when invite-only mode is active"),
+            ]
+        )
+    ),
+    responses: [
+        new OA\Response(
+            response: 201,
+            description: "User registered successfully",
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "message", type: "string", example: "We have sent you verification email, please check your inbox and click the link to verify your email address."),
+                    new OA\Property(property: "access_token", type: "string", example: "2|aBcDeFgHiJkLmNoPqRsTuVwXyZ"),
+                    new OA\Property(property: "token_type", type: "string", example: "Bearer"),
+                    new OA\Property(property: "email_verified", type: "boolean", example: false),
+                    new OA\Property(property: "email_sent", type: "boolean", example: true),
+                    new OA\Property(property: "requires_verification", type: "boolean", example: true),
+                ]
+            )
+        ),
+        new OA\Response(
+            response: 422,
+            description: "Validation error"
+        ),
+        new OA\Response(
+            response: 403,
+            description: "Registration not allowed (invite-only mode active without valid invitation)"
+        ),
+    ]
+)]
 class RegisterController extends Controller
 {
     use ApiResponseTrait;

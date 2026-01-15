@@ -7,61 +7,58 @@ use App\Models\Category;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Post(
- *     path="/api/categories",
- *     summary="Create a new category",
- *     tags={"Categories"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\RequestBody(
- *         required=true,
- *
- *         @OA\JsonContent(
- *             required={"name", "pet_type_id"},
- *
- *             @OA\Property(property="name", type="string", maxLength=50, example="Siamese"),
- *             @OA\Property(property="pet_type_id", type="integer", example=1),
- *             @OA\Property(property="description", type="string", nullable=true, example="Elegant cats with blue eyes")
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=201,
- *         description="Category created successfully",
- *
- *         @OA\JsonContent(ref="#/components/schemas/Category")
- *     ),
- *
- *     @OA\Response(
- *         response=422,
- *         description="Validation error"
- *     ),
- *     @OA\Response(
- *         response=401,
- *         description="Unauthenticated"
- *     )
- * )
- *
- * @OA\Schema(
- *     schema="Category",
- *     type="object",
- *     title="Category",
- *     required={"id", "name", "slug", "pet_type_id"},
- *
- *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="Siamese"),
- *     @OA\Property(property="slug", type="string", example="siamese"),
- *     @OA\Property(property="pet_type_id", type="integer", example=1),
- *     @OA\Property(property="description", type="string", nullable=true, example="Elegant cats with blue eyes"),
- *     @OA\Property(property="created_by", type="integer", nullable=true, example=5),
- *     @OA\Property(property="approved_at", type="string", format="datetime", nullable=true),
- *     @OA\Property(property="usage_count", type="integer", example=10),
- *     @OA\Property(property="created_at", type="string", format="datetime"),
- *     @OA\Property(property="updated_at", type="string", format="datetime")
- * )
- */
+#[OA\Post(
+    path: "/api/categories",
+    summary: "Create a new category",
+    tags: ["Categories"],
+    security: [["sanctum" => []]],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ["name", "pet_type_id"],
+            properties: [
+                new OA\Property(property: "name", type: "string", maxLength: 50, example: "Siamese"),
+                new OA\Property(property: "pet_type_id", type: "integer", example: 1),
+                new OA\Property(property: "description", type: "string", nullable: true, example: "Elegant cats with blue eyes"),
+            ]
+        )
+    ),
+    responses: [
+        new OA\Response(
+            response: 201,
+            description: "Category created successfully",
+            content: new OA\JsonContent(ref: "#/components/schemas/Category")
+        ),
+        new OA\Response(
+            response: 422,
+            description: "Validation error"
+        ),
+        new OA\Response(
+            response: 401,
+            description: "Unauthenticated"
+        ),
+    ]
+)]
+#[OA\Schema(
+    schema: "Category",
+    type: "object",
+    title: "Category",
+    required: ["id", "name", "slug", "pet_type_id"],
+    properties: [
+        new OA\Property(property: "id", type: "integer", example: 1),
+        new OA\Property(property: "name", type: "string", example: "Siamese"),
+        new OA\Property(property: "slug", type: "string", example: "siamese"),
+        new OA\Property(property: "pet_type_id", type: "integer", example: 1),
+        new OA\Property(property: "description", type: "string", nullable: true, example: "Elegant cats with blue eyes"),
+        new OA\Property(property: "created_by", type: "integer", nullable: true, example: 5),
+        new OA\Property(property: "approved_at", type: "string", format: "datetime", nullable: true),
+        new OA\Property(property: "usage_count", type: "integer", example: 10),
+        new OA\Property(property: "created_at", type: "string", format: "datetime"),
+        new OA\Property(property: "updated_at", type: "string", format: "datetime"),
+    ]
+)]
 class StoreCategoryController extends Controller
 {
     use ApiResponseTrait;

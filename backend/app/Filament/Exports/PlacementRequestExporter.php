@@ -69,7 +69,9 @@ class PlacementRequestExporter extends Exporter
     {
         $body = 'Your placement request export has completed and '.number_format($export->successful_rows).' '.str('row')->plural($export->successful_rows).' exported.';
 
-        if ($failedRowsCount = $export->getFailedRowsCount()) {
+        $failedRowsCount = (int) $export->getFailedRowsCount();
+
+        if ($failedRowsCount !== 0) {
             $body .= ' '.number_format($failedRowsCount).' '.str('row')->plural($failedRowsCount).' failed to export.';
         }
 

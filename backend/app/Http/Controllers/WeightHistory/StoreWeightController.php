@@ -10,62 +10,43 @@ use App\Traits\HandlesPetResources;
 use App\Traits\HandlesValidation;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Post(
- *     path="/api/pets/{pet}/weights",
- *     summary="Add a new weight record for a pet",
- *     tags={"Pets"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\Parameter(
- *         name="pet",
- *         in="path",
- *         required=true,
- *         description="ID of the pet to add a weight record for",
- *
- *         @OA\Schema(type="integer")
- *     ),
- *
- *     @OA\RequestBody(
- *         required=true,
- *
- *         @OA\JsonContent(
- *             required={"weight_kg", "record_date"},
- *
- *             @OA\Property(property="weight_kg", type="number", format="float", example=5.2),
- *             @OA\Property(property="record_date", type="string", format="date", example="2024-01-15")
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=201,
- *         description="Weight record created successfully",
- *
- *         @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/WeightHistory"))
- *     ),
- *
- *     @OA\Response(
- *         response=422,
- *         description="Validation error",
- *
- *         @OA\JsonContent(
- *
- *             @OA\Property(property="message", type="string", example="Validation Error"),
- *             @OA\Property(property="errors", type="object", example={"weight_kg": {"The weight kg field is required."}})
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=401,
- *         description="Unauthenticated"
- *     ),
- *     @OA\Response(
- *         response=403,
- *         description="Forbidden: You are not authorized to add weight records for this pet."
- *     )
- * )
- */
+#[OA\Post(
+    path: "/api/pets/{pet}/weights",
+    summary: "Add a new weight record for a pet",
+    tags: ["Pets"],
+    security: [["sanctum" => []]],
+    parameters: [
+        new OA\Parameter(
+            name: "pet",
+            in: "path",
+            required: true,
+            description: "ID of the pet to add a weight record for",
+            schema: new OA\Schema(type: "integer")
+        )
+    ],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ["weight_kg", "record_date"],
+            properties: [
+                new OA\Property(property: "weight_kg", type: "number", format: "float", example: 5.2),
+                new OA\Property(property: "record_date", type: "string", format: "date", example: "2024-01-15")
+            ]
+        )
+    ),
+    responses: [
+        new OA\Response(
+            response: 201,
+            description: "Weight record created successfully",
+            content: new OA\JsonContent(properties: [new OA\Property(property: "data", ref: "#/components/schemas/WeightHistory")])
+        ),
+        new OA\Response(response: 422, description: "Validation error"),
+        new OA\Response(response: 401, description: "Unauthenticated"),
+        new OA\Response(response: 403, description: "Forbidden")
+    ]
+)]
 class StoreWeightController extends Controller
 {
     use ApiResponseTrait;

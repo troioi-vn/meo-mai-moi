@@ -183,18 +183,19 @@ class Chat extends Model
      */
     public function scopeWithUnreadCount($query, User $user)
     {
-        return $query->withCount(['messages as unread_count' => function ($query) use ($user) {
-            $query->where('sender_id', '!=', $user->id)
-                ->join('chat_users', function ($join) use ($user) {
-                    $join->on('chat_messages.chat_id', '=', 'chat_users.chat_id')
-                        ->where('chat_users.user_id', '=', $user->id)
-                        ->whereNull('chat_users.left_at');
-                })
-                ->where(function ($q) {
-                    $q->whereNull('chat_users.last_read_at')
-                        ->orWhere('chat_messages.created_at', '>', \DB::raw('chat_users.last_read_at'));
-                });
-        }]);
-
+        return $query->withCount([
+            'messages as unread_count' => function ($query) use ($user) {
+                $query->where('sender_id', '!=', $user->id)
+                    ->join('chat_users', function ($join) use ($user) {
+                        $join->on('chat_messages.chat_id', '=', 'chat_users.chat_id')
+                            ->where('chat_users.user_id', '=', $user->id)
+                            ->whereNull('chat_users.left_at');
+                    })
+                    ->where(function ($q) {
+                        $q->whereNull('chat_users.last_read_at')
+                            ->orWhere('chat_messages.created_at', '>', \DB::raw('chat_users.last_read_at'));
+                    });
+            },
+        ]);
     }
 }

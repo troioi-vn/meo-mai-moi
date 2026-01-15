@@ -9,45 +9,44 @@ use App\Models\PlacementRequestResponse;
 use App\Services\NotificationService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Post(
- *     path="/api/placement-responses/{id}/reject",
- *     summary="Reject a response to a placement request",
- *     tags={"Placement Request Responses"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         required=true,
- *         description="ID of the placement response",
- *
- *         @OA\Schema(type="integer")
- *     ),
- *
- *     @OA\Response(
- *         response=200,
- *         description="Response rejected successfully",
- *
- *         @OA\JsonContent(
- *
- *             @OA\Property(property="success", type="boolean", example=true),
- *             @OA\Property(property="data", ref="#/components/schemas/PlacementRequestResponse"),
- *             @OA\Property(property="message", type="string", example="Response rejected successfully.")
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=403,
- *         description="Forbidden - Not authorized or invalid state transition"
- *     ),
- *     @OA\Response(
- *         response=404,
- *         description="Placement response not found"
- *     )
- * )
- */
+#[OA\Post(
+    path: "/api/placement-responses/{id}/reject",
+    summary: "Reject a response to a placement request",
+    tags: ["Placement Request Responses"],
+    security: [["sanctum" => []]],
+    parameters: [
+        new OA\Parameter(
+            name: "id",
+            in: "path",
+            required: true,
+            description: "ID of the placement response",
+            schema: new OA\Schema(type: "integer")
+        ),
+    ],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "Response rejected successfully",
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "success", type: "boolean", example: true),
+                    new OA\Property(property: "data", ref: "#/components/schemas/PlacementRequestResponse"),
+                    new OA\Property(property: "message", type: "string", example: "Response rejected successfully."),
+                ]
+            )
+        ),
+        new OA\Response(
+            response: 403,
+            description: "Forbidden - Not authorized or invalid state transition"
+        ),
+        new OA\Response(
+            response: 404,
+            description: "Placement response not found"
+        ),
+    ]
+)]
 class RejectPlacementRequestResponseController extends Controller
 {
     use ApiResponseTrait;

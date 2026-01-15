@@ -5,104 +5,49 @@ namespace App\Http\Controllers;
 use App\Models\Message;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
-use OpenApi\Annotations as OA;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Schema(
- *     schema="Message",
- *     title="Message",
- *     description="Message model",
- *
- *     @OA\Property(
- *         property="id",
- *         type="integer",
- *         format="int64",
- *         description="Message ID"
- *     ),
- *     @OA\Property(
- *         property="sender_id",
- *         type="integer",
- *         format="int64",
- *         description="ID of the user who sent the message"
- *     ),
- *     @OA\Property(
- *         property="recipient_id",
- *         type="integer",
- *         format="int64",
- *         description="ID of the user who received the message"
- *     ),
- *     @OA\Property(
- *         property="content",
- *         type="string",
- *         description="Content of the message"
- *     ),
- *     @OA\Property(
- *         property="read_at",
- *         type="string",
- *         format="date-time",
- *         nullable=true,
- *         description="Timestamp when the message was read"
- *     ),
- *     @OA\Property(
- *         property="created_at",
- *         type="string",
- *         format="date-time",
- *         description="Timestamp of message creation"
- *     ),
- *     @OA\Property(
- *         property="updated_at",
- *         type="string",
- *         format="date-time",
- *         description="Timestamp of last message update"
- *     )
- * )
- */
 class MessageController extends Controller
 {
     use ApiResponseTrait;
 
-    /**
-     * @OA\Post(
-     *     path="/api/messages",
-     *     summary="Send a new message",
-     *     tags={"Messages"},
-     *     security={{"sanctum": {}}},
-     *
-     *     @OA\RequestBody(
-     *         required=true,
-     *
-     *         @OA\JsonContent(
-     *             required={"recipient_id", "content"},
-     *
-     *             @OA\Property(property="recipient_id", type="integer", example=2),
-     *             @OA\Property(property="content", type="string", example="Hello, how are you?")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=201,
-     *         description="Message sent successfully",
-     *
-     *         @OA\JsonContent(ref="#/components/schemas/Message")
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validation error",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="message", type="string", example="Validation Error"),
-     *             @OA\Property(property="errors", type="object", example={"recipient_id": {"The recipient id field is required."}})
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthenticated"
-     *     )
-     * )
-     */
+    #[OA\Post(
+        path: "/api/messages",
+        summary: "Send a new message",
+        tags: ["Messages"],
+        security: [["sanctum" => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["recipient_id", "content"],
+                properties: [
+                    new OA\Property(property: "recipient_id", type: "integer", example: 2),
+                    new OA\Property(property: "content", type: "string", example: "Hello, how are you?"),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: "Message sent successfully",
+                content: new OA\JsonContent(ref: "#/components/schemas/Message")
+            ),
+            new OA\Response(
+                response: 422,
+                description: "Validation error",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "message", type: "string", example: "Validation Error"),
+                        new OA\Property(property: "errors", type: "object", example: ["recipient_id" => ["The recipient id field is required."]]),
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 401,
+                description: "Unauthenticated"
+            ),
+        ]
+    )]
     public function store(Request $request)
     {
         $validatedData = $request->validate([
@@ -124,30 +69,26 @@ class MessageController extends Controller
         return $this->sendSuccess($message, 201);
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/messages",
-     *     summary="Get all messages for the authenticated user",
-     *     tags={"Messages"},
-     *     security={{"sanctum": {}}},
-     *
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *
-     *         @OA\JsonContent(
-     *             type="array",
-     *
-     *             @OA\Items(ref="#/components/schemas/Message")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthenticated"
-     *     )
-     * )
-     */
+    #[OA\Get(
+        path: "/api/messages",
+        summary: "Get all messages for the authenticated user",
+        tags: ["Messages"],
+        security: [["sanctum" => []]],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Successful operation",
+                content: new OA\JsonContent(
+                    type: "array",
+                    items: new OA\Items(ref: "#/components/schemas/Message")
+                )
+            ),
+            new OA\Response(
+                response: 401,
+                description: "Unauthenticated"
+            ),
+        ]
+    )]
     public function index(Request $request)
     {
         $userId = $request->user()->id;
@@ -159,46 +100,44 @@ class MessageController extends Controller
         return $this->sendSuccess($messages);
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/messages/{id}",
-     *     summary="Get a single message by ID",
-     *     tags={"Messages"},
-     *     security={{"sanctum": {}}},
-     *
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="ID of the message to retrieve",
-     *
-     *         @OA\Schema(type="integer")
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="data", ref="#/components/schemas/Message")
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthenticated"
-     *     ),
-     *     @OA\Response(
-     *         response=403,
-     *         description="Forbidden: You are not the sender or recipient of this message."
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Message not found"
-     *     )
-     * )
-     */
+    #[OA\Get(
+        path: "/api/messages/{id}",
+        summary: "Get a single message by ID",
+        tags: ["Messages"],
+        security: [["sanctum" => []]],
+        parameters: [
+            new OA\Parameter(
+                name: "id",
+                in: "path",
+                required: true,
+                description: "ID of the message to retrieve",
+                schema: new OA\Schema(type: "integer")
+            ),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Successful operation",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "data", ref: "#/components/schemas/Message")
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 401,
+                description: "Unauthenticated"
+            ),
+            new OA\Response(
+                response: 403,
+                description: "Forbidden: You are not the sender or recipient of this message."
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Message not found"
+            ),
+        ]
+    )]
     public function show(Request $request, Message $message)
     {
         if ($message->sender_id !== $request->user()->id && $message->recipient_id !== $request->user()->id) {
@@ -213,43 +152,40 @@ class MessageController extends Controller
         return $this->sendSuccess($message);
     }
 
-    /**
-     * @OA\Put(
-     *     path="/api/messages/{id}/read",
-     *     summary="Mark a message as read",
-     *     tags={"Messages"},
-     *     security={{"sanctum": {}}},
-     *
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="ID of the message to mark as read",
-     *
-     *         @OA\Schema(type="integer")
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=200,
-     *         description="Message marked as read successfully",
-     *
-     *         @OA\JsonContent(ref="#/components/schemas/Message")
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthenticated"
-     *     ),
-     *     @OA\Response(
-     *         response=403,
-     *         description="Forbidden: You are not the recipient of this message."
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Message not found"
-     *     )
-     * )
-     */
+    #[OA\Put(
+        path: "/api/messages/{id}/read",
+        summary: "Mark a message as read",
+        tags: ["Messages"],
+        security: [["sanctum" => []]],
+        parameters: [
+            new OA\Parameter(
+                name: "id",
+                in: "path",
+                required: true,
+                description: "ID of the message to mark as read",
+                schema: new OA\Schema(type: "integer")
+            ),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Message marked as read successfully",
+                content: new OA\JsonContent(ref: "#/components/schemas/Message")
+            ),
+            new OA\Response(
+                response: 401,
+                description: "Unauthenticated"
+            ),
+            new OA\Response(
+                response: 403,
+                description: "Forbidden: You are not the recipient of this message."
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Message not found"
+            ),
+        ]
+    )]
     public function markAsRead(Request $request, Message $message)
     {
         if ($message->recipient_id !== $request->user()->id) {
@@ -262,40 +198,39 @@ class MessageController extends Controller
         return $this->sendSuccess($message);
     }
 
-    /**
-     * @OA\Delete(
-     *     path="/api/messages/{id}",
-     *     summary="Delete a message",
-     *     tags={"Messages"},
-     *     security={{"sanctum": {}}},
-     *
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="ID of the message to delete",
-     *
-     *         @OA\Schema(type="integer")
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=204,
-     *         description="Message deleted successfully"
-     *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthenticated"
-     *     ),
-     *     @OA\Response(
-     *         response=403,
-     *         description="Forbidden: You are not the sender or recipient of this message."
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Message not found"
-     *     )
-     * )
-     */
+    #[OA\Delete(
+        path: "/api/messages/{id}",
+        summary: "Delete a message",
+        tags: ["Messages"],
+        security: [["sanctum" => []]],
+        parameters: [
+            new OA\Parameter(
+                name: "id",
+                in: "path",
+                required: true,
+                description: "ID of the message to delete",
+                schema: new OA\Schema(type: "integer")
+            ),
+        ],
+        responses: [
+            new OA\Response(
+                response: 204,
+                description: "Message deleted successfully"
+            ),
+            new OA\Response(
+                response: 401,
+                description: "Unauthenticated"
+            ),
+            new OA\Response(
+                response: 403,
+                description: "Forbidden: You are not the sender or recipient of this message."
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Message not found"
+            ),
+        ]
+    )]
     public function destroy(Request $request, Message $message)
     {
         if ($message->sender_id !== $request->user()->id && $message->recipient_id !== $request->user()->id) {

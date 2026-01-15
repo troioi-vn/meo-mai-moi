@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Models\EmailConfiguration;
-use App\Services\EmailConfigurationService;
 use Illuminate\Console\Command;
 
 class VerifyEmailConfigCommand extends Command

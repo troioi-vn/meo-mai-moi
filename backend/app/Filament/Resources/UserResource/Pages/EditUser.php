@@ -31,7 +31,12 @@ class EditUser extends EditRecord
 
     protected function getActions(): array
     {
-        ! config('filament-users.impersonate') ?: $ret[] = Impersonate::make()->record($this->getRecord());
+        $ret = [];
+
+        if (config('filament-users.impersonate')) {
+            $ret[] = Impersonate::make()->record($this->getRecord());
+        }
+
         $ret[] = DeleteAction::make();
 
         return $ret;

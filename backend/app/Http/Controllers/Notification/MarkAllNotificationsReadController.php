@@ -6,18 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Support\Facades\Auth;
+use OpenApi\Attributes as OA;
 
-/**
- * Mark all unread notifications as read for the current user.
- *
- * @OA\Post(
- *   path="/api/notifications/mark-all-read",
- *   tags={"Notifications"},
- *   security={{"sanctum":{}}},
- *
- *   @OA\Response(response=204, description="No Content")
- * )
- */
+#[OA\Post(
+    path: "/api/notifications/mark-all-read",
+    tags: ["Notifications"],
+    security: [["sanctum" => []]],
+    responses: [
+        new OA\Response(response: 204, description: "No Content"),
+    ]
+)]
 class MarkAllNotificationsReadController extends Controller
 {
     use ApiResponseTrait;

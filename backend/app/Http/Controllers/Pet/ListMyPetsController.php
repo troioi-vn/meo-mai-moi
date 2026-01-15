@@ -8,31 +8,28 @@ use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use App\Traits\HandlesErrors;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Get(
- *     path="/api/my-pets",
- *     summary="Get the pets of the authenticated user",
- *     tags={"Pets"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\Response(
- *         response=200,
- *         description="A list of the user's pets",
- *
- *         @OA\JsonContent(
- *             type="array",
- *
- *             @OA\Items(ref="#/components/schemas/Pet")
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=401,
- *         description="Unauthenticated"
- *     )
- * )
- */
+#[OA\Get(
+    path: "/api/my-pets",
+    summary: "Get the pets of the authenticated user",
+    tags: ["Pets"],
+    security: [["sanctum" => []]],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "A list of the user's pets",
+            content: new OA\JsonContent(
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/Pet")
+            )
+        ),
+        new OA\Response(
+            response: 401,
+            description: "Unauthenticated"
+        ),
+    ]
+)]
 class ListMyPetsController extends Controller
 {
     use ApiResponseTrait;

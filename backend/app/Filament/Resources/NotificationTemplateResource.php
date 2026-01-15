@@ -37,6 +37,7 @@ class NotificationTemplateResource extends Resource
                     ->options(function (Get $get) {
                         $types = config('notification_templates.types', []);
                         $channel = (string) $get('channel');
+
                         return collect($types)
                             ->mapWithKeys(function ($cfg, $key) use ($channel) {
                                 $slug = $cfg['slug'] ?? $key;
@@ -124,19 +125,12 @@ class NotificationTemplateResource extends Resource
                                 $slug = $cfg['slug'] ?? $key;
                                 $label = \Illuminate\Support\Str::headline($slug);
                                 $channels = implode(', ', $cfg['channels'] ?? []);
-                                $rows .= '<tr><td style="padding:6px 8px; border-bottom:1px solid #eee"><code>'.e($key).'</code></td>'
-                                    .'<td style="padding:6px 8px; border-bottom:1px solid #eee">'.e($label).'</td>'
-                                    .'<td style="padding:6px 8px; border-bottom:1px solid #eee">'.e($channels).'</td></tr>';
+                                $rows .= '<tr><td style="padding:6px 8px; border-bottom:1px solid #eee"><code>'.e($key).'</code></td><td style="padding:6px 8px; border-bottom:1px solid #eee">'.e($label).'</td><td style="padding:6px 8px; border-bottom:1px solid #eee">'.e($channels).'</td></tr>';
                             }
-                            $html = '<div style="max-height:70vh; overflow:auto">'
-                                .'<table style="width:100%; border-collapse:collapse">'
-                                .'<thead><tr>'
-                                .'<th style="text-align:left; padding:6px 8px; border-bottom:1px solid #ddd">Type (key)</th>'
-                                .'<th style="text-align:left; padding:6px 8px; border-bottom:1px solid #ddd">Slug/Name</th>'
-                                .'<th style="text-align:left; padding:6px 8px; border-bottom:1px solid #ddd">Channels</th>'
-                                .'</tr></thead><tbody>'
-                                .$rows
-                                .'</tbody></table></div>';
+                            $html = sprintf(
+                                '<div style="max-height:70vh; overflow:auto"><table style="width:100%%; border-collapse:collapse"><thead><tr><th style="text-align:left; padding:6px 8px; border-bottom:1px solid #ddd">Type (key)</th><th style="text-align:left; padding:6px 8px; border-bottom:1px solid #ddd">Slug/Name</th><th style="text-align:left; padding:6px 8px; border-bottom:1px solid #ddd">Channels</th></tr></thead><tbody>%s</tbody></table></div>',
+                                $rows,
+                            );
 
                             return new HtmlString($html);
                         }),
@@ -267,17 +261,18 @@ class NotificationTemplateResource extends Resource
                             }
                         }
 
-                        $tpl = fn ($title, $content) => '<div style="width:48%; display:inline-block; vertical-align:top;">'
-                            .'<div style="font-weight:600; margin-bottom:6px">'.e($title).'</div>'
-                            .'<pre style="white-space:pre-wrap; border:1px solid #e5e7eb; padding:10px; background:#f8fafc; max-height:60vh; overflow:auto">'.e($content).'</pre></div>';
+                        $tpl = fn ($title, $content) => '<div style="width:48%; display:inline-block; vertical-align:top;"><div style="font-weight:600; margin-bottom:6px">'
+                            .e($title)
+                            .'</div><pre style="white-space:pre-wrap; border:1px solid #e5e7eb; padding:10px; background:#f8fafc; max-height:60vh; overflow:auto">'
+                            .e($content)
+                            .'</pre></div>';
 
                         $html = '<div style="display:flex; gap:4%; align-items:flex-start">'
                             .$tpl('DB Subject', $dbSubject)
                             .$tpl('Default Subject', $fileSubject)
-                            .'</div><div style="height:8px"></div>'
-                            .'<div style="display:flex; gap:4%; align-items:flex-start">'
+                            .'</div><div style="height:8px"></div><div style="display:flex; gap:4%; align-items:flex-start">'
                             .$tpl('DB Body', $dbBody)
-                            .$tpl('Default ('.$defaultLabel.')', $fileBody)
+                            .$tpl("Default ({$defaultLabel})", $fileBody)
                             .'</div>';
 
                         return new HtmlString($html);

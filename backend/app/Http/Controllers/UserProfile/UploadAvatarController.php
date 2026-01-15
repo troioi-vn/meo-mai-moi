@@ -5,60 +5,56 @@ namespace App\Http\Controllers\UserProfile;
 use App\Http\Controllers\Controller;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Post(
- *     path="/api/users/me/avatar",
- *     summary="Upload or update authenticated user's avatar",
- *     tags={"User Profile"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\RequestBody(
- *         required=true,
- *
- *         @OA\MediaType(
- *             mediaType="multipart/form-data",
- *
- *             @OA\Schema(
- *
- *                 @OA\Property(
- *                     property="avatar",
- *                     type="string",
- *                     format="binary",
- *                     description="The avatar image file (max 2MB, jpeg, png, jpg, gif, svg)"
- *                 )
- *             )
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=200,
- *         description="Avatar uploaded successfully",
- *
- *         @OA\JsonContent(
- *
- *             @OA\Property(property="message", type="string", example="Avatar uploaded successfully."),
- *             @OA\Property(property="avatar_url", type="string", example="http://localhost:8000/storage/users/avatars/user_1_1678886400.png")
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=422,
- *         description="Validation error",
- *
- *         @OA\JsonContent(
- *
- *             @OA\Property(property="message", type="string", example="Validation Error"),
- *             @OA\Property(property="errors", type="object", example={"avatar": {"The avatar must be an image."}})
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=401,
- *         description="Unauthenticated"
- *     )
- * )
- */
+#[OA\Post(
+    path: "/api/users/me/avatar",
+    summary: "Upload or update authenticated user's avatar",
+    tags: ["User Profile"],
+    security: [["sanctum" => []]],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\MediaType(
+            mediaType: "multipart/form-data",
+            schema: new OA\Schema(
+                properties: [
+                    new OA\Property(
+                        property: "avatar",
+                        type: "string",
+                        format: "binary",
+                        description: "The avatar image file (max 2MB, jpeg, png, jpg, gif, svg)"
+                    )
+                ]
+            )
+        )
+    ),
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "Avatar uploaded successfully",
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "message", type: "string", example: "Avatar uploaded successfully."),
+                    new OA\Property(property: "avatar_url", type: "string", example: "http://localhost:8000/storage/users/avatars/user_1_1678886400.png")
+                ]
+            )
+        ),
+        new OA\Response(
+            response: 422,
+            description: "Validation error",
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "message", type: "string", example: "Validation Error"),
+                    new OA\Property(property: "errors", type: "object", example: ["avatar" => ["The avatar must be an image."]])
+                ]
+            )
+        ),
+        new OA\Response(
+            response: 401,
+            description: "Unauthenticated"
+        )
+    ]
+)]
 class UploadAvatarController extends Controller
 {
     use ApiResponseTrait;

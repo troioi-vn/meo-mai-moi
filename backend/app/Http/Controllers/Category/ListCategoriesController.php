@@ -6,48 +6,43 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Get(
- *     path="/api/categories",
- *     summary="List categories for a pet type",
- *     tags={"Categories"},
- *
- *     @OA\Parameter(
- *         name="pet_type_id",
- *         in="query",
- *         required=true,
- *         description="The pet type ID to filter categories",
- *
- *         @OA\Schema(type="integer")
- *     ),
- *
- *     @OA\Parameter(
- *         name="search",
- *         in="query",
- *         required=false,
- *         description="Search term to filter categories by name",
- *
- *         @OA\Schema(type="string")
- *     ),
- *
- *     @OA\Response(
- *         response=200,
- *         description="A list of categories",
- *
- *         @OA\JsonContent(
- *             type="array",
- *
- *             @OA\Items(ref="#/components/schemas/Category")
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=422,
- *         description="Validation error - pet_type_id required"
- *     )
- * )
- */
+#[OA\Get(
+    path: "/api/categories",
+    summary: "List categories for a pet type",
+    tags: ["Categories"],
+    parameters: [
+        new OA\Parameter(
+            name: "pet_type_id",
+            in: "query",
+            required: true,
+            description: "The pet type ID to filter categories",
+            schema: new OA\Schema(type: "integer")
+        ),
+        new OA\Parameter(
+            name: "search",
+            in: "query",
+            required: false,
+            description: "Search term to filter categories by name",
+            schema: new OA\Schema(type: "string")
+        ),
+    ],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "A list of categories",
+            content: new OA\JsonContent(
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/Category")
+            )
+        ),
+        new OA\Response(
+            response: 422,
+            description: "Validation error - pet_type_id required"
+        ),
+    ]
+)]
 class ListCategoriesController extends Controller
 {
     use ApiResponseTrait;

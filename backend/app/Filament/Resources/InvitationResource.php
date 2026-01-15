@@ -4,7 +4,6 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\InvitationResource\Pages;
 use App\Models\Invitation;
-use App\Models\User;
 use App\Services\InvitationService;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -168,18 +167,20 @@ class InvitationResource extends Resource
                     ->action(function (Invitation $record, $livewire): void {
                         $url = $record->getInvitationUrl();
 
+                                                $script = sprintf(<<<'JS'
+(() => {
+    const url = %s;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).catch(() => window.prompt("Copy invitation URL:", url));
+    } else {
+        window.prompt("Copy invitation URL:", url);
+    }
+})()
+JS, json_encode($url));
+
                         // Livewire v3: execute JS on the client to copy to clipboard.
                         // Fallback to prompt() when Clipboard API is unavailable/blocked.
-                        $livewire->js(
-                            '(() => {'
-                            .'const url = '.json_encode($url).';'
-                            .'if (navigator.clipboard && navigator.clipboard.writeText) {'
-                            .'  navigator.clipboard.writeText(url).catch(() => window.prompt("Copy invitation URL:", url));'
-                            .'} else {'
-                            .'  window.prompt("Copy invitation URL:", url);'
-                            .'}'
-                            .'})()'
-                        );
+                                                $livewire->js($script);
 
                         Notification::make()
                             ->title('Invitation URL Copied')

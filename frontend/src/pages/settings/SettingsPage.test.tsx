@@ -17,7 +17,8 @@ const mockUser = {
 
 function renderSettings(route: string) {
   return renderWithRouter(<SettingsPage />, {
-    route,
+    initialEntries: [route],
+    route: '/settings/:tab',
     initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
   })
 }
@@ -25,7 +26,7 @@ function renderSettings(route: string) {
 describe('SettingsPage routing tabs', () => {
   it('renders account tab content for /settings/account', () => {
     renderSettings('/settings/account')
-    expect(screen.getByRole('heading', { name: /password/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /password/i })).toBeInTheDocument()
     expect(screen.getByText(mockUser.name)).toBeInTheDocument()
     expect(screen.getByText(mockUser.email)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /log out/i })).toBeInTheDocument()

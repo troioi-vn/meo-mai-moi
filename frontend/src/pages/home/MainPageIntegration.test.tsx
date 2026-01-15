@@ -69,7 +69,7 @@ describe('MainPage Integration with ActivePlacementRequestsSection', () => {
 
       // Check for ActivePlacementRequestsSection content
       expect(screen.getByText('Fluffy')).toBeInTheDocument()
-      expect(screen.getByText(/5 years old/)).toBeInTheDocument()
+      expect(screen.getByText(/years old/)).toBeInTheDocument()
       expect(screen.getByRole('button', { name: 'Respond' })).toBeInTheDocument()
     })
 

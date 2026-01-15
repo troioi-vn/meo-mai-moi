@@ -103,13 +103,13 @@ php artisan test --parallel
 cd frontend
 
 # Run all tests
-npm test
+bun test
 
 # Interactive UI
-npm run test:ui
+bun run test:ui
 
 # Coverage report
-npm run test:coverage
+bun run test:coverage
 ```
 
 ### End-to-End (Playwright)
@@ -121,12 +121,12 @@ Quick start:
 ```bash
 # In one terminal (dev server)
 cd frontend
-npm run dev
+bun run dev
 
 # In another terminal (from repo root)
-npm run e2e            # headless run
-npm run e2e:ui         # interactive UI
-npm run e2e:report     # open last HTML report
+bun run e2e            # headless run
+bun run e2e:ui         # interactive UI
+bun run e2e:report     # open last HTML report
 ```
 
 ## Static Analysis & Quality Gates

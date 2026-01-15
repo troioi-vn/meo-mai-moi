@@ -35,7 +35,7 @@ gh pr create --base dev --head feature/your-change --title "feat: ..." --body ".
 Before merging any PR:
 
 - [ ] All tests pass (backend + frontend)
-- [ ] Code formatted: `./vendor/bin/pint` (backend), `npm run lint` (frontend)
+- [ ] Code formatted: `./vendor/bin/pint` (backend), `bun run lint` (frontend)
 - [ ] Rebased/merged latest target branch
 - [ ] OpenAPI docs updated: `php artisan l5-swagger:generate`
 - [ ] Documentation updated if needed
@@ -113,11 +113,13 @@ git log dev..origin/dev --oneline
 ## Merge vs Rebase
 
 **Merge** (simpler, keeps exact history):
+
 ```bash
 git fetch origin && git merge origin/dev
 ```
 
 **Rebase** (linear history, preferred):
+
 ```bash
 git fetch origin && git rebase origin/dev
 # If conflicts: resolve, then
@@ -127,7 +129,7 @@ git add . && git rebase --continue
 ## Common Conflict Patterns
 
 - **Routes files**: Merge both old and new routes
-- **Model files**: Combine relationships and methods  
+- **Model files**: Combine relationships and methods
 - **Factory files**: Take version with more features
 - **Frontend components**: Merge prop changes and functionality
 - **Generated files**: Take dev version, regenerate if needed

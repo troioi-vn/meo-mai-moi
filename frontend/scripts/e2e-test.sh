@@ -17,7 +17,7 @@ check_command() {
 
 check_command docker
 check_command curl
-check_command npx
+check_command bun
 
 if ! docker compose version &> /dev/null; then
     echo "❌ docker compose is not available"
@@ -92,7 +92,7 @@ docker compose exec -T backend php artisan email:verify-config --env=e2e
 # --- Run tests ---
 echo "🎭 Running Playwright E2E tests..."
 PLAYWRIGHT_EXIT_CODE=0
-SKIP_E2E_SETUP=true PLAYWRIGHT_BASE_URL=http://localhost:8000 npx playwright test "$@" || PLAYWRIGHT_EXIT_CODE=$?
+SKIP_E2E_SETUP=true PLAYWRIGHT_BASE_URL=http://localhost:8000 bun x playwright test "$@" || PLAYWRIGHT_EXIT_CODE=$?
 
 if [ $PLAYWRIGHT_EXIT_CODE -eq 0 ]; then
     echo "✅ E2E tests completed successfully!"

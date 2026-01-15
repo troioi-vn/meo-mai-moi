@@ -36,8 +36,8 @@ This guide provides solutions to common issues encountered during development.
 
 **Build Failures**
 
-- Clear `node_modules`: `rm -rf node_modules && npm install`
-- Check for TypeScript errors: `npm run typecheck`
+- Clear `node_modules`: `rm -rf node_modules && bun install`
+- Check for TypeScript errors: `bun run typecheck`
 
 **Test Environment Issues**
 

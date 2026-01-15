@@ -4,6 +4,15 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Changed
+
+- **Switch to Bun**: Migrated the entire frontend development and build toolchain from npm to [Bun](https://bun.sh/). 
+  - Replaced `package-lock.json` with `bun.lock` across the workspace (root, frontend, and docs).
+  - Updated all `package.json` scripts to use `bun run` and `bun x`.
+  - Switched Docker builds to use `oven/bun:1` as the base image for the app-build stage.
+  - Updated utility scripts (`utils/setup.sh`, `utils/deploy_docker.sh`, and `frontend/scripts/e2e-test.sh`) to prefer Bun.
+  - Updated developer documentation and VS Code tasks to reflect Bun-based workflows.
+
 ### Added
 
 - **Parallel Testing**: Enabled parallel testing for backend using ParaTest, significantly reducing test execution time.

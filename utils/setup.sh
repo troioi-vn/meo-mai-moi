@@ -94,20 +94,20 @@ prompt_with_default() {
     printf "%s" "$var"
 }
 
-# Generate VAPID keys using npx web-push
+# Generate VAPID keys using bun x web-push
 generate_vapid_keys() {
-    echo "Checking for Node.js/npx..."
+    echo "Checking for Bun..."
     
-    if ! command -v npx >/dev/null 2>&1; then
-        echo "✗ npx not found. Please install Node.js first."
-        echo "  Visit: https://nodejs.org/"
-        log_error "npx not available for VAPID key generation"
+    if ! command -v bun >/dev/null 2>&1; then
+        echo "✗ Bun not found. Please install Bun first."
+        echo "  Visit: https://bun.sh/"
+        log_error "bun not available for VAPID key generation"
         return 1
     fi
     
     echo "Generating VAPID keys..."
     local output
-    if ! output=$(npx --yes web-push generate-vapid-keys 2>&1); then
+    if ! output=$(bun x web-push generate-vapid-keys 2>&1); then
         echo "✗ Failed to generate VAPID keys"
         echo "$output"
         log_error "VAPID key generation failed" "output=$output"
@@ -348,18 +348,18 @@ setup_initialize() {
                     else
                         echo ""
                         echo "⚠️  Failed to generate VAPID keys automatically."
-                        echo "   Please generate manually with: npx web-push generate-vapid-keys"
+                        echo "   Please generate manually with: bun x web-push generate-vapid-keys"
                         echo "   Then add to both .env and backend/.env"
                     fi
                 else
                     echo ""
                     echo "ℹ️  Skipped VAPID key generation."
-                    echo "   Generate manually with: npx web-push generate-vapid-keys"
+                    echo "   Generate manually with: bun x web-push generate-vapid-keys"
                     echo "   Then add to both .env and backend/.env"
                 fi
             else
                 echo "   (Non-interactive mode: skipping auto-generation)"
-                echo "   Generate with: npx web-push generate-vapid-keys"
+                echo "   Generate with: bun x web-push generate-vapid-keys"
                 echo "   Then add to both .env and backend/.env"
             fi
         fi
@@ -547,7 +547,7 @@ setup_initialize() {
         else
             echo "⚠️  No VAPID keys found in .env to sync"
             echo "   Both .env and backend/.env need VAPID keys for push notifications"
-            echo "   Generate with: npx web-push generate-vapid-keys"
+            echo "   Generate with: bun x web-push generate-vapid-keys"
             log_warn "No VAPID keys in root env to sync"
         fi
 

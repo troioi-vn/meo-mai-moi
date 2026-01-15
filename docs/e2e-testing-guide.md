@@ -5,6 +5,7 @@ This guide covers best practices for end-to-end testing with email verification 
 ## Overview
 
 Our e2e testing setup uses:
+
 - **Playwright** for browser automation
 - **MailHog** for email capture and testing
 - **Docker Compose** with testing profiles
@@ -14,19 +15,19 @@ Our e2e testing setup uses:
 
 ```bash
 # Run e2e tests with automatic cleanup
-cd frontend && npm run test:e2e
+cd frontend && bun run test:e2e
 
 # Run tests with visible browser for debugging
-cd frontend && npm run test:e2e -- --headed
+cd frontend && bun run test:e2e -- --headed
 
 # Run tests with interactive UI mode
-cd frontend && npm run test:e2e -- --ui
+cd frontend && bun run test:e2e -- --ui
 
 # Run tests and keep services running for debugging
-cd frontend && npm run test:e2e -- --keep-running
+cd frontend && bun run test:e2e -- --keep-running
 
 # Run specific test file with visible browser
-cd frontend && npm run test:e2e -- --headed auth.spec.ts
+cd frontend && bun run test:e2e -- --headed auth.spec.ts
 ```
 
 ## Architecture
@@ -54,10 +55,10 @@ The app uses `EmailConfiguration` model to manage email settings, which override
 # docker-compose.yml profiles
 services:
   mailhog:
-    profiles: [testing, e2e]  # Only runs with --profile e2e
+    profiles: [testing, e2e] # Only runs with --profile e2e
     ports:
-      - "1025:1025"  # SMTP server
-      - "8025:8025"  # Web UI for debugging
+      - "1025:1025" # SMTP server
+      - "8025:8025" # Web UI for debugging
 ```
 
 ## Best Practices
@@ -69,11 +70,16 @@ Always ensure your login utility functions wait for the authentication redirect 
 ```typescript
 // ✅ Good: Login function waits for redirect
 export async function login(page: Page, email: string, password: string) {
-  await gotoApp(page, '/login')
+  await gotoApp(page, "/login");
   // ... login form filling ...
-  await page.locator('form').getByRole('button', { name: 'Login', exact: true }).click()
+  await page
+    .locator("form")
+    .getByRole("button", { name: "Login", exact: true })
+    .click();
   // Wait for successful login and redirect to home
-  await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?(\?.*)?$/, { timeout: 10000 })
+  await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?(\?.*)?$/, {
+    timeout: 10000,
+  });
 }
 
 // ❌ Bad: Login function doesn't wait for redirect
@@ -88,44 +94,48 @@ export async function login(page: Page, email: string, password: string) {
 ### 2. **Use Real Email Services in Tests**
 
 ✅ **Good**: Test with actual email sending
+
 ```typescript
 // Wait for real email from MailHog
 const email = await mailhog.waitForEmail(user.email, {
   timeout: 15000,
-  subject: 'Verify'
-})
+  subject: "Verify",
+});
 ```
 
 ❌ **Avoid**: Mocking email verification entirely
+
 ```typescript
 // This doesn't test the real flow
-await page.route('**/verify-email', () => ({ status: 200 }))
+await page.route("**/verify-email", () => ({ status: 200 }));
 ```
 
 ### 2. **Use Real Email Services in Tests**
 
 ✅ **Good**: Test with actual email sending
+
 ```typescript
 // Wait for real email from MailHog
 const email = await mailhog.waitForEmail(user.email, {
   timeout: 15000,
-  subject: 'Verify'
-})
+  subject: "Verify",
+});
 ```
 
 ❌ **Avoid**: Mocking email verification entirely
+
 ```typescript
 // This doesn't test the real flow
-await page.route('**/verify-email', () => ({ status: 200 }))
+await page.route("**/verify-email", () => ({ status: 200 }));
 ```
 
 ### 3. **Clean State Between Tests**
 
 ```typescript
 test.beforeEach(async () => {
-  mailhog = new MailHogClient()
-  await mailhog.clearMessages() // Clear previous emails
-})
+  mailhog = new MailHogClient();
+  await mailhog.clearMessages(); // Clear previous emails
+});
 ```
 
 ### 4. **Use Dedicated Test Database**
@@ -140,19 +150,19 @@ DB_DATABASE=meo_mai_moi_test
 ```typescript
 // Wait for email with reasonable timeout
 const email = await mailhog.waitForEmail(userEmail, {
-  timeout: 15000,  // 15 seconds
-  interval: 1000,  // Check every second
-  subject: 'Verify Email'
-})
+  timeout: 15000, // 15 seconds
+  interval: 1000, // Check every second
+  subject: "Verify Email",
+});
 ```
 
 ### 8. **Test Edge Cases**
 
 ```typescript
-test('handles invalid verification link', async ({ page }) => {
-  await page.goto('/email/verify/999/invalid-signature')
-  await expect(page.getByText(/invalid|expired/i)).toBeVisible()
-})
+test("handles invalid verification link", async ({ page }) => {
+  await page.goto("/email/verify/999/invalid-signature");
+  await expect(page.getByText(/invalid|expired/i)).toBeVisible();
+});
 ```
 
 ### 10. **Handle Complex Form Interactions**
@@ -161,21 +171,21 @@ For forms with dynamic components like city selection that allow creating new en
 
 ```typescript
 // City selection with creation
-test('creates pet with new city', async ({ page }) => {
-  await login(page, TEST_USER.email, TEST_USER.password)
-  await page.goto('/pets/create')
+test("creates pet with new city", async ({ page }) => {
+  await login(page, TEST_USER.email, TEST_USER.password);
+  await page.goto("/pets/create");
 
   // Fill basic pet info
-  await page.getByLabel('Name').fill('Test Pet')
+  await page.getByLabel("Name").fill("Test Pet");
 
   // Handle city selection - create new city if needed
-  await page.getByText('Select city').click()
-  await page.getByPlaceholder('Search cities...').fill('New Test City')
-  await page.getByText('Create: "New Test City"').click()
+  await page.getByText("Select city").click();
+  await page.getByPlaceholder("Search cities...").fill("New Test City");
+  await page.getByText('Create: "New Test City"').click();
 
-  await page.getByRole('button', { name: 'Create Pet' }).click()
-  await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?$/)
-})
+  await page.getByRole("button", { name: "Create Pet" }).click();
+  await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?$/);
+});
 ```
 
 **Note**: Components like `CitySelect` may have complex interactions involving dropdowns, search, and creation. Test these thoroughly.
@@ -185,17 +195,17 @@ test('creates pet with new city', async ({ page }) => {
 Validate that required fields show appropriate error messages:
 
 ```typescript
-test('validates required fields', async ({ page }) => {
-  await login(page, TEST_USER.email, TEST_USER.password)
-  await page.goto('/pets/create')
+test("validates required fields", async ({ page }) => {
+  await login(page, TEST_USER.email, TEST_USER.password);
+  await page.goto("/pets/create");
 
   // Submit empty form
-  await page.getByRole('button', { name: 'Create Pet' }).click()
+  await page.getByRole("button", { name: "Create Pet" }).click();
 
   // Check for validation errors
-  await expect(page.getByText('Name is required')).toBeVisible()
-  await expect(page.getByText('City is required')).toBeVisible()
-})
+  await expect(page.getByText("Name is required")).toBeVisible();
+  await expect(page.getByText("City is required")).toBeVisible();
+});
 ```
 
 ### 13. **Clean Up Debug Artifacts**
@@ -215,6 +225,7 @@ echo "debug-*.png" >> frontend/.gitignore
 ## Environment Configuration
 
 ### Backend (.env.e2e)
+
 ```env
 # E2E Testing Environment
 APP_ENV=testing
@@ -238,11 +249,13 @@ QUEUE_CONNECTION=sync
 ### Frontend Environment Files
 
 **`.env` (Base configuration)**:
+
 ```env
 PLAYWRIGHT_BASE_URL=http://localhost:8000
 ```
 
 **`.env.e2e` (E2E-specific additions)**:
+
 ```env
 MAILHOG_API_URL=http://localhost:8025/api/v2
 ```
@@ -254,62 +267,64 @@ The Playwright config loads these files in order: `.env.e2e.local` → `.env.e2e
 ### Basic Operations
 
 ```typescript
-const mailhog = new MailHogClient()
+const mailhog = new MailHogClient();
 
 // Get all messages
-const messages = await mailhog.getMessages()
+const messages = await mailhog.getMessages();
 
 // Get messages for specific email
-const userMessages = await mailhog.getMessagesForEmail('user@example.com')
+const userMessages = await mailhog.getMessagesForEmail("user@example.com");
 
 // Wait for email with polling
-const email = await mailhog.waitForEmail('user@example.com', {
+const email = await mailhog.waitForEmail("user@example.com", {
   timeout: 10000,
-  subject: 'Welcome'
-})
+  subject: "Welcome",
+});
 
 // Extract verification URL
-const verificationUrl = mailhog.extractVerificationUrl(email)
+const verificationUrl = mailhog.extractVerificationUrl(email);
 ```
 
 ### Advanced Patterns
 
 ```typescript
 // Test email content
-test('verification email contains correct content', async () => {
-  const email = await mailhog.waitForEmail(TEST_USER.email)
-  
-  expect(email.Content.Headers['Subject'][0]).toContain('Verify')
-  expect(email.Content.Body).toContain(TEST_USER.name)
-  expect(email.Content.Body).toContain('verify')
-})
+test("verification email contains correct content", async () => {
+  const email = await mailhog.waitForEmail(TEST_USER.email);
+
+  expect(email.Content.Headers["Subject"][0]).toContain("Verify");
+  expect(email.Content.Body).toContain(TEST_USER.name);
+  expect(email.Content.Body).toContain("verify");
+});
 
 // Test multiple emails
-test('sends welcome email after verification', async () => {
+test("sends welcome email after verification", async () => {
   // Register and verify...
-  
-  const emails = await mailhog.getMessagesForEmail(TEST_USER.email)
-  expect(emails).toHaveLength(2) // Verification + Welcome
-  
-  const welcomeEmail = emails.find(e => 
-    e.Content.Headers['Subject'][0].includes('Welcome')
-  )
-  expect(welcomeEmail).toBeTruthy()
-})
+
+  const emails = await mailhog.getMessagesForEmail(TEST_USER.email);
+  expect(emails).toHaveLength(2); // Verification + Welcome
+
+  const welcomeEmail = emails.find((e) =>
+    e.Content.Headers["Subject"][0].includes("Welcome")
+  );
+  expect(welcomeEmail).toBeTruthy();
+});
 ```
 
 ## Debugging
 
 ### View Emails in Browser
+
 ```bash
 # Start services and keep running
-npm run test:e2e:keep
+bun run test:e2e:keep
 
 # Open MailHog UI
 open http://localhost:8025
 ```
 
 ### Check Email Configuration
+
 ```bash
 # Verify email config status
 docker compose exec backend php artisan email:verify-config --env=e2e
@@ -322,6 +337,7 @@ docker compose exec backend php artisan db:seed --class=E2EEmailConfigurationSee
 ```
 
 ### Check Service Status
+
 ```bash
 # Check if services are running
 docker compose --profile e2e ps
@@ -332,18 +348,19 @@ docker compose logs backend
 ```
 
 ### Debug Test Failures
+
 ```bash
 # Run with UI mode for debugging (recommended)
-npm run test:e2e -- --ui
+bun run test:e2e -- --ui
 
 # Run with visible browser
-npm run test:e2e -- --headed
+bun run test:e2e -- --headed
 
 # Run with debug mode (pauses at each step)
-npm run test:e2e -- --debug
+bun run test:e2e -- --debug
 
 # Run specific test file with visible browser
-npm run test:e2e -- --headed auth.spec.ts
+bun run test:e2e -- --headed auth.spec.ts
 
 # Enable slow motion for easier observation (uncomment in playwright.config.ts)
 # launchOptions: { slowMo: 500 }
@@ -356,6 +373,7 @@ npm run test:e2e -- --headed auth.spec.ts
 **Problem**: Login utility functions don't wait for authentication redirects, causing subsequent navigation to fail
 
 **Solutions**:
+
 - Always wait for URL changes after login: `await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?/)`
 - Ensure login functions return only after successful authentication
 - Test login functions independently to verify they complete properly
@@ -365,6 +383,7 @@ npm run test:e2e -- --headed auth.spec.ts
 **Problem**: Tests fail because `/register` redirects to `/login`
 
 **Solutions**:
+
 - This was fixed in the AuthContext to exclude public pages from unauthorized redirects
 - Ensure `AuthContext.tsx` has proper public path handling
 - Check that `loadUser()` is not called on public pages
@@ -374,6 +393,7 @@ npm run test:e2e -- --headed auth.spec.ts
 **Problem**: Test times out waiting for email
 
 **Solutions**:
+
 - Check MailHog is running: `curl http://localhost:8025/api/v2/messages`
 - Verify Laravel mail config points to MailHog
 - Check queue is set to `sync` for immediate processing
@@ -384,6 +404,7 @@ npm run test:e2e -- --headed auth.spec.ts
 **Problem**: Cannot extract verification URL from email
 
 **Solutions**:
+
 - Check email content format matches expected pattern
 - Update regex patterns in `extractVerificationUrl()`
 - Log email body for debugging: `console.log(email.Content.Body)`
@@ -393,6 +414,7 @@ npm run test:e2e -- --headed auth.spec.ts
 **Problem**: Tests fail due to existing data
 
 **Solutions**:
+
 - Use `RefreshDatabase` in Laravel tests
 - Run `migrate:fresh --seed` before e2e tests
 - Use unique email addresses per test run
@@ -402,6 +424,7 @@ npm run test:e2e -- --headed auth.spec.ts
 **Problem**: Tests start before services are ready
 
 **Solutions**:
+
 - Add health checks to docker-compose.yml
 - Use `waitUntil` in Playwright navigation
 - Add explicit waits for service availability
@@ -411,12 +434,15 @@ npm run test:e2e -- --headed auth.spec.ts
 **Problem**: `global-setup.ts` checks for `/api/health` endpoint that may not exist
 
 **Solutions**:
+
 ```typescript
 // ✅ Good: Check actual web server response
-execSync('curl -f -I http://localhost:8000 >/dev/null 2>&1', { stdio: 'pipe' })
+execSync("curl -f -I http://localhost:8000 >/dev/null 2>&1", { stdio: "pipe" });
 
 // ❌ Bad: Assume /api/health exists
-execSync('curl -f http://localhost:8000/api/health >/dev/null 2>&1', { stdio: 'pipe' })
+execSync("curl -f http://localhost:8000/api/health >/dev/null 2>&1", {
+  stdio: "pipe",
+});
 ```
 
 **Note**: Use `curl -I` (HEAD request) to check if the web server is responding, rather than assuming specific API endpoints exist.
@@ -426,47 +452,48 @@ execSync('curl -f http://localhost:8000/api/health >/dev/null 2>&1', { stdio: 'p
 Here's a complete example from our pet creation test that demonstrates multiple best practices:
 
 ```typescript
-import { test, expect } from '@playwright/test'
-import { login } from './utils/app'
-import { MailHogClient } from './utils/mailhog'
+import { test, expect } from "@playwright/test";
+import { login } from "./utils/app";
+import { MailHogClient } from "./utils/mailhog";
 
-const TEST_USER = { email: 'user1@catarchy.space', password: 'password' }
+const TEST_USER = { email: "user1@catarchy.space", password: "password" };
 
-test.describe('Pet Creation', () => {
-  let mailhog: MailHogClient
+test.describe("Pet Creation", () => {
+  let mailhog: MailHogClient;
 
   test.beforeEach(async () => {
-    mailhog = new MailHogClient()
-    await mailhog.clearMessages() // Clean state between tests
-  })
+    mailhog = new MailHogClient();
+    await mailhog.clearMessages(); // Clean state between tests
+  });
 
-  test('allows authenticated user to create a new pet', async ({ page }) => {
+  test("allows authenticated user to create a new pet", async ({ page }) => {
     // Login with proper redirect waiting
-    await login(page, TEST_USER.email, TEST_USER.password)
+    await login(page, TEST_USER.email, TEST_USER.password);
 
     // Navigate to protected route
-    await page.goto('/pets/create')
-    await expect(page.locator('#root')).toBeVisible()
+    await page.goto("/pets/create");
+    await expect(page.locator("#root")).toBeVisible();
 
     // Fill form with complex interactions
-    await page.getByLabel('Name').fill('Test Pet')
-    await page.getByLabel('Birthday Precision').selectOption('day')
-    await page.locator('#birthday').fill('2020-06-15')
+    await page.getByLabel("Name").fill("Test Pet");
+    await page.getByLabel("Birthday Precision").selectOption("day");
+    await page.locator("#birthday").fill("2020-06-15");
 
     // Handle dynamic city creation
-    await page.getByText('Select city').click()
-    await page.getByPlaceholder('Search cities...').fill('Test City')
-    await page.getByText('Create: "Test City"').click()
+    await page.getByText("Select city").click();
+    await page.getByPlaceholder("Search cities...").fill("Test City");
+    await page.getByText('Create: "Test City"').click();
 
     // Submit and verify success
-    await page.getByRole('button', { name: 'Create Pet' }).click()
-    await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?$/, { timeout: 10000 })
-    await expect(page.getByText('Test Pet')).toBeVisible()
-  })
-})
+    await page.getByRole("button", { name: "Create Pet" }).click();
+    await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?$/, { timeout: 10000 });
+    await expect(page.getByText("Test Pet")).toBeVisible();
+  });
+});
 ```
 
 This example shows:
+
 - Proper login with redirect waiting
 - Complex form interactions (city selection)
 - State cleanup between tests
@@ -486,23 +513,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Start services
         run: docker compose --profile e2e up -d
-        
+
       - name: Wait for services
         run: |
           timeout 60 bash -c 'until curl -f http://localhost:8025/api/v2/messages; do sleep 2; done'
-          
+
       - name: Setup test database
         run: docker compose exec backend php artisan migrate:fresh --seed --env=e2e
-        
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
       - name: Install Playwright
-        run: cd frontend && npm ci && npx playwright install
-        
+        run: cd frontend && bun install && bun x playwright install
+
       - name: Run E2E tests
-        run: cd frontend && npm run e2e
-        
+        run: cd frontend && bun run e2e
+
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: failure()

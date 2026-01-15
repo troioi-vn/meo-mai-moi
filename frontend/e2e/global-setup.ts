@@ -57,7 +57,7 @@ async function globalSetup() {
     console.log('   - User: user1@catarchy.space / password')
   } catch (error) {
     console.error('❌ Failed to setup E2E test database:', error)
-    console.error('💡 Try running: npm run test:e2e instead of npm run e2e:direct')
+    console.error('💡 Try running: bun run test:e2e instead of bun run e2e:direct')
     throw error
   }
 }

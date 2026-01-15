@@ -59,7 +59,7 @@ The application supports browser-based push notifications using the Web Push Pro
 **Root `.env` (Docker Compose variables):**
 
 ```bash
-# Generate with: npx web-push generate-vapid-keys
+# Generate with: bun x web-push generate-vapid-keys
 VAPID_PUBLIC_KEY=your_public_key
 VAPID_PRIVATE_KEY=your_private_key
 ```
@@ -97,8 +97,8 @@ The setup script (`utils/setup.sh`) will automatically offer to generate VAPID k
 
 When prompted, choose "yes" to generate keys automatically. The script will:
 
-- Check for Node.js/npx availability
-- Generate keys using `npx web-push generate-vapid-keys`
+- Check for Bun availability
+- Generate keys using `bun x web-push generate-vapid-keys`
 - Add them to both `.env` and `backend/.env`
 - Sync them automatically
 
@@ -107,7 +107,7 @@ When prompted, choose "yes" to generate keys automatically. The script will:
 If you prefer to generate keys manually:
 
 ```bash
-npx web-push generate-vapid-keys
+bun x web-push generate-vapid-keys
 ```
 
 Copy the generated keys to both `.env` and `backend/.env`.

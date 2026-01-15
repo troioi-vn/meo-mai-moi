@@ -2,10 +2,11 @@
 .git
 .gitignore
 
-# Node dependencies
+# Node & Bun dependencies
 node_modules
 frontend/node_modules
 npm-debug.log
+bun-error.log
 yarn-error.log
 
 # Frontend build artifacts & caches

@@ -26,6 +26,7 @@ This document outlines the architecture of the Meo Mai Moi application, includin
 The application uses a flexible relationship system to manage connections between pets and users:
 
 **pet_relationships table**:
+
 - `user_id`: Foreign key to users table
 - `pet_id`: Foreign key to pets table
 - `relationship_type`: Enum (owner, foster, editor, viewer)
@@ -34,12 +35,14 @@ The application uses a flexible relationship system to manage connections betwee
 - `created_by`: User who created this relationship
 
 **Relationship Types**:
+
 - **owner**: Full ownership rights including transfer capabilities
 - **foster**: Temporary caretaking access during fostering
 - **editor**: Edit access for pet management assistance
 - **viewer**: Read-only access for monitoring
 
 **Key Features**:
+
 - Multiple concurrent relationships per pet
 - Historical tracking with start/end dates
 - Relationship lifecycle management
@@ -160,7 +163,7 @@ src/
 **Code Style**:
 
 - **ESLint + Prettier** with strict TypeScript rules
-- Run before commit: `npm run lint && npm run typecheck`
+- Run before commit: `bun run lint && bun run typecheck`
 
 ### Documentation Standards
 

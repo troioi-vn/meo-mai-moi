@@ -150,7 +150,7 @@ src/
 
 - **ESLint + Prettier** with strict TypeScript rules
 
-- Run before commit: `npm run lint && npm run typecheck`
+- Run before commit: `bun run lint && bun run typecheck`
 
 ### Documentation Standards
 
@@ -211,15 +211,15 @@ cd backend && php artisan test --parallel
 **Frontend (Vitest + RTL)**:
 
 ```bash
-cd frontend && npm test
-cd frontend && npm run typecheck
+cd frontend && bun test
+cd frontend && bun run typecheck
 ```
 
 **E2E Tests (Playwright + MailHog)**:
 
 ```bash
-cd frontend && npm run test:e2e
-cd frontend && npm run test:e2e:keep  # Keep services running for debugging
+cd frontend && bun run test:e2e
+cd frontend && bun run test:e2e:keep  # Keep services running for debugging
 ```
 
 - **Real Email Testing**: Uses MailHog SMTP server for authentic email verification flows
@@ -267,8 +267,8 @@ cd frontend && npm run test:e2e:keep  # Keep services running for debugging
 **Frontend Issues**
 
 - **Build Failures**:
-  - Clear node_modules: `rm -rf node_modules && npm install`
-  - Check TypeScript errors: `npm run typecheck`
+  - Clear node_modules: `rm -rf node_modules && bun install`
+  - Check TypeScript errors: `bun run typecheck`
 - **Test Environment Issues**:
   - Radix/shadcn components need polyfills in `setupTests.ts`
   - MSW handlers must use absolute URLs
@@ -295,15 +295,15 @@ cd frontend && npm run test:e2e:keep  # Keep services running for debugging
 ## 8) Linting & formatting
 
 - Backend: Laravel Pint (`./vendor/bin/pint`).
-- Frontend: ESLint + Prettier + TypeScript (`npm run lint`, `npm run typecheck`).
+- Frontend: ESLint + Prettier + TypeScript (`bun run lint`, `bun run typecheck`).
 
 ## 9) Quick commands
 
 - Start (Docker): `docker compose up -d --build`
 - Backend tests: `cd backend && php artisan test --parallel`
-- Frontend tests: `cd frontend && npm test`
-- E2E tests: `cd frontend && npm run test:e2e`
-- E2E debug: `cd frontend && npm run test:e2e:keep` (keeps services running)
+- Frontend tests: `cd frontend && bun test`
+- E2E tests: `cd frontend && bun run test:e2e`
+- E2E debug: `cd frontend && bun run test:e2e:keep` (keeps services running)
 - Migrate/seed (Docker): `docker compose exec backend php artisan migrate --seed`
 - Generate API docs: `php artisan l5-swagger:generate` (generates automatically alongside the openapi spec tests)
 - Admin panel: http://localhost:8000/admin

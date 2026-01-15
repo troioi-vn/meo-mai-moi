@@ -98,12 +98,12 @@ cd backend && php artisan test --parallel
 cd backend && ./vendor/bin/pint
 
 # Frontend
-cd frontend && npm test
-cd frontend && npm run lint && npm run typecheck
+cd frontend && bun test
+cd frontend && bun run lint && bun run typecheck
 
 # E2E Tests (with email verification)
-cd frontend && npm run test:e2e
-cd frontend && npm run test:e2e:keep  # Keep services running for debugging
+cd frontend && bun run test:e2e
+cd frontend && bun run test:e2e:keep  # Keep services running for debugging
 ```
 
 5. Open a Pull Request

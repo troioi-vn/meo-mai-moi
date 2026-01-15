@@ -1,5 +1,5 @@
 # Multi-stage build: First stage for building the entire application
-FROM node:24 AS app-build
+FROM oven/bun:1 AS app-build
 
 ARG VAPID_PUBLIC_KEY
 ENV VAPID_PUBLIC_KEY=$VAPID_PUBLIC_KEY
@@ -21,9 +21,9 @@ WORKDIR /app
 # Build Frontend SPA assets
 ##
 # Copy package files first to leverage Docker cache
-COPY ./frontend/package.json ./frontend/package-lock.json /app/frontend/
+COPY ./frontend/package.json ./frontend/bun.lock /app/frontend/
 WORKDIR /app/frontend
-RUN npm ci
+RUN bun install --frozen-lockfile
 
 # Copy the rest of the source code
 COPY ./frontend /app/frontend
@@ -31,7 +31,7 @@ COPY ./backend /app/backend
 
 # Build the frontend SPA (copies to /app/backend/public/build via script)
 WORKDIR /app/frontend
-RUN npm run build:docker
+RUN bun run build:docker
 
 ##
 # No backend JS build: backend is API-only. Frontend SPA build already copied into /app/backend/public/build.

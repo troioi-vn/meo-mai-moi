@@ -13,16 +13,16 @@ _deploy_docker_build_docs() {
     if [ ! -d "$PROJECT_ROOT/docs" ]; then
         return 0
     fi
-    if ! command -v npm >/dev/null 2>&1; then
-        note "⚠️  npm not found; skipping docs build (docs will not be updated)."
+    if ! command -v bun >/dev/null 2>&1; then
+        note "⚠️  bun not found; skipping docs build (docs will not be updated)."
         return 0
     fi
 
     note "Building documentation (VitePress)..."
     (
         cd "$PROJECT_ROOT" && \
-        npm --prefix docs install --no-fund --no-audit && \
-        npm --prefix docs run docs:build
+        bun install --prefix docs && \
+        bun --prefix docs run docs:build
     ) || {
         note "⚠️  Failed to build docs. Continuing without updated docs."
         return 0

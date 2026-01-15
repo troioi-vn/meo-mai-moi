@@ -31,6 +31,7 @@ backend/certs/
 /public/build
 node_modules/
 npm-debug.log
+bun-error.log
 yarn-error.log
 
 .env.local

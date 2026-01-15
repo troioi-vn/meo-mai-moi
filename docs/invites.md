@@ -443,7 +443,7 @@ cd backend
 
 ```bash
 cd frontend
-npm run test
+bun test
 ```
 
 ## User Workflows

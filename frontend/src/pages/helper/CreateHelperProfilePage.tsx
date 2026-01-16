@@ -123,7 +123,6 @@ const CreateHelperProfilePage: React.FC = () => {
                     type="submit"
                     aria-label="Create Helper Profile"
                     disabled={isSubmitting || loadingPetTypes}
-                    className="flex-1"
                   >
                     {isSubmitting ? 'Creating Profile...' : 'Create Helper Profile'}
                   </Button>

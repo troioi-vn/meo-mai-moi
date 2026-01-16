@@ -7,6 +7,7 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Changed
 
 - **OpenAPI Migration Complete**: Completed migration from `@OA` docblock annotations to PHP 8 attributes:
+
   - Migrated all 19 OpenAPI controllers from deprecated docblock format to native PHP 8 attributes
   - Upgraded `darkaonline/l5-swagger` from v9.0 to v10.0
   - **Removed dependency**: `doctrine/annotations` (marked abandoned) is no longer required
@@ -759,3 +760,7 @@ All notable changes to this project are documented here, following the [Keep a C
 
 - Fixed syntax error in SettingsPage.tsx where two lines were merged
 - Fixed useCreateChat hook destructuring and usage in SettingsPage.tsx
+
+### Added
+
+- **Placement Request Page**: Show "Your Response" section to potential helpers who haven't created a Helper Profile yet, with a prompt to create one.

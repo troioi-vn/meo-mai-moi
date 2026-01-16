@@ -11,10 +11,7 @@ import {
   finalizePlacementRequest,
   deletePlacementRequest,
 } from '@/api/placement'
-import type {
-  PlacementRequestDetail,
-  PlacementRequestResponse,
-} from '@/types/placement'
+import type { PlacementRequestDetail, PlacementRequestResponse } from '@/types/placement'
 import {
   formatRequestType,
   formatStatus,
@@ -68,30 +65,27 @@ import type { HelperProfile, PlacementRequestType } from '@/types/helper-profile
 // Status badge variants
 const getStatusBadgeVariant = (
   status: string
-): 'default' | 'secondary' | 'destructive' | 'outline' | 'success' => {
+): 'default' | 'secondary' | 'destructive' | 'outline' => {
   switch (status) {
     case 'open':
       return 'default'
     case 'pending_transfer':
-      return 'secondary'
     case 'active':
-      return 'success'
     case 'finalized':
-      return 'success'
+      return 'secondary'
     default:
       return 'outline'
   }
 }
 
-
 const getResponseStatusBadgeVariant = (
   status: string
-): 'default' | 'secondary' | 'destructive' | 'outline' | 'success' => {
+): 'default' | 'secondary' | 'destructive' | 'outline' => {
   switch (status) {
     case 'responded':
       return 'secondary'
     case 'accepted':
-      return 'success'
+      return 'secondary'
     case 'rejected':
       return 'destructive'
     case 'cancelled':
@@ -145,10 +139,14 @@ export default function RequestDetailPage() {
     void fetchRequest()
   }, [fetchRequest])
 
-  // Fetch helper profiles when user can respond
+  // Fetch helper profiles when user can respond or might want to
   useEffect(() => {
     if (!request || !user) return
-    if (!request.available_actions.can_respond) return
+
+    const isOwnerOrAdmin = request.viewer_role === 'owner' || request.viewer_role === 'admin'
+    const isPotentialHelper = !isOwnerOrAdmin && request.status === 'open'
+
+    if (!request.available_actions.can_respond && !isPotentialHelper) return
 
     const fetchProfiles = async () => {
       try {
@@ -174,7 +172,6 @@ export default function RequestDetailPage() {
 
     void fetchProfiles()
   }, [request, user])
-
 
   const handleAcceptResponse = useCallback(
     async (responseId: number) => {
@@ -339,10 +336,7 @@ export default function RequestDetailPage() {
   // Warning: city mismatch
   const cityWarning = (() => {
     if (!selectedHelperProfile || !request?.pet) return undefined
-    const petCity =
-      typeof request.pet.city === 'string'
-        ? request.pet.city
-        : request.pet.city?.name
+    const petCity = typeof request.pet.city === 'string' ? request.pet.city : request.pet.city?.name
     if (!petCity) return undefined
     const profileCity =
       typeof selectedHelperProfile.city === 'string'
@@ -356,7 +350,7 @@ export default function RequestDetailPage() {
 
   // Warning: country mismatch
   const countryWarning = (() => {
-    if (!selectedHelperProfile || !request.pet.country) return undefined
+    if (!selectedHelperProfile || !request?.pet.country) return undefined
     const profileCountry = selectedHelperProfile.country?.toLowerCase().trim()
     const petCountry = request.pet.country.toLowerCase().trim()
     if (profileCountry && petCountry && profileCountry !== petCountry) {
@@ -392,7 +386,12 @@ export default function RequestDetailPage() {
           <CardContent className="pt-6">
             <div className="text-center py-8">
               <p className="text-destructive mb-4">{error}</p>
-              <Button variant="outline" onClick={() => void navigate(-1)}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  void navigate(-1)
+                }}
+              >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Go Back
               </Button>
@@ -410,8 +409,13 @@ export default function RequestDetailPage() {
   const actions = request.available_actions
   const isOwnerOrAdmin = request.viewer_role === 'owner' || request.viewer_role === 'admin'
   const isHelper = request.viewer_role === 'helper'
-  // Show respond section for both helpers and public users who can respond
-  const canShowRespondSection = isHelper || actions.can_respond
+
+  // Potential helper: logged in, not the owner/admin, and request is open
+  const isPotentialHelper = !!user && !isOwnerOrAdmin && request.status === 'open'
+
+  // Show respond section for helpers, users who already responded, or potential helpers
+  const canShowRespondSection = isHelper || actions.can_respond || !!myResponse || isPotentialHelper
+
   const petCity =
     typeof request.pet.city === 'object' && request.pet.city
       ? request.pet.city.name
@@ -553,7 +557,7 @@ export default function RequestDetailPage() {
                   </div>
                 )}
               </div>
-            ) : actions.can_respond ? (
+            ) : actions.can_respond || isPotentialHelper ? (
               <div className="space-y-4">
                 {loadingProfiles ? (
                   <div className="flex items-center justify-center py-6">
@@ -628,7 +632,9 @@ export default function RequestDetailPage() {
                       <Textarea
                         placeholder="Introduce yourself and explain why you'd like to help..."
                         value={responseMessage}
-                        onChange={(e) => { setResponseMessage(e.target.value) }}
+                        onChange={(e) => {
+                          setResponseMessage(e.target.value)
+                        }}
                         rows={4}
                       />
                     </div>
@@ -659,7 +665,11 @@ export default function RequestDetailPage() {
             {request.user_id && (isHelper || myResponse) && (
               <Button
                 variant="outline"
-                onClick={() => void handleChat(Number(request.user_id))}
+                onClick={() => {
+                  if (request.user_id) {
+                    void handleChat(request.user_id)
+                  }
+                }}
                 disabled={creatingChat}
                 className="w-full"
               >
@@ -730,7 +740,11 @@ export default function RequestDetailPage() {
               {acceptedResponse.helper_profile?.user?.id && (
                 <Button
                   variant="outline"
-                  onClick={() => void handleChat(Number(acceptedResponse.helper_profile.user.id))}
+                  onClick={() => {
+                    if (acceptedResponse.helper_profile?.user?.id) {
+                      void handleChat(acceptedResponse.helper_profile.user.id)
+                    }
+                  }}
                   disabled={creatingChat}
                   className="w-full"
                 >
@@ -761,7 +775,11 @@ export default function RequestDetailPage() {
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="outline" className="w-full" disabled={actionLoading === 'finalize'}>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    disabled={actionLoading === 'finalize'}
+                  >
                     {actionLoading === 'finalize' ? (
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     ) : (
@@ -775,9 +793,8 @@ export default function RequestDetailPage() {
                     <AlertDialogTitle>Confirm Pet Return</AlertDialogTitle>
                     <AlertDialogDescription>
                       Are you confirming that {request.pet.name} has been returned to you? This will
-                      end the{' '}
-                      {request.request_type === 'pet_sitting' ? 'pet sitting' : 'fostering'} period
-                      and mark the placement as completed.
+                      end the {request.request_type === 'pet_sitting' ? 'pet sitting' : 'fostering'}{' '}
+                      period and mark the placement as completed.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -925,7 +942,6 @@ export default function RequestDetailPage() {
           </CardContent>
         </Card>
       )}
-
     </div>
   )
 }

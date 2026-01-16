@@ -742,3 +742,16 @@ All notable changes to this project are documented here, following the [Keep a C
   - **Public access** preserved for lost pets and pets with active placement requests
   - Updated all notification links and frontend routing to use the new `/view` endpoint
   - Enhanced `PetPolicy` with `isPendingTransferRecipient()` method for transfer-based access control
+
+### Changed
+
+- Updated seed user name for support user to "Support 🐱"
+
+### Added
+
+- Added "Chat with Support" button in settings page that creates a conversation with support user (ID 2)
+
+### Fixed
+
+- Fixed syntax error in SettingsPage.tsx where two lines were merged
+- Fixed useCreateChat hook destructuring and usage in SettingsPage.tsx

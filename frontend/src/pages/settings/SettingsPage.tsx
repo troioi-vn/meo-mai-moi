@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button'
 import { ChangePasswordDialog } from '@/components/auth/ChangePasswordDialog'
 import { SetPasswordComponent } from '@/components/auth/SetPasswordComponent'
 import { DeleteAccountDialog } from '@/components/auth/DeleteAccountDialog'
+import { useCreateChat } from '@/hooks/useMessaging'
+import { MessageCircle } from 'lucide-react'
 
 const TAB_VALUES = ['account', 'notifications', 'contact-us'] as const
 type TabValue = (typeof TAB_VALUES)[number]
@@ -122,7 +124,9 @@ function AccountTabContent() {
       <Card>
         <CardHeader>
           <CardTitle>Session</CardTitle>
-          <CardDescription>Sign out of this session. You can always log back in later.</CardDescription>
+          <CardDescription>
+            Sign out of this session. You can always log back in later.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Button variant="outline" onClick={handleLogout}>
@@ -135,7 +139,9 @@ function AccountTabContent() {
       <Card className="border-destructive/50">
         <CardHeader>
           <CardTitle className="text-destructive">Danger zone</CardTitle>
-          <CardDescription>Permanently delete your account and all associated data.</CardDescription>
+          <CardDescription>
+            Permanently delete your account and all associated data.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <DeleteAccountDialog onAccountDeleted={handleAccountDeleted} />
@@ -148,6 +154,7 @@ function AccountTabContent() {
 export default function SettingsPage() {
   const location = useLocation()
   const navigate = useNavigate()
+  const { create, creating } = useCreateChat()
 
   useEffect(() => {
     if (location.pathname === '/settings' || location.pathname === '/settings/') {
@@ -190,9 +197,30 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="contact-us">
-          <div className="rounded-lg border bg-card p-6 text-sm text-card-foreground">
-            Contact us coming soon
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Contact Support</CardTitle>
+              <CardDescription>
+                Need help? Start a conversation with our support team.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                onClick={() => {
+                  void (async () => {
+                    const chat = await create(2)
+                    if (chat) {
+                      void navigate(`/messages/${String(chat.id)}`)
+                    }
+                  })()
+                }}
+                disabled={creating}
+              >
+                <MessageCircle className="mr-2 h-4 w-4" />
+                {creating ? 'Starting...' : 'Chat with Support'}
+              </Button>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

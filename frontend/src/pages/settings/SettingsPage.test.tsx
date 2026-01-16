@@ -37,8 +37,8 @@ describe('SettingsPage routing tabs', () => {
     expect(screen.getByTestId('notification-preferences')).toBeInTheDocument()
   })
 
-  it('renders contact placeholder for /settings/contact-us', () => {
+  it('renders contact support for /settings/contact-us', () => {
     renderSettings('/settings/contact-us')
-    expect(screen.getByText(/contact us coming soon/i)).toBeInTheDocument()
+    expect(screen.getByText(/Chat with Support/i)).toBeInTheDocument()
   })
 })

@@ -12,32 +12,32 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
-    path: "/api/pets/{pet}/medical-notes",
-    summary: "List medical notes for a pet",
-    tags: ["Pets"],
-    security: [["sanctum" => []]],
+    path: '/api/pets/{pet}/medical-notes',
+    summary: 'List medical notes for a pet',
+    tags: ['Pets'],
+    security: [['sanctum' => []]],
     parameters: [
-        new OA\Parameter(name: "pet", in: "path", required: true, schema: new OA\Schema(type: "integer")),
-        new OA\Parameter(name: "page", in: "query", required: false, schema: new OA\Schema(type: "integer")),
+        new OA\Parameter(name: 'pet', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        new OA\Parameter(name: 'page', in: 'query', required: false, schema: new OA\Schema(type: 'integer')),
     ],
     responses: [
         new OA\Response(
             response: 200,
-            description: "List of medical notes",
+            description: 'List of medical notes',
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "data", type: "object",
+                    new OA\Property(property: 'data', type: 'object',
                         properties: [
-                            new OA\Property(property: "data", type: "array", items: new OA\Items(ref: "#/components/schemas/MedicalNote")),
-                            new OA\Property(property: "links", type: "object"),
-                            new OA\Property(property: "meta", type: "object"),
+                            new OA\Property(property: 'data', type: 'array', items: new OA\Items(ref: '#/components/schemas/MedicalNote')),
+                            new OA\Property(property: 'links', type: 'object'),
+                            new OA\Property(property: 'meta', type: 'object'),
                         ]
                     ),
                 ]
             )
         ),
-        new OA\Response(response: 401, description: "Unauthenticated"),
-        new OA\Response(response: 403, description: "Forbidden"),
+        new OA\Response(response: 401, description: 'Unauthenticated'),
+        new OA\Response(response: 403, description: 'Forbidden'),
     ]
 )]
 class ListMedicalNotesController extends Controller

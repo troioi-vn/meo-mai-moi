@@ -16,50 +16,50 @@ use Illuminate\Validation\Rules\Enum;
 use OpenApi\Attributes as OA;
 
 #[OA\Post(
-    path: "/api/placement-requests",
-    summary: "Create a new placement request",
-    tags: ["Placement Requests"],
-    security: [["sanctum" => []]],
+    path: '/api/placement-requests',
+    summary: 'Create a new placement request',
+    tags: ['Placement Requests'],
+    security: [['sanctum' => []]],
     requestBody: new OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
-            required: ["pet_id", "request_type"],
+            required: ['pet_id', 'request_type'],
             properties: [
-                new OA\Property(property: "pet_id", type: "integer", example: 1),
-                new OA\Property(property: "request_type", type: "string", enum: PlacementRequestType::class, example: "permanent"),
-                new OA\Property(property: "notes", type: "string", example: "Looking for a loving home."),
-                new OA\Property(property: "expires_at", type: "string", format: "date", example: "2025-12-31"),
-                new OA\Property(property: "start_date", type: "string", format: "date", example: "2025-08-05"),
-                new OA\Property(property: "end_date", type: "string", format: "date", example: "2025-08-20"),
+                new OA\Property(property: 'pet_id', type: 'integer', example: 1),
+                new OA\Property(property: 'request_type', type: 'string', enum: PlacementRequestType::class, example: 'permanent'),
+                new OA\Property(property: 'notes', type: 'string', example: 'Looking for a loving home.'),
+                new OA\Property(property: 'expires_at', type: 'string', format: 'date', example: '2025-12-31'),
+                new OA\Property(property: 'start_date', type: 'string', format: 'date', example: '2025-08-05'),
+                new OA\Property(property: 'end_date', type: 'string', format: 'date', example: '2025-08-20'),
             ]
         )
     ),
     responses: [
         new OA\Response(
             response: 201,
-            description: "Placement request created successfully",
+            description: 'Placement request created successfully',
             content: new OA\JsonContent(
-                type: "object",
+                type: 'object',
                 properties: [
-                    new OA\Property(property: "data", ref: "#/components/schemas/PlacementRequest")
+                    new OA\Property(property: 'data', ref: '#/components/schemas/PlacementRequest'),
                 ]
             )
         ),
         new OA\Response(
             response: 401,
-            description: "Unauthenticated"
+            description: 'Unauthenticated'
         ),
         new OA\Response(
             response: 403,
-            description: "Forbidden"
+            description: 'Forbidden'
         ),
         new OA\Response(
             response: 409,
-            description: "Conflict - Active placement request of this type already exists"
+            description: 'Conflict - Active placement request of this type already exists'
         ),
         new OA\Response(
             response: 422,
-            description: "Validation error"
+            description: 'Validation error'
         ),
     ]
 )]

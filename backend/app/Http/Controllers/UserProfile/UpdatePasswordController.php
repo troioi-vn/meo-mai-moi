@@ -9,45 +9,45 @@ use Illuminate\Support\Facades\Hash;
 use OpenApi\Attributes as OA;
 
 #[OA\Put(
-    path: "/api/users/me/password",
+    path: '/api/users/me/password',
     summary: "Update authenticated user's password",
-    tags: ["User Profile"],
-    security: [["sanctum" => []]],
+    tags: ['User Profile'],
+    security: [['sanctum' => []]],
     requestBody: new OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
-            required: ["current_password", "new_password", "new_password_confirmation"],
+            required: ['current_password', 'new_password', 'new_password_confirmation'],
             properties: [
-                new OA\Property(property: "current_password", type: "string", format: "password", example: "old_secret_password"),
-                new OA\Property(property: "new_password", type: "string", format: "password", example: "new_secret_password"),
-                new OA\Property(property: "new_password_confirmation", type: "string", format: "password", example: "new_secret_password")
+                new OA\Property(property: 'current_password', type: 'string', format: 'password', example: 'old_secret_password'),
+                new OA\Property(property: 'new_password', type: 'string', format: 'password', example: 'new_secret_password'),
+                new OA\Property(property: 'new_password_confirmation', type: 'string', format: 'password', example: 'new_secret_password'),
             ]
         )
     ),
     responses: [
         new OA\Response(
             response: 200,
-            description: "Password updated successfully",
+            description: 'Password updated successfully',
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "message", type: "string", example: "Password updated successfully.")
+                    new OA\Property(property: 'message', type: 'string', example: 'Password updated successfully.'),
                 ]
             )
         ),
         new OA\Response(
             response: 422,
-            description: "Validation error",
+            description: 'Validation error',
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "message", type: "string", example: "Validation Error"),
-                    new OA\Property(property: "errors", type: "object", example: ["current_password" => ["The provided password does not match your current password."]])
+                    new OA\Property(property: 'message', type: 'string', example: 'Validation Error'),
+                    new OA\Property(property: 'errors', type: 'object', example: ['current_password' => ['The provided password does not match your current password.']]),
                 ]
             )
         ),
         new OA\Response(
             response: 401,
-            description: "Unauthenticated"
-        )
+            description: 'Unauthenticated'
+        ),
     ]
 )]
 class UpdatePasswordController extends Controller

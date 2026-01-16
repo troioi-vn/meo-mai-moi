@@ -9,16 +9,16 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
-    path: "/helper-profiles",
-    summary: "List helper profiles",
-    tags: ["Helper Profiles"],
+    path: '/helper-profiles',
+    summary: 'List helper profiles',
+    tags: ['Helper Profiles'],
     responses: [
         new OA\Response(
             response: 200,
-            description: "A list of helper profiles",
+            description: 'A list of helper profiles',
             content: new OA\JsonContent(
-                type: "array",
-                items: new OA\Items(ref: "#/components/schemas/HelperProfile")
+                type: 'array',
+                items: new OA\Items(ref: '#/components/schemas/HelperProfile')
             )
         ),
     ]

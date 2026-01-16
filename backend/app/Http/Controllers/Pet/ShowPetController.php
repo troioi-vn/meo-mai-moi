@@ -11,27 +11,27 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
-    path: "/api/pets/{id}",
-    summary: "Get a specific pet",
-    tags: ["Pets"],
+    path: '/api/pets/{id}',
+    summary: 'Get a specific pet',
+    tags: ['Pets'],
     parameters: [
         new OA\Parameter(
-            name: "id",
-            in: "path",
+            name: 'id',
+            in: 'path',
             required: true,
-            description: "ID of the pet",
-            schema: new OA\Schema(type: "integer")
+            description: 'ID of the pet',
+            schema: new OA\Schema(type: 'integer')
         ),
     ],
     responses: [
         new OA\Response(
             response: 200,
-            description: "The pet",
-            content: new OA\JsonContent(ref: "#/components/schemas/Pet")
+            description: 'The pet',
+            content: new OA\JsonContent(ref: '#/components/schemas/Pet')
         ),
         new OA\Response(
             response: 404,
-            description: "Pet not found"
+            description: 'Pet not found'
         ),
     ]
 )]

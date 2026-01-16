@@ -8,27 +8,27 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
-    path: "/helper-profiles/{id}",
-    summary: "Get a specific helper profile",
-    tags: ["Helper Profiles"],
+    path: '/helper-profiles/{id}',
+    summary: 'Get a specific helper profile',
+    tags: ['Helper Profiles'],
     parameters: [
         new OA\Parameter(
-            name: "id",
-            in: "path",
+            name: 'id',
+            in: 'path',
             required: true,
-            description: "ID of the helper profile",
-            schema: new OA\Schema(type: "integer")
+            description: 'ID of the helper profile',
+            schema: new OA\Schema(type: 'integer')
         ),
     ],
     responses: [
         new OA\Response(
             response: 200,
-            description: "The helper profile",
-            content: new OA\JsonContent(ref: "#/components/schemas/HelperProfile")
+            description: 'The helper profile',
+            content: new OA\JsonContent(ref: '#/components/schemas/HelperProfile')
         ),
         new OA\Response(
             response: 404,
-            description: "Helper profile not found"
+            description: 'Helper profile not found'
         ),
     ]
 )]

@@ -13,30 +13,30 @@ use Illuminate\Validation\ValidationException;
 use OpenApi\Attributes as OA;
 
 #[OA\Post(
-    path: "/api/pets/{pet}/vaccinations",
-    summary: "Create a vaccination record",
-    tags: ["Pets"],
-    security: [["sanctum" => []]],
+    path: '/api/pets/{pet}/vaccinations',
+    summary: 'Create a vaccination record',
+    tags: ['Pets'],
+    security: [['sanctum' => []]],
     parameters: [
-        new OA\Parameter(name: "pet", in: "path", required: true, schema: new OA\Schema(type: "integer"))
+        new OA\Parameter(name: 'pet', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
     ],
     requestBody: new OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
-            required: ["vaccine_name", "administered_at"],
+            required: ['vaccine_name', 'administered_at'],
             properties: [
-                new OA\Property(property: "vaccine_name", type: "string", example: "Rabies"),
-                new OA\Property(property: "administered_at", type: "string", format: "date", example: "2024-06-01"),
-                new OA\Property(property: "due_at", type: "string", format: "date", example: "2025-06-01"),
-                new OA\Property(property: "notes", type: "string", example: "Booster due next year")
+                new OA\Property(property: 'vaccine_name', type: 'string', example: 'Rabies'),
+                new OA\Property(property: 'administered_at', type: 'string', format: 'date', example: '2024-06-01'),
+                new OA\Property(property: 'due_at', type: 'string', format: 'date', example: '2025-06-01'),
+                new OA\Property(property: 'notes', type: 'string', example: 'Booster due next year'),
             ]
         )
     ),
     responses: [
-        new OA\Response(response: 201, description: "Created", content: new OA\JsonContent(properties: [new OA\Property(property: "data", ref: "#/components/schemas/VaccinationRecord")])),
-        new OA\Response(response: 401, description: "Unauthenticated"),
-        new OA\Response(response: 403, description: "Forbidden"),
-        new OA\Response(response: 422, description: "Validation error")
+        new OA\Response(response: 201, description: 'Created', content: new OA\JsonContent(properties: [new OA\Property(property: 'data', ref: '#/components/schemas/VaccinationRecord')])),
+        new OA\Response(response: 401, description: 'Unauthenticated'),
+        new OA\Response(response: 403, description: 'Forbidden'),
+        new OA\Response(response: 422, description: 'Validation error'),
     ]
 )]
 class StoreVaccinationRecordController extends Controller

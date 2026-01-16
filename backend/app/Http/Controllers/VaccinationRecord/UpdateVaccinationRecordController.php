@@ -14,31 +14,31 @@ use Illuminate\Validation\ValidationException;
 use OpenApi\Attributes as OA;
 
 #[OA\Put(
-    path: "/api/pets/{pet}/vaccinations/{record}",
-    summary: "Update a vaccination record",
-    tags: ["Pets"],
-    security: [["sanctum" => []]],
+    path: '/api/pets/{pet}/vaccinations/{record}',
+    summary: 'Update a vaccination record',
+    tags: ['Pets'],
+    security: [['sanctum' => []]],
     parameters: [
-        new OA\Parameter(name: "pet", in: "path", required: true, schema: new OA\Schema(type: "integer")),
-        new OA\Parameter(name: "record", in: "path", required: true, schema: new OA\Schema(type: "integer"))
+        new OA\Parameter(name: 'pet', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        new OA\Parameter(name: 'record', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
     ],
     requestBody: new OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
             properties: [
-                new OA\Property(property: "vaccine_name", type: "string"),
-                new OA\Property(property: "administered_at", type: "string", format: "date"),
-                new OA\Property(property: "due_at", type: "string", format: "date"),
-                new OA\Property(property: "notes", type: "string")
+                new OA\Property(property: 'vaccine_name', type: 'string'),
+                new OA\Property(property: 'administered_at', type: 'string', format: 'date'),
+                new OA\Property(property: 'due_at', type: 'string', format: 'date'),
+                new OA\Property(property: 'notes', type: 'string'),
             ]
         )
     ),
     responses: [
-        new OA\Response(response: 200, description: "OK", content: new OA\JsonContent(properties: [new OA\Property(property: "data", ref: "#/components/schemas/VaccinationRecord")])),
-        new OA\Response(response: 401, description: "Unauthenticated"),
-        new OA\Response(response: 403, description: "Forbidden"),
-        new OA\Response(response: 404, description: "Not found"),
-        new OA\Response(response: 422, description: "Validation error")
+        new OA\Response(response: 200, description: 'OK', content: new OA\JsonContent(properties: [new OA\Property(property: 'data', ref: '#/components/schemas/VaccinationRecord')])),
+        new OA\Response(response: 401, description: 'Unauthenticated'),
+        new OA\Response(response: 403, description: 'Forbidden'),
+        new OA\Response(response: 404, description: 'Not found'),
+        new OA\Response(response: 422, description: 'Validation error'),
     ]
 )]
 class UpdateVaccinationRecordController extends Controller

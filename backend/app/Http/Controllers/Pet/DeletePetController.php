@@ -12,40 +12,40 @@ use Illuminate\Support\Facades\Hash;
 use OpenApi\Attributes as OA;
 
 #[OA\Delete(
-    path: "/api/pets/{id}",
-    summary: "Delete a pet",
-    tags: ["Pets"],
-    security: [["sanctum" => []]],
+    path: '/api/pets/{id}',
+    summary: 'Delete a pet',
+    tags: ['Pets'],
+    security: [['sanctum' => []]],
     parameters: [
         new OA\Parameter(
-            name: "id",
-            in: "path",
+            name: 'id',
+            in: 'path',
             required: true,
-            description: "ID of the pet to delete",
-            schema: new OA\Schema(type: "integer")
+            description: 'ID of the pet to delete',
+            schema: new OA\Schema(type: 'integer')
         ),
     ],
     requestBody: new OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
-            required: ["password"],
+            required: ['password'],
             properties: [
-                new OA\Property(property: "password", type: "string", format: "password", description: "User's current password for confirmation"),
+                new OA\Property(property: 'password', type: 'string', format: 'password', description: "User's current password for confirmation"),
             ]
         )
     ),
     responses: [
         new OA\Response(
             response: 204,
-            description: "Pet deleted successfully"
+            description: 'Pet deleted successfully'
         ),
         new OA\Response(
             response: 403,
-            description: "Forbidden"
+            description: 'Forbidden'
         ),
         new OA\Response(
             response: 422,
-            description: "Validation error"
+            description: 'Validation error'
         ),
     ]
 )]

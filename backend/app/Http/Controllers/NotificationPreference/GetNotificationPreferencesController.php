@@ -10,22 +10,22 @@ use Illuminate\Support\Facades\Auth;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
-    path: "/api/notification-preferences",
-    tags: ["Notification Preferences"],
-    security: [["sanctum" => []]],
+    path: '/api/notification-preferences',
+    tags: ['Notification Preferences'],
+    security: [['sanctum' => []]],
     responses: [
-        new OA\Response(response: 200, description: "OK",
+        new OA\Response(response: 200, description: 'OK',
             content: new OA\JsonContent(
-                type: "object",
+                type: 'object',
                 properties: [
-                    new OA\Property(property: "data", type: "array",
+                    new OA\Property(property: 'data', type: 'array',
                         items: new OA\Items(
                             properties: [
-                                new OA\Property(property: "type", type: "string"),
-                                new OA\Property(property: "label", type: "string"),
-                                new OA\Property(property: "group", type: "string"),
-                                new OA\Property(property: "email_enabled", type: "boolean"),
-                                new OA\Property(property: "in_app_enabled", type: "boolean"),
+                                new OA\Property(property: 'type', type: 'string'),
+                                new OA\Property(property: 'label', type: 'string'),
+                                new OA\Property(property: 'group', type: 'string'),
+                                new OA\Property(property: 'email_enabled', type: 'boolean'),
+                                new OA\Property(property: 'in_app_enabled', type: 'boolean'),
                             ]
                         )
                     ),

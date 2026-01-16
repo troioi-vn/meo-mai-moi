@@ -11,54 +11,54 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Post(
-    path: "/api/waitlist",
-    summary: "Join the waitlist",
-    description: "Add an email address to the waitlist when invite-only mode is active.",
-    tags: ["Waitlist"],
+    path: '/api/waitlist',
+    summary: 'Join the waitlist',
+    description: 'Add an email address to the waitlist when invite-only mode is active.',
+    tags: ['Waitlist'],
     requestBody: new OA\RequestBody(
         required: true,
-        description: "Email address to add to waitlist",
+        description: 'Email address to add to waitlist',
         content: new OA\JsonContent(
-            required: ["email"],
+            required: ['email'],
             properties: [
-                new OA\Property(property: "email", type: "string", format: "email", example: "user@example.com")
+                new OA\Property(property: 'email', type: 'string', format: 'email', example: 'user@example.com'),
             ]
         )
     ),
     responses: [
         new OA\Response(
             response: 201,
-            description: "Successfully added to waitlist",
+            description: 'Successfully added to waitlist',
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "message", type: "string", example: "Successfully added to waitlist"),
-                    new OA\Property(property: "data", type: "object", properties: [
-                        new OA\Property(property: "email", type: "string", example: "user@example.com"),
-                        new OA\Property(property: "status", type: "string", example: "pending"),
-                        new OA\Property(property: "created_at", type: "string", format: "datetime")
-                    ])
+                    new OA\Property(property: 'message', type: 'string', example: 'Successfully added to waitlist'),
+                    new OA\Property(property: 'data', type: 'object', properties: [
+                        new OA\Property(property: 'email', type: 'string', example: 'user@example.com'),
+                        new OA\Property(property: 'status', type: 'string', example: 'pending'),
+                        new OA\Property(property: 'created_at', type: 'string', format: 'datetime'),
+                    ]),
                 ]
             )
         ),
         new OA\Response(
             response: 422,
-            description: "Validation error",
+            description: 'Validation error',
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "message", type: "string", example: "The email has already been taken."),
-                    new OA\Property(property: "errors", type: "object")
+                    new OA\Property(property: 'message', type: 'string', example: 'The email has already been taken.'),
+                    new OA\Property(property: 'errors', type: 'object'),
                 ]
             )
         ),
         new OA\Response(
             response: 409,
-            description: "Email already exists",
+            description: 'Email already exists',
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "message", type: "string", example: "Email is already registered or on waitlist")
+                    new OA\Property(property: 'message', type: 'string', example: 'Email is already registered or on waitlist'),
                 ]
             )
-        )
+        ),
     ]
 )]
 class JoinWaitlistController extends Controller

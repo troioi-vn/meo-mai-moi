@@ -9,14 +9,14 @@ use Illuminate\Support\Facades\Auth;
 use OpenApi\Attributes as OA;
 
 #[OA\Post(
-    path: "/api/notifications/mark-as-read",
+    path: '/api/notifications/mark-as-read',
     deprecated: true,
-    tags: ["Notifications"],
-    summary: "Mark all notifications as read (DEPRECATED)",
-    description: "This endpoint is deprecated. Use POST /api/notifications/mark-all-read instead.",
-    security: [["sanctum" => []]],
+    tags: ['Notifications'],
+    summary: 'Mark all notifications as read (DEPRECATED)',
+    description: 'This endpoint is deprecated. Use POST /api/notifications/mark-all-read instead.',
+    security: [['sanctum' => []]],
     responses: [
-        new OA\Response(response: 204, description: "No Content"),
+        new OA\Response(response: 204, description: 'No Content'),
     ]
 )]
 class MarkAsReadLegacyController extends Controller

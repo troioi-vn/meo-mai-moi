@@ -17,23 +17,23 @@ use Illuminate\Support\Facades\Validator;
 use OpenApi\Attributes as OA;
 
 #[OA\Post(
-    path: "/api/pets",
-    summary: "Create a new pet",
-    tags: ["Pets"],
-    security: [["sanctum" => []]],
+    path: '/api/pets',
+    summary: 'Create a new pet',
+    tags: ['Pets'],
+    security: [['sanctum' => []]],
     requestBody: new OA\RequestBody(
         required: true,
-        content: new OA\JsonContent(ref: "#/components/schemas/Pet")
+        content: new OA\JsonContent(ref: '#/components/schemas/Pet')
     ),
     responses: [
         new OA\Response(
             response: 201,
-            description: "Pet created successfully",
-            content: new OA\JsonContent(ref: "#/components/schemas/Pet")
+            description: 'Pet created successfully',
+            content: new OA\JsonContent(ref: '#/components/schemas/Pet')
         ),
         new OA\Response(
             response: 422,
-            description: "Validation error"
+            description: 'Validation error'
         ),
     ]
 )]

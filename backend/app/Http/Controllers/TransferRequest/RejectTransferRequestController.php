@@ -13,28 +13,28 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Post(
-    path: "/api/transfer-requests/{id}/reject",
-    summary: "Reject a transfer request for a pet",
-    tags: ["Transfer Requests"],
-    security: [["sanctum" => []]],
+    path: '/api/transfer-requests/{id}/reject',
+    summary: 'Reject a transfer request for a pet',
+    tags: ['Transfer Requests'],
+    security: [['sanctum' => []]],
     parameters: [
         new OA\Parameter(
-            name: "id",
-            in: "path",
+            name: 'id',
+            in: 'path',
             required: true,
-            description: "ID of the transfer request to reject",
-            schema: new OA\Schema(type: "integer")
-        )
+            description: 'ID of the transfer request to reject',
+            schema: new OA\Schema(type: 'integer')
+        ),
     ],
     responses: [
         new OA\Response(
             response: 200,
-            description: "Transfer request rejected successfully",
-            content: new OA\JsonContent(ref: "#/components/schemas/TransferRequest")
+            description: 'Transfer request rejected successfully',
+            content: new OA\JsonContent(ref: '#/components/schemas/TransferRequest')
         ),
-        new OA\Response(response: 404, description: "Transfer request not found"),
-        new OA\Response(response: 401, description: "Unauthenticated"),
-        new OA\Response(response: 403, description: "Forbidden: You are not the recipient of this request or the request is not pending.")
+        new OA\Response(response: 404, description: 'Transfer request not found'),
+        new OA\Response(response: 401, description: 'Unauthenticated'),
+        new OA\Response(response: 403, description: 'Forbidden: You are not the recipient of this request or the request is not pending.'),
     ]
 )]
 class RejectTransferRequestController extends Controller

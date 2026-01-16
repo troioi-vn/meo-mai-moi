@@ -14,47 +14,47 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
-    path: "/api/placement-requests/{id}/me",
-    summary: "Get viewer context for a placement request",
-    description: "Returns viewer-specific context including their role, their response if any, their transfer request if any, and available actions they can perform.",
-    tags: ["Placement Requests"],
-    security: [["sanctum" => []]],
+    path: '/api/placement-requests/{id}/me',
+    summary: 'Get viewer context for a placement request',
+    description: 'Returns viewer-specific context including their role, their response if any, their transfer request if any, and available actions they can perform.',
+    tags: ['Placement Requests'],
+    security: [['sanctum' => []]],
     parameters: [
         new OA\Parameter(
-            name: "id",
-            in: "path",
+            name: 'id',
+            in: 'path',
             required: true,
-            description: "ID of the placement request",
-            schema: new OA\Schema(type: "integer")
+            description: 'ID of the placement request',
+            schema: new OA\Schema(type: 'integer')
         ),
     ],
     responses: [
         new OA\Response(
             response: 200,
-            description: "Viewer context for the placement request",
+            description: 'Viewer context for the placement request',
             content: new OA\JsonContent(
-                type: "object",
+                type: 'object',
                 properties: [
-                    new OA\Property(property: "viewer_role", type: "string", enum: ["owner", "helper", "admin", "public"]),
-                    new OA\Property(property: "my_response", type: "object", nullable: true),
-                    new OA\Property(property: "my_response_id", type: "integer", nullable: true),
-                    new OA\Property(property: "my_transfer", type: "object", nullable: true),
-                    new OA\Property(property: "available_actions", type: "object"),
-                    new OA\Property(property: "chat_id", type: "integer", nullable: true),
+                    new OA\Property(property: 'viewer_role', type: 'string', enum: ['owner', 'helper', 'admin', 'public']),
+                    new OA\Property(property: 'my_response', type: 'object', nullable: true),
+                    new OA\Property(property: 'my_response_id', type: 'integer', nullable: true),
+                    new OA\Property(property: 'my_transfer', type: 'object', nullable: true),
+                    new OA\Property(property: 'available_actions', type: 'object'),
+                    new OA\Property(property: 'chat_id', type: 'integer', nullable: true),
                 ]
             )
         ),
         new OA\Response(
             response: 401,
-            description: "Unauthenticated"
+            description: 'Unauthenticated'
         ),
         new OA\Response(
             response: 403,
-            description: "Forbidden"
+            description: 'Forbidden'
         ),
         new OA\Response(
             response: 404,
-            description: "Placement request not found"
+            description: 'Placement request not found'
         ),
     ]
 )]

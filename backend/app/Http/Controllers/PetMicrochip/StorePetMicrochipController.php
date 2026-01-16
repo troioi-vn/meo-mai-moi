@@ -12,44 +12,44 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Post(
-    path: "/api/pets/{pet}/microchips",
-    summary: "Add a new microchip record for a pet",
-    tags: ["Pets"],
-    security: [["sanctum" => []]],
+    path: '/api/pets/{pet}/microchips',
+    summary: 'Add a new microchip record for a pet',
+    tags: ['Pets'],
+    security: [['sanctum' => []]],
     parameters: [
         new OA\Parameter(
-            name: "pet",
-            in: "path",
+            name: 'pet',
+            in: 'path',
             required: true,
-            description: "ID of the pet to add a microchip record for",
-            schema: new OA\Schema(type: "integer")
+            description: 'ID of the pet to add a microchip record for',
+            schema: new OA\Schema(type: 'integer')
         ),
     ],
     requestBody: new OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
-            required: ["chip_number"],
+            required: ['chip_number'],
             properties: [
-                new OA\Property(property: "chip_number", type: "string", example: "982000123456789"),
-                new OA\Property(property: "issuer", type: "string", example: "HomeAgain"),
-                new OA\Property(property: "implanted_at", type: "string", format: "date", example: "2024-01-15"),
+                new OA\Property(property: 'chip_number', type: 'string', example: '982000123456789'),
+                new OA\Property(property: 'issuer', type: 'string', example: 'HomeAgain'),
+                new OA\Property(property: 'implanted_at', type: 'string', format: 'date', example: '2024-01-15'),
             ]
         )
     ),
     responses: [
         new OA\Response(
             response: 201,
-            description: "Microchip record created successfully",
+            description: 'Microchip record created successfully',
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "data", ref: "#/components/schemas/PetMicrochip")
+                    new OA\Property(property: 'data', ref: '#/components/schemas/PetMicrochip'),
                 ]
             )
         ),
-        new OA\Response(response: 401, description: "Unauthenticated"),
-        new OA\Response(response: 403, description: "Forbidden"),
-        new OA\Response(response: 404, description: "Not found"),
-        new OA\Response(response: 422, description: "Validation error"),
+        new OA\Response(response: 401, description: 'Unauthenticated'),
+        new OA\Response(response: 403, description: 'Forbidden'),
+        new OA\Response(response: 404, description: 'Not found'),
+        new OA\Response(response: 422, description: 'Validation error'),
     ]
 )]
 class StorePetMicrochipController extends Controller

@@ -10,20 +10,20 @@ use Illuminate\Support\Facades\Auth;
 use OpenApi\Attributes as OA;
 
 #[OA\Put(
-    path: "/api/notification-preferences",
-    tags: ["Notification Preferences"],
-    security: [["sanctum" => []]],
+    path: '/api/notification-preferences',
+    tags: ['Notification Preferences'],
+    security: [['sanctum' => []]],
     requestBody: new OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
-            type: "object",
+            type: 'object',
             properties: [
-                new OA\Property(property: "preferences", type: "array",
+                new OA\Property(property: 'preferences', type: 'array',
                     items: new OA\Items(
                         properties: [
-                            new OA\Property(property: "type", type: "string"),
-                            new OA\Property(property: "email_enabled", type: "boolean"),
-                            new OA\Property(property: "in_app_enabled", type: "boolean"),
+                            new OA\Property(property: 'type', type: 'string'),
+                            new OA\Property(property: 'email_enabled', type: 'boolean'),
+                            new OA\Property(property: 'in_app_enabled', type: 'boolean'),
                         ]
                     )
                 ),
@@ -31,15 +31,15 @@ use OpenApi\Attributes as OA;
         )
     ),
     responses: [
-        new OA\Response(response: 200, description: "OK",
+        new OA\Response(response: 200, description: 'OK',
             content: new OA\JsonContent(
-                type: "object",
+                type: 'object',
                 properties: [
-                    new OA\Property(property: "message", type: "string"),
+                    new OA\Property(property: 'message', type: 'string'),
                 ]
             )
         ),
-        new OA\Response(response: 422, description: "Validation Error"),
+        new OA\Response(response: 422, description: 'Validation Error'),
     ]
 )]
 class UpdateNotificationPreferencesController extends Controller

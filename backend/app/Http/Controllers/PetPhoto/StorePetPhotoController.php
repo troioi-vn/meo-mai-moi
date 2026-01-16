@@ -15,30 +15,30 @@ use OpenApi\Attributes as OA;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 #[OA\Post(
-    path: "/api/pets/{pet}/photos",
-    summary: "Upload a photo for a specific pet",
-    tags: ["Pet Photos"],
-    security: [["sanctum" => []]],
+    path: '/api/pets/{pet}/photos',
+    summary: 'Upload a photo for a specific pet',
+    tags: ['Pet Photos'],
+    security: [['sanctum' => []]],
     parameters: [
         new OA\Parameter(
-            name: "pet",
-            in: "path",
+            name: 'pet',
+            in: 'path',
             required: true,
-            description: "ID of the pet",
-            schema: new OA\Schema(type: "integer")
+            description: 'ID of the pet',
+            schema: new OA\Schema(type: 'integer')
         ),
     ],
     requestBody: new OA\RequestBody(
         required: true,
         content: new OA\MediaType(
-            mediaType: "multipart/form-data",
+            mediaType: 'multipart/form-data',
             schema: new OA\Schema(
                 properties: [
                     new OA\Property(
-                        property: "photo",
-                        type: "string",
-                        format: "binary",
-                        description: "The photo file (max 10MB, jpeg, png, jpg, gif, svg)"
+                        property: 'photo',
+                        type: 'string',
+                        format: 'binary',
+                        description: 'The photo file (max 10MB, jpeg, png, jpg, gif, svg)'
                     ),
                 ]
             )
@@ -47,24 +47,24 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
     responses: [
         new OA\Response(
             response: 200,
-            description: "Photo uploaded successfully",
+            description: 'Photo uploaded successfully',
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "data", ref: "#/components/schemas/Pet")
+                    new OA\Property(property: 'data', ref: '#/components/schemas/Pet'),
                 ]
             )
         ),
         new OA\Response(
             response: 401,
-            description: "Unauthenticated"
+            description: 'Unauthenticated'
         ),
         new OA\Response(
             response: 403,
-            description: "Unauthorized"
+            description: 'Unauthorized'
         ),
         new OA\Response(
             response: 422,
-            description: "Validation error or feature not available for pet type"
+            description: 'Validation error or feature not available for pet type'
         ),
     ]
 )]

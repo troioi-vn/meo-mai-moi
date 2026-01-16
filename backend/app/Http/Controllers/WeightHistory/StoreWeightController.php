@@ -13,38 +13,38 @@ use Illuminate\Validation\ValidationException;
 use OpenApi\Attributes as OA;
 
 #[OA\Post(
-    path: "/api/pets/{pet}/weights",
-    summary: "Add a new weight record for a pet",
-    tags: ["Pets"],
-    security: [["sanctum" => []]],
+    path: '/api/pets/{pet}/weights',
+    summary: 'Add a new weight record for a pet',
+    tags: ['Pets'],
+    security: [['sanctum' => []]],
     parameters: [
         new OA\Parameter(
-            name: "pet",
-            in: "path",
+            name: 'pet',
+            in: 'path',
             required: true,
-            description: "ID of the pet to add a weight record for",
-            schema: new OA\Schema(type: "integer")
-        )
+            description: 'ID of the pet to add a weight record for',
+            schema: new OA\Schema(type: 'integer')
+        ),
     ],
     requestBody: new OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
-            required: ["weight_kg", "record_date"],
+            required: ['weight_kg', 'record_date'],
             properties: [
-                new OA\Property(property: "weight_kg", type: "number", format: "float", example: 5.2),
-                new OA\Property(property: "record_date", type: "string", format: "date", example: "2024-01-15")
+                new OA\Property(property: 'weight_kg', type: 'number', format: 'float', example: 5.2),
+                new OA\Property(property: 'record_date', type: 'string', format: 'date', example: '2024-01-15'),
             ]
         )
     ),
     responses: [
         new OA\Response(
             response: 201,
-            description: "Weight record created successfully",
-            content: new OA\JsonContent(properties: [new OA\Property(property: "data", ref: "#/components/schemas/WeightHistory")])
+            description: 'Weight record created successfully',
+            content: new OA\JsonContent(properties: [new OA\Property(property: 'data', ref: '#/components/schemas/WeightHistory')])
         ),
-        new OA\Response(response: 422, description: "Validation error"),
-        new OA\Response(response: 401, description: "Unauthenticated"),
-        new OA\Response(response: 403, description: "Forbidden")
+        new OA\Response(response: 422, description: 'Validation error'),
+        new OA\Response(response: 401, description: 'Unauthenticated'),
+        new OA\Response(response: 403, description: 'Forbidden'),
     ]
 )]
 class StoreWeightController extends Controller

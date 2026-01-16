@@ -9,16 +9,16 @@ use App\Traits\ApiResponseTrait;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
-    path: "/api/pets/featured",
-    summary: "Get a list of featured pets",
-    tags: ["Pets"],
+    path: '/api/pets/featured',
+    summary: 'Get a list of featured pets',
+    tags: ['Pets'],
     responses: [
         new OA\Response(
             response: 200,
-            description: "A list of featured pets",
+            description: 'A list of featured pets',
             content: new OA\JsonContent(
-                type: "array",
-                items: new OA\Items(ref: "#/components/schemas/Pet")
+                type: 'array',
+                items: new OA\Items(ref: '#/components/schemas/Pet')
             )
         ),
     ]

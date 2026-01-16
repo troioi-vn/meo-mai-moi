@@ -11,22 +11,22 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
-    path: "/api/my-pets",
-    summary: "Get the pets of the authenticated user",
-    tags: ["Pets"],
-    security: [["sanctum" => []]],
+    path: '/api/my-pets',
+    summary: 'Get the pets of the authenticated user',
+    tags: ['Pets'],
+    security: [['sanctum' => []]],
     responses: [
         new OA\Response(
             response: 200,
             description: "A list of the user's pets",
             content: new OA\JsonContent(
-                type: "array",
-                items: new OA\Items(ref: "#/components/schemas/Pet")
+                type: 'array',
+                items: new OA\Items(ref: '#/components/schemas/Pet')
             )
         ),
         new OA\Response(
             response: 401,
-            description: "Unauthenticated"
+            description: 'Unauthenticated'
         ),
     ]
 )]

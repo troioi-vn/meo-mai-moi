@@ -9,46 +9,46 @@ use App\Traits\ApiResponseTrait;
 use OpenApi\Attributes as OA;
 
 #[OA\Delete(
-    path: "/api/pets/{pet}/photos/{photo}",
-    summary: "Delete a specific photo for a pet",
-    tags: ["Pet Photos"],
-    security: [["sanctum" => []]],
+    path: '/api/pets/{pet}/photos/{photo}',
+    summary: 'Delete a specific photo for a pet',
+    tags: ['Pet Photos'],
+    security: [['sanctum' => []]],
     parameters: [
         new OA\Parameter(
-            name: "pet",
-            in: "path",
+            name: 'pet',
+            in: 'path',
             required: true,
-            description: "ID of the pet",
-            schema: new OA\Schema(type: "integer")
+            description: 'ID of the pet',
+            schema: new OA\Schema(type: 'integer')
         ),
         new OA\Parameter(
-            name: "photo",
-            in: "path",
+            name: 'photo',
+            in: 'path',
             required: true,
             description: "ID of the photo or 'current' to delete the current photo",
-            schema: new OA\Schema(type: "string")
+            schema: new OA\Schema(type: 'string')
         ),
     ],
     responses: [
         new OA\Response(
             response: 204,
-            description: "Photo deleted successfully"
+            description: 'Photo deleted successfully'
         ),
         new OA\Response(
             response: 401,
-            description: "Unauthenticated"
+            description: 'Unauthenticated'
         ),
         new OA\Response(
             response: 403,
-            description: "Unauthorized"
+            description: 'Unauthorized'
         ),
         new OA\Response(
             response: 404,
-            description: "Photo not found"
+            description: 'Photo not found'
         ),
         new OA\Response(
             response: 422,
-            description: "Feature not available for pet type"
+            description: 'Feature not available for pet type'
         ),
     ]
 )]

@@ -4,8 +4,6 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ChatResource\Pages;
 use App\Models\Chat;
-use App\Enums\ChatType;
-use App\Enums\ContextableType;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;

@@ -20,21 +20,21 @@ class EmailConfigurationStatusController extends Controller
     }
 
     #[OA\Get(
-        path: "/api/email/configuration-status",
-        summary: "Check email configuration status",
-        description: "Check if email system is properly configured and operational.",
-        tags: ["Email Configuration"],
-        security: [["sanctum" => []]],
+        path: '/api/email/configuration-status',
+        summary: 'Check email configuration status',
+        description: 'Check if email system is properly configured and operational.',
+        tags: ['Email Configuration'],
+        security: [['sanctum' => []]],
         responses: [
             new OA\Response(
                 response: 200,
-                description: "Email configuration status",
+                description: 'Email configuration status',
                 content: new OA\JsonContent(
                     properties: [
-                        new OA\Property(property: "enabled", type: "boolean", example: true),
-                        new OA\Property(property: "provider", type: "string", example: "smtp"),
-                        new OA\Property(property: "from_address", type: "string", example: "noreply@example.com"),
-                        new OA\Property(property: "status", type: "string", example: "active"),
+                        new OA\Property(property: 'enabled', type: 'boolean', example: true),
+                        new OA\Property(property: 'provider', type: 'string', example: 'smtp'),
+                        new OA\Property(property: 'from_address', type: 'string', example: 'noreply@example.com'),
+                        new OA\Property(property: 'status', type: 'string', example: 'active'),
                     ]
                 )
             ),

@@ -11,38 +11,38 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
-    path: "/api/placement-requests/{id}/responses",
-    summary: "List responses for a placement request",
-    tags: ["Placement Request Responses"],
-    security: [["sanctum" => []]],
+    path: '/api/placement-requests/{id}/responses',
+    summary: 'List responses for a placement request',
+    tags: ['Placement Request Responses'],
+    security: [['sanctum' => []]],
     parameters: [
         new OA\Parameter(
-            name: "id",
-            in: "path",
+            name: 'id',
+            in: 'path',
             required: true,
-            description: "ID of the placement request",
-            schema: new OA\Schema(type: "integer")
+            description: 'ID of the placement request',
+            schema: new OA\Schema(type: 'integer')
         ),
     ],
     responses: [
         new OA\Response(
             response: 200,
-            description: "List of responses",
+            description: 'List of responses',
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "success", type: "boolean", example: true),
-                    new OA\Property(property: "data", type: "array", items: new OA\Items(ref: "#/components/schemas/PlacementRequestResponse")),
-                    new OA\Property(property: "message", type: "string", example: "Responses retrieved successfully."),
+                    new OA\Property(property: 'success', type: 'boolean', example: true),
+                    new OA\Property(property: 'data', type: 'array', items: new OA\Items(ref: '#/components/schemas/PlacementRequestResponse')),
+                    new OA\Property(property: 'message', type: 'string', example: 'Responses retrieved successfully.'),
                 ]
             )
         ),
         new OA\Response(
             response: 403,
-            description: "Forbidden - Not authorized to view responses"
+            description: 'Forbidden - Not authorized to view responses'
         ),
         new OA\Response(
             response: 404,
-            description: "Placement request not found"
+            description: 'Placement request not found'
         ),
     ]
 )]

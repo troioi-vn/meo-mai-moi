@@ -8,24 +8,24 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
-    path: "/api/users/me",
+    path: '/api/users/me',
     summary: "Get authenticated user's profile",
-    tags: ["User Profile"],
-    security: [["sanctum" => []]],
+    tags: ['User Profile'],
+    security: [['sanctum' => []]],
     responses: [
         new OA\Response(
             response: 200,
-            description: "Successful operation",
+            description: 'Successful operation',
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "data", ref: "#/components/schemas/User")
+                    new OA\Property(property: 'data', ref: '#/components/schemas/User'),
                 ]
             )
         ),
         new OA\Response(
             response: 401,
-            description: "Unauthenticated"
-        )
+            description: 'Unauthenticated'
+        ),
     ]
 )]
 class ShowProfileController extends Controller

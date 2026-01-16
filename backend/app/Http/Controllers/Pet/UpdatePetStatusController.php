@@ -14,31 +14,31 @@ use Illuminate\Validation\Rules\Enum;
 use OpenApi\Attributes as OA;
 
 #[OA\Put(
-    path: "/api/pets/{id}/status",
+    path: '/api/pets/{id}/status',
     summary: "Update a pet's status",
-    tags: ["Pets"],
-    security: [["sanctum" => []]],
+    tags: ['Pets'],
+    security: [['sanctum' => []]],
     parameters: [
-        new OA\Parameter(name: "id", in: "path", required: true, description: "ID of the pet to update", schema: new OA\Schema(type: "integer")),
+        new OA\Parameter(name: 'id', in: 'path', required: true, description: 'ID of the pet to update', schema: new OA\Schema(type: 'integer')),
     ],
     requestBody: new OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
-            required: ["status", "password"],
+            required: ['status', 'password'],
             properties: [
-                new OA\Property(property: "status", type: "string", enum: PetStatus::class, example: "lost"),
-                new OA\Property(property: "password", type: "string", format: "password", description: "User's current password for confirmation"),
+                new OA\Property(property: 'status', type: 'string', enum: PetStatus::class, example: 'lost'),
+                new OA\Property(property: 'password', type: 'string', format: 'password', description: "User's current password for confirmation"),
             ]
         )
     ),
     responses: [
         new OA\Response(
             response: 200,
-            description: "Pet status updated successfully",
-            content: new OA\JsonContent(ref: "#/components/schemas/Pet")
+            description: 'Pet status updated successfully',
+            content: new OA\JsonContent(ref: '#/components/schemas/Pet')
         ),
-        new OA\Response(response: 403, description: "Forbidden"),
-        new OA\Response(response: 422, description: "Validation Error"),
+        new OA\Response(response: 403, description: 'Forbidden'),
+        new OA\Response(response: 422, description: 'Validation Error'),
     ]
 )]
 class UpdatePetStatusController extends Controller

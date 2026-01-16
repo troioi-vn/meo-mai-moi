@@ -10,16 +10,16 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
-    path: "/api/pets/placement-requests",
-    summary: "Get a list of pets with open placement requests",
-    tags: ["Pets"],
+    path: '/api/pets/placement-requests',
+    summary: 'Get a list of pets with open placement requests',
+    tags: ['Pets'],
     responses: [
         new OA\Response(
             response: 200,
-            description: "A list of pets with open placement requests",
+            description: 'A list of pets with open placement requests',
             content: new OA\JsonContent(
-                type: "array",
-                items: new OA\Items(ref: "#/components/schemas/Pet")
+                type: 'array',
+                items: new OA\Items(ref: '#/components/schemas/Pet')
             )
         ),
     ]

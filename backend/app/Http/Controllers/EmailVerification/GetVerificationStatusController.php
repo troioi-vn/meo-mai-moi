@@ -8,19 +8,19 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
-    path: "/api/email/verification-status",
-    summary: "Check email verification status",
+    path: '/api/email/verification-status',
+    summary: 'Check email verification status',
     description: "Check if the authenticated user's email is verified.",
-    tags: ["Email Verification"],
-    security: [["sanctum" => []]],
+    tags: ['Email Verification'],
+    security: [['sanctum' => []]],
     responses: [
         new OA\Response(
             response: 200,
-            description: "Verification status",
+            description: 'Verification status',
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "verified", type: "boolean", example: true),
-                    new OA\Property(property: "email", type: "string", example: "user@example.com"),
+                    new OA\Property(property: 'verified', type: 'boolean', example: true),
+                    new OA\Property(property: 'email', type: 'string', example: 'user@example.com'),
                 ]
             )
         ),

@@ -9,57 +9,57 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
-    path: "/api/email/verify/{id}/{hash}",
-    summary: "Verify email address",
+    path: '/api/email/verify/{id}/{hash}',
+    summary: 'Verify email address',
     description: "Verify user's email address using signed URL from verification email.",
-    tags: ["Email Verification"],
+    tags: ['Email Verification'],
     parameters: [
         new OA\Parameter(
-            name: "id",
-            in: "path",
+            name: 'id',
+            in: 'path',
             required: true,
-            schema: new OA\Schema(type: "string"),
-            description: "User ID"
+            schema: new OA\Schema(type: 'string'),
+            description: 'User ID'
         ),
         new OA\Parameter(
-            name: "hash",
-            in: "path",
+            name: 'hash',
+            in: 'path',
             required: true,
-            schema: new OA\Schema(type: "string"),
-            description: "Email hash"
+            schema: new OA\Schema(type: 'string'),
+            description: 'Email hash'
         ),
         new OA\Parameter(
-            name: "expires",
-            in: "query",
+            name: 'expires',
+            in: 'query',
             required: true,
-            schema: new OA\Schema(type: "integer"),
-            description: "Expiration timestamp"
+            schema: new OA\Schema(type: 'integer'),
+            description: 'Expiration timestamp'
         ),
         new OA\Parameter(
-            name: "signature",
-            in: "query",
+            name: 'signature',
+            in: 'query',
             required: true,
-            schema: new OA\Schema(type: "string"),
-            description: "URL signature"
+            schema: new OA\Schema(type: 'string'),
+            description: 'URL signature'
         ),
     ],
     responses: [
         new OA\Response(
             response: 200,
-            description: "Email verified successfully",
+            description: 'Email verified successfully',
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "message", type: "string", example: "Email verified successfully"),
+                    new OA\Property(property: 'message', type: 'string', example: 'Email verified successfully'),
                 ]
             )
         ),
         new OA\Response(
             response: 400,
-            description: "Email already verified or invalid request"
+            description: 'Email already verified or invalid request'
         ),
         new OA\Response(
             response: 403,
-            description: "Invalid or expired verification link"
+            description: 'Invalid or expired verification link'
         ),
     ]
 )]

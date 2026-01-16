@@ -9,27 +9,27 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
-    path: "/api/transfer-requests/{id}/responder-profile",
+    path: '/api/transfer-requests/{id}/responder-profile',
     summary: "Get the responder's helper profile for a given pet transfer request",
-    tags: ["Transfer Requests"],
-    security: [["sanctum" => []]],
+    tags: ['Transfer Requests'],
+    security: [['sanctum' => []]],
     parameters: [
         new OA\Parameter(
-            name: "id",
-            in: "path",
+            name: 'id',
+            in: 'path',
             required: true,
-            description: "ID of the transfer request",
-            schema: new OA\Schema(type: "integer")
-        )
+            description: 'ID of the transfer request',
+            schema: new OA\Schema(type: 'integer')
+        ),
     ],
     responses: [
         new OA\Response(
             response: 200,
             description: "The responder's helper profile",
-            content: new OA\JsonContent(ref: "#/components/schemas/HelperProfile")
+            content: new OA\JsonContent(ref: '#/components/schemas/HelperProfile')
         ),
-        new OA\Response(response: 403, description: "Forbidden"),
-        new OA\Response(response: 404, description: "Helper profile not found")
+        new OA\Response(response: 403, description: 'Forbidden'),
+        new OA\Response(response: 404, description: 'Helper profile not found'),
     ]
 )]
 class GetResponderProfileController extends Controller

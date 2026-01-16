@@ -16,36 +16,36 @@ use Illuminate\Support\Facades\Validator;
 use OpenApi\Attributes as OA;
 
 #[OA\Put(
-    path: "/api/pets/{id}",
-    summary: "Update a pet",
-    tags: ["Pets"],
-    security: [["sanctum" => []]],
+    path: '/api/pets/{id}',
+    summary: 'Update a pet',
+    tags: ['Pets'],
+    security: [['sanctum' => []]],
     parameters: [
         new OA\Parameter(
-            name: "id",
-            in: "path",
+            name: 'id',
+            in: 'path',
             required: true,
-            description: "ID of the pet to update",
-            schema: new OA\Schema(type: "integer")
+            description: 'ID of the pet to update',
+            schema: new OA\Schema(type: 'integer')
         ),
     ],
     requestBody: new OA\RequestBody(
         required: true,
-        content: new OA\JsonContent(ref: "#/components/schemas/Pet")
+        content: new OA\JsonContent(ref: '#/components/schemas/Pet')
     ),
     responses: [
         new OA\Response(
             response: 200,
-            description: "Pet updated successfully",
-            content: new OA\JsonContent(ref: "#/components/schemas/Pet")
+            description: 'Pet updated successfully',
+            content: new OA\JsonContent(ref: '#/components/schemas/Pet')
         ),
         new OA\Response(
             response: 403,
-            description: "Forbidden"
+            description: 'Forbidden'
         ),
         new OA\Response(
             response: 422,
-            description: "Validation error"
+            description: 'Validation error'
         ),
     ]
 )]

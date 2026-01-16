@@ -13,28 +13,28 @@ use Illuminate\Validation\ValidationException;
 use OpenApi\Attributes as OA;
 
 #[OA\Post(
-    path: "/api/pets/{pet}/medical-notes",
-    summary: "Create a medical note",
-    tags: ["Pets"],
-    security: [["sanctum" => []]],
+    path: '/api/pets/{pet}/medical-notes',
+    summary: 'Create a medical note',
+    tags: ['Pets'],
+    security: [['sanctum' => []]],
     parameters: [
-        new OA\Parameter(name: "pet", in: "path", required: true, schema: new OA\Schema(type: "integer")),
+        new OA\Parameter(name: 'pet', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
     ],
     requestBody: new OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
-            required: ["note", "record_date"],
+            required: ['note', 'record_date'],
             properties: [
-                new OA\Property(property: "note", type: "string", example: "Rabies vaccination"),
-                new OA\Property(property: "record_date", type: "string", format: "date", example: "2024-06-01"),
+                new OA\Property(property: 'note', type: 'string', example: 'Rabies vaccination'),
+                new OA\Property(property: 'record_date', type: 'string', format: 'date', example: '2024-06-01'),
             ]
         )
     ),
     responses: [
-        new OA\Response(response: 201, description: "Created", content: new OA\JsonContent(properties: [new OA\Property(property: "data", ref: "#/components/schemas/MedicalNote")])),
-        new OA\Response(response: 401, description: "Unauthenticated"),
-        new OA\Response(response: 403, description: "Forbidden"),
-        new OA\Response(response: 422, description: "Validation error"),
+        new OA\Response(response: 201, description: 'Created', content: new OA\JsonContent(properties: [new OA\Property(property: 'data', ref: '#/components/schemas/MedicalNote')])),
+        new OA\Response(response: 401, description: 'Unauthenticated'),
+        new OA\Response(response: 403, description: 'Forbidden'),
+        new OA\Response(response: 422, description: 'Validation error'),
     ]
 )]
 class StoreMedicalNoteController extends Controller

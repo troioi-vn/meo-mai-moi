@@ -8,7 +8,6 @@ use App\Enums\PlacementResponseStatus;
 use App\Enums\TransferRequestStatus;
 use App\Models\HelperProfile;
 use App\Models\Pet;
-use App\Models\PetType;
 use App\Models\PlacementRequest;
 use App\Models\PlacementRequestResponse;
 use App\Models\TransferRequest;

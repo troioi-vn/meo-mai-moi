@@ -9,11 +9,11 @@ use Illuminate\Support\Facades\Auth;
 use OpenApi\Attributes as OA;
 
 #[OA\Post(
-    path: "/api/notifications/mark-all-read",
-    tags: ["Notifications"],
-    security: [["sanctum" => []]],
+    path: '/api/notifications/mark-all-read',
+    tags: ['Notifications'],
+    security: [['sanctum' => []]],
     responses: [
-        new OA\Response(response: 204, description: "No Content"),
+        new OA\Response(response: 204, description: 'No Content'),
     ]
 )]
 class MarkAllNotificationsReadController extends Controller

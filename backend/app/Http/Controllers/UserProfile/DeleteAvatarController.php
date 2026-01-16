@@ -8,23 +8,23 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Delete(
-    path: "/api/users/me/avatar",
+    path: '/api/users/me/avatar',
     summary: "Delete authenticated user's avatar",
-    tags: ["User Profile"],
-    security: [["sanctum" => []]],
+    tags: ['User Profile'],
+    security: [['sanctum' => []]],
     responses: [
         new OA\Response(
             response: 204,
-            description: "Avatar deleted successfully"
+            description: 'Avatar deleted successfully'
         ),
         new OA\Response(
             response: 401,
-            description: "Unauthenticated"
+            description: 'Unauthenticated'
         ),
         new OA\Response(
             response: 404,
-            description: "No avatar to delete"
-        )
+            description: 'No avatar to delete'
+        ),
     ]
 )]
 class DeleteAvatarController extends Controller

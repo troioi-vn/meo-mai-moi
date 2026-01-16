@@ -8,31 +8,31 @@ use App\Traits\ApiResponseTrait;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
-    path: "/api/settings/public",
-    summary: "Get public settings",
-    description: "Retrieve public settings that can be exposed to frontend, such as invite-only mode status.",
-    tags: ["Settings"],
+    path: '/api/settings/public',
+    summary: 'Get public settings',
+    description: 'Retrieve public settings that can be exposed to frontend, such as invite-only mode status.',
+    tags: ['Settings'],
     responses: [
         new OA\Response(
             response: 200,
-            description: "Public settings retrieved successfully",
+            description: 'Public settings retrieved successfully',
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "data", type: "object", properties: [
-                        new OA\Property(property: "invite_only_enabled", type: "boolean", example: true)
-                    ])
+                    new OA\Property(property: 'data', type: 'object', properties: [
+                        new OA\Property(property: 'invite_only_enabled', type: 'boolean', example: true),
+                    ]),
                 ]
             )
         ),
         new OA\Response(
             response: 500,
-            description: "Server error",
+            description: 'Server error',
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "message", type: "string", example: "Unable to retrieve settings")
+                    new OA\Property(property: 'message', type: 'string', example: 'Unable to retrieve settings'),
                 ]
             )
-        )
+        ),
     ]
 )]
 class GetPublicSettingsController extends Controller

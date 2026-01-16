@@ -10,33 +10,33 @@ use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
 
 #[OA\Post(
-    path: "/api/check-email",
-    summary: "Check if email exists",
-    description: "Check if an email address is registered in the system.",
-    tags: ["Authentication"],
+    path: '/api/check-email',
+    summary: 'Check if email exists',
+    description: 'Check if an email address is registered in the system.',
+    tags: ['Authentication'],
     requestBody: new OA\RequestBody(
         required: true,
-        description: "Email to check",
+        description: 'Email to check',
         content: new OA\JsonContent(
-            required: ["email"],
+            required: ['email'],
             properties: [
-                new OA\Property(property: "email", type: "string", format: "email", example: "user@example.com"),
+                new OA\Property(property: 'email', type: 'string', format: 'email', example: 'user@example.com'),
             ]
         )
     ),
     responses: [
         new OA\Response(
             response: 200,
-            description: "Email check result",
+            description: 'Email check result',
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "exists", type: "boolean", example: true),
+                    new OA\Property(property: 'exists', type: 'boolean', example: true),
                 ]
             )
         ),
         new OA\Response(
             response: 422,
-            description: "Validation error"
+            description: 'Validation error'
         ),
     ]
 )]

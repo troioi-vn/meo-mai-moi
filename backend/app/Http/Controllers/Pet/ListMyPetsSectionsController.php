@@ -12,27 +12,27 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
-    path: "/api/my-pets/sections",
-    summary: "Get the pets of the authenticated user, organized by section",
-    tags: ["Pets"],
-    security: [["sanctum" => []]],
+    path: '/api/my-pets/sections',
+    summary: 'Get the pets of the authenticated user, organized by section',
+    tags: ['Pets'],
+    security: [['sanctum' => []]],
     responses: [
         new OA\Response(
             response: 200,
             description: "A list of the user's pets, organized by section",
             content: new OA\JsonContent(
-                type: "object",
+                type: 'object',
                 properties: [
-                    new OA\Property(property: "owned", type: "array", items: new OA\Items(ref: "#/components/schemas/Pet")),
-                    new OA\Property(property: "fostering_active", type: "array", items: new OA\Items(ref: "#/components/schemas/Pet")),
-                    new OA\Property(property: "fostering_past", type: "array", items: new OA\Items(ref: "#/components/schemas/Pet")),
-                    new OA\Property(property: "transferred_away", type: "array", items: new OA\Items(ref: "#/components/schemas/Pet")),
+                    new OA\Property(property: 'owned', type: 'array', items: new OA\Items(ref: '#/components/schemas/Pet')),
+                    new OA\Property(property: 'fostering_active', type: 'array', items: new OA\Items(ref: '#/components/schemas/Pet')),
+                    new OA\Property(property: 'fostering_past', type: 'array', items: new OA\Items(ref: '#/components/schemas/Pet')),
+                    new OA\Property(property: 'transferred_away', type: 'array', items: new OA\Items(ref: '#/components/schemas/Pet')),
                 ]
             )
         ),
         new OA\Response(
             response: 401,
-            description: "Unauthenticated"
+            description: 'Unauthenticated'
         ),
     ]
 )]

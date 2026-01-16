@@ -15,42 +15,42 @@ use Illuminate\Support\Facades\Auth;
 use OpenApi\Attributes as OA;
 
 #[OA\Post(
-    path: "/api/placement-requests/{id}/responses",
-    summary: "Respond to a placement request",
-    tags: ["Placement Request Responses"],
-    security: [["sanctum" => []]],
+    path: '/api/placement-requests/{id}/responses',
+    summary: 'Respond to a placement request',
+    tags: ['Placement Request Responses'],
+    security: [['sanctum' => []]],
     parameters: [
         new OA\Parameter(
-            name: "id",
-            in: "path",
+            name: 'id',
+            in: 'path',
             required: true,
-            description: "ID of the placement request",
-            schema: new OA\Schema(type: "integer")
-        )
+            description: 'ID of the placement request',
+            schema: new OA\Schema(type: 'integer')
+        ),
     ],
     requestBody: new OA\RequestBody(
         required: false,
         content: new OA\JsonContent(
             properties: [
-                new OA\Property(property: "message", type: "string", example: "I can help with this pet!", maxLength: 1000),
-                new OA\Property(property: "helper_profile_id", type: "integer", example: 1, description: "Optional helper profile ID if user has multiple")
+                new OA\Property(property: 'message', type: 'string', example: 'I can help with this pet!', maxLength: 1000),
+                new OA\Property(property: 'helper_profile_id', type: 'integer', example: 1, description: 'Optional helper profile ID if user has multiple'),
             ]
         )
     ),
     responses: [
         new OA\Response(
             response: 201,
-            description: "Response submitted successfully",
+            description: 'Response submitted successfully',
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "success", type: "boolean", example: true),
-                    new OA\Property(property: "data", ref: "#/components/schemas/PlacementRequestResponse"),
-                    new OA\Property(property: "message", type: "string", example: "Response submitted successfully.")
+                    new OA\Property(property: 'success', type: 'boolean', example: true),
+                    new OA\Property(property: 'data', ref: '#/components/schemas/PlacementRequestResponse'),
+                    new OA\Property(property: 'message', type: 'string', example: 'Response submitted successfully.'),
                 ]
             )
         ),
-        new OA\Response(response: 403, description: "Forbidden - Request not active or helper blocked"),
-        new OA\Response(response: 404, description: "Placement request not found")
+        new OA\Response(response: 403, description: 'Forbidden - Request not active or helper blocked'),
+        new OA\Response(response: 404, description: 'Placement request not found'),
     ]
 )]
 class StorePlacementRequestResponseController extends Controller

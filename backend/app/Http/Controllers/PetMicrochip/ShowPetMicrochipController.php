@@ -13,23 +13,23 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
-    path: "/api/pets/{pet}/microchips/{microchip}",
-    summary: "Get a specific microchip record",
-    tags: ["Pets"],
-    security: [["sanctum" => []]],
+    path: '/api/pets/{pet}/microchips/{microchip}',
+    summary: 'Get a specific microchip record',
+    tags: ['Pets'],
+    security: [['sanctum' => []]],
     parameters: [
-        new OA\Parameter(name: "pet", in: "path", required: true, schema: new OA\Schema(type: "integer")),
-        new OA\Parameter(name: "microchip", in: "path", required: true, schema: new OA\Schema(type: "integer")),
+        new OA\Parameter(name: 'pet', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        new OA\Parameter(name: 'microchip', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
     ],
     responses: [
         new OA\Response(
             response: 200,
-            description: "OK",
-            content: new OA\JsonContent(properties: [new OA\Property(property: "data", ref: "#/components/schemas/PetMicrochip")])
+            description: 'OK',
+            content: new OA\JsonContent(properties: [new OA\Property(property: 'data', ref: '#/components/schemas/PetMicrochip')])
         ),
-        new OA\Response(response: 401, description: "Unauthenticated"),
-        new OA\Response(response: 403, description: "Forbidden"),
-        new OA\Response(response: 404, description: "Not found"),
+        new OA\Response(response: 401, description: 'Unauthenticated'),
+        new OA\Response(response: 403, description: 'Forbidden'),
+        new OA\Response(response: 404, description: 'Not found'),
     ]
 )]
 class ShowPetMicrochipController extends Controller

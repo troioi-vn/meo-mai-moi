@@ -11,27 +11,27 @@ use Illuminate\Support\Facades\Auth;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
-    path: "/api/notifications",
-    tags: ["Notifications"],
-    security: [["sanctum" => []]],
+    path: '/api/notifications',
+    tags: ['Notifications'],
+    security: [['sanctum' => []]],
     parameters: [
-        new OA\Parameter(name: "status", in: "query", required: false, schema: new OA\Schema(type: "string", enum: ["all", "unread"])),
+        new OA\Parameter(name: 'status', in: 'query', required: false, schema: new OA\Schema(type: 'string', enum: ['all', 'unread'])),
     ],
     responses: [
-        new OA\Response(response: 200, description: "OK",
+        new OA\Response(response: 200, description: 'OK',
             content: new OA\JsonContent(
-                type: "object",
+                type: 'object',
                 properties: [
-                    new OA\Property(property: "data", type: "array",
+                    new OA\Property(property: 'data', type: 'array',
                         items: new OA\Items(
                             properties: [
-                                new OA\Property(property: "id", type: "string"),
-                                new OA\Property(property: "level", type: "string", enum: ["info", "success", "warning", "error"]),
-                                new OA\Property(property: "title", type: "string"),
-                                new OA\Property(property: "body", type: "string", nullable: true),
-                                new OA\Property(property: "url", type: "string", nullable: true),
-                                new OA\Property(property: "created_at", type: "string", format: "date-time"),
-                                new OA\Property(property: "read_at", type: "string", format: "date-time", nullable: true),
+                                new OA\Property(property: 'id', type: 'string'),
+                                new OA\Property(property: 'level', type: 'string', enum: ['info', 'success', 'warning', 'error']),
+                                new OA\Property(property: 'title', type: 'string'),
+                                new OA\Property(property: 'body', type: 'string', nullable: true),
+                                new OA\Property(property: 'url', type: 'string', nullable: true),
+                                new OA\Property(property: 'created_at', type: 'string', format: 'date-time'),
+                                new OA\Property(property: 'read_at', type: 'string', format: 'date-time', nullable: true),
                             ]
                         )
                     ),

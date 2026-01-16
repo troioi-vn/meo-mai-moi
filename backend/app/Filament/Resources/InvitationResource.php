@@ -167,7 +167,7 @@ class InvitationResource extends Resource
                     ->action(function (Invitation $record, $livewire): void {
                         $url = $record->getInvitationUrl();
 
-                                                $script = sprintf(<<<'JS'
+                        $script = sprintf(<<<'JS'
 (() => {
     const url = %s;
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -180,7 +180,7 @@ JS, json_encode($url));
 
                         // Livewire v3: execute JS on the client to copy to clipboard.
                         // Fallback to prompt() when Clipboard API is unavailable/blocked.
-                                                $livewire->js($script);
+                        $livewire->js($script);
 
                         Notification::make()
                             ->title('Invitation URL Copied')

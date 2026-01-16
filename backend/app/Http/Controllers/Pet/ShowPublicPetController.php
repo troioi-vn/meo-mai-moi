@@ -12,40 +12,40 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
-    path: "/api/pets/{id}/view",
-    summary: "Get viewable profile of a specific pet",
-    description: "Returns whitelisted fields for view. Accessible to: pet owner, users with viewer/owner PetRelationship, helpers involved in pending transfers, and anyone when pet is lost or has active placement requests.",
-    tags: ["Pets"],
+    path: '/api/pets/{id}/view',
+    summary: 'Get viewable profile of a specific pet',
+    description: 'Returns whitelisted fields for view. Accessible to: pet owner, users with viewer/owner PetRelationship, helpers involved in pending transfers, and anyone when pet is lost or has active placement requests.',
+    tags: ['Pets'],
     responses: [
         new OA\Response(
             response: 200,
-            description: "The pet view profile",
+            description: 'The pet view profile',
             content: new OA\JsonContent(
-                type: "object",
+                type: 'object',
                 properties: [
-                    new OA\Property(property: "id", type: "integer"),
-                    new OA\Property(property: "name", type: "string"),
-                    new OA\Property(property: "sex", type: "string"),
-                    new OA\Property(property: "birthday_precision", type: "string"),
-                    new OA\Property(property: "birthday_year", type: "integer", nullable: true),
-                    new OA\Property(property: "birthday_month", type: "integer", nullable: true),
-                    new OA\Property(property: "birthday_day", type: "integer", nullable: true),
-                    new OA\Property(property: "country", type: "string"),
-                    new OA\Property(property: "state", type: "string", nullable: true),
-                    new OA\Property(property: "city", type: "string", nullable: true),
-                    new OA\Property(property: "description", type: "string"),
-                    new OA\Property(property: "status", type: "string"),
-                    new OA\Property(property: "pet_type_id", type: "integer"),
-                    new OA\Property(property: "photo_url", type: "string", nullable: true),
-                    new OA\Property(property: "photos", type: "array", items: new OA\Items(type: "object")),
-                    new OA\Property(property: "pet_type", type: "object"),
-                    new OA\Property(property: "categories", type: "array", items: new OA\Items(type: "object")),
-                    new OA\Property(property: "placement_requests", type: "array", items: new OA\Items(type: "object")),
+                    new OA\Property(property: 'id', type: 'integer'),
+                    new OA\Property(property: 'name', type: 'string'),
+                    new OA\Property(property: 'sex', type: 'string'),
+                    new OA\Property(property: 'birthday_precision', type: 'string'),
+                    new OA\Property(property: 'birthday_year', type: 'integer', nullable: true),
+                    new OA\Property(property: 'birthday_month', type: 'integer', nullable: true),
+                    new OA\Property(property: 'birthday_day', type: 'integer', nullable: true),
+                    new OA\Property(property: 'country', type: 'string'),
+                    new OA\Property(property: 'state', type: 'string', nullable: true),
+                    new OA\Property(property: 'city', type: 'string', nullable: true),
+                    new OA\Property(property: 'description', type: 'string'),
+                    new OA\Property(property: 'status', type: 'string'),
+                    new OA\Property(property: 'pet_type_id', type: 'integer'),
+                    new OA\Property(property: 'photo_url', type: 'string', nullable: true),
+                    new OA\Property(property: 'photos', type: 'array', items: new OA\Items(type: 'object')),
+                    new OA\Property(property: 'pet_type', type: 'object'),
+                    new OA\Property(property: 'categories', type: 'array', items: new OA\Items(type: 'object')),
+                    new OA\Property(property: 'placement_requests', type: 'array', items: new OA\Items(type: 'object')),
                     new OA\Property(
-                        property: "viewer_permissions",
-                        type: "object",
+                        property: 'viewer_permissions',
+                        type: 'object',
                         properties: [
-                            new OA\Property(property: "is_owner", type: "boolean"),
+                            new OA\Property(property: 'is_owner', type: 'boolean'),
                         ]
                     ),
                 ]
@@ -53,11 +53,11 @@ use OpenApi\Attributes as OA;
         ),
         new OA\Response(
             response: 403,
-            description: "Pet is not viewable by the current user"
+            description: 'Pet is not viewable by the current user'
         ),
         new OA\Response(
             response: 404,
-            description: "Pet not found"
+            description: 'Pet not found'
         ),
     ]
 )]

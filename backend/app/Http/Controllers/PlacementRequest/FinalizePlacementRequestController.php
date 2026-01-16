@@ -17,32 +17,32 @@ use Illuminate\Support\Facades\DB;
 use OpenApi\Attributes as OA;
 
 #[OA\Post(
-    path: "/api/placement-requests/{id}/finalize",
-    summary: "Finalize an active placement request (mark pet as returned for temporary fostering)",
-    tags: ["Placement Requests"],
-    security: [["sanctum" => []]],
+    path: '/api/placement-requests/{id}/finalize',
+    summary: 'Finalize an active placement request (mark pet as returned for temporary fostering)',
+    tags: ['Placement Requests'],
+    security: [['sanctum' => []]],
     parameters: [
         new OA\Parameter(
-            name: "id",
-            in: "path",
+            name: 'id',
+            in: 'path',
             required: true,
-            description: "ID of the placement request to finalize",
-            schema: new OA\Schema(type: "integer")
+            description: 'ID of the placement request to finalize',
+            schema: new OA\Schema(type: 'integer')
         ),
     ],
     responses: [
         new OA\Response(
             response: 200,
-            description: "Placement request finalized successfully",
-            content: new OA\JsonContent(ref: "#/components/schemas/PlacementRequest")
+            description: 'Placement request finalized successfully',
+            content: new OA\JsonContent(ref: '#/components/schemas/PlacementRequest')
         ),
         new OA\Response(
             response: 403,
-            description: "Forbidden - Only owner can finalize"
+            description: 'Forbidden - Only owner can finalize'
         ),
         new OA\Response(
             response: 409,
-            description: "Conflict - Placement request is not in active status"
+            description: 'Conflict - Placement request is not in active status'
         ),
     ]
 )]

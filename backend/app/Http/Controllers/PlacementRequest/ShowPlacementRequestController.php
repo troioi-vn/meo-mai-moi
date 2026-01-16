@@ -10,32 +10,32 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
-    path: "/api/placement-requests/{id}",
-    summary: "Get a placement request by ID",
-    description: "Returns placement request details. Access rules: Admin/owner can view any request. Helpers can view if they have responded, are part of a transfer, or have an active placement relationship. Anonymous users can view open requests (with limited data).",
-    tags: ["Placement Requests"],
+    path: '/api/placement-requests/{id}',
+    summary: 'Get a placement request by ID',
+    description: 'Returns placement request details. Access rules: Admin/owner can view any request. Helpers can view if they have responded, are part of a transfer, or have an active placement relationship. Anonymous users can view open requests (with limited data).',
+    tags: ['Placement Requests'],
     parameters: [
         new OA\Parameter(
-            name: "id",
-            in: "path",
+            name: 'id',
+            in: 'path',
             required: true,
-            description: "ID of the placement request",
-            schema: new OA\Schema(type: "integer")
+            description: 'ID of the placement request',
+            schema: new OA\Schema(type: 'integer')
         ),
     ],
     responses: [
         new OA\Response(
             response: 200,
-            description: "Placement request details",
-            content: new OA\JsonContent(ref: "#/components/schemas/PlacementRequest")
+            description: 'Placement request details',
+            content: new OA\JsonContent(ref: '#/components/schemas/PlacementRequest')
         ),
         new OA\Response(
             response: 403,
-            description: "Forbidden - Not authorized to view this placement request"
+            description: 'Forbidden - Not authorized to view this placement request'
         ),
         new OA\Response(
             response: 404,
-            description: "Placement request not found"
+            description: 'Placement request not found'
         ),
     ]
 )]

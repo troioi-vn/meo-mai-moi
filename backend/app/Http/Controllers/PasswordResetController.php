@@ -26,40 +26,40 @@ class PasswordResetController extends Controller
     }
 
     #[OA\Get(
-        path: "/api/password/reset/{token}",
-        summary: "Validate password reset token",
-        description: "Check if password reset token is valid.",
-        tags: ["Password Reset"],
+        path: '/api/password/reset/{token}',
+        summary: 'Validate password reset token',
+        description: 'Check if password reset token is valid.',
+        tags: ['Password Reset'],
         parameters: [
             new OA\Parameter(
-                name: "token",
-                in: "path",
+                name: 'token',
+                in: 'path',
                 required: true,
-                schema: new OA\Schema(type: "string"),
-                description: "Reset token"
+                schema: new OA\Schema(type: 'string'),
+                description: 'Reset token'
             ),
             new OA\Parameter(
-                name: "email",
-                in: "query",
+                name: 'email',
+                in: 'query',
                 required: true,
-                schema: new OA\Schema(type: "string", format: "email"),
-                description: "User email"
+                schema: new OA\Schema(type: 'string', format: 'email'),
+                description: 'User email'
             ),
         ],
         responses: [
             new OA\Response(
                 response: 200,
-                description: "Token is valid",
+                description: 'Token is valid',
                 content: new OA\JsonContent(
                     properties: [
-                        new OA\Property(property: "valid", type: "boolean", example: true),
-                        new OA\Property(property: "email", type: "string", example: "user@example.com"),
+                        new OA\Property(property: 'valid', type: 'boolean', example: true),
+                        new OA\Property(property: 'email', type: 'string', example: 'user@example.com'),
                     ]
                 )
             ),
             new OA\Response(
                 response: 422,
-                description: "Invalid token"
+                description: 'Invalid token'
             ),
         ]
     )]

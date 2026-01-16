@@ -8,22 +8,22 @@ use App\Traits\ApiResponseTrait;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
-    path: "/api/pet-types",
-    summary: "Get all available pet types",
-    tags: ["Pet Types"],
+    path: '/api/pet-types',
+    summary: 'Get all available pet types',
+    tags: ['Pet Types'],
     responses: [
         new OA\Response(
             response: 200,
-            description: "A list of available pet types",
+            description: 'A list of available pet types',
             content: new OA\JsonContent(
-                type: "array",
+                type: 'array',
                 items: new OA\Items(
-                    type: "object",
+                    type: 'object',
                     properties: [
-                        new OA\Property(property: "id", type: "integer", example: 1),
-                        new OA\Property(property: "name", type: "string", example: "Cat"),
-                        new OA\Property(property: "slug", type: "string", example: "cat"),
-                        new OA\Property(property: "description", type: "string", example: "Feline companions"),
+                        new OA\Property(property: 'id', type: 'integer', example: 1),
+                        new OA\Property(property: 'name', type: 'string', example: 'Cat'),
+                        new OA\Property(property: 'slug', type: 'string', example: 'cat'),
+                        new OA\Property(property: 'description', type: 'string', example: 'Feline companions'),
                     ]
                 )
             )

@@ -11,22 +11,22 @@ use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
 
 #[OA\Post(
-    path: "/helper-profiles",
-    summary: "Create a helper profile",
-    tags: ["Helper Profiles"],
+    path: '/helper-profiles',
+    summary: 'Create a helper profile',
+    tags: ['Helper Profiles'],
     requestBody: new OA\RequestBody(
         required: true,
-        content: new OA\JsonContent(ref: "#/components/schemas/HelperProfile")
+        content: new OA\JsonContent(ref: '#/components/schemas/HelperProfile')
     ),
     responses: [
         new OA\Response(
             response: 201,
-            description: "Helper profile created successfully",
-            content: new OA\JsonContent(ref: "#/components/schemas/HelperProfile")
+            description: 'Helper profile created successfully',
+            content: new OA\JsonContent(ref: '#/components/schemas/HelperProfile')
         ),
         new OA\Response(
             response: 422,
-            description: "Validation error"
+            description: 'Validation error'
         ),
     ]
 )]

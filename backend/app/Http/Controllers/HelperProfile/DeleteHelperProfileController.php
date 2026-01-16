@@ -10,30 +10,30 @@ use Illuminate\Support\Facades\Storage;
 use OpenApi\Attributes as OA;
 
 #[OA\Delete(
-    path: "/helper-profiles/{id}",
-    summary: "Delete a helper profile",
-    tags: ["Helper Profiles"],
+    path: '/helper-profiles/{id}',
+    summary: 'Delete a helper profile',
+    tags: ['Helper Profiles'],
     parameters: [
         new OA\Parameter(
-            name: "id",
-            in: "path",
+            name: 'id',
+            in: 'path',
             required: true,
-            description: "ID of the helper profile",
-            schema: new OA\Schema(type: "integer")
+            description: 'ID of the helper profile',
+            schema: new OA\Schema(type: 'integer')
         ),
     ],
     responses: [
         new OA\Response(
             response: 204,
-            description: "Helper profile deleted successfully"
+            description: 'Helper profile deleted successfully'
         ),
         new OA\Response(
             response: 400,
-            description: "Cannot delete profile with associated placement requests"
+            description: 'Cannot delete profile with associated placement requests'
         ),
         new OA\Response(
             response: 403,
-            description: "Unauthorized"
+            description: 'Unauthorized'
         ),
     ]
 )]

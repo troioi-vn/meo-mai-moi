@@ -10,42 +10,42 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Delete(
-    path: "/api/invitations/{id}",
-    summary: "Revoke an invitation",
-    description: "Revoke a pending invitation sent by the authenticated user.",
-    tags: ["Invitations"],
-    security: [["sanctum" => []]],
+    path: '/api/invitations/{id}',
+    summary: 'Revoke an invitation',
+    description: 'Revoke a pending invitation sent by the authenticated user.',
+    tags: ['Invitations'],
+    security: [['sanctum' => []]],
     parameters: [
         new OA\Parameter(
-            name: "id",
-            in: "path",
+            name: 'id',
+            in: 'path',
             required: true,
-            description: "Invitation ID",
-            schema: new OA\Schema(type: "integer")
+            description: 'Invitation ID',
+            schema: new OA\Schema(type: 'integer')
         ),
     ],
     responses: [
         new OA\Response(
             response: 200,
-            description: "Invitation revoked successfully",
+            description: 'Invitation revoked successfully',
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "message", type: "string", example: "Invitation revoked successfully")
+                    new OA\Property(property: 'message', type: 'string', example: 'Invitation revoked successfully'),
                 ]
             )
         ),
         new OA\Response(
             response: 404,
-            description: "Invitation not found or cannot be revoked",
+            description: 'Invitation not found or cannot be revoked',
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "message", type: "string", example: "Invitation not found or cannot be revoked")
+                    new OA\Property(property: 'message', type: 'string', example: 'Invitation not found or cannot be revoked'),
                 ]
             )
         ),
         new OA\Response(
             response: 401,
-            description: "Unauthenticated"
+            description: 'Unauthenticated'
         ),
     ]
 )]

@@ -21,7 +21,9 @@ export function NotificationBell() {
       variant="ghost"
       size="icon"
       aria-label={
-        unreadCount > 0 ? `Open notifications (${unreadCount} unread)` : 'Open notifications'
+        unreadCount > 0
+          ? `Open notifications (${String(unreadCount)} unread)`
+          : 'Open notifications'
       }
       className="relative"
       asChild

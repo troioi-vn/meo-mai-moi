@@ -84,10 +84,12 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
       try {
         const registration = await getServiceWorkerRegistration()
         const subscription = registration ? await registration.pushManager.getSubscription() : null
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!cancelled) {
           setSuppressNativeNotifications(Boolean(subscription))
         }
       } catch {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!cancelled) {
           setSuppressNativeNotifications(false)
         }
@@ -201,7 +203,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
     return () => {
       if (timer) window.clearTimeout(timer)
     }
-  }, [pollMs, refresh, visible, isAuthenticated, user?.id])
+  }, [pollMs, refresh, visible, isAuthenticated, user])
 
   // Reset and refetch when the authenticated user changes
   // This effect handles both initial load and user changes
@@ -212,7 +214,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
     if (isAuthenticated && user) {
       void refresh()
     }
-  }, [isAuthenticated, user?.id, refresh])
+  }, [isAuthenticated, user, refresh])
 
   const markAllReadNow = useCallback(async () => {
     if (unreadCount === 0) return

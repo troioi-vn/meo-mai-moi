@@ -3,7 +3,7 @@ import React, { createContext, useCallback, use, useEffect, useMemo, useRef, use
 import { toast } from 'sonner'
 import { getNotifications, markAllRead, markRead } from '@/api/notifications'
 import type { AppNotification, NotificationLevel } from '@/types/notification'
-import { useAuth } from '@/hooks/use-auth'
+import { AuthContext } from '@/contexts/auth-context'
 
 interface NotificationContextValue {
   notifications: AppNotification[]
@@ -11,7 +11,7 @@ interface NotificationContextValue {
   loading: boolean
   refresh: () => Promise<void>
   markRead: (id: string) => Promise<void>
-  setDropdownOpen: (open: boolean) => void
+  markAllReadNow: () => Promise<void>
 }
 
 export const NotificationContext = createContext<NotificationContextValue | undefined>(undefined)
@@ -56,26 +56,17 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
   const [notifications, setNotifications] = useState<AppNotification[]>([])
   const [loading, setLoading] = useState(false)
   const seenIdsRef = useRef<Set<string>>(new Set())
-  const isDropdownOpenRef = useRef(false)
   const visible = useVisibility()
-  let user: ReturnType<typeof useAuth>['user'] = null
-  let isAuthenticated = false
-  try {
-    const auth = useAuth()
-    user = auth.user
-    isAuthenticated = auth.isAuthenticated
-  } catch {
-    // Allow usage without AuthProvider (tests)
-    user = null
-    isAuthenticated = false
-  }
+
+  const auth = use(AuthContext)
+  const user = auth?.user ?? null
+  const isAuthenticated = auth?.isAuthenticated ?? false
 
   const unreadCount = useMemo(() => notifications.filter((n) => !n.read_at).length, [notifications])
 
   const showNativeNotification = useCallback((notification: AppNotification) => {
     if (typeof window === 'undefined' || !('Notification' in window)) return
     if (Notification.permission !== 'granted') return
-    if (isDropdownOpenRef.current) return
 
     if (typeof document !== 'undefined') {
       const isVisible = document.visibilityState === 'visible'
@@ -171,7 +162,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
     return () => {
       if (timer) window.clearTimeout(timer)
     }
-  }, [pollMs, refresh, visible, isAuthenticated, user])
+  }, [pollMs, refresh, visible, isAuthenticated, user?.id])
 
   // Reset and refetch when the authenticated user changes
   // This effect handles both initial load and user changes
@@ -182,29 +173,19 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
     if (isAuthenticated && user) {
       void refresh()
     }
-  }, [isAuthenticated, user?.id, refresh, user])
+  }, [isAuthenticated, user?.id, refresh])
 
-  // Mark all read when dropdown opens
-  const setDropdownOpen = useCallback(
-    (open: boolean) => {
-      isDropdownOpenRef.current = open
-      if (open && unreadCount > 0) {
-        void (async () => {
-          // optimistic
-          setNotifications((prev) =>
-            prev.map((n) => (n.read_at ? n : { ...n, read_at: new Date().toISOString() }))
-          )
-          try {
-            await markAllRead()
-          } catch {
-            // on failure, refetch
-            await refresh()
-          }
-        })()
-      }
-    },
-    [refresh, unreadCount]
-  )
+  const markAllReadNow = useCallback(async () => {
+    if (unreadCount === 0) return
+    setNotifications((prev) =>
+      prev.map((n) => (n.read_at ? n : { ...n, read_at: new Date().toISOString() }))
+    )
+    try {
+      await markAllRead()
+    } catch {
+      await refresh()
+    }
+  }, [refresh, unreadCount])
 
   const markOneRead = useCallback(
     async (id: string) => {
@@ -229,9 +210,9 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
       loading,
       refresh,
       markRead: markOneRead,
-      setDropdownOpen,
+      markAllReadNow,
     }),
-    [loading, markOneRead, notifications, refresh, setDropdownOpen, unreadCount]
+    [loading, markAllReadNow, markOneRead, notifications, refresh, unreadCount]
   )
 
   return <NotificationContext value={value}>{children}</NotificationContext>

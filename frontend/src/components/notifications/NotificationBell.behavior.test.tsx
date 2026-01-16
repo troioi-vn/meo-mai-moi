@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, waitFor, within } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { NotificationProvider } from '@/contexts/NotificationProvider'
 import { NotificationBell } from './NotificationBell'
@@ -26,7 +25,7 @@ function renderWithProviders(ui: React.ReactNode, { pollMs = 30_000 } = {}) {
 }
 
 describe('NotificationBell behavior', () => {
-  it('marks all as read when dropdown opens (badge disappears)', async () => {
+  it('shows unread badge and links to notifications page', async () => {
     // Ensure API returns two unread
     server.use(
       http.get('http://localhost:3000/api/notifications', () => {
@@ -57,19 +56,11 @@ describe('NotificationBell behavior', () => {
 
     renderWithProviders(<NotificationBell />)
 
-    const btn = await screen.findByRole('button', { name: /open notifications/i })
+    const link = await screen.findByRole('link', { name: /open notifications/i })
     await waitFor(() => {
-      expect(within(btn).getByText('2')).toBeInTheDocument()
+      expect(within(link).getByText('2')).toBeInTheDocument()
     })
-
-    // Open dropdown → optimistic mark-all → badge removed
-    const user = userEvent.setup()
-    await user.click(btn)
-    await waitFor(() => expect(btn).toHaveAttribute('aria-expanded', 'true'))
-
-    await waitFor(() => {
-      expect(within(btn).queryByText('2')).not.toBeInTheDocument()
-    })
+    expect(link).toHaveAttribute('href', '/notifications')
   })
 
   it('shows a toast when a new notification arrives via polling', async () => {

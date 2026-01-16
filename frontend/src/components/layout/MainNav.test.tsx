@@ -44,7 +44,7 @@ describe('MainNav', () => {
 
     // Wait for notification bell to finish loading and check for its button
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /open notifications/i })).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: /open notifications/i })).toBeInTheDocument()
     })
     expect(screen.getByText(/TU/i)).toBeInTheDocument() // User menu avatar with initials
     expect(screen.getByTitle('Requests')).toBeInTheDocument()

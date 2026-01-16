@@ -1,0 +1,38 @@
+import { useEffect, useRef } from 'react'
+import { NotificationList } from '@/components/notifications/NotificationList'
+import { Button } from '@/components/ui/button'
+import { useNotifications } from '@/contexts/NotificationProvider'
+
+export default function NotificationsPage() {
+  const { unreadCount, markAllReadNow } = useNotifications()
+  const hasMarkedRef = useRef(false)
+
+  useEffect(() => {
+    // Only mark existing notifications as read once on initial page load
+    if (!hasMarkedRef.current && unreadCount > 0) {
+      void markAllReadNow()
+      hasMarkedRef.current = true
+    }
+  }, [markAllReadNow, unreadCount])
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">Notifications</h2>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => void markAllReadNow()}
+            disabled={unreadCount === 0}
+          >
+            Mark all as read
+          </Button>
+        </div>
+
+        <NotificationList />
+      </div>
+    </div>
+  )
+}

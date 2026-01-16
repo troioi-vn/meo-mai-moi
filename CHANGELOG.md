@@ -4,6 +4,18 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Added
+
+- **Notifications System**: Implemented a dedicated notifications page with a list view, mark as read functionality, and automatic marking of all notifications as read upon page visit. Added `NotificationList` component for displaying notifications with icons, timestamps, and links. Integrated with existing notification polling and toast system.
+
+### Changed
+
+- **Notification Bell**: Refactored the notification bell from a dropdown menu to a simple link that navigates to the new notifications page, improving UX by providing a dedicated space for managing notifications.
+
+### Fixed
+
+- **Accessibility Improvements**: Added screen-reader labels to notification level icons (Success, Warning, Info, Error) and enhanced the notification bell's aria-label to include unread count for better accessibility.
+
 ### Changed
 
 - **OpenAPI Migration Complete**: Completed migration from `@OA` docblock annotations to PHP 8 attributes:

@@ -28,6 +28,7 @@ import NotFoundPage from './pages/errors/NotFoundPage'
 import RequestsPage from './pages/placement/RequestsPage'
 import RequestDetailPage from './pages/placement/RequestDetailPage'
 import MessagesPage from './pages/messages/MessagesPage'
+import NotificationsPage from './pages/notifications/NotificationsPage'
 import './App.css'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -119,6 +120,14 @@ export function AppRoutes() {
         element={
           <PrivateRoute>
             <InvitationsPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/notifications"
+        element={
+          <PrivateRoute>
+            <NotificationsPage />
           </PrivateRoute>
         }
       />

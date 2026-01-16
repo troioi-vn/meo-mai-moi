@@ -3421,6 +3421,43 @@
             }
         },
         "/api/placement-requests/{id}": {
+            "get": {
+                "tags": [
+                    "Placement Requests"
+                ],
+                "summary": "Get a placement request by ID",
+                "description": "Returns placement request details. Access rules: Admin/owner can view any request. Helpers can view if they have responded, are part of a transfer, or have an active placement relationship. Anonymous users can view open requests (with limited data).",
+                "operationId": "8ec516255e7f11526496f1bb3812bed1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the placement request",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Placement request details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlacementRequest"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Not authorized to view this placement request"
+                    },
+                    "404": {
+                        "description": "Placement request not found"
+                    }
+                }
+            },
             "delete": {
                 "tags": [
                     "Placement Requests"
@@ -3487,6 +3524,83 @@
                     },
                     "409": {
                         "description": "Conflict - Placement request is not in active status"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/placement-requests/{id}/me": {
+            "get": {
+                "tags": [
+                    "Placement Requests"
+                ],
+                "summary": "Get viewer context for a placement request",
+                "description": "Returns viewer-specific context including their role, their response if any, their transfer request if any, and available actions they can perform.",
+                "operationId": "a603de748ddb99acfceb647254f1f1df",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the placement request",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Viewer context for the placement request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "viewer_role": {
+                                            "type": "string",
+                                            "enum": [
+                                                "owner",
+                                                "helper",
+                                                "admin",
+                                                "public"
+                                            ]
+                                        },
+                                        "my_response": {
+                                            "type": "object",
+                                            "nullable": true
+                                        },
+                                        "my_response_id": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        },
+                                        "my_transfer": {
+                                            "type": "object",
+                                            "nullable": true
+                                        },
+                                        "available_actions": {
+                                            "type": "object"
+                                        },
+                                        "chat_id": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Placement request not found"
                     }
                 },
                 "security": [

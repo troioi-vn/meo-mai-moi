@@ -19,7 +19,7 @@ const MessagesLink: React.FC = () => {
       className="relative inline-flex items-center justify-center size-9 text-foreground hover:text-primary transition-colors"
       title="Messages"
     >
-      <MessageCircle className="h-6 w-6" />
+      <MessageCircle className="size-6" />
       <span className="sr-only">Messages</span>
       {count > 0 && (
         <span className="absolute -right-1 -top-1 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] h-4 min-w-4 px-1 leading-none">
@@ -45,7 +45,7 @@ const MainNav: React.FC = () => {
               className="text-foreground ml-6 hover:text-primary transition-colors"
               title="Cats"
             >
-              <Cat className="h-6 w-6" />
+              <Cat className="size-6" />
               <span className="sr-only">Cats</span>
             </Link>
           )}
@@ -54,7 +54,7 @@ const MainNav: React.FC = () => {
             className="text-foreground ml-6 hover:text-primary transition-colors"
             title="Requests"
           >
-            <PawPrint className="h-6 w-6" />
+            <PawPrint className="size-6" />
             <span className="sr-only">Requests</span>
           </Link>
         </div>

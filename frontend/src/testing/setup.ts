@@ -92,6 +92,36 @@ class MockResizeObserver {
 }
 ;(globalThis as unknown as { ResizeObserver?: unknown }).ResizeObserver = MockResizeObserver
 
+// Mock QRCode library to prevent canvas usage in tests
+vi.mock('qrcode', () => ({
+  default: {
+    toCanvas: vi.fn().mockResolvedValue(undefined),
+    toDataURL: vi.fn().mockResolvedValue('data:image/png;base64,mock-qr-code'),
+  },
+}))
+
+// Mock HTMLCanvasElement.getContext to prevent canvas usage in tests
+Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+  writable: true,
+  value: vi.fn(() => ({
+    clearRect: vi.fn(),
+    fillRect: vi.fn(),
+    drawImage: vi.fn(),
+    getImageData: vi.fn(),
+    putImageData: vi.fn(),
+    createImageData: vi.fn(),
+    setTransform: vi.fn(),
+    save: vi.fn(),
+    restore: vi.fn(),
+    beginPath: vi.fn(),
+    moveTo: vi.fn(),
+    lineTo: vi.fn(),
+    closePath: vi.fn(),
+    stroke: vi.fn(),
+    fill: vi.fn(),
+  })),
+})
+
 // Mock IntersectionObserver (needed for Embla Carousel)
 class MockIntersectionObserver {
   root: Element | null = null

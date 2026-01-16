@@ -4,13 +4,16 @@ import { PetCard } from './PetCard'
 import type { Pet, PetType } from '@/types/pet'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { vi } from 'vitest'
+import { beforeEach, vi } from 'vitest'
 
-// Mock the PlacementResponseModal
-vi.mock('@/components/placement/PlacementResponseModal', () => ({
-  PlacementResponseModal: ({ isOpen, petName }: { isOpen: boolean; petName: string }) =>
-    isOpen ? <div data-testid="placement-modal">Modal for {petName}</div> : null,
-}))
+const mockNavigate = vi.fn()
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  }
+})
 
 const mockCatType: PetType = {
   id: 1,
@@ -130,6 +133,10 @@ const renderWithProviders = (component: React.ReactElement, user: MockUser | nul
 }
 
 describe('PetCard', () => {
+  beforeEach(() => {
+    mockNavigate.mockClear()
+  })
+
   it('renders cat information correctly', () => {
     renderWithProviders(<PetCard pet={mockCat} />)
 
@@ -171,14 +178,13 @@ describe('PetCard', () => {
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
   })
 
-  it('opens placement response modal when respond button is clicked', () => {
+  it('navigates to placement request when respond button is clicked', () => {
     renderWithProviders(<PetCard pet={mockCat} />, mockUser)
 
     const respondButton = screen.getByText('Respond')
     fireEvent.click(respondButton)
 
-    expect(screen.getByTestId('placement-modal')).toBeInTheDocument()
-    expect(screen.getByText('Modal for Fluffy')).toBeInTheDocument()
+    expect(mockNavigate).toHaveBeenCalledWith('/requests/1')
   })
 
   it('does not show respond button for owners', () => {

@@ -7,6 +7,7 @@ use App\Enums\ContextableType;
 use App\Http\Controllers\Controller;
 use App\Models\Chat;
 use App\Models\PlacementRequest;
+use App\Models\PlacementRequestResponse;
 use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
@@ -57,9 +58,29 @@ class StoreChatController extends Controller
                     if (! $placementRequest) {
                         return $this->sendError('Placement request not found.', 404);
                     }
-                    // Verify recipient is the owner of the placement request
-                    if ($placementRequest->user_id !== $recipientId) {
-                        return $this->sendError('Recipient must be the owner of the placement request.', 422);
+
+                    $ownerId = (int) $placementRequest->user_id;
+
+                    // Allow helper -> owner always (owner is the placement request user)
+                    if ($recipientId === $ownerId) {
+                        // ok
+                    } else {
+                        // For owner -> helper, require the authenticated user is the owner
+                        if ((int) $user->id !== $ownerId) {
+                            return $this->sendError('Only the placement request owner can message helpers in this request.', 403);
+                        }
+
+                        // And require the recipient is a helper who has responded to this placement request
+                        $recipientHasResponded = PlacementRequestResponse::query()
+                            ->where('placement_request_id', $placementRequest->id)
+                            ->whereHas('helperProfile', function ($query) use ($recipientId) {
+                                $query->where('user_id', $recipientId);
+                            })
+                            ->exists();
+
+                        if (! $recipientHasResponded) {
+                            return $this->sendError('Recipient must be a helper who responded to the placement request.', 422);
+                        }
                     }
                 }
             }

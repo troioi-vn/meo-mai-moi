@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { ChevronLeft, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -85,9 +86,24 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           ) : (
             <>
               <h3 className="font-semibold truncate">{displayName}</h3>
-              {chat?.contextable_type && (
+              {chat?.contextable_type && chat?.contextable_id && (
                 <p className="text-xs text-muted-foreground">
-                  via {chat.contextable_type === 'PlacementRequest' ? 'Placement Request' : 'Pet'}
+                  via{' '}
+                  {chat.contextable_type === 'PlacementRequest' ? (
+                    <Link
+                      to={`/requests/${chat.contextable_id}`}
+                      className="hover:text-primary transition-colors underline-offset-2 hover:underline"
+                    >
+                      Placement Request
+                    </Link>
+                  ) : (
+                    <Link
+                      to={`/pets/${chat.contextable_id}/view`}
+                      className="hover:text-primary transition-colors underline-offset-2 hover:underline"
+                    >
+                      Pet
+                    </Link>
+                  )}
                 </p>
               )}
             </>

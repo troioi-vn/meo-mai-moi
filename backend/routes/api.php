@@ -74,7 +74,9 @@ use App\Http\Controllers\PetPhoto\StorePetPhotoController;
 use App\Http\Controllers\PlacementRequest\ConfirmPlacementRequestController;
 use App\Http\Controllers\PlacementRequest\DeletePlacementRequestController;
 use App\Http\Controllers\PlacementRequest\FinalizePlacementRequestController;
+use App\Http\Controllers\PlacementRequest\GetPlacementRequestViewerContextController;
 use App\Http\Controllers\PlacementRequest\RejectPlacementRequestController;
+use App\Http\Controllers\PlacementRequest\ShowPlacementRequestController;
 use App\Http\Controllers\PlacementRequest\StorePlacementRequestController;
 use App\Http\Controllers\PlacementRequestResponse\AcceptPlacementRequestResponseController;
 use App\Http\Controllers\PlacementRequestResponse\CancelPlacementRequestResponseController;
@@ -233,6 +235,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::delete('/pets/{pet}/photos/{photo}', DeletePetPhotoController::class);
     Route::post('/pets/{pet}/photos/{photo}/set-primary', SetPrimaryPetPhotoController::class);
     Route::post('/placement-requests', StorePlacementRequestController::class);
+    Route::get('/placement-requests/{placementRequest}/me', GetPlacementRequestViewerContextController::class);
     Route::delete('/placement-requests/{placementRequest}', DeletePlacementRequestController::class);
     Route::post('/placement-requests/{placementRequest}/confirm', ConfirmPlacementRequestController::class);
     Route::post('/placement-requests/{placementRequest}/reject', RejectPlacementRequestController::class);
@@ -317,6 +320,11 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
 // New pet routes (public)
 Route::get('/pets/placement-requests', ListPetsWithPlacementRequestsController::class);
+
+// Placement request detail (public with optional auth for role-shaping)
+Route::get('/placement-requests/{placementRequest}', ShowPlacementRequestController::class)
+    ->middleware('optional.auth')
+    ->whereNumber('placementRequest');
 Route::get('/pets/featured', ListFeaturedPetsController::class);
 Route::get('/pets/{pet}', ShowPetController::class)->middleware('optional.auth')->whereNumber('pet');
 Route::get('/pets/{pet}/view', ShowPublicPetController::class)->middleware('optional.auth')->whereNumber('pet');

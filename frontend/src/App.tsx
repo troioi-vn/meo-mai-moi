@@ -26,6 +26,7 @@ import CreateHelperProfilePage from './pages/helper/CreateHelperProfilePage'
 import HelperProfileViewPage from './pages/helper/HelperProfileViewPage'
 import NotFoundPage from './pages/errors/NotFoundPage'
 import RequestsPage from './pages/placement/RequestsPage'
+import RequestDetailPage from './pages/placement/RequestDetailPage'
 import MessagesPage from './pages/messages/MessagesPage'
 import './App.css'
 
@@ -64,6 +65,7 @@ export function AppRoutes() {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/requests" element={<RequestsPage />} />
+      <Route path="/requests/:id" element={<RequestDetailPage />} />
 
       {/* Pet routes */}
       <Route path="/pets/:id" element={<PetProfilePage />} />

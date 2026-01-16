@@ -9,7 +9,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ImpersonationIndicator } from '@/components/layout/ImpersonationBanner'
 import { AdminPanelLink } from '@/components/user/AdminPanelLink'
 import { useUnreadChatsCount } from '@/hooks/useMessaging'
-import { Badge } from '@/components/ui/badge'
 
 const MessagesLink: React.FC = () => {
   const { count } = useUnreadChatsCount()
@@ -17,18 +16,15 @@ const MessagesLink: React.FC = () => {
   return (
     <Link
       to="/messages"
-      className="relative text-foreground hover:text-primary transition-colors"
+      className="relative inline-flex items-center justify-center size-9 text-foreground hover:text-primary transition-colors"
       title="Messages"
     >
       <MessageCircle className="h-6 w-6" />
       <span className="sr-only">Messages</span>
       {count > 0 && (
-        <Badge
-          variant="destructive"
-          className="absolute -top-1.5 -right-1.5 h-4.5 min-w-4.5 px-1 text-[10px] flex items-center justify-center"
-        >
-          {count > 99 ? '99+' : count}
-        </Badge>
+        <span className="absolute -right-1 -top-1 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] h-4 min-w-4 px-1 leading-none">
+          {count > 9 ? '9+' : String(count)}
+        </span>
       )}
     </Link>
   )

@@ -6,7 +6,9 @@ use App\Enums\ChatType;
 use App\Enums\ChatUserRole;
 use App\Models\Chat;
 use App\Models\ChatMessage;
+use App\Models\HelperProfile;
 use App\Models\PlacementRequest;
+use App\Models\PlacementRequestResponse;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -87,6 +89,59 @@ class MessagingTest extends TestCase
         $response->assertStatus(201)
             ->assertJsonPath('data.contextable_type', 'PlacementRequest')
             ->assertJsonPath('data.contextable_id', $placementRequest->id);
+    }
+
+    public function test_placement_request_owner_can_create_context_chat_with_helper_who_responded()
+    {
+        $owner = User::factory()->create();
+        $helper = User::factory()->create();
+
+        $helperProfile = HelperProfile::factory()->create([
+            'user_id' => $helper->id,
+        ]);
+
+        $placementRequest = PlacementRequest::factory()->create([
+            'user_id' => $owner->id,
+        ]);
+
+        PlacementRequestResponse::factory()->create([
+            'placement_request_id' => $placementRequest->id,
+            'helper_profile_id' => $helperProfile->id,
+        ]);
+
+        Sanctum::actingAs($owner);
+
+        $response = $this->postJson('/api/msg/chats', [
+            'type' => 'direct',
+            'recipient_id' => $helper->id,
+            'contextable_type' => 'PlacementRequest',
+            'contextable_id' => $placementRequest->id,
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.contextable_type', 'PlacementRequest')
+            ->assertJsonPath('data.contextable_id', $placementRequest->id);
+    }
+
+    public function test_placement_request_owner_cannot_create_context_chat_with_unrelated_user()
+    {
+        $owner = User::factory()->create();
+        $unrelatedUser = User::factory()->create();
+
+        $placementRequest = PlacementRequest::factory()->create([
+            'user_id' => $owner->id,
+        ]);
+
+        Sanctum::actingAs($owner);
+
+        $response = $this->postJson('/api/msg/chats', [
+            'type' => 'direct',
+            'recipient_id' => $unrelatedUser->id,
+            'contextable_type' => 'PlacementRequest',
+            'contextable_id' => $placementRequest->id,
+        ]);
+
+        $response->assertStatus(422);
     }
 
     public function test_user_can_send_message()

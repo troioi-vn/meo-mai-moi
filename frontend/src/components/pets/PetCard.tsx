@@ -1,7 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Pet } from '@/types/pet'
-import { PlacementResponseModal } from '@/components/placement/PlacementResponseModal'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -30,7 +29,6 @@ interface PetCardProps {
 export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
   const { isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
-  const [isModalOpen, setIsModalOpen] = React.useState(false)
   const [isLoginPromptOpen, setIsLoginPromptOpen] = React.useState(false)
 
   // Determine active/open placement requests: status in {open,finalized}
@@ -40,7 +38,10 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
     // Fulfilled should not count as open so we can surface the fulfilled badge
     return ['open', 'pending_transfer', 'active', 'finalized', 'pending'].includes(s)
   }
-  const activePlacementRequest = pet.placement_requests?.find((req) => isStatusOpen(req.status))
+  // Get the most recent active request by sorting by ID descending
+  const activePlacementRequest = pet.placement_requests
+    ?.filter((req) => isStatusOpen(req.status))
+    .sort((a, b) => b.id - a.id)[0]
   const activePlacementRequestId = activePlacementRequest?.id
   // Show Fulfilled only when there were requests but none are currently active/open
   const hasActivePlacementRequests = Boolean(activePlacementRequest)
@@ -171,31 +172,17 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
                         ? 'Your response was accepted!'
                         : 'You responded... Waiting for approval'}
                     </p>
-                    {myPendingResponse && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          void navigate(`/pets/${String(pet.id)}`)
-                        }}
-                      >
-                        View Details
-                      </Button>
-                    )}
-                    {myAcceptedResponse && (
-                      <Button
-                        size="sm"
-                        className="w-full"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          void navigate(`/pets/${String(pet.id)}`)
-                        }}
-                      >
-                        View Details
-                      </Button>
-                    )}
+                    <Button
+                      variant={myAcceptedResponse ? 'default' : 'outline'}
+                      size="sm"
+                      className="w-full"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        void navigate(`/requests/${String(activePlacementRequestId)}`)
+                      }}
+                    >
+                      View Details
+                    </Button>
                   </div>
                 ) : (
                   <Button
@@ -203,7 +190,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
                     onClick={(e) => {
                       e.stopPropagation()
                       if (isAuthenticated) {
-                        setIsModalOpen(true)
+                        void navigate(`/requests/${String(activePlacementRequestId)}`)
                       } else {
                         setIsLoginPromptOpen(true)
                       }
@@ -211,20 +198,6 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
                   >
                     Respond
                   </Button>
-                )}
-                {isAuthenticated && (
-                  <PlacementResponseModal
-                    isOpen={isModalOpen}
-                    onClose={() => {
-                      setIsModalOpen(false)
-                    }}
-                    petName={pet.name}
-                    petId={pet.id}
-                    placementRequestId={activePlacementRequestId}
-                    requestType={activePlacementRequest?.request_type ?? ''}
-                    petCity={typeof pet.city === 'string' ? pet.city : (pet.city?.name ?? '')}
-                    petCountry={pet.country}
-                  />
                 )}
               </>
             )}
@@ -249,7 +222,10 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
                 <AlertDialogAction
                   onClick={(e) => {
                     e.stopPropagation()
-                    void navigate(`/login?redirect=/pets/${String(pet.id)}`)
+                    const redirectUrl = activePlacementRequestId
+                      ? `/requests/${String(activePlacementRequestId)}`
+                      : `/pets/${String(pet.id)}`
+                    void navigate(`/login?redirect=${encodeURIComponent(redirectUrl)}`)
                   }}
                 >
                   Login

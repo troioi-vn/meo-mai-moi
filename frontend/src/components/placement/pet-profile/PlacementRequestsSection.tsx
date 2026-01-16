@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { Trash2, Users, Clock, CheckCircle2, Loader2, Home, MessageCircle, X } from 'lucide-react'
+import { Trash2, Users, Clock, CheckCircle2, Loader2, Home, MessageCircle, X, ExternalLink } from 'lucide-react'
 import { api } from '@/api/axios'
 import { toast } from 'sonner'
 import type { Pet } from '@/types/pet'
@@ -47,16 +47,16 @@ const getRequestTypeBadgeVariant = (
 
 const getStatusBadgeVariant = (
   status: string
-): 'default' | 'secondary' | 'destructive' | 'outline' | 'success' => {
+): 'default' | 'secondary' | 'destructive' | 'outline' => {
   switch (status) {
     case 'open':
       return 'default'
     case 'pending_transfer':
       return 'secondary'
     case 'active':
-      return 'success'
+      return 'outline'
     case 'finalized':
-      return 'success'
+      return 'outline'
     default:
       return 'outline'
   }
@@ -210,6 +210,13 @@ export const PlacementRequestsSection: React.FC<Props> = ({
                       {formatStatus(request.status)}
                     </Badge>
                   )}
+                  <Link
+                    to={`/requests/${String(request.id)}`}
+                    className="text-xs text-muted-foreground hover:text-primary inline-flex items-center gap-1 transition-colors"
+                  >
+                    View Details
+                    <ExternalLink className="h-3 w-3" />
+                  </Link>
                 </div>
                 {request.notes && <p className="text-sm text-muted-foreground">{request.notes}</p>}
               </div>

@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,8 +13,8 @@ import {
   Loader2,
   HandshakeIcon,
   Home,
+  ExternalLink,
 } from 'lucide-react'
-import { PlacementResponseModal } from '@/components/placement/PlacementResponseModal'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
 import type { PublicPet } from '@/api/pets'
@@ -64,7 +64,6 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
   const { user } = useAuth()
   const navigate = useNavigate()
   const { create: createChat, creating: creatingChat } = useCreateChat()
-  const [respondingToRequest, setRespondingToRequest] = useState<PlacementRequest | null>(null)
   const [confirmingTransferId, setConfirmingTransferId] = useState<number | null>(null)
   const [cancellingResponseId, setCancellingResponseId] = useState<number | null>(null)
 
@@ -288,6 +287,12 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                           <span>Your response is pending approval</span>
                         </div>
                         <div className="space-y-2">
+                          <Button variant="outline" size="sm" className="w-full" asChild>
+                            <Link to={`/requests/${request.id}`}>
+                              <ExternalLink className="h-4 w-4 mr-1" />
+                              View Request Details
+                            </Link>
+                          </Button>
                           {request.user_id != null && (
                             <Button
                               variant="outline"
@@ -318,13 +323,10 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        <Button
-                          onClick={() => {
-                            setRespondingToRequest(request)
-                          }}
-                          className="w-full"
-                        >
-                          Respond to Placement Request
+                        <Button className="w-full" asChild>
+                          <Link to={`/requests/${request.id}`}>
+                            Respond to Placement Request
+                          </Link>
                         </Button>
                         {request.user_id != null && (
                           <Button
@@ -341,9 +343,12 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                     )
                   ) : (
                     <div className="text-sm text-muted-foreground text-center py-2">
-                      <a href="/login" className="text-primary hover:underline">
+                      <Link
+                        to={`/login?redirect=${encodeURIComponent(`/requests/${request.id}`)}`}
+                        className="text-primary hover:underline"
+                      >
                         Sign in
-                      </a>{' '}
+                      </Link>{' '}
                       to respond to this placement request
                     </div>
                   )}
@@ -353,25 +358,6 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
           )
         })}
       </CardContent>
-
-      {respondingToRequest && (
-        <PlacementResponseModal
-          isOpen={true}
-          onClose={() => {
-            setRespondingToRequest(null)
-          }}
-          petName={pet.name}
-          petId={pet.id}
-          placementRequestId={respondingToRequest.id}
-          requestType={respondingToRequest.request_type}
-          petCity={typeof pet.city === 'string' ? pet.city : pet.city?.name}
-          petCountry={pet.country}
-          onSuccess={() => {
-            setRespondingToRequest(null)
-            onRefresh?.()
-          }}
-        />
-      )}
     </Card>
   )
 }

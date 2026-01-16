@@ -58,7 +58,7 @@ export function NotificationBell() {
     <DropdownMenu onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" aria-label="Open notifications" className="relative">
-          <Bell className="h-5 w-5" />
+          <Bell className="h-8 w-8" />
           {unreadCount > 0 && (
             <span className="absolute -right-1 -top-1 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] h-4 min-w-4 px-1 leading-none">
               {unreadCount > 9 ? '9+' : String(unreadCount)}

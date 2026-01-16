@@ -86,19 +86,19 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           ) : (
             <>
               <h3 className="font-semibold truncate">{displayName}</h3>
-              {chat?.contextable_type && chat?.contextable_id && (
+              {chat?.contextable_type && chat.contextable_id && (
                 <p className="text-xs text-muted-foreground">
                   via{' '}
                   {chat.contextable_type === 'PlacementRequest' ? (
                     <Link
-                      to={`/requests/${chat.contextable_id}`}
+                      to={`/requests/${String(chat.contextable_id)}`}
                       className="hover:text-primary transition-colors underline-offset-2 hover:underline"
                     >
                       Placement Request
                     </Link>
                   ) : (
                     <Link
-                      to={`/pets/${chat.contextable_id}/view`}
+                      to={`/pets/${String(chat.contextable_id)}/view`}
                       className="hover:text-primary transition-colors underline-offset-2 hover:underline"
                     >
                       Pet

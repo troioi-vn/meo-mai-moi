@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { toast } from 'sonner'
@@ -14,13 +14,11 @@ import {
 import type {
   PlacementRequestDetail,
   PlacementRequestResponse,
-  AvailableActions,
 } from '@/types/placement'
 import {
   formatRequestType,
   formatStatus,
   isTemporaryType,
-  requiresHandover,
   PlacementResponseStatusLabels,
 } from '@/types/placement'
 import { Button } from '@/components/ui/button'
@@ -85,13 +83,6 @@ const getStatusBadgeVariant = (
   }
 }
 
-const getRequestTypeBadgeVariant = (
-  type: string
-): 'default' | 'secondary' | 'destructive' | 'outline' => {
-  if (type === 'permanent') return 'default'
-  if (type.includes('foster')) return 'secondary'
-  return 'outline'
-}
 
 const getResponseStatusBadgeVariant = (
   status: string
@@ -187,7 +178,7 @@ export default function RequestDetailPage() {
 
   const handleAcceptResponse = useCallback(
     async (responseId: number) => {
-      setActionLoading(`accept-${responseId}`)
+      setActionLoading(`accept-${String(responseId)}`)
       try {
         await acceptPlacementResponse(responseId)
         toast.success('Response accepted!')
@@ -204,7 +195,7 @@ export default function RequestDetailPage() {
 
   const handleRejectResponse = useCallback(
     async (responseId: number) => {
-      setActionLoading(`reject-${responseId}`)
+      setActionLoading(`reject-${String(responseId)}`)
       try {
         await rejectPlacementResponse(responseId)
         toast.success('Response rejected')
@@ -274,7 +265,7 @@ export default function RequestDetailPage() {
     try {
       await deletePlacementRequest(request.id)
       toast.success('Placement request deleted')
-      navigate('/requests')
+      void navigate('/requests')
     } catch (err) {
       console.error('Failed to delete placement request', err)
       toast.error('Failed to delete placement request. Please try again.')
@@ -365,7 +356,7 @@ export default function RequestDetailPage() {
 
   // Warning: country mismatch
   const countryWarning = (() => {
-    if (!selectedHelperProfile || !request?.pet?.country) return undefined
+    if (!selectedHelperProfile || !request.pet.country) return undefined
     const profileCountry = selectedHelperProfile.country?.toLowerCase().trim()
     const petCountry = request.pet.country.toLowerCase().trim()
     if (profileCountry && petCountry && profileCountry !== petCountry) {
@@ -401,7 +392,7 @@ export default function RequestDetailPage() {
           <CardContent className="pt-6">
             <div className="text-center py-8">
               <p className="text-destructive mb-4">{error}</p>
-              <Button variant="outline" onClick={() => navigate(-1)}>
+              <Button variant="outline" onClick={() => void navigate(-1)}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Go Back
               </Button>
@@ -436,7 +427,7 @@ export default function RequestDetailPage() {
             Requests
           </Link>
           <span>/</span>
-          <Link to={`/pets/${request.pet.id}/view`} className="hover:text-foreground">
+          <Link to={`/pets/${String(request.pet.id)}/view`} className="hover:text-foreground">
             {request.pet.name}
           </Link>
           <span>/</span>
@@ -472,7 +463,7 @@ export default function RequestDetailPage() {
           <div className="flex items-center gap-2">
             {request.chat_id && (
               <Button variant="outline" size="sm" asChild>
-                <Link to={`/messages/${request.chat_id}`}>
+                <Link to={`/messages/${String(request.chat_id)}`}>
                   <MessageCircle className="h-4 w-4 mr-1" />
                   Chat
                 </Link>
@@ -637,7 +628,7 @@ export default function RequestDetailPage() {
                       <Textarea
                         placeholder="Introduce yourself and explain why you'd like to help..."
                         value={responseMessage}
-                        onChange={(e) => setResponseMessage(e.target.value)}
+                        onChange={(e) => { setResponseMessage(e.target.value) }}
                         rows={4}
                       />
                     </div>
@@ -668,7 +659,7 @@ export default function RequestDetailPage() {
             {request.user_id && (isHelper || myResponse) && (
               <Button
                 variant="outline"
-                onClick={() => void handleChat(request.user_id!)}
+                onClick={() => void handleChat(Number(request.user_id))}
                 disabled={creatingChat}
                 className="w-full"
               >
@@ -739,7 +730,7 @@ export default function RequestDetailPage() {
               {acceptedResponse.helper_profile?.user?.id && (
                 <Button
                   variant="outline"
-                  onClick={() => void handleChat(acceptedResponse.helper_profile!.user!.id!)}
+                  onClick={() => void handleChat(Number(acceptedResponse.helper_profile.user.id))}
                   disabled={creatingChat}
                   className="w-full"
                 >
@@ -827,7 +818,7 @@ export default function RequestDetailPage() {
                 {request.pet.country && `, ${request.pet.country}`}
               </p>
               <Link
-                to={`/pets/${request.pet.id}/view`}
+                to={`/pets/${String(request.pet.id)}/view`}
                 className="text-sm text-primary hover:underline"
               >
                 View Pet Profile →
@@ -987,10 +978,10 @@ function ResponseCard({
       <div className="flex flex-col sm:flex-row gap-2">
         <Button
           onClick={() => void onAccept(response.id)}
-          disabled={actionLoading === `accept-${response.id}`}
+          disabled={actionLoading === `accept-${String(response.id)}`}
           className="flex-1"
         >
-          {actionLoading === `accept-${response.id}` ? (
+          {actionLoading === `accept-${String(response.id)}` ? (
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
           ) : (
             <CheckCircle2 className="h-4 w-4 mr-2" />
@@ -1000,10 +991,10 @@ function ResponseCard({
         <Button
           variant="outline"
           onClick={() => void onReject(response.id)}
-          disabled={actionLoading === `reject-${response.id}`}
+          disabled={actionLoading === `reject-${String(response.id)}`}
           className="flex-1"
         >
-          {actionLoading === `reject-${response.id}` ? (
+          {actionLoading === `reject-${String(response.id)}` ? (
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
           ) : (
             <X className="h-4 w-4 mr-2" />

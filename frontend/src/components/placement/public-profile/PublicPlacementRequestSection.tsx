@@ -288,7 +288,7 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                         </div>
                         <div className="space-y-2">
                           <Button variant="outline" size="sm" className="w-full" asChild>
-                            <Link to={`/requests/${request.id}`}>
+                            <Link to={`/requests/${String(request.id)}`}>
                               <ExternalLink className="h-4 w-4 mr-1" />
                               View Request Details
                             </Link>
@@ -324,7 +324,7 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                     ) : (
                       <div className="space-y-2">
                         <Button className="w-full" asChild>
-                          <Link to={`/requests/${request.id}`}>
+                          <Link to={`/requests/${String(request.id)}`}>
                             Respond to Placement Request
                           </Link>
                         </Button>
@@ -344,7 +344,7 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                   ) : (
                     <div className="text-sm text-muted-foreground text-center py-2">
                       <Link
-                        to={`/login?redirect=${encodeURIComponent(`/requests/${request.id}`)}`}
+                        to={`/login?redirect=${encodeURIComponent(`/requests/${String(request.id)}`)}`}
                         className="text-primary hover:underline"
                       >
                         Sign in

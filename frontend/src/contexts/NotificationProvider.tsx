@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { getNotifications, markAllRead, markRead } from '@/api/notifications'
 import type { AppNotification, NotificationLevel } from '@/types/notification'
 import { AuthContext } from '@/contexts/auth-context'
+import { getServiceWorkerRegistration } from '@/lib/web-push'
 
 interface NotificationContextValue {
   notifications: AppNotification[]
@@ -55,6 +56,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
 }) => {
   const [notifications, setNotifications] = useState<AppNotification[]>([])
   const [loading, setLoading] = useState(false)
+  const [suppressNativeNotifications, setSuppressNativeNotifications] = useState(false)
   const seenIdsRef = useRef<Set<string>>(new Set())
   const visible = useVisibility()
 
@@ -64,52 +66,89 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
 
   const unreadCount = useMemo(() => notifications.filter((n) => !n.read_at).length, [notifications])
 
-  const showNativeNotification = useCallback((notification: AppNotification) => {
-    if (typeof window === 'undefined' || !('Notification' in window)) return
-    if (Notification.permission !== 'granted') return
-
-    if (typeof document !== 'undefined') {
-      const isVisible = document.visibilityState === 'visible'
-      const hasFocus = typeof document.hasFocus === 'function' ? document.hasFocus() : true
-      if (isVisible && hasFocus) return
+  // If the user has device push enabled (service worker + push subscription), the service worker
+  // will already display OS notifications. Suppress in-page native notifications to avoid doubles.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('Notification' in window)) {
+      setSuppressNativeNotifications(false)
+      return
     }
 
-    const options: NotificationOptions = {
-      body: notification.body ?? undefined,
-      tag: notification.id,
-      data: notification.url ? { url: notification.url } : undefined,
+    if (Notification.permission !== 'granted') {
+      setSuppressNativeNotifications(false)
+      return
     }
 
-    const showWithWindowContext = () => {
-      const fallback = new Notification(notification.title, options)
-      fallback.onclick = () => {
-        if (typeof window !== 'undefined') {
-          window.focus()
-          if (notification.url) {
-            window.location.assign(notification.url)
+    let cancelled = false
+    void (async () => {
+      try {
+        const registration = await getServiceWorkerRegistration()
+        const subscription = registration ? await registration.pushManager.getSubscription() : null
+        if (!cancelled) {
+          setSuppressNativeNotifications(Boolean(subscription))
+        }
+      } catch {
+        if (!cancelled) {
+          setSuppressNativeNotifications(false)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [visible, isAuthenticated, user?.id])
+
+  const showNativeNotification = useCallback(
+    (notification: AppNotification) => {
+      if (typeof window === 'undefined' || !('Notification' in window)) return
+      if (Notification.permission !== 'granted') return
+      if (suppressNativeNotifications) return
+
+      if (typeof document !== 'undefined') {
+        const isVisible = document.visibilityState === 'visible'
+        const hasFocus = typeof document.hasFocus === 'function' ? document.hasFocus() : true
+        if (isVisible && hasFocus) return
+      }
+
+      const options: NotificationOptions = {
+        body: notification.body ?? undefined,
+        tag: notification.id,
+        data: notification.url ? { url: notification.url } : undefined,
+      }
+
+      const showWithWindowContext = () => {
+        const fallback = new Notification(notification.title, options)
+        fallback.onclick = () => {
+          if (typeof window !== 'undefined') {
+            window.focus()
+            if (notification.url) {
+              window.location.assign(notification.url)
+            }
           }
         }
       }
-    }
 
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .getRegistration()
-        .then((registration) => {
-          if (registration) {
-            return registration.showNotification(notification.title, options)
-          }
-          // Fall back to Notification constructor if no registration available
-          showWithWindowContext()
-        })
-        .catch(() => {
-          // On failure, try direct notification constructor as a last resort
-          showWithWindowContext()
-        })
-    } else {
-      showWithWindowContext()
-    }
-  }, [])
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker
+          .getRegistration()
+          .then((registration) => {
+            if (registration) {
+              return registration.showNotification(notification.title, options)
+            }
+            // Fall back to Notification constructor if no registration available
+            showWithWindowContext()
+          })
+          .catch(() => {
+            // On failure, try direct notification constructor as a last resort
+            showWithWindowContext()
+          })
+      } else {
+        showWithWindowContext()
+      }
+    },
+    [suppressNativeNotifications]
+  )
 
   const emitToastsForNew = useCallback(
     (incoming: AppNotification[]) => {

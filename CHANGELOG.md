@@ -16,6 +16,8 @@ All notable changes to this project are documented here, following the [Keep a C
 
 - **Accessibility Improvements**: Added screen-reader labels to notification level icons (Success, Warning, Info, Error) and enhanced the notification bell's aria-label to include unread count for better accessibility.
 
+- **Duplicate native notifications**: Fixed an issue where bell notifications could appear twice (push + in-page native notification) during flows like rehoming. The `NotificationProvider` now detects an active Service Worker push subscription and suppresses in-page native notifications when device push is enabled; in-app toasts remain unaffected. (See `frontend/src/contexts/NotificationProvider.tsx` — tests: frontend suite passed.)
+
 ### Changed
 
 - **OpenAPI Migration Complete**: Completed migration from `@OA` docblock annotations to PHP 8 attributes:

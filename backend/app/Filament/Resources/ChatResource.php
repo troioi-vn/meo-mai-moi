@@ -4,6 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ChatResource\Pages;
 use App\Models\Chat;
+use App\Enums\ChatType;
+use App\Enums\ContextableType;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -83,7 +85,7 @@ class ChatResource extends Resource
 
                 Tables\Columns\TextColumn::make('contextable_type')
                     ->label('Context')
-                    ->formatStateUsing(fn (?string $state) => $state ?? '-'),
+                    ->formatStateUsing(fn ($state) => $state?->getLabel() ?? '-'),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created')

@@ -62,9 +62,8 @@ class StoreChatController extends Controller
                     $ownerId = (int) $placementRequest->user_id;
 
                     // Allow helper -> owner always (owner is the placement request user)
-                    if ($recipientId === $ownerId) {
-                        // ok
-                    } else {
+                    // For owner -> helper, require additional validation
+                    if ($recipientId !== $ownerId) {
                         // For owner -> helper, require the authenticated user is the owner
                         if ((int) $user->id !== $ownerId) {
                             return $this->sendError('Only the placement request owner can message helpers in this request.', 403);

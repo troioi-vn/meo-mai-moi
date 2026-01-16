@@ -1,12 +1,11 @@
 import React, { useCallback, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import type { Pet } from '@/types/pet'
 import type { PlacementRequestResponse, TransferRequest } from '@/types/placement'
 import { formatRequestType, requiresHandover } from '@/types/placement'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Clock, X, MessageCircle, CheckCircle2, Loader2, HandshakeIcon } from 'lucide-react'
-import { PlacementResponseModal } from '@/components/placement/PlacementResponseModal'
 import { useCreateChat } from '@/hooks/useMessaging'
 import { cancelPlacementResponse, confirmTransfer } from '@/api/placement'
 import { toast } from 'sonner'
@@ -34,7 +33,6 @@ export const PlacementResponseSection: React.FC<Props> = ({
   onRefresh,
 }) => {
   const navigate = useNavigate()
-  const [isRespondOpen, setIsRespondOpen] = useState(false)
   const [cancelling, setCancelling] = useState(false)
   const [confirmingHandover, setConfirmingHandover] = useState(false)
   const { create: createChat, creating: creatingChat } = useCreateChat()
@@ -204,29 +202,12 @@ export const PlacementResponseSection: React.FC<Props> = ({
 
       {/* State 4: No response yet - can respond */}
       {!isPending && !isAccepted && (
-        <Button
-          onClick={() => {
-            setIsRespondOpen(true)
-          }}
-          className="w-full"
-        >
-          Respond to Placement Request
+        <Button className="w-full" asChild>
+          <Link to={`/requests/${String(activePlacementRequest.id)}`}>
+            Respond to Placement Request
+          </Link>
         </Button>
       )}
-
-      <PlacementResponseModal
-        isOpen={isRespondOpen}
-        onClose={() => {
-          setIsRespondOpen(false)
-        }}
-        petName={pet.name}
-        petId={pet.id}
-        placementRequestId={activePlacementRequest.id}
-        requestType={activePlacementRequest.request_type}
-        petCity={typeof pet.city === 'string' ? pet.city : pet.city?.name}
-        petCountry={pet.country}
-        onSuccess={onRefresh}
-      />
     </div>
   )
 }

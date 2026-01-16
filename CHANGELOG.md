@@ -224,15 +224,19 @@ All notable changes to this project are documented here, following the [Keep a C
   - `frontend/src/components/messaging/ChatWindow.tsx` (optional chaining improvements)
   - `frontend/src/components/notifications/NotificationPreferences.tsx` (nullish coalescing and grouping logic)
   - `frontend/src/components/pets/PetCard.tsx`, `PetRelationshipsSection.tsx` (removed non-null assertions and improved null checks)
-  - `frontend/src/components/placement/pet-profile/PlacementResponseForm.tsx` (fixed void expression in arrow handler)
   - `frontend/src/components/placement/public-profile/PublicPlacementRequestSection.tsx` (removed force-non-null assertions)
-  - `frontend/src/hooks/usePlacementResponse.ts` (template literal and API call stringification)
   - `frontend/src/pages/helper/HelperProfileViewPage.tsx` (normalized nullable fields)
 
   All changes are lint-compliant; `npm run lint -- --max-warnings 0` now passes.
 
 ### Removed
 
+- **Placement Response Modal Components**: Removed deprecated modal-based placement response system in favor of the unified `/requests/:id` detail page experience:
+  - Deleted `PlacementResponseModal.tsx` component
+  - Deleted `PlacementResponseModal.test.tsx` test file
+  - Deleted `usePlacementResponse.ts` hook
+  - Deleted `PlacementResponseForm.tsx` and `PlacementResponseConfirm.tsx` form components
+  - Updated `PlacementResponseSection.tsx` to navigate directly to request detail page instead of opening modal
 - Deprecated `StoreTransferRequestController` and associated `/api/transfer-requests` POST endpoint in favor of the new placement response system.
   - Comprehensive documentation updates for the new response flow
 

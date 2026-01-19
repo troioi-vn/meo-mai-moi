@@ -18,6 +18,8 @@ All notable changes to this project are documented here, following the [Keep a C
 
 - **Duplicate native notifications**: Fixed an issue where bell notifications could appear twice (push + in-page native notification) during flows like rehoming. The `NotificationProvider` now detects an active Service Worker push subscription and suppresses in-page native notifications when device push is enabled; in-app toasts remain unaffected. (See `frontend/src/contexts/NotificationProvider.tsx` — tests: frontend suite passed.)
 
+- **Duplicate in-app notification toasts**: Fixed an issue where identical in-app notification toasts could appear twice during multi-step flows (e.g. rehoming) due to effects re-running when the auth user object/callback identities changed. The notification refresh lifecycle is now keyed to a stable `userId` to avoid resetting `seenIdsRef` and re-emitting toasts.
+
 ### Changed
 
 - **OpenAPI Migration Complete**: Completed migration from `@OA` docblock annotations to PHP 8 attributes:

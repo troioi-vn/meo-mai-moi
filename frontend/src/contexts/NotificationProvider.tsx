@@ -58,11 +58,13 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
   const [loading, setLoading] = useState(false)
   const [suppressNativeNotifications, setSuppressNativeNotifications] = useState(false)
   const seenIdsRef = useRef<Set<string>>(new Set())
+  const refreshRef = useRef<(() => Promise<void>) | null>(null)
   const visible = useVisibility()
 
   const auth = use(AuthContext)
   const user = auth?.user ?? null
   const isAuthenticated = auth?.isAuthenticated ?? false
+  const userId = user?.id ?? null
 
   const unreadCount = useMemo(() => notifications.filter((n) => !n.read_at).length, [notifications])
 
@@ -99,7 +101,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
     return () => {
       cancelled = true
     }
-  }, [visible, isAuthenticated, user?.id])
+  }, [visible, isAuthenticated, userId])
 
   const showNativeNotification = useCallback(
     (notification: AppNotification) => {
@@ -183,10 +185,14 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
     }
   }, [emitToastsForNew])
 
+  useEffect(() => {
+    refreshRef.current = refresh
+  }, [refresh])
+
   // polling - only poll when user is authenticated
   useEffect(() => {
     // Don't start polling if user is not authenticated
-    if (!isAuthenticated || !user) {
+    if (!isAuthenticated || !userId) {
       return
     }
 
@@ -203,7 +209,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
     return () => {
       if (timer) window.clearTimeout(timer)
     }
-  }, [pollMs, refresh, visible, isAuthenticated, user])
+  }, [pollMs, refresh, visible, isAuthenticated, userId])
 
   // Reset and refetch when the authenticated user changes
   // This effect handles both initial load and user changes
@@ -211,10 +217,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
     // Clear local state to avoid showing previous user's notifications
     setNotifications([])
     seenIdsRef.current.clear()
-    if (isAuthenticated && user) {
-      void refresh()
+    if (isAuthenticated && userId) {
+      void refreshRef.current?.()
     }
-  }, [isAuthenticated, user, refresh])
+  }, [isAuthenticated, userId])
 
   const markAllReadNow = useCallback(async () => {
     if (unreadCount === 0) return

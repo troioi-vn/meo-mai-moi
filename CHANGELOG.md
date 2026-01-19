@@ -24,7 +24,9 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Fixed
 
-- **Accessibility Improvements**: Added screen-reader labels to notification level icons (Success, Warning, Info, Error) and enhanced the notification bell's aria-label to include unread count for better accessibility.
+- **Doubled Bell Notifications**: Fixed an issue where rehoming flow notifications appeared twice in the bell UI (once for 'in_app' channel and once for 'email' channel). The `bellVisible` scope now correctly filters out non-in-app notification channels from the bell count and list. Marking all notifications as read also now only affects bell-visible records to preserve engagement state for other channels. (Tests: `UnifiedNotificationsBellVisibilityTest` passed.)
+
+- **Accessibility Improvements**: Fixed screen-reader labels to notification level icons (Success, Warning, Info, Error) and enhanced the notification bell's aria-label to include unread count for better accessibility.
 
 - **Duplicate native notifications**: Fixed an issue where bell notifications could appear twice (push + in-page native notification) during flows like rehoming. The `NotificationProvider` now detects an active Service Worker push subscription and suppresses in-page native notifications when device push is enabled; in-app toasts remain unaffected. (See `frontend/src/contexts/NotificationProvider.tsx` — tests: frontend suite passed.)
 

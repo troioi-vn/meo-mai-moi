@@ -24,6 +24,7 @@ class MarkAllNotificationsReadController extends Controller
     public function __invoke()
     {
         Notification::where('user_id', Auth::id())
+            ->bellVisible()
             ->unread()
             ->update(['read_at' => now()]);
 

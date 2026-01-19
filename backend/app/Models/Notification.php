@@ -113,10 +113,17 @@ class Notification extends Model
      */
     public function scopeBellVisible($query)
     {
-        return $query->where(function ($q) {
-            $q->whereNull('type')
-                ->orWhere('type', '!=', NotificationType::EMAIL_VERIFICATION->value);
-        });
+        return $query
+            ->where(function ($q) {
+                $q->whereNull('type')
+                    ->orWhere('type', '!=', NotificationType::EMAIL_VERIFICATION->value);
+            })
+            // The bell UI only represents in-app notifications.
+            // Email notifications are persisted for delivery/audit but must not affect bell count.
+            ->where(function ($q) {
+                $q->whereNull('data->channel')
+                    ->orWhere('data->channel', 'like', 'in_app%');
+            });
     }
 
     /**

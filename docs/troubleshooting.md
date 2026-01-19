@@ -46,7 +46,7 @@ This guide provides solutions to common issues encountered during development.
 
 **Network Errors (ERR_NETWORK / AxiosError)**
 
-- **Symptom**: API requests (especially `/api/notifications`) fail with "Network Error" in the console.
+- **Symptom**: API requests (especially `/api/notifications/unified`) fail with "Network Error" in the console.
 - **Cause**: Adblockers (like uBlock Origin or AdBlock Plus) often block URLs containing the word "notification".
 - **Solution**: Disable your adblocker for `localhost` or the development domain.
 

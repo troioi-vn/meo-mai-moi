@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Notification;
 
+use App\Events\NotificationRead;
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use App\Traits\ApiResponseTrait;
@@ -28,6 +29,18 @@ class MarkAsReadLegacyController extends Controller
         Notification::where('user_id', Auth::id())
             ->unread()
             ->update(['read_at' => now()]);
+
+        try {
+            $unreadBellCount = Notification::query()
+                ->where('user_id', Auth::id())
+                ->bellVisible()
+                ->unread()
+                ->count();
+
+            event(new NotificationRead((int) Auth::id(), null, true, $unreadBellCount));
+        } catch (\Throwable) {
+            // Best-effort: marking read should succeed even if broadcasting fails.
+        }
 
         return $this->sendSuccess(null, 204);
     }

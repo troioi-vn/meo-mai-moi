@@ -26,7 +26,7 @@ describe('MessagesPage', () => {
         return HttpResponse.json({ data: [mockChat] })
       }),
       http.get('http://localhost:3000/api/msg/unread-count', () => {
-        return HttpResponse.json({ data: { unread_chats_count: 1 } })
+        return HttpResponse.json({ data: { unread_message_count: 1 } })
       })
     )
 
@@ -66,7 +66,7 @@ describe('MessagesPage', () => {
         return HttpResponse.json({ success: true })
       }),
       http.get('http://localhost:3000/api/msg/unread-count', () => {
-        return HttpResponse.json({ data: { unread_chats_count: 1 } })
+        return HttpResponse.json({ data: { unread_message_count: 1 } })
       })
     )
 

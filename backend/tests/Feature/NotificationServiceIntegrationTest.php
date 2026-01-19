@@ -131,11 +131,16 @@ class NotificationServiceIntegrationTest extends TestCase
         // Should still create notifications
         $this->assertDatabaseCount('notifications', 2);
 
-        $notification = Notification::where('user_id', $user->id)->first();
+        $notification = Notification::query()
+            ->where('user_id', $user->id)
+            ->where('type', NotificationType::PLACEMENT_REQUEST_RESPONSE->value)
+            ->where('data->channel', 'in_app')
+            ->first();
 
-        // Should handle empty message gracefully
-        $this->assertEquals('', $notification->message);
-        $this->assertNull($notification->link);
+        $this->assertNotNull($notification);
+
+        // Should handle empty data gracefully (message/link may be filled via templates)
+        $this->assertIsString($notification->message);
         $this->assertIsArray($notification->data);
     }
 

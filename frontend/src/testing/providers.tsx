@@ -5,6 +5,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import type { User } from '@/types/user'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { afterEach } from 'vitest'
+import { NotificationsProvider } from '@/contexts/NotificationProvider'
 
 export const AllTheProviders: React.FC<{
   children: React.ReactNode
@@ -22,7 +23,7 @@ export const AllTheProviders: React.FC<{
         initialLoading={initialAuthState?.isLoading}
         skipInitialLoad={true}
       >
-        {children}
+        <NotificationsProvider>{children}</NotificationsProvider>
       </AuthProvider>
     </QueryClientProvider>
   )

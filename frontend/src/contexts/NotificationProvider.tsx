@@ -1,21 +1,25 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useCallback, use, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { getNotifications, markAllRead, markRead } from '@/api/notifications'
+import { getUnifiedNotifications, markAllRead, markRead } from '@/api/notifications'
 import type { AppNotification, NotificationLevel } from '@/types/notification'
 import { AuthContext } from '@/contexts/auth-context'
 import { getServiceWorkerRegistration } from '@/lib/web-push'
+import { getEcho } from '@/lib/echo'
 
 interface NotificationContextValue {
-  notifications: AppNotification[]
-  unreadCount: number
+  bellNotifications: AppNotification[]
+  unreadBellCount: number
+  unreadMessageCount: number
   loading: boolean
-  refresh: () => Promise<void>
-  markRead: (id: string) => Promise<void>
-  markAllReadNow: () => Promise<void>
+  refresh: (opts?: { includeBellNotifications?: boolean }) => Promise<void>
+  markBellRead: (id: string) => Promise<void>
+  markAllBellReadNow: () => Promise<void>
 }
 
 export const NotificationContext = createContext<NotificationContextValue | undefined>(undefined)
+
+const DEFAULT_BELL_LIMIT = 20
 
 const LEVEL_TO_TOAST: Record<
   NotificationLevel,
@@ -50,11 +54,10 @@ function useVisibility(): boolean {
   return visible
 }
 
-export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?: number }> = ({
-  children,
-  pollMs = 30000,
-}) => {
-  const [notifications, setNotifications] = useState<AppNotification[]>([])
+export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [bellNotifications, setBellNotifications] = useState<AppNotification[]>([])
+  const [unreadBellCount, setUnreadBellCount] = useState(0)
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0)
   const [loading, setLoading] = useState(false)
   const [suppressNativeNotifications, setSuppressNativeNotifications] = useState(false)
   const seenIdsRef = useRef<Set<string>>(new Set())
@@ -65,8 +68,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
   const user = auth?.user ?? null
   const isAuthenticated = auth?.isAuthenticated ?? false
   const userId = user?.id ?? null
-
-  const unreadCount = useMemo(() => notifications.filter((n) => !n.read_at).length, [notifications])
+  const isVerified = Boolean(user?.email_verified_at)
 
   // If the user has device push enabled (service worker + push subscription), the service worker
   // will already display OS notifications. Suppress in-page native notifications to avoid doubles.
@@ -168,83 +170,176 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
     [showNativeNotification]
   )
 
-  const refresh = useCallback(async () => {
-    setLoading(true)
-    try {
-      const { data } = await getNotifications({ status: 'all', page: 1 })
-      // de-dup by id, newest first assuming server returns sorted
-      const byId = new Map<string, AppNotification>()
-      for (const n of data) byId.set(n.id, n)
-      const list = Array.from(byId.values())
-      setNotifications(list)
-      emitToastsForNew(list)
-    } catch (error) {
-      console.error('Error fetching notifications:', error)
-    } finally {
-      setLoading(false)
-    }
-  }, [emitToastsForNew])
+  const refresh = useCallback(
+    async (opts?: { includeBellNotifications?: boolean }) => {
+      if (!isAuthenticated || !userId || !isVerified) {
+        setBellNotifications([])
+        setUnreadBellCount(0)
+        setUnreadMessageCount(0)
+        return
+      }
+
+      setLoading(true)
+      try {
+        const includeBellNotifications = opts?.includeBellNotifications ?? false
+
+        const data = await getUnifiedNotifications({
+          limit: DEFAULT_BELL_LIMIT,
+          includeBellNotifications,
+        })
+
+        setUnreadBellCount(data.unread_bell_count)
+        setUnreadMessageCount(data.unread_message_count)
+
+        if (includeBellNotifications) {
+          // de-dup by id, newest first assuming server returns sorted
+          const byId = new Map<string, AppNotification>()
+          for (const n of data.bell_notifications) byId.set(n.id, n)
+          const list = Array.from(byId.values())
+          setBellNotifications(list)
+          emitToastsForNew(list)
+        }
+      } catch (error) {
+        console.error('Error fetching unified notifications:', error)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [emitToastsForNew, isAuthenticated, isVerified, userId]
+  )
+
+  const upsertBellNotification = useCallback((incoming: AppNotification) => {
+    setBellNotifications((prev) => {
+      const next = [incoming, ...prev.filter((n) => n.id !== incoming.id)]
+      return next.slice(0, DEFAULT_BELL_LIMIT)
+    })
+  }, [])
+
+  const hasBellListLoaded = bellNotifications.length > 0
 
   useEffect(() => {
     refreshRef.current = refresh
   }, [refresh])
 
-  // polling - only poll when user is authenticated
+  // Real-time updates via Echo/Reverb (no polling)
   useEffect(() => {
-    // Don't start polling if user is not authenticated
-    if (!isAuthenticated || !userId) {
-      return
-    }
+    if (!isAuthenticated || !user || !isVerified) return
 
-    let timer: number | undefined
-    const tick = () => {
-      if (!visible) {
-        timer = window.setTimeout(tick, pollMs)
-        return
+    const echoInstance = getEcho()
+    if (!echoInstance) return // Reverb not configured
+
+    const channel = echoInstance.private(`App.Models.User.${user.id.toString()}`)
+
+    channel.listen('.App\\Events\\MessageSent', () => {
+      // Fetch counts-only to keep updates lightweight
+      void refresh({ includeBellNotifications: false })
+    })
+
+    channel.listen(
+      '.App\\Events\\NotificationCreated',
+      (event: { notification?: AppNotification; unread_bell_count?: number }) => {
+        if (typeof event.unread_bell_count === 'number') {
+          setUnreadBellCount(event.unread_bell_count)
+        } else {
+          // Fallback: make sure badge moves even if backend doesn't send the count
+          setUnreadBellCount((prev) => prev + 1)
+        }
+
+        if (event.notification) {
+          // Only maintain the in-memory list if the user has opened the /notifications page
+          // (which triggers a list fetch). Otherwise counts-only mode keeps memory light.
+          if (hasBellListLoaded) {
+            upsertBellNotification(event.notification)
+          }
+          emitToastsForNew([event.notification])
+        }
+
+        // Authoritative counts can diverge between sessions (mark read elsewhere).
+        // Keep message count in sync as well by a counts-only refresh.
+        void refresh({ includeBellNotifications: false })
       }
-      void refresh()
-      timer = window.setTimeout(tick, pollMs)
-    }
-    timer = window.setTimeout(tick, pollMs)
+    )
+
+    channel.listen(
+      '.App\\Events\\NotificationRead',
+      (event: { notification_id?: string | null; all?: boolean; unread_bell_count?: number }) => {
+        if (typeof event.unread_bell_count === 'number') {
+          setUnreadBellCount(event.unread_bell_count)
+        }
+
+        if (event.all) {
+          const now = new Date().toISOString()
+          setBellNotifications((prev) => prev.map((n) => (n.read_at ? n : { ...n, read_at: now })))
+          return
+        }
+
+        const id = event.notification_id
+        if (id) {
+          const now = new Date().toISOString()
+          setBellNotifications((prev) =>
+            prev.map((n) => (n.id === id ? { ...n, read_at: n.read_at ?? now } : n))
+          )
+        }
+      }
+    )
+
     return () => {
-      if (timer) window.clearTimeout(timer)
+      channel.stopListening('.App\\Events\\MessageSent')
+      channel.stopListening('.App\\Events\\NotificationCreated')
+      channel.stopListening('.App\\Events\\NotificationRead')
     }
-  }, [pollMs, refresh, visible, isAuthenticated, userId])
+  }, [
+    emitToastsForNew,
+    hasBellListLoaded,
+    isAuthenticated,
+    isVerified,
+    refresh,
+    upsertBellNotification,
+    user,
+  ])
 
   // Reset and refetch when the authenticated user changes
   // This effect handles both initial load and user changes
   useEffect(() => {
     // Clear local state to avoid showing previous user's notifications
-    setNotifications([])
+    setBellNotifications([])
+    setUnreadBellCount(0)
+    setUnreadMessageCount(0)
     seenIdsRef.current.clear()
-    if (isAuthenticated && userId) {
+    if (isAuthenticated && userId && isVerified) {
       void refreshRef.current?.()
     }
-  }, [isAuthenticated, userId])
+  }, [isAuthenticated, isVerified, userId])
 
-  const markAllReadNow = useCallback(async () => {
-    if (unreadCount === 0) return
-    setNotifications((prev) =>
+  const markAllBellReadNow = useCallback(async () => {
+    if (unreadBellCount === 0) return
+    setUnreadBellCount(0)
+    setBellNotifications((prev) =>
       prev.map((n) => (n.read_at ? n : { ...n, read_at: new Date().toISOString() }))
     )
     try {
       await markAllRead()
     } catch {
-      await refresh()
+      await refresh({ includeBellNotifications: true })
     }
-  }, [refresh, unreadCount])
+  }, [refresh, unreadBellCount])
 
-  const markOneRead = useCallback(
+  const markBellRead = useCallback(
     async (id: string) => {
-      setNotifications((prev) =>
-        prev.map((n) =>
+      setBellNotifications((prev) => {
+        const wasUnread = prev.some((n) => n.id === id && !n.read_at)
+        if (wasUnread) {
+          setUnreadBellCount((count) => Math.max(0, count - 1))
+        }
+
+        return prev.map((n) =>
           n.id === id ? { ...n, read_at: n.read_at ?? new Date().toISOString() } : n
         )
-      )
+      })
       try {
         await markRead(id)
       } catch {
-        await refresh()
+        await refresh({ includeBellNotifications: true })
       }
     },
     [refresh]
@@ -252,14 +347,23 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
 
   const value = useMemo<NotificationContextValue>(
     () => ({
-      notifications,
-      unreadCount,
+      bellNotifications,
+      unreadBellCount,
+      unreadMessageCount,
       loading,
       refresh,
-      markRead: markOneRead,
-      markAllReadNow,
+      markBellRead,
+      markAllBellReadNow,
     }),
-    [loading, markAllReadNow, markOneRead, notifications, refresh, unreadCount]
+    [
+      bellNotifications,
+      loading,
+      markAllBellReadNow,
+      markBellRead,
+      refresh,
+      unreadBellCount,
+      unreadMessageCount,
+    ]
   )
 
   return <NotificationContext value={value}>{children}</NotificationContext>
@@ -267,6 +371,6 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; pollMs?
 
 export function useNotifications() {
   const ctx = use(NotificationContext)
-  if (!ctx) throw new Error('useNotifications must be used within NotificationProvider')
+  if (!ctx) throw new Error('useNotifications must be used within NotificationsProvider')
   return ctx
 }

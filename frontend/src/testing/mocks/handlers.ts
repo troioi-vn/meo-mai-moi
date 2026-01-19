@@ -871,11 +871,19 @@ export const handlers = [
       },
     ]
     return [
-      http.get('http://localhost:3000/api/notifications', ({ request }) => {
+      http.get('http://localhost:3000/api/notifications/unified', ({ request }) => {
         const url = new URL(request.url)
-        const status = url.searchParams.get('status')
-        const list = status === 'unread' ? mem.filter((n) => !n.read_at) : mem
-        return HttpResponse.json({ data: list })
+        const limit = Number(url.searchParams.get('limit') ?? '20')
+        const includeBell = (url.searchParams.get('include_bell_notifications') ?? '1') !== '0'
+
+        const bell = includeBell ? mem.slice(0, Number.isFinite(limit) ? limit : 20) : []
+        const unreadBell = mem.filter((n) => !n.read_at).length
+
+        return HttpResponse.json({
+          bell_notifications: bell,
+          unread_bell_count: unreadBell,
+          unread_message_count: 0,
+        })
       }),
       http.post('http://localhost:3000/api/notifications/mark-all-read', async () => {
         const now = new Date().toISOString()

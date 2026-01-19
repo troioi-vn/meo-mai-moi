@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\NotificationType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -108,6 +109,17 @@ class Notification extends Model
     }
 
     /**
+     * Scope for notifications that should appear in the bell UI.
+     */
+    public function scopeBellVisible($query)
+    {
+        return $query->where(function ($q) {
+            $q->whereNull('type')
+                ->orWhere('type', '!=', NotificationType::EMAIL_VERIFICATION->value);
+        });
+    }
+
+    /**
      * Scope for read notifications.
      */
     public function scopeRead($query)
@@ -165,5 +177,54 @@ class Notification extends Model
         if ($this->isRead()) {
             $this->update(['read_at' => null]);
         }
+    }
+
+    public function getBellTitle(): string
+    {
+        $title = data_get($this->data, 'title');
+        if (is_string($title) && trim($title) !== '') {
+            return $title;
+        }
+
+        if (is_string($this->message) && trim($this->message) !== '') {
+            return $this->message;
+        }
+
+        if (is_string($this->type) && $this->type !== '') {
+            $type = NotificationType::tryFrom($this->type);
+            if ($type) {
+                return $type->getLabel();
+            }
+
+            return $this->type_display;
+        }
+
+        return 'Notification';
+    }
+
+    public function getBellBody(): ?string
+    {
+        $body = data_get($this->data, 'body');
+        if ($body === null) {
+            return null;
+        }
+
+        if (is_string($body)) {
+            $body = trim($body);
+
+            return $body === '' ? null : $body;
+        }
+
+        return null;
+    }
+
+    public function getBellLevel(): string
+    {
+        $level = data_get($this->data, 'level');
+        if (is_string($level) && $level !== '') {
+            return $level;
+        }
+
+        return 'info';
     }
 }

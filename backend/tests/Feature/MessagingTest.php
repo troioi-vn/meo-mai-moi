@@ -233,7 +233,7 @@ class MessagingTest extends TestCase
         $response = $this->getJson('/api/msg/unread-count');
 
         $response->assertStatus(200)
-            ->assertJsonPath('data.unread_chats_count', 1);
+            ->assertJsonPath('data.unread_message_count', 1);
     }
 
     public function test_user_can_leave_chat()

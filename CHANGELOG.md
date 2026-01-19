@@ -6,11 +6,21 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
-- **Notifications System**: Implemented a dedicated notifications page with a list view, mark as read functionality, and automatic marking of all notifications as read upon page visit. Added `NotificationList` component for displaying notifications with icons, timestamps, and links. Integrated with existing notification polling and toast system.
+- **Notifications System**: Implemented a dedicated notifications page with a list view, mark as read functionality, and automatic marking of all notifications as read upon page visit. Added `NotificationList` component for displaying notifications with icons, timestamps, and links.
+
+- **Unified notifications API**: Added `GET /api/notifications/unified` (requires `auth:sanctum` + `verified`) returning unread bell + unread message counts, and (optionally) the latest bell notifications.
+
+- **Cross-tab notification read sync**: Added a real-time `NotificationRead` Echo/Reverb event so unread bell badges and read state stay synchronized across multiple open tabs/devices.
 
 ### Changed
 
 - **Notification Bell**: Refactored the notification bell from a dropdown menu to a simple link that navigates to the new notifications page, improving UX by providing a dedicated space for managing notifications.
+
+- **Real-time notification updates**: Removed bell polling and unified real-time updates via Echo/Reverb on the per-user channel (`App.Models.User.{id}`). Nav badges update from counts; the bell list is fetched only when visiting `/notifications`.
+
+- **Unread message badge semantics**: Unread message badge now represents total unread messages (not unread chats). Legacy `GET /api/msg/unread-count` aligns with unified naming via `unread_message_count` (old key kept as deprecated compatibility).
+
+- **Verified-only notification endpoints**: Notifications, notification preferences, and push-subscription endpoints are now grouped under `verified` middleware to match the unified notifications access model.
 
 ### Fixed
 
@@ -20,10 +30,11 @@ All notable changes to this project are documented here, following the [Keep a C
 
 - **Duplicate in-app notification toasts**: Fixed an issue where identical in-app notification toasts could appear twice during multi-step flows (e.g. rehoming) due to effects re-running when the auth user object/callback identities changed. The notification refresh lifecycle is now keyed to a stable `userId` to avoid resetting `seenIdsRef` and re-emitting toasts.
 
+- **Empty notification titles**: Notifications now fall back to a human-readable title derived from the notification type when the stored message/title is empty.
+
 ### Changed
 
 - **OpenAPI Migration Complete**: Completed migration from `@OA` docblock annotations to PHP 8 attributes:
-
   - Migrated all 19 OpenAPI controllers from deprecated docblock format to native PHP 8 attributes
   - Upgraded `darkaonline/l5-swagger` from v9.0 to v10.0
   - **Removed dependency**: `doctrine/annotations` (marked abandoned) is no longer required
@@ -62,7 +73,6 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Added
 
 - **OAuth User Password Management**:
-
   - **`has_password` Flag**: Added `has_password` boolean to user profile response to indicate whether a user has a password set (relevant for OAuth/SSO users)
   - **Smart Password UI**: Settings page now shows context-aware password management:
     - Users with a password see the existing "Change password" dialog
@@ -78,7 +88,6 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Added
 
 - **Admin Panel Pet Relationships Management**:
-
   - **Full Relationship Representation**: Updated the "View Pet" page in admin panel to display all PetRelationships records (including expired ones) instead of just showing the creator as "Owner"
   - **RelationshipsRelationManager**: New relation manager for managing all pet relationships (Owner, Foster, Sitter, Editor, Viewer) with full CRUD operations
   - **Transfer Ownership**: Added bulk action to transfer ownership from current owners to a new owner with proper end/start dates
@@ -90,16 +99,13 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Added
 
 - **Placement Request System Complete Migration (Phase 4)**:
-
   - **New Type System**: Introduced comprehensive type definitions in `frontend/src/types/placement.ts` for the new placement request data model:
-
     - `PlacementRequestResponse` - Helper responses to placement requests with status lifecycle (responded → accepted/rejected/cancelled)
     - `TransferRequest` - Physical handover confirmation objects for accepted responses
     - `PlacementRequestStatus` and `PlacementResponseStatus` enums with proper status transitions
     - Helper functions for formatting, status checking, and UI display
 
   - **API Layer Overhaul**: Complete replacement of legacy transfer_request-based APIs with clean response-based endpoints:
-
     - `getPlacementResponses()` - List responses for owner view
     - `submitPlacementResponse()` - Submit new helper response
     - `acceptPlacementResponse()` - Owner accepts response (creates TransferRequest for non-pet_sitting)
@@ -109,7 +115,6 @@ All notable changes to this project are documented here, following the [Keep a C
     - `rejectTransfer()` - Owner cancels accepted response
 
   - **Frontend Component Migration**: Complete UI migration from transfer_requests to responses:
-
     - **Owner View**: `PlacementRequestsSection.tsx` now shows responses with accept/reject actions and pending_transfer status
     - **Helper View**: `PlacementResponseSection.tsx` handles all response states (pending, accepted, active)
     - **Public Profile**: `PublicPlacementRequestSection.tsx` includes handover confirmation for accepted helpers
@@ -117,7 +122,6 @@ All notable changes to this project are documented here, following the [Keep a C
     - **Responses Drawer**: Redesigned to show response details with message, timestamps, and profile access
 
   - **Backend Resource Updates**:
-
     - `PlacementRequestResponseResource.php` now includes `transfer_request` when response is accepted
     - New `TransferRequestResource.php` for clean transfer request serialization
     - Updated controllers to load both responses and transfer_requests relationships
@@ -128,9 +132,7 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Added
 
 - **Notification System Complete Overhaul**:
-
   - **Restructured Notification Types**: Complete reorganization of notification types with clearer groupings:
-
     - `placement_owner`: Notifications for pet owners about their placement requests (new responses, cancellations, transfer confirmations)
     - `placement_helper`: Notifications for helpers about their responses (acceptance, rejection, placement ending)
     - `pet_reminders`: Pet health reminders (vaccinations, birthdays)
@@ -140,14 +142,12 @@ All notable changes to this project are documented here, following the [Keep a C
   - **Improved Notification Labels & Descriptions**: Each notification type now has human-readable labels and detailed descriptions for better user understanding
 
   - **Enhanced Frontend Notification Settings Page**: Complete UI redesign with grouped, card-based layout:
-
     - Notifications grouped by category with icons (Heart for placement, Bell for reminders, etc.)
     - Each notification shows description explaining when it's triggered
     - Responsive design with proper mobile support
     - Visual hierarchy with group headers and consistent styling
 
   - **Context-Aware Notification Messages**: All placement-related notifications now provide clear, actionable messages:
-
     - **Owner receives**: "Someone wants to help with [pet name]. Review their response!"
     - **Helper receives**: "Great news! Your response was accepted. Please confirm when you receive the pet." (with handover context)
     - **Helper receives**: "Your offer for [pet] was declined. Thank you for your interest in helping!" (gentle rejection)
@@ -156,13 +156,11 @@ All notable changes to this project are documented here, following the [Keep a C
     - **Helper receives**: "The placement for [pet] has ended. Thank you for your help!" (gracious completion)
 
   - **Proper Notification Links**: Each notification links to the most relevant page:
-
     - Owner notifications → Pet profile page (`/pets/:id`)
     - Helper notifications → Public pet profile page (`/pets/:id/public`) for ongoing placements
     - Placement ended notifications → Requests page for browsing new opportunities
 
   - **Email Template Updates**: Created comprehensive email templates for all new notification types with:
-
     - Professional styling consistent with app branding
     - Clear call-to-action buttons linking to relevant pages
     - Contextual information about the pet and placement details
@@ -179,7 +177,6 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Added
 
 - **E2E Testing Infrastructure**:
-
   - Added comprehensive end-to-end test suite for pet creation functionality
   - Created `pet-creation.spec.ts` with full coverage of the pet creation user flow
   - Fixed global setup health check to work with actual backend endpoints (removed dependency on `/api/health`)
@@ -193,7 +190,6 @@ All notable changes to this project are documented here, following the [Keep a C
   - Tests validate complete pet creation workflow: form submission, backend processing, and UI updates
 
 - **Placement Finalization & Relationship Updates**:
-
   - Implemented automatic relationship updates upon transfer confirmation:
     - **Permanent**: Ends former owner's relationship, creates new owner relationship for helper, and grants viewer access to former owner.
     - **Foster**: Creates new foster relationship for helper starting at confirmation time.
@@ -235,7 +231,6 @@ All notable changes to this project are documented here, following the [Keep a C
 - Fixed global typo in `PlacementRequestType` enum (`foster_payed` -> `foster_paid`).
 - Fixed API contract mismatch caused by the typo.
 - Fixed 41 ESLint errors across the frontend (e2e tests and multiple components). Key files updated include:
-
   - `frontend/e2e/pet-creation.spec.ts` (template literal numeric values made explicit)
   - `frontend/src/api/placement.ts` (added Axios response generics to avoid `any`)
   - `frontend/src/components/messaging/ChatWindow.tsx` (optional chaining improvements)
@@ -343,7 +338,6 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Backend**: Fixed type mismatch in password reset email route by using `SendPasswordResetLinkRequest` instead of generic `Request` in `backend/routes/api.php`.
 - **Tests**: Updated `CreatePetPage` test to reflect changes in location fields visibility.
 - **E2E Testing and Playwright Configuration Improvements**:
-
   - Fixed Playwright env file loading to correctly prioritize `frontend/` directory env files when tests are run from workspace root
   - Improved e2e-test.sh to detect existing services and avoid redundant startup (checks ports 8000 and 8025)
   - Added prerequisite validation in e2e-test.sh (docker, curl, npx commands)
@@ -354,7 +348,6 @@ All notable changes to this project are documented here, following the [Keep a C
   - Added `SKIP_E2E_SETUP=true` flag to use e2e-test.sh setup instead of Playwright's auto-setup
 
 - **E2E Test Suite Refactoring and New Utilities**:
-
   - Created shared `frontend/e2e/utils/app.ts` with common test utilities: `gotoApp()`, `login()`, `openUserMenu()`
   - Refactored all e2e tests to use shared utilities instead of duplicated test helpers
   - Updated auth.spec.ts to use shared utilities and improved login flow testing
@@ -363,20 +356,17 @@ All notable changes to this project are documented here, following the [Keep a C
   - Improved MailHog client with environment-driven API URL configuration
 
 - **Frontend Package Scripts and Dependencies**:
-
   - Updated e2e and e2e:ui scripts to use e2e-test.sh wrapper for proper environment setup
   - Added e2e:direct script for direct Playwright execution (useful when services are already running)
   - Removed test:e2e:keep script in favor of e2e-test.sh --keep-running approach
   - Fixed Playwright config comment to reflect new default baseURL (http://localhost:8000 instead of localhost:5173)
 
 - **Backend Authentication Rate Limiting**:
-
   - Enhanced FortifyServiceProvider to allow higher login/registration rate limits in dev/testing environments
   - Development environments (local, development, e2e, testing) now allow 100 login attempts per minute (up from 5)
   - Testing environments allow 10 registration attempts per minute for easier test execution
 
 - **E2E Test Authentication Issues**:
-
   - Fixed authentication redirect loops preventing access to public pages (`/register`, `/login`, etc.)
   - Modified `AuthContext` to skip user loading on public pages, preventing unnecessary 401 responses
   - Updated unauthorized handler to exclude public paths from login redirects
@@ -393,7 +383,6 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Added
 
 - **E2E Email Testing Infrastructure**:
-
   - Complete end-to-end testing setup with MailHog for email verification flows
   - `E2EEmailConfigurationSeeder` automatically configures MailHog as active email provider for testing
   - `E2ETestingSeeder` orchestrates all necessary seeders for complete test environment
@@ -415,7 +404,6 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Requests page filters**:
   - Added City filter with autocomplete (country-dependent, no create) to `/requests`.
 - **Helper profile pets section**:
-
   - Helper profile view now lists pets linked via placement requests, showing request type plus placement and transfer statuses with links to pet pages.
   - `helper-profiles/{id}` API now eager-loads transfer requests with related placement requests and pets.
   - Added unit tests for the new Pets section (linked pets and empty state).
@@ -430,7 +418,6 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Unauthorized handling**:
   - Any 401 API response now clears auth state and redirects to `/login?redirect=<path>` using shared axios interceptors, preventing stale sessions and error screens.
 - **Helper profile updates**:
-
   - Updating a helper profile no longer requires sending `pet_type_ids` when only changing location/contact details.
 
 - **Frontend pages restructuring**:
@@ -440,16 +427,13 @@ All notable changes to this project are documented here, following the [Keep a C
   - Separated pet creation and editing into dedicated pages (`CreatePetPage` and `EditPetPage`) with a shared `PetFormSection`.
   - Renamed edit-focused tests to `EditPetPage.*.test.tsx` to align with the new page.
 - **Requests page visibility**:
-
   - Pets stay visible on the `/requests` page when their placement requests are in progress (`fulfilled`, `pending_transfer`, `active`, `finalized`) so accepted helpers can still access the public pet page and continue the flow.
 
 - **Placement request completion flow**:
-
   - After creating a placement request, owners are redirected to `/requests?sort=newest` so they land on the latest-first view.
   - The requests page now syncs the created-date sort with the `?sort=` query param, defaulting to `newest` and preserving user selection in the URL.
 
 - **Placement Request Auto-Rejection Timing**:
-
   - Moved auto-rejection of other pending helper offers from the "Accept Response" step to the "Complete Handover" step
   - Previously: Other offers were rejected when the owner accepted a response (PlacementRequest → `fulfilled`)
   - Now: Other offers remain pending until the handover is completed and status changes to `active` (fostering) or `finalized` (permanent rehoming)
@@ -478,7 +462,6 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Added
 
 - **Per-Pet Viewer/Editor Access Lists**:
-
   - Pets now support explicit “Users who can see this pet” and “Users who can edit this pet” lists
   - Backed by new pivot tables `pet_viewers` and `pet_editors` with model relationships and policy updates
   - Create/Update pet APIs accept `viewer_user_ids` and `editor_user_ids` to manage these lists
@@ -486,7 +469,6 @@ All notable changes to this project are documented here, following the [Keep a C
   - Tests: `PetViewerEditorAccessTest` covers creation, viewing, and editing permissions
 
 - **Placement Response Modal Improvements**:
-
   - Removed "Relationship Type" dropdown - now automatically derived from placement request type
   - Auto-prefill "Helper Profile" dropdown when user has only one profile
   - Added validation to compare request type against helper profile's allowed request types
@@ -500,7 +482,6 @@ All notable changes to this project are documented here, following the [Keep a C
     - `permanent` → Permanent Foster
 
 - **Placement Request Status Flow Enhancement**:
-
   - Implemented complete status lifecycle for placement requests:
     - `open` → `fulfilled` (when Owner accepts Helper's response)
     - `fulfilled` → `pending_transfer` (when Helper clicks "Confirm Rehoming")
@@ -514,7 +495,6 @@ All notable changes to this project are documented here, following the [Keep a C
   - Comprehensive status flow documentation updated in `docs/placement-request-lifecycle.md`
 
 - **Helper Profile Pages UI Modernization**:
-
   - Updated `HelperProfilePage` (list view) with modern card-based design matching Pet Profile patterns
   - Updated `HelperProfileViewPage` with consistent navigation, status badges, and organized card sections
   - Updated `CreateHelperProfilePage` and `HelperProfileEditPage` with consistent navigation headers
@@ -522,7 +502,6 @@ All notable changes to this project are documented here, following the [Keep a C
   - Better visual hierarchy with icons, badges, and consistent spacing
 
 - **Helper Profile Request Types & Visibility**:
-
   - Removed legacy boolean fields `is_public`, `can_foster`, and `can_adopt` from helper profiles.
   - Added new `request_types` array field on `helper_profiles` backed by the `PlacementRequestType` enum (`foster_paid`, `foster_free`, `permanent`).
   - Enforced validation so that helper profiles must have at least one `request_type` selected on create and update.
@@ -535,7 +514,6 @@ All notable changes to this project are documented here, following the [Keep a C
   - Updated helper profile listing and show endpoints to respect the new visibility logic.
 
 - **Contact Info Field for Helper Profiles**:
-
   - Added new `contact_info` multiline text field to helper profiles, positioned after the phone number field
   - Helpers can add additional contact information (e.g., Telegram, Zalo, WhatsApp, preferred contact times)
   - Field includes a help icon with tooltip explaining that this info and phone number will be visible to pet owners when responding to placement requests
@@ -547,7 +525,6 @@ All notable changes to this project are documented here, following the [Keep a C
   - Updated documentation: new `docs/helper-profiles.md` with complete field reference
 
 - **Public Pet Profile Endpoint and UI**:
-
   - New `/api/pets/{id}/public` endpoint for accessing pet profiles publicly (for guests and non-owners)
   - Public profiles are accessible for:
     - Pets with status "lost" (always publicly viewable)
@@ -565,7 +542,6 @@ All notable changes to this project are documented here, following the [Keep a C
   - Test coverage: `PublicPetProfileTest.php` and `PetPublicProfilePage.test.tsx` with 13+ test cases
 
 - **Login Prompt for Placement Requests**:
-
   - "Respond" button on pet cards is now visible to all users (not just logged-in users)
   - Non-authenticated users clicking "Respond" see a modal with "Please login to respond" message
   - Modal includes "Login" and "Cancel" buttons
@@ -574,7 +550,6 @@ All notable changes to this project are documented here, following the [Keep a C
   - Existing login redirect functionality already supported this pattern with security validation
 
 - **Enhanced Filters on Requests Page**:
-
   - Added **Request Type filter** with options: All Request Types, Foster (Paid), Foster (Free), Permanent
   - Added **Country filter** dynamically populated from available pets, sorted alphabetically with human-readable country names
   - Improved **date filters** with comparison operators:
@@ -605,7 +580,6 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Fixed
 
 - **Pet Cards Visibility on Requests Page**:
-
   - Made `/api/pet-types` endpoint public so non-logged-in users can view Pet Cards on the `/requests` page
   - Previously, the endpoint was protected by `auth:sanctum` middleware, causing the page to fail for unauthenticated users
   - Moved `/api/pet-types` route to public routes section to allow access without authentication
@@ -619,7 +593,6 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Added
 
 - **Pet Sex Field**:
-
   - Added `sex` field to Pet model with options: Male, Female, and Not Specified (default)
   - Sex field available in pet creation (`/pets/create`) and edit (`/pets/:id/edit`) forms
   - Sex displayed on pet profile page (`/pets/:id`) and pet cards
@@ -631,7 +604,6 @@ All notable changes to this project are documented here, following the [Keep a C
   - Factory and seeders updated to include sex values
 
 - **Pet Categories System**:
-
   - Category model for tagging pets with breed, type, and other characteristics
   - Categories are pet-type-specific (cats have different categories than dogs)
   - Dual-mode creation: administrators create via admin panel, users create on-demand during pet creation/editing
@@ -647,7 +619,6 @@ All notable changes to this project are documented here, following the [Keep a C
   - Comprehensive documentation at `/docs/categories.md`
 
 - **Standardized Location Fields**:
-
   - Pet and HelperProfile models now use consistent location fields: Country (required), State, City, and Address (optional)
   - Country field uses ISO 3166-1 alpha-2 codes (2-character country codes, e.g., 'VN' for Vietnam)
   - New `CountrySelect` component with searchable dropdown featuring all countries (using `i18n-iso-countries` package)
@@ -656,7 +627,6 @@ All notable changes to this project are documented here, following the [Keep a C
   - Email templates updated to display structured location format
 
 - **Placement Terms & Conditions System**:
-
   - New placement terms document stored in `backend/resources/markdown/placement-terms.md`
   - API endpoint `GET /api/legal/placement-terms` to serve terms with version tracking
   - PlacementTermsDialog component displaying terms in a scrollable modal
@@ -666,7 +636,6 @@ All notable changes to this project are documented here, following the [Keep a C
   - Version dating based on file modification time with 1-hour HTTP cache
 
 - **Placement Request Enhancements**:
-
   - Public profile visibility warning checkbox - users must acknowledge pet profile will become publicly visible
   - Date validation: Pick-up date cannot be in the past (today is allowed)
   - Date validation: Drop-off date must be on or after pick-up date
@@ -693,7 +662,6 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Changed
 
 - **Pet Model Schema**:
-
   - Removed `breed` field from Pet model (replaced by Categories system for more flexible tagging)
   - Pet breed information can now be stored using the Categories system (e.g., "Siamese", "Persian" categories)
   - Pet profile displays now show pet type name instead of breed
@@ -702,7 +670,6 @@ All notable changes to this project are documented here, following the [Keep a C
   - Admin panel (Filament) removed breed field from pet form and table
 
 - **Placement Request Display Refactor**:
-
   - PlacementRequestsSection now uses improved card-based styling with badges for request types
   - Request types formatted as human-readable labels: "Foster (Free)", "Foster (Paid)", "Permanent Adoption"
   - Request type badges color-coded: default for permanent, secondary for fostering, outline for others
@@ -712,7 +679,6 @@ All notable changes to this project are documented here, following the [Keep a C
   - Improved spacing and visual consistency across request cards
 
 - **Helper Profiles Page Redesign**:
-
   - Changed from table layout to modern card-based design matching app's design system
   - Added back button navigation consistent with other pages
   - Location displayed with MapPin icon showing "City, State" format

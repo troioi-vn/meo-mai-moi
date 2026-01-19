@@ -8,8 +8,12 @@ import { HttpResponse, http } from 'msw'
 describe('MainNav', () => {
   beforeEach(() => {
     server.use(
-      http.get('http://localhost:3000/api/notifications', () => {
-        return HttpResponse.json({ data: [] })
+      http.get('http://localhost:3000/api/notifications/unified', () => {
+        return HttpResponse.json({
+          bell_notifications: [],
+          unread_bell_count: 0,
+          unread_message_count: 0,
+        })
       }),
       http.get('http://localhost:3000/api/impersonation/status', () => {
         return HttpResponse.json({ is_impersonating: false })

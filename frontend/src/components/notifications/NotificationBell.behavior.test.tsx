@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import { NotificationProvider } from '@/contexts/NotificationProvider'
+import { NotificationsProvider, useNotifications } from '@/contexts/NotificationProvider'
 import { NotificationBell } from './NotificationBell'
 import { server } from '@/testing/mocks/server'
 import { http, HttpResponse } from 'msw'
@@ -12,13 +12,23 @@ const mockUser = {
   id: 1,
   name: 'Test User',
   email: 'test@example.com',
+  email_verified_at: new Date().toISOString(),
 }
 
-function renderWithProviders(ui: React.ReactNode, { pollMs = 30_000 } = {}) {
+function RefreshControl() {
+  const { refresh } = useNotifications()
+  return (
+    <button type="button" onClick={() => void refresh({ includeBellNotifications: true })}>
+      Refresh
+    </button>
+  )
+}
+
+function renderWithProviders(ui: React.ReactNode) {
   return render(
     <MemoryRouter>
       <TestAuthProvider mockValues={{ user: mockUser, isAuthenticated: true }}>
-        <NotificationProvider pollMs={pollMs}>{ui}</NotificationProvider>
+        <NotificationsProvider>{ui}</NotificationsProvider>
       </TestAuthProvider>
     </MemoryRouter>
   )
@@ -28,9 +38,9 @@ describe('NotificationBell behavior', () => {
   it('shows unread badge and links to notifications page', async () => {
     // Ensure API returns two unread
     server.use(
-      http.get('http://localhost:3000/api/notifications', () => {
+      http.get('http://localhost:3000/api/notifications/unified', () => {
         return HttpResponse.json({
-          data: [
+          bell_notifications: [
             {
               id: 'a',
               level: 'info',
@@ -50,6 +60,8 @@ describe('NotificationBell behavior', () => {
               read_at: null,
             },
           ],
+          unread_bell_count: 2,
+          unread_message_count: 0,
         })
       })
     )
@@ -63,18 +75,22 @@ describe('NotificationBell behavior', () => {
     expect(link).toHaveAttribute('href', '/notifications')
   })
 
-  it('shows a toast when a new notification arrives via polling', async () => {
+  it('shows a toast when a new notification is fetched on refresh', async () => {
     const calls: number[] = []
     server.use(
-      http.get('http://localhost:3000/api/notifications', () => {
+      http.get('http://localhost:3000/api/notifications/unified', () => {
         calls.push(1)
         // First call: nothing → no initial toast
         if (calls.length === 1) {
-          return HttpResponse.json({ data: [] })
+          return HttpResponse.json({
+            bell_notifications: [],
+            unread_bell_count: 0,
+            unread_message_count: 0,
+          })
         }
         // Second call: one new unread
         return HttpResponse.json({
-          data: [
+          bell_notifications: [
             {
               id: 'n-new',
               level: 'warning',
@@ -85,6 +101,8 @@ describe('NotificationBell behavior', () => {
               read_at: null,
             },
           ],
+          unread_bell_count: 1,
+          unread_message_count: 0,
         })
       })
     )
@@ -92,9 +110,23 @@ describe('NotificationBell behavior', () => {
     // Reset toast mocks
     vi.clearAllMocks()
 
-    renderWithProviders(<NotificationBell />, { pollMs: 50 })
+    renderWithProviders(
+      <>
+        <NotificationBell />
+        <RefreshControl />
+      </>
+    )
 
-    // Wait until the second poll triggers and toast is emitted
+    // Wait for initial empty fetch to settle
+    await waitFor(() => {
+      const link = screen.getByRole('link', { name: /open notifications/i })
+      expect(within(link).queryByText('1')).not.toBeInTheDocument()
+    })
+
+    // Trigger a manual refresh (simulates what the Echo event handler would do)
+    await screen.findByRole('button', { name: 'Refresh' }).then((btn) => btn.click())
+
+    // Wait until the second fetch triggers and toast is emitted
     await waitFor(() => {
       // Any variant is fine, but warning should be called based on level mapping
       // @ts-expect-error - Vitest mock type

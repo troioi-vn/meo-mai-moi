@@ -8,10 +8,10 @@ import { UserMenu } from '@/components/user/UserMenu'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ImpersonationIndicator } from '@/components/layout/ImpersonationBanner'
 import { AdminPanelLink } from '@/components/user/AdminPanelLink'
-import { useUnreadChatsCount } from '@/hooks/useMessaging'
+import { useNotifications } from '@/contexts/NotificationProvider'
 
 const MessagesLink: React.FC = () => {
-  const { count } = useUnreadChatsCount()
+  const { unreadMessageCount } = useNotifications()
 
   return (
     <Link
@@ -21,9 +21,9 @@ const MessagesLink: React.FC = () => {
     >
       <MessageCircle className="size-6" />
       <span className="sr-only">Messages</span>
-      {count > 0 && (
+      {unreadMessageCount > 0 && (
         <span className="absolute -right-1 -top-1 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] h-4 min-w-4 px-1 leading-none">
-          {count > 9 ? '9+' : String(count)}
+          {unreadMessageCount > 9 ? '9+' : String(unreadMessageCount)}
         </span>
       )}
     </Link>

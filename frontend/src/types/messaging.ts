@@ -63,5 +63,5 @@ export interface SendMessagePayload {
 }
 
 export interface UnreadCountResponse {
-  unread_chats_count: number
+  unread_message_count: number
 }

@@ -49,9 +49,9 @@ function timeAgo(iso: string) {
 }
 
 export function NotificationList() {
-  const { notifications, loading, markRead } = useNotifications()
+  const { bellNotifications, loading, markBellRead } = useNotifications()
 
-  if (loading && notifications.length === 0) {
+  if (loading && bellNotifications.length === 0) {
     return (
       <div className="rounded-lg border bg-card p-8 text-center text-sm text-muted-foreground">
         Loading notifications...
@@ -59,7 +59,7 @@ export function NotificationList() {
     )
   }
 
-  if (notifications.length === 0) {
+  if (bellNotifications.length === 0) {
     return (
       <div className="rounded-lg border bg-card p-8 text-center text-sm text-muted-foreground">
         No notifications
@@ -69,7 +69,7 @@ export function NotificationList() {
 
   return (
     <div className="rounded-lg border bg-card divide-y">
-      {notifications.map((n) => {
+      {bellNotifications.map((n) => {
         const baseClass = `flex items-start gap-3 px-4 py-3 transition-colors ${
           n.read_at ? '' : 'bg-accent/40'
         }`
@@ -94,7 +94,7 @@ export function NotificationList() {
               key={n.id}
               to={n.url}
               className={`${baseClass} hover:bg-accent/60`}
-              onClick={() => void markRead(n.id)}
+              onClick={() => void markBellRead(n.id)}
             >
               {content}
             </Link>
@@ -106,7 +106,7 @@ export function NotificationList() {
             key={n.id}
             type="button"
             className={`${baseClass} w-full text-left hover:bg-accent/60`}
-            onClick={() => void markRead(n.id)}
+            onClick={() => void markBellRead(n.id)}
           >
             {content}
           </button>

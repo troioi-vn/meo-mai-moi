@@ -1,6 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { useChatList, useChat, useUnreadChatsCount } from './useMessaging'
+import { useChatList, useChat } from './useMessaging'
 import { server } from '@/testing/mocks/server'
 import { HttpResponse, http } from 'msw'
 import { mockChat, mockChatMessage } from '@/testing/mocks/data/messaging'
@@ -83,20 +83,5 @@ describe('useMessaging hooks', () => {
     })
   })
 
-  describe('useUnreadChatsCount', () => {
-    it('fetches and returns unread count', async () => {
-      server.use(
-        http.get('http://localhost:3000/api/msg/unread-count', () => {
-          return HttpResponse.json({ data: { unread_chats_count: 5 } })
-        })
-      )
-
-      const { result } = renderHook(() => useUnreadChatsCount())
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false)
-        expect(result.current.count).toBe(5)
-      })
-    })
-  })
+  // Nav badge unread count is covered by unified notifications context tests.
 })

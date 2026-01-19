@@ -45,6 +45,7 @@ use App\Http\Controllers\Messaging\MarkChatReadController;
 use App\Http\Controllers\Messaging\ShowChatController;
 use App\Http\Controllers\Messaging\StoreChatController;
 use App\Http\Controllers\Messaging\StoreMessageController;
+use App\Http\Controllers\Notification\GetUnifiedNotificationsController;
 use App\Http\Controllers\Notification\ListNotificationsController;
 use App\Http\Controllers\Notification\MarkAllNotificationsReadController;
 use App\Http\Controllers\Notification\MarkAsReadLegacyController;
@@ -167,22 +168,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/email/configuration-status', [EmailConfigurationStatusController::class, 'status']);
 });
 
-// Routes that don't require email verification (notifications, email verification management)
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/notifications', ListNotificationsController::class);
-    Route::post('/notifications/mark-as-read', MarkAsReadLegacyController::class); // legacy alias
-    Route::post('/notifications/mark-all-read', MarkAllNotificationsReadController::class);
-    Route::patch('/notifications/{notification}/read', MarkNotificationReadController::class);
-
-    // Push subscriptions
-    Route::get('/push-subscriptions', ListPushSubscriptionsController::class);
-    Route::post('/push-subscriptions', StorePushSubscriptionController::class);
-    Route::delete('/push-subscriptions', DeletePushSubscriptionController::class);
-
-    // Notification preferences
-    Route::get('/notification-preferences', GetNotificationPreferencesController::class);
-    Route::put('/notification-preferences', UpdateNotificationPreferencesController::class);
-});
+// Authenticated routes that don't require email verification (verification management)
 
 // Auth routes - only checkEmail is custom, rest handled by Fortify
 Route::post('/check-email', CheckEmailController::class)->middleware('throttle:20,1');
@@ -198,6 +184,24 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/user', function (Request $request) {
         return response()->json(['data' => $request->user()]);
     });
+
+    // Unified notifications (requires email verification)
+    Route::get('/notifications/unified', GetUnifiedNotificationsController::class);
+
+    // Notifications
+    Route::get('/notifications', ListNotificationsController::class);
+    Route::post('/notifications/mark-as-read', MarkAsReadLegacyController::class); // legacy alias
+    Route::post('/notifications/mark-all-read', MarkAllNotificationsReadController::class);
+    Route::patch('/notifications/{notification}/read', MarkNotificationReadController::class);
+
+    // Push subscriptions
+    Route::get('/push-subscriptions', ListPushSubscriptionsController::class);
+    Route::post('/push-subscriptions', StorePushSubscriptionController::class);
+    Route::delete('/push-subscriptions', DeletePushSubscriptionController::class);
+
+    // Notification preferences
+    Route::get('/notification-preferences', GetNotificationPreferencesController::class);
+    Route::put('/notification-preferences', UpdateNotificationPreferencesController::class);
 
     // Invitation management routes (authenticated with rate limiting + validation)
     Route::get('/invitations', ListInvitationsController::class);

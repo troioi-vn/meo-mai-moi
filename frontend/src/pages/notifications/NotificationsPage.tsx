@@ -4,16 +4,21 @@ import { Button } from '@/components/ui/button'
 import { useNotifications } from '@/contexts/NotificationProvider'
 
 export default function NotificationsPage() {
-  const { unreadCount, markAllReadNow } = useNotifications()
+  const { unreadBellCount, markAllBellReadNow, refresh } = useNotifications()
   const hasMarkedRef = useRef(false)
 
   useEffect(() => {
+    // Load the bell notifications list only when the user opens this page.
+    void refresh({ includeBellNotifications: true })
+  }, [refresh])
+
+  useEffect(() => {
     // Only mark existing notifications as read once on initial page load
-    if (!hasMarkedRef.current && unreadCount > 0) {
-      void markAllReadNow()
+    if (!hasMarkedRef.current && unreadBellCount > 0) {
+      void markAllBellReadNow()
       hasMarkedRef.current = true
     }
-  }, [markAllReadNow, unreadCount])
+  }, [markAllBellReadNow, unreadBellCount])
 
   return (
     <div className="min-h-screen bg-background">
@@ -24,8 +29,8 @@ export default function NotificationsPage() {
           </div>
           <Button
             variant="outline"
-            onClick={() => void markAllReadNow()}
-            disabled={unreadCount === 0}
+            onClick={() => void markAllBellReadNow()}
+            disabled={unreadBellCount === 0}
           >
             Mark all as read
           </Button>

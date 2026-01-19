@@ -8,7 +8,6 @@ import {
   sendMessage,
   markChatRead,
   createDirectChat,
-  getUnreadChatsCount,
 } from '@/api/messaging'
 import type { Chat, ChatMessage } from '@/types/messaging'
 
@@ -189,59 +188,6 @@ export function useChat(chatId: number | null) {
     send,
     refresh: loadChat,
   }
-}
-
-/**
- * Hook for unread chats count (for nav badge)
- */
-export function useUnreadChatsCount() {
-  const [count, setCount] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const { isAuthenticated, user } = useAuth()
-
-  const refresh = useCallback(async () => {
-    if (!isAuthenticated) {
-      setCount(0)
-      return
-    }
-
-    try {
-      const unreadCount = await getUnreadChatsCount()
-      setCount(unreadCount)
-    } catch (err) {
-      console.error('Failed to fetch unread count:', err)
-    } finally {
-      setLoading(false)
-    }
-  }, [isAuthenticated])
-
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      void refresh()
-    } else {
-      setCount(0)
-      setLoading(false)
-    }
-  }, [isAuthenticated, user, refresh])
-
-  // Listen for updates via Echo (only if configured)
-  useEffect(() => {
-    if (!isAuthenticated || !user) return
-
-    const echoInstance = getEcho()
-    if (!echoInstance) return // Reverb not configured
-
-    const channel = echoInstance.private(`App.Models.User.${user.id.toString()}`)
-    channel.listen('.App\\Events\\MessageSent', () => {
-      void refresh()
-    })
-
-    return () => {
-      channel.stopListening('.App\\Events\\MessageSent')
-    }
-  }, [isAuthenticated, user, refresh])
-
-  return { count, loading, refresh }
 }
 
 /**

@@ -6,7 +6,7 @@ import { ThemeProvider } from './components/shared/theme-provider'
 import './index.css'
 // Note: Echo is lazy-loaded in useMessaging hook to avoid WebSocket errors when Reverb isn't running
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { NotificationProvider } from './contexts/NotificationProvider'
+import { NotificationsProvider } from './contexts/NotificationProvider'
 import { registerSW } from 'virtual:pwa-register'
 
 const queryClient = new QueryClient()
@@ -84,9 +84,9 @@ if (rootElement) {
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <AuthProvider>
           <QueryClientProvider client={queryClient}>
-            <NotificationProvider>
+            <NotificationsProvider>
               <App />
-            </NotificationProvider>
+            </NotificationsProvider>
           </QueryClientProvider>
         </AuthProvider>
       </ThemeProvider>

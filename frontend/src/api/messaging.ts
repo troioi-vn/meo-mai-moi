@@ -86,11 +86,11 @@ export async function deleteMessage(messageId: number): Promise<void> {
 }
 
 /**
- * Get unread chats count (for nav badge)
+ * Get unread message count (legacy endpoint)
  */
 export async function getUnreadChatsCount(): Promise<number> {
   const res = await api.get<{ data: UnreadCountResponse }>('/msg/unread-count')
-  return res.data.data.unread_chats_count
+  return res.data.data.unread_message_count ?? res.data.data.unread_chats_count ?? 0
 }
 
 /**

@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Events\NotificationCreated;
 use App\Models\Notification;
 use App\Services\Notifications\WebPushDispatcher;
 use Illuminate\Support\Facades\Log;
@@ -25,6 +26,19 @@ class NotificationObserver
             ]);
 
             return;
+        }
+
+        // Real-time (Echo/Reverb) updates are only available to verified users.
+        if ($user->hasVerifiedEmail()) {
+            try {
+                event(new NotificationCreated($notification));
+            } catch (\Throwable $e) {
+                Log::warning('Failed to broadcast notification created event', [
+                    'notification_id' => $notification->id,
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         try {

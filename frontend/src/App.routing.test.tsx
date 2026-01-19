@@ -36,9 +36,13 @@ beforeEach(() => {
     http.get('http://localhost:3000/api/user', () => {
       return HttpResponse.json({ data: mockUser })
     }),
-    // Mock for notifications
-    http.get('http://localhost:3000/api/notifications', () => {
-      return HttpResponse.json({ data: { notifications: [], unread_count: 1 } })
+    // Mock for unified notifications
+    http.get('http://localhost:3000/api/notifications/unified', () => {
+      return HttpResponse.json({
+        bell_notifications: [],
+        unread_bell_count: 1,
+        unread_message_count: 0,
+      })
     }),
     // Mock for notification preferences
     http.get('http://localhost:3000/api/notification-preferences', () => {

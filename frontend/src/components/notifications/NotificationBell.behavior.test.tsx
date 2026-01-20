@@ -124,7 +124,9 @@ describe('NotificationBell behavior', () => {
     })
 
     // Trigger a manual refresh (simulates what the Echo event handler would do)
-    await screen.findByRole('button', { name: 'Refresh' }).then((btn) => btn.click())
+    await screen.findByRole('button', { name: 'Refresh' }).then((btn) => {
+      btn.click()
+    })
 
     // Wait until the second fetch triggers and toast is emitted
     await waitFor(() => {

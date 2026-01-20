@@ -90,7 +90,7 @@ export async function deleteMessage(messageId: number): Promise<void> {
  */
 export async function getUnreadChatsCount(): Promise<number> {
   const res = await api.get<{ data: UnreadCountResponse }>('/msg/unread-count')
-  return res.data.data.unread_message_count ?? res.data.data.unread_chats_count ?? 0
+  return res.data.data.unread_message_count
 }
 
 /**

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { getHelperProfile } from '@/api/helper-profiles'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { PlacementResponseStatusLabels } from '@/types/placement'
+import { PlacementResponseStatusLabels, type PlacementResponseStatus } from '@/types/placement'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -14,8 +14,16 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel'
-import { ChevronLeft, ChevronRight, MapPin, PawPrint, Baby, Home, Heart, User } from 'lucide-react'
+import { ChevronRight, MapPin, PawPrint, Baby, Home, Heart, User } from 'lucide-react'
 import placeholderAvatar from '@/assets/images/default-avatar.webp'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
 
 const formatLabel = (value: string, fallback = 'Unknown') =>
   value ? value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : fallback
@@ -35,10 +43,6 @@ export default function HelperProfileViewPage() {
     queryFn: () => getHelperProfile(id ?? ''),
     enabled: Boolean(id),
   })
-
-  const handleBack = () => {
-    void navigate(-1)
-  }
 
   const handleEdit = () => {
     void navigate(`/helper/${id ?? ''}/edit`)
@@ -96,21 +100,29 @@ export default function HelperProfileViewPage() {
   const placementRequests = placementResponses
     .map((response) => {
       const placementRequest = response.placement_request
-      const placementRequestId = placementRequest?.id ?? response.placement_request_id
+      if (!placementRequest) return null
+      const placementRequestId = placementRequest.id
       if (!placementRequestId) return null
 
-      const petName = response.pet?.name ?? placementRequest?.pet?.name ?? 'Unknown'
+      const responsePet = response.pet ?? placementRequest.pet
+      if (!responsePet) return null
+      const petName = responsePet.name
+      const placementRequestOwnerName: string | undefined = (
+        placementRequest as { owner?: { name?: string } }
+      ).owner?.name
+      const placementRequestUserName: string | undefined = (
+        placementRequest as { user?: { name?: string } }
+      ).user?.name
+      const responsePetUserName: string | undefined = (responsePet as { user?: { name?: string } })
+        .user?.name
       const ownerName =
-        (placementRequest as { owner?: { name?: string } } | undefined)?.owner?.name ??
-        (placementRequest as { user?: { name?: string } } | undefined)?.user?.name ??
-        response.pet?.user?.name ??
-        'Unknown'
+        placementRequestOwnerName ?? placementRequestUserName ?? responsePetUserName ?? 'Unknown'
 
-      const placementRequestStatus = placementRequest?.status
-      const ownerUserId = placementRequest?.user_id
+      const placementRequestStatus = placementRequest.status
+      const ownerUserId = placementRequest.user_id
       const helperUserId = profile.user_id
-      const transferRequests = Array.isArray(placementRequest?.transfer_requests)
-        ? placementRequest?.transfer_requests
+      const transferRequests = Array.isArray(placementRequest.transfer_requests)
+        ? placementRequest.transfer_requests
         : []
 
       const isActionRequired =
@@ -133,7 +145,18 @@ export default function HelperProfileViewPage() {
         isActionRequired,
       }
     })
-    .filter(Boolean)
+    .filter(
+      (
+        item
+      ): item is {
+        id: number
+        ownerName: string
+        petName: string
+        respondedAt: string
+        status: PlacementResponseStatus
+        isActionRequired: boolean
+      } => Boolean(item)
+    )
     .sort((a, b) => {
       const aTime = a.respondedAt ? new Date(a.respondedAt).getTime() : 0
       const bTime = b.respondedAt ? new Date(b.respondedAt).getTime() : 0
@@ -142,8 +165,8 @@ export default function HelperProfileViewPage() {
     id: number
     ownerName: string
     petName: string
-    respondedAt?: string
-    status: string
+    respondedAt: string
+    status: PlacementResponseStatus
     isActionRequired: boolean
   }[]
 
@@ -152,15 +175,25 @@ export default function HelperProfileViewPage() {
       {/* Navigation */}
       <div className="px-4 py-3">
         <div className="max-w-lg mx-auto flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="default"
-            onClick={handleBack}
-            className="flex items-center gap-1 -ml-2 text-base"
-          >
-            <ChevronLeft className="h-6 w-6" />
-            Back
-          </Button>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/">Home</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/helper">Helper</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>{profile.user?.name ?? 'Helper'}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
           <Button variant="ghost" size="default" onClick={handleEdit} className="text-base">
             Edit
           </Button>

@@ -93,9 +93,7 @@ describe('PetPublicProfilePage', () => {
 
     renderPetPublicProfilePage('1')
 
-    await waitFor(async () => {
-      expect(await screen.findByText('Fluffy')).toBeInTheDocument()
-    })
+    expect(await screen.findByRole('heading', { name: 'Fluffy', level: 1 })).toBeInTheDocument()
 
     // Should show placement requests section
     expect(screen.getByText('Placement Requests')).toBeInTheDocument()
@@ -132,9 +130,7 @@ describe('PetPublicProfilePage', () => {
 
     renderPetPublicProfilePage('2')
 
-    await waitFor(async () => {
-      expect(await screen.findByText('Lost Kitty')).toBeInTheDocument()
-    })
+    expect(await screen.findByRole('heading', { name: 'Lost Kitty', level: 1 })).toBeInTheDocument()
 
     expect(screen.getByText(/this pet has been reported as lost/i)).toBeInTheDocument()
   })
@@ -221,9 +217,7 @@ describe('PetPublicProfilePage', () => {
     // Render with authenticated user to trigger the owner check
     renderPetPublicProfilePage('1', { id: 1, name: 'Owner', email: 'owner@test.com' })
 
-    await waitFor(async () => {
-      expect(await screen.findByText('Fluffy')).toBeInTheDocument()
-    })
+    expect(await screen.findByRole('heading', { name: 'Fluffy', level: 1 })).toBeInTheDocument()
 
     // Should show message that owner cannot respond
     expect(

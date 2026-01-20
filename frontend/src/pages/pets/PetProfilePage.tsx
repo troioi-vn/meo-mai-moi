@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { ChevronLeft, ShieldAlert } from 'lucide-react'
+import { useParams, useNavigate, Link } from 'react-router-dom'
+import { ShieldAlert } from 'lucide-react'
 import { usePetProfile } from '@/hooks/usePetProfile'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -20,6 +20,14 @@ import { PlacementRequestsSection } from '@/components/placement/pet-profile/Pla
 import { api } from '@/api/axios'
 import { toast } from 'sonner'
 import type { Pet } from '@/types/pet'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
 
 // Check if pet is publicly viewable (lost or has active placement request)
 const isPubliclyViewable = (petData: Pet | null): boolean => {
@@ -38,10 +46,6 @@ const PetProfilePage: React.FC = () => {
   const [vaccinationVersion, setVaccinationVersion] = useState(0)
   const handleVaccinationChange = () => {
     setVaccinationVersion((v) => v + 1)
-  }
-
-  const handleBack = () => {
-    void navigate(-1)
   }
 
   const handleEdit = () => {
@@ -107,15 +111,19 @@ const PetProfilePage: React.FC = () => {
       <div className="min-h-screen">
         <div className="px-4 py-3">
           <div className="max-w-lg mx-auto">
-            <Button
-              variant="ghost"
-              size="default"
-              onClick={handleBack}
-              className="flex items-center gap-1 -ml-2 text-base"
-            >
-              <ChevronLeft className="h-6 w-6" />
-              Back
-            </Button>
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link to="/">Home</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>{pet.name}</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
           </div>
         </div>
         <main className="px-4 pb-8">
@@ -157,15 +165,19 @@ const PetProfilePage: React.FC = () => {
       {/* Navigation Buttons */}
       <div className="px-4 py-3">
         <div className="max-w-lg mx-auto flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="default"
-            onClick={handleBack}
-            className="flex items-center gap-1 -ml-2 text-base"
-          >
-            <ChevronLeft className="h-6 w-6" />
-            Back
-          </Button>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/">Home</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>{pet.name}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
           {canEdit && (
             <Button variant="ghost" size="default" onClick={handleEdit} className="text-base">
               Edit

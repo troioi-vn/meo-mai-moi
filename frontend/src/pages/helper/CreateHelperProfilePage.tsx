@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { FileInput } from '@/components/ui/FileInput'
@@ -9,7 +9,15 @@ import type { PetType } from '@/types/pet'
 import { toast } from 'sonner'
 import { HelperProfileFormFields } from '@/components/helper/HelperProfileFormFields'
 import { PetTypesSelector } from '@/components/helper/PetTypesSelector'
-import { ChevronLeft, Heart, Camera, UserPlus } from 'lucide-react'
+import { Heart, Camera, UserPlus } from 'lucide-react'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
 
 const FormSectionHeader = ({ icon: Icon, title }: { icon: React.ElementType; title: string }) => (
   <div className="flex items-center gap-2 pb-2 border-b mb-4">
@@ -19,9 +27,16 @@ const FormSectionHeader = ({ icon: Icon, title }: { icon: React.ElementType; tit
 )
 
 const CreateHelperProfilePage: React.FC = () => {
-  const navigate = useNavigate()
-  const { formData, errors, isSubmitting, updateField, updateCities, handleSubmit, handleCancel } =
-    useHelperProfileForm(undefined, {})
+  const {
+    formData,
+    errors,
+    isSubmitting,
+    updateField,
+    updateCities,
+    handleSubmit,
+    handleCancel,
+    setFormData,
+  } = useHelperProfileForm(undefined, {})
 
   const [petTypes, setPetTypes] = useState<PetType[]>([])
   const [loadingPetTypes, setLoadingPetTypes] = useState(true)
@@ -42,24 +57,45 @@ const CreateHelperProfilePage: React.FC = () => {
     void loadPetTypes()
   }, [])
 
-  const handleBack = () => {
-    void navigate(-1)
-  }
+  useEffect(() => {
+    if (loadingPetTypes) return
+    if (petTypes.length === 0) return
+    if (formData.pet_type_ids.length > 0) return
+
+    const defaultPetTypeIds = petTypes.filter((t) => t.placement_requests_allowed).map((t) => t.id)
+
+    if (defaultPetTypeIds.length === 0) return
+
+    setFormData((prev) => {
+      if (prev.pet_type_ids.length > 0) return prev
+      return { ...prev, pet_type_ids: defaultPetTypeIds }
+    })
+  }, [formData.pet_type_ids.length, loadingPetTypes, petTypes, setFormData])
 
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
       <div className="px-4 py-4">
         <div className="max-w-3xl mx-auto">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBack}
-            className="flex items-center gap-1 -ml-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Back to previous page
-          </Button>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/">Home</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/helper">Helper</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Create</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
         </div>
       </div>
 

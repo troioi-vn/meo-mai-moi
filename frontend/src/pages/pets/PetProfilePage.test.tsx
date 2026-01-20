@@ -159,7 +159,7 @@ describe('PetProfilePage redirect logic', () => {
 
     // Should show the pet name, not redirect
     await waitFor(() => {
-      expect(screen.getByText('Owner Pet')).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: 'Owner Pet', level: 1 })).toBeInTheDocument()
     })
     expect(screen.queryByTestId('public-view')).not.toBeInTheDocument()
   })

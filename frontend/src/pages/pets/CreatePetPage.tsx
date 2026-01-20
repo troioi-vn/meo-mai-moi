@@ -1,13 +1,18 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-import { ChevronLeft } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 import { useCreatePetForm } from '@/hooks/useCreatePetForm'
 import { PetFormSection } from '@/components/pets/PetFormSection'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
 
 const CreatePetPage: React.FC = () => {
-  const navigate = useNavigate()
   const {
     formData,
     petTypes,
@@ -22,24 +27,24 @@ const CreatePetPage: React.FC = () => {
     handleCancel,
   } = useCreatePetForm()
 
-  const handleBack = () => {
-    void navigate(-1)
-  }
-
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
       <div className="px-4 py-3">
         <div className="max-w-2xl mx-auto">
-          <Button
-            variant="ghost"
-            size="default"
-            onClick={handleBack}
-            className="flex items-center gap-1 -ml-2 text-base"
-          >
-            <ChevronLeft className="h-6 w-6" />
-            Back
-          </Button>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/">Home</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Add New Pet</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
         </div>
       </div>
 

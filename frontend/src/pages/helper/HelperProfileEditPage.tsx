@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { Link, useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FileInput } from '@/components/ui/FileInput'
@@ -31,7 +31,15 @@ import { PetTypesSelector } from '@/components/helper/PetTypesSelector'
 import { PhotosGrid } from '@/components/helper/PhotosGrid'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
-import { ChevronLeft, Trash2, Heart, Camera, UserCog } from 'lucide-react'
+import { Trash2, Heart, Camera, UserCog } from 'lucide-react'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
 
 interface ApiError {
   response?: {
@@ -170,10 +178,6 @@ const HelperProfileEditPage: React.FC = () => {
     },
   })
 
-  const handleBack = () => {
-    void navigate(-1)
-  }
-
   if (isLoading) {
     return <LoadingState message="Loading helper profile..." />
   }
@@ -200,22 +204,34 @@ const HelperProfileEditPage: React.FC = () => {
     )
   }
 
+  const helperName = data.data.user?.name ?? 'Helper'
+
   const photos = data.data.photos as { id: number; path: string }[]
 
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
       <div className="px-4 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBack}
-            className="flex items-center gap-1 -ml-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Back to profile
-          </Button>
+        <div className="max-w-3xl mx-auto">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/">Home</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/helper">Helper</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>{helperName}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
         </div>
       </div>
 

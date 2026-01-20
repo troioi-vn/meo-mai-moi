@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { PlusCircle, MapPin, ChevronLeft, ChevronRight, Home, Heart } from 'lucide-react'
+import { PlusCircle, MapPin, ChevronRight, Home, Heart } from 'lucide-react'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import type { HelperProfile } from '@/types/helper-profile'
@@ -15,10 +15,6 @@ export default function HelperProfilePage() {
     queryKey: ['helper-profiles'],
     queryFn: getHelperProfiles,
   })
-
-  const handleBack = () => {
-    void navigate(-1)
-  }
 
   if (isLoading) {
     return <LoadingState message="Loading helper profiles..." />
@@ -41,39 +37,16 @@ export default function HelperProfilePage() {
 
   return (
     <div className="min-h-screen">
-      {/* Navigation */}
-      <div className="px-4 py-3">
-        <div className="max-w-lg mx-auto flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="default"
-            onClick={handleBack}
-            className="flex items-center gap-1 -ml-2 text-base"
-          >
-            <ChevronLeft className="h-6 w-6" />
-            Back
-          </Button>
-          <Button
-            size="default"
-            onClick={() => {
-              void navigate('/helper/create')
-            }}
-          >
-            <PlusCircle className="mr-2 h-4 w-4" />
-            New Profile
-          </Button>
-        </div>
-      </div>
-
-      <main className="px-4 pb-8">
+      <main className="px-4 py-8">
         <div className="max-w-lg mx-auto space-y-6">
           {/* Header */}
-          <section>
-            <h1 className="text-2xl font-bold text-foreground">My Helper Profiles</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Manage your profiles for fostering and adoption
-            </p>
-          </section>
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold text-foreground">Helper Profiles</h1>
+            <Button onClick={() => void navigate('/helper/create')}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Create
+            </Button>
+          </div>
 
           {/* Profiles List */}
           {profiles.length === 0 ? (

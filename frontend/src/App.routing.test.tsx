@@ -66,19 +66,20 @@ beforeEach(() => {
 
 describe('App Routing', () => {
   describe('Pet profile routes', () => {
-    it('shows main navigation and back button on pet profile page', async () => {
+    it('shows main navigation and breadcrumb on pet profile page', async () => {
       renderWithRouter(<App />, { route: '/pets/1' })
 
       // Wait for pet data to load
       await waitFor(async () => {
-        expect(await screen.findByText('Fluffy')).toBeInTheDocument()
+        expect(await screen.findAllByText('Fluffy')).toHaveLength(2)
       })
 
       // MainNav should be present (Requests link is always visible)
       expect(screen.getByRole('link', { name: 'Requests' })).toBeInTheDocument()
 
-      // Back button should also be present
-      expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument()
+      // Breadcrumb should also be present
+      expect(screen.getByRole('link', { name: /home/i })).toBeInTheDocument()
+      expect(screen.getAllByText('Fluffy')[0]).toBeInTheDocument()
     })
 
     it('shows main navigation on other pages', async () => {

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { ChevronLeft, Info, Eye } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Link, useParams, useNavigate } from 'react-router-dom'
+import { Info, Eye } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -10,6 +9,14 @@ import { ErrorState } from '@/components/ui/ErrorState'
 import { PublicPlacementRequestSection } from '@/components/placement/public-profile/PublicPlacementRequestSection'
 import { getPetPublic, type PublicPet } from '@/api/pets'
 import placeholderImage from '@/assets/images/default-avatar.webp'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
 
 // Helper function to format pet age from public pet data
 const formatPublicPetAge = (pet: PublicPet): string => {
@@ -130,10 +137,6 @@ const PetPublicProfilePage: React.FC = () => {
     setVersion((v) => v + 1)
   }
 
-  const handleBack = () => {
-    void navigate(-1)
-  }
-
   if (loading) {
     return <LoadingState message="Loading pet profile..." />
   }
@@ -174,15 +177,19 @@ const PetPublicProfilePage: React.FC = () => {
       {/* Navigation Buttons */}
       <div className="px-4 py-3">
         <div className="max-w-lg mx-auto flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="default"
-            onClick={handleBack}
-            className="flex items-center gap-1 -ml-2 text-base"
-          >
-            <ChevronLeft className="h-6 w-6" />
-            Back
-          </Button>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/">Home</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>{pet.name}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
         </div>
       </div>
 

@@ -52,6 +52,8 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
     initialValues?.start_date ?? undefined
   )
   const [endDate, setEndDate] = useState<Date | undefined>(initialValues?.end_date ?? undefined)
+  const [startDatePickerOpen, setStartDatePickerOpen] = useState(false)
+  const [endDatePickerOpen, setEndDatePickerOpen] = useState(false)
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [publicProfileAccepted, setPublicProfileAccepted] = useState(false)
   const createPlacementRequestMutation = useCreatePlacementRequest()
@@ -148,9 +150,10 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
                 Pick-up Date
               </Label>
               <div className="col-span-3 space-y-1">
-                <Popover>
+                <Popover open={startDatePickerOpen} onOpenChange={setStartDatePickerOpen}>
                   <PopoverTrigger asChild>
                     <Button
+                      id="start-date"
                       variant={'outline'}
                       className={cn(
                         'w-full justify-start text-left font-normal',
@@ -166,7 +169,10 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
                     <Calendar
                       mode="single"
                       selected={startDate}
-                      onSelect={setStartDate}
+                      onSelect={(date) => {
+                        setStartDate(date)
+                        if (date) setStartDatePickerOpen(false)
+                      }}
                       disabled={(date) => isBefore(startOfDay(date), today)}
                       autoFocus
                     />
@@ -183,9 +189,10 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
                   Drop-off Date
                 </Label>
                 <div className="col-span-3 space-y-1">
-                  <Popover>
+                  <Popover open={endDatePickerOpen} onOpenChange={setEndDatePickerOpen}>
                     <PopoverTrigger asChild>
                       <Button
+                        id="end-date"
                         variant={'outline'}
                         className={cn(
                           'w-full justify-start text-left font-normal',
@@ -201,7 +208,10 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
                       <Calendar
                         mode="single"
                         selected={endDate}
-                        onSelect={setEndDate}
+                        onSelect={(date) => {
+                          setEndDate(date)
+                          if (date) setEndDatePickerOpen(false)
+                        }}
                         disabled={(date) =>
                           startDate ? isBefore(startOfDay(date), startOfDay(startDate)) : false
                         }
@@ -230,9 +240,11 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
               />
               <Label
                 htmlFor="public-profile-accepted"
-                className="text-sm font-normal leading-relaxed cursor-pointer"
+                className="flex-1 min-w-0 items-start text-sm font-normal leading-relaxed cursor-pointer"
               >
-                I understand the pet&apos;s profile will become publicly visible.
+                <span className="leading-relaxed">
+                  I understand the pet&apos;s profile will become publicly visible.
+                </span>
               </Label>
             </div>
 
@@ -248,11 +260,14 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
               />
               <Label
                 htmlFor="terms-accepted"
-                className="text-sm font-normal leading-relaxed cursor-pointer"
+                className="flex-1 min-w-0 items-start text-sm font-normal leading-relaxed cursor-pointer"
               >
-                I confirm I am authorized to place this pet and that the information I provide is
-                accurate. I understand the platform only facilitates connections and is not
-                responsible for outcomes. I agree to the <PlacementTermsLink className="text-sm" />.
+                <span className="leading-relaxed">
+                  I confirm I am authorized to place this pet and that the information I provide is
+                  accurate. I understand the platform only facilitates connections and is not
+                  responsible for outcomes. I agree to the{' '}
+                  <PlacementTermsLink className="text-sm" />.
+                </span>
               </Label>
             </div>
           </div>

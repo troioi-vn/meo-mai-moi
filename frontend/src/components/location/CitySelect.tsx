@@ -55,6 +55,7 @@ export const CitySelect: React.FC<Props> = (props) => {
   const [loading, setLoading] = useState(false)
   const [searchValue, setSearchValue] = useState('')
   const [creating, setCreating] = useState(false)
+  const [open, setOpen] = useState(false)
   const generatedId = useId()
   const inputId = id ?? generatedId
 
@@ -117,6 +118,9 @@ export const CitySelect: React.FC<Props> = (props) => {
       const singleProps = props as SingleProps
       singleProps.onChange(city)
     }
+
+    setSearchValue('')
+    setOpen(false)
   }
 
   const handleClear = () => {
@@ -159,6 +163,7 @@ export const CitySelect: React.FC<Props> = (props) => {
       }
 
       setSearchValue('')
+      setOpen(false)
       toast.success('City created (pending approval)')
     } catch (err: unknown) {
       console.error('Failed to create city:', err)
@@ -209,7 +214,7 @@ export const CitySelect: React.FC<Props> = (props) => {
             : ((props.value as City | null)?.name ?? '')
         }
       />
-      <Tags className="w-full">
+      <Tags className="w-full" open={open} onOpenChange={setOpen}>
         <TagsTrigger
           id={inputId}
           disabled={disabled}

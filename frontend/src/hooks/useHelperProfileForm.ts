@@ -7,6 +7,13 @@ import type React from 'react'
 import type { PlacementRequestType } from '@/types/helper-profile'
 import type { City } from '@/types/pet'
 
+const DEFAULT_REQUEST_TYPES: PlacementRequestType[] = [
+  'foster_paid',
+  'foster_free',
+  'permanent',
+  'pet_sitting',
+]
+
 interface HelperProfileForm {
   country: string
   address: string
@@ -44,7 +51,7 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
     experience: '',
     has_pets: false,
     has_children: false,
-    request_types: [],
+    request_types: initialData?.request_types ?? DEFAULT_REQUEST_TYPES,
     photos: [],
     pet_type_ids: [],
     ...initialData,
@@ -68,7 +75,7 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
       experience: '',
       has_pets: false,
       has_children: false,
-      request_types: [],
+      request_types: initialData?.request_types ?? DEFAULT_REQUEST_TYPES,
       photos: [],
       pet_type_ids: [],
       ...initialData,

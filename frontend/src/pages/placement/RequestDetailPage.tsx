@@ -46,6 +46,7 @@ import {
   AlertTriangle,
   ArrowLeft,
   CheckCircle2,
+  ChevronRight,
   Clock,
   HandshakeIcon,
   Home,
@@ -59,6 +60,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import { useCreateChat } from '@/hooks/useMessaging'
+import { ResponsesDrawer } from '@/components/placement/pet-profile/ResponsesDrawer'
 import { api } from '@/api/axios'
 import type { HelperProfile, PlacementRequestType } from '@/types/helper-profile'
 
@@ -700,6 +702,7 @@ export default function RequestDetailPage() {
                       key={response.id}
                       response={response}
                       placementRequestId={request.id}
+                      requestType={request.request_type}
                       onAccept={handleAcceptResponse}
                       onReject={handleRejectResponse}
                       onChat={handleChat}
@@ -950,6 +953,7 @@ export default function RequestDetailPage() {
 interface ResponseCardProps {
   response: PlacementRequestResponse
   placementRequestId: number
+  requestType: string
   onAccept: (id: number) => Promise<void>
   onReject: (id: number) => Promise<void>
   onChat: (userId: number) => Promise<void>
@@ -959,6 +963,8 @@ interface ResponseCardProps {
 
 function ResponseCard({
   response,
+  placementRequestId,
+  requestType,
   onAccept,
   onReject,
   onChat,
@@ -967,6 +973,7 @@ function ResponseCard({
 }: ResponseCardProps) {
   const helperName = response.helper_profile?.user?.name ?? 'Unknown Helper'
   const helperUserId = response.helper_profile?.user?.id
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   return (
     <div className="border rounded-lg p-4 space-y-3">
@@ -976,7 +983,16 @@ function ResponseCard({
             <User className="h-5 w-5 text-muted-foreground" />
           </div>
           <div>
-            <p className="font-medium">{helperName}</p>
+            <button
+              type="button"
+              className="font-medium text-left hover:underline inline-flex items-center gap-1"
+              onClick={() => {
+                setDrawerOpen(true)
+              }}
+            >
+              {helperName}
+              <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+            </button>
             {response.helper_profile?.city && (
               <p className="text-xs text-muted-foreground">{response.helper_profile.city}</p>
             )}
@@ -1027,6 +1043,18 @@ function ResponseCard({
           </Button>
         )}
       </div>
+
+      <ResponsesDrawer
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        responses={[response]}
+        requestType={requestType}
+        placementRequestId={placementRequestId}
+        onAccept={onAccept}
+        onReject={onReject}
+        openProfileOnOpen={true}
+        showDecisionActions={false}
+      />
     </div>
   )
 }

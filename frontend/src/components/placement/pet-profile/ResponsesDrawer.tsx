@@ -1,7 +1,14 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel'
 import {
   Drawer,
   DrawerClose,
@@ -36,6 +43,9 @@ interface ResponsesDrawerProps {
   placementRequestId: number
   onAccept: (responseId: number) => void | Promise<void>
   onReject: (responseId: number) => void | Promise<void>
+  initialResponseId?: number
+  openProfileOnOpen?: boolean
+  showDecisionActions?: boolean
 }
 
 export function ResponsesDrawer({
@@ -46,6 +56,9 @@ export function ResponsesDrawer({
   placementRequestId,
   onAccept,
   onReject,
+  initialResponseId,
+  openProfileOnOpen = false,
+  showDecisionActions = true,
 }: ResponsesDrawerProps) {
   const navigate = useNavigate()
   const { create: createChat, creating: creatingChat } = useCreateChat()
@@ -57,18 +70,6 @@ export function ResponsesDrawer({
 
   const currentResponse = responses[currentIndex]
   const hasMultiple = responses.length > 1
-
-  const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : responses.length - 1))
-    setViewingProfile(false)
-    setProfileData(null)
-  }
-
-  const goToNext = () => {
-    setCurrentIndex((prev) => (prev < responses.length - 1 ? prev + 1 : 0))
-    setViewingProfile(false)
-    setProfileData(null)
-  }
 
   const handleViewProfile = useCallback(async () => {
     if (!currentResponse?.helper_profile_id) return
@@ -86,6 +87,48 @@ export function ResponsesDrawer({
       setLoadingProfile(false)
     }
   }, [currentResponse?.helper_profile_id])
+
+  // When opening, jump to a specific response if requested.
+  useEffect(() => {
+    if (!open) return
+    if (!initialResponseId) return
+    const idx = responses.findIndex((r) => r.id === initialResponseId)
+    if (idx >= 0) {
+      setCurrentIndex(idx)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, initialResponseId])
+
+  // Optionally auto-open the helper profile view when the drawer opens.
+  useEffect(() => {
+    if (!open) return
+    if (!openProfileOnOpen) return
+    if (!currentResponse?.helper_profile_id) return
+    if (viewingProfile) return
+    if (loadingProfile) return
+    if (profileData) return
+    void handleViewProfile()
+  }, [
+    open,
+    openProfileOnOpen,
+    currentResponse?.helper_profile_id,
+    viewingProfile,
+    loadingProfile,
+    profileData,
+    handleViewProfile,
+  ])
+
+  const goToPrevious = () => {
+    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : responses.length - 1))
+    setViewingProfile(false)
+    setProfileData(null)
+  }
+
+  const goToNext = () => {
+    setCurrentIndex((prev) => (prev < responses.length - 1 ? prev + 1 : 0))
+    setViewingProfile(false)
+    setProfileData(null)
+  }
 
   const handleChatWithHelper = useCallback(async () => {
     const helperUserId = currentResponse?.helper_profile?.user?.id
@@ -142,11 +185,6 @@ export function ResponsesDrawer({
     }
   }
 
-  const handleBackToList = () => {
-    setViewingProfile(false)
-    setProfileData(null)
-  }
-
   // Reset state when drawer closes
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
@@ -164,14 +202,7 @@ export function ResponsesDrawer({
       <DrawerContent className="max-h-[85vh]">
         <DrawerHeader className="border-b">
           <div className="flex items-center justify-between">
-            {viewingProfile ? (
-              <Button variant="ghost" size="sm" onClick={handleBackToList} className="-ml-2">
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                Back
-              </Button>
-            ) : (
-              <div />
-            )}
+            <div />
             <Badge variant="secondary">{formatRequestType(requestType)}</Badge>
           </div>
           <DrawerTitle>{viewingProfile ? 'Helper Profile' : 'Responses'}</DrawerTitle>
@@ -248,21 +279,32 @@ export function ResponsesDrawer({
                 {Array.isArray(profileData.photos) && profileData.photos.length > 0 && (
                   <div>
                     <p className="text-sm text-muted-foreground mb-2">Photos</p>
-                    <div className="grid grid-cols-3 gap-2">
-                      {profileData.photos.map((ph) => {
-                        const photo = ph as { id?: number; path?: string; url?: string }
-                        const key = photo.id ? String(photo.id) : (photo.path ?? '')
-                        const src = photo.url ?? (photo.path ? `/storage/${photo.path}` : '')
-                        return (
-                          <img
-                            key={key}
-                            src={src}
-                            alt="Helper"
-                            className="rounded object-cover w-full h-20"
-                          />
-                        )
-                      })}
-                    </div>
+                    <Carousel className="w-full">
+                      <CarouselContent>
+                        {profileData.photos.map((ph) => {
+                          const photo = ph as { id?: number; path?: string; url?: string }
+                          const key = photo.id ? String(photo.id) : (photo.path ?? '')
+                          const src = photo.url ?? (photo.path ? `/storage/${photo.path}` : '')
+                          return (
+                            <CarouselItem key={key}>
+                              <div className="aspect-video rounded-lg overflow-hidden border bg-muted">
+                                <img
+                                  src={src}
+                                  alt="Helper"
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            </CarouselItem>
+                          )
+                        })}
+                      </CarouselContent>
+                      {profileData.photos.length > 1 && (
+                        <>
+                          <CarouselPrevious className="left-2" />
+                          <CarouselNext className="right-2" />
+                        </>
+                      )}
+                    </Carousel>
                   </div>
                 )}
               </div>
@@ -360,34 +402,36 @@ export function ResponsesDrawer({
         </div>
 
         <DrawerFooter className="border-t">
-          <div className="flex flex-col sm:flex-row gap-2 w-full">
-            <Button
-              variant="default"
-              className="w-full sm:flex-1"
-              onClick={() => void handleAccept()}
-              disabled={actionLoading !== null}
-            >
-              {actionLoading === 'accept' ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Check className="h-4 w-4 mr-2" />
-              )}
-              Accept
-            </Button>
-            <Button
-              variant="destructive"
-              className="w-full sm:flex-1"
-              onClick={() => void handleReject()}
-              disabled={actionLoading !== null}
-            >
-              {actionLoading === 'reject' ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <X className="h-4 w-4 mr-2" />
-              )}
-              Reject
-            </Button>
-          </div>
+          {showDecisionActions && (
+            <div className="flex flex-col sm:flex-row gap-2 w-full">
+              <Button
+                variant="default"
+                className="w-full sm:flex-1"
+                onClick={() => void handleAccept()}
+                disabled={actionLoading !== null}
+              >
+                {actionLoading === 'accept' ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Check className="h-4 w-4 mr-2" />
+                )}
+                Accept
+              </Button>
+              <Button
+                variant="destructive"
+                className="w-full sm:flex-1"
+                onClick={() => void handleReject()}
+                disabled={actionLoading !== null}
+              >
+                {actionLoading === 'reject' ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <X className="h-4 w-4 mr-2" />
+                )}
+                Reject
+              </Button>
+            </div>
+          )}
           <DrawerClose asChild>
             <Button variant="outline">Close</Button>
           </DrawerClose>

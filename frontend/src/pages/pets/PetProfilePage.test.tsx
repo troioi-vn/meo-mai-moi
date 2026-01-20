@@ -36,10 +36,6 @@ vi.mock('@/hooks/usePetProfile', () => ({
   }),
 }))
 
-vi.mock('@/components/placement/pet-profile/PlacementRequestsSection', () => ({
-  PlacementRequestsSection: () => <div data-testid="placement-requests-section" />,
-}))
-
 vi.mock('@/components/pet-health/weights/WeightHistoryCard', () => ({
   WeightHistoryCard: () => <div data-testid="weight-history-card" />,
 }))
@@ -56,33 +52,47 @@ vi.mock('@/components/pet-health/vaccinations/VaccinationStatusBadge', () => ({
   VaccinationStatusBadge: () => <div data-testid="vaccination-status-badge" />,
 }))
 
-vi.mock('@/components/placement/PlacementRequestModal', () => ({
-  PlacementRequestModal: ({ onSuccess }: { onSuccess?: () => void }) => (
-    <button
-      type="button"
-      data-testid="mock-create-request"
-      onClick={() => {
-        onSuccess?.()
-      }}
-    >
-      Mock Create Request
-    </button>
-  ),
-}))
+describe('PetProfilePage placement requests list', () => {
+  beforeEach(() => {
+    mockPetData = {
+      ...mockPet,
+      pet_type: {
+        ...mockPet.pet_type,
+        slug: 'dog',
+        placement_requests_allowed: true,
+      },
+      viewer_permissions: { can_edit: true },
+      placement_requests: [],
+      status: 'active',
+    }
+  })
 
-describe('PetProfilePage placement request flow', () => {
-  it('redirects to requests page after creating a placement request', async () => {
-    const { user } = renderWithRouter(<PetProfilePage />, {
+  it('shows empty state when there are no placement requests', () => {
+    renderWithRouter(<PetProfilePage />, {
       initialEntries: ['/pets/1'],
-      routes: [{ path: '/requests', element: <div>Requests Page</div> }],
     })
 
-    await user.click(await screen.findByTestId('mock-create-request'))
+    expect(screen.getByText('Placement Requests')).toBeInTheDocument()
+    expect(screen.getByText('No placement requests yet.')).toBeInTheDocument()
+  })
 
-    await waitFor(() => {
-      expect(screen.getByText('Requests Page')).toBeInTheDocument()
+  it('renders a clickable list item for each placement request', () => {
+    mockPetData.placement_requests = [
+      {
+        id: 123,
+        status: 'open',
+        request_type: 'permanent',
+        created_at: '2026-01-01T00:00:00.000Z',
+      } as any,
+    ]
+
+    renderWithRouter(<PetProfilePage />, {
+      initialEntries: ['/pets/1'],
+      routes: [{ path: '/requests/:id', element: <div>Request Detail</div> }],
     })
-    expect(refreshMock).toHaveBeenCalled()
+
+    const link = screen.getByRole('link', { name: /open placement request 123/i })
+    expect(link).toHaveAttribute('href', '/requests/123')
   })
 })
 

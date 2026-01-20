@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { ShieldAlert } from 'lucide-react'
+import { ChevronRight, ShieldAlert } from 'lucide-react'
 import { usePetProfile } from '@/hooks/usePetProfile'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
-import { PlacementRequestModal } from '@/components/placement/PlacementRequestModal'
 import { WeightHistoryCard } from '@/components/pet-health/weights/WeightHistoryCard'
 import { UpcomingVaccinationsSection } from '@/components/pet-health/vaccinations/UpcomingVaccinationsSection'
 import { VaccinationStatusBadge } from '@/components/pet-health/vaccinations/VaccinationStatusBadge'
@@ -16,10 +16,8 @@ import { useVaccinations } from '@/hooks/useVaccinations'
 import { calculateVaccinationStatus } from '@/utils/vaccinationStatus'
 import { petSupportsCapability, formatPetAge } from '@/types/pet'
 import { deriveImageUrl } from '@/utils/petImages'
-import { PlacementRequestsSection } from '@/components/placement/pet-profile/PlacementRequestsSection'
-import { api } from '@/api/axios'
-import { toast } from 'sonner'
 import type { Pet } from '@/types/pet'
+import { formatRequestType, formatStatus } from '@/types/placement'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -40,8 +38,7 @@ const isPubliclyViewable = (petData: Pet | null): boolean => {
 const PetProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { pet, loading, error, refresh } = usePetProfile(id)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const { pet, loading, error } = usePetProfile(id)
   // Track vaccination updates to refresh the badge
   const [vaccinationVersion, setVaccinationVersion] = useState(0)
   const handleVaccinationChange = () => {
@@ -51,16 +48,6 @@ const PetProfilePage: React.FC = () => {
   const handleEdit = () => {
     if (pet) {
       void navigate(`/pets/${String(pet.id)}/edit`)
-    }
-  }
-
-  const handleDeletePlacementRequest = async (prId: number) => {
-    try {
-      await api.delete('placement-requests/' + String(prId))
-      toast.success('Placement request deleted')
-      refresh()
-    } catch {
-      toast.error('Failed to delete placement request')
     }
   }
 
@@ -159,6 +146,39 @@ const PetProfilePage: React.FC = () => {
   const supportsPlacement = petSupportsCapability(pet.pet_type, 'placement')
   const placementRequests = pet.placement_requests ?? []
   const hasPlacementRequests = placementRequests.length > 0
+  const sortedPlacementRequests = [...placementRequests].sort((a, b) => {
+    const aTime = a.created_at ? new Date(a.created_at).getTime() : 0
+    const bTime = b.created_at ? new Date(b.created_at).getTime() : 0
+    return bTime - aTime
+  })
+
+  const getRequestTypeBadgeVariant = (
+    type: string
+  ): 'default' | 'secondary' | 'destructive' | 'outline' => {
+    if (type === 'permanent') return 'default'
+    if (type.includes('foster')) return 'secondary'
+    return 'outline'
+  }
+
+  const getStatusBadgeVariant = (
+    status: string
+  ): 'default' | 'secondary' | 'destructive' | 'outline' => {
+    switch (status) {
+      case 'open':
+        return 'default'
+      case 'pending_transfer':
+        return 'secondary'
+      case 'active':
+      case 'finalized':
+        return 'outline'
+      case 'expired':
+        return 'secondary'
+      case 'cancelled':
+        return 'secondary'
+      default:
+        return 'outline'
+    }
+  }
 
   return (
     <div className="min-h-screen">
@@ -237,48 +257,70 @@ const PetProfilePage: React.FC = () => {
                 <CardTitle className="text-lg font-semibold">Placement Requests</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {hasPlacementRequests ? (
-                  <PlacementRequestsSection
-                    placementRequests={placementRequests}
-                    canEdit={canEdit}
-                    onDeletePlacementRequest={handleDeletePlacementRequest}
-                    onRefresh={refresh}
-                  />
-                ) : (
-                  <p className="text-sm text-muted-foreground py-2">
-                    No active placement requests.
-                  </p>
+                {!hasPlacementRequests && (
+                  <p className="text-sm text-muted-foreground py-2">No placement requests yet.</p>
                 )}
 
-                {canEdit && (
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => {
-                      setIsModalOpen(true)
-                    }}
+                {sortedPlacementRequests.map((request) => (
+                  <Link
+                    key={request.id}
+                    to={`/requests/${String(request.id)}`}
+                    aria-label={`Open placement request ${String(request.id)}`}
+                    className="block rounded-lg border bg-card hover:bg-accent/50 transition-colors"
                   >
-                    + Add Placement Request
-                  </Button>
-                )}
+                    <div className="p-4 flex items-center gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                              Type
+                            </p>
+                            <div className="mt-1">
+                              <Badge
+                                variant={getRequestTypeBadgeVariant(request.request_type)}
+                                className="w-fit"
+                              >
+                                {formatRequestType(request.request_type)}
+                              </Badge>
+                            </div>
+                          </div>
+
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                              Created
+                            </p>
+                            <p className="text-sm font-medium">
+                              {request.created_at
+                                ? new Date(request.created_at).toLocaleDateString('en-US')
+                                : '—'}
+                            </p>
+                          </div>
+
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                              Status
+                            </p>
+                            <div className="mt-1">
+                              <Badge
+                                variant={getStatusBadgeVariant(request.status)}
+                                className="w-fit"
+                              >
+                                {formatStatus(request.status)}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                    </div>
+                  </Link>
+                ))}
               </CardContent>
             </Card>
           )}
         </div>
       </main>
-
-      {/* Placement Request Modal */}
-      <PlacementRequestModal
-        petId={pet.id}
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false)
-        }}
-        onSuccess={() => {
-          refresh()
-          void navigate('/requests?sort=newest')
-        }}
-      />
     </div>
   )
 }

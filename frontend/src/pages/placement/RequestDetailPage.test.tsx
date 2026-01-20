@@ -44,6 +44,114 @@ describe('RequestDetailPage', () => {
     mockUseParams.mockReturnValue({ id: '1' })
   })
 
+  it('opens helper profile drawer when owner clicks helper name in Responses list', async () => {
+    server.use(
+      http.get('http://localhost:3000/api/placement-requests/1', () => {
+        return HttpResponse.json({
+          data: {
+            id: 1,
+            pet_id: 1,
+            user_id: 1,
+            request_type: 'foster_free',
+            status: 'open',
+            notes: 'Looking for a foster home',
+            start_date: '2025-01-15',
+            end_date: '2025-02-15',
+            created_at: '2025-01-01T00:00:00Z',
+            updated_at: '2025-01-01T00:00:00Z',
+            response_count: 1,
+            responses: [
+              {
+                id: 10,
+                placement_request_id: 1,
+                helper_profile_id: 5,
+                status: 'responded',
+                message: 'I can help!',
+                responded_at: '2025-01-02T00:00:00Z',
+                created_at: '2025-01-02T00:00:00Z',
+                updated_at: '2025-01-02T00:00:00Z',
+                helper_profile: {
+                  id: 5,
+                  user: { id: 2, name: 'Helper One', email: 'helper1@example.com' },
+                  city: 'Hanoi',
+                  state: null,
+                },
+              },
+            ],
+            pet: {
+              id: 1,
+              name: 'Fluffy',
+              photo_url: 'http://localhost:8000/storage/pets/1/photo.jpg',
+              pet_type: { id: 1, name: 'Cat', slug: 'cat' },
+              city: 'Hanoi',
+              country: 'VN',
+            },
+            viewer_role: 'owner',
+            my_response_id: null,
+            available_actions: {
+              can_respond: false,
+              can_cancel_my_response: false,
+              can_accept_responses: true,
+              can_reject_responses: true,
+              can_confirm_handover: false,
+              can_finalize: false,
+              can_delete_request: false,
+            },
+            chat_id: null,
+          },
+        })
+      })
+    )
+
+    server.use(
+      http.get('http://localhost:3000/api/helper-profiles/5', () => {
+        return HttpResponse.json({
+          data: {
+            id: 5,
+            user_id: 2,
+            user: { id: 2, name: 'Helper One', email: 'helper1@example.com' },
+            city: 'Hanoi',
+            state: null,
+            country: 'VN',
+            phone_number: '+84123456789',
+            has_pets: true,
+            has_children: false,
+            about: 'About helper',
+            experience: 'Experience helper',
+            photos: [],
+            status: 'active',
+            request_types: ['foster_free'],
+            created_at: '2025-01-01T00:00:00Z',
+            updated_at: '2025-01-01T00:00:00Z',
+          },
+        })
+      })
+    )
+
+    const ownerUser: User = {
+      id: 1,
+      name: 'Owner User',
+      email: 'owner@example.com',
+      email_verified_at: '2025-01-01T00:00:00Z',
+      created_at: '2025-01-01T00:00:00Z',
+      updated_at: '2025-01-01T00:00:00Z',
+    }
+
+    renderWithProviders(<RequestDetailPage />, ownerUser)
+
+    await waitFor(() => {
+      expect(screen.getByText('Responses')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Helper One' })).toBeInTheDocument()
+    })
+
+    screen.getByRole('button', { name: 'Helper One' }).click()
+
+    await waitFor(() => {
+      expect(screen.getByText('Helper Profile')).toBeInTheDocument()
+      expect(screen.getByText("Viewing Helper One's profile")).toBeInTheDocument()
+    })
+  })
+
   it('shows "Send Response" button when potential helper views open placement request', async () => {
     // Mock the placement request API to return an open request with can_respond: true
     server.use(

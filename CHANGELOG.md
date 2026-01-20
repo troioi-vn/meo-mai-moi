@@ -752,3 +752,11 @@ All notable changes to this project are documented here, following the [Keep a C
 ### Added
 
 - **Placement Request Page**: Show "Your Response" section to potential helpers who haven't created a Helper Profile yet, with a prompt to create one.
+
+### Changed
+
+- **Pet Profile Placement Requests UI**: Simplified the Placement Requests section on pet profile pages by removing create and delete action buttons, replacing them with a clickable list displaying placement requests with status badges, matching the style of the helper profile page.
+
+- **Request Details Helper Access**: Enhanced the request details page by making helper names in the Responses section clickable, opening a helper profile drawer for owners to view helper information directly.
+
+- **Responses Drawer UI Improvements**: Added ChevronRight icon to helper names for better visual indication of clickability, removed the back button from the drawer for a cleaner interface, and changed photo display from static images to a carousel for better viewing experience.

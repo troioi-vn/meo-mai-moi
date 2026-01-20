@@ -57,6 +57,7 @@ class ShowHelperProfileController extends Controller
                     });
                     $query->with([
                         'placementRequest.pet.petType',
+                        'placementRequest.user:id,name',
                         'placementRequest.transferRequests',
                     ]);
                 },

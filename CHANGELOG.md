@@ -745,6 +745,10 @@ All notable changes to this project are documented here, following the [Keep a C
 - Fixed syntax error in SettingsPage.tsx where two lines were merged
 - Fixed useCreateChat hook destructuring and usage in SettingsPage.tsx
 
+### Changed
+
+- **Helper Profile Placement Requests Section**: Rewrote the 'Placement Responses' section on `/helper/:id` to display a simplified list of related Placement Requests instead of detailed pet cards with transfer actions. Each item now shows owner name, pet name, responded date, status, and a badge indicating "Waiting" or "Action required" (when the request is in 'pending_transfer' status with a pending owner-to-helper transfer). Removed all transfer confirmation actions from the page. Added ChevronRight icons to match the `/helper` list style. Updated backend API to include owner information for display.
+
 ### Added
 
 - **Placement Request Page**: Show "Your Response" section to potential helpers who haven't created a Helper Profile yet, with a prompt to create one.

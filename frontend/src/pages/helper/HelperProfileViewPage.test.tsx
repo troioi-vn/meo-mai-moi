@@ -28,9 +28,10 @@ const renderWithRouter = (profileId = mockHelperProfile.id, authUser = null) => 
 }
 
 describe('HelperProfileViewPage - Placement Responses section', () => {
-  it('shows linked pets with request, placement, and response statuses', async () => {
+  it('shows linked placement requests with owner, pet, responded date, and status', async () => {
     const profileWithPets = {
       ...mockHelperProfile,
+      user_id: 500,
       placement_responses: [
         {
           id: 101,
@@ -43,9 +44,18 @@ describe('HelperProfileViewPage - Placement Responses section', () => {
           placement_request: {
             id: 201,
             request_type: 'foster_free',
-            status: 'open',
+            status: 'pending_transfer',
             pet_id: 301,
             user_id: 999,
+            transfer_requests: [
+              {
+                id: 701,
+                placement_request_id: 201,
+                from_user_id: 999,
+                to_user_id: 500,
+                status: 'pending',
+              },
+            ],
           },
           pet: {
             id: 301,
@@ -55,7 +65,7 @@ describe('HelperProfileViewPage - Placement Responses section', () => {
             status: 'active',
             pet_type_id: 1,
             pet_type: { id: 1, name: 'Cat', slug: 'cat', placement_requests_allowed: true },
-            user: { id: 5, name: 'Owner', email: 'owner@test.com' },
+            user: { id: 5, name: 'Alice Owner', email: 'owner@test.com' },
           },
         },
       ],
@@ -70,13 +80,15 @@ describe('HelperProfileViewPage - Placement Responses section', () => {
     renderWithRouter(profileWithPets.id)
 
     await waitFor(() => {
-      expect(screen.getByText('Placement Responses')).toBeInTheDocument()
+      expect(screen.getByText('Placement Requests')).toBeInTheDocument()
     })
 
     expect(screen.getByText('Fluffy')).toBeInTheDocument()
-    expect(screen.getByText('Request: Foster (Free)')).toBeInTheDocument()
-    expect(screen.getByText('Placement: Open')).toBeInTheDocument()
-    expect(screen.getByText('Response: Pending Review')).toBeInTheDocument()
+    expect(screen.getByText('Alice Owner')).toBeInTheDocument()
+    expect(screen.getByText('Pending Review')).toBeInTheDocument()
+    expect(screen.getByText('Action required')).toBeInTheDocument()
+    const link = screen.getByRole('link', { name: /Open placement request 201/i })
+    expect(link).toHaveAttribute('href', '/requests/201')
   })
 
   it('shows empty state when no pets are linked', async () => {
@@ -89,9 +101,9 @@ describe('HelperProfileViewPage - Placement Responses section', () => {
     renderWithRouter()
 
     await waitFor(() => {
-      expect(screen.getByText('Placement Responses')).toBeInTheDocument()
+      expect(screen.getByText('Placement Requests')).toBeInTheDocument()
     })
 
-    expect(screen.getByText('No placement responses yet.')).toBeInTheDocument()
+    expect(screen.getByText('No placement requests yet.')).toBeInTheDocument()
   })
 })

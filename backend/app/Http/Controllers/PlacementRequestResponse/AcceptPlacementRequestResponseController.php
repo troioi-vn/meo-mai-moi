@@ -63,8 +63,9 @@ class AcceptPlacementRequestResponseController extends Controller
 
         if ($response->accept()) {
             // Send notification to helper
-            $pet = $response->placementRequest->pet;
-            $placementType = $response->placementRequest->request_type->value;
+            $placementRequest = $response->placementRequest;
+            $pet = $placementRequest->pet;
+            $placementType = $placementRequest->request_type->value;
             $needsHandover = in_array($placementType, ['permanent', 'foster_free', 'foster_paid']);
 
             $message = $needsHandover
@@ -76,9 +77,10 @@ class AcceptPlacementRequestResponseController extends Controller
                 NotificationType::HELPER_RESPONSE_ACCEPTED->value,
                 [
                     'message' => $message,
-                    'link' => '/pets/'.$pet->id.'/view',
+                    'link' => '/requests/'.$placementRequest->id,
                     'pet_name' => $pet->name,
                     'pet_id' => $pet->id,
+                    'placement_request_id' => $placementRequest->id,
                     'placement_response_id' => $response->id,
                 ]
             );

@@ -63,15 +63,17 @@ class RejectPlacementRequestResponseController extends Controller
 
         if ($response->reject()) {
             // Send notification to helper
-            $pet = $response->placementRequest->pet;
+            $placementRequest = $response->placementRequest;
+            $pet = $placementRequest->pet;
             $this->notificationService->send(
                 $response->helperProfile->user,
                 NotificationType::HELPER_RESPONSE_REJECTED->value,
                 [
                     'message' => 'Your offer to help with '.$pet->name.' was declined. Thank you for reaching out!',
-                    'link' => '/pets/'.$pet->id.'/view',
+                    'link' => '/requests/'.$placementRequest->id,
                     'pet_name' => $pet->name,
                     'pet_id' => $pet->id,
+                    'placement_request_id' => $placementRequest->id,
                     'placement_response_id' => $response->id,
                 ]
             );

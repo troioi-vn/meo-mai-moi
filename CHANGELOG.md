@@ -744,6 +744,7 @@ All notable changes to this project are documented here, following the [Keep a C
 
 - Fixed syntax error in SettingsPage.tsx where two lines were merged
 - Fixed useCreateChat hook destructuring and usage in SettingsPage.tsx
+- **Placement Request Notification Links**: Fixed placement request notifications to link to `/requests/:id` instead of `/pets/:id` and added `placement_request_id` to notification data for better deep-linking.
 
 ### Changed
 

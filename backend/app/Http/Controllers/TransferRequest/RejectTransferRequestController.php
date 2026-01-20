@@ -71,15 +71,19 @@ class RejectTransferRequestController extends Controller
             if ($pet) {
                 $helper = User::find($transferRequest->to_user_id);
                 if ($helper) {
+                    $placementRequestId = $transferRequest->placementRequest?->id
+                        ?? $transferRequest->placementRequestResponse?->placement_request_id;
+
                     $this->notificationService->send(
                         $helper,
                         NotificationType::HELPER_RESPONSE_REJECTED->value,
                         [
                             'message' => 'The transfer for '.$pet->name.' was cancelled by the owner.',
-                            'link' => '/pets/'.$pet->id.'/view',
+                            'link' => $placementRequestId ? '/requests/'.$placementRequestId : '/pets/'.$pet->id.'/view',
                             'pet_name' => $pet->name,
                             'pet_id' => $pet->id,
                             'transfer_request_id' => $transferRequest->id,
+                            'placement_request_id' => $placementRequestId,
                         ]
                     );
                 }

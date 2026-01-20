@@ -76,16 +76,20 @@ class CancelTransferRequestController extends Controller
                     /** @var \App\Models\User|null $helper */
                     $helper = User::find($transferRequest->to_user_id);
                     $helperName = $helper ? $helper->name : 'A helper';
+                    $placementRequestId = $transferRequest->placementRequest?->id
+                        ?? $transferRequest->placementRequestResponse?->placement_request_id;
+
                     $this->notificationService->send(
                         $owner,
                         NotificationType::HELPER_RESPONSE_CANCELED->value,
                         [
                             'message' => $helperName.' cancelled the pending transfer for '.$pet->name.'. The placement request is open again.',
-                            'link' => '/pets/'.$pet->id,
+                            'link' => $placementRequestId ? '/requests/'.$placementRequestId : '/pets/'.$pet->id,
                             'helper_name' => $helperName,
                             'pet_name' => $pet->name,
                             'pet_id' => $pet->id,
                             'transfer_request_id' => $transferRequest->id,
+                            'placement_request_id' => $placementRequestId,
                         ]
                     );
                 }

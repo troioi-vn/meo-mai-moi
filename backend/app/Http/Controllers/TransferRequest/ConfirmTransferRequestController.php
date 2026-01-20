@@ -147,6 +147,7 @@ class ConfirmTransferRequestController extends Controller
                 $helper = User::find($transferRequest->to_user_id);
                 $placementType = $transferRequest->placementRequest?->request_type->value ?? '';
                 $isPermanent = $placementType === 'permanent';
+                $placementRequestId = $transferRequest->placementRequest?->id;
 
                 $message = $isPermanent
                     ? ($helper ? $helper->name : 'The helper').' has confirmed receiving '.$pet->name.'. The ownership transfer is complete.'
@@ -157,11 +158,12 @@ class ConfirmTransferRequestController extends Controller
                     NotificationType::TRANSFER_CONFIRMED->value,
                     [
                         'message' => $message,
-                        'link' => '/pets/'.$pet->id,
+                        'link' => $placementRequestId ? '/requests/'.$placementRequestId : '/pets/'.$pet->id,
                         'pet_name' => $pet->name,
                         'pet_id' => $pet->id,
                         'helper_name' => $helper?->name,
                         'transfer_request_id' => $transferRequest->id,
+                        'placement_request_id' => $placementRequestId,
                     ]
                 );
             }

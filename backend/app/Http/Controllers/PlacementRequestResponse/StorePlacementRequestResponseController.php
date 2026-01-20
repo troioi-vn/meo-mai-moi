@@ -133,10 +133,11 @@ class StorePlacementRequestResponseController extends Controller
             NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
             [
                 'message' => $user->name.' wants to help with '.$pet->name.'. Review their response!',
-                'link' => '/pets/'.$pet->id,
+                'link' => '/requests/'.$placementRequest->id,
                 'helper_name' => $user->name,
                 'pet_name' => $pet->name,
                 'pet_id' => $pet->id,
+                'placement_request_id' => $placementRequest->id,
                 'placement_response_id' => $response->id,
             ]
         );

@@ -119,9 +119,10 @@ class FinalizePlacementRequestController extends Controller
                     NotificationType::PLACEMENT_ENDED->value,
                     [
                         'message' => 'The placement for '.$placementRequest->pet->name.' has ended. Thank you for your help!',
-                        'link' => '/pets/'.$placementRequest->pet_id.'/view',
+                        'link' => '/requests/'.$placementRequest->id,
                         'pet_name' => $placementRequest->pet->name,
                         'pet_id' => $placementRequest->pet_id,
+                        'placement_request_id' => $placementRequest->id,
                     ]
                 );
             }

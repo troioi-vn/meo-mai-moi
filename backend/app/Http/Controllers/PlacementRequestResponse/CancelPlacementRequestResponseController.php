@@ -63,17 +63,19 @@ class CancelPlacementRequestResponseController extends Controller
 
         if ($response->cancel()) {
             // Send notification to owner
-            $pet = $response->placementRequest->pet;
+            $placementRequest = $response->placementRequest;
+            $pet = $placementRequest->pet;
             $helperName = $response->helperProfile->user->name;
             $this->notificationService->send(
-                $response->placementRequest->user,
+                $placementRequest->user,
                 NotificationType::HELPER_RESPONSE_CANCELED->value,
                 [
                     'message' => $helperName.' withdrew their response for '.$pet->name.'.',
-                    'link' => '/pets/'.$pet->id,
+                    'link' => '/requests/'.$placementRequest->id,
                     'helper_name' => $helperName,
                     'pet_name' => $pet->name,
                     'pet_id' => $pet->id,
+                    'placement_request_id' => $placementRequest->id,
                     'placement_response_id' => $response->id,
                 ]
             );

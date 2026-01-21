@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\EmailLogStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -36,6 +37,7 @@ class EmailLog extends Model
     ];
 
     protected $casts = [
+        'status' => EmailLogStatus::class,
         'headers' => 'array',
         'sent_at' => 'datetime',
         'delivered_at' => 'datetime',
@@ -73,40 +75,11 @@ class EmailLog extends Model
     }
 
     /**
-     * Get the status badge color.
-     */
-    public function getStatusColor(): string
-    {
-        return match ($this->status) {
-            'delivered' => 'success',
-            'accepted' => 'warning',
-            'failed', 'bounced' => 'danger',
-            'pending' => 'warning',
-            default => 'gray',
-        };
-    }
-
-    /**
-     * Get the status display name.
-     */
-    public function getStatusDisplayName(): string
-    {
-        return match ($this->status) {
-            'pending' => 'Pending',
-            'accepted' => 'Accepted',
-            'delivered' => 'Delivered',
-            'failed' => 'Failed',
-            'bounced' => 'Bounced',
-            default => ucfirst($this->status),
-        };
-    }
-
-    /**
      * Check if this email can be retried.
      */
     public function canRetry(): bool
     {
-        return in_array($this->status, ['failed', 'bounced']) && $this->retry_count < 5;
+        return in_array($this->status, [EmailLogStatus::FAILED, EmailLogStatus::BOUNCED]) && $this->retry_count < 5;
     }
 
     /**
@@ -115,7 +88,7 @@ class EmailLog extends Model
     public function markAsAccepted(?string $smtpResponse = null): void
     {
         $this->update([
-            'status' => 'accepted',
+            'status' => EmailLogStatus::ACCEPTED,
             'smtp_response' => $smtpResponse,
             'sent_at' => now(),
             'error_message' => null,
@@ -192,7 +165,7 @@ class EmailLog extends Model
     public function markAsPermanentFail(string $reason): void
     {
         $this->update([
-            'status' => 'failed',
+            'status' => EmailLogStatus::FAILED,
             'error_message' => $reason,
             'failed_at' => now(),
             'permanent_fail_at' => now(),

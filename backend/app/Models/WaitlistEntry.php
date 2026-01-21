@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\WaitlistEntryStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,6 +20,7 @@ class WaitlistEntry extends Model
     ];
 
     protected $casts = [
+        'status' => WaitlistEntryStatus::class,
         'invited_at' => 'datetime',
     ];
 
@@ -28,7 +30,7 @@ class WaitlistEntry extends Model
     public function markAsInvited(): void
     {
         $this->update([
-            'status' => 'invited',
+            'status' => WaitlistEntryStatus::INVITED,
             'invited_at' => now(),
         ]);
     }
@@ -38,7 +40,7 @@ class WaitlistEntry extends Model
      */
     public function scopePending(Builder $query): Builder
     {
-        return $query->where('status', 'pending');
+        return $query->where('status', WaitlistEntryStatus::PENDING);
     }
 
     /**
@@ -46,7 +48,7 @@ class WaitlistEntry extends Model
      */
     public function scopeInvited(Builder $query): Builder
     {
-        return $query->where('status', 'invited');
+        return $query->where('status', WaitlistEntryStatus::INVITED);
     }
 
     /**

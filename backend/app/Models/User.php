@@ -365,6 +365,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
+            'google_token' => 'encrypted',
+            'google_refresh_token' => 'encrypted',
         ];
     }
 }

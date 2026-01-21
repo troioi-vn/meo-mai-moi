@@ -125,29 +125,74 @@ class DatabaseSeeder extends Seeder
 
     private function addWeightHistory(Pet $pet, int $count): void
     {
-        if ($pet->petType->slug === 'bird') {
+        $slug = $pet->petType->slug ?? 'cat';
+        if ($slug === 'bird') {
             return;
         }
 
-        $startDate = now()->subYears(5);
-        $usedDates = [];
+        // Only seed realistic weight histories for cats and dogs.
+        if (! in_array($slug, ['cat', 'dog'], true)) {
+            return;
+        }
 
+        $count = max(1, $count);
+
+        // Keep consecutive measurements stable (<= 3% change per record).
+        $maxStepChange = 0.03;
+
+        // Species-specific realistic ranges (kg) and a typical adult baseline.
+        // Note: these are intentionally conservative to avoid outliers in demo data.
+        if ($slug === 'cat') {
+            $minKg = 2.6;
+            $maxKg = 6.8;
+            $baseWeight = 3.6 + (rand(0, 18) / 10); // 3.6 - 5.4 kg
+            $baseBandMin = $baseWeight * 0.88;
+            $baseBandMax = $baseWeight * 1.12;
+        } else { // dog
+            $minKg = 4.0;
+            $maxKg = 32.0;
+            $baseWeight = 9.0 + (rand(0, 190) / 10); // 9.0 - 28.0 kg
+            $baseBandMin = $baseWeight * 0.85;
+            $baseBandMax = $baseWeight * 1.15;
+        }
+
+        // Start close to baseline.
+        $currentWeight = $baseWeight * (1 + (rand(-15, 15) / 1000)); // +/- 1.5%
+
+        // Generate evenly spaced dates starting from 5 years ago
+        $startDate = now()->subYears(5)->startOfDay();
+        $daysPerRecord = (int) (1825 / max($count, 1)); // Spread evenly across 5 years
+        
         for ($i = 0; $i < $count; $i++) {
-            if ($count === 50) {
-                $recordDate = (clone $startDate)->addDays($i * 36); // Roughly every 36 days over 5 years
-            } else {
-                // Ensure unique dates for smaller counts
-                do {
-                    $recordDate = now()->subDays(rand(0, 365 * 5))->startOfDay();
-                } while (in_array($recordDate->toDateString(), $usedDates));
-            }
+            $recordDate = $startDate->copy()->addDays($i * $daysPerRecord);
 
-            $usedDates[] = $recordDate->toDateString();
+            // Create a gentle trend over time:
+            // - early period: slight growth
+            // - middle: mostly stable
+            // - later: tiny drift (could be up or down)
+            $t = $count > 1 ? ($i / ($count - 1)) : 0.0;
 
-            WeightHistory::factory()->create([
+            $drift = match (true) {
+                $t < 0.15 => rand(0, 12) / 1000,      // 0.0% .. +1.2%
+                $t > 0.85 => rand(-8, 8) / 1000,      // -0.8% .. +0.8%
+                default => rand(-4, 4) / 1000,        // -0.4% .. +0.4%
+            };
+
+            $noise = rand(-10, 10) / 1000; // -1.0% .. +1.0%
+
+            $changePercent = $drift + $noise;
+            $changePercent = max(-$maxStepChange, min($maxStepChange, $changePercent));
+            $currentWeight = $currentWeight * (1 + $changePercent);
+
+            // Hard clamp to species limits and also keep within a tighter band around baseline.
+            $minWeight = max($minKg, $baseBandMin);
+            $maxWeight = min($maxKg, $baseBandMax);
+            $currentWeight = max($minWeight, min($maxWeight, $currentWeight));
+
+            WeightHistory::create([
                 'pet_id' => $pet->id,
-                'record_date' => $recordDate,
-                'weight_kg' => rand(200, 1000) / 100, // 2.00 to 10.00 kg
+                'record_date' => $recordDate->toDateString(),
+                'weight_kg' => round($currentWeight, 2),
             ]);
         }
     }

@@ -17,7 +17,7 @@ class WeightHistoryFactory extends Factory
     {
         return [
             'pet_id' => Pet::factory(),
-            'weight_kg' => $this->faker->randomFloat(2, 2, 40),
+            'weight_kg' => $this->faker->randomFloat(2, 3, 15),
             'record_date' => $this->faker->dateTimeBetween('-1 year', 'now'),
         ];
     }

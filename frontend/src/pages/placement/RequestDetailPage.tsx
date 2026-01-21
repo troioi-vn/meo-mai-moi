@@ -11,7 +11,7 @@ import {
   finalizePlacementRequest,
   deletePlacementRequest,
 } from '@/api/placement'
-import type { PlacementRequestDetail, PlacementRequestResponse } from '@/types/placement'
+import type { PlacementRequestDetail } from '@/types/placement'
 import type { PlacementRequestType } from '@/types/helper-profile'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'

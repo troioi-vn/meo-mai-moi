@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react'
-import { Link, useParams, useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useParams, useNavigate } from 'react-router-dom'
+import { Card, CardContent } from '@/components/ui/card'
 import { FileInput } from '@/components/ui/FileInput'
 import useHelperProfileForm from '@/hooks/useHelperProfileForm'
 import { getPetTypes } from '@/api/pets'
@@ -15,31 +14,17 @@ import {
   deleteHelperProfilePhoto,
 } from '@/api/helper-profiles'
 import { toast } from 'sonner'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
 import { HelperProfileFormFields } from '@/components/helper/HelperProfileFormFields'
 import { PetTypesSelector } from '@/components/helper/PetTypesSelector'
-import { PhotosGrid } from '@/components/helper/PhotosGrid'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
-import { Trash2, Heart, Camera, UserCog } from 'lucide-react'
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb'
+import { Heart, Camera } from 'lucide-react'
+import { HelperProfileEditBreadcrumb } from '@/components/helper/profile-edit/HelperProfileEditBreadcrumb'
+import { HelperProfileEditHero } from '@/components/helper/profile-edit/HelperProfileEditHero'
+import { FormSectionHeader } from '@/components/helper/profile-edit/FormSectionHeader'
+import { CurrentPhotosCard } from '@/components/helper/profile-edit/CurrentPhotosCard'
+import { ProfileStatusSection } from '@/components/helper/profile-edit/ProfileStatusSection'
+import { EditFormActions } from '@/components/helper/profile-edit/EditFormActions'
 
 interface ApiError {
   response?: {
@@ -48,13 +33,6 @@ interface ApiError {
     }
   }
 }
-
-const FormSectionHeader = ({ icon: Icon, title }: { icon: React.ElementType; title: string }) => (
-  <div className="flex items-center gap-2 pb-2 border-b mb-4">
-    <Icon className="h-5 w-5 text-primary" />
-    <h3 className="text-lg font-semibold">{title}</h3>
-  </div>
-)
 
 const HelperProfileEditPage: React.FC = () => {
   const { id } = useParams()
@@ -210,64 +188,20 @@ const HelperProfileEditPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <div className="px-4 py-4">
-        <div className="max-w-3xl mx-auto">
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/">Home</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/helper">Helper</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>{helperName}</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-      </div>
+      <HelperProfileEditBreadcrumb helperName={helperName} />
 
       <main className="px-4 pb-12">
         <div className="max-w-3xl mx-auto">
-          <div className="mb-8 text-center">
-            <div className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-full mb-4">
-              <UserCog className="h-8 w-8 text-primary" />
-            </div>
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Edit Helper Profile</h1>
-            <p className="text-muted-foreground max-w-lg mx-auto">
-              Keep your profile up to date to help pet owners find the best match for their pets.
-            </p>
-          </div>
+          <HelperProfileEditHero />
 
           <div className="space-y-8">
-            {/* Photos Section */}
-            {photos.length > 0 && (
-              <Card className="border-none shadow-lg bg-card/50 backdrop-blur-sm">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Camera className="h-5 w-5 text-primary" />
-                    Current Photos
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <PhotosGrid
-                    photos={photos}
-                    onDelete={(photoId) => {
-                      deletePhotoMutation.mutate(photoId)
-                    }}
-                    deleting={deletePhotoMutation.isPending}
-                  />
-                </CardContent>
-              </Card>
-            )}
+            <CurrentPhotosCard
+              photos={photos}
+              onDelete={(photoId) => {
+                deletePhotoMutation.mutate(photoId)
+              }}
+              deleting={deletePhotoMutation.isPending}
+            />
 
             {/* Edit Form */}
             <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm">
@@ -307,96 +241,31 @@ const HelperProfileEditPage: React.FC = () => {
                     </div>
                   </section>
 
-                  <section className="pt-6 border-t space-y-4">
-                    <FormSectionHeader icon={UserCog} title="Profile Status" />
-                    <div className="flex flex-wrap gap-4">
-                      {data.data.status === 'active' && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => {
-                            archiveMutation.mutate()
-                          }}
-                          disabled={archiveMutation.isPending}
-                        >
-                          {archiveMutation.isPending ? 'Archiving...' : 'Archive Profile'}
-                        </Button>
-                      )}
-                      {data.data.status === 'archived' && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => {
-                            restoreMutation.mutate()
-                          }}
-                          disabled={restoreMutation.isPending}
-                        >
-                          {restoreMutation.isPending ? 'Restoring...' : 'Restore Profile'}
-                        </Button>
-                      )}
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            disabled={deleteMutation.isPending}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            {deleteMutation.isPending ? 'Deleting...' : 'Delete Profile'}
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This action cannot be undone. This will permanently delete your helper
-                              profile and remove your data from our servers.
-                              {data.data.placement_responses &&
-                                data.data.placement_responses.length > 0 && (
-                                  <p className="mt-2 font-semibold text-destructive">
-                                    Note: Profiles with associated placement requests cannot be
-                                    deleted.
-                                  </p>
-                                )}
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => {
-                                deleteMutation.mutate()
-                              }}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </section>
+                  <ProfileStatusSection
+                    status={data.data.status}
+                    hasPlacementResponses={Boolean(
+                      data.data.placement_responses && data.data.placement_responses.length > 0
+                    )}
+                    onArchive={() => {
+                      archiveMutation.mutate()
+                    }}
+                    onRestore={() => {
+                      restoreMutation.mutate()
+                    }}
+                    onDelete={() => {
+                      deleteMutation.mutate()
+                    }}
+                    isArchiving={archiveMutation.isPending}
+                    isRestoring={restoreMutation.isPending}
+                    isDeleting={deleteMutation.isPending}
+                  />
 
-                  <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t">
-                    <Button
-                      type="submit"
-                      aria-label="Update Helper Profile"
-                      disabled={isSubmitting}
-                      className="flex-1 h-12 text-lg font-semibold"
-                    >
-                      {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        handleCancel()
-                      }}
-                      disabled={isSubmitting}
-                      className="h-12 px-8"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
+                  <EditFormActions
+                    isSubmitting={isSubmitting}
+                    onCancel={() => {
+                      handleCancel()
+                    }}
+                  />
                 </form>
               </CardContent>
             </Card>

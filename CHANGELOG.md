@@ -29,6 +29,8 @@ All notable changes to this project are documented here, following the [Keep a C
   - `NotificationPreferencesGroups.tsx` - Manages rendering of grouped notification preferences
   - `NotificationPreferencesSkeleton.tsx` - Dedicated loading skeleton component
 
+- **Helper profile pages refactor**: Broke down helper profile list/view/edit pages into smaller components under `frontend/src/components/helper/profile-*` to improve maintainability.
+
 ### Fixed
 
 - **Doubled Bell Notifications**: Fixed an issue where rehoming flow notifications appeared twice in the bell UI (once for 'in_app' channel and once for 'email' channel). The `bellVisible` scope now correctly filters out non-in-app notification channels from the bell count and list. Marking all notifications as read also now only affects bell-visible records to preserve engagement state for other channels. (Tests: `UnifiedNotificationsBellVisibilityTest` passed.)

@@ -6,6 +6,7 @@
     "src/**/*.test.tsx",
     "src/setupTests.ts",
     "src/test-utils.ts",
-    "src/**/__tests__/**"
+    "src/**/__tests__/**",
+    "src/components/ui/**"
   ]
 }

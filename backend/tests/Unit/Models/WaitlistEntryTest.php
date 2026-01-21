@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Models;
 
+use App\Enums\WaitlistEntryStatus;
 use App\Models\WaitlistEntry;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -21,7 +22,7 @@ class WaitlistEntryTest extends TestCase
         $entry->markAsInvited();
 
         $entry->refresh();
-        $this->assertEquals('invited', $entry->status);
+        $this->assertEquals(WaitlistEntryStatus::INVITED, $entry->status);
         $this->assertNotNull($entry->invited_at);
         $this->assertInstanceOf(Carbon::class, $entry->invited_at);
     }
@@ -158,7 +159,7 @@ class WaitlistEntryTest extends TestCase
         $entry = WaitlistEntry::create($data);
 
         $this->assertEquals($data['email'], $entry->email);
-        $this->assertEquals($data['status'], $entry->status);
+        $this->assertEquals(WaitlistEntryStatus::PENDING, $entry->status);
         $this->assertEquals($data['invited_at'], $entry->invited_at);
     }
 }

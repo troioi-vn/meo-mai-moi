@@ -20,6 +20,24 @@ class Notification extends Model
 {
     use HasFactory;
 
+    protected static function booted(): void
+    {
+        static::saving(function (self $notification): void {
+            $isRead = (bool) $notification->is_read;
+
+            // Keep the redundant fields in sync.
+            if ($isRead && $notification->read_at === null) {
+                $notification->read_at = now();
+            }
+
+            if (! $isRead && $notification->read_at !== null) {
+                $notification->read_at = null;
+            }
+
+            $notification->is_read = $notification->read_at !== null;
+        });
+    }
+
     protected $fillable = [
         'user_id',
         'message',
@@ -35,6 +53,7 @@ class Notification extends Model
 
     protected $casts = [
         'data' => 'array',
+        'is_read' => 'boolean',
         'read_at' => 'datetime',
         'delivered_at' => 'datetime',
         'failed_at' => 'datetime',

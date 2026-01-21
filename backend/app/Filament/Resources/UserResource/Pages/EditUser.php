@@ -31,12 +31,14 @@ class EditUser extends EditRecord
         return trans('filament-users::user.resource.title.edit');
     }
 
-    protected function getActions(): array
+    protected function getHeaderActions(): array
     {
         $ret = [];
 
         if (config('filament-users.impersonate')) {
-            $ret[] = Impersonate::make()->record($this->getRecord());
+            $ret[] = Impersonate::make()
+                ->redirectTo('/')
+                ->record($this->getRecord());
         }
 
         $ret[] = DeleteAction::make();

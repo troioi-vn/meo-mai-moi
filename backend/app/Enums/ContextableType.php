@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-enum ContextableType: string
+use Filament\Support\Contracts\HasLabel;
+
+enum ContextableType: string implements HasLabel
 {
     case PLACEMENT_REQUEST = 'PlacementRequest';
     case PET = 'Pet';
 
-    public function getLabel(): string
+    public function getLabel(): ?string
     {
         return match ($this) {
             self::PLACEMENT_REQUEST => 'Placement Request',

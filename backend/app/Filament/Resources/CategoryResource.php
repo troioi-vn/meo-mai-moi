@@ -6,7 +6,6 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CategoryResource\Pages;
 use App\Models\Category;
-use App\Models\PetType;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -19,7 +18,6 @@ use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -31,61 +29,63 @@ class CategoryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
 
-    protected static ?string $navigationGroup = 'System';
+    protected static ?string $navigationGroup = 'Pet Management';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                TextInput::make('name')
-                    ->required()
-                    ->maxLength(50)
-                    ->live(onBlur: true)
-                    ->afterStateUpdated(function (string $context, $state, callable $set): void {
-                        if ($context === 'create') {
-                            $set('slug', Str::slug($state));
-                        }
-                    }),
+                Forms\Components\Section::make('General Information')
+                    ->schema([
+                        TextInput::make('name')
+                            ->required()
+                            ->maxLength(50)
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function (string $context, $state, callable $set): void {
+                                if ($context === 'create') {
+                                    $set('slug', Str::slug($state));
+                                }
+                            }),
 
-                TextInput::make('slug')
-                    ->required()
-                    ->maxLength(60)
-                    ->rules(['regex:/^[a-z0-9-]+$/'])
-                    ->helperText('Lowercase letters, numbers, and hyphens only'),
+                        TextInput::make('slug')
+                            ->required()
+                            ->maxLength(60)
+                            ->rules(['regex:/^[a-z0-9-]+$/'])
+                            ->helperText('Lowercase letters, numbers, and hyphens only'),
 
-                Select::make('pet_type_id')
-                    ->label('Pet Type')
-                    ->options(PetType::active()->ordered()->pluck('name', 'id'))
-                    ->required()
-                    ->searchable()
-                    ->preload(),
+                        Select::make('pet_type_id')
+                            ->label('Pet Type')
+                            ->relationship('petType', 'name')
+                            ->required()
+                            ->searchable()
+                            ->preload(),
 
-                Textarea::make('description')
-                    ->maxLength(500)
-                    ->rows(3),
+                        Textarea::make('description')
+                            ->maxLength(500)
+                            ->rows(3)
+                            ->columnSpanFull(),
+                    ])->columns(2),
 
-                Toggle::make('is_approved')
-                    ->label('Approved')
-                    ->helperText('Approved categories are visible to all users')
-                    ->dehydrated(false)
-                    ->afterStateHydrated(function ($component, $record): void {
-                        if ($record) {
-                            $component->state($record->approved_at !== null);
-                        }
-                    }),
+                Forms\Components\Section::make('Status & Metadata')
+                    ->schema([
+                        Toggle::make('is_approved')
+                            ->label('Approved')
+                            ->helperText('Approved categories are visible to all users')
+                            ->dehydrated(false)
+                            ->afterStateHydrated(function ($component, $record): void {
+                                if ($record) {
+                                    $component->state($record->approved_at !== null);
+                                }
+                            }),
 
-                TextInput::make('created_by_name')
-                    ->label('Created By')
-                    ->disabled()
-                    ->dehydrated(false)
-                    ->visible(fn ($record) => $record && $record->creator)
-                    ->afterStateHydrated(function ($component, $record): void {
-                        if ($record && $record->creator) {
-                            $component->state($record->creator->name);
-                        }
-                    }),
+                        Forms\Components\Select::make('created_by')
+                            ->label('Created By')
+                            ->relationship('creator', 'name')
+                            ->disabled()
+                            ->visible(fn ($record) => $record && $record->creator),
+                    ])->columns(2),
             ]);
     }
 
@@ -120,13 +120,15 @@ class CategoryResource extends Resource
                         return $state;
                     }),
 
-                BadgeColumn::make('approved_at')
+                TextColumn::make('approved_at')
                     ->label('Status')
                     ->getStateUsing(fn ($record) => $record->approved_at ? 'Approved' : 'Pending')
-                    ->colors([
-                        'success' => 'Approved',
-                        'warning' => 'Pending',
-                    ])
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Approved' => 'success',
+                        'Pending' => 'warning',
+                        default => 'gray',
+                    })
                     ->sortable(),
 
                 TextColumn::make('creator.name')
@@ -155,22 +157,20 @@ class CategoryResource extends Resource
             ->filters([
                 SelectFilter::make('pet_type_id')
                     ->label('Pet Type')
-                    ->options(PetType::active()->ordered()->pluck('name', 'id'))
+                    ->relationship('petType', 'name')
+                    ->searchable()
+                    ->preload()
                     ->native(false),
 
-                SelectFilter::make('status')
+                Tables\Filters\TernaryFilter::make('approved')
                     ->label('Approval Status')
-                    ->options([
-                        'approved' => 'Approved',
-                        'pending' => 'Pending Approval',
-                    ])
-                    ->query(function ($query, array $data) {
-                        return match ($data['value'] ?? null) {
-                            'approved' => $query->whereNotNull('approved_at'),
-                            'pending' => $query->whereNull('approved_at'),
-                            default => $query,
-                        };
-                    })
+                    ->placeholder('All')
+                    ->trueLabel('Approved')
+                    ->falseLabel('Pending Approval')
+                    ->queries(
+                        true: fn (Builder $query) => $query->whereNotNull('approved_at'),
+                        false: fn (Builder $query) => $query->whereNull('approved_at'),
+                    )
                     ->native(false),
             ])
             ->actions([

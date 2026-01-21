@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-enum NotificationType: string
+use Filament\Support\Contracts\HasColor;
+use Filament\Support\Contracts\HasLabel;
+
+enum NotificationType: string implements HasColor, HasLabel
 {
     // Owner receives: when someone responds to their placement request
     case PLACEMENT_REQUEST_RESPONSE = 'placement_request_response';
@@ -69,7 +72,7 @@ enum NotificationType: string
         };
     }
 
-    public function getLabel(): string
+    public function getLabel(): ?string
     {
         return match ($this) {
             self::PLACEMENT_REQUEST_RESPONSE => 'New response to your request',
@@ -82,6 +85,20 @@ enum NotificationType: string
             self::PET_BIRTHDAY => 'Pet birthday',
             self::EMAIL_VERIFICATION => 'Email verification',
             self::NEW_MESSAGE => 'New message',
+        };
+    }
+
+    public function getColor(): string|array|null
+    {
+        return match ($this) {
+            self::PLACEMENT_REQUEST_RESPONSE => 'info',
+            self::HELPER_RESPONSE_ACCEPTED, self::TRANSFER_CONFIRMED => 'success',
+            self::HELPER_RESPONSE_REJECTED, self::HELPER_RESPONSE_CANCELED => 'danger',
+            self::PLACEMENT_ENDED => 'warning',
+            self::VACCINATION_REMINDER => 'primary',
+            self::PET_BIRTHDAY => 'warning',
+            self::EMAIL_VERIFICATION => 'info',
+            self::NEW_MESSAGE => 'success',
         };
     }
 

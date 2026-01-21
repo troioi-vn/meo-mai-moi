@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Enums\ChatMessageType;
 use App\Filament\Resources\ChatMessageResource\Pages;
 use App\Models\ChatMessage;
 use Filament\Forms;
@@ -20,7 +21,7 @@ class ChatMessageResource extends Resource
 
     protected static ?string $navigationGroup = 'Communication';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $navigationLabel = 'Chat Messages';
 
@@ -44,10 +45,8 @@ class ChatMessageResource extends Resource
 
                         Forms\Components\Select::make('type')
                             ->label('Message Type')
-                            ->options([
-                                'text' => 'Text',
-                            ])
-                            ->default('text')
+                            ->options(ChatMessageType::class)
+                            ->default(ChatMessageType::TEXT->value)
                             ->required(),
 
                         Forms\Components\Textarea::make('content')
@@ -76,6 +75,10 @@ class ChatMessageResource extends Resource
                     ->label('Sender')
                     ->searchable()
                     ->sortable(),
+
+                Tables\Columns\TextColumn::make('type')
+                    ->label('Type')
+                    ->badge(),
 
                 Tables\Columns\TextColumn::make('content')
                     ->label('Content')

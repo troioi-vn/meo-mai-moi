@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Enums\ReviewStatus;
 use App\Filament\Resources\ReviewResource\Pages;
 use App\Models\Review;
 use Filament\Forms;
@@ -24,7 +25,7 @@ class ReviewResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-star';
 
-    protected static ?string $navigationGroup = 'Users & Helpers';
+    protected static ?string $navigationGroup = 'Communication';
 
     protected static ?int $navigationSort = 3;
 
@@ -74,13 +75,8 @@ class ReviewResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('status')
                             ->label('Status')
-                            ->options([
-                                'active' => 'Active',
-                                'hidden' => 'Hidden',
-                                'flagged' => 'Flagged',
-                                'deleted' => 'Deleted',
-                            ])
-                            ->default('active')
+                            ->options(ReviewStatus::class)
+                            ->default(ReviewStatus::ACTIVE->value)
                             ->required(),
 
                         Forms\Components\Toggle::make('is_flagged')
@@ -143,14 +139,9 @@ class ReviewResource extends Resource
                         return $state;
                     }),
 
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')
                     ->label('Status')
-                    ->colors([
-                        'success' => 'active',
-                        'warning' => 'flagged',
-                        'danger' => 'hidden',
-                        'secondary' => 'deleted',
-                    ]),
+                    ->badge(),
 
                 Tables\Columns\IconColumn::make('is_flagged')
                     ->label('Flagged')
@@ -174,12 +165,7 @@ class ReviewResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('status')
-                    ->options([
-                        'active' => 'Active',
-                        'hidden' => 'Hidden',
-                        'flagged' => 'Flagged',
-                        'deleted' => 'Deleted',
-                    ]),
+                    ->options(ReviewStatus::class),
 
                 SelectFilter::make('rating')
                     ->options([

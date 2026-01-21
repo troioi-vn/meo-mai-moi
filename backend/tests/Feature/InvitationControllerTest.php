@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\InvitationStatus;
 use App\Models\Invitation;
 use App\Models\User;
 use Carbon\Carbon;
@@ -156,7 +157,7 @@ class InvitationControllerTest extends TestCase
             ]);
 
         $invitation->refresh();
-        $this->assertEquals('revoked', $invitation->status);
+        $this->assertEquals(InvitationStatus::REVOKED, $invitation->status);
     }
 
     public function test_user_cannot_revoke_other_users_invitation()
@@ -176,7 +177,7 @@ class InvitationControllerTest extends TestCase
             ]);
 
         $invitation->refresh();
-        $this->assertEquals('pending', $invitation->status);
+        $this->assertEquals(InvitationStatus::PENDING, $invitation->status);
     }
 
     public function test_cannot_revoke_already_accepted_invitation()
@@ -197,7 +198,7 @@ class InvitationControllerTest extends TestCase
             ]);
 
         $invitation->refresh();
-        $this->assertEquals('accepted', $invitation->status);
+        $this->assertEquals(InvitationStatus::ACCEPTED, $invitation->status);
     }
 
     public function test_cannot_revoke_non_existent_invitation()

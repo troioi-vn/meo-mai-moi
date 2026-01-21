@@ -16,7 +16,6 @@ use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -30,50 +29,60 @@ class CityResource extends Resource
 
     protected static ?string $navigationGroup = 'System';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            TextInput::make('name')
-                ->required()
-                ->maxLength(100)
-                ->live(onBlur: true)
-                ->afterStateUpdated(function (string $context, $state, callable $set): void {
-                    if ($context === 'create') {
-                        $set('slug', Str::slug($state));
-                    }
-                }),
-            TextInput::make('slug')
-                ->required()
-                ->maxLength(120)
-                ->rules(['regex:/^[a-z0-9-]+$/'])
-                ->helperText('Lowercase letters, numbers, and hyphens only'),
-            TextInput::make('country')
-                ->required()
-                ->maxLength(2)
-                ->helperText('ISO 3166-1 alpha-2'),
-            Textarea::make('description')
-                ->maxLength(500)
-                ->rows(3),
-            Toggle::make('is_approved')
-                ->label('Approved')
-                ->dehydrated(false)
-                ->afterStateHydrated(function ($component, $record): void {
-                    if ($record) {
-                        $component->state($record->approved_at !== null);
-                    }
-                }),
-            TextInput::make('created_by_name')
-                ->label('Created By')
-                ->disabled()
-                ->dehydrated(false)
-                ->visible(fn ($record) => $record && $record->creator)
-                ->afterStateHydrated(function ($component, $record): void {
-                    if ($record && $record->creator) {
-                        $component->state($record->creator->name);
-                    }
-                }),
+            Forms\Components\Section::make('General Information')
+                ->schema([
+                    TextInput::make('name')
+                        ->required()
+                        ->maxLength(100)
+                        ->live(onBlur: true)
+                        ->afterStateUpdated(function (string $context, $state, callable $set): void {
+                            if ($context === 'create') {
+                                $set('slug', Str::slug($state));
+                            }
+                        }),
+                    TextInput::make('slug')
+                        ->required()
+                        ->maxLength(120)
+                        ->rules(['regex:/^[a-z0-9-]+$/'])
+                        ->helperText('Lowercase letters, numbers, and hyphens only'),
+                    TextInput::make('country')
+                        ->required()
+                        ->maxLength(2)
+                        ->helperText('ISO 3166-1 alpha-2'),
+                    Textarea::make('description')
+                        ->maxLength(500)
+                        ->rows(3)
+                        ->columnSpanFull(),
+                ])
+                ->columns(2),
+
+            Forms\Components\Section::make('Status & Metadata')
+                ->schema([
+                    Toggle::make('is_approved')
+                        ->label('Approved')
+                        ->dehydrated(false)
+                        ->afterStateHydrated(function ($component, $record): void {
+                            if ($record) {
+                                $component->state($record->approved_at !== null);
+                            }
+                        }),
+                    TextInput::make('created_by_name')
+                        ->label('Created By')
+                        ->disabled()
+                        ->dehydrated(false)
+                        ->visible(fn ($record) => $record && $record->creator)
+                        ->afterStateHydrated(function ($component, $record): void {
+                            if ($record && $record->creator) {
+                                $component->state($record->creator->name);
+                            }
+                        }),
+                ])
+                ->columns(2),
         ]);
     }
 
@@ -87,13 +96,15 @@ class CityResource extends Resource
                 TextColumn::make('description')
                     ->limit(40)
                     ->tooltip(fn (TextColumn $column): ?string => $column->getState()),
-                BadgeColumn::make('approved_at')
+                TextColumn::make('approved_at')
                     ->label('Status')
+                    ->badge()
                     ->getStateUsing(fn ($record) => $record->approved_at ? 'Approved' : 'Pending')
-                    ->colors([
-                        'success' => 'Approved',
-                        'warning' => 'Pending',
-                    ])
+                    ->color(fn (string $state): string => match ($state) {
+                        'Approved' => 'success',
+                        'Pending' => 'warning',
+                        default => 'gray',
+                    })
                     ->sortable(),
                 TextColumn::make('creator.name')
                     ->label('Created By')
@@ -124,18 +135,15 @@ class CityResource extends Resource
                             ->pluck('country', 'country')
                     )
                     ->native(false),
-                SelectFilter::make('status')
-                    ->options([
-                        'approved' => 'Approved',
-                        'pending' => 'Pending Approval',
-                    ])
-                    ->query(function ($query, array $data) {
-                        return match ($data['value'] ?? null) {
-                            'approved' => $query->whereNotNull('approved_at'),
-                            'pending' => $query->whereNull('approved_at'),
-                            default => $query,
-                        };
-                    })
+                Tables\Filters\TernaryFilter::make('approved')
+                    ->label('Approval Status')
+                    ->placeholder('All')
+                    ->trueLabel('Approved')
+                    ->falseLabel('Pending Approval')
+                    ->queries(
+                        true: fn (Builder $query) => $query->whereNotNull('approved_at'),
+                        false: fn (Builder $query) => $query->whereNull('approved_at'),
+                    )
                     ->native(false),
             ])
             ->actions([

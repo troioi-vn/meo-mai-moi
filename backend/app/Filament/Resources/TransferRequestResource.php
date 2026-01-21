@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Enums\TransferRequestStatus;
 use App\Filament\Resources\TransferRequestResource\Pages;
 use App\Models\TransferRequest;
 use Filament\Forms;
@@ -16,7 +17,6 @@ use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -28,11 +28,9 @@ class TransferRequestResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-path';
 
-    protected static ?string $navigationGroup = 'Pet Management';
+    protected static ?string $navigationGroup = 'Requests';
 
-    protected static ?string $navigationLabel = 'Transfer Requests';
-
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
@@ -69,15 +67,9 @@ class TransferRequestResource extends Resource
 
                 Select::make('status')
                     ->label('Status')
-                    ->options([
-                        'pending' => 'Pending',
-                        'confirmed' => 'Confirmed',
-                        'rejected' => 'Rejected',
-                        'expired' => 'Expired',
-                        'canceled' => 'Canceled',
-                    ])
+                    ->options(TransferRequestStatus::class)
                     ->required()
-                    ->default('pending'),
+                    ->default(TransferRequestStatus::PENDING->value),
 
                 DateTimePicker::make('confirmed_at')
                     ->label('Confirmed At')
@@ -116,15 +108,9 @@ class TransferRequestResource extends Resource
                     ->sortable()
                     ->searchable(),
 
-                BadgeColumn::make('status')
+                TextColumn::make('status')
                     ->label('Status')
-                    ->colors([
-                        'warning' => 'pending',
-                        'success' => 'confirmed',
-                        'danger' => 'rejected',
-                        'secondary' => 'expired',
-                        'gray' => 'canceled',
-                    ]),
+                    ->badge(),
 
                 TextColumn::make('confirmed_at')
                     ->label('Confirmed Date')
@@ -146,13 +132,7 @@ class TransferRequestResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('status')
-                    ->options([
-                        'pending' => 'Pending',
-                        'confirmed' => 'Confirmed',
-                        'rejected' => 'Rejected',
-                        'expired' => 'Expired',
-                        'canceled' => 'Canceled',
-                    ]),
+                    ->options(TransferRequestStatus::class),
 
                 Tables\Filters\Filter::make('created_from')
                     ->form([

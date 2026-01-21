@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Enums\InvitationStatus;
 use App\Models\Invitation;
 use App\Models\User;
 use App\Services\InvitationService;
@@ -33,7 +34,7 @@ class InvitationServiceTest extends TestCase
 
         $this->assertInstanceOf(Invitation::class, $invitation);
         $this->assertEquals($this->user->id, $invitation->inviter_user_id);
-        $this->assertEquals('pending', $invitation->status);
+        $this->assertEquals(InvitationStatus::PENDING, $invitation->status);
         $this->assertNotEmpty($invitation->code);
         $this->assertEquals(32, strlen($invitation->code));
         $this->assertDatabaseHas('invitations', [
@@ -112,7 +113,7 @@ class InvitationServiceTest extends TestCase
 
         $this->assertTrue($result);
         $invitation->refresh();
-        $this->assertEquals('accepted', $invitation->status);
+        $this->assertEquals(InvitationStatus::ACCEPTED, $invitation->status);
         $this->assertEquals($recipient->id, $invitation->recipient_user_id);
     }
 
@@ -149,7 +150,7 @@ class InvitationServiceTest extends TestCase
 
         $this->assertTrue($result);
         $invitation->refresh();
-        $this->assertEquals('revoked', $invitation->status);
+        $this->assertEquals(InvitationStatus::REVOKED, $invitation->status);
     }
 
     public function test_revoke_invitation_returns_false_for_non_existent_invitation()
@@ -190,8 +191,8 @@ class InvitationServiceTest extends TestCase
         $this->assertEquals(1, $count);
         $expiredInvitation->refresh();
         $validInvitation->refresh();
-        $this->assertEquals('expired', $expiredInvitation->status);
-        $this->assertEquals('pending', $validInvitation->status);
+        $this->assertEquals(InvitationStatus::EXPIRED, $expiredInvitation->status);
+        $this->assertEquals(InvitationStatus::PENDING, $validInvitation->status);
     }
 
     public function test_get_user_invitation_stats_returns_correct_counts()

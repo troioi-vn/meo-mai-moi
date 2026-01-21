@@ -12,6 +12,11 @@ class ChatPolicy
 {
     use HandlesAuthorization;
 
+    public function viewAny(User $user): bool
+    {
+        return $this->isAdmin($user);
+    }
+
     /**
      * Determine whether the user can view the chat.
      */
@@ -26,6 +31,11 @@ class ChatPolicy
     public function create(User $user): bool
     {
         return true;
+    }
+
+    public function update(User $user, Chat $chat): bool
+    {
+        return $this->isAdmin($user);
     }
 
     /**
@@ -43,6 +53,41 @@ class ChatPolicy
     public function delete(User $user, Chat $chat): bool
     {
         return $this->isAdmin($user) || $chat->hasParticipant($user);
+    }
+
+    public function deleteAny(User $user): bool
+    {
+        return $this->isAdmin($user);
+    }
+
+    public function forceDelete(User $user, Chat $chat): bool
+    {
+        return $this->isAdmin($user);
+    }
+
+    public function forceDeleteAny(User $user): bool
+    {
+        return $this->isAdmin($user);
+    }
+
+    public function restore(User $user, Chat $chat): bool
+    {
+        return $this->isAdmin($user);
+    }
+
+    public function restoreAny(User $user): bool
+    {
+        return $this->isAdmin($user);
+    }
+
+    public function replicate(User $user, Chat $chat): bool
+    {
+        return $this->isAdmin($user);
+    }
+
+    public function reorder(User $user): bool
+    {
+        return $this->isAdmin($user);
     }
 
     /**

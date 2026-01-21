@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\InvitationStatus;
 use App\Models\Invitation;
 use App\Models\Settings;
 use App\Models\User;
@@ -224,7 +225,7 @@ class GoogleAuthTest extends TestCase
         $this->assertAuthenticatedAs($user);
 
         $invitation->refresh();
-        $this->assertEquals('accepted', $invitation->status);
+        $this->assertEquals(InvitationStatus::ACCEPTED, $invitation->status);
         $this->assertEquals($user->id, $invitation->recipient_user_id);
     }
 

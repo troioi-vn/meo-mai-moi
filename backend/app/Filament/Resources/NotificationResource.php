@@ -23,9 +23,9 @@ class NotificationResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-bell';
 
-    protected static ?string $navigationGroup = 'Communication';
+    protected static ?string $navigationGroup = 'System';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $recordTitleAttribute = 'message';
 
@@ -44,18 +44,7 @@ class NotificationResource extends Resource
 
                         Forms\Components\Select::make('type')
                             ->label('Notification Type')
-                            ->options([
-                                'placement_request' => 'Placement Request',
-                                'transfer_request' => 'Transfer Request',
-                                'transfer_accepted' => 'Transfer Accepted',
-                                'transfer_rejected' => 'Transfer Rejected',
-                                'handover_scheduled' => 'Handover Scheduled',
-                                'handover_completed' => 'Handover Completed',
-                                'review_received' => 'Review Received',
-                                'profile_approved' => 'Profile Approved',
-                                'profile_rejected' => 'Profile Rejected',
-                                'system_announcement' => 'System Announcement',
-                            ])
+                            ->options(\App\Enums\NotificationType::class)
                             ->searchable()
                             ->nullable(),
 
@@ -81,9 +70,9 @@ class NotificationResource extends Resource
 
                 Forms\Components\Section::make('Delivery Status')
                     ->schema([
-                        Forms\Components\DateTimePicker::make('read_at')
-                            ->label('Read At')
-                            ->nullable(),
+                        Forms\Components\Toggle::make('is_read')
+                            ->label('Is Read')
+                            ->required(),
 
                         Forms\Components\DateTimePicker::make('read_at')
                             ->label('Read At')
@@ -116,17 +105,11 @@ class NotificationResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\BadgeColumn::make('type_display')
+                Tables\Columns\TextColumn::make('type')
                     ->label('Type')
-                    ->colors([
-                        'primary' => 'placement_request',
-                        'warning' => 'transfer_request',
-                        'success' => ['transfer_accepted', 'handover_completed', 'profile_approved'],
-                        'danger' => ['transfer_rejected', 'profile_rejected'],
-                        'info' => 'handover_scheduled',
-                        'secondary' => 'review_received',
-                        'gray' => 'system_announcement',
-                    ])
+                    ->badge()
+                    ->formatStateUsing(fn ($state) => \App\Enums\NotificationType::tryFrom($state)?->getLabel() ?? $state)
+                    ->color(fn ($state) => \App\Enums\NotificationType::tryFrom($state)?->getColor() ?? 'gray')
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('message')
@@ -142,13 +125,15 @@ class NotificationResource extends Resource
                     })
                     ->searchable(),
 
-                Tables\Columns\BadgeColumn::make('delivery_status')
+                Tables\Columns\TextColumn::make('delivery_status')
                     ->label('Delivery')
-                    ->colors([
-                        'warning' => 'pending',
-                        'success' => 'delivered',
-                        'danger' => 'failed',
-                    ])
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'delivered' => 'success',
+                        'failed' => 'danger',
+                        default => 'gray',
+                    })
                     ->formatStateUsing(fn (string $state): string => ucfirst($state))
                     ->tooltip(function (Notification $record): ?string {
                         if ($record->failed_at && $record->failure_reason) {
@@ -161,13 +146,15 @@ class NotificationResource extends Resource
                         return null;
                     }),
 
-                Tables\Columns\BadgeColumn::make('engagement_status')
+                Tables\Columns\TextColumn::make('engagement_status')
                     ->label('Engagement')
-                    ->colors([
-                        'gray' => 'not_delivered',
-                        'warning' => 'delivered_unread',
-                        'success' => 'read',
-                    ])
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'not_delivered' => 'gray',
+                        'delivered_unread' => 'warning',
+                        'read' => 'success',
+                        default => 'gray',
+                    })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'not_delivered' => 'Not Delivered',
                         'delivered_unread' => 'Unread',
@@ -220,18 +207,7 @@ class NotificationResource extends Resource
             ->filters([
                 SelectFilter::make('type')
                     ->label('Notification Type')
-                    ->options([
-                        'placement_request' => 'Placement Request',
-                        'transfer_request' => 'Transfer Request',
-                        'transfer_accepted' => 'Transfer Accepted',
-                        'transfer_rejected' => 'Transfer Rejected',
-                        'handover_scheduled' => 'Handover Scheduled',
-                        'handover_completed' => 'Handover Completed',
-                        'review_received' => 'Review Received',
-                        'profile_approved' => 'Profile Approved',
-                        'profile_rejected' => 'Profile Rejected',
-                        'system_announcement' => 'System Announcement',
-                    ]),
+                    ->options(\App\Enums\NotificationType::class),
 
                 SelectFilter::make('delivery_status')
                     ->label('Delivery Status')

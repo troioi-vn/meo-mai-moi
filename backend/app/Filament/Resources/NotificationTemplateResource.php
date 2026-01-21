@@ -25,9 +25,11 @@ class NotificationTemplateResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-bell-alert';
 
-    protected static ?string $navigationGroup = 'Notifications';
+    protected static ?string $navigationGroup = 'System';
 
-    protected static ?string $navigationLabel = 'Templates';
+    protected static ?string $navigationLabel = 'Notification Templates';
+
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
@@ -179,14 +181,24 @@ class NotificationTemplateResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('type')->searchable()->sortable(),
-                Tables\Columns\BadgeColumn::make('channel')->colors([
-                    'primary' => 'email',
-                    'success' => 'in_app',
-                ])->sortable(),
+                Tables\Columns\TextColumn::make('type')->searchable()->sortable()
+                    ->formatStateUsing(fn ($state) => \Illuminate\Support\Str::headline($state)),
+                Tables\Columns\TextColumn::make('channel')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'email' => 'primary',
+                        'in_app' => 'success',
+                        default => 'gray',
+                    })->sortable(),
                 Tables\Columns\TextColumn::make('locale')->sortable(),
                 Tables\Columns\TextColumn::make('engine')->sortable(),
-                Tables\Columns\TextColumn::make('status')->sortable(),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'active' => 'success',
+                        'inactive' => 'danger',
+                        default => 'gray',
+                    })->sortable(),
                 Tables\Columns\TextColumn::make('version')->sortable(),
                 Tables\Columns\TextColumn::make('updated_at')->dateTime()->since(),
             ])
@@ -226,8 +238,7 @@ class NotificationTemplateResource extends Resource
                     ->modalHeading('Compare with Default')
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Close')
-                    ->action(function (): void {
-                    })
+                    ->action(function (): void {})
                     ->modalContent(function (NotificationTemplate $record) {
                         $type = $record->type;
                         $locale = $record->locale;
@@ -310,10 +321,9 @@ class NotificationTemplateResource extends Resource
                         $html = $rendered['html'] ?? '<p>(no content)</p>';
 
                         // Send using a lightweight anonymous mailable
-                        Mail::to($user->email)->send(new class($subject, $html) extends Mailable {
-                            public function __construct(private string $s, private string $h)
-                            {
-                            }
+                        Mail::to($user->email)->send(new class($subject, $html) extends Mailable
+                        {
+                            public function __construct(private string $s, private string $h) {}
 
                             public function build(): self
                             {

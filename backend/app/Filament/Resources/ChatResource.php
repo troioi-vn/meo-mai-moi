@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Enums\ChatType;
+use App\Enums\ContextableType;
 use App\Filament\Resources\ChatResource\Pages;
 use App\Models\Chat;
 use Filament\Forms;
@@ -20,7 +22,7 @@ class ChatResource extends Resource
 
     protected static ?string $navigationGroup = 'Communication';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $recordTitleAttribute = 'id';
 
@@ -32,19 +34,12 @@ class ChatResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('type')
                             ->label('Chat Type')
-                            ->options([
-                                'direct' => 'Direct Message',
-                                'private_group' => 'Private Group',
-                                'public_group' => 'Public Group',
-                            ])
+                            ->options(ChatType::class)
                             ->required(),
 
                         Forms\Components\Select::make('contextable_type')
                             ->label('Context Type')
-                            ->options([
-                                'PlacementRequest' => 'Placement Request',
-                                'Pet' => 'Pet',
-                            ])
+                            ->options(ContextableType::class)
                             ->nullable(),
 
                         Forms\Components\TextInput::make('contextable_id')
@@ -64,13 +59,9 @@ class ChatResource extends Resource
                     ->label('ID')
                     ->sortable(),
 
-                Tables\Columns\BadgeColumn::make('type')
+                Tables\Columns\TextColumn::make('type')
                     ->label('Type')
-                    ->colors([
-                        'primary' => 'direct',
-                        'success' => 'private_group',
-                        'warning' => 'public_group',
-                    ]),
+                    ->badge(),
 
                 Tables\Columns\TextColumn::make('activeParticipants.name')
                     ->label('Participants')
@@ -84,8 +75,7 @@ class ChatResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('contextable_type')
-                    ->label('Context')
-                    ->formatStateUsing(fn ($state) => $state?->getLabel() ?? '-'),
+                    ->label('Context'),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created')
@@ -99,11 +89,10 @@ class ChatResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type')
-                    ->options([
-                        'direct' => 'Direct Message',
-                        'private_group' => 'Private Group',
-                        'public_group' => 'Public Group',
-                    ]),
+                    ->options(ChatType::class),
+
+                Tables\Filters\SelectFilter::make('contextable_type')
+                    ->options(ContextableType::class),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

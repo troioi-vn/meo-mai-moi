@@ -20,8 +20,7 @@ use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
-use Filament\Tables\Columns\BadgeColumn;
-use Filament\Tables\Columns\BooleanColumn;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
@@ -33,69 +32,72 @@ class PetTypeResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
 
-    protected static ?string $navigationGroup = 'System';
+    protected static ?string $navigationGroup = 'Pet Management';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                TextInput::make('name')
-                    ->required()
-                    ->maxLength(255)
-                    ->unique(ignoreRecord: true)
-                    ->live(onBlur: true)
-                    ->afterStateUpdated(function (string $context, $state, callable $set): void {
-                        if ($context === 'create') {
-                            $set('slug', Str::slug($state));
-                        }
-                    }),
+                Forms\Components\Section::make('Basic Information')
+                    ->schema([
+                        TextInput::make('name')
+                            ->required()
+                            ->maxLength(255)
+                            ->unique(ignoreRecord: true)
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function (string $context, $state, callable $set): void {
+                                if ($context === 'create') {
+                                    $set('slug', Str::slug($state));
+                                }
+                            }),
 
-                TextInput::make('slug')
-                    ->required()
-                    ->maxLength(255)
-                    ->unique(ignoreRecord: true)
-                    ->rules(['regex:/^[a-z0-9-]+$/'])
-                    ->helperText('Lowercase letters, numbers, and hyphens only'),
+                        TextInput::make('slug')
+                            ->required()
+                            ->maxLength(255)
+                            ->unique(ignoreRecord: true)
+                            ->rules(['regex:/^[a-z0-9-]+$/'])
+                            ->helperText('Lowercase letters, numbers, and hyphens only'),
 
-                Textarea::make('description')
-                    ->maxLength(500)
-                    ->rows(3),
+                        Textarea::make('description')
+                            ->maxLength(500)
+                            ->rows(3)
+                            ->columnSpanFull(),
+                    ])->columns(2),
 
-                Toggle::make('placement_requests_allowed')
-                    ->label('Placement requests allowed')
-                    ->default(false)
-                    ->helperText('Allow users to create placement requests for this pet type'),
+                Forms\Components\Section::make('Capabilities & Status')
+                    ->schema([
+                        Toggle::make('placement_requests_allowed')
+                            ->label('Placement requests allowed')
+                            ->default(false)
+                            ->helperText('Allow users to create placement requests for this pet type'),
 
-                // Additional capability toggles
-                Toggle::make('weight_tracking_allowed')
-                    ->label('Weight tracking allowed')
-                    ->default(false)
-                    ->helperText('Enable weight tracking feature for this pet type'),
-                Toggle::make('microchips_allowed')
-                    ->label('Microchips allowed')
-                    ->default(false)
-                    ->helperText('Enable microchips feature for this pet type'),
+                        Toggle::make('weight_tracking_allowed')
+                            ->label('Weight tracking allowed')
+                            ->default(false)
+                            ->helperText('Enable weight tracking feature for this pet type'),
 
-                Select::make('status')
-                    ->options([
-                        PetTypeStatus::ACTIVE->value => 'Active',
-                        PetTypeStatus::INACTIVE->value => 'Inactive',
-                        PetTypeStatus::ARCHIVED->value => 'Archived',
-                    ])
-                    ->default(PetTypeStatus::ACTIVE->value)
-                    ->required()
-                    ->helperText('Inactive pet types cannot be selected when creating new pets')
-                    ->disabled(fn ($record) => $record?->slug === 'cat'), // Cat cannot be deactivated
+                        Toggle::make('microchips_allowed')
+                            ->label('Microchips allowed')
+                            ->default(false)
+                            ->helperText('Enable microchips feature for this pet type'),
 
-                Hidden::make('is_system')
-                    ->default(false),
+                        Select::make('status')
+                            ->options(PetTypeStatus::class)
+                            ->default(PetTypeStatus::ACTIVE)
+                            ->required()
+                            ->helperText('Inactive pet types cannot be selected when creating new pets')
+                            ->disabled(fn ($record) => $record?->slug === 'cat'), // Cat cannot be deactivated
 
-                TextInput::make('display_order')
-                    ->numeric()
-                    ->default(0)
-                    ->helperText('Lower numbers appear first in lists'),
+                        TextInput::make('display_order')
+                            ->numeric()
+                            ->default(0)
+                            ->helperText('Lower numbers appear first in lists'),
+
+                        Hidden::make('is_system')
+                            ->default(false),
+                    ])->columns(2),
             ]);
     }
 
@@ -124,31 +126,28 @@ class PetTypeResource extends Resource
                         return $state;
                     }),
 
-                BadgeColumn::make('status')
-                    ->colors([
-                        'success' => PetTypeStatus::ACTIVE->value,
-                        'warning' => PetTypeStatus::INACTIVE->value,
-                        'gray' => PetTypeStatus::ARCHIVED->value,
-                    ])
+                TextColumn::make('status')
+                    ->badge()
                     ->sortable(),
 
-                BooleanColumn::make('placement_requests_allowed')
+                IconColumn::make('placement_requests_allowed')
                     ->label('Placements Allowed')
+                    ->boolean()
                     ->sortable(),
 
                 // Show capability flags
-                BooleanColumn::make('weight_tracking_allowed')
+                IconColumn::make('weight_tracking_allowed')
                     ->label('Weights Allowed')
+                    ->boolean()
                     ->sortable(),
-                BooleanColumn::make('microchips_allowed')
+                IconColumn::make('microchips_allowed')
                     ->label('Microchips Allowed')
+                    ->boolean()
                     ->sortable(),
 
-                BadgeColumn::make('is_system')
-                    ->colors([
-                        'success' => true,
-                        'gray' => false,
-                    ])
+                TextColumn::make('is_system')
+                    ->badge()
+                    ->color(fn (bool $state): string => $state ? 'success' : 'gray')
                     ->formatStateUsing(fn (bool $state): string => $state ? 'System' : 'Custom'),
 
                 TextColumn::make('display_order')

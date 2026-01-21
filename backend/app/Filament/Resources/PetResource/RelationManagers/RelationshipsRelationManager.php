@@ -12,7 +12,6 @@ use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -57,15 +56,9 @@ class RelationshipsRelationManager extends RelationManager
                     ->searchable()
                     ->sortable(),
 
-                BadgeColumn::make('relationship_type')
+                TextColumn::make('relationship_type')
                     ->label('Type')
-                    ->colors([
-                        'primary' => PetRelationshipType::OWNER->value,
-                        'success' => PetRelationshipType::FOSTER->value,
-                        'warning' => PetRelationshipType::SITTER->value,
-                        'info' => PetRelationshipType::EDITOR->value,
-                        'gray' => PetRelationshipType::VIEWER->value,
-                    ]),
+                    ->badge(),
 
                 TextColumn::make('start_at')
                     ->dateTime()

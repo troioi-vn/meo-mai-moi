@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\HelperProfileApprovalStatus;
 use App\Enums\HelperProfileStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -63,6 +64,7 @@ class HelperProfile extends Model
         'has_pets' => 'boolean',
         'has_children' => 'boolean',
         'request_types' => 'array',
+        'approval_status' => HelperProfileApprovalStatus::class,
         'status' => HelperProfileStatus::class,
         'archived_at' => 'datetime',
         'restored_at' => 'datetime',

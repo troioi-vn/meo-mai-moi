@@ -14,7 +14,8 @@ use Filament\Pages\Page;
 
 class SystemSettings extends Page
 {
-    protected array $data = [];
+    public array $data = [];
+
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
 
     protected static string $view = 'filament.pages.system-settings';

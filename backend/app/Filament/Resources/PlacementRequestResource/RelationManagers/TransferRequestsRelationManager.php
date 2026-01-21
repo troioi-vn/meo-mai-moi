@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\PlacementRequestResource\RelationManagers;
 
+use App\Enums\TransferRequestStatus;
 use App\Models\User;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -43,15 +43,9 @@ class TransferRequestsRelationManager extends RelationManager
                     ->getOptionLabelFromRecordUsing(fn (User $record): string => "{$record->name} ({$record->email})"),
 
                 Select::make('status')
-                    ->options([
-                        'pending' => 'Pending',
-                        'confirmed' => 'Confirmed',
-                        'rejected' => 'Rejected',
-                        'expired' => 'Expired',
-                        'canceled' => 'Canceled',
-                    ])
+                    ->options(TransferRequestStatus::class)
                     ->required()
-                    ->default('pending'),
+                    ->default(TransferRequestStatus::PENDING),
 
                 DateTimePicker::make('confirmed_at')
                     ->label('Confirmed At'),
@@ -76,14 +70,8 @@ class TransferRequestsRelationManager extends RelationManager
                     ->searchable()
                     ->sortable(),
 
-                BadgeColumn::make('status')
-                    ->colors([
-                        'warning' => 'pending',
-                        'success' => 'confirmed',
-                        'danger' => 'rejected',
-                        'secondary' => 'expired',
-                        'gray' => 'canceled',
-                    ]),
+                TextColumn::make('status')
+                    ->badge(),
 
                 TextColumn::make('created_at')
                     ->label('Created')

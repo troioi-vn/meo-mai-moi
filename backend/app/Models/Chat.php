@@ -76,9 +76,9 @@ class Chat extends Model
     /**
      * Get the latest message in this chat.
      */
-    public function latestMessage(): HasMany
+    public function latestMessage()
     {
-        return $this->hasMany(ChatMessage::class)->latest()->limit(1);
+        return $this->hasOne(ChatMessage::class)->latestOfMany();
     }
 
     /**
@@ -163,8 +163,8 @@ class Chat extends Model
 
         // Add both users as participants
         $chat->participants()->attach([
-            $user1->id => ['role' => ChatUserRole::MEMBER, 'joined_at' => now()],
-            $user2->id => ['role' => ChatUserRole::MEMBER, 'joined_at' => now()],
+            $user1->id => ['role' => ChatUserRole::MEMBER->value, 'joined_at' => now()],
+            $user2->id => ['role' => ChatUserRole::MEMBER->value, 'joined_at' => now()],
         ]);
 
         return $chat;

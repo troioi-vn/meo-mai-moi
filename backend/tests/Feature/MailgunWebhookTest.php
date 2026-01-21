@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\EmailLogStatus;
 use App\Models\EmailConfiguration;
 use App\Models\EmailLog;
 use App\Models\Notification;
@@ -52,7 +53,7 @@ class MailgunWebhookTest extends TestCase
 
         $response->assertStatus(200);
         $emailLog->refresh();
-        $this->assertEquals('accepted', $emailLog->status);
+        $this->assertEquals(EmailLogStatus::ACCEPTED, $emailLog->status);
         $this->assertNotNull($emailLog->sent_at);
     }
 
@@ -78,7 +79,7 @@ class MailgunWebhookTest extends TestCase
 
         $response->assertStatus(200);
         $emailLog->refresh();
-        $this->assertEquals('delivered', $emailLog->status);
+        $this->assertEquals(EmailLogStatus::DELIVERED, $emailLog->status);
         $this->assertNotNull($emailLog->delivered_at);
 
         $notification->refresh();
@@ -187,7 +188,7 @@ class MailgunWebhookTest extends TestCase
 
         $response->assertStatus(200);
         $emailLog->refresh();
-        $this->assertEquals('failed', $emailLog->status);
+        $this->assertEquals(EmailLogStatus::FAILED, $emailLog->status);
         $this->assertNotNull($emailLog->failed_at);
         $this->assertNotNull($emailLog->permanent_fail_at);
 
@@ -213,7 +214,7 @@ class MailgunWebhookTest extends TestCase
         $response->assertStatus(200);
         $emailLog->refresh();
         // Status should remain pending for retry
-        $this->assertEquals('pending', $emailLog->status);
+        $this->assertEquals(EmailLogStatus::PENDING, $emailLog->status);
     }
 
     public function test_webhook_rejects_invalid_signature(): void

@@ -20,9 +20,9 @@ class ImpersonateAsUser extends Action
             ->name('impersonate')
             ->label(__('Impersonate User'))
             ->iconButton()
-            ->icon('impersonate-icon')
+            ->icon('heroicon-o-user')
             ->backTo(fn () => Filament::getCurrentPanel()->getUrl())
-            ->redirectTo('/account')
+            ->redirectTo('/')
             ->action(fn ($record) => $this->impersonate($record))
             ->hidden(fn ($record) => ! $this->canBeImpersonated($record));
     }

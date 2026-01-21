@@ -4,12 +4,35 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-enum PlacementResponseStatus: string
+use Filament\Support\Contracts\HasColor;
+use Filament\Support\Contracts\HasLabel;
+
+enum PlacementResponseStatus: string implements HasColor, HasLabel
 {
     case RESPONDED = 'responded';
     case ACCEPTED = 'accepted';
     case REJECTED = 'rejected';
     case CANCELLED = 'cancelled';
+
+    public function getLabel(): ?string
+    {
+        return match ($this) {
+            self::RESPONDED => 'Responded',
+            self::ACCEPTED => 'Accepted',
+            self::REJECTED => 'Rejected',
+            self::CANCELLED => 'Cancelled',
+        };
+    }
+
+    public function getColor(): string|array|null
+    {
+        return match ($this) {
+            self::RESPONDED => 'info',
+            self::ACCEPTED => 'success',
+            self::REJECTED => 'danger',
+            self::CANCELLED => 'gray',
+        };
+    }
 
     /**
      * Check if this status is a terminal state (no further transitions allowed).

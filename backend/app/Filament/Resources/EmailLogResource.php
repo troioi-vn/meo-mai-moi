@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Enums\EmailLogStatus;
 use App\Filament\Resources\EmailLogResource\Pages;
 use App\Jobs\SendNotificationEmail;
 use App\Models\EmailLog;
@@ -23,7 +24,7 @@ class EmailLogResource extends Resource
 
     protected static ?string $navigationGroup = 'System';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 5;
 
     protected static ?string $navigationLabel = 'Email Logs';
 
@@ -56,13 +57,7 @@ class EmailLogResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('status')
                             ->label('Status')
-                            ->options([
-                                'pending' => 'Pending',
-                                'accepted' => 'Accepted',
-                                'delivered' => 'Delivered',
-                                'failed' => 'Failed',
-                                'bounced' => 'Bounced',
-                            ])
+                            ->options(EmailLogStatus::class)
                             ->disabled(),
                         Forms\Components\TextInput::make('retry_count')
                             ->label('Retry Count')
@@ -164,14 +159,9 @@ class EmailLogResource extends Resource
                         return $state;
                     }),
 
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')
                     ->label('Status')
-                    ->colors([
-                        'warning' => fn ($state) => in_array($state, ['pending', 'accepted']),
-                        'success' => 'delivered',
-                        'danger' => fn ($state) => in_array($state, ['failed', 'bounced']),
-                    ])
-                    ->formatStateUsing(fn (EmailLog $record) => $record->getStatusDisplayName()),
+                    ->badge(),
 
                 Tables\Columns\TextColumn::make('emailConfiguration.name')
                     ->label('Email Config')
@@ -230,13 +220,7 @@ class EmailLogResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
-                    ->options([
-                        'pending' => 'Pending',
-                        'accepted' => 'Accepted',
-                        'delivered' => 'Delivered',
-                        'failed' => 'Failed',
-                        'bounced' => 'Bounced',
-                    ])
+                    ->options(EmailLogStatus::class)
                     ->placeholder('All Statuses'),
 
                 Tables\Filters\SelectFilter::make('email_configuration_id')

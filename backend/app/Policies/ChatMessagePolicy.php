@@ -12,6 +12,11 @@ class ChatMessagePolicy
 {
     use HandlesAuthorization;
 
+    public function viewAny(User $user): bool
+    {
+        return $this->isAdmin($user);
+    }
+
     /**
      * Determine whether the user can view the message.
      */
@@ -32,6 +37,41 @@ class ChatMessagePolicy
 
         // Users can only delete their own messages
         return $message->sender_id === $user->id;
+    }
+
+    public function deleteAny(User $user): bool
+    {
+        return $this->isAdmin($user);
+    }
+
+    public function forceDelete(User $user, ChatMessage $message): bool
+    {
+        return $this->isAdmin($user);
+    }
+
+    public function forceDeleteAny(User $user): bool
+    {
+        return $this->isAdmin($user);
+    }
+
+    public function restore(User $user, ChatMessage $message): bool
+    {
+        return $this->isAdmin($user);
+    }
+
+    public function restoreAny(User $user): bool
+    {
+        return $this->isAdmin($user);
+    }
+
+    public function replicate(User $user, ChatMessage $message): bool
+    {
+        return $this->isAdmin($user);
+    }
+
+    public function reorder(User $user): bool
+    {
+        return $this->isAdmin($user);
     }
 
     /**

@@ -17,7 +17,7 @@ class ListUsers extends ListRecords
         return trans('filament-users::user.resource.title.list');
     }
 
-    protected function getActions(): array
+    protected function getHeaderActions(): array
     {
         return [
             CreateAction::make(),

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Enums\HelperProfileApprovalStatus;
 use App\Enums\HelperProfileStatus;
 use App\Enums\PlacementRequestType;
 use App\Filament\Resources\HelperProfileResource\Pages;
@@ -24,7 +25,7 @@ class HelperProfileResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
 
-    protected static ?string $navigationGroup = 'Users & Helpers';
+    protected static ?string $navigationGroup = 'Users & Invites';
 
     protected static ?int $navigationSort = 2;
 
@@ -48,11 +49,7 @@ class HelperProfileResource extends Resource
                     ->schema([
                         Forms\Components\CheckboxList::make('request_types')
                             ->label('Request Types')
-                            ->options([
-                                PlacementRequestType::FOSTER_PAID->value => 'Foster (Paid)',
-                                PlacementRequestType::FOSTER_FREE->value => 'Foster (Free)',
-                                PlacementRequestType::PERMANENT->value => 'Permanent Adoption',
-                            ])
+                            ->options(PlacementRequestType::class)
                             ->required()
                             ->minItems(1)
                             ->columnSpanFull(),
@@ -109,23 +106,14 @@ class HelperProfileResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('approval_status')
                             ->label('Approval Status')
-                            ->options([
-                                'pending' => 'Pending',
-                                'approved' => 'Approved',
-                                'rejected' => 'Rejected',
-                                'suspended' => 'Suspended',
-                            ])
-                            ->default('pending')
+                            ->options(HelperProfileApprovalStatus::class)
+                            ->default(HelperProfileApprovalStatus::PENDING)
                             ->required(),
 
                         Forms\Components\Select::make('status')
                             ->label('Profile Status')
-                            ->options([
-                                HelperProfileStatus::ACTIVE->value => 'Active',
-                                HelperProfileStatus::ARCHIVED->value => 'Archived',
-                                HelperProfileStatus::DELETED->value => 'Deleted',
-                            ])
-                            ->default(HelperProfileStatus::ACTIVE->value)
+                            ->options(HelperProfileStatus::class)
+                            ->default(HelperProfileStatus::ACTIVE)
                             ->required(),
 
                         Forms\Components\DateTimePicker::make('archived_at')
@@ -160,20 +148,9 @@ class HelperProfileResource extends Resource
 
                 Tables\Columns\TextColumn::make('request_types')
                     ->label('Request Types')
-                    ->formatStateUsing(function (HelperProfile $record): string {
-                        $types = $record->request_types ?? [];
-                        $labels = array_map(function ($type) {
-                            return match ($type) {
-                                'foster_paid' => 'Foster (Paid)',
-                                'foster_free' => 'Foster (Free)',
-                                'permanent' => 'Permanent',
-                                default => $type,
-                            };
-                        }, $types);
-
-                        return implode(', ', $labels) ?: 'None';
-                    })
                     ->badge()
+                    ->formatStateUsing(fn (string $state): string => PlacementRequestType::tryFrom($state)?->getLabel() ?? $state)
+                    ->color(fn (string $state): string => PlacementRequestType::tryFrom($state)?->getColor() ?? 'gray')
                     ->separator(','),
 
                 Tables\Columns\TextColumn::make('country')
@@ -188,23 +165,11 @@ class HelperProfileResource extends Resource
 
                 Tables\Columns\TextColumn::make('approval_status')
                     ->label('Approval')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'approved' => 'success',
-                        'pending' => 'warning',
-                        'rejected' => 'danger',
-                        'suspended' => 'gray',
-                        default => 'gray',
-                    }),
+                    ->badge(),
 
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
-                    ->badge()
-                    ->color(fn (HelperProfileStatus $state): string => match ($state) {
-                        HelperProfileStatus::ACTIVE => 'success',
-                        HelperProfileStatus::ARCHIVED => 'warning',
-                        HelperProfileStatus::DELETED => 'danger',
-                    }),
+                    ->badge(),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created')
@@ -221,29 +186,16 @@ class HelperProfileResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('approval_status')
                     ->label('Approval Status')
-                    ->options([
-                        'pending' => 'Pending',
-                        'approved' => 'Approved',
-                        'rejected' => 'Rejected',
-                        'suspended' => 'Suspended',
-                    ]),
+                    ->options(HelperProfileApprovalStatus::class),
 
                 Tables\Filters\SelectFilter::make('status')
                     ->label('Profile Status')
-                    ->options([
-                        HelperProfileStatus::ACTIVE->value => 'Active',
-                        HelperProfileStatus::ARCHIVED->value => 'Archived',
-                        HelperProfileStatus::DELETED->value => 'Deleted',
-                    ]),
+                    ->options(HelperProfileStatus::class),
 
                 Tables\Filters\SelectFilter::make('request_types')
                     ->label('Request Types')
                     ->multiple()
-                    ->options([
-                        PlacementRequestType::FOSTER_PAID->value => 'Foster (Paid)',
-                        PlacementRequestType::FOSTER_FREE->value => 'Foster (Free)',
-                        PlacementRequestType::PERMANENT->value => 'Permanent',
-                    ])
+                    ->options(PlacementRequestType::class)
                     ->query(function (Builder $query, array $data): Builder {
                         if (empty($data['values'])) {
                             return $query;
@@ -270,12 +222,12 @@ class HelperProfileResource extends Resource
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn (HelperProfile $record): bool => $record->approval_status === 'pending')
+                    ->visible(fn (HelperProfile $record): bool => $record->approval_status === HelperProfileApprovalStatus::PENDING)
                     ->requiresConfirmation()
                     ->modalHeading('Approve Helper Profile')
                     ->modalDescription('Are you sure you want to approve this helper profile?')
                     ->action(function (HelperProfile $record): void {
-                        $record->update(['approval_status' => 'approved']);
+                        $record->update(['approval_status' => HelperProfileApprovalStatus::APPROVED]);
 
                         Notification::make()
                             ->title('Helper profile approved successfully')
@@ -287,12 +239,12 @@ class HelperProfileResource extends Resource
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn (HelperProfile $record): bool => $record->approval_status === 'pending')
+                    ->visible(fn (HelperProfile $record): bool => $record->approval_status === HelperProfileApprovalStatus::PENDING)
                     ->requiresConfirmation()
                     ->modalHeading('Reject Helper Profile')
                     ->modalDescription('Are you sure you want to reject this helper profile?')
                     ->action(function (HelperProfile $record): void {
-                        $record->update(['approval_status' => 'rejected']);
+                        $record->update(['approval_status' => HelperProfileApprovalStatus::REJECTED]);
 
                         Notification::make()
                             ->title('Helper profile rejected successfully')
@@ -304,12 +256,12 @@ class HelperProfileResource extends Resource
                     ->label('Suspend')
                     ->icon('heroicon-o-pause-circle')
                     ->color('warning')
-                    ->visible(fn (HelperProfile $record): bool => $record->approval_status === 'approved')
+                    ->visible(fn (HelperProfile $record): bool => $record->approval_status === HelperProfileApprovalStatus::APPROVED)
                     ->requiresConfirmation()
                     ->modalHeading('Suspend Helper Profile')
                     ->modalDescription('Are you sure you want to suspend this helper profile?')
                     ->action(function (HelperProfile $record): void {
-                        $record->update(['approval_status' => 'suspended']);
+                        $record->update(['approval_status' => HelperProfileApprovalStatus::SUSPENDED]);
 
                         Notification::make()
                             ->title('Helper profile suspended successfully')
@@ -321,12 +273,12 @@ class HelperProfileResource extends Resource
                     ->label('Reactivate')
                     ->icon('heroicon-o-play-circle')
                     ->color('success')
-                    ->visible(fn (HelperProfile $record): bool => $record->approval_status === 'suspended')
+                    ->visible(fn (HelperProfile $record): bool => $record->approval_status === HelperProfileApprovalStatus::SUSPENDED)
                     ->requiresConfirmation()
                     ->modalHeading('Reactivate Helper Profile')
                     ->modalDescription('Are you sure you want to reactivate this helper profile?')
                     ->action(function (HelperProfile $record): void {
-                        $record->update(['approval_status' => 'approved']);
+                        $record->update(['approval_status' => HelperProfileApprovalStatus::APPROVED]);
 
                         Notification::make()
                             ->title('Helper profile reactivated successfully')
@@ -347,10 +299,10 @@ class HelperProfileResource extends Resource
                         ->modalDescription('Are you sure you want to approve the selected helper profiles?')
                         ->action(function (Collection $records): void {
                             /** @var Collection<int, HelperProfile> $records */
-                            $count = $records->where('approval_status', 'pending')->count();
+                            $count = $records->where('approval_status', HelperProfileApprovalStatus::PENDING)->count();
 
-                            $records->where('approval_status', 'pending')
-                                ->each(fn (HelperProfile $record) => $record->update(['approval_status' => 'approved']));
+                            $records->where('approval_status', HelperProfileApprovalStatus::PENDING)
+                                ->each(fn (HelperProfile $record) => $record->update(['approval_status' => HelperProfileApprovalStatus::APPROVED]));
 
                             Notification::make()
                                 ->title("{$count} helper profiles approved successfully")
@@ -367,10 +319,10 @@ class HelperProfileResource extends Resource
                         ->modalDescription('Are you sure you want to reject the selected helper profiles?')
                         ->action(function (Collection $records): void {
                             /** @var Collection<int, HelperProfile> $records */
-                            $count = $records->where('approval_status', 'pending')->count();
+                            $count = $records->where('approval_status', HelperProfileApprovalStatus::PENDING)->count();
 
-                            $records->where('approval_status', 'pending')
-                                ->each(fn (HelperProfile $record) => $record->update(['approval_status' => 'rejected']));
+                            $records->where('approval_status', HelperProfileApprovalStatus::PENDING)
+                                ->each(fn (HelperProfile $record) => $record->update(['approval_status' => HelperProfileApprovalStatus::REJECTED]));
 
                             Notification::make()
                                 ->title("{$count} helper profiles rejected successfully")
@@ -387,10 +339,10 @@ class HelperProfileResource extends Resource
                         ->modalDescription('Are you sure you want to suspend the selected helper profiles?')
                         ->action(function (Collection $records): void {
                             /** @var Collection<int, HelperProfile> $records */
-                            $count = $records->where('approval_status', 'approved')->count();
+                            $count = $records->where('approval_status', HelperProfileApprovalStatus::APPROVED)->count();
 
-                            $records->where('approval_status', 'approved')
-                                ->each(fn (HelperProfile $record) => $record->update(['approval_status' => 'suspended']));
+                            $records->where('approval_status', HelperProfileApprovalStatus::APPROVED)
+                                ->each(fn (HelperProfile $record) => $record->update(['approval_status' => HelperProfileApprovalStatus::SUSPENDED]));
 
                             Notification::make()
                                 ->title("{$count} helper profiles suspended successfully")

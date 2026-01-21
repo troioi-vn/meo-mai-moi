@@ -9,7 +9,6 @@ use App\Enums\PetStatus;
 use App\Filament\Resources\PetResource\Pages;
 use App\Filament\Resources\PetResource\RelationManagers;
 use App\Models\Pet;
-use App\Models\PetType;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
@@ -18,13 +17,21 @@ use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
+/**
+ * Filament Resource for managing Pets.
+ *
+ * Provides comprehensive admin interface for creating, viewing, editing, and deleting
+ * pet records. Includes relationships for handling pet owners, medical records, placement
+ * requests, and relationships with users.
+ *
+ * @see Pet
+ */
 class PetResource extends Resource
 {
     protected static ?string $model = Pet::class;
@@ -39,47 +46,124 @@ class PetResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
+                Forms\Components\Tabs::make('Pet Details')
+                    ->tabs([
+                        Forms\Components\Tabs\Tab::make('Basic Info')
+                            ->icon('heroicon-o-information-circle')
+                            ->schema([
+                                Forms\Components\Section::make('Core Details')
+                                    ->schema([
+                                        Forms\Components\TextInput::make('name')
+                                            ->required()
+                                            ->maxLength(255),
 
-                Select::make('pet_type_id')
-                    ->label('Pet Type')
-                    ->options(PetType::active()->pluck('name', 'id'))
-                    ->default(1) // Default to Cat
-                    ->required()
-                    ->searchable()
-                    ->preload(),
+                                        Select::make('pet_type_id')
+                                            ->label('Pet Type')
+                                            ->relationship('petType', 'name')
+                                            ->default(1)
+                                            ->required()
+                                            ->searchable()
+                                            ->preload(),
 
-                Select::make('sex')
-                    ->options(PetSex::class)
-                    ->default('not_specified')
-                    ->required(),
+                                        Select::make('sex')
+                                            ->options(PetSex::class)
+                                            ->default(PetSex::NOT_SPECIFIED)
+                                            ->required(),
+                                    ])->columns(2),
 
-                Forms\Components\DatePicker::make('birthday')
-                    ->required()
-                    ->maxDate(now()),
+                                Forms\Components\Section::make('Management')
+                                    ->schema([
+                                        Select::make('status')
+                                            ->options(PetStatus::class)
+                                            ->required()
+                                            ->default(PetStatus::ACTIVE),
 
-                Forms\Components\TextInput::make('location')
-                    ->required()
-                    ->maxLength(255),
+                                        Select::make('created_by')
+                                            ->label('Creator')
+                                            ->relationship('creator', 'name')
+                                            ->searchable()
+                                            ->preload()
+                                            ->required(),
+                                    ])->columns(2),
+                            ]),
 
-                Forms\Components\Textarea::make('description')
-                    ->maxLength(65535)
-                    ->rows(4)
-                    ->columnSpanFull(),
+                        Forms\Components\Tabs\Tab::make('Birthday')
+                            ->icon('heroicon-o-cake')
+                            ->schema([
+                                Forms\Components\Section::make('Date Selection')
+                                    ->schema([
+                                        Forms\Components\DatePicker::make('birthday')
+                                            ->maxDate(now()),
 
-                Select::make('status')
-                    ->options(PetStatus::class)
-                    ->required()
-                    ->default('active'),
+                                        Select::make('birthday_precision')
+                                            ->options([
+                                                'day' => 'Exact Date',
+                                                'month' => 'Month and Year',
+                                                'year' => 'Year Only',
+                                                'unknown' => 'Unknown',
+                                            ])
+                                            ->default('day'),
+                                    ])->columns(2),
 
-                Select::make('created_by')
-                    ->label('Creator')
-                    ->relationship('creator', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->required(),
+                                Forms\Components\Section::make('Manual Components')
+                                    ->description('Used when precise birthday is unknown.')
+                                    ->schema([
+                                        Forms\Components\TextInput::make('birthday_year')
+                                            ->numeric()
+                                            ->minValue(1900)
+                                            ->maxValue(now()->year),
+
+                                        Forms\Components\TextInput::make('birthday_month')
+                                            ->numeric()
+                                            ->minValue(1)
+                                            ->maxValue(12),
+
+                                        Forms\Components\TextInput::make('birthday_day')
+                                            ->numeric()
+                                            ->minValue(1)
+                                            ->maxValue(31),
+                                    ])->columns(3),
+                            ]),
+
+                        Forms\Components\Tabs\Tab::make('Location')
+                            ->icon('heroicon-o-map-pin')
+                            ->schema([
+                                Forms\Components\Section::make('Regional Details')
+                                    ->schema([
+                                        Forms\Components\TextInput::make('country')
+                                            ->maxLength(2),
+
+                                        Forms\Components\TextInput::make('state')
+                                            ->maxLength(255),
+                                    ])->columns(2),
+
+                                Forms\Components\Section::make('City')
+                                    ->schema([
+                                        Select::make('city_id')
+                                            ->label('City (Reference)')
+                                            ->relationship('city', 'name')
+                                            ->searchable()
+                                            ->preload(),
+
+                                        Forms\Components\TextInput::make('city')
+                                            ->label('City (Custom)')
+                                            ->maxLength(255),
+                                    ])->columns(2),
+
+                                Forms\Components\TextInput::make('address')
+                                    ->maxLength(255)
+                                    ->columnSpanFull(),
+                            ]),
+
+                        Forms\Components\Tabs\Tab::make('Description')
+                            ->icon('heroicon-o-document-text')
+                            ->schema([
+                                Forms\Components\Textarea::make('description')
+                                    ->maxLength(65535)
+                                    ->rows(10)
+                                    ->columnSpanFull(),
+                            ]),
+                    ])->columnSpanFull(),
             ]);
     }
 
@@ -96,49 +180,41 @@ class PetResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                BadgeColumn::make('petType.name')
+                TextColumn::make('petType.name')
                     ->label('Type')
-                    ->colors([
-                        'primary' => 'Cat',
-                        'success' => 'Dog',
-                        'gray' => fn ($state) => ! in_array($state, ['Cat', 'Dog']),
-                    ]),
-
-                BadgeColumn::make('sex')
-                    ->colors([
-                        'primary' => 'male',
-                        'danger' => 'female',
-                        'gray' => 'not_specified',
-                    ])
-                    ->formatStateUsing(fn ($state) => match ($state) {
-                        'male' => 'Male',
-                        'female' => 'Female',
-                        default => 'Not Specified',
+                    ->badge()
+                    ->color(fn ($state) => match ($state) {
+                        'Cat' => 'primary',
+                        'Dog' => 'success',
+                        default => 'gray',
                     }),
+
+                TextColumn::make('sex')
+                    ->badge(),
 
                 TextColumn::make('birthday')
                     ->date()
                     ->sortable()
-                    ->formatStateUsing(function ($state) {
-                        if (! $state) {
-                            return '-';
+                    ->description(function ($record) {
+                        if (! $record->birthday) {
+                            return null;
                         }
-                        $age = $state->age;
+                        $age = $record->birthday->age;
 
-                        return $state->format('M j, Y')." ({$age}y)";
+                        return "{$age} years old";
                     }),
 
-                TextColumn::make('location')
+                TextColumn::make('city')
                     ->searchable()
-                    ->limit(30),
+                    ->sortable(),
 
-                BadgeColumn::make('status')
-                    ->colors([
-                        'success' => 'active',
-                        'warning' => 'lost',
-                        'primary' => 'deceased',
-                        'danger' => 'deleted',
-                    ]),
+                TextColumn::make('state')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('status')
+                    ->badge(),
 
                 TextColumn::make('owners.name')
                     ->label('Owners')
@@ -164,7 +240,7 @@ class PetResource extends Resource
             ->filters([
                 SelectFilter::make('pet_type_id')
                     ->label('Pet Type')
-                    ->options(PetType::active()->pluck('name', 'id'))
+                    ->relationship('petType', 'name')
                     ->searchable()
                     ->preload(),
 

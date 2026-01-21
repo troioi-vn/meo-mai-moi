@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\PetResource\RelationManagers;
 
+use App\Enums\PlacementRequestStatus;
+use App\Enums\PlacementRequestType;
 use App\Services\PetCapabilityService;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
@@ -14,7 +16,6 @@ use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -34,23 +35,14 @@ class PlacementRequestsRelationManager extends RelationManager
                     ->schema([
                         Select::make('request_type')
                             ->label('Request Type')
-                            ->options([
-                                'fostering' => 'Fostering',
-                                'adoption' => 'Adoption',
-                                'permanent' => 'Permanent',
-                                'foster_free' => 'Foster (Free)',
-                            ])
+                            ->options(PlacementRequestType::class)
                             ->required(),
 
                         Select::make('status')
                             ->label('Status')
-                            ->options([
-                                'active' => 'Active',
-                                'fulfilled' => 'Fulfilled',
-                                'canceled' => 'Canceled',
-                            ])
+                            ->options(PlacementRequestStatus::class)
                             ->required()
-                            ->default('active'),
+                            ->default(PlacementRequestStatus::OPEN->value),
 
                         DatePicker::make('start_date')
                             ->label('Start Date')
@@ -78,22 +70,13 @@ class PlacementRequestsRelationManager extends RelationManager
                     ->label('ID')
                     ->sortable(),
 
-                BadgeColumn::make('request_type')
+                TextColumn::make('request_type')
                     ->label('Type')
-                    ->colors([
-                        'primary' => 'fostering',
-                        'success' => 'adoption',
-                        'warning' => 'permanent',
-                        'info' => 'foster_free',
-                    ]),
+                    ->badge(),
 
-                BadgeColumn::make('status')
+                TextColumn::make('status')
                     ->label('Status')
-                    ->colors([
-                        'success' => 'active',
-                        'primary' => 'fulfilled',
-                        'danger' => 'canceled',
-                    ]),
+                    ->badge(),
 
                 TextColumn::make('start_date')
                     ->label('Start Date')
@@ -130,19 +113,10 @@ class PlacementRequestsRelationManager extends RelationManager
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('request_type')
-                    ->options([
-                        'fostering' => 'Fostering',
-                        'adoption' => 'Adoption',
-                        'permanent' => 'Permanent',
-                        'foster_free' => 'Foster (Free)',
-                    ]),
+                    ->options(PlacementRequestType::class),
 
                 Tables\Filters\SelectFilter::make('status')
-                    ->options([
-                        'active' => 'Active',
-                        'fulfilled' => 'Fulfilled',
-                        'canceled' => 'Canceled',
-                    ]),
+                    ->options(PlacementRequestStatus::class),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
@@ -172,10 +146,10 @@ class PlacementRequestsRelationManager extends RelationManager
                     ->label('Fulfill')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) => $record->status === 'active')
+                    ->visible(fn ($record) => $record->isActive())
                     ->requiresConfirmation()
                     ->action(function ($record): void {
-                        $record->update(['status' => 'fulfilled']);
+                        $record->markAsFulfilled();
 
                         Notification::make()
                             ->title('Placement request fulfilled')
@@ -187,10 +161,10 @@ class PlacementRequestsRelationManager extends RelationManager
                     ->label('Cancel')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) => $record->status === 'active')
+                    ->visible(fn ($record) => $record->isActive())
                     ->requiresConfirmation()
                     ->action(function ($record): void {
-                        $record->update(['status' => 'canceled']);
+                        $record->markAsCancelled();
 
                         Notification::make()
                             ->title('Placement request canceled')

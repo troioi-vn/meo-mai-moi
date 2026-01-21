@@ -11,7 +11,6 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -36,14 +35,9 @@ class ResponsesRelationManager extends RelationManager
                     ->required(),
 
                 Select::make('status')
-                    ->options([
-                        PlacementResponseStatus::RESPONDED->value => 'Responded',
-                        PlacementResponseStatus::ACCEPTED->value => 'Accepted',
-                        PlacementResponseStatus::REJECTED->value => 'Rejected',
-                        PlacementResponseStatus::CANCELLED->value => 'Cancelled',
-                    ])
+                    ->options(PlacementResponseStatus::class)
                     ->required()
-                    ->default(PlacementResponseStatus::RESPONDED->value),
+                    ->default(PlacementResponseStatus::RESPONDED),
 
                 Textarea::make('message')
                     ->label('Message')
@@ -80,19 +74,8 @@ class ResponsesRelationManager extends RelationManager
                     ->label('Country')
                     ->sortable(),
 
-                BadgeColumn::make('status')
-                    ->formatStateUsing(fn (PlacementResponseStatus $state): string => match ($state) {
-                        PlacementResponseStatus::RESPONDED => 'Responded',
-                        PlacementResponseStatus::ACCEPTED => 'Accepted',
-                        PlacementResponseStatus::REJECTED => 'Rejected',
-                        PlacementResponseStatus::CANCELLED => 'Cancelled',
-                    })
-                    ->colors([
-                        'warning' => PlacementResponseStatus::RESPONDED->value,
-                        'success' => PlacementResponseStatus::ACCEPTED->value,
-                        'danger' => PlacementResponseStatus::REJECTED->value,
-                        'gray' => PlacementResponseStatus::CANCELLED->value,
-                    ]),
+                TextColumn::make('status')
+                    ->badge(),
 
                 TextColumn::make('message')
                     ->label('Message')

@@ -38,7 +38,7 @@ class TestPushNotification extends Command
         $this->info("Found {$subscriptions->count()} subscription(s) for {$user->email}");
 
         // Create a test notification
-        $notification = new Notification();
+        $notification = new Notification;
         $notification->id = fake()->randomNumber();
         $notification->user_id = $user->id;
         $notification->type = 'test';

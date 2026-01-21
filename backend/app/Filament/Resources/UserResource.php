@@ -21,6 +21,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Hash;
 use STS\FilamentImpersonate\Tables\Actions\Impersonate;
+use Filament\Facades\Filament;
 
 class UserResource extends Resource
 {
@@ -47,7 +48,12 @@ class UserResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return config('filament-users.group');
+        return 'Users & Invites';
+    }
+
+    public static function getNavigationSort(): ?int
+    {
+        return 1;
     }
 
     public function getTitle(): string
@@ -57,53 +63,34 @@ class UserResource extends Resource
 
     public static function form(Form $form): Form
     {
-        $rows = [
-            TextInput::make('name')
-                ->required()
-                ->label(trans('filament-users::user.resource.name')),
-            TextInput::make('email')
-                ->email()
-                ->required()
-                ->label(trans('filament-users::user.resource.email')),
-            TextInput::make('password')
-                ->label(trans('filament-users::user.resource.password'))
-                ->password()
-                ->maxLength(255)
-                ->dehydrateStateUsing(static function ($state, $record) {
-                    return ! empty($state)
-                        ? Hash::make($state)
-                        : $record->password;
-                }),
-        ];
-
-        if (config('filament-users.shield') && class_exists(\BezhanSalleh\FilamentShield\FilamentShield::class)) {
-            $rows[] = Forms\Components\Select::make('roles')
-                ->multiple()
-                ->preload()
-                ->relationship('roles', 'name')
-                ->label(trans('filament-users::user.resource.roles'));
-        }
-
-        $form->schema($rows);
-
-        return $form;
+        return $form
+            ->schema([
+                TextInput::make('name')
+                    ->required()
+                    ->label(trans('filament-users::user.resource.name')),
+                TextInput::make('email')
+                    ->email()
+                    ->required()
+                    ->label(trans('filament-users::user.resource.email')),
+                TextInput::make('password')
+                    ->label(trans('filament-users::user.resource.password'))
+                    ->password()
+                    ->maxLength(255)
+                    ->dehydrateStateUsing(fn ($state) => filled($state) ? Hash::make($state) : null)
+                    ->dehydrated(fn ($state) => filled($state))
+                    ->required(fn (string $context): bool => $context === 'create'),
+                Forms\Components\Select::make('roles')
+                    ->multiple()
+                    ->preload()
+                    ->relationship('roles', 'name')
+                    ->label(trans('filament-users::user.resource.roles'))
+                    ->visible(fn () => config('filament-users.shield') && class_exists(\BezhanSalleh\FilamentShield\FilamentShield::class)),
+            ]);
     }
 
     public static function table(Table $table): Table
     {
-        // Build actions array
-        $actions = [
-            ViewAction::make(),
-            EditAction::make(),
-            DeleteAction::make(),
-        ];
-
-        // Add impersonation action if enabled
-        if (class_exists(\STS\FilamentImpersonate\Tables\Actions\Impersonate::class) && config('filament-users.impersonate')) {
-            $actions[] = Impersonate::make('impersonate');
-        }
-
-        $table
+        return $table
             ->columns([
                 Tables\Columns\ImageColumn::make('avatar_url')
                     ->label('Avatar')
@@ -144,15 +131,15 @@ class UserResource extends Resource
                     ->query(fn (Builder $query): Builder => $query->whereNull('email_verified_at')),
             ])
             ->actions([
+                Impersonate::make()
+                    ->icon('heroicon-o-user')
+                    ->backTo(fn () => Filament::getCurrentPanel()->getUrl())
+                    ->redirectTo('/'),
                 ActionGroup::make([
                     ViewAction::make(),
                     EditAction::make(),
                     DeleteAction::make(),
                 ]),
-                // Add impersonation action outside the group if enabled
-                ...(class_exists(\STS\FilamentImpersonate\Tables\Actions\Impersonate::class) && config('filament-users.impersonate')
-                    ? [Impersonate::make('impersonate')]
-                    : []),
             ]);
 
         return $table;

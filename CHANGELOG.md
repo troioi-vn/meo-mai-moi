@@ -4,6 +4,32 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Added
+
+- **Email Log Status Management**: Introduced comprehensive email delivery status tracking with `EmailLogStatus` enum supporting pending, accepted, delivered, failed, and bounced states for better email monitoring and debugging.
+
+- **Helper Profile Approval System**: Added approval workflow for helper profiles with `HelperProfileApprovalStatus` enum including pending, approved, rejected, and suspended states for better content moderation.
+
+- **Invitation Status Management**: Enhanced invitation system with `InvitationStatus` enum tracking pending, accepted, expired, and revoked states for improved invitation lifecycle management.
+
+- **Waitlist Entry Status Management**: Added status tracking for waitlist entries with `WaitlistEntryStatus` enum supporting pending and invited states.
+
+- **Medical Records System**: Complete CRUD system for pet medical records including:
+  - MedicalRecord model with support for vaccination, medical notes, surgery, prescription, diagnosis, and other record types
+  - Full admin panel interface for managing pet medical records with veterinarian details and file attachments
+  - Support for PDF and image attachments up to 5MB
+  - Date-based sorting and filtering capabilities
+
+- **Pet Comments System**: Added commenting functionality for pets with:
+  - PetComment model linking comments to specific pets and users
+  - Admin panel for managing pet comments with full CRUD operations
+  - Author and pet filtering capabilities
+
+- **Pet Microchip System**: Introduced microchip tracking for pets with:
+  - PetMicrochip model for storing microchip information including chip number, manufacturer, and implantation details
+  - Admin panel interface for managing microchip records
+  - Relationship to pets for comprehensive pet identification tracking
+
 ### Changed
 
 - **Frontend Code Cleanup**: Comprehensive cleanup of `frontend/src` folder to remove unused and misplaced files:

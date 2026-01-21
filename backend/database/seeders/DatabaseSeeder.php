@@ -25,7 +25,6 @@ class DatabaseSeeder extends Seeder
             RolesAndPermissionsSeeder::class,
             UserSeeder::class,
             ShieldSeeder::class,
-            ReviewSeeder::class,
             NotificationPreferenceSeeder::class,
             EmailConfigurationSeeder::class,
             NotificationTemplateSeeder::class,

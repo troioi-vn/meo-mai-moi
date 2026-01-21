@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && bun run blade:update && bun run assets:copy",
+    "build:analyze": "ANALYZE=true vite build",
     "build:docker": "vite build && bun run blade:update && bun run assets:copy",
     "assets:copy": "node ./scripts/copy-assets.cjs",
     "blade:update": "node ./scripts/update-blade.cjs",
@@ -104,6 +105,7 @@
     "msw": "^2.12.7",
     "postcss": "^8.5.6",
     "prettier": "^3.8.1",
+    "rollup-plugin-visualizer": "^6.0.5",
     "shadcn": "^3.7.0",
     "tailwindcss": "^4.1.18",
     "tailwindcss-animate": "^1.0.7",

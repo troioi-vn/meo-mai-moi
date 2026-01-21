@@ -828,3 +828,12 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Request Details Helper Access**: Enhanced the request details page by making helper names in the Responses section clickable, opening a helper profile drawer for owners to view helper information directly.
 
 - **Responses Drawer UI Improvements**: Added ChevronRight icon to helper names for better visual indication of clickability, removed the back button from the drawer for a cleaner interface, and changed photo display from static images to a carousel for better viewing experience.
+
+### Changed
+
+- **Frontend Performance Optimizations**: Implemented code splitting and lazy loading to improve initial bundle size and loading times:
+  - Added lazy loading for page components in App.tsx with Suspense fallback using a new PageLoadingSpinner component
+  - Lazy loaded WeightChart and InvitationQRCode components with Suspense fallbacks
+  - Made Echo/Reverb initialization async and dynamic to avoid loading pusher-js and laravel-echo when not configured
+  - Added manual chunk splitting in Vite config for better caching of vendor libraries
+  - Added bundle analysis tool with rollup-plugin-visualizer and build:analyze script

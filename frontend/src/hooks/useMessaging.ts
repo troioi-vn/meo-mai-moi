@@ -47,16 +47,26 @@ export function useChatList() {
   useEffect(() => {
     if (!isAuthenticated || !user) return
 
-    const echoInstance = getEcho()
-    if (!echoInstance) return // Reverb not configured
+    let active = true
+    let channel: any = null
 
-    const channel = echoInstance.private(`App.Models.User.${user.id.toString()}`)
-    channel.listen('.App\\Events\\MessageSent', () => {
-      void refresh()
-    })
+    const setupEcho = async () => {
+      const echoInstance = await getEcho()
+      if (!echoInstance || !active) return
+
+      channel = echoInstance.private(`App.Models.User.${user.id.toString()}`)
+      channel.listen('.App\\Events\\MessageSent', () => {
+        if (active) void refresh()
+      })
+    }
+
+    void setupEcho()
 
     return () => {
-      channel.stopListening('.App\\Events\\MessageSent')
+      active = false
+      if (channel) {
+        channel.stopListening('.App\\Events\\MessageSent')
+      }
     }
   }, [isAuthenticated, user, refresh])
 
@@ -156,23 +166,34 @@ export function useChat(chatId: number | null) {
   useEffect(() => {
     if (!chatId || !isAuthenticated) return
 
-    const echoInstance = getEcho()
-    if (!echoInstance) return // Reverb not configured
+    let active = true
+    let channel: any = null
 
-    const channel = echoInstance.private(`chat.${chatId.toString()}`)
-    channel.listen('.App\\Events\\MessageSent', (event: ChatMessage) => {
-      setMessages((prev) => {
-        // Avoid duplicates
-        if (prev.some((m) => m.id === event.id)) return prev
-        return [...prev, event]
+    const setupEcho = async () => {
+      const echoInstance = await getEcho()
+      if (!echoInstance || !active) return
+
+      channel = echoInstance.private(`chat.${chatId.toString()}`)
+      channel.listen('.App\\Events\\MessageSent', (event: ChatMessage) => {
+        if (!active) return
+        setMessages((prev) => {
+          // Avoid duplicates
+          if (prev.some((m) => m.id === event.id)) return prev
+          return [...prev, event]
+        })
+
+        // Mark as read
+        void markChatRead(chatId)
       })
+    }
 
-      // Mark as read
-      void markChatRead(chatId)
-    })
+    void setupEcho()
 
     return () => {
-      channel.stopListening('.App\\Events\\MessageSent')
+      active = false
+      if (channel) {
+        channel.stopListening('.App\\Events\\MessageSent')
+      }
     }
   }, [chatId, isAuthenticated])
 

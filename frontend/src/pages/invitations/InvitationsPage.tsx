@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -25,8 +25,9 @@ import {
   RefreshCw,
 } from 'lucide-react'
 import { format } from 'date-fns'
-import InvitationQRCode from '@/components/invitations/InvitationQRCode'
 import InvitationShare from '@/components/invitations/InvitationShare'
+
+const InvitationQRCode = lazy(() => import('@/components/invitations/InvitationQRCode'))
 
 const REFRESH_INTERVAL_MS = 30_000
 
@@ -332,10 +333,14 @@ export default function InvitationsPage() {
                             invitationUrl={invitation.invitation_url}
                             invitationCode={invitation.code}
                           />
-                          <InvitationQRCode
-                            invitationUrl={invitation.invitation_url}
-                            invitationCode={invitation.code}
-                          />
+                          <Suspense
+                            fallback={<div className="h-10 w-10 animate-pulse bg-muted rounded" />}
+                          >
+                            <InvitationQRCode
+                              invitationUrl={invitation.invitation_url}
+                              invitationCode={invitation.code}
+                            />
+                          </Suspense>
                         </>
                       )}
 

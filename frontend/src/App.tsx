@@ -1,34 +1,37 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, lazy, Suspense } from 'react'
 import { useAuth } from '@/hooks/use-auth'
 import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
 import MainNav from '@/components/layout/MainNav'
 import { usePwaUpdate } from '@/hooks/use-pwa-update'
+import { PageLoadingSpinner } from '@/components/ui/page-loading-spinner'
 
-import MainPage from './pages/home/MainPage'
-import LoginPage from './pages/auth/LoginPage'
-import RegisterPage from './pages/auth/RegisterPage'
-import EmailVerificationPage from './pages/auth/EmailVerificationPage'
-import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
-import ResetPasswordPage from './pages/auth/ResetPasswordPage'
-import MyPetsPage from './pages/pets/MyPetsPage'
-import CreatePetPage from './pages/pets/CreatePetPage'
-import EditPetPage from './pages/pets/EditPetPage'
-import AccountPasswordPage from './pages/settings/AccountPasswordPage'
-import InvitationsPage from './pages/invitations/InvitationsPage'
-import PetProfilePage from './pages/pets/PetProfilePage'
-import PetPublicProfilePage from './pages/pets/PetPublicProfilePage'
-import SettingsPage from './pages/settings/SettingsPage'
-import HelperProfilePage from './pages/helper/HelperProfilePage'
-import HelperProfileEditPage from './pages/helper/HelperProfileEditPage'
-import CreateHelperProfilePage from './pages/helper/CreateHelperProfilePage'
-import HelperProfileViewPage from './pages/helper/HelperProfileViewPage'
-import NotFoundPage from './pages/errors/NotFoundPage'
-import RequestsPage from './pages/placement/RequestsPage'
-import RequestDetailPage from './pages/placement/RequestDetailPage'
-import MessagesPage from './pages/messages/MessagesPage'
-import NotificationsPage from './pages/notifications/NotificationsPage'
+// Lazy loaded components
+const MainPage = lazy(() => import('./pages/home/MainPage'))
+const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
+const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'))
+const EmailVerificationPage = lazy(() => import('./pages/auth/EmailVerificationPage'))
+const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'))
+const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'))
+const MyPetsPage = lazy(() => import('./pages/pets/MyPetsPage'))
+const CreatePetPage = lazy(() => import('./pages/pets/CreatePetPage'))
+const EditPetPage = lazy(() => import('./pages/pets/EditPetPage'))
+const AccountPasswordPage = lazy(() => import('./pages/settings/AccountPasswordPage'))
+const InvitationsPage = lazy(() => import('./pages/invitations/InvitationsPage'))
+const PetProfilePage = lazy(() => import('./pages/pets/PetProfilePage'))
+const PetPublicProfilePage = lazy(() => import('./pages/pets/PetPublicProfilePage'))
+const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'))
+const HelperProfilePage = lazy(() => import('./pages/helper/HelperProfilePage'))
+const HelperProfileEditPage = lazy(() => import('./pages/helper/HelperProfileEditPage'))
+const CreateHelperProfilePage = lazy(() => import('./pages/helper/CreateHelperProfilePage'))
+const HelperProfileViewPage = lazy(() => import('./pages/helper/HelperProfileViewPage'))
+const NotFoundPage = lazy(() => import('./pages/errors/NotFoundPage'))
+const RequestsPage = lazy(() => import('./pages/placement/RequestsPage'))
+const RequestDetailPage = lazy(() => import('./pages/placement/RequestDetailPage'))
+const MessagesPage = lazy(() => import('./pages/messages/MessagesPage'))
+const NotificationsPage = lazy(() => import('./pages/notifications/NotificationsPage'))
+
 import './App.css'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -203,7 +206,9 @@ export default function App() {
     <>
       <MainNav />
       <main className="pt-16">
-        <AppRoutes />
+        <Suspense fallback={<PageLoadingSpinner />}>
+          <AppRoutes />
+        </Suspense>
       </main>
       <Toaster />
     </>

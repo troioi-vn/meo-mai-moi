@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,11 +13,12 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { useWeights } from '@/hooks/useWeights'
-import { WeightChart } from './WeightChart'
 import { WeightForm } from './WeightForm'
 import { toast } from 'sonner'
 import { Pencil, Trash2 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
+
+const WeightChart = lazy(() => import('./WeightChart').then((m) => ({ default: m.WeightChart })))
 
 interface WeightHistoryCardProps {
   petId: number
@@ -125,7 +126,11 @@ export function WeightHistoryCard({ petId, canEdit, mode = 'view' }: WeightHisto
         ) : (
           <>
             {/* View mode: show chart only */}
-            {mode === 'view' && <WeightChart weights={chartItems} />}
+            {mode === 'view' && (
+              <Suspense fallback={<div className="h-62.5 w-full animate-pulse bg-muted rounded" />}>
+                <WeightChart weights={chartItems} />
+              </Suspense>
+            )}
 
             {/* Edit mode: show records list only */}
             {mode === 'edit' && items.length > 0 && canEdit && (

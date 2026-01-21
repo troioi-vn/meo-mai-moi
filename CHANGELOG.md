@@ -4,6 +4,8 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+## [v0.6.0] - 2026-01-22
+
 ### Added
 
 - **Email Log Status Management**: Introduced comprehensive email delivery status tracking with `EmailLogStatus` enum supporting pending, accepted, delivered, failed, and bounced states for better email monitoring and debugging.

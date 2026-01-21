@@ -24,6 +24,11 @@ All notable changes to this project are documented here, following the [Keep a C
 
 - **RequestDetailPage Refactor**: Broke down the oversized `RequestDetailPage.tsx` into smaller, focused components under `frontend/src/pages/placement/request-detail/` for better maintainability.
 
+- **NotificationPreferences Component Refactoring**: Split the large `NotificationPreferences.tsx` component into smaller, focused components for better maintainability:
+  - `DeviceNotificationsCard.tsx` - Handles device push notification logic and UI
+  - `NotificationPreferencesGroups.tsx` - Manages rendering of grouped notification preferences
+  - `NotificationPreferencesSkeleton.tsx` - Dedicated loading skeleton component
+
 ### Fixed
 
 - **Doubled Bell Notifications**: Fixed an issue where rehoming flow notifications appeared twice in the bell UI (once for 'in_app' channel and once for 'email' channel). The `bellVisible` scope now correctly filters out non-in-app notification channels from the bell count and list. Marking all notifications as read also now only affects bell-visible records to preserve engagement state for other channels. (Tests: `UnifiedNotificationsBellVisibilityTest` passed.)

@@ -15,6 +15,8 @@ This guide provides a comprehensive overview of how to get started with developm
     > **Note**: The backend automatically creates `.env` from `.env.example` when you run any `php artisan` command if it doesn't exist. You'll see a helpful message to run `php artisan key:generate`.
 
     > **Tip**: Use `./utils/deploy.sh --skip-git-sync` to deploy local uncommitted changes without git pull. This is useful during development when you want to test changes before committing.
+    >
+    > **Tip**: Use `./utils/deploy.sh --skip-build` for faster deployments when you've already built the Docker images and just need to restart containers or run database migrations.
 
 2.  **Access the app**
 

@@ -46,7 +46,15 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Fixed
 
-- **Doubled Bell Notifications**: Fixed an issue where rehoming flow notifications appeared twice in the bell UI (once for 'in_app' channel and once for 'email' channel). The `bellVisible` scope now correctly filters out non-in-app notification channels from the bell count and list. Marking all notifications as read also now only affects bell-visible records to preserve engagement state for other channels. (Tests: `UnifiedNotificationsBellVisibilityTest` passed.)
+- **Database Seeder Weight Histories**: Fixed the `DatabaseSeeder` to generate realistic weight progression for cats and dogs, ensuring weights stay within species-appropriate ranges (cats: 2.6-6.8kg, dogs: 4.0-32.0kg), with a maximum 3% change between consecutive measurements for smooth, natural progression over time.
+
+### Changed
+
+- **Deploy Script Fresh Mode**: Updated `utils/deploy.sh` to rebuild Docker images during `--fresh` deployments, ensuring seeding runs with the latest code instead of stale container images.
+
+### Added
+
+- **Deploy Script Skip Build Flag**: Added `--skip-build` flag to `utils/deploy.sh` to optionally skip Docker image and documentation builds, allowing faster deployments when using existing local images. Updated help text and usage examples accordingly.
 
 - **PostgreSQL Schema Compatibility**: Removed `SET transaction_timeout = 0;` from `pgsql-schema.sql` to fix "unrecognized configuration parameter" errors during parallel testing, as the schema was dumped with pg_dump 17 but Docker uses PostgreSQL 14.
 

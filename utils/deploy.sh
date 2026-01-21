@@ -81,6 +81,7 @@ source "$SCRIPT_DIR/deploy_post.sh"
 MIGRATE_COMMAND="migrate"
 SEED="false"
 NO_CACHE="false"
+SKIP_BUILD="false"
 FRESH="false"
 NO_INTERACTIVE="false"
 QUIET="false"
@@ -100,6 +101,9 @@ for arg in "$@"; do
             ;;
         --no-cache)
             NO_CACHE="true"
+            ;;
+        --skip-build)
+            SKIP_BUILD="true"
             ;;
         --no-interactive)
             NO_INTERACTIVE="true"
@@ -674,7 +678,11 @@ if [ "$FRESH" = "true" ]; then
     
     # In fresh mode we still need to build images so the new containers run the latest code.
     # Note: docker compose down -v removes containers/volumes, not images.
-    deploy_docker_prepare "$NO_CACHE"
+    if [ "$SKIP_BUILD" = "true" ]; then
+        note "⚠️  Skipping Docker build (--skip-build): will use existing local images."
+    else
+        deploy_docker_prepare "$NO_CACHE"
+    fi
 else
     echo ""
     note "ℹ️  Standard deployment (data preservation mode)"
@@ -682,7 +690,11 @@ else
     
     # Pre-build to minimize downtime
     # (Documentation and Docker images are built while old containers are still running)
-    deploy_docker_prepare "$NO_CACHE"
+    if [ "$SKIP_BUILD" = "true" ]; then
+        note "⚠️  Skipping Docker build (--skip-build): will use existing local images."
+    else
+        deploy_docker_prepare "$NO_CACHE"
+    fi
     
     note "Stopping containers..."
     docker compose stop 2>/dev/null || true

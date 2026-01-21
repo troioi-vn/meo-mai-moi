@@ -17,12 +17,12 @@ Helper profiles allow users to register as helpers who can respond to placement 
 | experience    | text      | Yes      | Description of the helper's experience with pets                                                                                                                                                         |
 | has_pets      | boolean   | Yes      | Whether the helper currently has pets                                                                                                                                                                    |
 | has_children  | boolean   | Yes      | Whether the helper has children                                                                                                                                                                          |
-| request_types | string[]  | Yes      | Types of placement requests this helper can respond to. Must contain at least one of: `foster_payed`, `foster_free`, or `permanent`.                                                                     |
+| request_types | string[]  | Yes      | Types of placement requests this helper can respond to. Must contain at least one of: `foster_paid`, `foster_free`, or `permanent`.                                                                      |
 
 ## Visibility
 
 - **Owner visibility**: A user can always view their own helper profiles, regardless of approval status.
-- **Placement request visibility**: A pet owner can view a helper's profile if that helper has responded (via a transfer request) to one of their placement requests for that pet.
+- **Placement request visibility**: A pet owner can view a helper's profile if that helper has responded (via a placement response) to one of their placement requests for that pet.
 - **Admin visibility**: Admin users can view all helper profiles.
 - When a helper responds to a placement request, the pet owner can view the helper's **phone number** and **contact info** to facilitate communication.
 
@@ -66,4 +66,4 @@ DELETE /api/helper-profiles/{id}
 3. When responding, the helper selects one of their helper profiles.
 4. The pet owner can view the helper's profile details, including phone number and contact info.
 5. The owner can accept or reject the response.
-6. Upon acceptance, the handover process begins (see [Rehoming Flow](./rehoming-flow.md)).
+6. Upon acceptance, the handover process begins (see [Placement Request Lifecycle](./placement-request-lifecycle.md)).

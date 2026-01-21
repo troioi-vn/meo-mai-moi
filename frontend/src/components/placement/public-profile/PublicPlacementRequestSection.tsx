@@ -1,31 +1,38 @@
 import React, { useCallback, useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Clock, X, Info, CheckCircle2, Loader2 } from 'lucide-react'
-import { PlacementResponseModal } from '@/components/placement/PlacementResponseModal'
-import { api } from '@/api/axios'
+import {
+  Clock,
+  X,
+  Info,
+  CheckCircle2,
+  MessageCircle,
+  Loader2,
+  HandshakeIcon,
+  Home,
+  ExternalLink,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
 import type { PublicPet } from '@/api/pets'
-import { getTransferHandover, completeHandover } from '@/api/handovers'
+import { useCreateChat } from '@/hooks/useMessaging'
+import type { PlacementRequestResponse, TransferRequest } from '@/types/placement'
+import {
+  formatRequestType,
+  formatStatus,
+  requiresHandover,
+  isTemporaryType,
+} from '@/types/placement'
+import { cancelPlacementResponse, confirmTransfer } from '@/api/placement'
 
 type PlacementRequest = NonNullable<PublicPet['placement_requests']>[number]
-type TransferRequest = NonNullable<PlacementRequest['transfer_requests']>[number]
 
 interface Props {
   pet: PublicPet
   onRefresh?: () => void
-}
-
-const formatRequestType = (type: string): string => {
-  const labels: Record<string, string> = {
-    foster_free: 'Foster (Free)',
-    foster_payed: 'Foster (Paid)',
-    permanent: 'Permanent Adoption',
-  }
-  return labels[type] ?? type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
 const getRequestTypeBadgeVariant = (
@@ -42,8 +49,6 @@ const getStatusBadgeVariant = (
   switch (status) {
     case 'open':
       return 'default'
-    case 'fulfilled':
-      return 'secondary'
     case 'pending_transfer':
       return 'secondary'
     case 'active':
@@ -55,81 +60,90 @@ const getStatusBadgeVariant = (
   }
 }
 
-const formatStatus = (status: string): string => {
-  const labels: Record<string, string> = {
-    open: 'Open',
-    fulfilled: 'Awaiting Confirmation',
-    pending_transfer: 'Transfer in Progress',
-    active: 'Active Fostering',
-    finalized: 'Completed',
-    expired: 'Expired',
-    cancelled: 'Cancelled',
-  }
-  return labels[status] ?? status.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
-}
-
 export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh }) => {
   const { user } = useAuth()
-  const [respondingToRequest, setRespondingToRequest] = useState<PlacementRequest | null>(null)
-  const [confirmingRehomingId, setConfirmingRehomingId] = useState<number | null>(null)
+  const navigate = useNavigate()
+  const { create: createChat, creating: creatingChat } = useCreateChat()
+  const [confirmingTransferId, setConfirmingTransferId] = useState<number | null>(null)
+  const [cancellingResponseId, setCancellingResponseId] = useState<number | null>(null)
 
   const placementRequests = pet.placement_requests ?? []
-  // Show open and fulfilled placement requests (fulfilled means awaiting helper confirmation)
+  // Show open, pending_transfer, and active placement requests
   const visiblePlacementRequests = placementRequests.filter(
-    (pr) => pr.status === 'open' || pr.status === 'fulfilled'
+    (pr) => pr.status === 'open' || pr.status === 'pending_transfer' || pr.status === 'active'
   )
   const isOwner = Boolean(pet.viewer_permissions?.is_owner)
 
-  // Find user's pending transfer request for any active placement request
-  const findMyPendingTransfer = (request: PlacementRequest): TransferRequest | undefined => {
+  // Find user's pending response (status='responded') for any placement request
+  const findMyPendingResponse = (
+    request: PlacementRequest
+  ): PlacementRequestResponse | undefined => {
     if (!user) return undefined
-    return request.transfer_requests?.find(
-      (tr) => tr.status === 'pending' && tr.helper_profile?.user?.id === user.id
+    return request.responses?.find(
+      (r) => r.status === 'responded' && r.helper_profile?.user?.id === user.id
     )
   }
 
-  // Find user's accepted transfer request (for fulfilled placement requests)
-  const findMyAcceptedTransfer = (request: PlacementRequest): TransferRequest | undefined => {
+  // Find user's accepted response (status='accepted') for any placement request
+  const findMyAcceptedResponse = (
+    request: PlacementRequest
+  ): PlacementRequestResponse | undefined => {
     if (!user) return undefined
-    return request.transfer_requests?.find(
-      (tr) => tr.status === 'accepted' && tr.helper_profile?.user?.id === user.id
+    return request.responses?.find(
+      (r) => r.status === 'accepted' && r.helper_profile?.user?.id === user.id
     )
   }
 
-  const handleCancelTransferRequest = useCallback(
-    async (transferRequestId: number) => {
+  // Get pending transfer request from accepted response
+  const getPendingTransfer = (
+    acceptedResponse: PlacementRequestResponse | undefined
+  ): TransferRequest | undefined => {
+    if (!acceptedResponse?.transfer_request) return undefined
+    if (acceptedResponse.transfer_request.status === 'pending') {
+      return acceptedResponse.transfer_request
+    }
+    return undefined
+  }
+
+  const handleCancelResponse = useCallback(
+    async (responseId: number) => {
+      setCancellingResponseId(responseId)
       try {
-        await api.delete(`transfer-requests/${String(transferRequestId)}`)
+        await cancelPlacementResponse(responseId)
         toast.success('Your response has been cancelled')
         onRefresh?.()
       } catch (error) {
-        console.error('Failed to cancel transfer request', error)
+        console.error('Failed to cancel response', error)
         toast.error('Failed to cancel your response')
+      } finally {
+        setCancellingResponseId(null)
       }
     },
     [onRefresh]
   )
 
-  const handleConfirmRehoming = useCallback(
-    async (transferRequest: TransferRequest) => {
-      setConfirmingRehomingId(transferRequest.id)
-      try {
-        // First, get the handover for this transfer request
-        const handover = await getTransferHandover(transferRequest.id)
-        if (!handover) {
-          toast.error('No handover found for this transfer request')
-          return
-        }
+  const handleMessageOwner = useCallback(
+    async (recipientId: number, placementRequestId: number) => {
+      const chat = await createChat(recipientId, 'PlacementRequest', placementRequestId)
+      if (chat) {
+        void navigate(`/messages/${String(chat.id)}`)
+      }
+    },
+    [createChat, navigate]
+  )
 
-        // Complete the handover
-        await completeHandover(handover.id)
-        toast.success('Rehoming confirmed successfully!')
+  const handleConfirmTransfer = useCallback(
+    async (transferId: number) => {
+      setConfirmingTransferId(transferId)
+      try {
+        await confirmTransfer(transferId)
+        toast.success('Handover confirmed! You are now responsible for this pet.')
         onRefresh?.()
       } catch (error) {
-        console.error('Failed to confirm rehoming', error)
-        toast.error('Failed to confirm rehoming. Please try again.')
+        console.error('Failed to confirm transfer', error)
+        toast.error('Failed to confirm handover. Please try again.')
       } finally {
-        setConfirmingRehomingId(null)
+        setConfirmingTransferId(null)
       }
     },
     [onRefresh]
@@ -146,15 +160,24 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
       </CardHeader>
       <CardContent className="space-y-3">
         {visiblePlacementRequests.map((request) => {
-          const myPendingTransfer = findMyPendingTransfer(request)
-          const myAcceptedTransfer = findMyAcceptedTransfer(request)
-          const isConfirming = confirmingRehomingId === myAcceptedTransfer?.id
+          const myPendingResponse = findMyPendingResponse(request)
+          const myAcceptedResponse = findMyAcceptedResponse(request)
+          const myPendingTransfer = getPendingTransfer(myAcceptedResponse)
+          const needsHandoverConfirm =
+            myAcceptedResponse && myPendingTransfer && requiresHandover(request.request_type)
+          const isActiveWithUser = request.status === 'active' && myAcceptedResponse
 
           return (
             <div key={request.id} className="rounded-lg border p-4 bg-muted/50 space-y-3">
               <div className="flex items-center justify-between gap-2">
                 <h3 className="font-semibold text-foreground">
-                  {request.status === 'open' ? 'Available for Placement' : 'Placement in Progress'}
+                  {request.status === 'open'
+                    ? 'Available for Placement'
+                    : request.status === 'pending_transfer'
+                      ? 'Awaiting Handover'
+                      : request.status === 'active'
+                        ? 'Active Placement'
+                        : 'Placement in Progress'}
                 </h3>
                 <div className="flex items-center gap-2">
                   <Badge variant={getRequestTypeBadgeVariant(request.request_type)}>
@@ -170,44 +193,84 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
 
               {request.notes && <p className="text-sm text-muted-foreground">{request.notes}</p>}
 
-              {request.expires_at && (
+              {request.expires_at && request.status === 'open' && (
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <Clock className="h-4 w-4" />
                   <span>Expires {new Date(request.expires_at).toLocaleDateString()}</span>
                 </div>
               )}
 
-              {/* Show Confirm Rehoming button for accepted helper when status is fulfilled */}
-              {request.status === 'fulfilled' && myAcceptedTransfer && (
-                <div className="rounded-md bg-background border p-3 space-y-3">
-                  <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+              {/* State: Response accepted, needs handover confirmation */}
+              {needsHandoverConfirm && (
+                <div className="rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 p-3 space-y-3">
+                  <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
                     <CheckCircle2 className="h-4 w-4" />
-                    <span>Your response was accepted!</span>
+                    <span className="font-medium">Your response was accepted!</span>
                   </div>
-                  <Button
-                    onClick={() => {
-                      void handleConfirmRehoming(myAcceptedTransfer)
-                    }}
-                    disabled={isConfirming}
-                    className="w-full"
-                  >
-                    {isConfirming ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Confirming...
-                      </>
-                    ) : (
-                      'Confirm Rehoming'
-                    )}
-                  </Button>
-                  <p className="text-xs text-muted-foreground text-center">
-                    Click to confirm you have received the pet
+                  <p className="text-sm text-muted-foreground">
+                    Please confirm once you have received the pet physically.
                   </p>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => void handleConfirmTransfer(myPendingTransfer.id)}
+                      disabled={confirmingTransferId === myPendingTransfer.id}
+                      className="flex-1"
+                    >
+                      {confirmingTransferId === myPendingTransfer.id ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Confirming...
+                        </>
+                      ) : (
+                        <>
+                          <HandshakeIcon className="h-4 w-4 mr-2" />
+                          Confirm Handover
+                        </>
+                      )}
+                    </Button>
+                    {request.user_id != null && (
+                      <Button
+                        variant="outline"
+                        onClick={() => void handleMessageOwner(request.user_id, request.id)}
+                        disabled={creatingChat}
+                        className="flex-1"
+                      >
+                        <MessageCircle className="h-4 w-4 mr-2" />
+                        {creatingChat ? 'Starting...' : 'Chat'}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               )}
 
-              {/* Show regular UI for open placement requests */}
-              {request.status === 'open' && (
+              {/* State: Active placement (user is caring for pet) */}
+              {isActiveWithUser && !needsHandoverConfirm && (
+                <div className="rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 p-3 space-y-3">
+                  <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
+                    <Home className="h-4 w-4" />
+                    <span className="font-medium">You are currently caring for {pet.name}</span>
+                  </div>
+                  {isTemporaryType(request.request_type) && (
+                    <p className="text-xs text-muted-foreground">
+                      The owner will mark the placement as complete when the pet is returned.
+                    </p>
+                  )}
+                  {request.user_id != null && (
+                    <Button
+                      variant="outline"
+                      onClick={() => void handleMessageOwner(request.user_id, request.id)}
+                      disabled={creatingChat}
+                      className="w-full"
+                    >
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                      {creatingChat ? 'Starting chat...' : 'Chat with Owner'}
+                    </Button>
+                  )}
+                </div>
+              )}
+
+              {/* Show regular UI for open placement requests (no accepted response) */}
+              {request.status === 'open' && !myAcceptedResponse && (
                 <>
                   {user ? (
                     isOwner ? (
@@ -217,39 +280,75 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                           You cannot respond to your own pet&apos;s placement request.
                         </AlertDescription>
                       </Alert>
-                    ) : myPendingTransfer ? (
+                    ) : myPendingResponse ? (
                       <div className="rounded-md bg-background border p-3 space-y-3">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Clock className="h-4 w-4" />
                           <span>Your response is pending approval</span>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            void handleCancelTransferRequest(myPendingTransfer.id)
-                          }}
-                          className="w-full"
-                        >
-                          <X className="h-4 w-4 mr-1" />
-                          Cancel Response
-                        </Button>
+                        <div className="space-y-2">
+                          <Button variant="outline" size="sm" className="w-full" asChild>
+                            <Link to={`/requests/${String(request.id)}`}>
+                              <ExternalLink className="h-4 w-4 mr-1" />
+                              View Request Details
+                            </Link>
+                          </Button>
+                          {request.user_id != null && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => void handleMessageOwner(request.user_id, request.id)}
+                              disabled={creatingChat}
+                              className="w-full"
+                            >
+                              <MessageCircle className="h-4 w-4 mr-1" />
+                              {creatingChat ? 'Starting chat...' : 'Chat with Owner'}
+                            </Button>
+                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => void handleCancelResponse(myPendingResponse.id)}
+                            disabled={cancellingResponseId === myPendingResponse.id}
+                            className="w-full"
+                          >
+                            {cancellingResponseId === myPendingResponse.id ? (
+                              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                            ) : (
+                              <X className="h-4 w-4 mr-1" />
+                            )}
+                            Cancel Response
+                          </Button>
+                        </div>
                       </div>
                     ) : (
-                      <Button
-                        onClick={() => {
-                          setRespondingToRequest(request)
-                        }}
-                        className="w-full"
-                      >
-                        Respond to Placement Request
-                      </Button>
+                      <div className="space-y-2">
+                        <Button className="w-full" asChild>
+                          <Link to={`/requests/${String(request.id)}`}>
+                            Respond to Placement Request
+                          </Link>
+                        </Button>
+                        {request.user_id != null && (
+                          <Button
+                            variant="outline"
+                            onClick={() => void handleMessageOwner(request.user_id, request.id)}
+                            disabled={creatingChat}
+                            className="w-full"
+                          >
+                            <MessageCircle className="h-4 w-4 mr-2" />
+                            {creatingChat ? 'Starting chat...' : 'Message Owner'}
+                          </Button>
+                        )}
+                      </div>
                     )
                   ) : (
                     <div className="text-sm text-muted-foreground text-center py-2">
-                      <a href="/login" className="text-primary hover:underline">
+                      <Link
+                        to={`/login?redirect=${encodeURIComponent(`/requests/${String(request.id)}`)}`}
+                        className="text-primary hover:underline"
+                      >
                         Sign in
-                      </a>{' '}
+                      </Link>{' '}
                       to respond to this placement request
                     </div>
                   )}
@@ -259,25 +358,6 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
           )
         })}
       </CardContent>
-
-      {respondingToRequest && (
-        <PlacementResponseModal
-          isOpen={true}
-          onClose={() => {
-            setRespondingToRequest(null)
-          }}
-          petName={pet.name}
-          petId={pet.id}
-          placementRequestId={respondingToRequest.id}
-          requestType={respondingToRequest.request_type}
-          petCity={typeof pet.city === 'string' ? pet.city : pet.city?.name}
-          petCountry={pet.country}
-          onSuccess={() => {
-            setRespondingToRequest(null)
-            onRefresh?.()
-          }}
-        />
-      )}
     </Card>
   )
 }

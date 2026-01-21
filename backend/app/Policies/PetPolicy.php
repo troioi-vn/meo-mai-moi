@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
 use App\Enums\PetStatus;
 use App\Enums\PlacementRequestStatus;
+use App\Enums\TransferRequestStatus;
 use App\Models\Pet;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
@@ -38,15 +41,17 @@ class PetPolicy
         }
 
         // Owner can view
-        if ($pet->user_id === $user->id) {
+        if ($pet->isOwnedBy($user)) {
             return true;
         }
 
-        // Explicit viewer/editor access
-        if (
-            $pet->viewers()->where('user_id', $user->id)->exists()
-            || $pet->editors()->where('user_id', $user->id)->exists()
-        ) {
+        // Explicit viewer/editor access via PetRelationship
+        if ($pet->canBeViewedBy($user)) {
+            return true;
+        }
+
+        // Helper involved in pending transfer can view
+        if ($this->isPendingTransferRecipient($pet, $user)) {
             return true;
         }
 
@@ -64,9 +69,25 @@ class PetPolicy
             return true;
         }
 
-        // Pet has active placement request
+        // Pet has active placement request (OPEN status)
         return $pet->placementRequests()
             ->where('status', PlacementRequestStatus::OPEN)
+            ->exists();
+    }
+
+    /**
+     * Check if user is a recipient of a pending transfer for this pet.
+     * This allows helpers to view the pet profile when the placement request
+     * is in 'pending_transfer' status.
+     */
+    public function isPendingTransferRecipient(Pet $pet, User $user): bool
+    {
+        return $pet->placementRequests()
+            ->where('status', PlacementRequestStatus::PENDING_TRANSFER)
+            ->whereHas('transferRequests', function ($query) use ($user): void {
+                $query->where('to_user_id', $user->id)
+                    ->where('status', TransferRequestStatus::PENDING);
+            })
             ->exists();
     }
 
@@ -84,11 +105,11 @@ class PetPolicy
      */
     public function update(User $user, Pet $pet): bool
     {
-        if ($this->isAdmin($user) || $pet->user_id === $user->id) {
+        if ($this->isAdmin($user)) {
             return true;
         }
 
-        return $pet->editors()->where('user_id', $user->id)->exists();
+        return $pet->canBeEditedBy($user);
     }
 
     /**
@@ -96,7 +117,7 @@ class PetPolicy
      */
     public function delete(User $user, Pet $pet): bool
     {
-        return $this->isAdmin($user) || $pet->user_id === $user->id;
+        return $this->isAdmin($user) || $pet->isOwnedBy($user);
     }
 
     /**

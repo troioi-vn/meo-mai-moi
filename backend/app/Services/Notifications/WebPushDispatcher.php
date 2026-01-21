@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Notifications;
 
 use App\Models\Notification;
@@ -214,7 +216,7 @@ class WebPushDispatcher
 
     private function resolveAssetPath(?string $value, string $fallback): string
     {
-        $path = $value ?: $fallback;
+        $path = $value ? $value : $fallback;
 
         if (empty($path)) {
             return $fallback;

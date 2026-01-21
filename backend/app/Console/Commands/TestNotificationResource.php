@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Models\Notification;
@@ -44,11 +46,11 @@ class TestNotificationResource extends Command
         // Test scopes
         $this->info('2. Testing model scopes...');
         $this->info('✓ Total notifications: '.Notification::count());
-        $this->info('✓ Unread notifications: '.Notification::unread()->count());
-        $this->info('✓ Read notifications: '.Notification::read()->count());
-        $this->info('✓ Delivered notifications: '.Notification::delivered()->count());
-        $this->info('✓ Failed notifications: '.Notification::failed()->count());
-        $this->info('✓ Pending notifications: '.Notification::pending()->count());
+        $this->info('✓ Unread notifications: '.Notification::query()->unread()->count());
+        $this->info('✓ Read notifications: '.Notification::query()->read()->count());
+        $this->info('✓ Delivered notifications: '.Notification::query()->delivered()->count());
+        $this->info('✓ Failed notifications: '.Notification::query()->failed()->count());
+        $this->info('✓ Pending notifications: '.Notification::query()->pending()->count());
 
         // Test notification actions
         $this->info('3. Testing notification actions...');

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\MedicalRecord;
 
 use App\Http\Controllers\Controller;
@@ -9,36 +11,40 @@ use App\Traits\HandlesAuthentication;
 use App\Traits\HandlesPetResources;
 use App\Traits\HandlesValidation;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Get(
- *     path="/api/pets/{pet}/medical-records",
- *     summary="List medical records for a pet",
- *     tags={"Pets"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\Parameter(name="pet", in="path", required=true, @OA\Schema(type="integer")),
- *     @OA\Parameter(name="page", in="query", required=false, @OA\Schema(type="integer")),
- *     @OA\Parameter(name="record_type", in="query", required=false, @OA\Schema(type="string", enum={"vaccination", "vet_visit", "medication", "treatment", "other"}), description="Filter by record type"),
- *
- *     @OA\Response(
- *         response=200,
- *         description="List of medical records",
- *
- *         @OA\JsonContent(
- *
- *             @OA\Property(property="data", type="object",
- *                 @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/MedicalRecord")),
- *                 @OA\Property(property="links", type="object"),
- *                 @OA\Property(property="meta", type="object")
- *             )
- *         )
- *     ),
- *
- *     @OA\Response(response=401, description="Unauthenticated"),
- *     @OA\Response(response=403, description="Forbidden")
- * )
- */
+#[OA\Get(
+    path: '/api/pets/{pet}/medical-records',
+    summary: 'List medical records for a pet',
+    tags: ['Pets'],
+    security: [['sanctum' => []]],
+    parameters: [
+        new OA\Parameter(name: 'pet', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        new OA\Parameter(name: 'page', in: 'query', required: false, schema: new OA\Schema(type: 'integer')),
+        new OA\Parameter(name: 'record_type', in: 'query', required: false, schema: new OA\Schema(type: 'string', enum: ['vaccination', 'vet_visit', 'medication', 'treatment', 'other']), description: 'Filter by record type'),
+    ],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: 'List of medical records',
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(
+                        property: 'data',
+                        type: 'object',
+                        properties: [
+                            new OA\Property(property: 'data', type: 'array', items: new OA\Items(ref: '#/components/schemas/MedicalRecord')),
+                            new OA\Property(property: 'links', type: 'object'),
+                            new OA\Property(property: 'meta', type: 'object'),
+                        ]
+                    ),
+                ]
+            )
+        ),
+        new OA\Response(response: 401, description: 'Unauthenticated'),
+        new OA\Response(response: 403, description: 'Forbidden'),
+    ]
+)]
 class ListMedicalRecordsController extends Controller
 {
     use ApiResponseTrait;

@@ -47,6 +47,16 @@ export const deleteHelperProfile = async (id: string): Promise<void> => {
   await api.delete(`/helper-profiles/${id}`)
 }
 
+export const archiveHelperProfile = async (id: string): Promise<HelperProfileResponse> => {
+  const response = await api.post<HelperProfileResponse>(`/helper-profiles/${id}/archive`)
+  return response.data
+}
+
+export const restoreHelperProfile = async (id: string): Promise<HelperProfileResponse> => {
+  const response = await api.post<HelperProfileResponse>(`/helper-profiles/${id}/restore`)
+  return response.data
+}
+
 export const deleteHelperProfilePhoto = async (
   profileId: string,
   photoId: number

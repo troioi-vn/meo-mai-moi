@@ -1,26 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Notification;
 
+use App\Events\NotificationRead;
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Support\Facades\Auth;
+use OpenApi\Attributes as OA;
 
-/**
- * Mark a single notification as read.
- *
- * @OA\Patch(
- *   path="/api/notifications/{id}/read",
- *   tags={"Notifications"},
- *   security={{"sanctum":{}}},
- *
- *   @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="string")),
- *
- *   @OA\Response(response=204, description="No Content"),
- *   @OA\Response(response=403, description="Forbidden")
- * )
- */
+#[OA\Patch(
+    path: '/api/notifications/{id}/read',
+    tags: ['Notifications'],
+    security: [['sanctum' => []]],
+    parameters: [
+        new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'string')),
+    ],
+    responses: [
+        new OA\Response(response: 204, description: 'No Content'),
+        new OA\Response(response: 403, description: 'Forbidden'),
+    ]
+)]
 class MarkNotificationReadController extends Controller
 {
     use ApiResponseTrait;
@@ -34,6 +36,14 @@ class MarkNotificationReadController extends Controller
         if (! $notification->isRead()) {
             $notification->markAsRead();
         }
+
+        $unreadBellCount = Notification::query()
+            ->where('user_id', Auth::id())
+            ->bellVisible()
+            ->unread()
+            ->count();
+
+        event(new NotificationRead((int) Auth::id(), (string) $notification->id, false, $unreadBellCount));
 
         return $this->sendSuccess(null, 204);
     }

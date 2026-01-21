@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -25,8 +25,9 @@ import {
   RefreshCw,
 } from 'lucide-react'
 import { format } from 'date-fns'
-import InvitationQRCode from '@/components/invitations/InvitationQRCode'
 import InvitationShare from '@/components/invitations/InvitationShare'
+
+const InvitationQRCode = lazy(() => import('@/components/invitations/InvitationQRCode'))
 
 const REFRESH_INTERVAL_MS = 30_000
 
@@ -38,7 +39,8 @@ export default function InvitationsPage() {
   const [error, setError] = useState<string | null>(null)
   const isRefreshingRef = useRef(false)
 
-  const loadData = useCallback(async ({ showLoading = true }: { showLoading?: boolean } = {}) => {
+  const loadData = useCallback(async (params?: { showLoading?: boolean }) => {
+    const { showLoading = true } = params ?? {}
     if (isRefreshingRef.current) {
       return
     }
@@ -58,7 +60,7 @@ export default function InvitationsPage() {
       setInvitations(invitationsData)
       setStats(statsData)
       setError(null)
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to load invitations:', err)
       if (showLoading) {
         setError('Failed to load invitations. Please try again.')
@@ -92,7 +94,7 @@ export default function InvitationsPage() {
         prev ? { ...prev, total: prev.total + 1, pending: prev.pending + 1 } : null
       )
       toast.success('Invitation generated successfully!')
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to generate invitation:', err)
       toast.error('Failed to generate invitation. You may have reached your daily limit.')
     } finally {
@@ -104,7 +106,7 @@ export default function InvitationsPage() {
     try {
       await navigator.clipboard.writeText(invitation.invitation_url)
       toast.success('Invitation link copied to clipboard!')
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to copy:', err)
       toast.error('Failed to copy invitation link')
     }
@@ -126,7 +128,7 @@ export default function InvitationsPage() {
           : null
       )
       toast.success('Invitation revoked successfully')
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to revoke invitation:', err)
       toast.error('Failed to revoke invitation')
     }
@@ -153,7 +155,7 @@ export default function InvitationsPage() {
   if (isLoading) {
     return (
       <div className="container mx-auto py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center justify-center min-h-400px">
           <div className="text-center space-y-4">
             <Loader2 className="h-8 w-8 animate-spin mx-auto" />
             <p className="text-muted-foreground">Loading your invitations...</p>
@@ -314,7 +316,7 @@ export default function InvitationsPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 sm:flex-shrink-0">
+                    <div className="flex items-center gap-2 sm:shrink-0">
                       <Button
                         variant="outline"
                         size="sm"
@@ -331,10 +333,14 @@ export default function InvitationsPage() {
                             invitationUrl={invitation.invitation_url}
                             invitationCode={invitation.code}
                           />
-                          <InvitationQRCode
-                            invitationUrl={invitation.invitation_url}
-                            invitationCode={invitation.code}
-                          />
+                          <Suspense
+                            fallback={<div className="h-10 w-10 animate-pulse bg-muted rounded" />}
+                          >
+                            <InvitationQRCode
+                              invitationUrl={invitation.invitation_url}
+                              invitationCode={invitation.code}
+                            />
+                          </Suspense>
                         </>
                       )}
 

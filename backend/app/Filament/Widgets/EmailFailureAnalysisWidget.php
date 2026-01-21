@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Widgets;
 
 use App\Models\Notification;
@@ -30,17 +32,19 @@ class EmailFailureAnalysisWidget extends BaseWidget
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\BadgeColumn::make('type_display')
+                Tables\Columns\TextColumn::make('type_display')
                     ->label('Type')
-                    ->colors([
-                        'primary' => 'placement_request',
-                        'warning' => 'transfer_request',
-                        'success' => ['transfer_accepted', 'handover_completed', 'profile_approved'],
-                        'danger' => ['transfer_rejected', 'profile_rejected'],
-                        'info' => 'handover_scheduled',
-                        'secondary' => 'review_received',
-                        'gray' => 'system_announcement',
-                    ]),
+                    ->badge()
+                    ->color(fn ($state) => match ($state) {
+                        'Placement Request' => 'primary',
+                        'Transfer Request' => 'warning',
+                        'Transfer Accepted', 'Handover Completed', 'Profile Approved' => 'success',
+                        'Transfer Rejected', 'Profile Rejected' => 'danger',
+                        'Handover Scheduled' => 'info',
+                        'Review Received' => 'indigo',
+                        'System Announcement' => 'gray',
+                        default => 'gray',
+                    }),
 
                 Tables\Columns\TextColumn::make('failure_reason')
                     ->label('Failure Reason')

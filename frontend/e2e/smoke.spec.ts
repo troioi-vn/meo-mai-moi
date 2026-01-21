@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 // Simple smoke to verify app loads and main UI shell renders
-// Assumes dev server on http://localhost:5173
+// Uses the configured baseURL (PLAYWRIGHT_BASE_URL), defaulting to http://localhost:8000
 
 test('loads home page shell', async ({ page }) => {
   await page.goto('/')

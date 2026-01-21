@@ -45,9 +45,9 @@ Meo Mai Moi is a comprehensive cat care management platform that helps cat owner
 ## Features
 
 - Pet profiles and access control: [Pet Profiles](./pet-profiles.md)
+- Pet relationship system: [Pet Relationship System](./pet-relationship-system.md)
 - Pet categorization and tagging: [Categories System](./categories.md)
 - Helper profiles for placement responses: [Helper Profiles](./helper-profiles.md)
-- Email notifications: [Notification Templates Admin](./notifications.md)
-- Push notifications: [Push Notifications](./push-notifications.md)
+- Notification system: [Notification Templates Admin](./notifications.md) | [Push Notifications](./push-notifications.md)
 - User invites: [User Invites](./invites.md)
-- Pet rehoming workflow: [Rehoming Flow](./rehoming-flow.md)
+- Pet placement workflow: [Placement Request Lifecycle](./placement-request-lifecycle.md)

@@ -1,34 +1,35 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\UserProfile;
 
 use App\Http\Controllers\Controller;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Get(
- *     path="/api/users/me",
- *     summary="Get authenticated user's profile",
- *     tags={"User Profile"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\Response(
- *         response=200,
- *         description="Successful operation",
- *
- *         @OA\JsonContent(
- *
- *             @OA\Property(property="data", ref="#/components/schemas/User")
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=401,
- *         description="Unauthenticated"
- *     )
- * )
- */
+#[OA\Get(
+    path: '/api/users/me',
+    summary: "Get authenticated user's profile",
+    tags: ['User Profile'],
+    security: [['sanctum' => []]],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: 'Successful operation',
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'data', ref: '#/components/schemas/User'),
+                ]
+            )
+        ),
+        new OA\Response(
+            response: 401,
+            description: 'Unauthenticated'
+        ),
+    ]
+)]
 class ShowProfileController extends Controller
 {
     use ApiResponseTrait;
@@ -43,8 +44,9 @@ class ShowProfileController extends Controller
         $userData['can_access_admin'] = $user->hasRole(['admin', 'super_admin']);
         $userData['roles'] = $user->roles->pluck('name')->toArray();
 
-        // Ensure avatar_url is included (it should be from the accessor, but let's be explicit)
+        // Ensure avatar_url and has_password are included (they are in $appends, but let's be explicit if needed)
         $userData['avatar_url'] = $user->avatar_url;
+        $userData['has_password'] = $user->has_password;
 
         return $this->sendSuccess($userData);
     }

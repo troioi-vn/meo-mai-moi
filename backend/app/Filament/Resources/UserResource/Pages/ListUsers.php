@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
@@ -15,7 +17,7 @@ class ListUsers extends ListRecords
         return trans('filament-users::user.resource.title.list');
     }
 
-    protected function getActions(): array
+    protected function getHeaderActions(): array
     {
         return [
             CreateAction::make(),

@@ -88,7 +88,7 @@ describe('RequestsPage', () => {
                   notes: 'Looking for permanent adoption',
                   created_at: '2025-07-20T00:00:00Z',
                   updated_at: '2025-07-20T00:00:00Z',
-                  transfer_requests: [],
+                  responses: [],
                 },
               ],
             },
@@ -107,7 +107,7 @@ describe('RequestsPage', () => {
                   notes: 'Looking for free fostering',
                   created_at: '2025-07-20T00:00:00Z',
                   updated_at: '2025-07-20T00:00:00Z',
-                  transfer_requests: [],
+                  responses: [],
                 },
               ],
             },
@@ -234,7 +234,7 @@ describe('RequestsPage', () => {
 
     renderWithRouter(<RequestsPage />, { initialEntries: ['/requests?sort=oldest'] })
 
-    const initialOrder = await screen.findAllByRole('heading', { name: /(Newest|Oldest)/i })
+    const initialOrder = await screen.findAllByText(/^(Oldest|Newest)$/)
     expect(initialOrder.map((el) => el.textContent)).toEqual(['Oldest', 'Newest'])
   })
 
@@ -278,14 +278,14 @@ describe('RequestsPage', () => {
 
     renderWithRouter(<RequestsPage />)
 
-    const initialOrder = await screen.findAllByRole('heading', { name: /(Newest|Oldest)/i })
+    const initialOrder = await screen.findAllByText(/^(Newest|Oldest)$/)
     expect(initialOrder.map((el) => el.textContent)).toEqual(['Newest', 'Oldest'])
 
     await user.click(screen.getByLabelText('Created Date Sort'))
     await user.click(screen.getByRole('option', { name: /oldest first/i }))
 
     await waitFor(() => {
-      const reordered = screen.getAllByRole('heading', { name: /(Newest|Oldest)/i })
+      const reordered = screen.getAllByText(/^(Oldest|Newest)$/)
       expect(reordered.map((el) => el.textContent)).toEqual(['Oldest', 'Newest'])
     })
   })

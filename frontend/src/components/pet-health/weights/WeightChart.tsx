@@ -43,14 +43,14 @@ export function WeightChart({ weights }: WeightChartProps) {
 
   if (weights.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[200px] text-muted-foreground">
+      <div className="flex items-center justify-center h-50 text-muted-foreground">
         No weight records yet
       </div>
     )
   }
 
   return (
-    <ChartContainer config={chartConfig} className="h-[200px] w-full">
+    <ChartContainer config={chartConfig} className="h-50 w-full">
       <LineChart
         accessibilityLayer
         data={chartData}

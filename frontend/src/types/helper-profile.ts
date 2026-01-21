@@ -1,4 +1,5 @@
-import type { City, Pet, PlacementRequest, TransferRequest } from '@/types/pet'
+import type { City, Pet, PlacementRequest } from '@/types/pet'
+import type { PlacementRequestResponse } from '@/types/placement'
 
 export interface HelperProfileUser {
   id?: number
@@ -6,7 +7,8 @@ export interface HelperProfileUser {
   email?: string
 }
 
-export type PlacementRequestType = 'foster_payed' | 'foster_free' | 'permanent'
+export type PlacementRequestType = 'foster_paid' | 'foster_free' | 'permanent' | 'pet_sitting'
+export type HelperProfileStatus = 'active' | 'archived' | 'deleted'
 
 export interface HelperProfile {
   id: number
@@ -15,6 +17,7 @@ export interface HelperProfile {
   address?: string
   city_id?: number | null
   city?: string | City
+  cities?: City[]
   state?: string
   zip_code?: string
   phone_number?: string
@@ -27,14 +30,17 @@ export interface HelperProfile {
   request_types?: PlacementRequestType[]
   approval_status?: string
   approved_at?: string | null
-  status?: string
+  status?: HelperProfileStatus
   user?: HelperProfileUser
   photos?: unknown[]
   pet_types?: { id: number; name: string; placement_requests_allowed: boolean }[]
-  transfer_requests?: (TransferRequest & {
+  // Updated: now using PlacementRequestResponse instead of TransferRequest
+  placement_responses?: (PlacementRequestResponse & {
     placement_request?: PlacementRequest
     pet?: Pet
   })[]
   created_at?: string
   updated_at?: string
+  archived_at?: string
+  restored_at?: string
 }

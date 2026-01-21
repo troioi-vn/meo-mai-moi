@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Mail;
 
 use App\Models\Pet;
@@ -17,6 +19,7 @@ class PetBirthdayMail extends NotificationMail
         if (isset($this->data['pet_id'])) {
             $pet = Pet::find($this->data['pet_id']);
             if ($pet) {
+                /** @var \App\Models\Pet $pet */
                 $petName = $pet->name;
             }
         }

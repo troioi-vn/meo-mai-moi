@@ -75,7 +75,7 @@ class PetControllerTest extends TestCase
                     'country',
                     'description',
                     'pet_type_id',
-                    'user_id',
+                    'created_by',
                     'pet_type',
                 ],
             ]);
@@ -83,7 +83,7 @@ class PetControllerTest extends TestCase
         $this->assertDatabaseHas('pets', [
             'name' => 'Fluffy',
             'pet_type_id' => $this->catType->id,
-            'user_id' => $this->user->id,
+            'created_by' => $this->user->id,
         ]);
     }
 
@@ -92,12 +92,12 @@ class PetControllerTest extends TestCase
         Sanctum::actingAs($this->user);
 
         $cat = Pet::factory()->create([
-            'user_id' => $this->user->id,
+            'created_by' => $this->user->id,
             'pet_type_id' => $this->catType->id,
         ]);
 
         $dog = Pet::factory()->create([
-            'user_id' => $this->user->id,
+            'created_by' => $this->user->id,
             'pet_type_id' => $this->dogType->id,
         ]);
 
@@ -142,7 +142,7 @@ class PetControllerTest extends TestCase
         Sanctum::actingAs($this->user);
 
         $pet = Pet::factory()->create([
-            'user_id' => $this->user->id,
+            'created_by' => $this->user->id,
             'pet_type_id' => $this->catType->id,
         ]);
 
@@ -165,7 +165,7 @@ class PetControllerTest extends TestCase
         Sanctum::actingAs($this->user);
 
         $pet = Pet::factory()->create([
-            'user_id' => $this->user->id,
+            'created_by' => $this->user->id,
             'pet_type_id' => $this->catType->id,
         ]);
 
@@ -188,7 +188,7 @@ class PetControllerTest extends TestCase
         Sanctum::actingAs($this->user);
 
         $pet = Pet::factory()->create([
-            'user_id' => $this->user->id,
+            'created_by' => $this->user->id,
             'pet_type_id' => $this->catType->id,
             'status' => \App\Enums\PetStatus::ACTIVE,
         ]);
@@ -225,7 +225,7 @@ class PetControllerTest extends TestCase
         Sanctum::actingAs($this->user);
 
         $pet = Pet::factory()->create([
-            'user_id' => $otherUser->id,
+            'created_by' => $otherUser->id,
             'pet_type_id' => $this->catType->id,
         ]);
 

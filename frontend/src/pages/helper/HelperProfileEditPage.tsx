@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { FileInput } from '@/components/ui/FileInput'
 import useHelperProfileForm from '@/hooks/useHelperProfileForm'
 import { getPetTypes } from '@/api/pets'
@@ -10,26 +9,30 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getHelperProfile,
   deleteHelperProfile,
+  archiveHelperProfile,
+  restoreHelperProfile,
   deleteHelperProfilePhoto,
 } from '@/api/helper-profiles'
 import { toast } from 'sonner'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
 import { HelperProfileFormFields } from '@/components/helper/HelperProfileFormFields'
 import { PetTypesSelector } from '@/components/helper/PetTypesSelector'
-import { PhotosGrid } from '@/components/helper/PhotosGrid'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
-import { ChevronLeft, Trash2 } from 'lucide-react'
+import { Heart, Camera } from 'lucide-react'
+import { HelperProfileEditBreadcrumb } from '@/components/helper/profile-edit/HelperProfileEditBreadcrumb'
+import { HelperProfileEditHero } from '@/components/helper/profile-edit/HelperProfileEditHero'
+import { FormSectionHeader } from '@/components/helper/profile-edit/FormSectionHeader'
+import { CurrentPhotosCard } from '@/components/helper/profile-edit/CurrentPhotosCard'
+import { ProfileStatusSection } from '@/components/helper/profile-edit/ProfileStatusSection'
+import { EditFormActions } from '@/components/helper/profile-edit/EditFormActions'
+
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string
+    }
+  }
+}
 
 const HelperProfileEditPage: React.FC = () => {
   const { id } = useParams()
@@ -53,27 +56,33 @@ const HelperProfileEditPage: React.FC = () => {
   const initialFormData = useMemo(() => {
     if (!data?.data) return {}
 
-    const cityValue =
-      typeof data.data.city === 'string'
-        ? {
-            id: data.data.city_id ?? -1,
-            name: data.data.city,
-            slug: data.data.city.toLowerCase().replace(/\s+/g, '-'),
-            country: data.data.country ?? '',
-            description: null,
-            created_by: null,
-            approved_at: data.data.approved_at ?? null,
-            created_at: '',
-            updated_at: '',
-          }
-        : ((data.data.city as unknown as City) ?? null)
+    const citiesSelected = data.data.cities ?? []
+
+    // Fallback for old data if cities is empty but city_id exists
+    if (citiesSelected.length === 0 && data.data.city_id) {
+      const cityValue =
+        typeof data.data.city === 'string'
+          ? {
+              id: data.data.city_id,
+              name: data.data.city,
+              slug: data.data.city.toLowerCase().replace(/\s+/g, '-'),
+              country: data.data.country ?? '',
+              description: null,
+              created_by: null,
+              approved_at: null,
+              created_at: '',
+              updated_at: '',
+            }
+          : (data.data.city as unknown as City)
+      citiesSelected.push(cityValue)
+    }
 
     return {
       country: data.data.country ?? '',
       address: data.data.address ?? '',
-      city: typeof data.data.city === 'string' ? data.data.city : (data.data.city?.name ?? ''),
-      city_id: data.data.city_id ?? (cityValue ? cityValue.id : null),
-      city_selected: cityValue,
+      city: citiesSelected.map((c) => c.name).join(', '),
+      city_ids: citiesSelected.map((c) => c.id),
+      cities_selected: citiesSelected,
       state: data.data.state ?? '',
       phone_number: data.data.phone_number ?? data.data.phone ?? '',
       contact_info: data.data.contact_info ?? '',
@@ -85,10 +94,10 @@ const HelperProfileEditPage: React.FC = () => {
       photos: [],
       pet_type_ids: data.data.pet_types?.map((pt) => pt.id) ?? [],
     }
-  }, [data?.data])
+  }, [data])
 
   // Initialize the form hook with proper initial data
-  const { formData, errors, isSubmitting, updateField, updateCity, handleSubmit, handleCancel } =
+  const { formData, errors, isSubmitting, updateField, updateCities, handleSubmit, handleCancel } =
     useHelperProfileForm(numericId, initialFormData)
 
   const deleteMutation = useMutation({
@@ -98,9 +107,39 @@ const HelperProfileEditPage: React.FC = () => {
       void queryClient.invalidateQueries({ queryKey: ['helper-profiles'] })
       void navigate('/helper')
     },
-    onError: (error) => {
-      console.error('Delete error:', error)
-      toast.error('Failed to delete helper profile. Please try again.')
+    onError: (error: unknown) => {
+      const message =
+        (error as ApiError).response?.data?.message ?? 'Failed to delete helper profile'
+      toast.error(message)
+    },
+  })
+
+  const archiveMutation = useMutation({
+    mutationFn: () => (id ? archiveHelperProfile(id) : Promise.reject(new Error('missing id'))),
+    onSuccess: () => {
+      toast.success('Helper profile archived successfully!')
+      void queryClient.invalidateQueries({ queryKey: ['helper-profiles'] })
+      void queryClient.invalidateQueries({ queryKey: ['helper-profile', id] })
+      void navigate('/helper')
+    },
+    onError: (error: unknown) => {
+      const message =
+        (error as ApiError).response?.data?.message ?? 'Failed to archive helper profile'
+      toast.error(message)
+    },
+  })
+
+  const restoreMutation = useMutation({
+    mutationFn: () => (id ? restoreHelperProfile(id) : Promise.reject(new Error('missing id'))),
+    onSuccess: () => {
+      toast.success('Helper profile restored successfully!')
+      void queryClient.invalidateQueries({ queryKey: ['helper-profiles'] })
+      void queryClient.invalidateQueries({ queryKey: ['helper-profile', id] })
+    },
+    onError: (error: unknown) => {
+      const message =
+        (error as ApiError).response?.data?.message ?? 'Failed to restore helper profile'
+      toast.error(message)
     },
   })
 
@@ -116,10 +155,6 @@ const HelperProfileEditPage: React.FC = () => {
       toast.error('Failed to delete photo. Please try again.')
     },
   })
-
-  const handleBack = () => {
-    void navigate(-1)
-  }
 
   if (isLoading) {
     return <LoadingState message="Loading helper profile..." />
@@ -147,132 +182,94 @@ const HelperProfileEditPage: React.FC = () => {
     )
   }
 
+  const helperName = data.data.user?.name ?? 'Helper'
+
   const photos = data.data.photos as { id: number; path: string }[]
 
   return (
-    <div className="min-h-screen">
-      {/* Navigation */}
-      <div className="px-4 py-3">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="default"
-            onClick={handleBack}
-            className="flex items-center gap-1 -ml-2 text-base"
-          >
-            <ChevronLeft className="h-6 w-6" />
-            Back
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="default"
-                className="text-destructive hover:text-destructive"
-              >
-                <Trash2 className="h-5 w-5" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete Helper Profile</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete your helper profile and
-                  all associated data.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => {
-                    deleteMutation.mutate()
-                  }}
-                  disabled={deleteMutation.isPending}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                >
-                  {deleteMutation.isPending ? 'Deleting...' : 'Delete Profile'}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-      </div>
+    <div className="min-h-screen bg-background">
+      <HelperProfileEditBreadcrumb helperName={helperName} />
 
-      <main className="px-4 pb-8">
-        <div className="max-w-2xl mx-auto space-y-6">
-          {/* Photos Section */}
-          {photos.length > 0 && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg font-semibold">Current Photos</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <PhotosGrid
-                  photos={photos}
-                  onDelete={(photoId) => {
-                    deletePhotoMutation.mutate(photoId)
-                  }}
-                  deleting={deletePhotoMutation.isPending}
-                />
-              </CardContent>
-            </Card>
-          )}
+      <main className="px-4 pb-12">
+        <div className="max-w-3xl mx-auto">
+          <HelperProfileEditHero />
 
-          {/* Edit Form */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">Edit Helper Profile</CardTitle>
-              <CardDescription>Update your profile information</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-                <HelperProfileFormFields
-                  formData={formData}
-                  errors={errors}
-                  updateField={updateField}
-                  cityValue={formData.city_selected as City | null}
-                  onCityChange={updateCity}
-                />
-                <PetTypesSelector
-                  petTypes={petTypes ?? []}
-                  selectedPetTypeIds={formData.pet_type_ids}
-                  onChangePetTypeIds={(ids) => {
-                    updateField('pet_type_ids')(ids)
-                  }}
-                  label="Pet Types"
-                  error={errors.pet_type_ids}
-                />
-                <FileInput
-                  id="photos"
-                  label="Add Photos"
-                  onChange={updateField('photos')}
-                  error={errors.photos}
-                  multiple
-                />
+          <div className="space-y-8">
+            <CurrentPhotosCard
+              photos={photos}
+              onDelete={(photoId) => {
+                deletePhotoMutation.mutate(photoId)
+              }}
+              deleting={deletePhotoMutation.isPending}
+            />
 
-                <div className="flex gap-3 pt-4">
-                  <Button
-                    type="submit"
-                    aria-label="Update Helper Profile"
-                    disabled={isSubmitting}
-                    className="flex-1 sm:flex-none"
-                  >
-                    {isSubmitting ? 'Saving...' : 'Save Changes'}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
+            {/* Edit Form */}
+            <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm">
+              <CardContent className="p-6 sm:p-8">
+                <form onSubmit={handleSubmit} className="space-y-10" noValidate>
+                  <HelperProfileFormFields
+                    formData={formData}
+                    errors={errors}
+                    updateField={updateField}
+                    citiesValue={formData.cities_selected}
+                    onCitiesChange={updateCities}
+                  />
+
+                  <section>
+                    <FormSectionHeader icon={Heart} title="Pet Preferences" />
+                    <PetTypesSelector
+                      petTypes={petTypes ?? []}
+                      selectedPetTypeIds={formData.pet_type_ids}
+                      onChangePetTypeIds={(ids) => {
+                        updateField('pet_type_ids')(ids)
+                      }}
+                      label="Pet Types Available for Placement Requests"
+                      error={errors.pet_type_ids}
+                    />
+                  </section>
+
+                  <section>
+                    <FormSectionHeader icon={Camera} title="Add More Photos" />
+                    <div className="bg-muted/30 rounded-lg p-4 border-2 border-dashed border-muted-foreground/20">
+                      <FileInput
+                        id="photos"
+                        label="Upload Photos"
+                        onChange={updateField('photos')}
+                        error={errors.photos}
+                        multiple
+                      />
+                    </div>
+                  </section>
+
+                  <ProfileStatusSection
+                    status={data.data.status}
+                    hasPlacementResponses={Boolean(
+                      data.data.placement_responses && data.data.placement_responses.length > 0
+                    )}
+                    onArchive={() => {
+                      archiveMutation.mutate()
+                    }}
+                    onRestore={() => {
+                      restoreMutation.mutate()
+                    }}
+                    onDelete={() => {
+                      deleteMutation.mutate()
+                    }}
+                    isArchiving={archiveMutation.isPending}
+                    isRestoring={restoreMutation.isPending}
+                    isDeleting={deleteMutation.isPending}
+                  />
+
+                  <EditFormActions
+                    isSubmitting={isSubmitting}
+                    onCancel={() => {
                       handleCancel()
                     }}
-                    disabled={isSubmitting}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+                  />
+                </form>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </main>
     </div>

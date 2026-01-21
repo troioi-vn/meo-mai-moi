@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Pet;
 
 use App\Http\Controllers\Controller;
@@ -8,31 +10,28 @@ use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use App\Traits\HandlesErrors;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Get(
- *     path="/api/my-pets",
- *     summary="Get the pets of the authenticated user",
- *     tags={"Pets"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\Response(
- *         response=200,
- *         description="A list of the user's pets",
- *
- *         @OA\JsonContent(
- *             type="array",
- *
- *             @OA\Items(ref="#/components/schemas/Pet")
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=401,
- *         description="Unauthenticated"
- *     )
- * )
- */
+#[OA\Get(
+    path: '/api/my-pets',
+    summary: 'Get the pets of the authenticated user',
+    tags: ['Pets'],
+    security: [['sanctum' => []]],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "A list of the user's pets",
+            content: new OA\JsonContent(
+                type: 'array',
+                items: new OA\Items(ref: '#/components/schemas/Pet')
+            )
+        ),
+        new OA\Response(
+            response: 401,
+            description: 'Unauthenticated'
+        ),
+    ]
+)]
 class ListMyPetsController extends Controller
 {
     use ApiResponseTrait;
@@ -44,11 +43,15 @@ class ListMyPetsController extends Controller
         if (! $request->user()) {
             return $this->handleUnauthorized();
         }
-        $query = Pet::where('user_id', $request->user()->id)->with('petType');
+
+        // Get pets where the user is an owner
+        $query = Pet::whereHas('owners', function ($q) use ($request): void {
+            $q->where('users.id', $request->user()->id);
+        })->with('petType');
 
         if ($request->filled('pet_type')) {
             $slug = $request->query('pet_type');
-            $query->whereHas('petType', function ($q) use ($slug) {
+            $query->whereHas('petType', function ($q) use ($slug): void {
                 $q->where('slug', $slug);
             });
         }

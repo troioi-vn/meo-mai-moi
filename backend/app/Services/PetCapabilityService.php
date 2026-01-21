@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\Pet;
@@ -7,7 +9,7 @@ use App\Services\PetCapability\CapabilityChecker;
 use App\Services\PetCapability\CapabilityMatrixBuilder;
 use App\Services\PetCapability\CapabilityValidator;
 
-class PetCapabilityService
+final class PetCapabilityService
 {
     private static ?CapabilityChecker $checker = null;
 

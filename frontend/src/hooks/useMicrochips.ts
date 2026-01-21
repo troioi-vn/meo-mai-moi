@@ -36,7 +36,7 @@ export const useMicrochips = (petId: number): UseMicrochipsResult => {
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(
-    async (pg = 1) => {
+    async (pg: number) => {
       setLoading(true)
       setError(null)
       try {

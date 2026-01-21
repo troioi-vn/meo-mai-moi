@@ -56,10 +56,10 @@ class UserSeeder extends Seeder
         }
 
         // Create admin user
-        $user1 = User::firstOrCreate(
+        $user1 = User::updateOrCreate(
             ['email' => 'user1@catarchy.space'],
             [
-                'name' => 'Admin User',
+                'name' => 'Support 🐱',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
             ]

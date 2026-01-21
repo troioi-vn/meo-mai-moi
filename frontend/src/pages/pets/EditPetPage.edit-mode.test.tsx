@@ -8,7 +8,13 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import * as petsApi from '@/api/pets'
 import type { Pet } from '@/types/pet'
 
-vi.mock('@/api/pets')
+vi.mock('@/api/pets', () => ({
+  getPet: vi.fn(),
+  getPetTypes: vi.fn(),
+  updatePetStatus: vi.fn(),
+  deletePet: vi.fn(),
+  updatePet: vi.fn(),
+}))
 
 const mockPet: Partial<Pet> = {
   id: 123,
@@ -102,7 +108,9 @@ describe('CreatePetPage edit mode enhancements', () => {
       expect(screen.getByRole('heading', { name: /edit pet/i })).toBeInTheDocument()
     )
 
-    expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument()
+    // Breadcrumb navigation
+    expect(screen.getByRole('link', { name: /home/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /fluffy/i })).toBeInTheDocument()
   })
 
   it('redirects to pet profile after status update', async () => {

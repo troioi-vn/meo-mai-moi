@@ -64,7 +64,7 @@ class PetFactory extends Factory
             'address' => $this->faker->optional(0.5)->streetAddress(),
             'description' => $this->faker->paragraph(),
             'status' => PetStatus::ACTIVE,
-            'user_id' => User::factory(),
+            'created_by' => User::factory(),
             'pet_type_id' => function () {
                 $existing = PetType::first();
                 if ($existing) {
@@ -81,6 +81,17 @@ class PetFactory extends Factory
                 ])->id;
             },
         ];
+    }
+
+    /**
+     * Configure the model factory.
+     */
+    public function configure(): static
+    {
+        return $this->afterCreating(function (Pet $pet) {
+            // Relationship creation is now handled by the Pet model's booted() method
+            // This ensures consistency across all pet creation methods
+        });
     }
 
     /**

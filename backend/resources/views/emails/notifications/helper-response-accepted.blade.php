@@ -16,7 +16,7 @@
                 <strong>Type:</strong> {{ $pet->petType->name ?? 'Pet' }}<br>
                 <strong>Location:</strong> {{ collect([$pet->city, $pet->state, $pet->country])->filter()->implode(', ') ?: 'Unknown' }}<br>
                 @if($pet->birthday)
-                    <strong>Age:</strong> {{ $pet->birthday->diffInYears(now()) }} years old<br>
+                    <strong>Age:</strong> {{ $pet->birthday->age }} years old<br>
                 @endif
                 @if($pet->description)
                     <strong>About {{ $pet->name }}:</strong> {{ Str::limit($pet->description, 150) }}<br>

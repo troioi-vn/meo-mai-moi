@@ -94,20 +94,20 @@ prompt_with_default() {
     printf "%s" "$var"
 }
 
-# Generate VAPID keys using npx web-push
+# Generate VAPID keys using bun x web-push
 generate_vapid_keys() {
-    echo "Checking for Node.js/npx..."
+    echo "Checking for Bun..."
     
-    if ! command -v npx >/dev/null 2>&1; then
-        echo "✗ npx not found. Please install Node.js first."
-        echo "  Visit: https://nodejs.org/"
-        log_error "npx not available for VAPID key generation"
+    if ! command -v bun >/dev/null 2>&1; then
+        echo "✗ Bun not found. Please install Bun first."
+        echo "  Visit: https://bun.sh/"
+        log_error "bun not available for VAPID key generation"
         return 1
     fi
     
     echo "Generating VAPID keys..."
     local output
-    if ! output=$(npx --yes web-push generate-vapid-keys 2>&1); then
+    if ! output=$(bun x web-push generate-vapid-keys 2>&1); then
         echo "✗ Failed to generate VAPID keys"
         echo "$output"
         log_error "VAPID key generation failed" "output=$output"
@@ -348,18 +348,18 @@ setup_initialize() {
                     else
                         echo ""
                         echo "⚠️  Failed to generate VAPID keys automatically."
-                        echo "   Please generate manually with: npx web-push generate-vapid-keys"
+                        echo "   Please generate manually with: bun x web-push generate-vapid-keys"
                         echo "   Then add to both .env and backend/.env"
                     fi
                 else
                     echo ""
                     echo "ℹ️  Skipped VAPID key generation."
-                    echo "   Generate manually with: npx web-push generate-vapid-keys"
+                    echo "   Generate manually with: bun x web-push generate-vapid-keys"
                     echo "   Then add to both .env and backend/.env"
                 fi
             else
                 echo "   (Non-interactive mode: skipping auto-generation)"
-                echo "   Generate with: npx web-push generate-vapid-keys"
+                echo "   Generate with: bun x web-push generate-vapid-keys"
                 echo "   Then add to both .env and backend/.env"
             fi
         fi
@@ -410,6 +410,13 @@ setup_initialize() {
             MAILGUN_WEBHOOK_SIGNING_KEY_INPUT="$MAILGUN_WEBHOOK_SIGNING_KEY_RAW"
         fi
 
+        REVERB_APP_ID_INPUT=$(prompt_with_default "REVERB_APP_ID" "836270")
+        REVERB_APP_KEY_INPUT=$(prompt_with_default "REVERB_APP_KEY" "mgyigyotlxz3rse8xcu4")
+        REVERB_APP_SECRET_INPUT=$(prompt_with_default "REVERB_APP_SECRET" "o2eqgfdsoxhmzo3u6l6i")
+        REVERB_HOST_INPUT=$(prompt_with_default "REVERB_HOST" "localhost")
+        REVERB_PORT_INPUT=$(prompt_with_default "REVERB_PORT" "8080")
+        REVERB_SCHEME_INPUT=$(prompt_with_default "REVERB_SCHEME" "http")
+
         # Apply values to the env file
         sed -i "s|^APP_NAME=.*|APP_NAME=\"${APP_NAME_INPUT}\"|" "$ENV_FILE"
         sed -i "s|^APP_ENV=.*|APP_ENV=${APP_ENV_INPUT}|" "$ENV_FILE"
@@ -438,6 +445,36 @@ setup_initialize() {
             sed -i "s|^MAILGUN_WEBHOOK_SIGNING_KEY=.*|MAILGUN_WEBHOOK_SIGNING_KEY=${MAILGUN_WEBHOOK_SIGNING_KEY_INPUT}|" "$ENV_FILE"
         else
             echo "MAILGUN_WEBHOOK_SIGNING_KEY=${MAILGUN_WEBHOOK_SIGNING_KEY_INPUT}" >> "$ENV_FILE"
+        fi
+
+        sed -i "s|^REVERB_APP_ID=.*|REVERB_APP_ID=${REVERB_APP_ID_INPUT}|" "$ENV_FILE"
+        sed -i "s|^REVERB_APP_KEY=.*|REVERB_APP_KEY=${REVERB_APP_KEY_INPUT}|" "$ENV_FILE"
+        sed -i "s|^REVERB_APP_SECRET=.*|REVERB_APP_SECRET=${REVERB_APP_SECRET_INPUT}|" "$ENV_FILE"
+        sed -i "s|^REVERB_HOST=.*|REVERB_HOST=\"${REVERB_HOST_INPUT}\"|" "$ENV_FILE"
+        sed -i "s|^REVERB_PORT=.*|REVERB_PORT=${REVERB_PORT_INPUT}|" "$ENV_FILE"
+        sed -i "s|^REVERB_SCHEME=.*|REVERB_SCHEME=${REVERB_SCHEME_INPUT}|" "$ENV_FILE"
+
+        sed -i "s|^VITE_REVERB_APP_KEY=.*|VITE_REVERB_APP_KEY=\"\${REVERB_APP_KEY}\"|" "$ENV_FILE"
+        sed -i "s|^VITE_REVERB_HOST=.*|VITE_REVERB_HOST=\"\${REVERB_HOST}\"|" "$ENV_FILE"
+        sed -i "s|^VITE_REVERB_PORT=.*|VITE_REVERB_PORT=\"\${REVERB_PORT}\"|" "$ENV_FILE"
+        sed -i "s|^VITE_REVERB_SCHEME=.*|VITE_REVERB_SCHEME=\"\${REVERB_SCHEME}\"|" "$ENV_FILE"
+
+        # Sync VITE_REVERB variables to root .env for Docker build args
+        if [ -f "$ROOT_ENV_FILE" ]; then
+            for var in VITE_REVERB_APP_KEY VITE_REVERB_HOST VITE_REVERB_PORT VITE_REVERB_SCHEME; do
+                val=$(grep "^${var}=" "$ENV_FILE" | cut -d'=' -f2- | tr -d '"' | tr -d "'")
+                # If it's a reference like ${REVERB_APP_KEY}, resolve it
+                if [[ "$val" =~ \$\{([A-Z0-9_]+)\} ]]; then
+                    ref_var="${BASH_REMATCH[1]}"
+                    val=$(grep "^${ref_var}=" "$ENV_FILE" | cut -d'=' -f2- | tr -d '"' | tr -d "'")
+                fi
+                
+                if grep -q "^${var}=" "$ROOT_ENV_FILE"; then
+                    sed -i "s|^${var}=.*|${var}=${val}|" "$ROOT_ENV_FILE"
+                else
+                    echo "${var}=${val}" >> "$ROOT_ENV_FILE"
+                fi
+            done
         fi
 
         # ENABLE_HTTPS default: false (opt-in) to avoid dev port conflicts and proxy issues
@@ -510,8 +547,25 @@ setup_initialize() {
         else
             echo "⚠️  No VAPID keys found in .env to sync"
             echo "   Both .env and backend/.env need VAPID keys for push notifications"
-            echo "   Generate with: npx web-push generate-vapid-keys"
+            echo "   Generate with: bun x web-push generate-vapid-keys"
             log_warn "No VAPID keys in root env to sync"
+        fi
+
+        # Sync Reverb keys from backend/.env to root .env (for Docker build args)
+        echo ""
+        if grep -q "^REVERB_APP_KEY=" "$ENV_FILE"; then
+            echo "Syncing Reverb keys from backend/.env to .env..."
+            for var in REVERB_APP_KEY REVERB_HOST REVERB_PORT REVERB_SCHEME; do
+                val=$(grep "^${var}=" "$ENV_FILE" | cut -d'=' -f2- | tr -d '"' | tr -d "'")
+                vite_var="VITE_${var}"
+                if grep -q "^${vite_var}=" "$ROOT_ENV_FILE"; then
+                    sed -i "s|^${vite_var}=.*|${vite_var}=${val}|" "$ROOT_ENV_FILE"
+                else
+                    echo "${vite_var}=${val}" >> "$ROOT_ENV_FILE"
+                fi
+            done
+            echo "✓ Reverb keys synced to .env"
+            log_success "Reverb keys synced from backend env to root env"
         fi
         
         # Setup Telegram Bot notifications (optional)
@@ -651,12 +705,13 @@ setup_initialize() {
 
 print_help() {
     cat <<'EOF'
-Usage: ./utils/deploy.sh [--fresh] [--seed] [--no-cache] [--no-interactive] [--quiet] [--allow-empty-db] [--test-notify] [--skip-git-sync] [--clean-up]
+Usage: ./utils/deploy.sh [--fresh] [--seed] [--no-cache] [--skip-build] [--no-interactive] [--quiet] [--allow-empty-db] [--test-notify] [--skip-git-sync] [--clean-up]
 
 Flags:
     --fresh          Drop and recreate database, re-run all migrations; also clears volumes/containers.
     --seed           Seed the database after running migrations (or migrate:fresh).
     --no-cache       Build Docker images without using cache.
+    --skip-build     Skip building Docker images/docs (uses existing local images).
     --no-interactive Skip confirmation prompts (useful for automated scripts/CI).
     --quiet          Reduce console output; full logs go to .deploy.log.
     --allow-empty-db Allow deployment to proceed even if database appears empty (non-fresh).
@@ -677,8 +732,13 @@ Examples:
     ./utils/deploy.sh --fresh --seed           # fresh + seed (asks for confirmation)
     ./utils/deploy.sh --fresh --no-interactive # fresh without prompts (for CI/automation)
     ./utils/deploy.sh --no-cache               # rebuild images without cache
+    ./utils/deploy.sh --skip-build             # skip docker build (fast; uses existing images)
     ./utils/deploy.sh --test-notify            # test Telegram notifications
     ./utils/deploy.sh --skip-git-sync          # deploy local changes without git pull
+
+Notes:
+    - If you change backend/frontend code, DO NOT use --skip-build unless you have built images separately.
+    - --no-cache has no effect when --skip-build is used.
 
 IMPORTANT: Data Preservation
     - Without --fresh: All existing database data is PRESERVED

@@ -2,15 +2,18 @@
   "name": "meo-mai-moi",
   "private": true,
   "scripts": {
-    "test:backend": "docker compose exec backend php artisan test",
-    "test": "cd frontend && npm test",
-    "test:frontend": "cd frontend && npm test",
-    "typecheck:frontend": "cd frontend && npx tsc -p tsconfig.typecheck.json --noEmit",
-    "e2e": "cd frontend && npm run e2e",
-    "e2e:ui": "cd frontend && npm run e2e:ui",
-    "e2e:report": "cd frontend && npm run e2e:report",
-    "docs:dev": "npm --prefix docs run docs:dev",
-    "docs:build": "npm --prefix docs run docs:build",
-    "docs:preview": "npm --prefix docs run docs:preview"
+    "test:backend": "cd backend && php artisan test --parallel",
+    "test": "cd frontend && bun test",
+    "test:frontend": "cd frontend && bun test",
+    "typecheck:frontend": "cd frontend && bun x tsc -p tsconfig.typecheck.json --noEmit",
+    "e2e": "cd frontend && bun run e2e",
+    "e2e:ui": "cd frontend && bun run e2e:ui",
+    "e2e:report": "cd frontend && bun run e2e:report",
+    "docs:dev": "bun --cwd docs run docs:dev",
+    "docs:build": "bun --cwd docs run docs:build",
+    "docs:preview": "bun --cwd docs run docs:preview"
+  },
+  "dependencies": {
+    "docs": "^0.3.2-canary.0"
   }
 }

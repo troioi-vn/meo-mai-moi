@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Pet;
 
 use App\Http\Controllers\Controller;
@@ -9,47 +11,46 @@ use App\Traits\HandlesAuthentication;
 use App\Traits\HandlesErrors;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Delete(
- *     path="/api/pets/{id}",
- *     summary="Delete a pet",
- *     tags={"Pets"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         required=true,
- *         description="ID of the pet to delete",
- *
- *         @OA\Schema(type="integer")
- *     ),
- *
- *     @OA\RequestBody(
- *         required=true,
- *
- *         @OA\JsonContent(
- *             required={"password"},
- *
- *             @OA\Property(property="password", type="string", format="password", description="User's current password for confirmation")
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=204,
- *         description="Pet deleted successfully"
- *     ),
- *     @OA\Response(
- *         response=403,
- *         description="Forbidden"
- *     ),
- *     @OA\Response(
- *         response=422,
- *         description="Validation error"
- *     )
- * )
- */
+#[OA\Delete(
+    path: '/api/pets/{id}',
+    summary: 'Delete a pet',
+    tags: ['Pets'],
+    security: [['sanctum' => []]],
+    parameters: [
+        new OA\Parameter(
+            name: 'id',
+            in: 'path',
+            required: true,
+            description: 'ID of the pet to delete',
+            schema: new OA\Schema(type: 'integer')
+        ),
+    ],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ['password'],
+            properties: [
+                new OA\Property(property: 'password', type: 'string', format: 'password', description: "User's current password for confirmation"),
+            ]
+        )
+    ),
+    responses: [
+        new OA\Response(
+            response: 204,
+            description: 'Pet deleted successfully'
+        ),
+        new OA\Response(
+            response: 403,
+            description: 'Forbidden'
+        ),
+        new OA\Response(
+            response: 422,
+            description: 'Validation error'
+        ),
+    ]
+)]
 class DeletePetController extends Controller
 {
     use ApiResponseTrait;

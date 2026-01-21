@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Invitation;
 
 use App\Http\Controllers\Controller;
@@ -10,59 +12,60 @@ use App\Traits\HandlesErrors;
 use App\Traits\HandlesValidation;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Post(
- *     path="/api/invitations",
- *     summary="Generate a new invitation",
- *     description="Create a new invitation code for the authenticated user.",
- *     tags={"Invitations"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\RequestBody(
- *         required=false,
- *         description="Optional invitation parameters",
- *
- *         @OA\JsonContent(
- *
- *             @OA\Property(property="expires_at", type="string", format="datetime", nullable=true, example="2024-12-31T23:59:59Z")
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=201,
- *         description="Invitation created successfully",
- *
- *         @OA\JsonContent(
- *
- *             @OA\Property(property="message", type="string", example="Invitation created successfully"),
- *             @OA\Property(property="data", type="object",
- *                 @OA\Property(property="id", type="integer"),
- *                 @OA\Property(property="code", type="string"),
- *                 @OA\Property(property="status", type="string", example="pending"),
- *                 @OA\Property(property="expires_at", type="string", format="datetime", nullable=true),
- *                 @OA\Property(property="invitation_url", type="string"),
- *                 @OA\Property(property="created_at", type="string", format="datetime")
- *             )
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=429,
- *         description="Rate limit exceeded",
- *
- *         @OA\JsonContent(
- *
- *             @OA\Property(property="message", type="string", example="Daily invitation limit exceeded")
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=401,
- *         description="Unauthenticated"
- *     )
- * )
- */
+#[OA\Post(
+    path: '/api/invitations',
+    summary: 'Generate a new invitation',
+    description: 'Create a new invitation code for the authenticated user.',
+    tags: ['Invitations'],
+    security: [['sanctum' => []]],
+    requestBody: new OA\RequestBody(
+        required: false,
+        description: 'Optional invitation parameters',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'expires_at', type: 'string', format: 'datetime', nullable: true, example: '2024-12-31T23:59:59Z'),
+            ]
+        )
+    ),
+    responses: [
+        new OA\Response(
+            response: 201,
+            description: 'Invitation created successfully',
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'message', type: 'string', example: 'Invitation created successfully'),
+                    new OA\Property(
+                        property: 'data',
+                        type: 'object',
+                        properties: [
+                            new OA\Property(property: 'id', type: 'integer'),
+                            new OA\Property(property: 'code', type: 'string'),
+                            new OA\Property(property: 'status', type: 'string', example: 'pending'),
+                            new OA\Property(property: 'expires_at', type: 'string', format: 'datetime', nullable: true),
+                            new OA\Property(property: 'invitation_url', type: 'string'),
+                            new OA\Property(property: 'created_at', type: 'string', format: 'datetime'),
+                        ]
+                    ),
+                ]
+            )
+        ),
+        new OA\Response(
+            response: 429,
+            description: 'Rate limit exceeded',
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'message', type: 'string', example: 'Daily invitation limit exceeded'),
+                ]
+            )
+        ),
+        new OA\Response(
+            response: 401,
+            description: 'Unauthenticated'
+        ),
+    ]
+)]
 class StoreInvitationController extends Controller
 {
     use ApiResponseTrait;

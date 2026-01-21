@@ -124,7 +124,7 @@ describe('RegisterForm', () => {
   it('generates and fills password and confirmation', async () => {
     renderWithRouter(<RegisterForm />)
 
-    const generateButton = await screen.findByRole('button', { name: /generate password/i })
+    const generateButton = await screen.findByRole('button', { name: /generate/i })
     await user.click(generateButton)
 
     const passwordInput = screen.getByLabelText<HTMLInputElement>(/^Password$/i)

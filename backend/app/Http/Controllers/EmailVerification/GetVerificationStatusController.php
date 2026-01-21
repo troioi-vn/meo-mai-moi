@@ -1,33 +1,33 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\EmailVerification;
 
 use App\Http\Controllers\Controller;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
-/**
- * Check email verification status.
- *
- * @OA\Get(
- *     path="/api/email/verification-status",
- *     summary="Check email verification status",
- *     description="Check if the authenticated user's email is verified.",
- *     tags={"Email Verification"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\Response(
- *         response=200,
- *         description="Verification status",
- *
- *         @OA\JsonContent(
- *
- *             @OA\Property(property="verified", type="boolean", example=true),
- *             @OA\Property(property="email", type="string", example="user@example.com")
- *         )
- *     )
- * )
- */
+#[OA\Get(
+    path: '/api/email/verification-status',
+    summary: 'Check email verification status',
+    description: "Check if the authenticated user's email is verified.",
+    tags: ['Email Verification'],
+    security: [['sanctum' => []]],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: 'Verification status',
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'verified', type: 'boolean', example: true),
+                    new OA\Property(property: 'email', type: 'string', example: 'user@example.com'),
+                ]
+            )
+        ),
+    ]
+)]
 class GetVerificationStatusController extends Controller
 {
     use ApiResponseTrait;

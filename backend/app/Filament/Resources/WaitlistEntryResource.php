@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources;
 
+use App\Enums\WaitlistEntryStatus;
 use App\Filament\Resources\WaitlistEntryResource\Pages;
 use App\Models\WaitlistEntry;
 use App\Services\WaitlistService;
@@ -20,7 +23,7 @@ class WaitlistEntryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-queue-list';
 
-    protected static ?string $navigationGroup = 'Invitation';
+    protected static ?string $navigationGroup = 'Users & Invites';
 
     protected static ?string $navigationLabel = 'Waitlist';
 
@@ -28,7 +31,7 @@ class WaitlistEntryResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Waitlist Entries';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form
     {
@@ -45,17 +48,14 @@ class WaitlistEntryResource extends Resource
 
                         Forms\Components\Select::make('status')
                             ->label('Status')
-                            ->options([
-                                'pending' => 'Pending',
-                                'invited' => 'Invited',
-                            ])
-                            ->default('pending')
+                            ->options(WaitlistEntryStatus::class)
+                            ->default(WaitlistEntryStatus::PENDING)
                             ->required(),
 
                         Forms\Components\DateTimePicker::make('invited_at')
                             ->label('Invited At')
                             ->nullable()
-                            ->visible(fn (Forms\Get $get): bool => $get('status') === 'invited'),
+                            ->visible(fn (Forms\Get $get): bool => $get('status') === WaitlistEntryStatus::INVITED->value),
                     ])
                     ->columns(2),
             ]);
@@ -75,13 +75,7 @@ class WaitlistEntryResource extends Resource
 
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'pending' => 'warning',
-                        'invited' => 'success',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn (string $state): string => ucfirst($state)),
+                    ->badge(),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Joined Waitlist')
@@ -109,10 +103,7 @@ class WaitlistEntryResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
-                    ->options([
-                        'pending' => 'Pending',
-                        'invited' => 'Invited',
-                    ]),
+                    ->options(WaitlistEntryStatus::class),
 
                 Tables\Filters\Filter::make('recent')
                     ->label('Recent (Last 7 days)')
@@ -127,7 +118,7 @@ class WaitlistEntryResource extends Resource
                     ->label('Send Invitation')
                     ->icon('heroicon-o-paper-airplane')
                     ->color('success')
-                    ->visible(fn (WaitlistEntry $record): bool => $record->status === 'pending')
+                    ->visible(fn (WaitlistEntry $record): bool => $record->status === WaitlistEntryStatus::PENDING)
                     ->action(function (WaitlistEntry $record): void {
                         $waitlistService = app(WaitlistService::class);
                         $user = auth()->user();
@@ -175,7 +166,7 @@ class WaitlistEntryResource extends Resource
                             $waitlistService = app(WaitlistService::class);
                             $user = auth()->user();
 
-                            $pendingRecords = $records->filter(fn (\App\Models\WaitlistEntry $record) => $record->status === 'pending');
+                            $pendingRecords = $records->filter(fn (\App\Models\WaitlistEntry $record) => $record->status === WaitlistEntryStatus::PENDING);
                             $emails = $pendingRecords->pluck('email')->toArray();
 
                             if (empty($emails)) {
@@ -203,7 +194,6 @@ class WaitlistEntryResource extends Resource
                                     ->body($message)
                                     ->success()
                                     ->send();
-
                             } catch (\Exception $e) {
                                 Notification::make()
                                     ->title('Error')
@@ -228,7 +218,7 @@ class WaitlistEntryResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+
         ];
     }
 
@@ -244,7 +234,9 @@ class WaitlistEntryResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::pending()->count() ?: null;
+        $count = static::getModel()::pending()->count();
+
+        return $count > 0 ? (string) $count : null;
     }
 
     public static function getNavigationBadgeColor(): ?string

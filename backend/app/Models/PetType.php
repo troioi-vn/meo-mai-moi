@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -128,12 +130,12 @@ class PetType extends Model
     /**
      * Boot the model and set up event listeners
      */
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 
         // Auto-generate slug from name if not provided
-        static::creating(function ($petType) {
+        static::creating(function ($petType): void {
             if (! $petType->slug) {
                 $petType->slug = Str::slug($petType->name);
             }

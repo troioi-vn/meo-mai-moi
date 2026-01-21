@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
@@ -29,9 +31,16 @@ class EditUser extends EditRecord
         return trans('filament-users::user.resource.title.edit');
     }
 
-    protected function getActions(): array
+    protected function getHeaderActions(): array
     {
-        ! config('filament-users.impersonate') ?: $ret[] = Impersonate::make()->record($this->getRecord());
+        $ret = [];
+
+        if (config('filament-users.impersonate')) {
+            $ret[] = Impersonate::make()
+                ->redirectTo('/')
+                ->record($this->getRecord());
+        }
+
         $ret[] = DeleteAction::make();
 
         return $ret;

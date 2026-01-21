@@ -1,26 +1,42 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
+use App\Enums\NotificationType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @method static \Illuminate\Database\Eloquent\Builder pending()
- * @method static \Illuminate\Database\Eloquent\Builder delivered()
- * @method static \Illuminate\Database\Eloquent\Builder failed()
- * @method static \Illuminate\Database\Eloquent\Builder read()
- * @method static \Illuminate\Database\Eloquent\Builder unread()
- * @method \Illuminate\Database\Eloquent\Builder pending()
- * @method \Illuminate\Database\Eloquent\Builder delivered()
- * @method \Illuminate\Database\Eloquent\Builder failed()
- * @method \Illuminate\Database\Eloquent\Builder read()
- * @method \Illuminate\Database\Eloquent\Builder unread()
+ * @method static \Illuminate\Database\Eloquent\Builder|static pending()
+ * @method static \Illuminate\Database\Eloquent\Builder|static delivered()
+ * @method static \Illuminate\Database\Eloquent\Builder|static failed()
+ * @method static \Illuminate\Database\Eloquent\Builder|static read()
+ * @method static \Illuminate\Database\Eloquent\Builder|static unread()
  */
 class Notification extends Model
 {
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $notification): void {
+            $isRead = (bool) $notification->is_read;
+
+            // Keep the redundant fields in sync.
+            if ($isRead && $notification->read_at === null) {
+                $notification->read_at = now();
+            }
+
+            if (! $isRead && $notification->read_at !== null) {
+                $notification->read_at = null;
+            }
+
+            $notification->is_read = $notification->read_at !== null;
+        });
+    }
 
     protected $fillable = [
         'user_id',
@@ -37,6 +53,7 @@ class Notification extends Model
 
     protected $casts = [
         'data' => 'array',
+        'is_read' => 'boolean',
         'read_at' => 'datetime',
         'delivered_at' => 'datetime',
         'failed_at' => 'datetime',
@@ -67,6 +84,7 @@ class Notification extends Model
             'profile_rejected' => 'Profile Rejected',
             'system_announcement' => 'System Announcement',
             'deployment' => 'Deployment',
+            'new_message' => 'New Message',
             default => ucfirst(str_replace('_', ' ', $this->type ?? 'notification')),
         };
     }
@@ -109,6 +127,24 @@ class Notification extends Model
     public function scopeUnread($query)
     {
         return $query->whereNull('read_at');
+    }
+
+    /**
+     * Scope for notifications that should appear in the bell UI.
+     */
+    public function scopeBellVisible($query)
+    {
+        return $query
+            ->where(function ($q): void {
+                $q->whereNull('type')
+                    ->orWhere('type', '!=', NotificationType::EMAIL_VERIFICATION->value);
+            })
+            // The bell UI only represents in-app notifications.
+            // Email notifications are persisted for delivery/audit but must not affect bell count.
+            ->where(function ($q): void {
+                $q->whereNull('data->channel')
+                    ->orWhere('data->channel', 'like', 'in_app%');
+            });
     }
 
     /**
@@ -169,5 +205,54 @@ class Notification extends Model
         if ($this->isRead()) {
             $this->update(['read_at' => null]);
         }
+    }
+
+    public function getBellTitle(): string
+    {
+        $title = data_get($this->data, 'title');
+        if (is_string($title) && trim($title) !== '') {
+            return $title;
+        }
+
+        if (is_string($this->message) && trim($this->message) !== '') {
+            return $this->message;
+        }
+
+        if (is_string($this->type) && $this->type !== '') {
+            $type = NotificationType::tryFrom($this->type);
+            if ($type) {
+                return $type->getLabel();
+            }
+
+            return $this->type_display;
+        }
+
+        return 'Notification';
+    }
+
+    public function getBellBody(): ?string
+    {
+        $body = data_get($this->data, 'body');
+        if ($body === null) {
+            return null;
+        }
+
+        if (is_string($body)) {
+            $body = trim($body);
+
+            return $body === '' ? null : $body;
+        }
+
+        return null;
+    }
+
+    public function getBellLevel(): string
+    {
+        $level = data_get($this->data, 'level');
+        if (is_string($level) && $level !== '') {
+            return $level;
+        }
+
+        return 'info';
     }
 }

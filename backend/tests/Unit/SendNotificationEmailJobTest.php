@@ -6,7 +6,6 @@ use App\Enums\NotificationType;
 use App\Jobs\SendNotificationEmail;
 use App\Mail\HelperResponseAcceptedMail;
 use App\Mail\HelperResponseRejectedMail;
-use App\Mail\PlacementRequestAcceptedMail;
 use App\Mail\PlacementRequestResponseMail;
 use App\Models\Notification;
 use App\Models\User;
@@ -74,20 +73,20 @@ class SendNotificationEmailJobTest extends TestCase
         $this->assertNull($this->notification->failure_reason);
     }
 
-    public function test_job_sends_placement_request_accepted_email()
+    public function test_job_sends_helper_response_accepted_email()
     {
         Mail::fake();
 
         $job = new SendNotificationEmail(
             $this->user,
-            NotificationType::PLACEMENT_REQUEST_ACCEPTED->value,
+            NotificationType::HELPER_RESPONSE_ACCEPTED->value,
             ['pet_id' => 1],
             $this->notification->id
         );
 
         $job->handle();
 
-        Mail::assertSent(PlacementRequestAcceptedMail::class, function ($mail) {
+        Mail::assertSent(HelperResponseAcceptedMail::class, function ($mail) {
             return $mail->hasTo($this->user->email);
         });
 
@@ -95,7 +94,7 @@ class SendNotificationEmailJobTest extends TestCase
         $this->assertNotNull($this->notification->delivered_at);
     }
 
-    public function test_job_sends_helper_response_accepted_email()
+    public function test_job_sends_helper_response_accepted_email_with_full_data()
     {
         Mail::fake();
 
@@ -353,7 +352,7 @@ class SendNotificationEmailJobTest extends TestCase
             $this->notification->id
         );
 
-        $this->assertEquals(3, $job->tries);
+        $this->assertEquals(3, $job->tries());
         $this->assertEquals([60, 300, 900], $job->backoff());
     }
 

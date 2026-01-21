@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\PetCapability;
 
 use App\Models\Pet;
 use Illuminate\Validation\ValidationException;
 
-class CapabilityValidator
+final class CapabilityValidator
 {
     private CapabilityChecker $checker;
 

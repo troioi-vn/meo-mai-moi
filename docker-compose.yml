@@ -5,10 +5,15 @@ services:
       context: .
       dockerfile: ./backend/Dockerfile
       args:
-        VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+        VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+        VITE_REVERB_APP_KEY: ${VITE_REVERB_APP_KEY:-}
+        VITE_REVERB_HOST: ${VITE_REVERB_HOST:-}
+        VITE_REVERB_PORT: ${VITE_REVERB_PORT:-}
+        VITE_REVERB_SCHEME: ${VITE_REVERB_SCHEME:-}
     image: meomaimoi/backend
     ports:
       - "8000:80"
+      - "8080:8080" # Reverb WebSocket server
     env_file:
       - ./backend/.env
     environment:
@@ -19,10 +24,19 @@ services:
       # Telegram notification config for monitoring scripts (from root .env)
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - CHAT_ID=${CHAT_ID}
+      # Set default pusher values to avoid docker compose warnings
+      - PUSHER_APP_ID=${PUSHER_APP_ID:-}
+      - PUSHER_APP_KEY=${PUSHER_APP_KEY:-}
+      - PUSHER_APP_SECRET=${PUSHER_APP_SECRET:-}
+      - PUSHER_HOST=${PUSHER_HOST:-}
+      - PUSHER_PORT=${PUSHER_PORT:-}
+      - PUSHER_SCHEME=${PUSHER_SCHEME:-}
+      - PUSHER_APP_CLUSTER=${PUSHER_APP_CLUSTER:-}
     depends_on:
       db:
         condition: service_healthy
     volumes:
+      - ./backend/.env:/var/www/.env:ro
       - uploads_data:/var/www/storage/app/public
       - logs_data:/var/www/storage/logs
       # Mount built docs into public path to serve at /docs
@@ -59,13 +73,13 @@ services:
     restart: unless-stopped
 
   db:
-    image: postgres:14-alpine
+    image: postgres:18-alpine
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-meo_mai_moi}
       POSTGRES_USER: ${POSTGRES_USER:-user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
       # Create additional test database for PHPUnit tests to prevent wiping dev data
-      POSTGRES_TEST_DB: meo_mai_moi_test
+      POSTGRES_TEST_DB: ${POSTGRES_TEST_DB:-meo_mai_moi_testing}
     ports:
       - "5432:5432"
     volumes:
@@ -80,6 +94,16 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    profiles:
+      - testing
+      - e2e
+    ports:
+      - "1025:1025" # SMTP server
+      - "8025:8025" # Web UI
     restart: unless-stopped
 
 volumes:

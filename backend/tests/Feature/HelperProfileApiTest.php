@@ -53,7 +53,7 @@ class HelperProfileApiTest extends TestCase
         $data = [
             'country' => 'VN',
             'address' => '123 Test St',
-            'city_id' => $city->id,
+            'city_ids' => [$city->id],
             'state' => 'TS',
             'phone_number' => '123-456-7890',
             'contact_info' => 'You can also reach me on Telegram @testhelper',
@@ -79,6 +79,86 @@ class HelperProfileApiTest extends TestCase
     }
 
     #[Test]
+    public function can_create_a_helper_profile_with_multiple_cities()
+    {
+        $user = User::factory()->create();
+        $city1 = City::factory()->create(['country' => 'VN', 'name' => 'City 1']);
+        $city2 = City::factory()->create(['country' => 'VN', 'name' => 'City 2']);
+        $petType = PetType::factory()->create(['name' => 'Cat', 'slug' => 'cat', 'is_system' => true]);
+
+        $data = [
+            'country' => 'VN',
+            'address' => '123 Test St',
+            'city_ids' => [$city1->id, $city2->id],
+            'state' => 'TS',
+            'phone_number' => '123-456-7890',
+            'contact_info' => 'Contact info',
+            'experience' => 'Experience',
+            'has_pets' => true,
+            'has_children' => false,
+            'request_types' => [PlacementRequestType::FOSTER_FREE->value],
+            'zip_code' => '12345',
+            'pet_type_ids' => [$petType->id],
+        ];
+
+        $response = $this->actingAs($user)->postJson('/api/helper-profiles', $data);
+
+        $response->assertStatus(201);
+
+        $profileId = $response->json('data.id');
+        $this->assertDatabaseHas('helper_profile_city', [
+            'helper_profile_id' => $profileId,
+            'city_id' => $city1->id,
+        ]);
+        $this->assertDatabaseHas('helper_profile_city', [
+            'helper_profile_id' => $profileId,
+            'city_id' => $city2->id,
+        ]);
+
+        // The 'city' field should contain both names
+        $this->assertDatabaseHas('helper_profiles', [
+            'id' => $profileId,
+            'city' => 'City 1, City 2',
+        ]);
+    }
+
+    #[Test]
+    public function can_update_a_helper_profile_with_multiple_cities()
+    {
+        $user = User::factory()->create();
+        $city1 = City::factory()->create(['country' => 'VN', 'name' => 'City 1']);
+        $city2 = City::factory()->create(['country' => 'VN', 'name' => 'City 2']);
+        $profile = HelperProfile::factory()->for($user)->create([
+            'country' => 'VN',
+            'city_id' => $city1->id,
+            'city' => $city1->name,
+        ]);
+        $profile->cities()->sync([$city1->id]);
+
+        $data = [
+            'city_ids' => [$city1->id, $city2->id],
+        ];
+
+        $response = $this->actingAs($user)->putJson("/api/helper-profiles/{$profile->id}", $data);
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('helper_profile_city', [
+            'helper_profile_id' => $profile->id,
+            'city_id' => $city1->id,
+        ]);
+        $this->assertDatabaseHas('helper_profile_city', [
+            'helper_profile_id' => $profile->id,
+            'city_id' => $city2->id,
+        ]);
+
+        $this->assertDatabaseHas('helper_profiles', [
+            'id' => $profile->id,
+            'city' => 'City 1, City 2',
+        ]);
+    }
+
+    #[Test]
     public function cannot_create_helper_profile_without_request_types()
     {
         $user = User::factory()->create();
@@ -88,7 +168,7 @@ class HelperProfileApiTest extends TestCase
         $data = [
             'country' => 'VN',
             'address' => '123 Test St',
-            'city_id' => $city->id,
+            'city_ids' => [$city->id],
             'state' => 'TS',
             'phone_number' => '123-456-7890',
             'experience' => 'Lots of experience',
@@ -161,21 +241,71 @@ class HelperProfileApiTest extends TestCase
         $profile = HelperProfile::factory()->for($helperOwner)->create(['approval_status' => 'pending']);
 
         // Create pet with placement request
-        $pet = \App\Models\Pet::factory()->for($petOwner)->create();
+        $pet = \App\Models\Pet::factory()->create(['created_by' => $petOwner->id]);
         $placementRequest = \App\Models\PlacementRequest::factory()->for($pet)->create([
             'request_type' => \App\Enums\PlacementRequestType::FOSTER_FREE->value,
         ]);
-        // Create transfer request (helper applied to placement request)
-        \App\Models\TransferRequest::factory()->create([
+        // Create placement response (helper applied to placement request)
+        \App\Models\PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $profile->id,
-            'status' => \App\Enums\TransferRequestStatus::PENDING->value,
+            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
         ]);
 
         $response = $this->actingAs($petOwner)->getJson("/api/helper-profiles/{$profile->id}");
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.id', $profile->id);
+        $response->assertJsonStructure([
+            'data' => [
+                'placement_responses' => [
+                    '*' => [
+                        'placement_request' => [
+                            'pet' => [
+                                'pet_type' => [
+                                    'id',
+                                    'name',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    #[Test]
+    public function helper_profile_view_only_returns_latest_response_per_placement_request()
+    {
+        $petOwner = User::factory()->create();
+        $helperOwner = User::factory()->create();
+        $profile = HelperProfile::factory()->for($helperOwner)->create(['approval_status' => 'pending']);
+
+        $pet = \App\Models\Pet::factory()->create(['created_by' => $petOwner->id]);
+        $placementRequest = \App\Models\PlacementRequest::factory()->for($pet)->create([
+            'request_type' => \App\Enums\PlacementRequestType::FOSTER_FREE->value,
+        ]);
+
+        $old = \App\Models\PlacementRequestResponse::factory()->create([
+            'placement_request_id' => $placementRequest->id,
+            'helper_profile_id' => $profile->id,
+            'status' => \App\Enums\PlacementResponseStatus::CANCELLED,
+        ]);
+
+        $latest = \App\Models\PlacementRequestResponse::factory()->create([
+            'placement_request_id' => $placementRequest->id,
+            'helper_profile_id' => $profile->id,
+            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
+        ]);
+
+        $response = $this->actingAs($petOwner)->getJson("/api/helper-profiles/{$profile->id}");
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data.placement_responses');
+
+        $ids = collect($response->json('data.placement_responses'))->pluck('id')->all();
+        $this->assertContains($latest->id, $ids);
+        $this->assertNotContains($old->id, $ids);
     }
 
     #[Test]

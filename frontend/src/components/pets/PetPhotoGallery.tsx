@@ -31,20 +31,17 @@ function PhotoImage({
   className: string
   useThumbnail?: boolean
 }) {
-  const [src, setSrc] = useState(useThumbnail ? (photo.thumb_url ?? photo.url) : photo.url)
-  const [hasError, setHasError] = useState(false)
+  const [errorPhotoId, setErrorPhotoId] = useState<number | null>(null)
 
-  // Reset state when photo changes
-  useEffect(() => {
-    setSrc(useThumbnail ? (photo.thumb_url ?? photo.url) : photo.url)
-    setHasError(false)
-  }, [photo.id, photo.url, photo.thumb_url, useThumbnail])
+  // If we're using thumbnail and haven't had an error for this specific photo yet,
+  // use the thumbnail. Otherwise fall back to the full URL.
+  const src =
+    useThumbnail && photo.thumb_url && errorPhotoId !== photo.id ? photo.thumb_url : photo.url
 
   const handleError = () => {
-    // If thumbnail failed and we haven't tried the original yet, fall back to original URL
-    if (!hasError && useThumbnail && photo.thumb_url && photo.thumb_url !== photo.url) {
-      setSrc(photo.url)
-      setHasError(true)
+    // If thumbnail failed, record the ID to fall back to original URL
+    if (useThumbnail && photo.thumb_url && errorPhotoId !== photo.id) {
+      setErrorPhotoId(photo.id)
     }
   }
 
@@ -157,7 +154,9 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
             <div className="flex justify-center">
               <button
                 type="button"
-                onClick={() => { openModal(0); }}
+                onClick={() => {
+                  openModal(0)
+                }}
                 className="relative aspect-square w-32 overflow-hidden rounded-lg border bg-muted cursor-pointer hover:opacity-90 transition-opacity"
               >
                 <PhotoImage
@@ -188,7 +187,9 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
                     <CarouselItem key={photo.id} className="pl-2 md:pl-4 basis-1/2 md:basis-1/3">
                       <button
                         type="button"
-                        onClick={() => { openModal(index); }}
+                        onClick={() => {
+                          openModal(index)
+                        }}
                         className="relative aspect-square w-full overflow-hidden rounded-lg border bg-muted cursor-pointer hover:opacity-90 transition-opacity"
                       >
                         <PhotoImage

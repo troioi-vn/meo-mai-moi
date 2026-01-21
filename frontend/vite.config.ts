@@ -5,6 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import path from 'path'
 import { VitePWA } from 'vite-plugin-pwa'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 export default defineConfig(({ mode }) => ({
   base: mode === 'production' ? '/build/' : '/',
@@ -38,25 +39,6 @@ export default defineConfig(({ mode }) => ({
         skipWaiting: true,
         clientsClaim: true,
         runtimeCaching: [
-          // Exclude /api/users/me from caching - always fetch fresh user data
-          // This ensures avatar and user info are always up-to-date after cache clear/deployment
-          {
-            urlPattern: /\/api\/users\/me/,
-            handler: 'NetworkOnly',
-            options: {
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-          {
-            urlPattern: /\/api\//,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              networkTimeoutSeconds: 8,
-              cacheableResponse: { statuses: [0, 200] },
-              expiration: { maxEntries: 100, maxAgeSeconds: 3600 },
-            },
-          },
           {
             urlPattern: /\.(?:png|jpg|jpeg|svg|webp)$/,
             handler: 'CacheFirst',
@@ -68,7 +50,14 @@ export default defineConfig(({ mode }) => ({
         ],
       },
     }),
-  ],
+    process.env.ANALYZE === 'true' &&
+      visualizer({
+        open: false,
+        filename: 'bundle-analysis.html',
+        gzipSize: true,
+        brotliSize: true,
+      }),
+  ].filter(Boolean) as any,
   server: {
     port: 5173,
     proxy: {
@@ -158,6 +147,44 @@ export default defineConfig(({ mode }) => ({
     manifest: true,
     assetsDir: 'assets',
     chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Core vendor chunks
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-ui': [
+            '@radix-ui/react-avatar',
+            '@radix-ui/react-checkbox',
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-label',
+            '@radix-ui/react-popover',
+            '@radix-ui/react-scroll-area',
+            '@radix-ui/react-select',
+            '@radix-ui/react-slot',
+            '@radix-ui/react-switch',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-toast',
+            '@radix-ui/react-tooltip',
+          ],
+          'vendor-icons': ['lucide-react', '@tabler/icons-react'],
+          'vendor-utils': [
+            'axios',
+            'date-fns',
+            'zod',
+            'clsx',
+            'tailwind-merge',
+            'i18n-iso-countries',
+          ],
+
+          // Feature-specific chunks
+          'feature-charts': ['recharts'],
+          'feature-realtime': ['pusher-js', 'laravel-echo'],
+          'feature-qr': ['qrcode'],
+          'feature-forms': ['react-hook-form', '@hookform/resolvers'],
+        },
+      },
+    },
   },
   optimizeDeps: {
     exclude: ['@radix-ui/number'],

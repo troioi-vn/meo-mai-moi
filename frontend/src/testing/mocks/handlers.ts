@@ -371,36 +371,11 @@ const transferRequestHandlers = [
   http.post('http://localhost:3000/api/transfer-requests/:id/reject', () => {
     return HttpResponse.json({})
   }),
-  http.get('http://localhost:3000/api/transfer-requests/:id/handover', () => {
-    return HttpResponse.json({
-      data: {
-        id: 1,
-        transfer_request_id: 1,
-        owner_user_id: 99,
-        helper_user_id: 1,
-        status: 'pending',
-      },
-    })
-  }),
-  http.post('http://localhost:3000/api/transfer-requests/:id/handover', () => {
-    return HttpResponse.json({ data: { id: 1, status: 'pending' } }, { status: 201 })
-  }),
-  http.post('http://localhost:3000/api/transfer-handovers/:id/confirm', async ({ request }) => {
-    const body = await request.json()
-    const confirmed = Boolean((body as { condition_confirmed?: boolean }).condition_confirmed)
-    return HttpResponse.json({ data: { id: 1, status: confirmed ? 'confirmed' : 'disputed' } })
-  }),
-  http.post('http://localhost:3000/api/transfer-handovers/:id/cancel', () => {
-    return HttpResponse.json({ data: { id: 1, status: 'canceled' } })
-  }),
-  http.post('http://localhost:3000/api/transfer-handovers/:id/complete', () => {
-    return HttpResponse.json({ data: { id: 1, status: 'completed' } })
-  }),
 ]
 
 const versionHandlers = [
   http.get('http://localhost:3000/api/version', () => {
-    return HttpResponse.json({ version: 'v0.5.0' })
+    return HttpResponse.json({ version: 'v0.6.0' })
   }),
 ]
 
@@ -896,11 +871,19 @@ export const handlers = [
       },
     ]
     return [
-      http.get('http://localhost:3000/api/notifications', ({ request }) => {
+      http.get('http://localhost:3000/api/notifications/unified', ({ request }) => {
         const url = new URL(request.url)
-        const status = url.searchParams.get('status')
-        const list = status === 'unread' ? mem.filter((n) => !n.read_at) : mem
-        return HttpResponse.json({ data: list })
+        const limit = Number(url.searchParams.get('limit') ?? '20')
+        const includeBell = (url.searchParams.get('include_bell_notifications') ?? '1') !== '0'
+
+        const bell = includeBell ? mem.slice(0, Number.isFinite(limit) ? limit : 20) : []
+        const unreadBell = mem.filter((n) => !n.read_at).length
+
+        return HttpResponse.json({
+          bell_notifications: bell,
+          unread_bell_count: unreadBell,
+          unread_message_count: 0,
+        })
       }),
       http.post('http://localhost:3000/api/notifications/mark-all-read', async () => {
         const now = new Date().toISOString()

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\MedicalNote;
 
 use App\Http\Controllers\Controller;
@@ -9,30 +11,34 @@ use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Put(
- *     path="/api/pets/{pet}/medical-notes/{note}",
- *     summary="Update a medical note",
- *     tags={"Pets"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\Parameter(name="pet", in="path", required=true, @OA\Schema(type="integer")),
- *     @OA\Parameter(name="note", in="path", required=true, @OA\Schema(type="integer")),
- *
- *     @OA\RequestBody(required=true, @OA\JsonContent(
- *
- *         @OA\Property(property="note", type="string"),
- *         @OA\Property(property="record_date", type="string", format="date")
- *     )),
- *
- *     @OA\Response(response=200, description="OK", @OA\JsonContent(@OA\Property(property="data", ref="#/components/schemas/MedicalNote"))),
- *     @OA\Response(response=401, description="Unauthenticated"),
- *     @OA\Response(response=403, description="Forbidden"),
- *     @OA\Response(response=404, description="Not found"),
- *     @OA\Response(response=422, description="Validation error")
- * )
- */
+#[OA\Put(
+    path: '/api/pets/{pet}/medical-notes/{note}',
+    summary: 'Update a medical note',
+    tags: ['Pets'],
+    security: [['sanctum' => []]],
+    parameters: [
+        new OA\Parameter(name: 'pet', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        new OA\Parameter(name: 'note', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+    ],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'note', type: 'string'),
+                new OA\Property(property: 'record_date', type: 'string', format: 'date'),
+            ]
+        )
+    ),
+    responses: [
+        new OA\Response(response: 200, description: 'OK', content: new OA\JsonContent(properties: [new OA\Property(property: 'data', ref: '#/components/schemas/MedicalNote')])),
+        new OA\Response(response: 401, description: 'Unauthenticated'),
+        new OA\Response(response: 403, description: 'Forbidden'),
+        new OA\Response(response: 404, description: 'Not found'),
+        new OA\Response(response: 422, description: 'Validation error'),
+    ]
+)]
 class UpdateMedicalNoteController extends Controller
 {
     use ApiResponseTrait;
@@ -43,7 +49,7 @@ class UpdateMedicalNoteController extends Controller
         if (! $user) {
             return $this->sendError('Unauthenticated.', 401);
         }
-        $isOwner = $user->id === $pet->user_id;
+        $isOwner = $pet->isOwnedBy($user);
         $isAdmin = method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
         if (! $isOwner && ! $isAdmin) {
             return $this->sendError('Forbidden.', 403);

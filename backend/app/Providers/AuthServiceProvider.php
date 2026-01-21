@@ -1,9 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
+use App\Models\Chat;
+use App\Models\ChatMessage;
 use App\Models\HelperProfile;
 use App\Models\Pet;
+use App\Policies\ChatMessagePolicy;
+use App\Policies\ChatPolicy;
 use App\Policies\HelperProfilePolicy;
 use App\Policies\PetPolicy;
 use App\Policies\TransferRequestPolicy;
@@ -21,6 +27,8 @@ class AuthServiceProvider extends ServiceProvider
         \App\Models\TransferRequest::class => TransferRequestPolicy::class,
         \App\Models\PlacementRequest::class => \App\Policies\PlacementRequestPolicy::class,
         Pet::class => PetPolicy::class,
+        Chat::class => ChatPolicy::class,
+        ChatMessage::class => ChatMessagePolicy::class,
     ];
 
     /**

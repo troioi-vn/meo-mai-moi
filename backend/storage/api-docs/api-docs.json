@@ -1,17 +1,19 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "Meo Mai Moi API Documentation",
-        "description": "API documentation for the Meo Mai Moi application.",
+        "title": "Meo Mai Moi API",
+        "description": "API for Meo Mai Moi, a cat care management platform.",
         "contact": {
-            "email": "admin@meomaimoi.com"
-        },
-        "license": {
-            "name": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+            "email": "support@meomaimoi.com"
         },
         "version": "1.0.0"
     },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Development server"
+        }
+    ],
     "paths": {
         "/api/check-email": {
             "post": {
@@ -63,188 +65,6 @@
                         "description": "Validation error"
                     }
                 }
-            }
-        },
-        "/api/forgot-password": {
-            "post": {
-                "tags": [
-                    "Authentication"
-                ],
-                "summary": "Request password reset",
-                "description": "Send password reset link to user's email address.",
-                "operationId": "ba55a60f99c28ed886193c33470ec1e4",
-                "requestBody": {
-                    "description": "Email address to send reset link to",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "email"
-                                ],
-                                "properties": {
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "user@example.com"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Password reset link sent successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Password reset link sent to your email address."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Validation Error"
-                                        },
-                                        "errors": {
-                                            "type": "object",
-                                            "example": {
-                                                "email": [
-                                                    "The selected email is invalid."
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "429": {
-                        "description": "Too many password reset attempts"
-                    }
-                }
-            }
-        },
-        "/api/login": {
-            "post": {
-                "tags": [
-                    "Authentication"
-                ],
-                "summary": "Log in a user",
-                "description": "Logs in a user and returns an authentication token.",
-                "operationId": "2e9c317eea06b322356cd346eb0e29fb",
-                "requestBody": {
-                    "description": "User credentials",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "email",
-                                    "password"
-                                ],
-                                "properties": {
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "user@example.com"
-                                    },
-                                    "password": {
-                                        "type": "string",
-                                        "format": "password",
-                                        "example": "password123"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Login successful",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Logged in successfully"
-                                        },
-                                        "access_token": {
-                                            "type": "string",
-                                            "example": "1|aBcDeFgHiJkLmNoPqRsTuVwXyZ"
-                                        },
-                                        "token_type": {
-                                            "type": "string",
-                                            "example": "Bearer"
-                                        },
-                                        "email_verified": {
-                                            "type": "boolean",
-                                            "example": true
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error (e.g., invalid credentials)"
-                    }
-                }
-            }
-        },
-        "/api/logout": {
-            "post": {
-                "tags": [
-                    "Authentication"
-                ],
-                "summary": "Log out the current user",
-                "description": "Logs out the current authenticated user by revoking their token.",
-                "operationId": "563bedfa982695d45a459257c9a8a36c",
-                "responses": {
-                    "200": {
-                        "description": "Logged out successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Logged out successfully"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
             }
         },
         "/api/register": {
@@ -341,96 +161,6 @@
                     },
                     "403": {
                         "description": "Registration not allowed (invite-only mode active without valid invitation)"
-                    }
-                }
-            }
-        },
-        "/api/reset-password": {
-            "post": {
-                "tags": [
-                    "Authentication"
-                ],
-                "summary": "Reset password with token",
-                "description": "Reset user's password using the token from reset email.",
-                "operationId": "185016942b467d40a0d27b68d3eb3b0f",
-                "requestBody": {
-                    "description": "Password reset details",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "email",
-                                    "password",
-                                    "password_confirmation",
-                                    "token"
-                                ],
-                                "properties": {
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "user@example.com"
-                                    },
-                                    "password": {
-                                        "type": "string",
-                                        "format": "password",
-                                        "example": "newpassword123"
-                                    },
-                                    "password_confirmation": {
-                                        "type": "string",
-                                        "format": "password",
-                                        "example": "newpassword123"
-                                    },
-                                    "token": {
-                                        "type": "string",
-                                        "example": "abc123def456..."
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Password reset successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Password reset successfully."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error or invalid token",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Validation Error"
-                                        },
-                                        "errors": {
-                                            "type": "object",
-                                            "example": {
-                                                "email": [
-                                                    "This password reset token is invalid."
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -735,148 +465,42 @@
                 }
             }
         },
-        "/api/foster-assignments/{assignment}/cancel": {
+        "/helper-profiles/{id}/archive": {
             "post": {
                 "tags": [
-                    "Foster Assignments"
+                    "Helper Profiles"
                 ],
-                "summary": "Cancel a foster assignment (early return)",
-                "operationId": "879ed6322a25731c94525fb2cf184dd7",
+                "summary": "Archive a helper profile",
+                "operationId": "b3d2d285335d02a9978780f1ebca9ad5",
                 "parameters": [
                     {
-                        "name": "assignment",
+                        "name": "id",
                         "in": "path",
-                        "description": "ID of the foster assignment",
+                        "description": "ID of the helper profile",
                         "required": true,
                         "schema": {
                             "type": "integer"
                         }
                     }
                 ],
-                "requestBody": {
-                    "required": false,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "reason": {
-                                        "type": "string",
-                                        "example": "Emergency situation"
-                                    }
-                                },
-                                "type": "object"
+                "responses": {
+                    "200": {
+                        "description": "Helper profile archived successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HelperProfile"
+                                }
                             }
                         }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Foster assignment canceled successfully"
+                    },
+                    "400": {
+                        "description": "Cannot archive profile with associated placement requests"
                     },
                     "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Foster assignment not found"
+                        "description": "Unauthorized"
                     }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/foster-assignments/{assignment}/complete": {
-            "post": {
-                "tags": [
-                    "Foster Assignments"
-                ],
-                "summary": "Complete a foster assignment",
-                "operationId": "a9e2cb77cb2663b67254a9616afca585",
-                "parameters": [
-                    {
-                        "name": "assignment",
-                        "in": "path",
-                        "description": "ID of the foster assignment",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Foster assignment completed successfully"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Foster assignment not found"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/foster-assignments/{assignment}/extend": {
-            "post": {
-                "tags": [
-                    "Foster Assignments"
-                ],
-                "summary": "Extend the end date of a foster assignment",
-                "operationId": "b5b68607605943101653b982d1915c63",
-                "parameters": [
-                    {
-                        "name": "assignment",
-                        "in": "path",
-                        "description": "ID of the foster assignment",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "expected_end_date"
-                                ],
-                                "properties": {
-                                    "expected_end_date": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2024-12-31"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Foster assignment extended successfully"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Foster assignment not found"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
+                }
             }
         },
         "/helper-profiles/{id}": {
@@ -1028,6 +652,9 @@
                     "204": {
                         "description": "Helper profile deleted successfully"
                     },
+                    "400": {
+                        "description": "Cannot delete profile with associated placement requests"
+                    },
                     "403": {
                         "description": "Unauthorized"
                     }
@@ -1086,6 +713,41 @@
                     },
                     "422": {
                         "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/helper-profiles/{id}/restore": {
+            "post": {
+                "tags": [
+                    "Helper Profiles"
+                ],
+                "summary": "Restore an archived helper profile",
+                "operationId": "5a18258779fef9ae6250b857fd554860",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the helper profile",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Helper profile restored successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HelperProfile"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized"
                     }
                 }
             }
@@ -2336,7 +1998,6 @@
                 "tags": [
                     "Notifications"
                 ],
-                "summary": "List current user's notifications.",
                 "operationId": "effef8b71e4c61c811a06f307f7c25f2",
                 "parameters": [
                     {
@@ -2418,7 +2079,6 @@
                 "tags": [
                     "Notifications"
                 ],
-                "summary": "Mark all unread notifications as read for the current user.",
                 "operationId": "3f3211d9dd55750f2e5727538e7afaf4",
                 "responses": {
                     "204": {
@@ -2458,7 +2118,6 @@
                 "tags": [
                     "Notifications"
                 ],
-                "summary": "Mark a single notification as read.",
                 "operationId": "f9d11599a5d2d390750a370058fd5a66",
                 "parameters": [
                     {
@@ -2490,7 +2149,6 @@
                 "tags": [
                     "Notification Preferences"
                 ],
-                "summary": "Get current user's notification preferences.",
                 "operationId": "9f75afade0e3c91bd6a23245b00f66d8",
                 "responses": {
                     "200": {
@@ -2539,7 +2197,6 @@
                 "tags": [
                     "Notification Preferences"
                 ],
-                "summary": "Update user's notification preferences.",
                 "operationId": "74eb8648603cb761543e8b618039b92c",
                 "requestBody": {
                     "required": true,
@@ -2970,28 +2627,17 @@
                 }
             }
         },
-        "/api/pets/{id}/public": {
+        "/api/pets/{id}/view": {
             "get": {
                 "tags": [
                     "Pets"
                 ],
-                "summary": "Get public profile of a specific pet",
-                "description": "Returns whitelisted fields for public view. Only accessible for pets that are lost or have active placement requests.",
-                "operationId": "d3818cb5a32260a751e5bba5937d2295",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID of the pet",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
+                "summary": "Get viewable profile of a specific pet",
+                "description": "Returns whitelisted fields for view. Accessible to: pet owner, users with viewer/owner PetRelationship, helpers involved in pending transfers, and anyone when pet is lost or has active placement requests.",
+                "operationId": "b322a3f36ecb60da84d399ce1815a16d",
                 "responses": {
                     "200": {
-                        "description": "The pet public profile",
+                        "description": "The pet view profile",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3080,7 +2726,7 @@
                         }
                     },
                     "403": {
-                        "description": "Pet is not publicly viewable"
+                        "description": "Pet is not viewable by the current user"
                     },
                     "404": {
                         "description": "Pet not found"
@@ -3775,6 +3421,43 @@
             }
         },
         "/api/placement-requests/{id}": {
+            "get": {
+                "tags": [
+                    "Placement Requests"
+                ],
+                "summary": "Get a placement request by ID",
+                "description": "Returns placement request details. Access rules: Admin/owner can view any request. Helpers can view if they have responded, are part of a transfer, or have an active placement relationship. Anonymous users can view open requests (with limited data).",
+                "operationId": "8ec516255e7f11526496f1bb3812bed1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the placement request",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Placement request details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlacementRequest"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Not authorized to view this placement request"
+                    },
+                    "404": {
+                        "description": "Placement request not found"
+                    }
+                }
+            },
             "delete": {
                 "tags": [
                     "Placement Requests"
@@ -3850,6 +3533,83 @@
                 ]
             }
         },
+        "/api/placement-requests/{id}/me": {
+            "get": {
+                "tags": [
+                    "Placement Requests"
+                ],
+                "summary": "Get viewer context for a placement request",
+                "description": "Returns viewer-specific context including their role, their response if any, their transfer request if any, and available actions they can perform.",
+                "operationId": "a603de748ddb99acfceb647254f1f1df",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the placement request",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Viewer context for the placement request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "viewer_role": {
+                                            "type": "string",
+                                            "enum": [
+                                                "owner",
+                                                "helper",
+                                                "admin",
+                                                "public"
+                                            ]
+                                        },
+                                        "my_response": {
+                                            "type": "object",
+                                            "nullable": true
+                                        },
+                                        "my_response_id": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        },
+                                        "my_transfer": {
+                                            "type": "object",
+                                            "nullable": true
+                                        },
+                                        "available_actions": {
+                                            "type": "object"
+                                        },
+                                        "chat_id": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Placement request not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/placement-requests/{id}/reject": {
             "post": {
                 "tags": [
@@ -3914,9 +3674,10 @@
                                     "request_type": {
                                         "type": "string",
                                         "enum": [
-                                            "foster_payed",
+                                            "foster_paid",
                                             "foster_free",
-                                            "permanent"
+                                            "permanent",
+                                            "pet_sitting"
                                         ],
                                         "example": "permanent"
                                     },
@@ -3981,6 +3742,309 @@
                 ]
             }
         },
+        "/api/placement-responses/{id}/accept": {
+            "post": {
+                "tags": [
+                    "Placement Request Responses"
+                ],
+                "summary": "Accept a response to a placement request",
+                "operationId": "c09e6eb363d86b1997526fc5faa37fd7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the placement response",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response accepted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/PlacementRequestResponse"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Response accepted successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Not authorized or invalid state transition"
+                    },
+                    "404": {
+                        "description": "Placement response not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/placement-responses/{id}/cancel": {
+            "post": {
+                "tags": [
+                    "Placement Request Responses"
+                ],
+                "summary": "Cancel a response to a placement request",
+                "operationId": "210524bcb15d6e348d8139789986608b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the placement response",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response cancelled successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/PlacementRequestResponse"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Response cancelled successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Not authorized or invalid state transition"
+                    },
+                    "404": {
+                        "description": "Placement response not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/placement-requests/{id}/responses": {
+            "get": {
+                "tags": [
+                    "Placement Request Responses"
+                ],
+                "summary": "List responses for a placement request",
+                "operationId": "d97c3d5abf2fb82408ef13b911a50964",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the placement request",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of responses",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PlacementRequestResponse"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Responses retrieved successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Not authorized to view responses"
+                    },
+                    "404": {
+                        "description": "Placement request not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Placement Request Responses"
+                ],
+                "summary": "Respond to a placement request",
+                "operationId": "4673f5c6acbb77decf1f92c951649a75",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the placement request",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "message": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "example": "I can help with this pet!"
+                                    },
+                                    "helper_profile_id": {
+                                        "description": "Optional helper profile ID if user has multiple",
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Response submitted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/PlacementRequestResponse"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Response submitted successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Request not active or helper blocked"
+                    },
+                    "404": {
+                        "description": "Placement request not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/placement-responses/{id}/reject": {
+            "post": {
+                "tags": [
+                    "Placement Request Responses"
+                ],
+                "summary": "Reject a response to a placement request",
+                "operationId": "fe418cbb1bb0136d0a1c585c0354762b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the placement response",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response rejected successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/PlacementRequestResponse"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Response rejected successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Not authorized or invalid state transition"
+                    },
+                    "404": {
+                        "description": "Placement response not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/settings/public": {
             "get": {
                 "tags": [
@@ -4030,301 +4094,6 @@
                 }
             }
         },
-        "/api/transfer-handovers/{id}/cancel": {
-            "post": {
-                "tags": [
-                    "Transfer Handover"
-                ],
-                "summary": "Cancel a handover (owner or helper)",
-                "operationId": "84470aff87a4dd7f5b519236d26a9d64",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/TransferHandover"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/transfer-handovers/{id}/complete": {
-            "post": {
-                "tags": [
-                    "Transfer Handover"
-                ],
-                "summary": "Complete handover and finalize transfer effects",
-                "operationId": "cff24b5a38d7a2fb56b4d1beb520d46f",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/TransferHandover"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/transfer-handovers/{id}/confirm": {
-            "post": {
-                "tags": [
-                    "Transfer Handover"
-                ],
-                "summary": "Helper confirms pet condition at handover",
-                "operationId": "267036f1bc1934b602197fd7f6522348",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "condition_confirmed"
-                                ],
-                                "properties": {
-                                    "condition_confirmed": {
-                                        "type": "boolean"
-                                    },
-                                    "condition_notes": {
-                                        "type": "string",
-                                        "nullable": true
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/TransferHandover"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/transfer-requests/{id}/handover": {
-            "get": {
-                "tags": [
-                    "Transfer Handover"
-                ],
-                "summary": "Get the latest handover for a transfer request (owner or helper)",
-                "operationId": "ee646bcecb27cabfc08ae9e87b017600",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/TransferHandover"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "Transfer Handover"
-                ],
-                "summary": "Initiate a handover for an accepted transfer request (owner only)",
-                "operationId": "7774c147dbcfbc6919a8afba5a7866d4",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "scheduled_at": {
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "nullable": true
-                                    },
-                                    "location": {
-                                        "type": "string",
-                                        "nullable": true
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/TransferHandover"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/transfer-requests/{id}/accept": {
-            "post": {
-                "tags": [
-                    "Transfer Requests"
-                ],
-                "summary": "Accept a transfer request for a pet",
-                "operationId": "6db3c5fc1798fe2abc38302ab7f55446",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID of the transfer request to accept",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Transfer request accepted successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/TransferRequest"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Transfer request not found"
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "403": {
-                        "description": "Forbidden: You are not the recipient of this request or the request is not pending."
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
         "/api/transfer-requests/{id}": {
             "delete": {
                 "tags": [
@@ -4365,6 +4134,60 @@
                     },
                     "409": {
                         "description": "Only pending requests can be canceled."
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/transfer-requests/{id}/confirm": {
+            "post": {
+                "tags": [
+                    "Transfer Requests"
+                ],
+                "summary": "Confirm a transfer request (helper confirms receipt of pet)",
+                "operationId": "eadb2c4cb28f21a1659e878c28272ac7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the transfer request to confirm",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transfer request confirmed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/TransferRequest"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Transfer request not found"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden: You are not the recipient of this transfer or the transfer is not pending."
+                    },
+                    "409": {
+                        "description": "Conflict: Only pending transfers can be confirmed."
                     }
                 },
                 "security": [
@@ -4454,108 +4277,6 @@
                     },
                     "403": {
                         "description": "Forbidden: You are not the recipient of this request or the request is not pending."
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/transfer-requests": {
-            "post": {
-                "tags": [
-                    "Transfer Requests"
-                ],
-                "summary": "Initiate a transfer request for a pet (by a helper)",
-                "operationId": "7ee474c3692aced31f4bb5a5331368a4",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "pet_id",
-                                    "requested_relationship_type"
-                                ],
-                                "properties": {
-                                    "pet_id": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "requested_relationship_type": {
-                                        "type": "string",
-                                        "enum": [
-                                            "fostering",
-                                            "permanent_foster"
-                                        ],
-                                        "example": "fostering"
-                                    },
-                                    "fostering_type": {
-                                        "type": "string",
-                                        "enum": [
-                                            "free",
-                                            "paid"
-                                        ],
-                                        "example": "free",
-                                        "nullable": true
-                                    },
-                                    "price": {
-                                        "type": "number",
-                                        "format": "float",
-                                        "example": 50,
-                                        "nullable": true
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Transfer request created successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/TransferRequest"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Validation Error"
-                                        },
-                                        "errors": {
-                                            "type": "object",
-                                            "example": {
-                                                "pet_id": [
-                                                    "The pet id field is required."
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "403": {
-                        "description": "Forbidden: Only helpers can initiate transfer requests or pet is not available."
-                    },
-                    "404": {
-                        "description": "Pet not found"
                     }
                 },
                 "security": [
@@ -4701,21 +4422,8 @@
                     }
                 },
                 "responses": {
-                    "200": {
-                        "description": "Account deleted successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Account deleted successfully."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                    "204": {
+                        "description": "Account deleted successfully"
                     },
                     "422": {
                         "description": "Validation error",
@@ -4838,21 +4546,8 @@
                 "summary": "Delete authenticated user's avatar",
                 "operationId": "e3e8bdd396169cfdd77ca25f889e386b",
                 "responses": {
-                    "200": {
-                        "description": "Avatar deleted successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Avatar deleted successfully."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                    "204": {
+                        "description": "Avatar deleted successfully"
                     },
                     "401": {
                         "description": "Unauthenticated"
@@ -5425,7 +5120,7 @@
                     "System"
                 ],
                 "summary": "Get API version",
-                "operationId": "2fc5e7cb989a6e76d38f4f3d97a7daf0",
+                "operationId": "09129e78676b67209910df34e6085d68",
                 "responses": {
                     "200": {
                         "description": "Current API version",
@@ -5869,34 +5564,13 @@
                         }
                     },
                     "422": {
-                        "description": "Validation error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Validation Error"
-                                        },
-                                        "errors": {
-                                            "type": "object",
-                                            "example": {
-                                                "weight_kg": [
-                                                    "The weight kg field is required."
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Validation error"
                     },
                     "401": {
                         "description": "Unauthenticated"
                     },
                     "403": {
-                        "description": "Forbidden: You are not authorized to add weight records for this pet."
+                        "description": "Forbidden"
                     }
                 },
                 "security": [
@@ -5917,177 +5591,52 @@
                     "slug",
                     "pet_type_id"
                 ],
-                "type": "object",
-                "allOf": [
-                    {
-                        "$ref": "#/components/schemas/Pagination"
-                    },
-                    {
-                        "properties": {
-                            "id": {
-                                "type": "integer",
-                                "example": 1
-                            },
-                            "name": {
-                                "type": "string",
-                                "example": "Siamese"
-                            },
-                            "slug": {
-                                "type": "string",
-                                "example": "siamese"
-                            },
-                            "pet_type_id": {
-                                "type": "integer",
-                                "example": 1
-                            },
-                            "description": {
-                                "type": "string",
-                                "example": "Elegant cats with blue eyes",
-                                "nullable": true
-                            },
-                            "created_by": {
-                                "type": "integer",
-                                "example": 5,
-                                "nullable": true
-                            },
-                            "approved_at": {
-                                "type": "string",
-                                "format": "datetime",
-                                "nullable": true
-                            },
-                            "usage_count": {
-                                "type": "integer",
-                                "example": 10
-                            },
-                            "created_at": {
-                                "type": "string",
-                                "format": "datetime"
-                            },
-                            "updated_at": {
-                                "type": "string",
-                                "format": "datetime"
-                            }
-                        },
-                        "type": "object"
-                    }
-                ]
-            },
-            "Pagination": {
-                "title": "Pagination",
-                "description": "Pagination object",
                 "properties": {
-                    "current_page": {
-                        "description": "Current page number",
-                        "type": "integer"
+                    "id": {
+                        "type": "integer",
+                        "example": 1
                     },
-                    "data": {
-                        "description": "List of items on the current page",
-                        "type": "array",
-                        "items": {
-                            "type": "object"
-                        }
-                    },
-                    "first_page_url": {
-                        "description": "URL of the first page",
-                        "type": "string"
-                    },
-                    "from": {
-                        "description": "The starting number of the items on the current page",
-                        "type": "integer"
-                    },
-                    "last_page": {
-                        "description": "The last page number",
-                        "type": "integer"
-                    },
-                    "last_page_url": {
-                        "description": "URL of the last page",
-                        "type": "string"
-                    },
-                    "links": {
-                        "description": "List of pagination links",
-                        "type": "array",
-                        "items": {
-                            "type": "object"
-                        }
-                    },
-                    "next_page_url": {
-                        "description": "URL of the next page",
+                    "name": {
                         "type": "string",
+                        "example": "Siamese"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "siamese"
+                    },
+                    "pet_type_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Elegant cats with blue eyes",
                         "nullable": true
                     },
-                    "path": {
-                        "description": "Base URL for the paginator",
-                        "type": "string"
-                    },
-                    "per_page": {
-                        "description": "Number of items per page",
-                        "type": "integer"
-                    },
-                    "prev_page_url": {
-                        "description": "URL of the previous page",
-                        "type": "string",
+                    "created_by": {
+                        "type": "integer",
+                        "example": 5,
                         "nullable": true
                     },
-                    "to": {
-                        "description": "The ending number of the items on the current page",
-                        "type": "integer"
+                    "approved_at": {
+                        "type": "string",
+                        "format": "datetime",
+                        "nullable": true
                     },
-                    "total": {
-                        "description": "Total number of items",
-                        "type": "integer"
+                    "usage_count": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "datetime"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "datetime"
                     }
                 },
                 "type": "object"
-            },
-            "Message": {
-                "title": "Message",
-                "description": "Message model",
-                "type": "object",
-                "allOf": [
-                    {
-                        "$ref": "#/components/schemas/Pagination"
-                    },
-                    {
-                        "properties": {
-                            "id": {
-                                "description": "Message ID",
-                                "type": "integer",
-                                "format": "int64"
-                            },
-                            "sender_id": {
-                                "description": "ID of the user who sent the message",
-                                "type": "integer",
-                                "format": "int64"
-                            },
-                            "recipient_id": {
-                                "description": "ID of the user who received the message",
-                                "type": "integer",
-                                "format": "int64"
-                            },
-                            "content": {
-                                "description": "Content of the message",
-                                "type": "string"
-                            },
-                            "read_at": {
-                                "description": "Timestamp when the message was read",
-                                "type": "string",
-                                "format": "date-time",
-                                "nullable": true
-                            },
-                            "created_at": {
-                                "description": "Timestamp of message creation",
-                                "type": "string",
-                                "format": "date-time"
-                            },
-                            "updated_at": {
-                                "description": "Timestamp of last message update",
-                                "type": "string",
-                                "format": "date-time"
-                            }
-                        },
-                        "type": "object"
-                    }
-                ]
             },
             "HelperProfile": {
                 "title": "HelperProfile",
@@ -6108,7 +5657,7 @@
                         "type": "string",
                         "enum": [
                             "active",
-                            "cancelled",
+                            "archived",
                             "deleted"
                         ]
                     },
@@ -6118,7 +5667,7 @@
                         "items": {
                             "type": "string",
                             "enum": [
-                                "foster_payed",
+                                "foster_paid",
                                 "foster_free",
                                 "permanent"
                             ]
@@ -6162,6 +5711,24 @@
                         "description": "Timestamp of last helper profile update",
                         "type": "string",
                         "format": "date-time"
+                    },
+                    "archived_at": {
+                        "description": "Timestamp when the profile was archived",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "restored_at": {
+                        "description": "Timestamp when the profile was restored",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "deleted_at": {
+                        "description": "Timestamp when the profile was deleted",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
                     }
                 },
                 "type": "object"
@@ -6174,7 +5741,7 @@
                     "country",
                     "description",
                     "status",
-                    "user_id",
+                    "created_by",
                     "pet_type_id"
                 ],
                 "properties": {
@@ -6261,7 +5828,8 @@
                         "type": "string",
                         "example": "active"
                     },
-                    "user_id": {
+                    "created_by": {
+                        "description": "ID of user who created this pet",
                         "type": "integer",
                         "example": 5
                     },
@@ -6366,72 +5934,70 @@
                 },
                 "type": "object"
             },
-            "TransferHandover": {
-                "title": "TransferHandover",
+            "PlacementRequestResponse": {
+                "title": "PlacementRequestResponse",
+                "description": "Tracks a helper's response to a placement request",
                 "properties": {
                     "id": {
-                        "type": "integer"
+                        "description": "Response ID",
+                        "type": "integer",
+                        "format": "int64"
                     },
-                    "transfer_request_id": {
-                        "type": "integer"
+                    "placement_request_id": {
+                        "description": "ID of the placement request",
+                        "type": "integer",
+                        "format": "int64"
                     },
-                    "owner_user_id": {
-                        "type": "integer"
-                    },
-                    "helper_user_id": {
-                        "type": "integer"
-                    },
-                    "scheduled_at": {
-                        "type": "string",
-                        "format": "date-time",
-                        "nullable": true
-                    },
-                    "location": {
-                        "type": "string",
-                        "nullable": true
+                    "helper_profile_id": {
+                        "description": "ID of the helper profile",
+                        "type": "integer",
+                        "format": "int64"
                     },
                     "status": {
+                        "description": "Current status of the response",
                         "type": "string",
                         "enum": [
-                            "pending",
-                            "confirmed",
-                            "completed",
-                            "canceled",
-                            "disputed"
+                            "responded",
+                            "accepted",
+                            "rejected",
+                            "cancelled"
                         ]
                     },
-                    "owner_initiated_at": {
+                    "message": {
+                        "description": "Optional message from the helper",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "responded_at": {
+                        "description": "When the helper responded",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "accepted_at": {
+                        "description": "When the owner accepted",
                         "type": "string",
                         "format": "date-time",
                         "nullable": true
                     },
-                    "helper_confirmed_at": {
+                    "rejected_at": {
+                        "description": "When the owner rejected",
                         "type": "string",
                         "format": "date-time",
                         "nullable": true
                     },
-                    "condition_confirmed": {
-                        "type": "boolean"
-                    },
-                    "condition_notes": {
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "completed_at": {
-                        "type": "string",
-                        "format": "date-time",
-                        "nullable": true
-                    },
-                    "canceled_at": {
+                    "cancelled_at": {
+                        "description": "When the helper cancelled",
                         "type": "string",
                         "format": "date-time",
                         "nullable": true
                     },
                     "created_at": {
+                        "description": "Creation timestamp",
                         "type": "string",
                         "format": "date-time"
                     },
                     "updated_at": {
+                        "description": "Last update timestamp",
                         "type": "string",
                         "format": "date-time"
                     }
@@ -6440,25 +6006,30 @@
             },
             "TransferRequest": {
                 "title": "TransferRequest",
-                "description": "Transfer Request model",
+                "description": "Transfer Request model - represents physical transfer of pet(s) between users",
                 "properties": {
                     "id": {
                         "description": "Transfer Request ID",
                         "type": "integer",
                         "format": "int64"
                     },
-                    "pet_id": {
-                        "description": "ID of the pet being transferred",
+                    "placement_request_id": {
+                        "description": "ID of the parent placement request",
                         "type": "integer",
                         "format": "int64"
                     },
-                    "initiator_user_id": {
-                        "description": "ID of the user initiating the transfer",
+                    "placement_request_response_id": {
+                        "description": "ID of the accepted response",
                         "type": "integer",
                         "format": "int64"
                     },
-                    "recipient_user_id": {
-                        "description": "ID of the user intended to receive the pet",
+                    "from_user_id": {
+                        "description": "ID of the user transferring the pet (sender)",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "to_user_id": {
+                        "description": "ID of the user receiving the pet (recipient)",
                         "type": "integer",
                         "format": "int64"
                     },
@@ -6467,35 +6038,14 @@
                         "type": "string",
                         "enum": [
                             "pending",
-                            "accepted",
-                            "rejected"
+                            "confirmed",
+                            "rejected",
+                            "expired",
+                            "canceled"
                         ]
                     },
-                    "requested_relationship_type": {
-                        "description": "Type of custodianship requested",
-                        "type": "string",
-                        "enum": [
-                            "fostering",
-                            "permanent_foster"
-                        ]
-                    },
-                    "fostering_type": {
-                        "description": "Type of fostering (free or paid)",
-                        "type": "string",
-                        "enum": [
-                            "free",
-                            "paid"
-                        ],
-                        "nullable": true
-                    },
-                    "price": {
-                        "description": "Price for paid fostering",
-                        "type": "number",
-                        "format": "float",
-                        "nullable": true
-                    },
-                    "accepted_at": {
-                        "description": "Timestamp when the request was accepted",
+                    "confirmed_at": {
+                        "description": "Timestamp when the transfer was confirmed",
                         "type": "string",
                         "format": "date-time",
                         "nullable": true
@@ -6541,6 +6091,10 @@
                         "description": "URL to the user's avatar image",
                         "type": "string",
                         "nullable": true
+                    },
+                    "has_password": {
+                        "description": "Whether the user has a local password set",
+                        "type": "boolean"
                     },
                     "created_at": {
                         "description": "Timestamp of user creation",
@@ -6670,6 +6224,115 @@
                 },
                 "type": "object"
             },
+            "Message": {
+                "title": "Message",
+                "description": "Message model",
+                "properties": {
+                    "id": {
+                        "description": "Message ID",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "sender_id": {
+                        "description": "ID of the user who sent the message",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "recipient_id": {
+                        "description": "ID of the user who received the message",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "content": {
+                        "description": "Content of the message",
+                        "type": "string"
+                    },
+                    "read_at": {
+                        "description": "Timestamp when the message was read",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "Timestamp of message creation",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "description": "Timestamp of last message update",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Pagination": {
+                "title": "Pagination",
+                "description": "Pagination object",
+                "properties": {
+                    "current_page": {
+                        "description": "Current page number",
+                        "type": "integer"
+                    },
+                    "data": {
+                        "description": "List of items on the current page",
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "first_page_url": {
+                        "description": "URL of the first page",
+                        "type": "string"
+                    },
+                    "from": {
+                        "description": "The starting number of the items on the current page",
+                        "type": "integer"
+                    },
+                    "last_page": {
+                        "description": "The last page number",
+                        "type": "integer"
+                    },
+                    "last_page_url": {
+                        "description": "URL of the last page",
+                        "type": "string"
+                    },
+                    "links": {
+                        "description": "List of pagination links",
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "next_page_url": {
+                        "description": "URL of the next page",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "path": {
+                        "description": "Base URL for the paginator",
+                        "type": "string"
+                    },
+                    "per_page": {
+                        "description": "Number of items per page",
+                        "type": "integer"
+                    },
+                    "prev_page_url": {
+                        "description": "URL of the previous page",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "to": {
+                        "description": "The ending number of the items on the current page",
+                        "type": "integer"
+                    },
+                    "total": {
+                        "description": "Total number of items",
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
             "VaccinationRecord": {
                 "title": "VaccinationRecord",
                 "description": "Vaccination record model",
@@ -6737,10 +6400,6 @@
             "description": "Email Verification"
         },
         {
-            "name": "Foster Assignments",
-            "description": "Foster Assignments"
-        },
-        {
             "name": "Helper Profiles",
             "description": "Helper Profiles"
         },
@@ -6785,12 +6444,12 @@
             "description": "Placement Requests"
         },
         {
-            "name": "Settings",
-            "description": "Settings"
+            "name": "Placement Request Responses",
+            "description": "Placement Request Responses"
         },
         {
-            "name": "Transfer Handover",
-            "description": "Transfer Handover"
+            "name": "Settings",
+            "description": "Settings"
         },
         {
             "name": "Transfer Requests",

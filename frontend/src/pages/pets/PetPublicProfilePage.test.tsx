@@ -17,10 +17,10 @@ const renderPetPublicProfilePage = (
     : { user: null, isLoading: false, isAuthenticated: false }
 
   return render(
-    <MemoryRouter initialEntries={[`/pets/${petId}/public`]}>
+    <MemoryRouter initialEntries={[`/pets/${petId}/view`]}>
       <AllTheProviders initialAuthState={initialAuthState}>
         <Routes>
-          <Route path="/pets/:id/public" element={<PetPublicProfilePage />} />
+          <Route path="/pets/:id/view" element={<PetPublicProfilePage />} />
         </Routes>
       </AllTheProviders>
     </MemoryRouter>
@@ -61,7 +61,7 @@ const mockPublicPet: PublicPet = {
       pet_id: 1,
       request_type: 'permanent',
       status: 'open',
-      transfer_requests: [],
+      responses: [],
     },
   ],
   viewer_permissions: {
@@ -86,16 +86,14 @@ describe('PetPublicProfilePage', () => {
 
   it('renders public pet profile with placement request section', async () => {
     server.use(
-      http.get('http://localhost:3000/api/pets/:id/public', () => {
+      http.get('http://localhost:3000/api/pets/:id/view', () => {
         return HttpResponse.json({ data: mockPublicPet })
       })
     )
 
     renderPetPublicProfilePage('1')
 
-    await waitFor(async () => {
-      expect(await screen.findByText('Fluffy')).toBeInTheDocument()
-    })
+    expect(await screen.findByRole('heading', { name: 'Fluffy', level: 1 })).toBeInTheDocument()
 
     // Should show placement requests section
     expect(screen.getByText('Placement Requests')).toBeInTheDocument()
@@ -104,7 +102,7 @@ describe('PetPublicProfilePage', () => {
 
   it('shows owner banner when owner views public profile', async () => {
     server.use(
-      http.get('http://localhost:3000/api/pets/:id/public', () => {
+      http.get('http://localhost:3000/api/pets/:id/view', () => {
         return HttpResponse.json({
           data: {
             ...mockPublicPet,
@@ -125,23 +123,21 @@ describe('PetPublicProfilePage', () => {
 
   it('shows lost pet banner for lost pets', async () => {
     server.use(
-      http.get('http://localhost:3000/api/pets/:id/public', () => {
+      http.get('http://localhost:3000/api/pets/:id/view', () => {
         return HttpResponse.json({ data: mockLostPet })
       })
     )
 
     renderPetPublicProfilePage('2')
 
-    await waitFor(async () => {
-      expect(await screen.findByText('Lost Kitty')).toBeInTheDocument()
-    })
+    expect(await screen.findByRole('heading', { name: 'Lost Kitty', level: 1 })).toBeInTheDocument()
 
     expect(screen.getByText(/this pet has been reported as lost/i)).toBeInTheDocument()
   })
 
   it('shows error message when pet is not publicly available', async () => {
     server.use(
-      http.get('http://localhost:3000/api/pets/:id/public', () => {
+      http.get('http://localhost:3000/api/pets/:id/view', () => {
         return HttpResponse.json(
           { message: 'This pet profile is not publicly available.' },
           { status: 403 }
@@ -175,7 +171,7 @@ describe('PetPublicProfilePage', () => {
     }
 
     server.use(
-      http.get('http://localhost:3000/api/pets/:id/public', () => {
+      http.get('http://localhost:3000/api/pets/:id/view', () => {
         return HttpResponse.json({ data: petWithCategories })
       })
     )
@@ -192,7 +188,7 @@ describe('PetPublicProfilePage', () => {
 
   it('shows description section when pet has description', async () => {
     server.use(
-      http.get('http://localhost:3000/api/pets/:id/public', () => {
+      http.get('http://localhost:3000/api/pets/:id/view', () => {
         return HttpResponse.json({ data: mockPublicPet })
       })
     )
@@ -208,7 +204,7 @@ describe('PetPublicProfilePage', () => {
 
   it('shows message when owner tries to respond to their own pet placement request', async () => {
     server.use(
-      http.get('http://localhost:3000/api/pets/:id/public', () => {
+      http.get('http://localhost:3000/api/pets/:id/view', () => {
         return HttpResponse.json({
           data: {
             ...mockPublicPet,
@@ -221,9 +217,7 @@ describe('PetPublicProfilePage', () => {
     // Render with authenticated user to trigger the owner check
     renderPetPublicProfilePage('1', { id: 1, name: 'Owner', email: 'owner@test.com' })
 
-    await waitFor(async () => {
-      expect(await screen.findByText('Fluffy')).toBeInTheDocument()
-    })
+    expect(await screen.findByRole('heading', { name: 'Fluffy', level: 1 })).toBeInTheDocument()
 
     // Should show message that owner cannot respond
     expect(

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Impersonation;
 
 use App\Http\Controllers\Controller;
@@ -21,17 +23,18 @@ class GetImpersonationStatusController extends Controller
         }
 
         $impersonatorId = session()->get('impersonate.impersonator_id');
+        /** @var \App\Models\User|null $impersonator */
         $impersonator = \App\Models\User::find($impersonatorId);
         $currentUser = $request->user();
 
         return response()->json([
             'is_impersonating' => true,
-            'impersonator' => $impersonator ? [
+            'impersonator' => $impersonator instanceof \App\Models\User ? [
                 'id' => $impersonator->id,
                 'name' => $impersonator->name,
                 'can_access_admin' => $impersonator->hasRole(['admin', 'super_admin']),
             ] : null,
-            'impersonated_user' => $currentUser ? [
+            'impersonated_user' => $currentUser instanceof \App\Models\User ? [
                 'id' => $currentUser->id,
                 'name' => $currentUser->name,
             ] : null,

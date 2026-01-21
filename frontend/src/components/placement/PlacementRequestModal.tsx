@@ -1,5 +1,5 @@
 import { useCreatePlacementRequest } from '@/hooks/useCreatePlacementRequest'
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -48,17 +48,25 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
 }) => {
   const [requestType, setRequestType] = useState(initialValues?.request_type ?? '')
   const [notes, setNotes] = useState(initialValues?.notes ?? '')
-  const [expiresAt, setExpiresAt] = useState<Date | undefined>(undefined)
   const [startDate, setStartDate] = useState<Date | undefined>(
     initialValues?.start_date ?? undefined
   )
   const [endDate, setEndDate] = useState<Date | undefined>(initialValues?.end_date ?? undefined)
+  const [startDatePickerOpen, setStartDatePickerOpen] = useState(false)
+  const [endDatePickerOpen, setEndDatePickerOpen] = useState(false)
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [publicProfileAccepted, setPublicProfileAccepted] = useState(false)
   const createPlacementRequestMutation = useCreatePlacementRequest()
 
   // Date validation
   const today = useMemo(() => startOfDay(new Date()), [])
+
+  const expiresAt = useMemo(() => {
+    if (requestType === 'permanent') {
+      return addMonths(new Date(), 6)
+    }
+    return startDate
+  }, [requestType, startDate])
 
   const isStartDateValid = useMemo(() => {
     if (!startDate) return true // No date selected yet, no error
@@ -70,15 +78,6 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
     if (requestType === 'permanent') return true // End date not used for permanent
     return !isBefore(startOfDay(endDate), startOfDay(startDate))
   }, [endDate, startDate, requestType])
-
-  useEffect(() => {
-    if (requestType === 'permanent') {
-      const sixMonthsFromNow = addMonths(new Date(), 6)
-      setExpiresAt(sixMonthsFromNow)
-    } else {
-      setExpiresAt(startDate)
-    }
-  }, [requestType, startDate])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -107,7 +106,7 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
           <DialogTitle>Create Placement Request</DialogTitle>
           <DialogDescription>
@@ -125,9 +124,10 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
                   <SelectValue placeholder="Select a request type" />
                 </SelectTrigger>
                 <SelectContent className="bg-background">
-                  <SelectItem value="foster_payed">Foster (Paid)</SelectItem>
+                  <SelectItem value="foster_paid">Foster (Paid)</SelectItem>
                   <SelectItem value="foster_free">Foster (Free)</SelectItem>
                   <SelectItem value="permanent">Permanent</SelectItem>
+                  <SelectItem value="pet_sitting">Pet Sitting</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -150,9 +150,10 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
                 Pick-up Date
               </Label>
               <div className="col-span-3 space-y-1">
-                <Popover>
+                <Popover open={startDatePickerOpen} onOpenChange={setStartDatePickerOpen}>
                   <PopoverTrigger asChild>
                     <Button
+                      id="start-date"
                       variant={'outline'}
                       className={cn(
                         'w-full justify-start text-left font-normal',
@@ -168,7 +169,10 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
                     <Calendar
                       mode="single"
                       selected={startDate}
-                      onSelect={setStartDate}
+                      onSelect={(date) => {
+                        setStartDate(date)
+                        if (date) setStartDatePickerOpen(false)
+                      }}
                       disabled={(date) => isBefore(startOfDay(date), today)}
                       autoFocus
                     />
@@ -185,9 +189,10 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
                   Drop-off Date
                 </Label>
                 <div className="col-span-3 space-y-1">
-                  <Popover>
+                  <Popover open={endDatePickerOpen} onOpenChange={setEndDatePickerOpen}>
                     <PopoverTrigger asChild>
                       <Button
+                        id="end-date"
                         variant={'outline'}
                         className={cn(
                           'w-full justify-start text-left font-normal',
@@ -203,7 +208,10 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
                       <Calendar
                         mode="single"
                         selected={endDate}
-                        onSelect={setEndDate}
+                        onSelect={(date) => {
+                          setEndDate(date)
+                          if (date) setEndDatePickerOpen(false)
+                        }}
                         disabled={(date) =>
                           startDate ? isBefore(startOfDay(date), startOfDay(startDate)) : false
                         }
@@ -225,14 +233,18 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
               <Checkbox
                 id="public-profile-accepted"
                 checked={publicProfileAccepted}
-                onCheckedChange={(checked) => { setPublicProfileAccepted(checked === true); }}
+                onCheckedChange={(checked) => {
+                  setPublicProfileAccepted(checked === true)
+                }}
                 className="mt-1"
               />
               <Label
                 htmlFor="public-profile-accepted"
-                className="text-sm font-normal leading-relaxed cursor-pointer"
+                className="flex-1 min-w-0 items-start text-sm font-normal leading-relaxed cursor-pointer"
               >
-                I understand the pet&apos;s profile will become publicly visible.
+                <span className="leading-relaxed">
+                  I understand the pet&apos;s profile will become publicly visible.
+                </span>
               </Label>
             </div>
 
@@ -241,16 +253,21 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
               <Checkbox
                 id="terms-accepted"
                 checked={termsAccepted}
-                onCheckedChange={(checked) => { setTermsAccepted(checked === true); }}
+                onCheckedChange={(checked) => {
+                  setTermsAccepted(checked === true)
+                }}
                 className="mt-1"
               />
               <Label
                 htmlFor="terms-accepted"
-                className="text-sm font-normal leading-relaxed cursor-pointer"
+                className="flex-1 min-w-0 items-start text-sm font-normal leading-relaxed cursor-pointer"
               >
-                I confirm I am authorized to place this pet and that the information I provide is
-                accurate. I understand the platform only facilitates connections and is not
-                responsible for outcomes. I agree to the <PlacementTermsLink className="text-sm" />.
+                <span className="leading-relaxed">
+                  I confirm I am authorized to place this pet and that the information I provide is
+                  accurate. I understand the platform only facilitates connections and is not
+                  responsible for outcomes. I agree to the{' '}
+                  <PlacementTermsLink className="text-sm" />.
+                </span>
               </Label>
             </div>
           </div>

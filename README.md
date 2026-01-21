@@ -17,9 +17,9 @@ Meo Mai Moi is a comprehensive pet care platform designed to help cat owners (an
 - **Health-Conscious Pet Parents**: Owners who want to track trends and catch health issues early
 - **Busy Pet Owners**: People who need automated reminders and organized records
 
-_Future expansion: Pet rehoming and adoption features planned after establishing core cat care functionality._
+**Pet Rehoming & Adoption**: Complete placement request system supporting permanent adoption, foster care (paid/free), and pet sitting with automated relationship management and handover tracking.
 
-Dockerized • Laravel 12 • React 19 • Vite 7 • PostgreSQL 14 • Filament 3
+Dockerized • Laravel 12 • React 19 • Vite 7 • PostgreSQL 14 • Filament 3 • E2E Email Testing
 
 ## Quick Start (Docker)
 
@@ -80,6 +80,7 @@ cd meo-mai-moi
 2. Read the Development Guide
 
 - Start here for local setup, daily workflow, testing, and Git practices to avoid merge conflicts: `docs/development.md`
+- For comprehensive e2e testing with email verification: `docs/e2e-testing-guide.md`
 
 3. Create a branch and code
 
@@ -93,18 +94,23 @@ git add -p && git commit -m "feat: do one thing"
 
 ```bash
 # Backend
-docker compose exec backend php artisan test
+cd backend && php artisan test --parallel
 cd backend && ./vendor/bin/pint
 
 # Frontend
-cd frontend && npm test
-cd frontend && npm run lint && npm run typecheck
+cd frontend && bun test
+cd frontend && bun run lint && bun run typecheck
+
+# E2E Tests (with email verification)
+cd frontend && bun run test:e2e
+cd frontend && bun run test:e2e:keep  # Keep services running for debugging
 ```
 
 5. Open a Pull Request
 
 - Push your branch and open a PR to `dev`. Keep PRs small when possible.
 - Include screenshots for UI changes and mention tests added/updated.
+- For email-related features, use e2e tests to verify the complete flow with MailHog.
 
 For architecture context, see `GEMINI.md` (AI Agent Guide).
 
@@ -128,5 +134,13 @@ For architecture context, see `GEMINI.md` (AI Agent Guide).
 - Care schedule templates and customization
 - Health alert configuration and monitoring
 - RBAC: Spatie Permission + Filament Shield
+- Placement request oversight and relationship management
 
-_Future Features_: Pet rehoming, foster networks, and adoption workflows will be added after establishing the core cat care platform.
+**Pet Rehoming & Adoption**:
+
+- **Placement Requests**: Owners can create requests for permanent adoption, foster care (paid/free), or pet sitting
+- **Helper Responses**: Community helpers can respond to placement requests with messages and profile information
+- **Handover Management**: Automated physical handover confirmation for foster/permanent placements with relationship tracking
+- **Relationship System**: Automatic creation and management of ownership, foster, and sitter relationships
+- **Public Profiles**: Lost pets and pets with active placement requests are publicly viewable for wider adoption reach
+- **Chat Integration**: Built-in messaging between owners and helpers throughout the placement process

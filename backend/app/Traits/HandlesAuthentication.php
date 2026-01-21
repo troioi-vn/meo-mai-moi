@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Traits;
 
 use Illuminate\Http\Request;
@@ -50,7 +52,13 @@ trait HandlesAuthentication
             return false;
         }
 
-        $isOwner = $resource->{$ownerField} === $user->id;
+        // Special handling for Pet model with new relationship system
+        if ($resource instanceof \App\Models\Pet) {
+            $isOwner = $resource->isOwnedBy($user);
+        } else {
+            $isOwner = $resource->{$ownerField} === $user->id;
+        }
+
         $isAdmin = method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
 
         return $isOwner || $isAdmin;

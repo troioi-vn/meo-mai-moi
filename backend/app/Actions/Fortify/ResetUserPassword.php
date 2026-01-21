@@ -1,12 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Fortify;
 
 use App\Models\User;
-use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Laravel\Fortify\Contracts\ResetsUserPasswords;
 
 class ResetUserPassword implements ResetsUserPasswords
@@ -24,14 +24,8 @@ class ResetUserPassword implements ResetsUserPasswords
             'password' => $this->passwordRules(),
         ])->validate();
 
-        // Update password and remember token (matching existing behavior)
         $user->forceFill([
             'password' => Hash::make($input['password']),
-        ])->setRememberToken(Str::random(60));
-
-        $user->save();
-
-        // Fire the PasswordReset event (maintains existing behavior and integrations)
-        event(new PasswordReset($user));
+        ])->save();
     }
 }

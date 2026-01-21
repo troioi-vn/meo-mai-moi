@@ -1,14 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jobs;
 
 use App\Enums\NotificationType;
 use App\Mail\EmailVerificationMail;
 use App\Mail\HelperResponseAcceptedMail;
+use App\Mail\HelperResponseCanceledMail;
 use App\Mail\HelperResponseRejectedMail;
+use App\Mail\NewMessageMail;
 use App\Mail\PetBirthdayMail;
-use App\Mail\PlacementRequestAcceptedMail;
+use App\Mail\PlacementEndedMail;
 use App\Mail\PlacementRequestResponseMail;
+use App\Mail\TransferConfirmedMail;
 use App\Mail\VaccinationReminderMail;
 use App\Models\EmailLog;
 use App\Models\Notification;
@@ -28,9 +33,6 @@ class SendNotificationEmail implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    // Laravel uses the public $tries property to determine max attempts. Keep public.
-    public int $tries = 3;
-
     // Replace public $backoff property with method to avoid forbidden public property rule.
     // 1 min, 5 min, 15 min
     protected array $backoffSchedule = [60, 300, 900];
@@ -47,6 +49,14 @@ class SendNotificationEmail implements ShouldQueue
         public int $notificationId
     ) {
         // NOTE: These are public for legacy tests that introspect queued job properties
+    }
+
+    /**
+     * The number of times the job may be attempted.
+     */
+    public function tries(): int
+    {
+        return 3;
     }
 
     /**
@@ -165,7 +175,7 @@ class SendNotificationEmail implements ShouldQueue
             try {
                 $emailLogId = $this->emailLog->id;
                 $notificationId = $this->notificationId;
-                $mail->withSymfonyMessage(function ($message) use ($emailLogId, $notificationId) {
+                $mail->withSymfonyMessage(function ($message) use ($emailLogId, $notificationId): void {
                     $headers = $message->getHeaders();
                     $variables = json_encode([
                         'email_log_id' => $emailLogId,
@@ -239,7 +249,7 @@ class SendNotificationEmail implements ShouldQueue
 
         // Mark email log as failed if it exists
         if ($this->emailLog && $this->emailLog->status !== 'failed') {
-            $this->emailLog->markAsFailed('Job failed permanently after '.$this->tries.' attempts: '.$exception->getMessage());
+            $this->emailLog->markAsFailed('Job failed permanently after '.$this->tries().' attempts: '.$exception->getMessage());
         }
 
         Log::error('Email notification job failed permanently', [
@@ -263,12 +273,15 @@ class SendNotificationEmail implements ShouldQueue
     {
         return match ($notificationType) {
             NotificationType::PLACEMENT_REQUEST_RESPONSE => new PlacementRequestResponseMail($this->user, $notificationType, $this->data),
-            NotificationType::PLACEMENT_REQUEST_ACCEPTED => new PlacementRequestAcceptedMail($this->user, $notificationType, $this->data),
             NotificationType::HELPER_RESPONSE_ACCEPTED => new HelperResponseAcceptedMail($this->user, $notificationType, $this->data),
             NotificationType::HELPER_RESPONSE_REJECTED => new HelperResponseRejectedMail($this->user, $notificationType, $this->data),
+            NotificationType::HELPER_RESPONSE_CANCELED => new HelperResponseCanceledMail($this->user, $notificationType, $this->data),
+            NotificationType::TRANSFER_CONFIRMED => new TransferConfirmedMail($this->user, $notificationType, $this->data),
+            NotificationType::PLACEMENT_ENDED => new PlacementEndedMail($this->user, $notificationType, $this->data),
             NotificationType::VACCINATION_REMINDER => new VaccinationReminderMail($this->user, $notificationType, $this->data),
             NotificationType::PET_BIRTHDAY => new PetBirthdayMail($this->user, $notificationType, $this->data),
             NotificationType::EMAIL_VERIFICATION => new EmailVerificationMail($this->user, $notificationType, $this->data),
+            NotificationType::NEW_MESSAGE => new NewMessageMail($this->user, $notificationType, $this->data),
             default => null,
         };
     }
@@ -319,7 +332,7 @@ class SendNotificationEmail implements ShouldQueue
                 $fallbackData = array_merge($this->data, [
                     'is_fallback' => true,
                     'original_channel' => 'email',
-                    'fallback_reason' => 'Email delivery failed after '.$this->tries.' attempts',
+                    'fallback_reason' => 'Email delivery failed after '.$this->tries().' attempts',
                     'original_error' => $this->truncateFailureReason($exception->getMessage()),
                 ]);
 

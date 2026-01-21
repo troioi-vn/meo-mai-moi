@@ -8,7 +8,10 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { ChangePasswordDialog } from '@/components/auth/ChangePasswordDialog'
+import { SetPasswordComponent } from '@/components/auth/SetPasswordComponent'
 import { DeleteAccountDialog } from '@/components/auth/DeleteAccountDialog'
+import { useCreateChat } from '@/hooks/useMessaging'
+import { MessageCircle } from 'lucide-react'
 
 const TAB_VALUES = ['account', 'notifications', 'contact-us'] as const
 type TabValue = (typeof TAB_VALUES)[number]
@@ -83,6 +86,7 @@ function AccountTabContent() {
 
   return (
     <div className="space-y-6">
+      {/* Profile Card */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col gap-6 md:flex-row md:items-center">
@@ -101,32 +105,46 @@ function AccountTabContent() {
         </CardContent>
       </Card>
 
+      {/* Password Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Account actions</CardTitle>
-          <CardDescription>Sign out or remove your account.</CardDescription>
+          <CardTitle>Password</CardTitle>
+          <CardDescription>
+            {user.has_password
+              ? 'Update your password to keep your account secure.'
+              : 'Set a password to sign in directly without third-party authentication.'}
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              Update your password to keep your account secure.
-            </p>
-            <ChangePasswordDialog />
-          </div>
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              Sign out of this session. You can always log back in later.
-            </p>
-            <Button variant="outline" onClick={handleLogout} className="w-full sm:w-auto">
-              Log out
-            </Button>
-          </div>
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              Permanently delete your account and all associated data.
-            </p>
-            <DeleteAccountDialog onAccountDeleted={handleAccountDeleted} />
-          </div>
+        <CardContent>
+          {user.has_password ? <ChangePasswordDialog /> : <SetPasswordComponent />}
+        </CardContent>
+      </Card>
+
+      {/* Session Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Session</CardTitle>
+          <CardDescription>
+            Sign out of this session. You can always log back in later.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button variant="outline" onClick={handleLogout}>
+            Log out
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Danger Zone */}
+      <Card className="border-destructive/50">
+        <CardHeader>
+          <CardTitle className="text-destructive">Danger zone</CardTitle>
+          <CardDescription>
+            Permanently delete your account and all associated data.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DeleteAccountDialog onAccountDeleted={handleAccountDeleted} />
         </CardContent>
       </Card>
     </div>
@@ -136,6 +154,7 @@ function AccountTabContent() {
 export default function SettingsPage() {
   const location = useLocation()
   const navigate = useNavigate()
+  const { create, creating } = useCreateChat()
 
   useEffect(() => {
     if (location.pathname === '/settings' || location.pathname === '/settings/') {
@@ -178,9 +197,30 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="contact-us">
-          <div className="rounded-lg border bg-card p-6 text-sm text-card-foreground">
-            Contact us coming soon
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Contact Support</CardTitle>
+              <CardDescription>
+                Need help? Start a conversation with our support team.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                onClick={() => {
+                  void (async () => {
+                    const chat = await create(2)
+                    if (chat) {
+                      void navigate(`/messages/${String(chat.id)}`)
+                    }
+                  })()
+                }}
+                disabled={creating}
+              >
+                <MessageCircle className="mr-2 h-4 w-4" />
+                {creating ? 'Starting...' : 'Chat with Support'}
+              </Button>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

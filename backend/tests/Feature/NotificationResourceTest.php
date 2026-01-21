@@ -77,6 +77,7 @@ class NotificationResourceTest extends TestCase
         $notification = Notification::factory()->create([
             'delivered_at' => null,
             'read_at' => null,
+            'is_read' => false,
         ]);
         $this->assertEquals('not_delivered', $notification->engagement_status);
 
@@ -84,6 +85,7 @@ class NotificationResourceTest extends TestCase
         $notification = Notification::factory()->create([
             'delivered_at' => now(),
             'read_at' => null,
+            'is_read' => false,
         ]);
         $this->assertEquals('delivered_unread', $notification->engagement_status);
 
@@ -91,6 +93,7 @@ class NotificationResourceTest extends TestCase
         $notification = Notification::factory()->create([
             'delivered_at' => now(),
             'read_at' => now(),
+            'is_read' => true,
         ]);
         $this->assertEquals('read', $notification->engagement_status);
     }
@@ -98,8 +101,14 @@ class NotificationResourceTest extends TestCase
     public function test_notification_scopes()
     {
         // Create test notifications
-        $unreadNotification = Notification::factory()->create(['read_at' => null]);
-        $readNotification = Notification::factory()->create(['read_at' => now()]);
+        $unreadNotification = Notification::factory()->create([
+            'read_at' => null,
+            'is_read' => false,
+        ]);
+        $readNotification = Notification::factory()->create([
+            'read_at' => now(),
+            'is_read' => true,
+        ]);
         $deliveredNotification = Notification::factory()->create(['delivered_at' => now()]);
         $failedNotification = Notification::factory()->create(['failed_at' => now()]);
         $pendingNotification = Notification::factory()->create([

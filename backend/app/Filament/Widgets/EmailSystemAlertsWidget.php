@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Widgets;
 
 use App\Models\EmailConfiguration;
@@ -47,7 +49,7 @@ class EmailSystemAlertsWidget extends Widget
         $recentTotal = Notification::where('created_at', '>=', $last24Hours)->count();
 
         if ($recentTotal > 10) { // Only alert if we have significant volume
-            $failureRate = ($recentFailed / $recentTotal) * 100;
+            $failureRate = $recentFailed / $recentTotal * 100;
             if ($failureRate > 20) {
                 $alerts[] = [
                     'type' => 'danger',
@@ -85,7 +87,11 @@ class EmailSystemAlertsWidget extends Widget
                 ];
             }
         } catch (\Exception $e) {
-            // Ignore if jobs table doesn't exist
+            // Log the exception but don't fail the widget
+            // This commonly happens when the jobs table doesn't exist during setup
+            \Illuminate\Support\Facades\Log::debug('EmailSystemAlertsWidget: Failed to get queued jobs count', [
+                'error' => $e->getMessage(),
+            ]);
         }
 
         // Check for notifications pending delivery for too long

@@ -2,7 +2,7 @@ deptrac:
   paths:
     - ./app
   exclude_files:
-    - '#/Tests/#'
+    - "#/Tests/#"
   skip_violations:
     App\Providers\AppServiceProvider:
       - App\Http\Responses\Auth\LoginResponse

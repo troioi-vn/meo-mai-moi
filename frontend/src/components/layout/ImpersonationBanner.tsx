@@ -37,8 +37,8 @@ export function ImpersonationIndicator() {
       void queryClient.invalidateQueries({ queryKey: ['impersonation-status'] })
       void queryClient.invalidateQueries({ queryKey: ['users', 'me'] })
       toast.success('Impersonation ended')
-      // Reload the page to refresh all user-specific data
-      window.location.reload()
+      // Redirect to admin users list after ending impersonation
+      window.location.href = '/admin/users'
     },
     onError: () => {
       toast.error('Failed to end impersonation')

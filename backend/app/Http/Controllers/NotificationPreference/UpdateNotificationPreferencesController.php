@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\NotificationPreference;
 
 use App\Http\Controllers\Controller;
@@ -7,45 +9,45 @@ use App\Http\Requests\UpdateNotificationPreferencesRequest;
 use App\Models\NotificationPreference;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Support\Facades\Auth;
+use OpenApi\Attributes as OA;
 
-/**
- * Update user's notification preferences.
- *
- * @OA\Put(
- *   path="/api/notification-preferences",
- *   tags={"Notification Preferences"},
- *   security={{"sanctum":{}}},
- *
- *   @OA\RequestBody(
- *     required=true,
- *
- *     @OA\JsonContent(
- *       type="object",
- *
- *       @OA\Property(property="preferences", type="array",
- *
- *         @OA\Items(
- *
- *           @OA\Property(property="type", type="string"),
- *           @OA\Property(property="email_enabled", type="boolean"),
- *           @OA\Property(property="in_app_enabled", type="boolean")
- *         )
- *       )
- *     )
- *   ),
- *
- *   @OA\Response(response=200, description="OK",
- *
- *     @OA\JsonContent(
- *       type="object",
- *
- *       @OA\Property(property="message", type="string")
- *     )
- *   ),
- *
- *   @OA\Response(response=422, description="Validation Error")
- * )
- */
+#[OA\Put(
+    path: '/api/notification-preferences',
+    tags: ['Notification Preferences'],
+    security: [['sanctum' => []]],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            type: 'object',
+            properties: [
+                new OA\Property(
+                    property: 'preferences',
+                    type: 'array',
+                    items: new OA\Items(
+                        properties: [
+                            new OA\Property(property: 'type', type: 'string'),
+                            new OA\Property(property: 'email_enabled', type: 'boolean'),
+                            new OA\Property(property: 'in_app_enabled', type: 'boolean'),
+                        ]
+                    )
+                ),
+            ]
+        )
+    ),
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: 'OK',
+            content: new OA\JsonContent(
+                type: 'object',
+                properties: [
+                    new OA\Property(property: 'message', type: 'string'),
+                ]
+            )
+        ),
+        new OA\Response(response: 422, description: 'Validation Error'),
+    ]
+)]
 class UpdateNotificationPreferencesController extends Controller
 {
     use ApiResponseTrait;

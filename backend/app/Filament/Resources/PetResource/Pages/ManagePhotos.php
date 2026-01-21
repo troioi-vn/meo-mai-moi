@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\PetResource\Pages;
 
 use App\Filament\Resources\PetResource;
@@ -26,6 +28,44 @@ class ManagePhotos extends ManageRelatedRecords
         return 'Photos';
     }
 
+    public function table(Table $table): Table
+    {
+        return $table
+            ->recordTitleAttribute('name')
+            ->columns([
+                Tables\Columns\ImageColumn::make('url')
+                    ->label('Photo')
+                    ->height(100)
+                    ->width(100),
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Filename')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('human_readable_size')
+                    ->label('Size'),
+                Tables\Columns\TextColumn::make('mime_type')
+                    ->label('Type'),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Uploaded')
+                    ->dateTime()
+                    ->sortable(),
+            ])
+            ->filters([
+            ])
+            ->headerActions([
+            ])
+            ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->url(fn ($record) => $record->getUrl()),
+                Tables\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ])
+            ->modifyQueryUsing(fn ($query) => $query->where('collection_name', 'photos'));
+    }
+
     protected function getHeaderActions(): array
     {
         return [
@@ -42,7 +82,7 @@ class ManagePhotos extends ManageRelatedRecords
                         ->maxSize(10240)
                         ->required(),
                 ])
-                ->action(function (array $data) {
+                ->action(function (array $data): void {
                     /** @var \App\Models\Pet $pet */
                     $pet = $this->getOwnerRecord();
 
@@ -66,45 +106,5 @@ class ManagePhotos extends ManageRelatedRecords
                     }
                 }),
         ];
-    }
-
-    public function table(Table $table): Table
-    {
-        return $table
-            ->recordTitleAttribute('name')
-            ->columns([
-                Tables\Columns\ImageColumn::make('url')
-                    ->label('Photo')
-                    ->height(100)
-                    ->width(100),
-                Tables\Columns\TextColumn::make('name')
-                    ->label('Filename')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('human_readable_size')
-                    ->label('Size'),
-                Tables\Columns\TextColumn::make('mime_type')
-                    ->label('Type'),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Uploaded')
-                    ->dateTime()
-                    ->sortable(),
-            ])
-            ->filters([
-                //
-            ])
-            ->headerActions([
-                //
-            ])
-            ->actions([
-                Tables\Actions\ViewAction::make()
-                    ->url(fn ($record) => $record->getUrl()),
-                Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ])
-            ->modifyQueryUsing(fn ($query) => $query->where('collection_name', 'photos'));
     }
 }

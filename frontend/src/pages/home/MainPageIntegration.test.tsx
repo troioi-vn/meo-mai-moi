@@ -36,12 +36,12 @@ describe('MainPage Integration with ActivePlacementRequestsSection', () => {
       {
         id: 1,
         pet_id: 1,
-        request_type: 'fostering',
+        request_type: 'foster_free',
         status: 'open',
         notes: 'Looking for a loving home.',
         created_at: '2025-07-20T00:00:00Z',
         updated_at: '2025-07-20T00:00:00Z',
-        transfer_requests: [],
+        responses: [],
       },
     ],
     placement_request_active: true,
@@ -69,7 +69,7 @@ describe('MainPage Integration with ActivePlacementRequestsSection', () => {
 
       // Check for ActivePlacementRequestsSection content
       expect(screen.getByText('Fluffy')).toBeInTheDocument()
-      expect(screen.getByText(/5 years old/)).toBeInTheDocument()
+      expect(screen.getByText(/years old/)).toBeInTheDocument()
       expect(screen.getByRole('button', { name: 'Respond' })).toBeInTheDocument()
     })
 

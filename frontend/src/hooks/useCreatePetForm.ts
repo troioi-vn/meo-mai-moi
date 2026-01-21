@@ -45,6 +45,10 @@ const VALIDATION_MESSAGES = {
   REQUIRED_MONTH: 'Month required',
   REQUIRED_PET_TYPE: 'Pet type is required',
   REQUIRED_COUNTRY: 'Country is required',
+  REQUIRED_CITY: 'City is required',
+  INVALID_YEAR: 'Year must be between 1900 and current year',
+  INVALID_MONTH: 'Month must be between 1 and 12',
+  INVALID_DAY: 'Day must be between 1 and 31',
 } as const
 
 const SUCCESS_MESSAGES = {
@@ -100,7 +104,7 @@ export const useCreatePetForm = (petId?: string) => {
         if (catType) {
           setFormData((prev) => ({ ...prev, pet_type_id: catType.id }))
         }
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Failed to load pet types:', err)
         toast.error(ERROR_MESSAGES.LOAD_PET_TYPES_FAILED)
       } finally {
@@ -135,15 +139,15 @@ export const useCreatePetForm = (petId?: string) => {
             birthday_precision: pet.birthday_precision ?? (pet.birthday ? 'day' : 'unknown'),
             country: pet.country,
             state: pet.state ?? '',
-            city: pet.city?.name ?? pet.city ?? '',
-            city_id: pet.city_id ?? pet.city?.id ?? null,
-            city_selected: pet.city ?? null,
+            city: typeof pet.city === 'object' && pet.city ? pet.city.name : (pet.city ?? ''),
+            city_id: pet.city_id ?? (typeof pet.city === 'object' && pet.city ? pet.city.id : null),
+            city_selected: typeof pet.city === 'object' && pet.city ? pet.city : null,
             address: pet.address ?? '',
             description: pet.description,
             pet_type_id: pet.pet_type.id,
             categories: pet.categories ?? [],
           })
-        } catch (err) {
+        } catch (err: unknown) {
           console.error('Failed to load pet data:', err)
           toast.error('Failed to load pet data')
         } finally {
@@ -178,6 +182,21 @@ export const useCreatePetForm = (petId?: string) => {
     if (!formData.name.trim()) {
       newErrors.name = VALIDATION_MESSAGES.REQUIRED_NAME
     }
+
+    const currentYear = new Date().getFullYear()
+    const validateYear = (year: string) => {
+      const y = parseInt(year)
+      return !isNaN(y) && y >= 1900 && y <= currentYear
+    }
+    const validateMonth = (month: string) => {
+      const m = parseInt(month)
+      return !isNaN(m) && m >= 1 && m <= 12
+    }
+    const validateDay = (day: string) => {
+      const d = parseInt(day)
+      return !isNaN(d) && d >= 1 && d <= 31
+    }
+
     // Precision-specific validation
     if (formData.birthday_precision === 'day') {
       if (
@@ -185,16 +204,42 @@ export const useCreatePetForm = (petId?: string) => {
         (!formData.birthday_year || !formData.birthday_month || !formData.birthday_day)
       ) {
         newErrors.birthday = VALIDATION_MESSAGES.REQUIRED_BIRTHDAY_COMPONENTS
+      } else if (!formData.birthday.trim()) {
+        if (!validateYear(formData.birthday_year)) {
+          newErrors.birthday_year = VALIDATION_MESSAGES.INVALID_YEAR
+        }
+        if (!validateMonth(formData.birthday_month)) {
+          newErrors.birthday_month = VALIDATION_MESSAGES.INVALID_MONTH
+        }
+        if (!validateDay(formData.birthday_day)) {
+          newErrors.birthday_day = VALIDATION_MESSAGES.INVALID_DAY
+        }
       }
     } else if (formData.birthday_precision === 'month') {
-      if (!formData.birthday_year) newErrors.birthday_year = VALIDATION_MESSAGES.REQUIRED_YEAR
-      if (!formData.birthday_month) newErrors.birthday_month = VALIDATION_MESSAGES.REQUIRED_MONTH
+      if (!formData.birthday_year) {
+        newErrors.birthday_year = VALIDATION_MESSAGES.REQUIRED_YEAR
+      } else if (!validateYear(formData.birthday_year)) {
+        newErrors.birthday_year = VALIDATION_MESSAGES.INVALID_YEAR
+      }
+
+      if (!formData.birthday_month) {
+        newErrors.birthday_month = VALIDATION_MESSAGES.REQUIRED_MONTH
+      } else if (!validateMonth(formData.birthday_month)) {
+        newErrors.birthday_month = VALIDATION_MESSAGES.INVALID_MONTH
+      }
     } else if (formData.birthday_precision === 'year') {
-      if (!formData.birthday_year) newErrors.birthday_year = VALIDATION_MESSAGES.REQUIRED_YEAR
+      if (!formData.birthday_year) {
+        newErrors.birthday_year = VALIDATION_MESSAGES.REQUIRED_YEAR
+      } else if (!validateYear(formData.birthday_year)) {
+        newErrors.birthday_year = VALIDATION_MESSAGES.INVALID_YEAR
+      }
     }
     // Country is required, other location fields are optional
     if (!formData.country.trim()) {
       newErrors.country = VALIDATION_MESSAGES.REQUIRED_COUNTRY
+    }
+    if (!formData.city_id) {
+      newErrors.city = VALIDATION_MESSAGES.REQUIRED_CITY
     }
     if (!formData.pet_type_id) {
       newErrors.pet_type_id = VALIDATION_MESSAGES.REQUIRED_PET_TYPE
@@ -267,6 +312,27 @@ export const useCreatePetForm = (petId?: string) => {
       const errorMessage = isEditMode ? 'Failed to update pet' : ERROR_MESSAGES.CREATE_FAILED
       setError(errorMessage)
       console.error(err)
+
+      // Handle Axios 422 error
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosErr = err as {
+          response: { status: number; data: { errors?: Record<string, string[]> } }
+        }
+        if (axiosErr.response.status === 422 && axiosErr.response.data.errors) {
+          const backendErrors = axiosErr.response.data.errors
+          const newFormErrors: FormErrors = {}
+          Object.keys(backendErrors).forEach((key) => {
+            const field = key as keyof FormErrors
+            if (backendErrors[key]?.[0]) {
+              newFormErrors[field] = backendErrors[key][0]
+            }
+          })
+          setErrors(newFormErrors)
+          toast.error('Please check the form for errors.')
+          return
+        }
+      }
+
       toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)

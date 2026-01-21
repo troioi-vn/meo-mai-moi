@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Enums\ReviewStatus;
@@ -11,7 +13,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 // ...existing code...
 class Review extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
         'reviewer_user_id',

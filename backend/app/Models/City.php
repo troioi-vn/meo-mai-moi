@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -54,7 +56,7 @@ class City extends Model
 
     public function scopeVisibleTo($query, ?User $user)
     {
-        return $query->where(function ($q) use ($user) {
+        return $query->where(function ($q) use ($user): void {
             $q->whereNotNull('approved_at');
             if ($user) {
                 $q->orWhere('created_by', $user->id);
@@ -78,18 +80,18 @@ class City extends Model
         return $this->pets()->count();
     }
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 
-        static::creating(function ($city) {
+        static::creating(function ($city): void {
             if (empty($city->slug)) {
                 $city->slug = self::generateUniqueSlug($city->name, $city->country);
             }
             $city->country = strtoupper($city->country);
         });
 
-        static::updating(function ($city) {
+        static::updating(function ($city): void {
             if ($city->isDirty('name') && ! $city->isDirty('slug')) {
                 $city->slug = self::generateUniqueSlug($city->name, $city->country);
             }

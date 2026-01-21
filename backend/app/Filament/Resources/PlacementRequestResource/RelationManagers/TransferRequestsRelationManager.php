@@ -1,15 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\PlacementRequestResource\RelationManagers;
 
+use App\Enums\TransferRequestStatus;
 use App\Models\User;
-use Filament\Forms;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -25,54 +26,29 @@ class TransferRequestsRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Select::make('requester_id')
-                    ->label('Requester')
-                    ->relationship('requester', 'name')
+                Select::make('from_user_id')
+                    ->label('From User (Owner)')
+                    ->relationship('fromUser', 'name')
                     ->searchable()
                     ->preload()
                     ->required()
                     ->getOptionLabelFromRecordUsing(fn (User $record): string => "{$record->name} ({$record->email})"),
 
-                Select::make('helper_profile_id')
-                    ->label('Helper Profile')
-                    ->relationship('helperProfile.user', 'name')
+                Select::make('to_user_id')
+                    ->label('To User (Helper)')
+                    ->relationship('toUser', 'name')
                     ->searchable()
-                    ->preload(),
+                    ->preload()
+                    ->required()
+                    ->getOptionLabelFromRecordUsing(fn (User $record): string => "{$record->name} ({$record->email})"),
 
                 Select::make('status')
-                    ->options([
-                        'pending' => 'Pending',
-                        'accepted' => 'Accepted',
-                        'rejected' => 'Rejected',
-                        'completed' => 'Completed',
-                    ])
+                    ->options(TransferRequestStatus::class)
                     ->required()
-                    ->default('pending'),
+                    ->default(TransferRequestStatus::PENDING),
 
-                Select::make('requested_relationship_type')
-                    ->label('Relationship Type')
-                    ->options([
-                        'foster' => 'Foster',
-                        'adopt' => 'Adopt',
-                        'temporary' => 'Temporary Care',
-                    ]),
-
-                Select::make('fostering_type')
-                    ->label('Fostering Type')
-                    ->options([
-                        'short_term' => 'Short Term',
-                        'long_term' => 'Long Term',
-                        'emergency' => 'Emergency',
-                    ])
-                    ->visible(fn (Forms\Get $get): bool => $get('requested_relationship_type') === 'foster'),
-
-                Forms\Components\TextInput::make('price')
-                    ->label('Price')
-                    ->numeric()
-                    ->prefix('$'),
-
-                DateTimePicker::make('accepted_at')
-                    ->label('Accepted At'),
+                DateTimePicker::make('confirmed_at')
+                    ->label('Confirmed At'),
 
                 DateTimePicker::make('rejected_at')
                     ->label('Rejected At'),
@@ -84,47 +60,27 @@ class TransferRequestsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('id')
             ->columns([
-                TextColumn::make('requester.name')
-                    ->label('Requester')
+                TextColumn::make('fromUser.name')
+                    ->label('From (Owner)')
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('helperProfile.user.name')
-                    ->label('Helper')
+                TextColumn::make('toUser.name')
+                    ->label('To (Helper)')
                     ->searchable()
-                    ->sortable()
-                    ->placeholder('N/A'),
+                    ->sortable(),
 
-                BadgeColumn::make('status')
-                    ->colors([
-                        'warning' => 'pending',
-                        'success' => 'accepted',
-                        'danger' => 'rejected',
-                        'info' => 'completed',
-                    ]),
-
-                TextColumn::make('requested_relationship_type')
-                    ->label('Type')
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'foster' => 'Foster',
-                        'adopt' => 'Adopt',
-                        'temporary' => 'Temporary',
-                        default => $state,
-                    }),
-
-                TextColumn::make('price')
-                    ->label('Price')
-                    ->money('USD')
-                    ->placeholder('Free'),
+                TextColumn::make('status')
+                    ->badge(),
 
                 TextColumn::make('created_at')
-                    ->label('Requested')
+                    ->label('Created')
                     ->dateTime()
                     ->sortable()
                     ->since(),
 
-                TextColumn::make('accepted_at')
-                    ->label('Accepted')
+                TextColumn::make('confirmed_at')
+                    ->label('Confirmed')
                     ->dateTime()
                     ->placeholder('N/A')
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -139,17 +95,10 @@ class TransferRequestsRelationManager extends RelationManager
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
                         'pending' => 'Pending',
-                        'accepted' => 'Accepted',
+                        'confirmed' => 'Confirmed',
                         'rejected' => 'Rejected',
-                        'completed' => 'Completed',
-                    ]),
-
-                Tables\Filters\SelectFilter::make('requested_relationship_type')
-                    ->label('Relationship Type')
-                    ->options([
-                        'foster' => 'Foster',
-                        'adopt' => 'Adopt',
-                        'temporary' => 'Temporary',
+                        'expired' => 'Expired',
+                        'canceled' => 'Canceled',
                     ]),
             ])
             ->headerActions([

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\NotificationPreference;
 
 use App\Enums\NotificationType;
@@ -7,35 +9,37 @@ use App\Http\Controllers\Controller;
 use App\Models\NotificationPreference;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Support\Facades\Auth;
+use OpenApi\Attributes as OA;
 
-/**
- * Get current user's notification preferences.
- *
- * @OA\Get(
- *   path="/api/notification-preferences",
- *   tags={"Notification Preferences"},
- *   security={{"sanctum":{}}},
- *
- *   @OA\Response(response=200, description="OK",
- *
- *     @OA\JsonContent(
- *       type="object",
- *
- *       @OA\Property(property="data", type="array",
- *
- *         @OA\Items(
- *
- *           @OA\Property(property="type", type="string"),
- *           @OA\Property(property="label", type="string"),
- *           @OA\Property(property="group", type="string"),
- *           @OA\Property(property="email_enabled", type="boolean"),
- *           @OA\Property(property="in_app_enabled", type="boolean")
- *         )
- *       )
- *     )
- *   )
- * )
- */
+#[OA\Get(
+    path: '/api/notification-preferences',
+    tags: ['Notification Preferences'],
+    security: [['sanctum' => []]],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: 'OK',
+            content: new OA\JsonContent(
+                type: 'object',
+                properties: [
+                    new OA\Property(
+                        property: 'data',
+                        type: 'array',
+                        items: new OA\Items(
+                            properties: [
+                                new OA\Property(property: 'type', type: 'string'),
+                                new OA\Property(property: 'label', type: 'string'),
+                                new OA\Property(property: 'group', type: 'string'),
+                                new OA\Property(property: 'email_enabled', type: 'boolean'),
+                                new OA\Property(property: 'in_app_enabled', type: 'boolean'),
+                            ]
+                        )
+                    ),
+                ]
+            )
+        ),
+    ]
+)]
 class GetNotificationPreferencesController extends Controller
 {
     use ApiResponseTrait;
@@ -55,7 +59,9 @@ class GetNotificationPreferencesController extends Controller
             $preferences[] = [
                 'type' => $type->value,
                 'label' => $type->getLabel(),
+                'description' => $type->getDescription(),
                 'group' => $type->getGroup(),
+                'group_label' => $type->getGroupLabel(),
                 'email_enabled' => $preference->email_enabled,
                 'in_app_enabled' => $preference->in_app_enabled,
             ];

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Models\Notification;
@@ -10,8 +12,6 @@ class NotifySuperadmin extends Command
 {
     /**
      * The name and signature of the console command.
-     *
-     * @var string
      */
     protected $signature = 'app:notify-superadmin 
                             {title : The notification title}
@@ -19,8 +19,6 @@ class NotifySuperadmin extends Command
 
     /**
      * The console command description.
-     *
-     * @var string
      */
     protected $description = 'Send an in-app notification to the superadmin user';
 
@@ -39,7 +37,7 @@ class NotifySuperadmin extends Command
 
         if (! $superadmin) {
             // Try to find any user with superadmin role
-            $superadmin = User::whereHas('roles', function ($query) {
+            $superadmin = User::whereHas('roles', function ($query): void {
                 $query->where('name', 'super_admin');
             })->first();
         }

@@ -50,7 +50,7 @@ class UnsubscribeServiceTest extends TestCase
     public function test_generates_different_tokens_for_different_types()
     {
         $token1 = $this->service->generateToken($this->user, NotificationType::PLACEMENT_REQUEST_RESPONSE);
-        $token2 = $this->service->generateToken($this->user, NotificationType::PLACEMENT_REQUEST_ACCEPTED);
+        $token2 = $this->service->generateToken($this->user, NotificationType::HELPER_RESPONSE_ACCEPTED);
 
         $this->assertNotEquals($token1, $token2);
     }

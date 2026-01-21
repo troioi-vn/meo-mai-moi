@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -73,7 +75,7 @@ class Category extends Model
      */
     public function scopeVisibleTo($query, ?User $user)
     {
-        return $query->where(function ($q) use ($user) {
+        return $query->where(function ($q) use ($user): void {
             $q->whereNotNull('approved_at');
             if ($user) {
                 $q->orWhere('created_by', $user->id);
@@ -108,17 +110,17 @@ class Category extends Model
     /**
      * Boot method to auto-generate slug.
      */
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 
-        static::creating(function ($category) {
+        static::creating(function ($category): void {
             if (empty($category->slug)) {
                 $category->slug = Str::slug($category->name);
             }
         });
 
-        static::updating(function ($category) {
+        static::updating(function ($category): void {
             if ($category->isDirty('name') && ! $category->isDirty('slug')) {
                 $category->slug = Str::slug($category->name);
             }

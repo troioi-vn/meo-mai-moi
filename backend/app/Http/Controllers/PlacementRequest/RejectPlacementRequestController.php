@@ -1,40 +1,40 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\PlacementRequest;
 
 use App\Http\Controllers\Controller;
 use App\Models\PlacementRequest;
 use App\Traits\ApiResponseTrait;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Post(
- *     path="/api/placement-requests/{id}/reject",
- *     summary="Reject a placement request",
- *     tags={"Placement Requests"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         required=true,
- *         description="ID of the placement request to reject",
- *
- *         @OA\Schema(type="integer")
- *     ),
- *
- *     @OA\Response(
- *         response=200,
- *         description="Placement request rejected successfully",
- *
- *         @OA\JsonContent(ref="#/components/schemas/PlacementRequest")
- *     ),
- *
- *     @OA\Response(
- *         response=403,
- *         description="Forbidden"
- *     )
- * )
- */
+#[OA\Post(
+    path: '/api/placement-requests/{id}/reject',
+    summary: 'Reject a placement request',
+    tags: ['Placement Requests'],
+    security: [['sanctum' => []]],
+    parameters: [
+        new OA\Parameter(
+            name: 'id',
+            in: 'path',
+            required: true,
+            description: 'ID of the placement request to reject',
+            schema: new OA\Schema(type: 'integer')
+        ),
+    ],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: 'Placement request rejected successfully',
+            content: new OA\JsonContent(ref: '#/components/schemas/PlacementRequest')
+        ),
+        new OA\Response(
+            response: 403,
+            description: 'Forbidden'
+        ),
+    ]
+)]
 class RejectPlacementRequestController extends Controller
 {
     use ApiResponseTrait;

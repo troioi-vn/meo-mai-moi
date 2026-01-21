@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Pet;
 
 use App\Enums\PetStatus;
@@ -11,38 +13,36 @@ use App\Traits\HandlesErrors;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Enum;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Put(
- *     path="/api/pets/{id}/status",
- *     summary="Update a pet's status",
- *     tags={"Pets"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\Parameter(name="id", in="path", required=true, description="ID of the pet to update", @OA\Schema(type="integer")),
- *
- *     @OA\RequestBody(
- *         required=true,
- *
- *         @OA\JsonContent(
- *             required={"status", "password"},
- *
- *             @OA\Property(property="status", type="string", enum=App\Enums\PetStatus::class, example="lost"),
- *             @OA\Property(property="password", type="string", format="password", description="User's current password for confirmation")
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=200,
- *         description="Pet status updated successfully",
- *
- *         @OA\JsonContent(ref="#/components/schemas/Pet")
- *     ),
- *
- *     @OA\Response(response=403, description="Forbidden"),
- *     @OA\Response(response=422, description="Validation Error")
- * )
- */
+#[OA\Put(
+    path: '/api/pets/{id}/status',
+    summary: "Update a pet's status",
+    tags: ['Pets'],
+    security: [['sanctum' => []]],
+    parameters: [
+        new OA\Parameter(name: 'id', in: 'path', required: true, description: 'ID of the pet to update', schema: new OA\Schema(type: 'integer')),
+    ],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ['status', 'password'],
+            properties: [
+                new OA\Property(property: 'status', type: 'string', enum: PetStatus::class, example: 'lost'),
+                new OA\Property(property: 'password', type: 'string', format: 'password', description: "User's current password for confirmation"),
+            ]
+        )
+    ),
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: 'Pet status updated successfully',
+            content: new OA\JsonContent(ref: '#/components/schemas/Pet')
+        ),
+        new OA\Response(response: 403, description: 'Forbidden'),
+        new OA\Response(response: 422, description: 'Validation Error'),
+    ]
+)]
 class UpdatePetStatusController extends Controller
 {
     use ApiResponseTrait;

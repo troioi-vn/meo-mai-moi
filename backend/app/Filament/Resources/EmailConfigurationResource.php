@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\EmailConfigurationResource\Pages;
@@ -22,7 +24,7 @@ class EmailConfigurationResource extends Resource
 
     protected static ?string $navigationGroup = 'System';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 4;
 
     protected static ?string $recordTitleAttribute = 'provider';
 
@@ -63,7 +65,7 @@ class EmailConfigurationResource extends Resource
                             ])
                             ->required()
                             ->live()
-                            ->afterStateUpdated(function (Forms\Set $set) {
+                            ->afterStateUpdated(function (Forms\Set $set): void {
                                 // Clear config when provider changes (interactive UX) but keep
                                 // provided test data intact during automated tests where we
                                 // set provider + config in a single fillForm() call.
@@ -77,11 +79,7 @@ class EmailConfigurationResource extends Resource
 
                         Forms\Components\Select::make('status')
                             ->label('Status')
-                            ->options([
-                                \App\Enums\EmailConfigurationStatus::ACTIVE->value => 'Active',
-                                \App\Enums\EmailConfigurationStatus::INACTIVE->value => 'Inactive',
-                                \App\Enums\EmailConfigurationStatus::DRAFT->value => 'Draft',
-                            ])
+                            ->options(\App\Enums\EmailConfigurationStatus::class)
                             ->default(\App\Enums\EmailConfigurationStatus::INACTIVE)
                             ->required()
                             ->helperText('Only one configuration can be active at a time'),
@@ -272,16 +270,6 @@ class EmailConfigurationResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->formatStateUsing(fn (\App\Enums\EmailConfigurationStatus $state): string => match ($state) {
-                        \App\Enums\EmailConfigurationStatus::ACTIVE => 'Active',
-                        \App\Enums\EmailConfigurationStatus::INACTIVE => 'Inactive',
-                        \App\Enums\EmailConfigurationStatus::DRAFT => 'Draft',
-                    })
-                    ->color(fn (\App\Enums\EmailConfigurationStatus $state): string => match ($state) {
-                        \App\Enums\EmailConfigurationStatus::ACTIVE => 'success',
-                        \App\Enums\EmailConfigurationStatus::INACTIVE => 'gray',
-                        \App\Enums\EmailConfigurationStatus::DRAFT => 'warning',
-                    })
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('validation_status')
@@ -463,7 +451,6 @@ class EmailConfigurationResource extends Resource
                                 ->body('Email configuration has been activated and tested successfully. Email notifications are now enabled.')
                                 ->success()
                                 ->send();
-
                         } catch (\App\Exceptions\EmailConfigurationException $e) {
                             $body = $e->getMessage();
                             if ($e->hasValidationErrors()) {
@@ -604,7 +591,7 @@ class EmailConfigurationResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+
         ];
     }
 

@@ -1,11 +1,9 @@
 {
-  "extends": "./tsconfig.app.json",
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "exclude": [
-    "src/**/*.test.ts",
-    "src/**/*.test.tsx",
-    "src/setupTests.ts",
-    "src/test-utils.ts",
-    "src/**/__tests__/**"
-  ]
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": false,
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*.{ts,tsx}", "!src/components/ui/**/*.{ts,tsx}"]
 }

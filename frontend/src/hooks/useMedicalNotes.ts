@@ -32,7 +32,7 @@ export const useMedicalNotes = (petId: number): UseMedicalNotesResult => {
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(
-    async (pg = 1) => {
+    async (pg: number) => {
       setLoading(true)
       setError(null)
       try {

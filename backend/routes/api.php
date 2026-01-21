@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Auth\CheckEmailController;
 use App\Http\Controllers\Category\ListCategoriesController;
 use App\Http\Controllers\Category\StoreCategoryController;
@@ -9,12 +11,6 @@ use App\Http\Controllers\EmailConfigurationStatusController;
 use App\Http\Controllers\EmailVerification\GetVerificationStatusController;
 use App\Http\Controllers\EmailVerification\ResendVerificationEmailController;
 use App\Http\Controllers\EmailVerification\VerifyEmailController;
-use App\Http\Controllers\FosterAssignment\CancelFosterAssignmentController;
-use App\Http\Controllers\FosterAssignment\CompleteFosterAssignmentController;
-use App\Http\Controllers\FosterAssignment\ExtendFosterAssignmentController;
-use App\Http\Controllers\FosterReturnHandover\CompleteReturnHandoverController;
-use App\Http\Controllers\FosterReturnHandover\OwnerConfirmReturnController;
-use App\Http\Controllers\FosterReturnHandover\StoreFosterReturnHandoverController;
 use App\Http\Controllers\HelperProfile\DeleteHelperProfileController;
 use App\Http\Controllers\HelperProfile\DeleteHelperProfilePhotoController;
 use App\Http\Controllers\HelperProfile\ListHelperProfilesController;
@@ -40,6 +36,16 @@ use App\Http\Controllers\MedicalRecord\ListMedicalRecordsController;
 use App\Http\Controllers\MedicalRecord\ShowMedicalRecordController;
 use App\Http\Controllers\MedicalRecord\StoreMedicalRecordController;
 use App\Http\Controllers\MedicalRecord\UpdateMedicalRecordController;
+use App\Http\Controllers\Messaging\DeleteChatController;
+use App\Http\Controllers\Messaging\DeleteMessageController;
+use App\Http\Controllers\Messaging\GetUnreadChatsCountController;
+use App\Http\Controllers\Messaging\ListChatsController;
+use App\Http\Controllers\Messaging\ListMessagesController;
+use App\Http\Controllers\Messaging\MarkChatReadController;
+use App\Http\Controllers\Messaging\ShowChatController;
+use App\Http\Controllers\Messaging\StoreChatController;
+use App\Http\Controllers\Messaging\StoreMessageController;
+use App\Http\Controllers\Notification\GetUnifiedNotificationsController;
 use App\Http\Controllers\Notification\ListNotificationsController;
 use App\Http\Controllers\Notification\MarkAllNotificationsReadController;
 use App\Http\Controllers\Notification\MarkAsReadLegacyController;
@@ -69,23 +75,24 @@ use App\Http\Controllers\PetPhoto\StorePetPhotoController;
 use App\Http\Controllers\PlacementRequest\ConfirmPlacementRequestController;
 use App\Http\Controllers\PlacementRequest\DeletePlacementRequestController;
 use App\Http\Controllers\PlacementRequest\FinalizePlacementRequestController;
+use App\Http\Controllers\PlacementRequest\GetPlacementRequestViewerContextController;
 use App\Http\Controllers\PlacementRequest\RejectPlacementRequestController;
+use App\Http\Controllers\PlacementRequest\ShowPlacementRequestController;
 use App\Http\Controllers\PlacementRequest\StorePlacementRequestController;
+use App\Http\Controllers\PlacementRequestResponse\AcceptPlacementRequestResponseController;
+use App\Http\Controllers\PlacementRequestResponse\CancelPlacementRequestResponseController;
+use App\Http\Controllers\PlacementRequestResponse\ListPlacementRequestResponsesController;
+use App\Http\Controllers\PlacementRequestResponse\RejectPlacementRequestResponseController;
+use App\Http\Controllers\PlacementRequestResponse\StorePlacementRequestResponseController;
 use App\Http\Controllers\PushSubscription\DeletePushSubscriptionController;
 use App\Http\Controllers\PushSubscription\ListPushSubscriptionsController;
 use App\Http\Controllers\PushSubscription\StorePushSubscriptionController;
 use App\Http\Controllers\Settings\GetInviteOnlyStatusController;
 use App\Http\Controllers\Settings\GetPublicSettingsController;
-use App\Http\Controllers\TransferHandover\CancelHandoverController;
-use App\Http\Controllers\TransferHandover\CompleteHandoverController;
-use App\Http\Controllers\TransferHandover\HelperConfirmHandoverController;
-use App\Http\Controllers\TransferHandover\ShowHandoverForTransferController;
-use App\Http\Controllers\TransferHandover\StoreTransferHandoverController;
-use App\Http\Controllers\TransferRequest\AcceptTransferRequestController;
 use App\Http\Controllers\TransferRequest\CancelTransferRequestController;
+use App\Http\Controllers\TransferRequest\ConfirmTransferRequestController;
 use App\Http\Controllers\TransferRequest\GetResponderProfileController;
 use App\Http\Controllers\TransferRequest\RejectTransferRequestController;
-use App\Http\Controllers\TransferRequest\StoreTransferRequestController;
 use App\Http\Controllers\Unsubscribe\ProcessUnsubscribeController;
 use App\Http\Controllers\UserProfile\DeleteAccountController;
 use App\Http\Controllers\UserProfile\DeleteAvatarController;
@@ -123,7 +130,7 @@ Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
 // Password reset routes - Fortify registers these at root level:
 // POST /forgot-password and POST /reset-password
 // We add API-prefixed aliases for compatibility with existing tests
-Route::post('/password/email', function (\Illuminate\Http\Request $request) {
+Route::post('/password/email', function (\Laravel\Fortify\Http\Requests\SendPasswordResetLinkRequest $request) {
     return app(\Laravel\Fortify\Http\Controllers\PasswordResetLinkController::class)->store($request);
 });
 
@@ -153,7 +160,7 @@ Route::post('/invitations/validate', ValidateInvitationCodeController::class)->m
 // Unsubscribe endpoint (no auth required)
 Route::post('/unsubscribe', ProcessUnsubscribeController::class);
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/email/verification-notification', ResendVerificationEmailController::class)
         ->middleware('throttle:6,1')
         ->name('api.verification.send');
@@ -161,8 +168,27 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/email/configuration-status', [EmailConfigurationStatusController::class, 'status']);
 });
 
-// Routes that don't require email verification (notifications, email verification management)
-Route::middleware('auth:sanctum')->group(function () {
+// Authenticated routes that don't require email verification (verification management)
+
+// Auth routes - only checkEmail is custom, rest handled by Fortify
+Route::post('/check-email', CheckEmailController::class)->middleware('throttle:20,1');
+
+// Impersonation routes
+Route::middleware('auth:sanctum')->group(function (): void {
+    Route::get('/impersonation/status', GetImpersonationStatusController::class);
+    Route::post('/impersonation/leave', LeaveImpersonationController::class);
+});
+
+// Main application routes that require email verification
+Route::middleware(['auth:sanctum', 'verified'])->group(function (): void {
+    Route::get('/user', function (Request $request) {
+        return response()->json(['data' => $request->user()]);
+    });
+
+    // Unified notifications (requires email verification)
+    Route::get('/notifications/unified', GetUnifiedNotificationsController::class);
+
+    // Notifications
     Route::get('/notifications', ListNotificationsController::class);
     Route::post('/notifications/mark-as-read', MarkAsReadLegacyController::class); // legacy alias
     Route::post('/notifications/mark-all-read', MarkAllNotificationsReadController::class);
@@ -176,22 +202,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // Notification preferences
     Route::get('/notification-preferences', GetNotificationPreferencesController::class);
     Route::put('/notification-preferences', UpdateNotificationPreferencesController::class);
-});
-
-// Auth routes - only checkEmail is custom, rest handled by Fortify
-Route::post('/check-email', CheckEmailController::class)->middleware('throttle:20,1');
-
-// Impersonation routes
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/impersonation/status', GetImpersonationStatusController::class);
-    Route::post('/impersonation/leave', LeaveImpersonationController::class);
-});
-
-// Main application routes that require email verification
-Route::middleware(['auth:sanctum', 'verified'])->group(function () {
-    Route::get('/user', function (Request $request) {
-        return response()->json(['data' => $request->user()]);
-    });
 
     // Invitation management routes (authenticated with rate limiting + validation)
     Route::get('/invitations', ListInvitationsController::class);
@@ -229,10 +239,18 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::delete('/pets/{pet}/photos/{photo}', DeletePetPhotoController::class);
     Route::post('/pets/{pet}/photos/{photo}/set-primary', SetPrimaryPetPhotoController::class);
     Route::post('/placement-requests', StorePlacementRequestController::class);
+    Route::get('/placement-requests/{placementRequest}/me', GetPlacementRequestViewerContextController::class);
     Route::delete('/placement-requests/{placementRequest}', DeletePlacementRequestController::class);
     Route::post('/placement-requests/{placementRequest}/confirm', ConfirmPlacementRequestController::class);
     Route::post('/placement-requests/{placementRequest}/reject', RejectPlacementRequestController::class);
     Route::post('/placement-requests/{placementRequest}/finalize', FinalizePlacementRequestController::class);
+
+    // Placement Request Responses
+    Route::get('/placement-requests/{placementRequest}/responses', ListPlacementRequestResponsesController::class);
+    Route::post('/placement-requests/{placementRequest}/responses', StorePlacementRequestResponseController::class);
+    Route::post('/placement-responses/{id}/accept', AcceptPlacementRequestResponseController::class);
+    Route::post('/placement-responses/{id}/reject', RejectPlacementRequestResponseController::class);
+    Route::post('/placement-responses/{id}/cancel', CancelPlacementRequestResponseController::class);
 
     // Helper profiles
     Route::get('/helper-profiles', ListHelperProfilesController::class);
@@ -242,6 +260,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::patch('/helper-profiles/{helperProfile}', UpdateHelperProfileController::class);
     Route::post('/helper-profiles/{helperProfile}', UpdateHelperProfileController::class);
     Route::delete('/helper-profiles/{helperProfile}', DeleteHelperProfileController::class);
+    Route::post('/helper-profiles/{helperProfile}/archive', \App\Http\Controllers\HelperProfile\ArchiveHelperProfileController::class);
+    Route::post('/helper-profiles/{helperProfile}/restore', \App\Http\Controllers\HelperProfile\RestoreHelperProfileController::class);
     Route::delete('/helper-profiles/{helperProfile}/photos/{photo}', DeleteHelperProfilePhotoController::class);
 
     // Pet health data write routes (read routes are public with optional.auth)
@@ -270,42 +290,48 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::put('/pets/{pet}/microchips/{microchip}', UpdatePetMicrochipController::class)->whereNumber('microchip');
     Route::delete('/pets/{pet}/microchips/{microchip}', DeletePetMicrochipController::class)->whereNumber('microchip');
 
-    Route::post('/transfer-requests', StoreTransferRequestController::class);
     Route::delete('/transfer-requests/{transferRequest}', CancelTransferRequestController::class);
-    Route::post('/transfer-requests/{transferRequest}/accept', AcceptTransferRequestController::class);
+    Route::post('/transfer-requests/{transferRequest}/confirm', ConfirmTransferRequestController::class);
     Route::post('/transfer-requests/{transferRequest}/reject', RejectTransferRequestController::class);
+
     // Owner-only: view responder's helper profile for a transfer request
     Route::get('/transfer-requests/{transferRequest}/responder-profile', GetResponderProfileController::class);
-    // Transfer handover lifecycle
-    Route::get('/transfer-requests/{transferRequest}/handover', ShowHandoverForTransferController::class);
-    Route::post('/transfer-requests/{transferRequest}/handover', StoreTransferHandoverController::class);
-    Route::post('/transfer-handovers/{handover}/confirm', HelperConfirmHandoverController::class);
-    Route::post('/transfer-handovers/{handover}/complete', CompleteHandoverController::class);
-    Route::post('/transfer-handovers/{handover}/cancel', CancelHandoverController::class);
-    // Foster assignment lifecycle
-    Route::post('/foster-assignments/{assignment}/complete', CompleteFosterAssignmentController::class);
-    Route::post('/foster-assignments/{assignment}/cancel', CancelFosterAssignmentController::class);
-    Route::post('/foster-assignments/{assignment}/extend', ExtendFosterAssignmentController::class);
 
-    // Foster return handover lifecycle
-    Route::post('/foster-assignments/{assignment}/return-handover', StoreFosterReturnHandoverController::class);
-    Route::post('/foster-return-handovers/{handover}/confirm', OwnerConfirmReturnController::class);
-    Route::post('/foster-return-handovers/{handover}/complete', CompleteReturnHandoverController::class);
+    // TODO: Rehoming flow removed. These routes need to be reimplemented:
+    // - Transfer handover lifecycle (schedule meeting, confirm, complete handover)
+    // - Foster assignment lifecycle (complete, cancel, extend fostering)
+    // - Foster return handover lifecycle (return pet from foster)
     // Route::post('/reviews', [ReviewController::class, 'store']);
 
-    // Message Routes
-    // Route::post('/messages', [MessageController::class, 'store']);
-    // Route::get('/messages', [MessageController::class, 'index']);
-    // Route::get('/messages/{message}', [MessageController::class, 'show']);
-    // Route::put('/messages/{message}/read', [MessageController::class, 'markAsRead']);
-    // Route::delete('/messages/{message}', [MessageController::class, 'destroy']);
+    // Messaging Routes (prefix: /msg)
+    Route::prefix('msg')->group(function (): void {
+        // Chats
+        Route::get('/chats', ListChatsController::class);
+        Route::post('/chats', StoreChatController::class);
+        Route::get('/chats/{chat}', ShowChatController::class);
+        Route::delete('/chats/{chat}', DeleteChatController::class);
+        Route::post('/chats/{chat}/read', MarkChatReadController::class);
+
+        // Messages
+        Route::get('/chats/{chat}/messages', ListMessagesController::class);
+        Route::post('/chats/{chat}/messages', StoreMessageController::class);
+        Route::delete('/messages/{message}', DeleteMessageController::class);
+
+        // Unread count for nav badge
+        Route::get('/unread-count', GetUnreadChatsCountController::class);
+    });
 });
 
 // New pet routes (public)
 Route::get('/pets/placement-requests', ListPetsWithPlacementRequestsController::class);
+
+// Placement request detail (public with optional auth for role-shaping)
+Route::get('/placement-requests/{placementRequest}', ShowPlacementRequestController::class)
+    ->middleware('optional.auth')
+    ->whereNumber('placementRequest');
 Route::get('/pets/featured', ListFeaturedPetsController::class);
 Route::get('/pets/{pet}', ShowPetController::class)->middleware('optional.auth')->whereNumber('pet');
-Route::get('/pets/{pet}/public', ShowPublicPetController::class)->middleware('optional.auth')->whereNumber('pet');
+Route::get('/pets/{pet}/view', ShowPublicPetController::class)->middleware('optional.auth')->whereNumber('pet');
 Route::get('/pet-types', ListPetTypesController::class);
 
 // Pet health data routes (public read, auth required for write)

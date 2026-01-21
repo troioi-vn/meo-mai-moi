@@ -65,24 +65,21 @@ export const mockCatWithFosterRequest: Pet = {
     {
       id: 1,
       pet_id: 1,
-      request_type: 'fostering',
+      request_type: 'foster_free',
       start_date: '2025-08-01',
       end_date: '2025-09-01',
       notes: 'Looking for a loving foster home while owner travels.',
       created_at: '2025-07-20T00:00:00Z',
       updated_at: '2025-07-20T00:00:00Z',
       status: 'open',
-      transfer_requests: [
+      responses: [
         {
           id: 101,
           placement_request_id: 1,
-          pet_id: 1,
           helper_profile_id: 1,
-          initiator_user_id: 2,
-          status: 'pending',
-          requested_relationship_type: 'fostering',
-          fostering_type: 'free',
-          price: null,
+          status: 'responded',
+          message: 'I would love to help foster Fluffy!',
+          responded_at: '2025-08-05T10:00:00Z',
           created_at: '2025-08-05T10:00:00Z',
           updated_at: '2025-08-05T10:00:00Z',
           helper_profile: {
@@ -139,12 +136,12 @@ export const mockCatWithAdoptionRequest: Pet = {
     {
       id: 2,
       pet_id: 2,
-      request_type: 'adoption',
+      request_type: 'permanent',
       notes: 'Looking for a permanent loving home. Great with children.',
       created_at: '2025-07-15T00:00:00Z',
       updated_at: '2025-07-15T00:00:00Z',
       status: 'open',
-      transfer_requests: [],
+      responses: [],
     },
   ],
 }
@@ -210,12 +207,12 @@ export const mockCatWithUrgentAdoptionRequest: Pet = {
     {
       id: 4,
       pet_id: 4,
-      request_type: 'adoption',
+      request_type: 'permanent',
       notes: 'URGENT: Need to rehome by end of month. Very sweet and calm senior cat.',
       created_at: '2025-07-28T00:00:00Z',
       updated_at: '2025-07-28T00:00:00Z',
       status: 'open',
-      transfer_requests: [],
+      responses: [],
     },
   ],
 }
@@ -251,14 +248,14 @@ export const mockCatWithFosterRequest5: Pet = {
     {
       id: 5,
       pet_id: 5,
-      request_type: 'fostering',
+      request_type: 'foster_free',
       start_date: '2025-08-15',
       end_date: '2025-10-15',
       notes: 'Temporary fostering needed during cross-country move.',
       created_at: '2025-07-30T00:00:00Z',
       updated_at: '2025-07-30T00:00:00Z',
       status: 'open',
-      transfer_requests: [],
+      responses: [],
     },
   ],
 }
@@ -294,12 +291,12 @@ export const mockCatWithAdoptionRequest6: Pet = {
     {
       id: 6,
       pet_id: 6,
-      request_type: 'adoption',
+      request_type: 'permanent',
       notes: 'Looking for a family who will love this sweet boy.',
       created_at: '2025-08-01T00:00:00Z',
       updated_at: '2025-08-01T00:00:00Z',
       status: 'open',
-      transfer_requests: [],
+      responses: [],
     },
   ],
 }

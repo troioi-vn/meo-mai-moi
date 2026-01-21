@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Exports;
 
 use App\Enums\PlacementRequestStatus;
@@ -29,7 +31,7 @@ class PlacementRequestExporter extends Exporter
             ExportColumn::make('request_type')
                 ->label('Request Type')
                 ->formatStateUsing(fn (PlacementRequestType $state): string => match ($state) {
-                    PlacementRequestType::FOSTER_PAYED => 'Foster (Paid)',
+                    PlacementRequestType::FOSTER_PAID => 'Foster (Paid)',
                     PlacementRequestType::FOSTER_FREE => 'Foster (Free)',
                     PlacementRequestType::PERMANENT => 'Permanent',
                     default => $state->value,
@@ -69,7 +71,9 @@ class PlacementRequestExporter extends Exporter
     {
         $body = 'Your placement request export has completed and '.number_format($export->successful_rows).' '.str('row')->plural($export->successful_rows).' exported.';
 
-        if ($failedRowsCount = $export->getFailedRowsCount()) {
+        $failedRowsCount = (int) $export->getFailedRowsCount();
+
+        if ($failedRowsCount !== 0) {
             $body .= ' '.number_format($failedRowsCount).' '.str('row')->plural($failedRowsCount).' failed to export.';
         }
 

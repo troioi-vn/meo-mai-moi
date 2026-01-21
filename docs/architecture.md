@@ -17,6 +17,36 @@ This document outlines the architecture of the Meo Mai Moi application, includin
 - **File Storage**: Local storage under `storage/app/public`
 - **Quality Gates**: PHPStan Level 5, Deptrac architecture enforcement
 - **Background Jobs**: Laravel Scheduler + Database Queue (supervisor-managed)
+- **Pet-User Relationships**: Flexible relationship system supporting multiple relationship types (owner/foster/editor/viewer) with temporal tracking
+
+### Database Schema
+
+#### Pet-User Relationship System
+
+The application uses a flexible relationship system to manage connections between pets and users:
+
+**pet_relationships table**:
+
+- `user_id`: Foreign key to users table
+- `pet_id`: Foreign key to pets table
+- `relationship_type`: Enum (owner, foster, editor, viewer)
+- `start_date`: When relationship began
+- `end_date`: When relationship ended (null = active)
+- `created_by`: User who created this relationship
+
+**Relationship Types**:
+
+- **owner**: Full ownership rights including transfer capabilities
+- **foster**: Temporary caretaking access during fostering
+- **editor**: Edit access for pet management assistance
+- **viewer**: Read-only access for monitoring
+
+**Key Features**:
+
+- Multiple concurrent relationships per pet
+- Historical tracking with start/end dates
+- Relationship lifecycle management
+- Replaces simple ownership with flexible access control
 
 ### Background Jobs & Scheduling
 
@@ -133,7 +163,7 @@ src/
 **Code Style**:
 
 - **ESLint + Prettier** with strict TypeScript rules
-- Run before commit: `npm run lint && npm run typecheck`
+- Run before commit: `bun run lint && bun run typecheck`
 
 ### Documentation Standards
 

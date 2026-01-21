@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\InvitationStatus;
 use App\Models\Invitation;
 use App\Models\Settings;
 use App\Models\User;
@@ -121,7 +122,7 @@ class InviteSystemAuthTest extends TestCase
 
         // Invitation should be marked as accepted
         $invitation->refresh();
-        $this->assertEquals('accepted', $invitation->status);
+        $this->assertEquals(InvitationStatus::ACCEPTED, $invitation->status);
         $this->assertNotNull($invitation->recipient_user_id);
     }
 
@@ -254,7 +255,7 @@ class InviteSystemAuthTest extends TestCase
 
         // Invitation should remain pending since it wasn't used
         $invitation->refresh();
-        $this->assertEquals('pending', $invitation->status);
+        $this->assertEquals(InvitationStatus::PENDING, $invitation->status);
     }
 
     public function test_invitation_code_is_accepted_even_when_invite_only_is_disabled()
@@ -284,7 +285,7 @@ class InviteSystemAuthTest extends TestCase
 
         // Invitation should be marked as accepted
         $invitation->refresh();
-        $this->assertEquals('accepted', $invitation->status);
+        $this->assertEquals(InvitationStatus::ACCEPTED, $invitation->status);
     }
 
     public function test_registration_allows_users_when_invite_only_is_disabled()

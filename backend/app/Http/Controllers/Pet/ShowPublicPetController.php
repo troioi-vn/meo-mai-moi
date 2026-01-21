@@ -1,73 +1,68 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Pet;
 
+use App\Enums\PetRelationshipType;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Get(
- *     path="/api/pets/{id}/public",
- *     summary="Get public profile of a specific pet",
- *     description="Returns whitelisted fields for public view. Only accessible for pets that are lost or have active placement requests.",
- *     tags={"Pets"},
- *
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         required=true,
- *         description="ID of the pet",
- *
- *         @OA\Schema(type="integer")
- *     ),
- *
- *     @OA\Response(
- *         response=200,
- *         description="The pet public profile",
- *
- *         @OA\JsonContent(
- *             type="object",
- *
- *             @OA\Property(property="id", type="integer"),
- *             @OA\Property(property="name", type="string"),
- *             @OA\Property(property="sex", type="string"),
- *             @OA\Property(property="birthday_precision", type="string"),
- *             @OA\Property(property="birthday_year", type="integer", nullable=true),
- *             @OA\Property(property="birthday_month", type="integer", nullable=true),
- *             @OA\Property(property="birthday_day", type="integer", nullable=true),
- *             @OA\Property(property="country", type="string"),
- *             @OA\Property(property="state", type="string", nullable=true),
- *             @OA\Property(property="city", type="string", nullable=true),
- *             @OA\Property(property="description", type="string"),
- *             @OA\Property(property="status", type="string"),
- *             @OA\Property(property="pet_type_id", type="integer"),
- *             @OA\Property(property="photo_url", type="string", nullable=true),
- *             @OA\Property(property="photos", type="array", @OA\Items(type="object")),
- *             @OA\Property(property="pet_type", type="object"),
- *             @OA\Property(property="categories", type="array", @OA\Items(type="object")),
- *             @OA\Property(property="placement_requests", type="array", @OA\Items(type="object")),
- *             @OA\Property(
- *                 property="viewer_permissions",
- *                 type="object",
- *                 @OA\Property(property="is_owner", type="boolean")
- *             )
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=403,
- *         description="Pet is not publicly viewable"
- *     ),
- *     @OA\Response(
- *         response=404,
- *         description="Pet not found"
- *     )
- * )
- */
+#[OA\Get(
+    path: '/api/pets/{id}/view',
+    summary: 'Get viewable profile of a specific pet',
+    description: 'Returns whitelisted fields for view. Accessible to: pet owner, users with viewer/owner PetRelationship, helpers involved in pending transfers, and anyone when pet is lost or has active placement requests.',
+    tags: ['Pets'],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: 'The pet view profile',
+            content: new OA\JsonContent(
+                type: 'object',
+                properties: [
+                    new OA\Property(property: 'id', type: 'integer'),
+                    new OA\Property(property: 'name', type: 'string'),
+                    new OA\Property(property: 'sex', type: 'string'),
+                    new OA\Property(property: 'birthday_precision', type: 'string'),
+                    new OA\Property(property: 'birthday_year', type: 'integer', nullable: true),
+                    new OA\Property(property: 'birthday_month', type: 'integer', nullable: true),
+                    new OA\Property(property: 'birthday_day', type: 'integer', nullable: true),
+                    new OA\Property(property: 'country', type: 'string'),
+                    new OA\Property(property: 'state', type: 'string', nullable: true),
+                    new OA\Property(property: 'city', type: 'string', nullable: true),
+                    new OA\Property(property: 'description', type: 'string'),
+                    new OA\Property(property: 'status', type: 'string'),
+                    new OA\Property(property: 'pet_type_id', type: 'integer'),
+                    new OA\Property(property: 'photo_url', type: 'string', nullable: true),
+                    new OA\Property(property: 'photos', type: 'array', items: new OA\Items(type: 'object')),
+                    new OA\Property(property: 'pet_type', type: 'object'),
+                    new OA\Property(property: 'categories', type: 'array', items: new OA\Items(type: 'object')),
+                    new OA\Property(property: 'placement_requests', type: 'array', items: new OA\Items(type: 'object')),
+                    new OA\Property(
+                        property: 'viewer_permissions',
+                        type: 'object',
+                        properties: [
+                            new OA\Property(property: 'is_owner', type: 'boolean'),
+                        ]
+                    ),
+                ]
+            )
+        ),
+        new OA\Response(
+            response: 403,
+            description: 'Pet is not viewable by the current user'
+        ),
+        new OA\Response(
+            response: 404,
+            description: 'Pet not found'
+        ),
+    ]
+)]
 class ShowPublicPetController extends Controller
 {
     use ApiResponseTrait;
@@ -107,11 +102,19 @@ class ShowPublicPetController extends Controller
         }
 
         // Load relations needed for public view
-        $pet->load(['placementRequests.transferRequests.helperProfile.user', 'petType', 'categories', 'city']);
+        $pet->load([
+            'placementRequests.responses.helperProfile.user',
+            'placementRequests.responses.transferRequest',
+            'petType',
+            'categories',
+            'city',
+        ]);
 
-        // Resolve user to determine if viewer is owner
+        // Resolve user and authorize access
+        /** @var \App\Models\User|null $user */
         $user = $this->resolveUser($request);
-        $isOwner = $user && $pet->user_id === $user->id;
+        $isOwner = $user instanceof \App\Models\User && $pet->isOwnedBy($user);
+        $isViewer = $user instanceof \App\Models\User && $pet->hasRelationshipWith($user, PetRelationshipType::VIEWER);
 
         // Build public response with whitelisted fields
         $publicData = $pet->only(self::PUBLIC_FIELDS);
@@ -124,6 +127,7 @@ class ShowPublicPetController extends Controller
         // Add viewer permissions
         $publicData['viewer_permissions'] = [
             'is_owner' => $isOwner,
+            'is_viewer' => $isViewer,
         ];
 
         return $this->sendSuccess($publicData);

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\EmailConfigurationResource\Pages;
 
 use App\Filament\Resources\EmailConfigurationResource;
@@ -58,8 +60,6 @@ class CreateEmailConfiguration extends CreateRecord
     {
         // Validate configuration before creating
         if (! empty($data['config'])) {
-            $service = app(EmailConfigurationService::class);
-
             // Remove empty values from config
             $data['config'] = array_filter($data['config'], function ($value) {
                 return $value !== null && $value !== '';

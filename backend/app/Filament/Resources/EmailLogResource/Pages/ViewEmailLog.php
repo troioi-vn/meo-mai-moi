@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\EmailLogResource\Pages;
 
 use App\Filament\Resources\EmailLogResource;
@@ -12,7 +14,7 @@ class ViewEmailLog extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            //
+
         ];
     }
 }

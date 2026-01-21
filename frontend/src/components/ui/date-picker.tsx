@@ -1,4 +1,3 @@
-import * as React from 'react'
 import { format } from 'date-fns'
 import { Calendar as CalendarIcon } from 'lucide-react'
 
@@ -22,7 +21,7 @@ export function DatePicker({ date, setDate, placeholder, className }: DatePicker
           variant="outline"
           data-empty={!date}
           className={cn(
-            'w-[280px] justify-start text-left font-normal data-[empty=true]:text-muted-foreground',
+            'w-32.5 justify-start text-left font-normal data-[empty=true]:text-muted-foreground',
             className
           )}
         >

@@ -1,46 +1,44 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Pet;
 
+use App\Enums\PetRelationshipType;
 use App\Enums\PetStatus;
 use App\Http\Controllers\Controller;
 use App\Models\City;
-use App\Models\OwnershipHistory;
 use App\Models\Pet;
 use App\Models\PetType;
+use App\Services\PetRelationshipService;
 use App\Traits\ApiResponseTrait;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Post(
- *     path="/api/pets",
- *     summary="Create a new pet",
- *     tags={"Pets"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\RequestBody(
- *         required=true,
- *
- *         @OA\JsonContent(ref="#/components/schemas/Pet")
- *     ),
- *
- *     @OA\Response(
- *         response=201,
- *         description="Pet created successfully",
- *
- *         @OA\JsonContent(ref="#/components/schemas/Pet")
- *     ),
- *
- *     @OA\Response(
- *         response=422,
- *         description="Validation error"
- *     )
- * )
- */
+#[OA\Post(
+    path: '/api/pets',
+    summary: 'Create a new pet',
+    tags: ['Pets'],
+    security: [['sanctum' => []]],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(ref: '#/components/schemas/Pet')
+    ),
+    responses: [
+        new OA\Response(
+            response: 201,
+            description: 'Pet created successfully',
+            content: new OA\JsonContent(ref: '#/components/schemas/Pet')
+        ),
+        new OA\Response(
+            response: 422,
+            description: 'Validation error'
+        ),
+    ]
+)]
 class StorePetController extends Controller
 {
     use ApiResponseTrait;
@@ -74,7 +72,7 @@ class StorePetController extends Controller
         ];
 
         $validator = Validator::make($request->all(), $rules);
-        $validator->after(function ($v) use ($request) {
+        $validator->after(function ($v) use ($request): void {
             $precision = $request->input('birthday_precision');
             $legacyBirthday = $request->input('birthday');
 
@@ -135,7 +133,7 @@ class StorePetController extends Controller
                         try {
                             $parsed = Carbon::parse($legacyBirthday);
                             if ($parsed->isFuture()) {
-                                $v->errors()->add('birthday', 'Birthday cannot be in the future.');
+                                $v->errors()->add('birthday', 'Invalid birthday date.');
                             }
                         } catch (Exception $e) {
                             $v->errors()->add('birthday', 'Invalid birthday date.');
@@ -214,25 +212,11 @@ class StorePetController extends Controller
             'address' => $data['address'] ?? null,
             'description' => $data['description'] ?? '',
             'pet_type_id' => $petTypeId,
-            'user_id' => $request->user()->id,
+            'created_by' => $request->user()->id,
             'status' => PetStatus::ACTIVE,
         ]);
 
-        // Create initial ownership history (open period) for the creator as owner, when table exists
-        if (Schema::hasTable('ownership_history')) {
-            $hasOpen = OwnershipHistory::where('pet_id', $pet->id)
-                ->where('user_id', $request->user()->id)
-                ->whereNull('to_ts')
-                ->exists();
-            if (! $hasOpen) {
-                OwnershipHistory::create([
-                    'pet_id' => $pet->id,
-                    'user_id' => $request->user()->id,
-                    'from_ts' => now(),
-                    'to_ts' => null,
-                ]);
-            }
-        }
+        // Initial ownership relationship is automatically created by Pet model's booted() method
 
         // Sync categories if provided
         if (isset($data['category_ids'])) {
@@ -240,11 +224,12 @@ class StorePetController extends Controller
         }
 
         // Sync viewers / editors if provided
+        $relationshipService = app(PetRelationshipService::class);
         if (isset($data['viewer_user_ids'])) {
-            $pet->viewers()->sync($data['viewer_user_ids']);
+            $relationshipService->syncRelationships($pet, $data['viewer_user_ids'], PetRelationshipType::VIEWER, $request->user());
         }
         if (isset($data['editor_user_ids'])) {
-            $pet->editors()->sync($data['editor_user_ids']);
+            $relationshipService->syncRelationships($pet, $data['editor_user_ids'], PetRelationshipType::EDITOR, $request->user());
         }
 
         $pet->load(['petType', 'categories', 'viewers', 'editors', 'city']);

@@ -8,7 +8,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" id="app-manifest" href="/site-light.webmanifest" />
     <meta name="theme-color" content="#ffffff" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <script>
       ;(function () {
         const manifestEl = document.getElementById('app-manifest')
@@ -30,10 +33,10 @@
           }
 
           manifestEl.href = isDark ? '/site-dark.webmanifest' : '/site-light.webmanifest'
-          
+
           // Update theme-color meta tag
           if (themeColorMeta) {
-            themeColorMeta.setAttribute('content', isDark ? '#111827' : '#ffffff')
+            themeColorMeta.setAttribute('content', isDark ? '#020817' : '#ffffff')
           }
         }
 

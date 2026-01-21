@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Listeners;
 
+use App\Enums\HelperProfileApprovalStatus;
 use App\Enums\NotificationType;
 use App\Events\HelperProfileStatusUpdated;
 use App\Models\Notification;
@@ -24,14 +27,15 @@ class CreateHelperProfileNotification
      */
     public function handle(HelperProfileStatusUpdated $event): void
     {
+        /** @var \App\Models\HelperProfile $helperProfile */
         $helperProfile = $event->getHelperProfile();
         $status = $helperProfile->approval_status;
-        $message = "Your helper profile has been {$status}.";
+        $message = "Your helper profile has been {$status->value}.";
 
         // Determine notification type based on status
         $notificationType = match ($status) {
-            'approved' => NotificationType::HELPER_RESPONSE_ACCEPTED->value,
-            'rejected' => NotificationType::HELPER_RESPONSE_REJECTED->value,
+            HelperProfileApprovalStatus::APPROVED => NotificationType::HELPER_RESPONSE_ACCEPTED->value,
+            HelperProfileApprovalStatus::REJECTED => NotificationType::HELPER_RESPONSE_REJECTED->value,
             default => null,
         };
 

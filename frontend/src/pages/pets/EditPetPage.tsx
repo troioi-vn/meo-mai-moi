@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Button } from '@/components/ui/button'
-import { ChevronLeft } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { useCreatePetForm } from '@/hooks/useCreatePetForm'
@@ -20,6 +18,14 @@ import { MedicalRecordsSection } from '@/components/pet-health/medical/MedicalRe
 import { PetStatusControls } from '@/components/pets/PetStatusControls'
 import { PetDangerZone } from '@/components/pets/PetDangerZone'
 import { PetFormSection } from '@/components/pets/PetFormSection'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
 
 type TabValue = 'general' | 'health' | 'status'
 
@@ -106,10 +112,6 @@ const EditPetPage: React.FC = () => {
     }
   }
 
-  const handleBack = () => {
-    void navigate(-1)
-  }
-
   if (isLoadingPet) {
     return <LoadingState message="Loading pet data..." />
   }
@@ -138,15 +140,25 @@ const EditPetPage: React.FC = () => {
       {/* Navigation */}
       <div className="px-4 py-3">
         <div className="max-w-2xl mx-auto">
-          <Button
-            variant="ghost"
-            size="default"
-            onClick={handleBack}
-            className="flex items-center gap-1 -ml-2 text-base"
-          >
-            <ChevronLeft className="h-6 w-6" />
-            Back
-          </Button>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/">Home</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to={`/pets/${petId ?? ''}`}>{loadedPet?.name ?? 'Pet'}</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Edit</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
         </div>
       </div>
 
@@ -255,4 +267,3 @@ const EditPetPage: React.FC = () => {
 }
 
 export default EditPetPage
-

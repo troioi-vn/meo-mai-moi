@@ -50,12 +50,12 @@ class VaccinationRecordsFeatureTest extends TestCase
         ]);
 
         $this->cat = Pet::factory()->create([
-            'user_id' => $this->owner->id,
+            'created_by' => $this->owner->id,
             'pet_type_id' => $this->catType->id,
         ]);
 
         $this->dog = Pet::factory()->create([
-            'user_id' => $this->owner->id,
+            'created_by' => $this->owner->id,
             'pet_type_id' => $this->dogType->id,
         ]);
     }

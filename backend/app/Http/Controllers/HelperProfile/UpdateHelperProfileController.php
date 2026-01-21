@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\HelperProfile;
 
 use App\Enums\PlacementRequestType;
@@ -9,84 +11,76 @@ use App\Models\HelperProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Put(
- *     path="/helper-profiles/{id}",
- *     summary="Update a helper profile",
- *     tags={"Helper Profiles"},
- *
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         required=true,
- *         description="ID of the helper profile",
- *
- *         @OA\Schema(type="integer")
- *     ),
- *
- *     @OA\RequestBody(
- *         required=true,
- *
- *         @OA\JsonContent(ref="#/components/schemas/HelperProfile")
- *     ),
- *
- *     @OA\Response(
- *         response=200,
- *         description="Helper profile updated successfully",
- *
- *         @OA\JsonContent(ref="#/components/schemas/HelperProfile")
- *     ),
- *
- *     @OA\Response(
- *         response=403,
- *         description="Unauthorized"
- *     ),
- *     @OA\Response(
- *         response=422,
- *         description="Validation error"
- *     )
- * )
- *
- * @OA\Post(
- *     path="/helper-profiles/{id}",
- *     summary="Update a helper profile (DEPRECATED - use PUT instead)",
- *     deprecated=true,
- *     tags={"Helper Profiles"},
- *     description="This endpoint is deprecated. Use PUT /helper-profiles/{id} instead. Kept for HTML form compatibility.",
- *
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         required=true,
- *         description="ID of the helper profile",
- *
- *         @OA\Schema(type="integer")
- *     ),
- *
- *     @OA\RequestBody(
- *         required=true,
- *
- *         @OA\JsonContent(ref="#/components/schemas/HelperProfile")
- *     ),
- *
- *     @OA\Response(
- *         response=200,
- *         description="Helper profile updated successfully",
- *
- *         @OA\JsonContent(ref="#/components/schemas/HelperProfile")
- *     ),
- *
- *     @OA\Response(
- *         response=403,
- *         description="Unauthorized"
- *     ),
- *     @OA\Response(
- *         response=422,
- *         description="Validation error"
- *     )
- * )
- */
+#[OA\Put(
+    path: '/helper-profiles/{id}',
+    summary: 'Update a helper profile',
+    tags: ['Helper Profiles'],
+    parameters: [
+        new OA\Parameter(
+            name: 'id',
+            in: 'path',
+            required: true,
+            description: 'ID of the helper profile',
+            schema: new OA\Schema(type: 'integer')
+        ),
+    ],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(ref: '#/components/schemas/HelperProfile')
+    ),
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: 'Helper profile updated successfully',
+            content: new OA\JsonContent(ref: '#/components/schemas/HelperProfile')
+        ),
+        new OA\Response(
+            response: 403,
+            description: 'Unauthorized'
+        ),
+        new OA\Response(
+            response: 422,
+            description: 'Validation error'
+        ),
+    ]
+)]
+#[OA\Post(
+    path: '/helper-profiles/{id}',
+    summary: 'Update a helper profile (DEPRECATED - use PUT instead)',
+    deprecated: true,
+    tags: ['Helper Profiles'],
+    description: 'This endpoint is deprecated. Use PUT /helper-profiles/{id} instead. Kept for HTML form compatibility.',
+    parameters: [
+        new OA\Parameter(
+            name: 'id',
+            in: 'path',
+            required: true,
+            description: 'ID of the helper profile',
+            schema: new OA\Schema(type: 'integer')
+        ),
+    ],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(ref: '#/components/schemas/HelperProfile')
+    ),
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: 'Helper profile updated successfully',
+            content: new OA\JsonContent(ref: '#/components/schemas/HelperProfile')
+        ),
+        new OA\Response(
+            response: 403,
+            description: 'Unauthorized'
+        ),
+        new OA\Response(
+            response: 422,
+            description: 'Validation error'
+        ),
+    ]
+)]
 class UpdateHelperProfileController extends Controller
 {
     public function __invoke(Request $request, HelperProfile $helperProfile)
@@ -98,7 +92,8 @@ class UpdateHelperProfileController extends Controller
         $validatedData = $request->validate([
             'country' => 'sometimes|string|size:2',
             'state' => 'sometimes|string|max:255|nullable',
-            'city_id' => 'sometimes|required|integer|exists:cities,id',
+            'city_ids' => 'sometimes|required|array|min:1',
+            'city_ids.*' => 'integer|exists:cities,id',
             'address' => 'sometimes|string|max:255|nullable',
             'zip_code' => 'sometimes|string|max:20|nullable',
             'phone_number' => 'sometimes|string|max:20',
@@ -108,7 +103,7 @@ class UpdateHelperProfileController extends Controller
             'has_children' => 'sometimes|boolean',
             'request_types' => ['sometimes', 'array', 'min:1'],
             'request_types.*' => [Rule::enum(PlacementRequestType::class)],
-            'status' => 'sometimes|string|in:active,cancelled,deleted',
+            'status' => ['sometimes', Rule::enum(\App\Enums\HelperProfileStatus::class)],
             'photos' => 'sometimes|array|max:5',
             'photos.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:10240',
             'pet_type_ids' => 'sometimes|array',
@@ -120,17 +115,23 @@ class UpdateHelperProfileController extends Controller
         }
 
         $helperProfile->update($validatedData);
-        if (isset($validatedData['city_id'])) {
+        if (isset($validatedData['city_ids'])) {
             $country = $validatedData['country'] ?? $helperProfile->country;
-            $city = City::find($validatedData['city_id']);
-            if (! $city) {
-                return response()->json(['message' => 'City not found'], 422);
+            $cities = City::whereIn('id', $validatedData['city_ids'])->get();
+            if ($cities->count() !== count($validatedData['city_ids'])) {
+                return response()->json(['message' => 'One or more cities not found'], 422);
             }
-            if ($city->country !== strtoupper($country)) {
-                return response()->json(['message' => 'Selected city does not belong to the specified country.'], 422);
+
+            foreach ($cities as $city) {
+                if ($city->country !== strtoupper($country)) {
+                    return response()->json(['message' => "City {$city->name} does not belong to the specified country."], 422);
+                }
             }
+
+            $helperProfile->cities()->sync($validatedData['city_ids']);
             $helperProfile->update([
-                'city' => $city->name,
+                'city' => $cities->pluck('name')->implode(', '),
+                'city_id' => $cities->first()->id,
                 'country' => strtoupper($country),
             ]);
         } elseif (isset($validatedData['country'])) {
@@ -154,6 +155,6 @@ class UpdateHelperProfileController extends Controller
             Log::info('No photos found in request');
         }
 
-        return response()->json(['data' => $helperProfile->load('photos', 'city')]);
+        return response()->json(['data' => $helperProfile->load('photos', 'cities')]);
     }
 }

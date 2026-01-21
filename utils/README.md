@@ -10,6 +10,7 @@
 ./utils/deploy.sh --fresh                  # Reset everything (asks for confirmation)
 ./utils/deploy.sh --fresh --seed           # Fresh start with sample data (asks for confirmation)
 ./utils/deploy.sh --fresh --no-interactive # Fresh deploy without prompts (for CI/automation)
+./utils/deploy.sh --skip-build             # Skip Docker builds (uses existing images)
 ./utils/deploy.sh --allow-empty-db        # Allow deploy even if DB is empty (non-fresh)
 ```
 

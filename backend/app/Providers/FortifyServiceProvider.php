@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
@@ -11,7 +13,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
-use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
 use Laravel\Fortify\Fortify;
 
 class FortifyServiceProvider extends ServiceProvider
@@ -29,10 +30,10 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Allow Fortify to register its routes (web endpoints like /register, /forgot-password, 2FA, etc.)
+        // Configure Fortify actions
         $this->configureFortifyActions();
 
-        // Configure rate limiters to match existing throttling behavior
+        // Configure rate limiters
         $this->configureRateLimiters();
     }
 
@@ -45,7 +46,6 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
-        Fortify::redirectUserForTwoFactorAuthenticationUsing(RedirectIfTwoFactorAuthenticatable::class);
     }
 
     /**
@@ -53,9 +53,14 @@ class FortifyServiceProvider extends ServiceProvider
      */
     private function configureRateLimiters(): void
     {
-        // Login rate limiting (matches existing AuthController throttling)
+        // Login rate limiting
         RateLimiter::for('login', function (Request $request) {
             $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
+
+            // Allow more login attempts for development/testing environments
+            if (app()->environment('local', 'development', 'e2e', 'testing')) {
+                return Limit::perMinute(100)->by($throttleKey);
+            }
 
             return Limit::perMinute(5)->by($throttleKey);
         });
@@ -65,12 +70,12 @@ class FortifyServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by($request->session()->get('login.id'));
         });
 
-        // Password reset rate limiting (matches existing forgot password throttling)
+        // Password reset rate limiting
         RateLimiter::for('password-reset', function (Request $request) {
             return Limit::perMinute(5)->by($request->ip());
         });
 
-        // Registration rate limiting for additional security
+        // Registration rate limiting
         RateLimiter::for('registration', function (Request $request) {
             if (app()->environment('testing')) {
                 return Limit::perMinute(10)->by($request->session()->getId());

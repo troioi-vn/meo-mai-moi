@@ -36,13 +36,19 @@ This guide provides solutions to common issues encountered during development.
 
 **Build Failures**
 
-- Clear `node_modules`: `rm -rf node_modules && npm install`
-- Check for TypeScript errors: `npm run typecheck`
+- Clear `node_modules`: `rm -rf node_modules && bun install`
+- Check for TypeScript errors: `bun run typecheck`
 
 **Test Environment Issues**
 
 - Radix/shadcn components may need polyfills in `setupTests.ts`.
 - MSW handlers must use absolute URLs.
+
+**Network Errors (ERR_NETWORK / AxiosError)**
+
+- **Symptom**: API requests (especially `/api/notifications/unified`) fail with "Network Error" in the console.
+- **Cause**: Adblockers (like uBlock Origin or AdBlock Plus) often block URLs containing the word "notification".
+- **Solution**: Disable your adblocker for `localhost` or the development domain.
 
 ## Docker Issues
 

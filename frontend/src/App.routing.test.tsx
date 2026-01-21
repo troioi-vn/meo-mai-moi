@@ -36,9 +36,13 @@ beforeEach(() => {
     http.get('http://localhost:3000/api/user', () => {
       return HttpResponse.json({ data: mockUser })
     }),
-    // Mock for notifications
-    http.get('http://localhost:3000/api/notifications', () => {
-      return HttpResponse.json({ data: { notifications: [], unread_count: 1 } })
+    // Mock for unified notifications
+    http.get('http://localhost:3000/api/notifications/unified', () => {
+      return HttpResponse.json({
+        bell_notifications: [],
+        unread_bell_count: 1,
+        unread_message_count: 0,
+      })
     }),
     // Mock for notification preferences
     http.get('http://localhost:3000/api/notification-preferences', () => {
@@ -62,19 +66,20 @@ beforeEach(() => {
 
 describe('App Routing', () => {
   describe('Pet profile routes', () => {
-    it('shows main navigation and back button on pet profile page', async () => {
+    it('shows main navigation and breadcrumb on pet profile page', async () => {
       renderWithRouter(<App />, { route: '/pets/1' })
 
-      // Wait for pet data to load
-      await waitFor(async () => {
-        expect(await screen.findByText('Fluffy')).toBeInTheDocument()
-      })
+      // Wait for lazy route + pet data to load
+      expect(
+        await screen.findByRole('heading', { name: 'Fluffy' }, { timeout: 5000 })
+      ).toBeInTheDocument()
 
       // MainNav should be present (Requests link is always visible)
       expect(screen.getByRole('link', { name: 'Requests' })).toBeInTheDocument()
 
-      // Back button should also be present
-      expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument()
+      // Breadcrumb should also be present
+      expect(screen.getByRole('link', { name: /home/i })).toBeInTheDocument()
+      expect(screen.getAllByText('Fluffy')[0]).toBeInTheDocument()
     })
 
     it('shows main navigation on other pages', async () => {
@@ -92,18 +97,14 @@ describe('App Routing', () => {
       renderWithRouter(<App />, { route: '/cats/1' })
 
       // Legacy /cats routes are no longer supported and should show 404
-      await waitFor(async () => {
-        expect(await screen.findByText(/not found/i)).toBeInTheDocument()
-      })
+      expect(await screen.findByText(/not found/i)).toBeInTheDocument()
     })
 
     it('shows not found page for /cats/:id/edit route (legacy routes removed)', async () => {
       renderWithRouter(<App />, { route: '/cats/1/edit' })
 
       // Legacy /cats routes are no longer supported and should show 404
-      await waitFor(async () => {
-        expect(await screen.findByText(/not found/i)).toBeInTheDocument()
-      })
+      expect(await screen.findByText(/not found/i)).toBeInTheDocument()
     })
   })
 

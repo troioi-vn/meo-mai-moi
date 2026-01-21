@@ -1,22 +1,29 @@
 # Multi-stage build: First stage for building the entire application
-FROM node:25.2.1 AS app-build
+FROM oven/bun:1 AS app-build
 
 ARG VAPID_PUBLIC_KEY
 ENV VAPID_PUBLIC_KEY=$VAPID_PUBLIC_KEY
 ENV VITE_VAPID_PUBLIC_KEY=$VAPID_PUBLIC_KEY
 
+ARG VITE_REVERB_APP_KEY
+ARG VITE_REVERB_HOST
+ARG VITE_REVERB_PORT
+ARG VITE_REVERB_SCHEME
+ENV VITE_REVERB_APP_KEY=$VITE_REVERB_APP_KEY
+ENV VITE_REVERB_HOST=$VITE_REVERB_HOST
+ENV VITE_REVERB_PORT=$VITE_REVERB_PORT
+ENV VITE_REVERB_SCHEME=$VITE_REVERB_SCHEME
+
 # Set the working directory for the entire application
 WORKDIR /app
 
-# Update npm to the latest version
-RUN npm install -g npm@11.7.0
 ##
 # Build Frontend SPA assets
 ##
 # Copy package files first to leverage Docker cache
-COPY ./frontend/package.json ./frontend/package-lock.json /app/frontend/
+COPY ./frontend/package.json ./frontend/bun.lock /app/frontend/
 WORKDIR /app/frontend
-RUN npm ci
+RUN bun install --frozen-lockfile
 
 # Copy the rest of the source code
 COPY ./frontend /app/frontend
@@ -24,8 +31,7 @@ COPY ./backend /app/backend
 
 # Build the frontend SPA (copies to /app/backend/public/build via script)
 WORKDIR /app/frontend
-RUN npm ci
-RUN npm run build:docker
+RUN bun run build:docker
 
 ##
 # No backend JS build: backend is API-only. Frontend SPA build already copied into /app/backend/public/build.
@@ -42,7 +48,7 @@ ARG INSTALL_DEV=false
 RUN apt-get update && apt-get install -y \
 	libpng-dev libjpeg62-turbo-dev libfreetype6-dev libonig-dev libzip-dev \
 	libpq-dev libicu-dev locales zip unzip curl nginx supervisor procps net-tools postgresql-client \
-	libwebp-dev libgmp-dev \
+	libwebp-dev libgmp-dev git \
  && if [ "$INSTALL_XDEBUG" = "true" ]; then pecl install xdebug >/dev/null 2>&1 && docker-php-ext-enable xdebug; fi
 
 # Install PHP extensions
@@ -87,7 +93,7 @@ RUN install -d -o www-data -g www-data \
 # pass --build-arg INSTALL_DEV=true to include dev packages (phpunit, pest, etc.).
 ##
 USER www-data
-RUN rm -f bootstrap/cache/packages.php && if [ "$INSTALL_DEV" = "true" ]; then composer install --no-interaction --prefer-dist; else composer install --no-dev --optimize-autoloader; fi
+RUN rm -f bootstrap/cache/packages.php && if [ "$INSTALL_DEV" = "true" ]; then composer install --no-interaction --prefer-dist --no-scripts; else composer install --no-dev --optimize-autoloader --no-interaction --no-scripts; fi
 
 # Switch back to root for final setup
 USER root

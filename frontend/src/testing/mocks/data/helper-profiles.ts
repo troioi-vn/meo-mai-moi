@@ -5,7 +5,9 @@ export const mockHelperProfile = {
   user_id: 1,
   country: 'VN',
   address: '123 Test St',
+  city_id: 1,
   city: 'Testville',
+  cities: [{ id: 1, name: 'Testville', country: 'VN' }],
   state: 'TS',
   phone_number: '123-456-7890',
   contact_info: 'You can also reach me on Telegram @testhelper',
@@ -19,7 +21,7 @@ export const mockHelperProfile = {
     { id: 1, path: '/test-photo-1.jpg' },
     { id: 2, path: '/test-photo-2.jpg' },
   ],
-  transfer_requests: [],
+  placement_responses: [],
 }
 
 export const helperProfileHandlers = [

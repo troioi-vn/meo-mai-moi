@@ -56,6 +56,23 @@ export interface PetPhoto {
   is_primary: boolean
 }
 
+export interface PetRelationship {
+  id: number
+  user_id: number
+  pet_id: number
+  relationship_type: 'owner' | 'foster' | 'editor' | 'viewer'
+  start_at: string
+  end_at: string | null
+  created_by: number
+  created_at: string
+  updated_at: string
+  user?: {
+    id: number
+    name: string
+    email?: string
+  }
+}
+
 export interface Pet {
   id: number
   name: string
@@ -91,33 +108,41 @@ export interface Pet {
     can_edit?: boolean
     can_view_contact?: boolean
     can_delete?: boolean
+    is_owner?: boolean
+    is_viewer?: boolean
   }
   placement_requests?: PlacementRequest[]
+  relationships?: PetRelationship[]
   // Convenience flag from backend (optional) used by PetCard
   placement_request_active?: boolean
-  foster_assignment?: {
-    id: number
-    status: string
-    expected_end_date?: string
-    foster_user?: {
-      id: number
-      name: string
-    }
-  }
-  ownership_transfers?: {
-    id: number
-    occurred_at: string
-    to_user?: {
-      id: number
-      name: string
-    }
-  }[]
 }
+
+// Re-export placement types for convenience
+export type {
+  PlacementRequestResponse,
+  PlacementResponseStatus,
+  PlacementRequestStatus,
+  PlacementRequestType,
+  TransferRequestStatus,
+  TransferRequest,
+} from './placement'
+export {
+  formatRequestType,
+  formatStatus,
+  isFosteringType,
+  isTemporaryType,
+  requiresHandover,
+  PlacementRequestStatusLabels,
+  PlacementResponseStatusLabels,
+  PlacementRequestTypeLabels,
+} from './placement'
+
+import type { PlacementRequestResponse } from './placement'
+import type { TransferRequest } from './placement'
 
 export interface PlacementRequest {
   id: number
   pet_id: number
-
   user_id?: number
   // Support backend enums and allow arbitrary strings to avoid redundant type constituents rule
   request_type: string
@@ -127,39 +152,13 @@ export interface PlacementRequest {
   // Optional date-range fields used by filters/tests
   start_date?: string
   end_date?: string
+  // New: responses from helpers
+  responses?: PlacementRequestResponse[]
+  // New: up to 2 transfer requests (handover/return)
   transfer_requests?: TransferRequest[]
-  created_at?: string
-  updated_at?: string
-}
-
-export interface TransferRequest {
-  id: number
-  pet_id?: number
-  placement_request_id?: number
-
-  helper_profile_id?: number
-  initiator_user_id?: number
-  requested_relationship_type?: string
-  fostering_type?: string | null
-  price?: number | null
-  status?: string
-  created_at?: string
-  updated_at?: string
-  helper_profile?: {
-    id?: number
-    city?: string
-    state?: string
-    address?: string
-    zip_code?: string
-    phone?: string
-    user?: { id?: number; name?: string; email?: string }
-    photos?: unknown[]
-    about?: string
-    created_at?: string
-    updated_at?: string
-  }
-  placement_request?: PlacementRequest
   pet?: Pet
+  created_at?: string
+  updated_at?: string
 }
 
 // Helper function to calculate age from birthday

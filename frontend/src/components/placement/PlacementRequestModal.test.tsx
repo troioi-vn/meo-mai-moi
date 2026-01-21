@@ -99,6 +99,24 @@ describe('PlacementRequestModal', () => {
     })
   })
 
+  it('closes the pick-up date picker after selecting a date', async () => {
+    const user = userEvent.setup()
+    render(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
+
+    // Open the popover
+    const startDateButton = screen.getByLabelText('Pick-up Date')
+    await user.click(startDateButton)
+    expect(await screen.findByTestId('mock-calendar-day')).toBeInTheDocument()
+
+    // Select a date
+    fireEvent.click(screen.getByTestId('mock-calendar-day'))
+
+    // Popover should close (calendar unmounted)
+    await waitFor(() => {
+      expect(screen.queryByTestId('mock-calendar-day')).not.toBeInTheDocument()
+    })
+  })
+
   it('submits the form with the correct data for a permanent request', async () => {
     const user = userEvent.setup()
     render(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
@@ -115,7 +133,7 @@ describe('PlacementRequestModal', () => {
     await user.type(notesInput, 'Test notes')
 
     // Select pick-up date
-    const startDateButton = screen.getByText('Pick a date')
+    const startDateButton = screen.getByLabelText('Pick-up Date')
     await user.click(startDateButton)
     const mockDayButton = await screen.findByTestId('mock-calendar-day')
     fireEvent.click(mockDayButton)
@@ -227,7 +245,7 @@ describe('PlacementRequestModal', () => {
     await user.click(permanentOption)
 
     // Select pick-up date
-    const startDateButton = screen.getByText('Pick a date')
+    const startDateButton = screen.getByLabelText('Pick-up Date')
     await user.click(startDateButton)
     const mockDayButton = await screen.findByTestId('mock-calendar-day')
     fireEvent.click(mockDayButton)

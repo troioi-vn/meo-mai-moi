@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\NotificationResource\Pages;
 
 use App\Filament\Resources\NotificationResource;
@@ -11,13 +13,6 @@ use Illuminate\Database\Eloquent\Builder;
 class ListNotifications extends ListRecords
 {
     protected static string $resource = NotificationResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\CreateAction::make(),
-        ];
-    }
 
     public function getTabs(): array
     {
@@ -48,6 +43,13 @@ class ListNotifications extends ListRecords
                 ->modifyQueryUsing(fn (Builder $query) => $query->failed())
                 ->badge(fn () => $this->getModel()::failed()->count())
                 ->badgeColor('danger'),
+        ];
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make(),
         ];
     }
 }

@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\EmailVerification;
 
 use App\Http\Controllers\Controller;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Verify email address via web route and redirect to frontend
@@ -38,7 +41,7 @@ class VerifyEmailWebController extends Controller
 
         if ($user->hasVerifiedEmail()) {
             // Ensure user gets logged into a session for SPA when visiting via email link
-            \Auth::guard(config('fortify.guard', 'web'))->login($user);
+            Auth::guard(config('fortify.guard', 'web'))->login($user);
 
             return redirect()->away(rtrim($frontend, '/').'/?verified=1');
         }
@@ -47,7 +50,7 @@ class VerifyEmailWebController extends Controller
             event(new Verified($user));
         }
         // Log the user in to create SPA session
-        \Auth::guard(config('fortify.guard', 'web'))->login($user);
+        Auth::guard(config('fortify.guard', 'web'))->login($user);
 
         return redirect()->away(rtrim($frontend, '/').'/?verified=1');
     }

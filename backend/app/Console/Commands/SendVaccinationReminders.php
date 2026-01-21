@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Enums\NotificationType;
 use App\Models\Pet;
-use App\Models\VaccinationRecord;
 use App\Models\User;
+use App\Models\VaccinationRecord;
 use App\Services\NotificationService;
 use App\Services\PetCapabilityService;
 use Carbon\Carbon;
@@ -32,8 +34,8 @@ class SendVaccinationReminders extends Command
             ->whereDate('due_at', '<=', $cutoff)
             ->whereNull('reminder_sent_at')
             ->with([
-                'pet' => function ($q) {
-                    $q->with('user', 'petType');
+                'pet' => function ($q): void {
+                    $q->with('owners', 'petType');
                 },
             ]);
 
@@ -44,7 +46,13 @@ class SendVaccinationReminders extends Command
             /** @var VaccinationRecord $record */
             foreach ($records as $record) {
                 $pet = $record->pet;
-                if (! $pet instanceof Pet || ! $pet->user) {
+                if (! $pet instanceof Pet) {
+                    continue;
+                }
+
+                // Get current owners of the pet
+                $owners = $pet->owners;
+                if ($owners->isEmpty()) {
                     continue;
                 }
 
@@ -55,28 +63,30 @@ class SendVaccinationReminders extends Command
                     continue;
                 }
 
-                $owner = $pet->user;
-                if (! $owner instanceof User) {
-                    continue;
+                // Send reminder to all current owners
+                foreach ($owners as $owner) {
+                    if (! $owner instanceof User) {
+                        continue;
+                    }
+
+                    $data = [
+                        'message' => sprintf(
+                            'Reminder: %s is due for %s on %s',
+                            $pet->name,
+                            $record->vaccine_name,
+                            optional($record->due_at)->toDateString()
+                        ),
+                        'link' => url('/pets/'.$pet->id.'#vaccinations'),
+                        'pet_id' => $pet->id,
+                        'vaccination_record_id' => $record->id,
+                        'vaccine_name' => $record->vaccine_name,
+                        'due_at' => optional($record->due_at)?->toDateString(),
+                        'notes' => $record->notes,
+                    ];
+
+                    // Respect user preferences via NotificationService
+                    $service->send($owner, NotificationType::VACCINATION_REMINDER->value, $data);
                 }
-
-                $data = [
-                    'message' => sprintf(
-                        'Reminder: %s is due for %s on %s',
-                        $pet->name,
-                        $record->vaccine_name,
-                        optional($record->due_at)->toDateString()
-                    ),
-                    'link' => url('/pets/'.$pet->id.'#vaccinations'),
-                    'pet_id' => $pet->id,
-                    'vaccination_record_id' => $record->id,
-                    'vaccine_name' => $record->vaccine_name,
-                    'due_at' => optional($record->due_at)?->toDateString(),
-                    'notes' => $record->notes,
-                ];
-
-                // Respect user preferences via NotificationService
-                $service->send($owner, NotificationType::VACCINATION_REMINDER->value, $data);
 
                 // Mark reminder_sent_at to avoid duplicates (idempotent if run again today)
                 $record->update(['reminder_sent_at' => now()]);

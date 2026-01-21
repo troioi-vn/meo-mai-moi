@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -38,11 +40,11 @@ class NotificationTemplate extends Model
             ->where('locale', $locale);
     }
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 
-        static::saving(function (self $model) {
+        static::saving(function (self $model): void {
             // Increment semantic version on updates
             if ($model->exists) {
                 $model->version = (int) ($model->version ?: 1) + 1;

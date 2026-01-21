@@ -1,7 +1,13 @@
+import './msw-polyfills'
 import { afterEach, beforeAll, afterAll, vi } from 'vitest'
 import { cleanup, configure } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 import { server } from './mocks/server'
+
+// Mock virtual:pwa-register
+vi.mock('virtual:pwa-register', () => ({
+  registerSW: vi.fn(() => vi.fn()),
+}))
 
 // Configure testing library to be less verbose
 configure({
@@ -12,27 +18,6 @@ configure({
     return error
   },
 })
-
-// Polyfill ProgressEvent early for MSW XHR in Node test environment
-if (!(globalThis as { ProgressEvent?: unknown }).ProgressEvent) {
-  class PolyfillProgressEvent extends Event {
-    lengthComputable = false
-    loaded = 0
-    total = 0
-    constructor(
-      type: string,
-      init?: { lengthComputable?: boolean; loaded?: number; total?: number }
-    ) {
-      super(type)
-      if (init) {
-        this.lengthComputable = !!init.lengthComputable
-        this.loaded = init.loaded ?? 0
-        this.total = init.total ?? 0
-      }
-    }
-  }
-  ;(globalThis as { ProgressEvent?: unknown }).ProgressEvent = PolyfillProgressEvent
-}
 
 // Polyfill for PointerEvents (minimal, typed)
 class TestPointerEvent extends MouseEvent {
@@ -91,6 +76,36 @@ class MockResizeObserver {
   disconnect = vi.fn()
 }
 ;(globalThis as unknown as { ResizeObserver?: unknown }).ResizeObserver = MockResizeObserver
+
+// Mock QRCode library to prevent canvas usage in tests
+vi.mock('qrcode', () => ({
+  default: {
+    toCanvas: vi.fn().mockResolvedValue(undefined),
+    toDataURL: vi.fn().mockResolvedValue('data:image/png;base64,mock-qr-code'),
+  },
+}))
+
+// Mock HTMLCanvasElement.getContext to prevent canvas usage in tests
+Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+  writable: true,
+  value: vi.fn(() => ({
+    clearRect: vi.fn(),
+    fillRect: vi.fn(),
+    drawImage: vi.fn(),
+    getImageData: vi.fn(),
+    putImageData: vi.fn(),
+    createImageData: vi.fn(),
+    setTransform: vi.fn(),
+    save: vi.fn(),
+    restore: vi.fn(),
+    beginPath: vi.fn(),
+    moveTo: vi.fn(),
+    lineTo: vi.fn(),
+    closePath: vi.fn(),
+    stroke: vi.fn(),
+    fill: vi.fn(),
+  })),
+})
 
 // Mock IntersectionObserver (needed for Embla Carousel)
 class MockIntersectionObserver {

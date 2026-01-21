@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Enums\NotificationType;
 use App\Mail\HelperResponseAcceptedMail;
 use App\Mail\HelperResponseRejectedMail;
-use App\Mail\PlacementRequestAcceptedMail;
 use App\Mail\PlacementRequestResponseMail;
 use App\Models\HelperProfile;
 use App\Models\Pet;
@@ -57,25 +56,6 @@ class EmailTemplateRenderingTest extends TestCase
         $this->assertStringContainsString($this->pet->name, $rendered);
         $this->assertStringContainsString('unsubscribe', $rendered);
         $this->assertStringContainsString('View Response', $rendered);
-    }
-
-    public function test_placement_request_accepted_template_renders_successfully()
-    {
-        $mail = new PlacementRequestAcceptedMail(
-            $this->user,
-            NotificationType::PLACEMENT_REQUEST_ACCEPTED,
-            [
-                'pet_id' => $this->pet->id,
-                'helper_profile_id' => $this->helperProfile->id,
-            ]
-        );
-
-        $rendered = $mail->render();
-
-        $this->assertStringContainsString('Congratulations', $rendered);
-        $this->assertStringContainsString(e($this->user->name), $rendered);
-        $this->assertStringContainsString($this->pet->name, $rendered);
-        $this->assertStringContainsString('accepted', $rendered);
     }
 
     public function test_helper_response_accepted_template_renders_successfully()
@@ -135,14 +115,12 @@ class EmailTemplateRenderingTest extends TestCase
     {
         $mailClasses = [
             PlacementRequestResponseMail::class,
-            PlacementRequestAcceptedMail::class,
             HelperResponseAcceptedMail::class,
             HelperResponseRejectedMail::class,
         ];
 
         $notificationTypes = [
             NotificationType::PLACEMENT_REQUEST_RESPONSE,
-            NotificationType::PLACEMENT_REQUEST_ACCEPTED,
             NotificationType::HELPER_RESPONSE_ACCEPTED,
             NotificationType::HELPER_RESPONSE_REJECTED,
         ];

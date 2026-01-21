@@ -3,7 +3,7 @@
 .env
 .env.backup
 .env.production
-.env
+.env.e2e
 
 .phpactor.json
 .phpunit.result.cache
@@ -19,6 +19,9 @@
 /public/build
 /public/hot
 /public/storage
+/public/sw.js
+/public/workbox-*.js
+/public/assets
 /storage/*.key
 /storage/pail
 /vendor

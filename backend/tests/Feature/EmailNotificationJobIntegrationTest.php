@@ -32,7 +32,7 @@ class EmailNotificationJobIntegrationTest extends TestCase
         ]);
 
         $this->pet = Pet::factory()->create([
-            'user_id' => $this->user->id,
+            'created_by' => $this->user->id,
             'status' => \App\Enums\PetStatus::ACTIVE,
         ]);
 
@@ -139,7 +139,7 @@ class EmailNotificationJobIntegrationTest extends TestCase
         );
 
         // Verify retry configuration
-        $this->assertEquals(3, $job->tries);
+        $this->assertEquals(3, $job->tries());
         $this->assertEquals([60, 300, 900], $job->backoff());
     }
 
@@ -149,9 +149,9 @@ class EmailNotificationJobIntegrationTest extends TestCase
 
         $notificationTypes = [
             NotificationType::PLACEMENT_REQUEST_RESPONSE,
-            NotificationType::PLACEMENT_REQUEST_ACCEPTED,
             NotificationType::HELPER_RESPONSE_ACCEPTED,
             NotificationType::HELPER_RESPONSE_REJECTED,
+            NotificationType::HELPER_RESPONSE_CANCELED,
         ];
 
         foreach ($notificationTypes as $type) {

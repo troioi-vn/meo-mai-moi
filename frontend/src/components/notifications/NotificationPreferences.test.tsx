@@ -25,29 +25,37 @@ const mockUpdateNotificationPreferences = vi.mocked(
 const mockPreferences = [
   {
     type: 'placement_request_response',
-    label: 'Response to Placement Request',
-    group: 'helper_profile',
+    label: 'New response to your request',
+    description: 'When someone responds to your placement request',
+    group: 'placement_owner',
+    group_label: 'Your Placement Requests',
     email_enabled: true,
-    in_app_enabled: true,
-  },
-  {
-    type: 'placement_request_accepted',
-    label: 'Placement Request Accepted',
-    group: 'helper_profile',
-    email_enabled: false,
     in_app_enabled: true,
   },
   {
     type: 'helper_response_accepted',
-    label: 'Helper Response Accepted',
-    group: 'helper_profile',
+    label: 'Your response was accepted',
+    description: 'When a pet owner accepts your response',
+    group: 'placement_helper',
+    group_label: 'Your Responses to Placements',
+    email_enabled: false,
+    in_app_enabled: true,
+  },
+  {
+    type: 'helper_response_rejected',
+    label: 'Your response was declined',
+    description: 'When a pet owner declines your response',
+    group: 'placement_helper',
+    group_label: 'Your Responses to Placements',
     email_enabled: true,
     in_app_enabled: false,
   },
   {
-    type: 'helper_response_rejected',
-    label: 'Helper Response Rejected',
-    group: 'helper_profile',
+    type: 'vaccination_reminder',
+    label: 'Vaccination due soon',
+    description: 'Reminders when vaccinations are due',
+    group: 'pet_reminders',
+    group_label: 'Pet Reminders',
     email_enabled: false,
     in_app_enabled: false,
   },
@@ -72,23 +80,27 @@ describe('NotificationPreferences', () => {
     expect(skeletons.length).toBeGreaterThan(0) // Should have skeleton elements
   })
 
-  it('renders preferences table when data loads successfully', async () => {
+  it('renders preferences in grouped cards when data loads successfully', async () => {
     mockGetNotificationPreferences.mockResolvedValue({ data: mockPreferences })
 
     render(<NotificationPreferences />)
 
     await waitFor(() => {
-      expect(screen.getByText('Response to Placement Request')).toBeInTheDocument()
+      expect(screen.getByText('New response to your request')).toBeInTheDocument()
     })
 
-    expect(screen.getByText('Placement Request Accepted')).toBeInTheDocument()
-    expect(screen.getByText('Helper Response Accepted')).toBeInTheDocument()
-    expect(screen.getByText('Helper Response Rejected')).toBeInTheDocument()
+    expect(screen.getByText('Your response was accepted')).toBeInTheDocument()
+    expect(screen.getByText('Your response was declined')).toBeInTheDocument()
+    expect(screen.getByText('Vaccination due soon')).toBeInTheDocument()
 
-    // Check table headers
-    expect(screen.getByText('Notification Type')).toBeInTheDocument()
-    expect(screen.getByText('Email')).toBeInTheDocument()
-    expect(screen.getByText('In-App')).toBeInTheDocument()
+    // Check group headers
+    expect(screen.getByText('Your Placement Requests')).toBeInTheDocument()
+    expect(screen.getByText('Your Responses to Placements')).toBeInTheDocument()
+    expect(screen.getByText('Pet Reminders')).toBeInTheDocument()
+
+    // Check descriptions
+    expect(screen.getByText('When someone responds to your placement request')).toBeInTheDocument()
+    expect(screen.getByText('When a pet owner accepts your response')).toBeInTheDocument()
   })
 
   it('renders error state when loading fails', async () => {
@@ -112,12 +124,12 @@ describe('NotificationPreferences', () => {
     render(<NotificationPreferences />)
 
     await waitFor(() => {
-      expect(screen.getByText('Response to Placement Request')).toBeInTheDocument()
+      expect(screen.getByText('New response to your request')).toBeInTheDocument()
     })
 
-    // Find the email switch for the first preference (should be checked)
-    const emailSwitches = screen.getAllByRole('switch')
-    const firstEmailSwitch = emailSwitches[0] // First row, email column
+    // Find all switches - they come in pairs (email, in-app) for each preference
+    const switches = screen.getAllByRole('switch')
+    const firstEmailSwitch = switches[0] // First preference, email switch
 
     expect(firstEmailSwitch).toBeChecked()
 
@@ -145,12 +157,12 @@ describe('NotificationPreferences', () => {
     render(<NotificationPreferences />)
 
     await waitFor(() => {
-      expect(screen.getByText('Response to Placement Request')).toBeInTheDocument()
+      expect(screen.getByText('New response to your request')).toBeInTheDocument()
     })
 
-    // Find the in-app switch for the first preference (should be checked)
+    // Find all switches - they come in pairs (email, in-app) for each preference
     const switches = screen.getAllByRole('switch')
-    const firstInAppSwitch = switches[1] // First row, in-app column
+    const firstInAppSwitch = switches[1] // First preference, in-app switch
 
     expect(firstInAppSwitch).toBeChecked()
 
@@ -178,7 +190,7 @@ describe('NotificationPreferences', () => {
     render(<NotificationPreferences />)
 
     await waitFor(() => {
-      expect(screen.getByText('Response to Placement Request')).toBeInTheDocument()
+      expect(screen.getByText('New response to your request')).toBeInTheDocument()
     })
 
     const emailSwitch = screen.getAllByRole('switch')[0]
@@ -196,7 +208,7 @@ describe('NotificationPreferences', () => {
     render(<NotificationPreferences />)
 
     await waitFor(() => {
-      expect(screen.getByText('Response to Placement Request')).toBeInTheDocument()
+      expect(screen.getByText('New response to your request')).toBeInTheDocument()
     })
 
     const emailSwitch = screen.getAllByRole('switch')[0]
@@ -224,7 +236,7 @@ describe('NotificationPreferences', () => {
     render(<NotificationPreferences />)
 
     await waitFor(() => {
-      expect(screen.getByText('Response to Placement Request')).toBeInTheDocument()
+      expect(screen.getByText('New response to your request')).toBeInTheDocument()
     })
 
     const switches = screen.getAllByRole('switch')

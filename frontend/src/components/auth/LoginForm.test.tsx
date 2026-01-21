@@ -99,6 +99,33 @@ describe('LoginForm', () => {
     )
   })
 
+  it('includes invitation_code param on Google login button when provided', async () => {
+    renderWithRouter(<LoginForm />, { initialEntries: ['/login?invitation_code=CODE123'] })
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: /sign in with google/i })).toBeInTheDocument()
+    })
+
+    expect(screen.getByRole('link', { name: /sign in with google/i })).toHaveAttribute(
+      'href',
+      '/auth/google/redirect?invitation_code=CODE123'
+    )
+  })
+
+  it('includes both redirect and invitation_code params on Google login button', async () => {
+    renderWithRouter(<LoginForm />, {
+      initialEntries: ['/login?redirect=/account/pets&invitation_code=CODE123'],
+    })
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: /sign in with google/i })).toBeInTheDocument()
+    })
+
+    const href = screen.getByRole('link', { name: /sign in with google/i }).getAttribute('href')
+    expect(href).toContain('redirect=%2Faccount%2Fpets')
+    expect(href).toContain('invitation_code=CODE123')
+  })
+
   it('displays an initial error message when provided', async () => {
     renderWithRouter(<LoginForm initialErrorMessage="Email already exists" />)
 

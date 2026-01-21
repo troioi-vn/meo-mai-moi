@@ -5,7 +5,7 @@ This is the authoritative guide for deploying Meo Mai Moi in development, stagin
 The single entrypoint for all deployments is:
 
 ```bash
-./utils/deploy.sh [--seed] [--fresh] [--no-cache] [--no-interactive] [--quiet]
+./utils/deploy.sh [--seed] [--fresh] [--no-cache] [--skip-build] [--no-interactive] [--quiet]
 ```
 
 See `./utils/deploy.sh --help` for full options.
@@ -27,7 +27,7 @@ If these files don't exist, the deploy script will create them interactively (or
 
 **Root `.env` important variables:**
 
-- `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` (for push notifications - generate with `npx web-push generate-vapid-keys`)
+- `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` (for push notifications - generate with `bun x web-push generate-vapid-keys`)
 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` (must match `backend/.env` DB\_\* values)
 - **Optional**: `DEPLOY_NOTIFY_ENABLED=true`, `TELEGRAM_BOT_TOKEN`, `CHAT_ID` for deployment and monitoring notifications
 
@@ -45,7 +45,10 @@ If these files don't exist, the deploy script will create them interactively (or
 ```bash
 ./utils/deploy.sh          # migrate only, preserves data
 ./utils/deploy.sh --seed   # migrate + seed sample data
+./utils/deploy.sh --skip-build  # skip Docker image builds (uses existing images)
 ```
+
+**Note**: Use `--skip-build` for faster deployments when you have already built the Docker images and just need to restart containers or run migrations.
 
 HTTPS in development is handled by the `https-proxy` service (compose profile `https`).
 

@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources;
 
+use App\Enums\InvitationStatus;
 use App\Filament\Resources\InvitationResource\Pages;
 use App\Models\Invitation;
-use App\Models\User;
 use App\Services\InvitationService;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -21,7 +23,7 @@ class InvitationResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-envelope';
 
-    protected static ?string $navigationGroup = 'Invitation';
+    protected static ?string $navigationGroup = 'Users & Invites';
 
     protected static ?string $navigationLabel = 'Invitations';
 
@@ -29,7 +31,7 @@ class InvitationResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Invitations';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
@@ -60,12 +62,7 @@ class InvitationResource extends Resource
 
                         Forms\Components\Select::make('status')
                             ->label('Status')
-                            ->options([
-                                'pending' => 'Pending',
-                                'accepted' => 'Accepted',
-                                'expired' => 'Expired',
-                                'revoked' => 'Revoked',
-                            ])
+                            ->options(InvitationStatus::class)
                             ->required(),
 
                         Forms\Components\DateTimePicker::make('expires_at')
@@ -101,15 +98,7 @@ class InvitationResource extends Resource
 
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'pending' => 'warning',
-                        'accepted' => 'success',
-                        'expired' => 'danger',
-                        'revoked' => 'gray',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn (string $state): string => ucfirst($state)),
+                    ->badge(),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created')
@@ -137,12 +126,7 @@ class InvitationResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
-                    ->options([
-                        'pending' => 'Pending',
-                        'accepted' => 'Accepted',
-                        'expired' => 'Expired',
-                        'revoked' => 'Revoked',
-                    ]),
+                    ->options(InvitationStatus::class),
 
                 Tables\Filters\SelectFilter::make('inviter')
                     ->relationship('inviter', 'name')
@@ -153,7 +137,7 @@ class InvitationResource extends Resource
                     ->label('Expired')
                     ->query(
                         fn (Builder $query): Builder => $query->where('expires_at', '<', now())
-                            ->where('status', 'pending')
+                            ->where('status', InvitationStatus::PENDING)
                     ),
 
                 Tables\Filters\Filter::make('recent')
@@ -165,8 +149,23 @@ class InvitationResource extends Resource
                     ->label('Copy URL')
                     ->icon('heroicon-o-clipboard')
                     ->color('info')
-                    ->action(function (Invitation $record): void {
+                    ->action(function (Invitation $record, $livewire): void {
                         $url = $record->getInvitationUrl();
+
+                        $script = sprintf(<<<'JS'
+(() => {
+    const url = %s;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).catch(() => window.prompt("Copy invitation URL:", url));
+    } else {
+        window.prompt("Copy invitation URL:", url);
+    }
+})()
+JS, json_encode($url));
+
+                        // Livewire v3: execute JS on the client to copy to clipboard.
+                        // Fallback to prompt() when Clipboard API is unavailable/blocked.
+                        $livewire->js($script);
 
                         Notification::make()
                             ->title('Invitation URL Copied')
@@ -179,7 +178,7 @@ class InvitationResource extends Resource
                     ->label('Revoke')
                     ->icon('heroicon-o-x-mark')
                     ->color('danger')
-                    ->visible(fn (Invitation $record): bool => $record->status === 'pending')
+                    ->visible(fn (Invitation $record): bool => $record->status === InvitationStatus::PENDING)
                     ->action(function (Invitation $record): void {
                         $record->markAsRevoked();
 
@@ -204,7 +203,7 @@ class InvitationResource extends Resource
                         ->color('danger')
                         ->action(function (Collection $records): void {
                             /** @var Collection<int, \App\Models\Invitation> $records */
-                            $pendingRecords = $records->filter(fn (\App\Models\Invitation $record) => $record->status === 'pending');
+                            $pendingRecords = $records->filter(fn (\App\Models\Invitation $record) => $record->status === InvitationStatus::PENDING);
 
                             if ($pendingRecords->isEmpty()) {
                                 Notification::make()
@@ -263,7 +262,7 @@ class InvitationResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+
         ];
     }
 
@@ -279,7 +278,9 @@ class InvitationResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::pending()->count() ?: null;
+        $count = static::getModel()::pending()->count();
+
+        return $count > 0 ? (string) $count : null;
     }
 
     public static function getNavigationBadgeColor(): ?string

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\EmailVerification\VerifyEmailWebController;
 use App\Http\Controllers\GoogleAuthController;
 use Illuminate\Http\Request;

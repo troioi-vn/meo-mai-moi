@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
+use App\Enums\PetRelationshipType;
 use App\Notifications\CustomPasswordReset;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -13,25 +16,26 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
+use OpenApi\Attributes as OA;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Permission\Traits\HasRoles;
 
-/**
- * @OA\Schema(
- *     schema="User",
- *     title="User",
- *     description="User model",
- *
- *     @OA\Property(property="id", type="integer", format="int64", description="User ID"),
- *     @OA\Property(property="name", type="string", description="User's name"),
- *     @OA\Property(property="email", type="string", format="email", description="User's email address"),
- *     @OA\Property(property="avatar_url", type="string", nullable=true, description="URL to the user's avatar image"),
- *     @OA\Property(property="created_at", type="string", format="date-time", description="Timestamp of user creation"),
- *     @OA\Property(property="updated_at", type="string", format="date-time", description="Timestamp of last user update")
- * )
- */
+#[OA\Schema(
+    schema: 'User',
+    title: 'User',
+    description: 'User model',
+    properties: [
+        new OA\Property(property: 'id', type: 'integer', format: 'int64', description: 'User ID'),
+        new OA\Property(property: 'name', type: 'string', description: "User's name"),
+        new OA\Property(property: 'email', type: 'string', format: 'email', description: "User's email address"),
+        new OA\Property(property: 'avatar_url', type: 'string', nullable: true, description: "URL to the user's avatar image"),
+        new OA\Property(property: 'has_password', type: 'boolean', description: 'Whether the user has a local password set'),
+        new OA\Property(property: 'created_at', type: 'string', format: 'date-time', description: 'Timestamp of user creation'),
+        new OA\Property(property: 'updated_at', type: 'string', format: 'date-time', description: 'Timestamp of last user update'),
+    ]
+)]
 class User extends Authenticatable implements FilamentUser, HasMedia, MustVerifyEmail
 {
     use HasApiTokens;
@@ -56,6 +60,16 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         'google_id',
         'google_token',
         'google_refresh_token',
+    ];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var list<string>
+     */
+    protected $appends = [
+        'avatar_url',
+        'has_password',
     ];
 
     /**
@@ -91,12 +105,17 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
     // Relationship: User owns many pets
     public function pets(): HasMany
     {
-        return $this->hasMany(\App\Models\Pet::class);
+        return $this->hasMany(\App\Models\Pet::class, 'created_by');
     }
 
+    /**
+     * Get ownership history for this user (via relationships)
+     */
     public function ownershipHistory(): HasMany
     {
-        return $this->hasMany(\App\Models\OwnershipHistory::class);
+        return $this->hasMany(PetRelationship::class)
+            ->where('relationship_type', PetRelationshipType::OWNER->value)
+            ->orderBy('start_at', 'desc');
     }
 
     public function notifications(): HasMany
@@ -104,14 +123,76 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         return $this->hasMany(Notification::class);
     }
 
-    public function viewablePets(): BelongsToMany
+    /**
+     * Get pets created by this user
+     */
+    public function createdPets(): HasMany
     {
-        return $this->belongsToMany(Pet::class, 'pet_viewers')->withTimestamps();
+        return $this->hasMany(Pet::class, 'created_by');
     }
 
+    /**
+     * Get all pet relationships for this user
+     */
+    public function petRelationships(): HasMany
+    {
+        return $this->hasMany(PetRelationship::class);
+    }
+
+    /**
+     * Get active pet relationships for this user
+     */
+    public function activePetRelationships(): HasMany
+    {
+        return $this->hasMany(PetRelationship::class)->whereNull('end_at');
+    }
+
+    /**
+     * Get pets this user owns
+     */
+    public function ownedPets(): BelongsToMany
+    {
+        return $this->belongsToMany(Pet::class, 'pet_relationships')
+            ->wherePivot('relationship_type', PetRelationshipType::OWNER->value)
+            ->wherePivotNull('end_at')
+            ->withPivot(['relationship_type', 'start_at', 'end_at', 'created_by'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get pets this user fosters
+     */
+    public function fosteredPets(): BelongsToMany
+    {
+        return $this->belongsToMany(Pet::class, 'pet_relationships')
+            ->wherePivot('relationship_type', PetRelationshipType::FOSTER->value)
+            ->wherePivotNull('end_at')
+            ->withPivot(['relationship_type', 'start_at', 'end_at', 'created_by'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get pets this user can edit
+     */
     public function editablePets(): BelongsToMany
     {
-        return $this->belongsToMany(Pet::class, 'pet_editors')->withTimestamps();
+        return $this->belongsToMany(Pet::class, 'pet_relationships')
+            ->wherePivot('relationship_type', PetRelationshipType::EDITOR->value)
+            ->wherePivotNull('end_at')
+            ->withPivot(['relationship_type', 'start_at', 'end_at', 'created_by'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get pets this user can view
+     */
+    public function viewablePets(): BelongsToMany
+    {
+        return $this->belongsToMany(Pet::class, 'pet_relationships')
+            ->wherePivot('relationship_type', PetRelationshipType::VIEWER->value)
+            ->wherePivotNull('end_at')
+            ->withPivot(['relationship_type', 'start_at', 'end_at', 'created_by'])
+            ->withTimestamps();
     }
 
     public function notificationPreferences(): HasMany
@@ -122,6 +203,36 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
     public function pushSubscriptions(): HasMany
     {
         return $this->hasMany(PushSubscription::class);
+    }
+
+    /**
+     * Get the chats this user participates in.
+     */
+    public function chats(): BelongsToMany
+    {
+        return $this->belongsToMany(Chat::class, 'chat_users')
+            ->withPivot(['role', 'joined_at', 'left_at', 'last_read_at'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the active chats (not left).
+     */
+    public function activeChats(): BelongsToMany
+    {
+        return $this->chats()->whereNull('chat_users.left_at');
+    }
+
+    /**
+     * Get the count of chats with unread messages.
+     */
+    public function getUnreadChatsCountAttribute(): int
+    {
+        return Chat::forUser($this)
+            ->withUnreadCount($this)
+            ->get()
+            ->filter(fn ($chat) => $chat->unread_count > 0)
+            ->count();
     }
 
     /**
@@ -170,11 +281,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
     /**
      * Send the password reset notification.
      * Uses Laravel's native notification system with custom EmailLog integration.
-     *
-     * @param  string  $token
-     * @return void
      */
-    public function sendPasswordResetNotification($token)
+    public function sendPasswordResetNotification($token): void
     {
         // Use Laravel's proper notification system
         // This will integrate with your EmailLog system via the CustomPasswordReset notification
@@ -184,10 +292,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
     /**
      * Send the email verification notification.
      * Uses our custom notification system for consistent email handling.
-     *
-     * @return void
      */
-    public function sendEmailVerificationNotification()
+    public function sendEmailVerificationNotification(): void
     {
         $this->notify(new \App\Notifications\VerifyEmail);
     }
@@ -207,6 +313,11 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
      */
     public function registerMediaConversions(?Media $media = null): void
     {
+        // Skip conversions during testing to avoid parallel test conflicts
+        if (app()->environment('testing')) {
+            return;
+        }
+
         $this->addMediaConversion('avatar_thumb')
             ->fit(\Spatie\Image\Enums\Fit::Crop, 128, 128);
 
@@ -232,7 +343,15 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
             $convertedUrl = $this->getFirstMediaUrl('avatar');
         }
 
-        return $convertedUrl ?: null;
+        return $convertedUrl ? $convertedUrl : null;
+    }
+
+    /**
+     * Get has_password attribute - returns true if user has a password set.
+     */
+    public function getHasPasswordAttribute(): bool
+    {
+        return ! empty($this->password);
     }
 
     /**
@@ -246,6 +365,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
+            'google_token' => 'encrypted',
+            'google_refresh_token' => 'encrypted',
         ];
     }
 }

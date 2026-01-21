@@ -27,7 +27,7 @@ describe('HelperProfilePage', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('My Helper Profiles')).toBeInTheDocument()
+      expect(screen.getByText('Helper Profiles')).toBeInTheDocument()
     })
     // Location should show city, state, and country
     expect(

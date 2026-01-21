@@ -48,7 +48,7 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
   const [recordTypeFilter, setRecordTypeFilter] = useState<MedicalRecordType | undefined>(undefined)
 
   const load = useCallback(
-    async (pg = 1) => {
+    async (pg: number) => {
       setLoading(true)
       setError(null)
       try {

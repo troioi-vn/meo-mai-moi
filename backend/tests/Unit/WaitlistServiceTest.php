@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Enums\WaitlistEntryStatus;
 use App\Models\Invitation;
 use App\Models\User;
 use App\Models\WaitlistEntry;
@@ -41,10 +42,10 @@ class WaitlistServiceTest extends TestCase
 
         $this->assertInstanceOf(WaitlistEntry::class, $entry);
         $this->assertEquals($email, $entry->email);
-        $this->assertEquals('pending', $entry->status);
+        $this->assertEquals(WaitlistEntryStatus::PENDING, $entry->status);
         $this->assertDatabaseHas('waitlist_entries', [
             'email' => $email,
-            'status' => 'pending',
+            'status' => WaitlistEntryStatus::PENDING,
         ]);
     }
 
@@ -118,7 +119,7 @@ class WaitlistServiceTest extends TestCase
         $this->assertEquals($this->user->id, $invitation->inviter_user_id);
 
         $entry->refresh();
-        $this->assertEquals('invited', $entry->status);
+        $this->assertEquals(WaitlistEntryStatus::INVITED, $entry->status);
         $this->assertNotNull($entry->invited_at);
     }
 

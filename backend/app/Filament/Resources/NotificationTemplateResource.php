@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\NotificationTemplateResource\Pages;
@@ -23,9 +25,11 @@ class NotificationTemplateResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-bell-alert';
 
-    protected static ?string $navigationGroup = 'Notifications';
+    protected static ?string $navigationGroup = 'System';
 
-    protected static ?string $navigationLabel = 'Templates';
+    protected static ?string $navigationLabel = 'Notification Templates';
+
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
@@ -37,27 +41,26 @@ class NotificationTemplateResource extends Resource
                     ->options(function (Get $get) {
                         $types = config('notification_templates.types', []);
                         $channel = (string) $get('channel');
-                        $opts = collect($types)
+
+                        return collect($types)
                             ->mapWithKeys(function ($cfg, $key) use ($channel) {
                                 $slug = $cfg['slug'] ?? $key;
                                 // If a channel is selected, only include types that support it
                                 if ($channel && isset($cfg['channels']) && is_array($cfg['channels']) && ! in_array($channel, $cfg['channels'], true)) {
                                     return [];
                                 }
-                                $label = \Illuminate\Support\Str::headline($slug)." ($key)";
+                                $label = \Illuminate\Support\Str::headline($slug)." ({$key})";
 
                                 return [$key => $label];
                             })
                             ->toArray();
-
-                        return $opts;
                     })
                     ->preload()
                     ->searchable()
                     ->required()
                     ->columnSpan(2)
                     ->reactive()
-                    ->afterStateUpdated(function (Set $set, Get $get) {
+                    ->afterStateUpdated(function (Set $set, Get $get): void {
                         self::prefillFromDefaults($set, $get);
                     }),
                 Forms\Components\Select::make('channel')
@@ -67,14 +70,14 @@ class NotificationTemplateResource extends Resource
                     ])
                     ->required()
                     ->reactive()
-                    ->afterStateUpdated(function (Set $set, Get $get) {
+                    ->afterStateUpdated(function (Set $set, Get $get): void {
                         self::prefillFromDefaults($set, $get);
                     }),
                 Forms\Components\TextInput::make('locale')
                     ->default(config('notification_templates.default_locale', 'en'))
                     ->required()
                     ->reactive()
-                    ->afterStateUpdated(function (Set $set, Get $get) {
+                    ->afterStateUpdated(function (Set $set, Get $get): void {
                         self::prefillFromDefaults($set, $get);
                     }),
                 Forms\Components\Select::make('engine')->options([
@@ -104,7 +107,7 @@ class NotificationTemplateResource extends Resource
                                     $req = ! empty($v['required']) ? ' (required)' : '';
                                     $type = $v['type'] ?? 'mixed';
 
-                                    return "- {{$v['name']}}: $type$req";
+                                    return "- {{$v['name']}}: {$type}{$req}";
                                 }, $vars);
 
                                 return new HtmlString(nl2br(e(implode("\n", $lines))));
@@ -126,21 +129,12 @@ class NotificationTemplateResource extends Resource
                                 $slug = $cfg['slug'] ?? $key;
                                 $label = \Illuminate\Support\Str::headline($slug);
                                 $channels = implode(', ', $cfg['channels'] ?? []);
-                                $rows .= '<tr>'
-                                    .'<td style="padding:6px 8px; border-bottom:1px solid #eee"><code>'.e($key).'</code></td>'
-                                    .'<td style="padding:6px 8px; border-bottom:1px solid #eee">'.e($label).'</td>'
-                                    .'<td style="padding:6px 8px; border-bottom:1px solid #eee">'.e($channels).'</td>'
-                                    .'</tr>';
+                                $rows .= '<tr><td style="padding:6px 8px; border-bottom:1px solid #eee"><code>'.e($key).'</code></td><td style="padding:6px 8px; border-bottom:1px solid #eee">'.e($label).'</td><td style="padding:6px 8px; border-bottom:1px solid #eee">'.e($channels).'</td></tr>';
                             }
-                            $html = '<div style="max-height:70vh; overflow:auto">'
-                                .'<table style="width:100%; border-collapse:collapse">'
-                                .'<thead><tr>'
-                                .'<th style="text-align:left; padding:6px 8px; border-bottom:1px solid #ddd">Type (key)</th>'
-                                .'<th style="text-align:left; padding:6px 8px; border-bottom:1px solid #ddd">Slug/Name</th>'
-                                .'<th style="text-align:left; padding:6px 8px; border-bottom:1px solid #ddd">Channels</th>'
-                                .'</tr></thead><tbody>'
-                                .$rows
-                                .'</tbody></table></div>';
+                            $html = sprintf(
+                                '<div style="max-height:70vh; overflow:auto"><table style="width:100%%; border-collapse:collapse"><thead><tr><th style="text-align:left; padding:6px 8px; border-bottom:1px solid #ddd">Type (key)</th><th style="text-align:left; padding:6px 8px; border-bottom:1px solid #ddd">Slug/Name</th><th style="text-align:left; padding:6px 8px; border-bottom:1px solid #ddd">Channels</th></tr></thead><tbody>%s</tbody></table></div>',
+                                $rows,
+                            );
 
                             return new HtmlString($html);
                         }),
@@ -150,7 +144,6 @@ class NotificationTemplateResource extends Resource
                         ->modalSubmitAction(false)
                         ->modalCancelActionLabel('Close')
                         ->modalContent(function (Get $get) {
-                            $type = (string) $get('type');
                             $channel = (string) $get('channel');
                             $locale = (string) $get('locale');
                             $subject = $get('subject_template');
@@ -188,14 +181,24 @@ class NotificationTemplateResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('type')->searchable()->sortable(),
-                Tables\Columns\BadgeColumn::make('channel')->colors([
-                    'primary' => 'email',
-                    'success' => 'in_app',
-                ])->sortable(),
+                Tables\Columns\TextColumn::make('type')->searchable()->sortable()
+                    ->formatStateUsing(fn ($state) => \Illuminate\Support\Str::headline($state)),
+                Tables\Columns\TextColumn::make('channel')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'email' => 'primary',
+                        'in_app' => 'success',
+                        default => 'gray',
+                    })->sortable(),
                 Tables\Columns\TextColumn::make('locale')->sortable(),
                 Tables\Columns\TextColumn::make('engine')->sortable(),
-                Tables\Columns\TextColumn::make('status')->sortable(),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'active' => 'success',
+                        'inactive' => 'danger',
+                        default => 'gray',
+                    })->sortable(),
                 Tables\Columns\TextColumn::make('version')->sortable(),
                 Tables\Columns\TextColumn::make('updated_at')->dateTime()->since(),
             ])
@@ -235,7 +238,7 @@ class NotificationTemplateResource extends Resource
                     ->modalHeading('Compare with Default')
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Close')
-                    ->action(function () {})
+                    ->action(function (): void {})
                     ->modalContent(function (NotificationTemplate $record) {
                         $type = $record->type;
                         $locale = $record->locale;
@@ -251,40 +254,39 @@ class NotificationTemplateResource extends Resource
                         $fileBody = '';
 
                         if ($channel === 'in_app' && $slug) {
-                            $path = resource_path("templates/notifications/bell/$locale/$slug.md");
+                            $path = resource_path("templates/notifications/bell/{$locale}/{$slug}.md");
                             if (is_file($path)) {
                                 $fileBody = file_get_contents($path) ?: '';
-                                $defaultLabel = "File: $path";
+                                $defaultLabel = "File: {$path}";
                             } else {
                                 $defaultLabel = 'No file default found.';
                             }
                         } elseif ($channel === 'email' && $slug) {
-                            $view = "emails.notifications.$locale.$slug";
-                            $legacy = "emails.notifications.$slug";
+                            $view = "emails.notifications.{$locale}.{$slug}";
+                            $legacy = "emails.notifications.{$slug}";
                             if (view()->exists($view)) {
-                                $fileBody = "@include('$view')";
-                                $defaultLabel = "View: $view";
+                                $fileBody = "@include('{$view}')";
+                                $defaultLabel = "View: {$view}";
                             } elseif (view()->exists($legacy)) {
-                                $fileBody = "@include('$legacy')";
-                                $defaultLabel = "View: $legacy (legacy)";
+                                $fileBody = "@include('{$legacy}')";
+                                $defaultLabel = "View: {$legacy} (legacy)";
                             } else {
                                 $defaultLabel = 'No view default found.';
                             }
                         }
 
-                        $tpl = fn ($title, $content) => '<div style="width:48%; display:inline-block; vertical-align:top;">'
-                            .'<div style="font-weight:600; margin-bottom:6px">'.e($title).'</div>'
-                            .'<pre style="white-space:pre-wrap; border:1px solid #e5e7eb; padding:10px; background:#f8fafc; max-height:60vh; overflow:auto">'.e($content).'</pre>'
-                            .'</div>';
+                        $tpl = fn ($title, $content) => '<div style="width:48%; display:inline-block; vertical-align:top;"><div style="font-weight:600; margin-bottom:6px">'
+                            .e($title)
+                            .'</div><pre style="white-space:pre-wrap; border:1px solid #e5e7eb; padding:10px; background:#f8fafc; max-height:60vh; overflow:auto">'
+                            .e($content)
+                            .'</pre></div>';
 
                         $html = '<div style="display:flex; gap:4%; align-items:flex-start">'
                             .$tpl('DB Subject', $dbSubject)
                             .$tpl('Default Subject', $fileSubject)
-                            .'</div>'
-                            .'<div style="height:8px"></div>'
-                            .'<div style="display:flex; gap:4%; align-items:flex-start">'
+                            .'</div><div style="height:8px"></div><div style="display:flex; gap:4%; align-items:flex-start">'
                             .$tpl('DB Body', $dbBody)
-                            .$tpl('Default ('.$defaultLabel.')', $fileBody)
+                            .$tpl("Default ({$defaultLabel})", $fileBody)
                             .'</div>';
 
                         return new HtmlString($html);
@@ -293,7 +295,7 @@ class NotificationTemplateResource extends Resource
                     ->label('Reset to Default')
                     ->requiresConfirmation()
                     ->visible(fn ($record) => $record->status === 'active')
-                    ->action(function (NotificationTemplate $record) {
+                    ->action(function (NotificationTemplate $record): void {
                         $record->delete();
                         FilamentNotification::make()->title('Template reset')->body('DB override removed. File/default will be used.')->success()->send();
                     }),
@@ -302,7 +304,7 @@ class NotificationTemplateResource extends Resource
                     ->icon('heroicon-o-paper-airplane')
                     ->visible(fn (NotificationTemplate $record) => $record->channel === 'email')
                     ->requiresConfirmation()
-                    ->action(function (NotificationTemplate $record) {
+                    ->action(function (NotificationTemplate $record): void {
                         $renderer = app(\App\Services\Notifications\NotificationTemplateRenderer::class);
                         $template = [
                             'source' => 'db',
@@ -337,6 +339,15 @@ class NotificationTemplateResource extends Resource
             ]);
     }
 
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListNotificationTemplates::route('/'),
+            'create' => Pages\CreateNotificationTemplate::route('/create'),
+            'edit' => Pages\EditNotificationTemplate::route('/{record}/edit'),
+        ];
+    }
+
     /**
      * Prefill engine/body from file defaults when creating or editing and fields are empty.
      */
@@ -363,7 +374,7 @@ class NotificationTemplateResource extends Resource
         }
 
         if ($channel === 'in_app') {
-            $path = resource_path("templates/notifications/bell/$locale/$slug.md");
+            $path = resource_path("templates/notifications/bell/{$locale}/{$slug}.md");
             if (is_file($path)) {
                 $set('engine', 'markdown');
                 $set('body_template', file_get_contents($path) ?: '');
@@ -373,33 +384,24 @@ class NotificationTemplateResource extends Resource
         }
 
         if ($channel === 'email') {
-            $view = "emails.notifications.$locale.$slug";
-            $legacy = "emails.notifications.$slug";
+            $view = "emails.notifications.{$locale}.{$slug}";
+            $legacy = "emails.notifications.{$slug}";
             if (view()->exists($view)) {
                 $set('engine', 'blade');
-                $set('body_template', "@include('$view')");
+                $set('body_template', "@include('{$view}')");
 
                 return;
             }
             if (view()->exists($legacy)) {
                 $set('engine', 'blade');
-                $set('body_template', "@include('$legacy')");
+                $set('body_template', "@include('{$legacy}')");
 
                 return;
             }
         }
 
         // Fallback: set engine default by channel if nothing found
-        $defaultEngine = config("notification_templates.channels.$channel.engine", 'blade');
+        $defaultEngine = config("notification_templates.channels.{$channel}.engine", 'blade');
         $set('engine', $defaultEngine);
-    }
-
-    public static function getPages(): array
-    {
-        return [
-            'index' => Pages\ListNotificationTemplates::route('/'),
-            'create' => Pages\CreateNotificationTemplate::route('/create'),
-            'edit' => Pages\EditNotificationTemplate::route('/{record}/edit'),
-        ];
     }
 }

@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Services\EmailConfigurationService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 class EmailConfigurationStatusController extends Controller
 {
@@ -18,30 +21,27 @@ class EmailConfigurationStatusController extends Controller
         $this->middleware('auth:sanctum');
     }
 
-    /**
-     * Get email configuration status.
-     *
-     * @OA\Get(
-     *     path="/api/email/configuration-status",
-     *     summary="Check email configuration status",
-     *     description="Check if email system is properly configured and operational.",
-     *     tags={"Email Configuration"},
-     *     security={{"sanctum": {}}},
-     *
-     *     @OA\Response(
-     *         response=200,
-     *         description="Email configuration status",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="enabled", type="boolean", example=true),
-     *             @OA\Property(property="provider", type="string", example="smtp"),
-     *             @OA\Property(property="from_address", type="string", example="noreply@example.com"),
-     *             @OA\Property(property="status", type="string", example="active")
-     *         )
-     *     )
-     * )
-     */
+    #[OA\Get(
+        path: '/api/email/configuration-status',
+        summary: 'Check email configuration status',
+        description: 'Check if email system is properly configured and operational.',
+        tags: ['Email Configuration'],
+        security: [['sanctum' => []]],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Email configuration status',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'enabled', type: 'boolean', example: true),
+                        new OA\Property(property: 'provider', type: 'string', example: 'smtp'),
+                        new OA\Property(property: 'from_address', type: 'string', example: 'noreply@example.com'),
+                        new OA\Property(property: 'status', type: 'string', example: 'active'),
+                    ]
+                )
+            ),
+        ]
+    )]
     public function status(Request $request)
     {
         $isEnabled = $this->emailConfigService->isEmailEnabled();

@@ -30,22 +30,30 @@ export function UserMenu() {
   const { theme, setTheme } = useTheme()
   const navigate = useNavigate()
   const isVerified = Boolean(user?.email_verified_at)
-  const [avatarSrc, setAvatarSrc] = useState<string>(defaultAvatar)
+  const [avatarSrc, setAvatarSrc] = useState<string>(user?.avatar_url ?? defaultAvatar)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  const [prevAvatarUrl, setPrevAvatarUrl] = useState(user?.avatar_url)
+
+  // Reset avatarSrc when user.avatar_url changes to empty/null
+  if (user?.avatar_url !== prevAvatarUrl) {
+    setPrevAvatarUrl(user?.avatar_url)
+    if (!user?.avatar_url || user.avatar_url.trim() === '') {
+      setAvatarSrc(defaultAvatar)
+    }
+  }
 
   // Preload avatar image to ensure it's available
   useEffect(() => {
-    if (user?.avatar_url && user.avatar_url.trim() !== '') {
+    const avatarUrl = user?.avatar_url
+    if (avatarUrl && avatarUrl.trim() !== '') {
       const img = new Image()
       img.onload = () => {
-        setAvatarSrc(user.avatar_url)
+        setAvatarSrc(avatarUrl)
       }
       img.onerror = () => {
         setAvatarSrc(defaultAvatar)
       }
-      img.src = user.avatar_url
-    } else {
-      setAvatarSrc(defaultAvatar)
+      img.src = avatarUrl
     }
   }, [user?.avatar_url])
 

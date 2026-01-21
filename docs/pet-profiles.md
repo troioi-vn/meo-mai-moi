@@ -16,31 +16,56 @@ Pet profiles contain detailed information about a pet, including:
 
 ## Access Control
 
-Pet profiles have two access levels:
+Pet profiles use a flexible relationship system that supports multiple user roles per pet. Each pet can have multiple active relationships with different users, allowing for complex scenarios like co-ownership, fostering, and delegated management.
 
-### Owner View (`/pets/:id`)
+### Relationship Types
 
-The full pet profile is accessible only to:
+The system supports four relationship types:
 
-- **Pet owner**: Full access with edit permissions
-- **Admin**: Full access with edit permissions
-- **Editors**: Users explicitly added to the pet's "Users who can edit this pet" list
+- **Owner**: Full access with ownership rights, including the ability to transfer ownership, manage relationships, and delete the pet
+- **Foster**: Caretaking access for temporary fostering situations, with edit permissions but no ownership rights
+- **Editor**: Edit access for pet management assistance, including updating information and managing health records
+- **Viewer**: Read-only access for monitoring pet information without edit capabilities
 
-Owner view includes:
+### Access Levels
+
+#### Owner/Foster/Editor View (`/pets/:id`)
+
+The full pet profile is accessible to users with active relationships granting edit permissions:
+
+- **Owners**: Full access including ownership transfer, relationship management, and pet deletion
+- **Fosters**: Edit access for pet care during fostering periods
+- **Editors**: Edit access for pet management assistance
+- **Admins**: Full administrative access regardless of relationships
+
+Full view includes:
 
 - All basic pet information
 - Health records (weight, vaccinations, medical records)
 - Placement requests with management capabilities
+- Relationship management (adding/removing editors, viewers)
 - Edit controls
 
-### Public View (`/pets/:id/public`)
+#### Viewer Access
 
-A limited public profile is accessible when the pet is **publicly viewable**. A pet is publicly viewable if:
+Users with viewer relationships can access the pet profile but cannot make changes:
 
-1. **Pet status is "lost"** - Lost pets are always publicly viewable to help find them
-2. **Pet has an active placement request** - Pets up for adoption/fostering are publicly viewable
+- Read-only access to basic information
+- Can view health records and placement requests
+- Cannot edit information or manage relationships
+- Cannot perform ownership transfers
 
-Public view includes (whitelisted fields only):
+### View Page (`/pets/:id/view`)
+
+A limited profile view is accessible based on several conditions. The view page is accessible if:
+
+1. **User is the pet owner** - Owners can always view their pets
+2. **User has a PetRelationship** - Users with 'owner' or 'viewer' relationship type can view
+3. **Pet status is "lost"** - Lost pets are publicly viewable to help find them
+4. **Pet has an active placement request** - Pets up for adoption/fostering (status: 'open') are publicly viewable
+5. **User is involved in a pending transfer** - Helpers who are recipients of a pending transfer request (placement request status: 'pending_transfer') can view
+
+View page includes (whitelisted fields only):
 
 - Basic info: name, sex, age, species
 - Location: country, state, city (no street address)
@@ -48,13 +73,13 @@ Public view includes (whitelisted fields only):
 - Photos
 - Categories
 - Active placement requests
-- Viewer permission flags (owner/admin/editor awareness, no edit controls)
+- Viewer permission flags (relationship awareness, no edit controls)
 
-Public view **excludes**:
+View page **excludes**:
 
-- User/owner information
+- User/relationship information
 - Exact address
-- Health records
+- Health records (unless user has appropriate relationship)
 - Edit permissions
 
 ## Routing Logic
@@ -62,28 +87,30 @@ Public view **excludes**:
 When a user visits `/pets/:id`:
 
 ```
-Is user the pet owner?
-├── YES → Show owner view (PetProfilePage)
-└── NO → Is pet publicly viewable (lost OR active placement)?
-    ├── YES → Redirect to /pets/:id/public
-    └── NO → Show "Access Restricted" message
+Does user have edit relationship (owner/foster/editor) with pet?
+├── YES → Show full view (PetProfilePage)
+└── NO → Does user have viewer relationship?
+    ├── YES → Show viewer view (read-only full profile)
+    └── NO → Is pet publicly viewable (lost OR active placement)?
+        ├── YES → Redirect to /pets/:id/view
+        └── NO → Show "Access Restricted" message
 ```
 
-When a user visits `/pets/:id/public`:
+When a user visits `/pets/:id/view`:
 
 ```
-Is pet publicly viewable?
-├── YES → Show public view (PetPublicProfilePage)
-│   └── Is user the owner? → Show info banner
+Can user view the pet? (owner, viewer relationship, pending transfer recipient, or publicly viewable)
+├── YES → Show view page (PetPublicProfilePage)
+│   └── Does user have relationship with pet? → Show info banner
 └── NO → Show "Not publicly available" error
 ```
 
-## Owner Viewing Public Profile
+## Relationship Holders Viewing Public Profile
 
-When an owner visits the public view of their own pet:
+When a user with a relationship to a pet visits the public view:
 
-- They see the public profile with a banner: "You are viewing the public profile of your pet."
-- The "Respond to Placement Request" button is replaced with a message: "You cannot respond to your own pet's placement request."
+- They see the public profile with a banner indicating their relationship: "You are viewing the public profile of [pet name]."
+- The "Respond to Placement Request" button is replaced with a message: "You cannot respond to placement requests for pets you have a relationship with."
 
 ## API Endpoints
 
@@ -92,18 +119,24 @@ When an owner visits the public view of their own pet:
 Full pet profile endpoint (existing).
 
 - **Auth**: Optional (uses `optional.auth` middleware)
-- **Access**: Owner, Admin, or users viewing pets with active placement requests
+- **Access**: Users with active relationships (owner/foster/editor/viewer), Admin, or users viewing pets with active placement requests
 - **Returns**: Full pet data with `viewer_permissions`
   - `viewer_permissions` includes:
-    - `can_edit` (owner/admin/editors)
-    - `can_view_contact` (admin or authenticated non-owner)
+    - `can_edit` (owner/foster/editor/admin)
+    - `can_manage_relationships` (owner/admin)
+    - `can_transfer_ownership` (owner/admin)
+    - `can_view_contact` (admin or authenticated users with relationships)
 
-### GET /api/pets/{id}/public
+### GET /api/pets/{id}/view
 
-Public pet profile endpoint (new).
+View pet profile endpoint.
 
 - **Auth**: Optional
-- **Access**: Anyone, but only for publicly viewable pets
+- **Access**: 
+  - Pet owner (always)
+  - Users with 'owner' or 'viewer' PetRelationship
+  - Helpers involved in pending transfers (PlacementRequest status: 'pending_transfer')
+  - Anyone for publicly viewable pets (lost OR active placement request)
 - **Returns**: Whitelisted fields only
 
 Response includes:
@@ -128,7 +161,9 @@ Response includes:
     "categories": [...],
     "placement_requests": [...],
     "viewer_permissions": {
-      "is_owner": false
+      "is_owner": false,
+      "can_edit": false,
+      "can_view_contact": true
     }
   }
 }
@@ -144,11 +179,13 @@ Response includes:
 
 ### Backend
 
-- `ShowPetController.php` - Full pet profile endpoint
+- `ShowPetController.php` - Full pet profile endpoint with relationship-based access control
 - `ShowPublicPetController.php` - Public pet profile endpoint with whitelisted fields
-- `PetPolicy.php` - Authorization policy with `isPubliclyViewable()` method
+- `PetPolicy.php` - Authorization policy with relationship-based permissions and `isPubliclyViewable()` method
+- `PetRelationshipService.php` - Service for managing pet-user relationships
+- `PetRelationship.php` - Model representing relationships between pets and users
 
 ## Related Documentation
 
-- [Rehoming Flow](./rehoming-flow.md) - How placement requests and transfers work
+- [Placement Request Lifecycle](./placement-request-lifecycle.md) - How placement requests and transfers work
 - [Categories System](./categories.md) - Pet categorization

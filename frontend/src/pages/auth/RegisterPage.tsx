@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import RegisterForm from '@/components/auth/RegisterForm'
 import WaitlistForm from '@/components/layout/WaitlistForm'
 import EmailVerificationPrompt from '@/components/auth/EmailVerificationPrompt'
@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { toast } from 'sonner'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Loader2, Lock, Globe } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import type { RegisterResponse } from '@/types/auth'
 
 export default function RegisterPage() {
@@ -17,17 +18,19 @@ export default function RegisterPage() {
     useInviteSystem()
   const [registrationResponse, setRegistrationResponse] = useState<RegisterResponse | null>(null)
   const [registeredEmail, setRegisteredEmail] = useState<string>('')
+  const [prevUser, setPrevUser] = useState(user)
+
+  // Clear registration state when user logs out (e.g., via "Use another email" button)
+  if (user === null && prevUser !== null) {
+    setPrevUser(null)
+    setRegistrationResponse(null)
+    setRegisteredEmail('')
+  } else if (user !== prevUser) {
+    setPrevUser(user)
+  }
 
   // Get email from query parameters (e.g., from login redirect)
   const initialEmail = searchParams.get('email') ?? undefined
-
-  // Clear registration state when user logs out (e.g., via "Use another email" button)
-  useEffect(() => {
-    if (user === null) {
-      setRegistrationResponse(null)
-      setRegisteredEmail('')
-    }
-  }, [user])
 
   const handleRegistrationSuccess = (response: RegisterResponse, email: string) => {
     if (response.requires_verification) {
@@ -132,6 +135,11 @@ export default function RegisterPage() {
     }
   }
 
+  const googleQueryParams = new URLSearchParams()
+  if (invitationCode) googleQueryParams.set('invitation_code', invitationCode)
+  const googleQueryString = googleQueryParams.toString()
+  const googleLoginHref = `/auth/google/redirect${googleQueryString ? `?${googleQueryString}` : ''}`
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
       <div className="w-full max-w-md p-8 space-y-8 bg-card rounded-lg shadow-lg border">
@@ -149,16 +157,31 @@ export default function RegisterPage() {
           )}
         </div>
 
-        {mode === 'invite-only-no-code' && <WaitlistForm onSuccess={handleWaitlistSuccess} />}
+        <div className="space-y-4">
+          <Button asChild variant="outline" className="w-full">
+            <a href={googleLoginHref}>Sign in with Google</a>
+          </Button>
 
-        {(mode === 'invite-only-with-code' || mode === 'open-registration') && (
-          <RegisterForm
-            onSuccess={handleRegistrationSuccess}
-            invitationCode={invitationCode}
-            inviterName={invitationValidation?.inviter.name}
-            initialEmail={initialEmail}
-          />
-        )}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
+            </div>
+          </div>
+
+          {mode === 'invite-only-no-code' && <WaitlistForm onSuccess={handleWaitlistSuccess} />}
+
+          {(mode === 'invite-only-with-code' || mode === 'open-registration') && (
+            <RegisterForm
+              onSuccess={handleRegistrationSuccess}
+              invitationCode={invitationCode}
+              inviterName={invitationValidation?.inviter.name}
+              initialEmail={initialEmail}
+            />
+          )}
+        </div>
       </div>
     </div>
   )

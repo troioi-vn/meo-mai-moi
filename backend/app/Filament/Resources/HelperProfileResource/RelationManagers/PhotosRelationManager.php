@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\HelperProfileResource\RelationManagers;
 
 use Filament\Forms;
@@ -58,7 +60,6 @@ class PhotosRelationManager extends RelationManager
                     ->toggleable(),
             ])
             ->filters([
-                //
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()

@@ -14,13 +14,14 @@ import type { Pet, PetType } from '@/types/pet'
 import { getCountryName } from '@/components/ui/CountrySelect'
 
 // Placement request type values matching backend enum
-type PlacementRequestType = 'all' | 'foster_payed' | 'foster_free' | 'permanent'
+type PlacementRequestType = 'all' | 'foster_paid' | 'foster_free' | 'permanent' | 'pet_sitting'
 
 const PLACEMENT_REQUEST_TYPE_LABELS: Record<PlacementRequestType, string> = {
   all: 'All Request Types',
-  foster_payed: 'Foster (Paid)',
+  foster_paid: 'Foster (Paid)',
   foster_free: 'Foster (Free)',
   permanent: 'Permanent',
+  pet_sitting: 'Pet Sitting',
 }
 
 type SortDirection = 'newest' | 'oldest'
@@ -65,7 +66,7 @@ const RequestsPage = () => {
         setPets(petsResponse)
         setPetTypes(petTypesResponse)
         setError(null)
-      } catch (err) {
+      } catch (err: unknown) {
         setError('Failed to fetch data. Please try again later.')
         console.error(err)
       } finally {
@@ -85,11 +86,14 @@ const RequestsPage = () => {
       return
     }
 
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev)
-      next.set('sort', 'newest')
-      return next
-    }, { replace: true })
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.set('sort', 'newest')
+        return next
+      },
+      { replace: true }
+    )
   }, [createdSortDirection, searchParams, setSearchParams])
 
   // Get unique countries from pets for the country filter
@@ -116,7 +120,7 @@ const RequestsPage = () => {
       // Hide pets with no visible placement requests
       const visibleStatuses = ['open', 'fulfilled', 'pending_transfer', 'active', 'finalized']
       const hasVisiblePlacementRequest = prs.some((pr) =>
-        visibleStatuses.includes((pr.status ?? '').toLowerCase())
+        visibleStatuses.includes(pr.status.toLowerCase())
       )
       if (!hasVisiblePlacementRequest) return false
 
@@ -134,7 +138,7 @@ const RequestsPage = () => {
       const matchesRequestType =
         requestTypeFilter === 'all' ||
         prs.some((pr) => {
-          const prType = (pr.request_type ?? '').toLowerCase()
+          const prType = pr.request_type.toLowerCase()
           return prType === requestTypeFilter
         })
 
@@ -219,15 +223,15 @@ const RequestsPage = () => {
 
       {/* Filters */}
       <div className="mb-6 flex flex-col gap-4">
-        {/* First row: Request Type, Pet Type, Country */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        {/* First row: Request Type, Pet Type, Country, Sort */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
           <Select
             value={requestTypeFilter}
             onValueChange={(v) => {
               setRequestTypeFilter(v as PlacementRequestType)
             }}
           >
-            <SelectTrigger className="w-full sm:w-[180px]" aria-label="Request Type Filter">
+            <SelectTrigger className="w-full lg:col-span-3" aria-label="Request Type Filter">
               <SelectValue placeholder="All Types" />
             </SelectTrigger>
             <SelectContent>
@@ -241,7 +245,7 @@ const RequestsPage = () => {
             </SelectContent>
           </Select>
           <Select value={petTypeFilter} onValueChange={setPetTypeFilter}>
-            <SelectTrigger className="w-full sm:w-[180px]" aria-label="Pet Type Filter">
+            <SelectTrigger className="w-full lg:col-span-1" aria-label="Pet Type Filter">
               <SelectValue placeholder="All Pet Types" />
             </SelectTrigger>
             <SelectContent>
@@ -254,7 +258,7 @@ const RequestsPage = () => {
             </SelectContent>
           </Select>
           <Select value={countryFilter} onValueChange={setCountryFilter}>
-            <SelectTrigger className="w-full sm:w-[180px]" aria-label="Country Filter">
+            <SelectTrigger className="w-full lg:col-span-1" aria-label="Country Filter">
               <SelectValue placeholder="All Countries" />
             </SelectTrigger>
             <SelectContent>
@@ -278,7 +282,7 @@ const RequestsPage = () => {
               })
             }}
           >
-            <SelectTrigger className="w-full sm:w-[180px]" aria-label="Created Date Sort">
+            <SelectTrigger className="w-full lg:col-span-1" aria-label="Created Date Sort">
               <SelectValue placeholder="Sort by Created Date" />
             </SelectTrigger>
             <SelectContent>
@@ -291,15 +295,17 @@ const RequestsPage = () => {
           </Select>
         </div>
         {/* Second row: Date filters */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
           {/* Pickup Date filter */}
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center flex-wrap">
             <span className="text-sm text-muted-foreground shrink-0">Pickup</span>
             <Select
               value={pickupDateComparison}
-              onValueChange={(v) => setPickupDateComparison(v as DateComparison)}
+              onValueChange={(v) => {
+                setPickupDateComparison(v as DateComparison)
+              }}
             >
-              <SelectTrigger className="w-[80px]" aria-label="Pickup Date Comparison">
+              <SelectTrigger className="w-22.5" aria-label="Pickup Date Comparison">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -310,18 +316,20 @@ const RequestsPage = () => {
                 ))}
               </SelectContent>
             </Select>
-            <DatePicker date={pickupDate} setDate={setPickupDate} className="w-[130px]" />
+            <DatePicker date={pickupDate} setDate={setPickupDate} className="w-full sm:w-45" />
           </div>
 
           {/* Drop-off Date filter - hidden for permanent requests */}
           {requestTypeFilter !== 'permanent' && (
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-2 items-center flex-wrap">
               <span className="text-sm text-muted-foreground shrink-0">Drop-off</span>
               <Select
                 value={dropoffDateComparison}
-                onValueChange={(v) => setDropoffDateComparison(v as DateComparison)}
+                onValueChange={(v) => {
+                  setDropoffDateComparison(v as DateComparison)
+                }}
               >
-                <SelectTrigger className="w-[80px]" aria-label="Drop-off Date Comparison">
+                <SelectTrigger className="w-22.5" aria-label="Drop-off Date Comparison">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -332,7 +340,7 @@ const RequestsPage = () => {
                   ))}
                 </SelectContent>
               </Select>
-              <DatePicker date={dropoffDate} setDate={setDropoffDate} className="w-[130px]" />
+              <DatePicker date={dropoffDate} setDate={setDropoffDate} className="w-full sm:w-45" />
             </div>
           )}
         </div>

@@ -235,14 +235,14 @@ class NotificationServiceTest extends TestCase
 
         $this->service->sendInApp(
             $this->user,
-            NotificationType::PLACEMENT_REQUEST_ACCEPTED->value,
+            NotificationType::HELPER_RESPONSE_ACCEPTED->value,
             $data
         );
 
         $notification = Notification::where('user_id', $this->user->id)->first();
 
         $this->assertNotNull($notification);
-        $this->assertEquals(NotificationType::PLACEMENT_REQUEST_ACCEPTED->value, $notification->type);
+        $this->assertEquals(NotificationType::HELPER_RESPONSE_ACCEPTED->value, $notification->type);
         $this->assertEquals($data['message'], $notification->message);
         $this->assertEquals($data['link'], $notification->link);
         $this->assertEquals('in_app', $notification->data['channel']);

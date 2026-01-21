@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Mail;
 
 use App\Enums\NotificationType;
@@ -148,11 +150,25 @@ abstract class NotificationMail extends Mailable
     {
         $baseUrl = config('app.url');
 
+        // Use the link from notification data if provided
+        if (! empty($this->data['link'])) {
+            return $baseUrl.$this->data['link'];
+        }
+
         return match ($this->notificationType) {
-            NotificationType::PLACEMENT_REQUEST_RESPONSE => $baseUrl.'/requests',
-            NotificationType::PLACEMENT_REQUEST_ACCEPTED => $baseUrl.'/requests',
-            NotificationType::HELPER_RESPONSE_ACCEPTED => $baseUrl.'/requests',
-            NotificationType::HELPER_RESPONSE_REJECTED => $baseUrl.'/requests',
+            // Owner-side placement notifications
+            NotificationType::PLACEMENT_REQUEST_RESPONSE,
+            NotificationType::HELPER_RESPONSE_CANCELED,
+            NotificationType::TRANSFER_CONFIRMED => $baseUrl.'/pets/'.($this->data['pet_id'] ?? ''),
+
+            // Helper-side placement notifications
+            NotificationType::HELPER_RESPONSE_ACCEPTED,
+            NotificationType::HELPER_RESPONSE_REJECTED,
+            NotificationType::PLACEMENT_ENDED => $baseUrl.'/pets/'.($this->data['pet_id'] ?? '').'/view',
+
+            // Messaging
+            NotificationType::NEW_MESSAGE => $baseUrl.'/messages/'.($this->data['chat_id'] ?? ''),
+
             default => $baseUrl,
         };
     }

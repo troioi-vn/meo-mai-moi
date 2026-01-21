@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Notification;
 
 use App\Enums\NotificationType;
@@ -8,39 +10,42 @@ use App\Models\Notification;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use OpenApi\Attributes as OA;
 
-/**
- * List current user's notifications.
- *
- * @OA\Get(
- *   path="/api/notifications",
- *   tags={"Notifications"},
- *   security={{"sanctum":{}}},
- *
- *   @OA\Parameter(name="status", in="query", required=false, @OA\Schema(type="string", enum={"all","unread"})),
- *
- *   @OA\Response(response=200, description="OK",
- *
- *     @OA\JsonContent(
- *       type="object",
- *
- *       @OA\Property(property="data", type="array",
- *
- *         @OA\Items(
- *
- *           @OA\Property(property="id", type="string"),
- *           @OA\Property(property="level", type="string", enum={"info","success","warning","error"}),
- *           @OA\Property(property="title", type="string"),
- *           @OA\Property(property="body", type="string", nullable=true),
- *           @OA\Property(property="url", type="string", nullable=true),
- *           @OA\Property(property="created_at", type="string", format="date-time"),
- *           @OA\Property(property="read_at", type="string", format="date-time", nullable=true)
- *         )
- *       )
- *     )
- *   )
- * )
- */
+#[OA\Get(
+    path: '/api/notifications',
+    tags: ['Notifications'],
+    security: [['sanctum' => []]],
+    parameters: [
+        new OA\Parameter(name: 'status', in: 'query', required: false, schema: new OA\Schema(type: 'string', enum: ['all', 'unread'])),
+    ],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: 'OK',
+            content: new OA\JsonContent(
+                type: 'object',
+                properties: [
+                    new OA\Property(
+                        property: 'data',
+                        type: 'array',
+                        items: new OA\Items(
+                            properties: [
+                                new OA\Property(property: 'id', type: 'string'),
+                                new OA\Property(property: 'level', type: 'string', enum: ['info', 'success', 'warning', 'error']),
+                                new OA\Property(property: 'title', type: 'string'),
+                                new OA\Property(property: 'body', type: 'string', nullable: true),
+                                new OA\Property(property: 'url', type: 'string', nullable: true),
+                                new OA\Property(property: 'created_at', type: 'string', format: 'date-time'),
+                                new OA\Property(property: 'read_at', type: 'string', format: 'date-time', nullable: true),
+                            ]
+                        )
+                    ),
+                ]
+            )
+        ),
+    ]
+)]
 class ListNotificationsController extends Controller
 {
     use ApiResponseTrait;
@@ -50,11 +55,11 @@ class ListNotificationsController extends Controller
         $status = $request->query('status', 'all');
         $query = Notification::where('user_id', Auth::id())
             // Hide email verification reminders from the bell menu
-            ->where(function ($q) {
+            ->where(function ($q): void {
                 $q->whereNull('type')
                     ->orWhere('type', '!=', NotificationType::EMAIL_VERIFICATION->value);
             })
-            ->when($status === 'unread', function ($q) {
+            ->when($status === 'unread', function ($q): void {
                 $q->unread();
             })
             ->latest();
@@ -62,22 +67,23 @@ class ListNotificationsController extends Controller
         $items = $query->get();
 
         // Map to frontend contract without altering DB schema yet
-        $data = $items->map(function (Notification $n) {
+        $data = [];
+        foreach ($items as $n) {
             // Extract title and body from data JSON if available
             $title = $n->data['title'] ?? $n->message;
             $body = $n->data['body'] ?? null;
             $level = $n->data['level'] ?? 'info';
 
-            return [
+            $data[] = [
                 'id' => (string) $n->id,
                 'level' => $level,
                 'title' => $title,
                 'body' => $body,
                 'url' => $n->link,
-                'created_at' => optional($n->created_at)->toISOString(),
-                'read_at' => optional($n->read_at)->toISOString(),
+                'created_at' => $n->created_at?->toISOString(),
+                'read_at' => $n->read_at?->toISOString(),
             ];
-        });
+        }
 
         return $this->sendSuccess($data);
     }

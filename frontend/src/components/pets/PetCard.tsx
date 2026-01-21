@@ -1,7 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Pet } from '@/types/pet'
-import { PlacementResponseModal } from '@/components/placement/PlacementResponseModal'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -30,7 +29,6 @@ interface PetCardProps {
 export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
   const { isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
-  const [isModalOpen, setIsModalOpen] = React.useState(false)
   const [isLoginPromptOpen, setIsLoginPromptOpen] = React.useState(false)
 
   // Determine active/open placement requests: status in {open,finalized}
@@ -40,7 +38,10 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
     // Fulfilled should not count as open so we can surface the fulfilled badge
     return ['open', 'pending_transfer', 'active', 'finalized', 'pending'].includes(s)
   }
-  const activePlacementRequest = pet.placement_requests?.find((req) => isStatusOpen(req.status))
+  // Get the most recent active request by sorting by ID descending
+  const activePlacementRequest = pet.placement_requests
+    ?.filter((req) => isStatusOpen(req.status))
+    .sort((a, b) => b.id - a.id)[0]
   const activePlacementRequestId = activePlacementRequest?.id
   // Show Fulfilled only when there were requests but none are currently active/open
   const hasActivePlacementRequests = Boolean(activePlacementRequest)
@@ -51,19 +52,41 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
   // Check if this pet type supports vaccinations
   const supportsVaccinations = petSupportsCapability(pet.pet_type, 'vaccinations')
 
-  // Check if current user has a pending response
-  const myPendingTransfer = React.useMemo(() => {
+  // Check if current user is an owner of this pet
+  const isOwner =
+    (pet.viewer_permissions?.is_owner ?? false) ||
+    (pet.relationships?.some((r) => r.relationship_type === 'owner' && r.user_id === user?.id) ??
+      false) ||
+    (user?.id !== undefined && pet.user_id === user.id)
+
+  // Check if current user has a pending response (status='responded')
+  const myPendingResponse = React.useMemo(() => {
     if (!user?.id || !pet.placement_requests) return undefined
     for (const pr of pet.placement_requests) {
-      const found = pr.transfer_requests?.find((tr) => {
-        if (tr.status !== 'pending') return false
-        if (tr.initiator_user_id && tr.initiator_user_id === user.id) return true
-        return tr.helper_profile?.user?.id === user.id
+      const found = pr.responses?.find((r) => {
+        if (r.status !== 'responded') return false
+        return r.helper_profile?.user?.id === user.id
       })
       if (found) return found
     }
     return undefined
-  }, [pet.placement_requests, user?.id])
+  }, [pet.placement_requests, user])
+
+  // Check if current user has an accepted response (status='accepted')
+  const myAcceptedResponse = React.useMemo(() => {
+    if (!user?.id || !pet.placement_requests) return undefined
+    for (const pr of pet.placement_requests) {
+      const found = pr.responses?.find((r) => {
+        if (r.status !== 'accepted') return false
+        return r.helper_profile?.user?.id === user.id
+      })
+      if (found) return found
+    }
+    return undefined
+  }, [pet.placement_requests, user])
+
+  // User has any active involvement with this placement
+  const hasActiveInvolvement = Boolean(myPendingResponse ?? myAcceptedResponse)
 
   // Prefer photos[0].url, then photo_url, then placeholder
   const imageUrl =
@@ -85,7 +108,8 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
       target.closest('button') ||
       target.closest('a') ||
       target.closest('[role="button"]') ||
-      target.closest('.modal')
+      target.closest('[role="dialog"]') ||
+      target.closest('[role="alertdialog"]')
     ) {
       return
     }
@@ -135,28 +159,29 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
       <CardContent className="flex grow flex-col justify-between p-4">
         <div className="mt-4">
           {/* Show Respond button for all users (except pet owner) when there's an active placement request */}
-          {(!isAuthenticated || user?.id !== pet.user_id) &&
+          {(!isAuthenticated || !isOwner) &&
             supportsPlacement &&
             // Prefer backend convenience flag; fallback to derived active/open state
             (pet.placement_request_active ?? hasActivePlacementRequests) &&
             activePlacementRequestId !== undefined && (
               <>
-                {isAuthenticated && myPendingTransfer ? (
+                {isAuthenticated && hasActiveInvolvement ? (
                   <div className="space-y-2">
                     <p className="text-sm text-muted-foreground text-center">
-                      You responded... Waiting for approval
+                      {myAcceptedResponse
+                        ? 'Your response was accepted!'
+                        : 'You responded... Waiting for approval'}
                     </p>
                     <Button
-                      variant="outline"
+                      variant={myAcceptedResponse ? 'default' : 'outline'}
                       size="sm"
                       className="w-full"
                       onClick={(e) => {
                         e.stopPropagation()
-                        // TODO: Add cancel functionality
-                        console.log('Cancel response for transfer:', myPendingTransfer.id)
+                        void navigate(`/requests/${String(activePlacementRequestId)}`)
                       }}
                     >
-                      Cancel Response
+                      View Details
                     </Button>
                   </div>
                 ) : (
@@ -165,7 +190,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
                     onClick={(e) => {
                       e.stopPropagation()
                       if (isAuthenticated) {
-                        setIsModalOpen(true)
+                        void navigate(`/requests/${String(activePlacementRequestId)}`)
                       } else {
                         setIsLoginPromptOpen(true)
                       }
@@ -173,20 +198,6 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
                   >
                     Respond
                   </Button>
-                )}
-                {isAuthenticated && (
-                  <PlacementResponseModal
-                    isOpen={isModalOpen}
-                    onClose={() => {
-                      setIsModalOpen(false)
-                    }}
-                    petName={pet.name}
-                    petId={pet.id}
-                    placementRequestId={activePlacementRequestId}
-                    requestType={activePlacementRequest?.request_type ?? ''}
-                    petCity={typeof pet.city === 'string' ? pet.city : pet.city?.name ?? ''}
-                    petCountry={pet.country}
-                  />
                 )}
               </>
             )}
@@ -211,7 +222,10 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
                 <AlertDialogAction
                   onClick={(e) => {
                     e.stopPropagation()
-                    void navigate(`/login?redirect=/pets/${String(pet.id)}`)
+                    const redirectUrl = activePlacementRequestId
+                      ? `/requests/${String(activePlacementRequestId)}`
+                      : `/pets/${String(pet.id)}`
+                    void navigate(`/login?redirect=${encodeURIComponent(redirectUrl)}`)
                   }}
                 >
                   Login

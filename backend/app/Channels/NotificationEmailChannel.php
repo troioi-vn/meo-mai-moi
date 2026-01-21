@@ -1,17 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Channels;
 
 use App\Jobs\SendNotificationEmail;
 use App\Models\Notification;
 use Illuminate\Notifications\Notification as LaravelNotification;
+use Illuminate\Support\Facades\Log;
 
 class NotificationEmailChannel
 {
     /**
      * Send the given notification.
      */
-    public function send($notifiable, LaravelNotification $notification)
+    public function send($notifiable, LaravelNotification $notification): void
     {
         // Get the notification data from the notification class
         if (! method_exists($notification, 'toNotificationEmail')) {
@@ -32,7 +35,7 @@ class NotificationEmailChannel
                 ->where('created_at', '>=', now()->subSeconds($window))
                 ->exists();
             if ($recent) {
-                \Log::info('Skipped duplicate email verification notification (idempotency window)', [
+                Log::info('Skipped duplicate email verification notification (idempotency window)', [
                     'user_id' => $notifiable->id,
                 ]);
 

@@ -17,7 +17,8 @@ const mockUser = {
 
 function renderSettings(route: string) {
   return renderWithRouter(<SettingsPage />, {
-    route,
+    initialEntries: [route],
+    route: '/settings/:tab',
     initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
   })
 }
@@ -25,7 +26,7 @@ function renderSettings(route: string) {
 describe('SettingsPage routing tabs', () => {
   it('renders account tab content for /settings/account', () => {
     renderSettings('/settings/account')
-    expect(screen.getByText(/account actions/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /password/i })).toBeInTheDocument()
     expect(screen.getByText(mockUser.name)).toBeInTheDocument()
     expect(screen.getByText(mockUser.email)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /log out/i })).toBeInTheDocument()
@@ -36,8 +37,8 @@ describe('SettingsPage routing tabs', () => {
     expect(screen.getByTestId('notification-preferences')).toBeInTheDocument()
   })
 
-  it('renders contact placeholder for /settings/contact-us', () => {
+  it('renders contact support for /settings/contact-us', () => {
     renderSettings('/settings/contact-us')
-    expect(screen.getByText(/contact us coming soon/i)).toBeInTheDocument()
+    expect(screen.getByText(/Chat with Support/i)).toBeInTheDocument()
   })
 })

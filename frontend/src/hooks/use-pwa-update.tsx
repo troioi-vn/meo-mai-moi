@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { toast } from 'sonner'
-import { setNeedsRefreshCallback, triggerAppUpdate } from '@/main'
+import { setNeedsRefreshCallback, triggerAppUpdate } from '@/pwa'
 
 /**
  * Hook that handles PWA update notifications.

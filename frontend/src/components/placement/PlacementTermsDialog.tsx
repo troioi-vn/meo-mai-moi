@@ -89,7 +89,7 @@ export const PlacementTermsDialog: React.FC<PlacementTermsDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh]">
+      <DialogContent className="sm:max-w-150 max-h-[80vh]">
         <DialogHeader>
           <DialogTitle>Placement Terms & Conditions</DialogTitle>
           <DialogDescription>
@@ -97,7 +97,7 @@ export const PlacementTermsDialog: React.FC<PlacementTermsDialogProps> = ({
             {data?.version && <span className="text-xs ml-2">(Version: {data.version})</span>}
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="h-[400px] pr-4">
+        <ScrollArea className="h-100 pr-4">
           {isLoading && (
             <div className="flex items-center justify-center h-32">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -126,7 +126,9 @@ export const PlacementTermsLink: React.FC<PlacementTermsLinkProps> = ({ classNam
     <>
       <button
         type="button"
-        onClick={() => { setOpen(true); }}
+        onClick={() => {
+          setOpen(true)
+        }}
         className={`inline-flex items-center gap-1 text-primary hover:underline font-medium ${className ?? ''}`}
       >
         Placement Terms & Conditions

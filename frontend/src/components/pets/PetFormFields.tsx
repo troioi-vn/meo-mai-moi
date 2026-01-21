@@ -59,7 +59,7 @@ export const PetFormFields: React.FC<Props> = ({
         <select
           id="sex"
           className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          value={formData.sex ?? 'not_specified'}
+          value={formData.sex}
           onChange={updateField('sex')}
         >
           <option value="not_specified">Not Specified</option>
@@ -111,7 +111,7 @@ export const PetFormFields: React.FC<Props> = ({
           <FormField
             id="birthday_year"
             label="Birth Year"
-            type="text"
+            type="number"
             value={formData.birthday_year ?? ''}
             onChange={updateField('birthday_year')}
             error={errors.birthday_year}
@@ -120,7 +120,7 @@ export const PetFormFields: React.FC<Props> = ({
           <FormField
             id="birthday_month"
             label="Birth Month"
-            type="text"
+            type="number"
             value={formData.birthday_month ?? ''}
             onChange={updateField('birthday_month')}
             error={errors.birthday_month}
@@ -132,7 +132,7 @@ export const PetFormFields: React.FC<Props> = ({
         <FormField
           id="birthday_year"
           label="Birth Year"
-          type="text"
+          type="number"
           value={formData.birthday_year ?? ''}
           onChange={updateField('birthday_year')}
           error={errors.birthday_year}
@@ -155,26 +155,19 @@ export const PetFormFields: React.FC<Props> = ({
         {errors.country && <p className="text-sm font-medium text-destructive">{errors.country}</p>}
       </div>
 
+      {/* Location */}
+      <div className="grid grid-cols-1 gap-4">
+        <CitySelect
+          country={formData.country || null}
+          value={cityValue ?? null}
+          onChange={onCityChange ?? (() => undefined)}
+          disabled={false}
+          error={errors.city}
+        />
+      </div>
+
       {showOptionalFields && (
         <>
-          {/* Location */}
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              id="state"
-              label="State/Province"
-              value={formData.state ?? ''}
-              onChange={updateField('state')}
-              error={errors.state}
-              placeholder="Enter state or province"
-            />
-            <CitySelect
-              country={formData.country || null}
-              value={cityValue ?? null}
-              onChange={onCityChange ?? (() => {})}
-              disabled={false}
-            />
-          </div>
-
           <FormField
             id="address"
             label="Address"

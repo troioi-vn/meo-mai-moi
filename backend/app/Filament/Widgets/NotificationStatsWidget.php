@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Widgets;
 
 use App\Models\EmailConfiguration;
@@ -7,7 +9,6 @@ use App\Models\Notification;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Queue;
 
 class NotificationStatsWidget extends BaseWidget
 {
@@ -19,9 +20,7 @@ class NotificationStatsWidget extends BaseWidget
     {
         // Basic notification stats
         $totalNotifications = Notification::count();
-        $unreadNotifications = Notification::unread()->count();
         $deliveredNotifications = Notification::delivered()->count();
-        $failedNotifications = Notification::failed()->count();
         $pendingNotifications = Notification::pending()->count();
 
         // Email-specific stats (last 24 hours)
@@ -35,11 +34,11 @@ class NotificationStatsWidget extends BaseWidget
 
         // Calculate rates
         $deliveryRate = $totalNotifications > 0
-            ? round(($deliveredNotifications / $totalNotifications) * 100, 1)
+            ? round($deliveredNotifications / $totalNotifications * 100, 1)
             : 0;
 
         $engagementRate = $deliveredNotifications > 0
-            ? round((Notification::read()->count() / $deliveredNotifications) * 100, 1)
+            ? round(Notification::read()->count() / $deliveredNotifications * 100, 1)
             : 0;
 
         // Email configuration status
@@ -52,7 +51,7 @@ class NotificationStatsWidget extends BaseWidget
         // Recent failure rate (last 24h)
         $recentTotal = $emailsSent24h + $emailsFailed24h;
         $recentFailureRate = $recentTotal > 0
-            ? round(($emailsFailed24h / $recentTotal) * 100, 1)
+            ? round($emailsFailed24h / $recentTotal * 100, 1)
             : 0;
 
         return [
@@ -113,7 +112,7 @@ class NotificationStatsWidget extends BaseWidget
             $total = Notification::whereBetween('created_at', [$date, $endDate])
                 ->count();
 
-            $rate = $total > 0 ? round(($delivered / $total) * 100, 1) : 0;
+            $rate = $total > 0 ? round($delivered / $total * 100, 1) : 0;
             $data[] = $rate;
         }
 

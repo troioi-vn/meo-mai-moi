@@ -1,63 +1,68 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Pet;
 
+use App\Enums\PetRelationshipType;
 use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\Pet;
+use App\Services\PetRelationshipService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Put(
- *     path="/api/pets/{id}",
- *     summary="Update a pet",
- *     tags={"Pets"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         required=true,
- *         description="ID of the pet to update",
- *
- *         @OA\Schema(type="integer")
- *     ),
- *
- *     @OA\RequestBody(
- *         required=true,
- *
- *         @OA\JsonContent(ref="#/components/schemas/Pet")
- *     ),
- *
- *     @OA\Response(
- *         response=200,
- *         description="Pet updated successfully",
- *
- *         @OA\JsonContent(ref="#/components/schemas/Pet")
- *     ),
- *
- *     @OA\Response(
- *         response=403,
- *         description="Forbidden"
- *     ),
- *     @OA\Response(
- *         response=422,
- *         description="Validation error"
- *     )
- * )
- */
+#[OA\Put(
+    path: '/api/pets/{id}',
+    summary: 'Update a pet',
+    tags: ['Pets'],
+    security: [['sanctum' => []]],
+    parameters: [
+        new OA\Parameter(
+            name: 'id',
+            in: 'path',
+            required: true,
+            description: 'ID of the pet to update',
+            schema: new OA\Schema(type: 'integer')
+        ),
+    ],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(ref: '#/components/schemas/Pet')
+    ),
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: 'Pet updated successfully',
+            content: new OA\JsonContent(ref: '#/components/schemas/Pet')
+        ),
+        new OA\Response(
+            response: 403,
+            description: 'Forbidden'
+        ),
+        new OA\Response(
+            response: 422,
+            description: 'Validation error'
+        ),
+    ]
+)]
 class UpdatePetController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
 
+    public function __construct(
+        protected PetRelationshipService $relationshipService
+    ) {}
+
     public function __invoke(Request $request, Pet $pet)
     {
+        /** @var \App\Models\User|null $user */
         $user = $this->authorizeUser($request, 'update', $pet);
 
         $rules = [
@@ -85,7 +90,7 @@ class UpdatePetController extends Controller
         ];
 
         $validator = Validator::make($request->all(), $rules);
-        $validator->after(function ($v) use ($request) {
+        $validator->after(function ($v) use ($request): void {
             $precision = $request->input('birthday_precision');
             $legacyBirthday = $request->input('birthday');
             if ($legacyBirthday && ! $precision) {
@@ -193,7 +198,7 @@ class UpdatePetController extends Controller
         if (isset($data['city_id'])) {
             $countryForCity = $data['country'] ?? $pet->country;
             $city = City::find($data['city_id']);
-            if (! $city) {
+            if (! $city instanceof City) {
                 return $this->sendError('City not found.', 422);
             }
             if ($city->country !== $countryForCity) {
@@ -227,22 +232,26 @@ class UpdatePetController extends Controller
 
         // Sync viewers / editors if provided
         if (isset($data['viewer_user_ids'])) {
-            $pet->viewers()->sync($data['viewer_user_ids']);
+            $this->relationshipService->syncRelationships($pet, $data['viewer_user_ids'], PetRelationshipType::VIEWER, $request->user());
         }
         if (isset($data['editor_user_ids'])) {
-            $pet->editors()->sync($data['editor_user_ids']);
+            $this->relationshipService->syncRelationships($pet, $data['editor_user_ids'], PetRelationshipType::EDITOR, $request->user());
         }
 
         $pet->load(['petType', 'categories', 'viewers', 'editors', 'city']);
 
         // Build viewer permission flags for response
-        $isOwner = $this->isOwnerOrAdmin($user, $pet);
-        $isAdmin = $this->hasRole($user, ['admin', 'super_admin']);
-        $isEditor = $user ? $pet->editors->contains($user->id) : false;
-        $pet->setAttribute('viewer_permissions', [
-            'can_edit' => $isOwner || $isAdmin || $isEditor,
-            'can_view_contact' => $isAdmin || ($user && ! $isOwner),
-        ]);
+        $canEdit = $user instanceof \App\Models\User && $pet->canBeEditedBy($user) || $this->hasRole($user, ['admin', 'super_admin']);
+        $isOwner = $user instanceof \App\Models\User && $pet->isOwnedBy($user);
+        $isViewer = $user instanceof \App\Models\User && $pet->hasRelationshipWith($user, PetRelationshipType::VIEWER);
+
+        $viewerPermissions = [
+            'can_edit' => $canEdit,
+            'can_view_contact' => $this->hasRole($user, ['admin', 'super_admin']) || ($user && ! $isOwner),
+            'is_owner' => $isOwner,
+            'is_viewer' => $isViewer,
+        ];
+        $pet->setAttribute('viewer_permissions', $viewerPermissions);
 
         return $this->sendSuccess($pet);
     }

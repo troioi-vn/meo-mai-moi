@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers\Filament;
 
 use App\Filament\Resources\UserResource\Actions\ImpersonateAsUser;
@@ -26,7 +28,7 @@ class AdminPanelProvider extends PanelProvider
 {
     public function boot(): void
     {
-        // Register a custom impersonate action that redirects to /account and stores a back link to the admin panel
+        // Register a custom impersonate action that redirects to / and stores a back link to the admin panel
         if (class_exists(FilamentUserActions::class) && class_exists(ImpersonateAsUser::class)) {
             FilamentUserActions::register(ImpersonateAsUser::make());
         }
@@ -38,7 +40,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            ->login(\App\Filament\Pages\Auth\Login::class)
             ->homeUrl('/')
             ->colors([
                 'primary' => Color::Amber,

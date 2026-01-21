@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Waitlist;
 
 use App\Models\WaitlistEntry;
 
-class WaitlistStatsCalculator
+final class WaitlistStatsCalculator
 {
     /**
      * Get waitlist statistics.

@@ -46,6 +46,23 @@ class PetTypeSeeder extends Seeder
             ]
         );
         $dog->update([
+            'placement_requests_allowed' => true,
+            'weight_tracking_allowed' => true,
+            'microchips_allowed' => true,
+        ]);
+
+        $bird = PetType::firstOrCreate(
+            ['slug' => 'bird'],
+            [
+                'id' => 3,
+                'name' => 'Bird',
+                'description' => 'Pet birds of various species',
+                'status' => PetTypeStatus::ACTIVE,
+                'is_system' => true,
+                'display_order' => 2,
+            ]
+        );
+        $bird->update([
             'placement_requests_allowed' => false,
             'weight_tracking_allowed' => false,
             'microchips_allowed' => false,

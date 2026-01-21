@@ -50,7 +50,7 @@ class PetPhotoControllerTest extends TestCase
         Sanctum::actingAs($this->user);
 
         $cat = Pet::factory()->create([
-            'user_id' => $this->user->id,
+            'created_by' => $this->user->id,
             'pet_type_id' => $this->catType->id,
         ]);
 
@@ -82,7 +82,7 @@ class PetPhotoControllerTest extends TestCase
         Sanctum::actingAs($this->user);
 
         $dog = Pet::factory()->create([
-            'user_id' => $this->user->id,
+            'created_by' => $this->user->id,
             'pet_type_id' => $this->dogType->id,
         ]);
 
@@ -105,7 +105,7 @@ class PetPhotoControllerTest extends TestCase
     public function test_cannot_upload_photo_without_authentication()
     {
         $cat = Pet::factory()->create([
-            'user_id' => $this->user->id,
+            'created_by' => $this->user->id,
             'pet_type_id' => $this->catType->id,
         ]);
 
@@ -124,7 +124,7 @@ class PetPhotoControllerTest extends TestCase
         Sanctum::actingAs($this->user);
 
         $cat = Pet::factory()->create([
-            'user_id' => $otherUser->id,
+            'created_by' => $otherUser->id,
             'pet_type_id' => $this->catType->id,
         ]);
 
@@ -142,7 +142,7 @@ class PetPhotoControllerTest extends TestCase
         Sanctum::actingAs($this->user);
 
         $cat = Pet::factory()->create([
-            'user_id' => $this->user->id,
+            'created_by' => $this->user->id,
             'pet_type_id' => $this->catType->id,
         ]);
 
@@ -165,7 +165,7 @@ class PetPhotoControllerTest extends TestCase
         Sanctum::actingAs($this->user);
 
         $cat = Pet::factory()->create([
-            'user_id' => $this->user->id,
+            'created_by' => $this->user->id,
             'pet_type_id' => $this->catType->id,
         ]);
 
@@ -185,7 +185,7 @@ class PetPhotoControllerTest extends TestCase
         Sanctum::actingAs($this->user);
 
         $cat = Pet::factory()->create([
-            'user_id' => $this->user->id,
+            'created_by' => $this->user->id,
             'pet_type_id' => $this->catType->id,
         ]);
 
@@ -210,7 +210,7 @@ class PetPhotoControllerTest extends TestCase
         Sanctum::actingAs($otherUser);
 
         $cat = Pet::factory()->create([
-            'user_id' => $otherUser->id,
+            'created_by' => $otherUser->id,
             'pet_type_id' => $this->catType->id,
         ]);
 

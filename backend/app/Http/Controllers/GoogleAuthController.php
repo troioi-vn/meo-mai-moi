@@ -1,8 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Models\Settings;
 use App\Models\User;
+use App\Services\InvitationService;
+use App\Services\WaitlistService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,6 +19,11 @@ use Laravel\Socialite\Facades\Socialite;
 
 class GoogleAuthController extends Controller
 {
+    public function __construct(
+        private readonly InvitationService $invitationService,
+        private readonly WaitlistService $waitlistService,
+    ) {}
+
     public function redirect(Request $request): RedirectResponse
     {
         $redirectPath = $this->sanitizeRedirectPath($request->string('redirect')->toString());
@@ -22,7 +32,15 @@ class GoogleAuthController extends Controller
             $request->session()->put('google_redirect', $redirectPath);
         }
 
-        return Socialite::driver('google')
+        $invitationCode = $request->string('invitation_code')->toString();
+        if ($invitationCode) {
+            $request->session()->put('google_invitation_code', $invitationCode);
+        }
+
+        /** @var \Laravel\Socialite\Two\GoogleProvider $provider */
+        $provider = Socialite::driver('google');
+
+        return $provider
             ->scopes(['openid', 'profile', 'email'])
             ->redirect();
     }
@@ -68,6 +86,27 @@ class GoogleAuthController extends Controller
             return $this->redirectToFrontend($this->consumeRedirect($request));
         }
 
+        // Handle invite-only registration
+        $inviteOnlyEnabled = filter_var(Settings::get('invite_only_enabled', false), FILTER_VALIDATE_BOOLEAN);
+        $invitationCode = $request->session()->pull('google_invitation_code');
+        $isValidInvitation = $invitationCode && $this->invitationService->validateInvitationCode($invitationCode);
+
+        if ($inviteOnlyEnabled && ! $isValidInvitation) {
+            if ($this->waitlistService->isEmailOnWaitlist($email)) {
+                return $this->redirectToFrontend('/login?error=already_on_waitlist');
+            }
+
+            try {
+                $this->waitlistService->addToWaitlist($email);
+
+                return $this->redirectToFrontend('/login?status=added_to_waitlist');
+            } catch (Exception $e) {
+                report($e);
+
+                return $this->redirectToFrontend('/login?error=waitlist_failed');
+            }
+        }
+
         $user = User::create([
             'name' => $googleUser->getName() ?: 'Google User',
             'email' => $email,
@@ -81,6 +120,11 @@ class GoogleAuthController extends Controller
 
         // Consider Google emails verified by default
         $user->forceFill(['email_verified_at' => Carbon::now()])->save();
+
+        // If we had a valid invitation, accept it now
+        if ($isValidInvitation) {
+            $this->invitationService->acceptInvitation($invitationCode, $user);
+        }
 
         Auth::login($user, true);
         $request->session()->regenerate();
@@ -177,7 +221,9 @@ class GoogleAuthController extends Controller
             }
 
             $tmpFile = $tmpPath.'.'.$extension;
-            @rename($tmpPath, $tmpFile);
+            if (! rename($tmpPath, $tmpFile)) {
+                return;
+            }
 
             file_put_contents($tmpFile, $body);
 
@@ -187,8 +233,8 @@ class GoogleAuthController extends Controller
         } catch (Exception $exception) {
             report($exception);
         } finally {
-            if ($tmpFile && file_exists($tmpFile)) {
-                @unlink($tmpFile);
+            if (isset($tmpFile) && file_exists($tmpFile)) {
+                unlink($tmpFile);
             }
         }
     }

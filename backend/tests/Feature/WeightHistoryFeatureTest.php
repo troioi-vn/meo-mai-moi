@@ -49,7 +49,7 @@ class WeightHistoryFeatureTest extends TestCase
         ]);
 
         $this->pet = Pet::factory()->create([
-            'user_id' => $this->owner->id,
+            'created_by' => $this->owner->id,
             'pet_type_id' => $this->catType->id,
         ]);
     }
@@ -123,7 +123,7 @@ class WeightHistoryFeatureTest extends TestCase
         Sanctum::actingAs($this->owner);
 
         $otherPet = Pet::factory()->create([
-            'user_id' => $this->owner->id,
+            'created_by' => $this->owner->id,
             'pet_type_id' => $this->catType->id,
         ]);
 
@@ -143,7 +143,7 @@ class WeightHistoryFeatureTest extends TestCase
 
         // make a dog pet which currently doesn't support 'weight'
         $dog = Pet::factory()->create([
-            'user_id' => $this->owner->id,
+            'created_by' => $this->owner->id,
             'pet_type_id' => $this->dogType->id,
         ]);
 

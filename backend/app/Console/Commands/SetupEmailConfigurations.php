@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Models\EmailConfiguration;
@@ -9,8 +11,6 @@ class SetupEmailConfigurations extends Command
 {
     /**
      * The name and signature of the console command.
-     *
-     * @var string
      */
     protected $signature = 'email:setup 
                             {--smtp-username= : SMTP username (email)}
@@ -20,8 +20,6 @@ class SetupEmailConfigurations extends Command
 
     /**
      * The console command description.
-     *
-     * @var string
      */
     protected $description = 'Set up email configurations for dev.meo-mai-moi.com with proper credentials';
 

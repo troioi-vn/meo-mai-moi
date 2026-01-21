@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { ChevronLeft, Info, Eye } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Link, useParams, useNavigate } from 'react-router-dom'
+import { Info, Eye } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -10,6 +9,14 @@ import { ErrorState } from '@/components/ui/ErrorState'
 import { PublicPlacementRequestSection } from '@/components/placement/public-profile/PublicPlacementRequestSection'
 import { getPetPublic, type PublicPet } from '@/api/pets'
 import placeholderImage from '@/assets/images/default-avatar.webp'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
 
 // Helper function to format pet age from public pet data
 const formatPublicPetAge = (pet: PublicPet): string => {
@@ -108,7 +115,9 @@ const PetPublicProfilePage: React.FC = () => {
         if (err && typeof err === 'object' && 'response' in err) {
           const axiosErr = err as { response?: { status?: number; data?: { message?: string } } }
           if (axiosErr.response?.status === 403) {
-            setError(axiosErr.response.data?.message ?? 'This pet profile is not publicly available.')
+            setError(
+              axiosErr.response.data?.message ?? 'This pet profile is not publicly available.'
+            )
           } else if (axiosErr.response?.status === 404) {
             setError('Pet not found')
           } else {
@@ -126,10 +135,6 @@ const PetPublicProfilePage: React.FC = () => {
 
   const refresh = () => {
     setVersion((v) => v + 1)
-  }
-
-  const handleBack = () => {
-    void navigate(-1)
   }
 
   if (loading) {
@@ -163,22 +168,28 @@ const PetPublicProfilePage: React.FC = () => {
   const ageDisplay = formatPublicPetAge(pet)
   const isLost = pet.status === 'lost'
   const isDeceased = pet.status === 'deceased'
-  const hasActivePlacementRequests = (pet.placement_requests ?? []).some((pr) => pr.status === 'open')
+  const hasActivePlacementRequests = (pet.placement_requests ?? []).some(
+    (pr) => pr.status === 'open'
+  )
 
   return (
     <div className="min-h-screen">
       {/* Navigation Buttons */}
       <div className="px-4 py-3">
         <div className="max-w-lg mx-auto flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="default"
-            onClick={handleBack}
-            className="flex items-center gap-1 -ml-2 text-base"
-          >
-            <ChevronLeft className="h-6 w-6" />
-            Back
-          </Button>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/">Home</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>{pet.name}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
         </div>
       </div>
 
@@ -189,9 +200,7 @@ const PetPublicProfilePage: React.FC = () => {
           {isOwner && (
             <Alert variant="info">
               <Eye className="h-4 w-4" />
-              <AlertDescription>
-                You are viewing the public profile of your pet.
-              </AlertDescription>
+              <AlertDescription>You are viewing the public profile of your pet.</AlertDescription>
             </Alert>
           )}
 
@@ -200,7 +209,8 @@ const PetPublicProfilePage: React.FC = () => {
             <Alert variant="warning">
               <Info className="h-4 w-4" />
               <AlertDescription>
-                This pet has been reported as lost. If you have any information, please contact the owner.
+                This pet has been reported as lost. If you have any information, please contact the
+                owner.
               </AlertDescription>
             </Alert>
           )}
@@ -217,11 +227,9 @@ const PetPublicProfilePage: React.FC = () => {
             <div className="flex flex-col gap-1">
               <h1 className="text-2xl font-bold text-foreground">{pet.name}</h1>
               <p className="text-muted-foreground">{ageDisplay}</p>
-              {pet.pet_type && (
-                <Badge variant="secondary" className="w-fit">
-                  {pet.pet_type.name}
-                </Badge>
-              )}
+              <Badge variant="secondary" className="w-fit">
+                {pet.pet_type.name}
+              </Badge>
             </div>
           </section>
 
@@ -281,5 +289,3 @@ const PetPublicProfilePage: React.FC = () => {
 }
 
 export default PetPublicProfilePage
-
-

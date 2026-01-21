@@ -13,8 +13,10 @@ This guide provides a comprehensive overview of how to get started with developm
     ```
 
     > **Note**: The backend automatically creates `.env` from `.env.example` when you run any `php artisan` command if it doesn't exist. You'll see a helpful message to run `php artisan key:generate`.
-    
+
     > **Tip**: Use `./utils/deploy.sh --skip-git-sync` to deploy local uncommitted changes without git pull. This is useful during development when you want to test changes before committing.
+    >
+    > **Tip**: Use `./utils/deploy.sh --skip-build` for faster deployments when you've already built the Docker images and just need to restart containers or run database migrations.
 
 2.  **Access the app**
 
@@ -68,13 +70,18 @@ This guide provides a comprehensive overview of how to get started with developm
 
 **Always run backend tests inside the Docker container** to ensure proper extensions and PHP version.
 
+Tests run in **parallel** by default for faster execution.
+
 ```bash
-# Run all tests
-docker compose exec backend php artisan test
+# Run all tests (parallel by default)
+cd backend && php artisan test --parallel
+
+# Run tests without parallel execution
+cd backend && php artisan test --no-parallel
 
 # Run specific test suites
-docker compose exec backend php artisan test --testsuite=Feature
-docker compose exec backend php artisan test --testsuite=Unit
+cd backend && php artisan test --parallel --testsuite=Feature
+cd backend && php artisan test --parallel --testsuite=Unit
 ```
 
 **Running tests locally (outside Docker):**
@@ -89,7 +96,7 @@ composer install
 php artisan key:generate
 
 # Configure your local database settings in .env, then run tests
-php artisan test
+php artisan test --parallel
 ```
 
 ### Frontend (Vitest)
@@ -98,13 +105,13 @@ php artisan test
 cd frontend
 
 # Run all tests
-npm test
+bun test
 
 # Interactive UI
-npm run test:ui
+bun run test:ui
 
 # Coverage report
-npm run test:coverage
+bun run test:coverage
 ```
 
 ### End-to-End (Playwright)
@@ -116,15 +123,25 @@ Quick start:
 ```bash
 # In one terminal (dev server)
 cd frontend
-npm run dev
+bun run dev
 
 # In another terminal (from repo root)
-npm run e2e            # headless run
-npm run e2e:ui         # interactive UI
-npm run e2e:report     # open last HTML report
+bun run e2e            # headless run
+bun run e2e:ui         # interactive UI
+bun run e2e:report     # open last HTML report
 ```
 
 ## Static Analysis & Quality Gates
+
+### Code Quality (Formatting)
+
+Run Laravel Pint to automatically format code according to PSR-12 and Laravel conventions.
+
+```bash
+# From the backend directory
+cd backend
+./vendor/bin/pint
+```
 
 ### PHPStan (Backend Type Analysis)
 

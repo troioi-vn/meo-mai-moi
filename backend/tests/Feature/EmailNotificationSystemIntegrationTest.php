@@ -11,7 +11,6 @@ use App\Models\Notification;
 use App\Models\NotificationPreference;
 use App\Models\Pet;
 use App\Models\PlacementRequest;
-use App\Models\TransferRequest;
 use App\Models\User;
 use App\Services\EmailConfigurationService;
 use App\Services\NotificationService;
@@ -57,7 +56,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
 
         // Create pet and placement request
         $pet = Pet::factory()->create([
-            'user_id' => $owner->id,
+            'created_by' => $owner->id,
             'status' => \App\Enums\PetStatus::ACTIVE,
             'name' => 'Fluffy',
         ]);
@@ -93,16 +92,12 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         ]);
 
         // Step 1: Helper responds to placement request
-        $response = $this->actingAs($helper)->postJson('/api/transfer-requests', [
-            'pet_id' => $pet->id,
-            'placement_request_id' => $placementRequest->id,
-            'helper_profile_id' => $helperProfile->id,
-            'requested_relationship_type' => 'fostering',
-            'fostering_type' => 'free',
+        $response = $this->actingAs($helper)->postJson("/api/placement-requests/{$placementRequest->id}/responses", [
+            'message' => 'I want to help!',
         ]);
 
         $response->assertStatus(201);
-        $transferRequest = TransferRequest::latest()->first();
+        $placementResponse = \App\Models\PlacementRequestResponse::latest()->first();
 
         // Verify owner got both email and in-app notifications
         $ownerNotifications = Notification::where('user_id', $owner->id)
@@ -123,7 +118,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         Queue::assertPushed(SendNotificationEmail::class, 1);
 
         // Step 2: Owner accepts the helper's response
-        $response = $this->actingAs($owner)->postJson("/api/transfer-requests/{$transferRequest->id}/accept");
+        $response = $this->actingAs($owner)->postJson("/api/placement-responses/{$placementResponse->id}/accept");
         $response->assertStatus(200);
 
         // Verify helper got only email notification (per preferences)
@@ -148,14 +143,10 @@ class EmailNotificationSystemIntegrationTest extends TestCase
             'status' => PlacementRequestStatus::OPEN->value,
         ]);
 
-        $transferRequest2 = TransferRequest::factory()->create([
-            'pet_id' => $pet->id,
+        $placementResponse2 = \App\Models\PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest2->id,
             'helper_profile_id' => $helperProfile2->id,
-            'initiator_user_id' => $helper2->id,
-            'recipient_user_id' => $owner->id,
-            'requester_id' => $helper2->id,
-            'status' => 'pending',
+            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
         ]);
 
         // Set up preferences for helper2 (only in-app for rejection)
@@ -167,7 +158,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         ]);
 
         // Owner rejects the second helper's response
-        $response = $this->actingAs($owner)->postJson("/api/transfer-requests/{$transferRequest2->id}/reject");
+        $response = $this->actingAs($owner)->postJson("/api/placement-responses/{$placementResponse2->id}/reject");
         $response->assertStatus(200);
 
         // Verify helper2 got only in-app notification

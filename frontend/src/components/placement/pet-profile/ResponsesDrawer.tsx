@@ -1,6 +1,14 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel'
 import {
   Drawer,
   DrawerClose,
@@ -10,28 +18,34 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer'
-import { User, Eye, Check, X, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
-import type { TransferRequest } from '@/types/pet'
+import {
+  User,
+  Eye,
+  Check,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  MessageCircle,
+} from 'lucide-react'
+import type { PlacementRequestResponse } from '@/types/placement'
+import { formatRequestType } from '@/types/placement'
 import type { HelperProfile } from '@/types/helper-profile'
 import { api } from '@/api/axios'
 import { toast } from 'sonner'
+import { useCreateChat } from '@/hooks/useMessaging'
 
 interface ResponsesDrawerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  responses: TransferRequest[]
+  responses: PlacementRequestResponse[]
   requestType: string
-  onConfirm: (transferId: number) => void | Promise<void>
-  onReject: (transferId: number) => void | Promise<void>
-}
-
-const formatRequestType = (type: string): string => {
-  const labels: Record<string, string> = {
-    foster_free: 'Foster (Free)',
-    foster_payed: 'Foster (Paid)',
-    permanent: 'Permanent Adoption',
-  }
-  return labels[type] ?? type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+  placementRequestId: number
+  onAccept: (responseId: number) => void | Promise<void>
+  onReject: (responseId: number) => void | Promise<void>
+  initialResponseId?: number
+  openProfileOnOpen?: boolean
+  showDecisionActions?: boolean
 }
 
 export function ResponsesDrawer({
@@ -39,29 +53,23 @@ export function ResponsesDrawer({
   onOpenChange,
   responses,
   requestType,
-  onConfirm,
+  placementRequestId,
+  onAccept,
   onReject,
+  initialResponseId,
+  openProfileOnOpen = false,
+  showDecisionActions = true,
 }: ResponsesDrawerProps) {
+  const navigate = useNavigate()
+  const { create: createChat, creating: creatingChat } = useCreateChat()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [viewingProfile, setViewingProfile] = useState(false)
   const [loadingProfile, setLoadingProfile] = useState(false)
   const [profileData, setProfileData] = useState<HelperProfile | null>(null)
-  const [actionLoading, setActionLoading] = useState<'confirm' | 'reject' | null>(null)
+  const [actionLoading, setActionLoading] = useState<'accept' | 'reject' | null>(null)
 
   const currentResponse = responses[currentIndex]
   const hasMultiple = responses.length > 1
-
-  const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : responses.length - 1))
-    setViewingProfile(false)
-    setProfileData(null)
-  }
-
-  const goToNext = () => {
-    setCurrentIndex((prev) => (prev < responses.length - 1 ? prev + 1 : 0))
-    setViewingProfile(false)
-    setProfileData(null)
-  }
 
   const handleViewProfile = useCallback(async () => {
     if (!currentResponse?.helper_profile_id) return
@@ -80,11 +88,72 @@ export function ResponsesDrawer({
     }
   }, [currentResponse?.helper_profile_id])
 
-  const handleConfirm = async () => {
+  // When opening, jump to a specific response if requested.
+  useEffect(() => {
+    if (!open) return
+    if (!initialResponseId) return
+    const idx = responses.findIndex((r) => r.id === initialResponseId)
+    if (idx >= 0) {
+      setCurrentIndex(idx)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, initialResponseId])
+
+  // Optionally auto-open the helper profile view when the drawer opens.
+  useEffect(() => {
+    if (!open) return
+    if (!openProfileOnOpen) return
+    if (!currentResponse?.helper_profile_id) return
+    if (viewingProfile) return
+    if (loadingProfile) return
+    if (profileData) return
+    void handleViewProfile()
+  }, [
+    open,
+    openProfileOnOpen,
+    currentResponse?.helper_profile_id,
+    viewingProfile,
+    loadingProfile,
+    profileData,
+    handleViewProfile,
+  ])
+
+  const goToPrevious = () => {
+    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : responses.length - 1))
+    setViewingProfile(false)
+    setProfileData(null)
+  }
+
+  const goToNext = () => {
+    setCurrentIndex((prev) => (prev < responses.length - 1 ? prev + 1 : 0))
+    setViewingProfile(false)
+    setProfileData(null)
+  }
+
+  const handleChatWithHelper = useCallback(async () => {
+    const helperUserId = currentResponse?.helper_profile?.user?.id
+    if (!helperUserId) {
+      toast.error('Cannot start chat: helper information not available')
+      return
+    }
+    const chat = await createChat(helperUserId, 'PlacementRequest', placementRequestId)
+    if (chat) {
+      onOpenChange(false)
+      void navigate(`/messages/${String(chat.id)}`)
+    }
+  }, [
+    currentResponse?.helper_profile?.user?.id,
+    placementRequestId,
+    createChat,
+    navigate,
+    onOpenChange,
+  ])
+
+  const handleAccept = async () => {
     if (!currentResponse) return
-    setActionLoading('confirm')
+    setActionLoading('accept')
     try {
-      await onConfirm(currentResponse.id)
+      await onAccept(currentResponse.id)
       // If there are more responses, move to next; otherwise close
       if (responses.length === 1) {
         onOpenChange(false)
@@ -116,11 +185,6 @@ export function ResponsesDrawer({
     }
   }
 
-  const handleBackToList = () => {
-    setViewingProfile(false)
-    setProfileData(null)
-  }
-
   // Reset state when drawer closes
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
@@ -138,14 +202,7 @@ export function ResponsesDrawer({
       <DrawerContent className="max-h-[85vh]">
         <DrawerHeader className="border-b">
           <div className="flex items-center justify-between">
-            {viewingProfile ? (
-              <Button variant="ghost" size="sm" onClick={handleBackToList} className="-ml-2">
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                Back
-              </Button>
-            ) : (
-              <div />
-            )}
+            <div />
             <Badge variant="secondary">{formatRequestType(requestType)}</Badge>
           </div>
           <DrawerTitle>{viewingProfile ? 'Helper Profile' : 'Responses'}</DrawerTitle>
@@ -160,27 +217,13 @@ export function ResponsesDrawer({
           {viewingProfile && profileData ? (
             // Profile view
             <div className="space-y-4">
-              {/* Response details */}
-              <div className="rounded-lg border p-3 bg-muted/50">
-                <p className="font-semibold mb-2 text-sm">Response Details</p>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <p>
-                    <span className="text-muted-foreground">Relationship:</span>{' '}
-                    {currentResponse.requested_relationship_type?.replace(/_/g, ' ') ?? 'N/A'}
-                  </p>
-                  {currentResponse.fostering_type && (
-                    <p>
-                      <span className="text-muted-foreground">Fostering:</span>{' '}
-                      {currentResponse.fostering_type}
-                    </p>
-                  )}
-                  {currentResponse.price !== undefined && currentResponse.price !== null && (
-                    <p>
-                      <span className="text-muted-foreground">Price:</span> {currentResponse.price}
-                    </p>
-                  )}
+              {/* Response message from helper */}
+              {currentResponse.message && (
+                <div className="rounded-lg border p-3 bg-muted/50">
+                  <p className="font-semibold mb-2 text-sm">Message from Helper</p>
+                  <p className="text-sm whitespace-pre-line">{currentResponse.message}</p>
                 </div>
-              </div>
+              )}
 
               {/* Profile details */}
               <div className="space-y-3">
@@ -199,7 +242,13 @@ export function ResponsesDrawer({
                   </p>
                   <p>
                     <span className="text-muted-foreground">Location:</span>{' '}
-                    {[profileData.city, profileData.state, profileData.country]
+                    {[
+                      typeof profileData.city === 'object'
+                        ? profileData.city.name
+                        : profileData.city,
+                      profileData.state,
+                      profileData.country,
+                    ]
                       .filter(Boolean)
                       .join(', ') || 'N/A'}
                   </p>
@@ -230,21 +279,32 @@ export function ResponsesDrawer({
                 {Array.isArray(profileData.photos) && profileData.photos.length > 0 && (
                   <div>
                     <p className="text-sm text-muted-foreground mb-2">Photos</p>
-                    <div className="grid grid-cols-3 gap-2">
-                      {profileData.photos.map((ph) => {
-                        const photo = ph as { id?: number; path?: string; url?: string }
-                        const key = photo.id ? String(photo.id) : (photo.path ?? '')
-                        const src = photo.url ?? (photo.path ? `/storage/${photo.path}` : '')
-                        return (
-                          <img
-                            key={key}
-                            src={src}
-                            alt="Helper"
-                            className="rounded object-cover w-full h-20"
-                          />
-                        )
-                      })}
-                    </div>
+                    <Carousel className="w-full">
+                      <CarouselContent>
+                        {profileData.photos.map((ph) => {
+                          const photo = ph as { id?: number; path?: string; url?: string }
+                          const key = photo.id ? String(photo.id) : (photo.path ?? '')
+                          const src = photo.url ?? (photo.path ? `/storage/${photo.path}` : '')
+                          return (
+                            <CarouselItem key={key}>
+                              <div className="aspect-video rounded-lg overflow-hidden border bg-muted">
+                                <img
+                                  src={src}
+                                  alt="Helper"
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            </CarouselItem>
+                          )
+                        })}
+                      </CarouselContent>
+                      {profileData.photos.length > 1 && (
+                        <>
+                          <CarouselPrevious className="left-2" />
+                          <CarouselNext className="right-2" />
+                        </>
+                      )}
+                    </Carousel>
                   </div>
                 )}
               </div>
@@ -285,77 +345,93 @@ export function ResponsesDrawer({
                   </div>
                 </div>
 
-                {/* Response details */}
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <p>
-                    <span className="text-muted-foreground">Relationship:</span>{' '}
-                    {currentResponse.requested_relationship_type?.replace(/_/g, ' ') ?? 'N/A'}
-                  </p>
-                  {currentResponse.fostering_type && (
-                    <p>
-                      <span className="text-muted-foreground">Type:</span>{' '}
-                      {currentResponse.fostering_type}
-                    </p>
-                  )}
-                  {currentResponse.price !== undefined && currentResponse.price !== null && (
-                    <p>
-                      <span className="text-muted-foreground">Price:</span> {currentResponse.price}
-                    </p>
-                  )}
-                </div>
+                {/* Response message */}
+                {currentResponse.message && (
+                  <div className="rounded-md bg-muted/50 p-3">
+                    <p className="text-sm text-muted-foreground mb-1">Message:</p>
+                    <p className="text-sm whitespace-pre-line">{currentResponse.message}</p>
+                  </div>
+                )}
 
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => void handleViewProfile()}
-                  disabled={loadingProfile}
-                >
-                  {loadingProfile ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Loading...
-                    </>
-                  ) : (
-                    <>
-                      <Eye className="h-4 w-4 mr-2" />
-                      View Full Profile
-                    </>
-                  )}
-                </Button>
+                {/* Response timestamp */}
+                <p className="text-xs text-muted-foreground">
+                  Responded {new Date(currentResponse.responded_at).toLocaleDateString()}
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button
+                    variant="outline"
+                    className="w-full sm:flex-1"
+                    onClick={() => void handleViewProfile()}
+                    disabled={loadingProfile}
+                  >
+                    {loadingProfile ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Profile
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full sm:flex-1"
+                    onClick={() => void handleChatWithHelper()}
+                    disabled={creatingChat || !currentResponse.helper_profile?.user?.id}
+                  >
+                    {creatingChat ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Starting...
+                      </>
+                    ) : (
+                      <>
+                        <MessageCircle className="h-4 w-4 mr-2" />
+                        Chat
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
           )}
         </div>
 
         <DrawerFooter className="border-t">
-          <div className="flex gap-2 w-full">
-            <Button
-              variant="default"
-              className="flex-1"
-              onClick={() => void handleConfirm()}
-              disabled={actionLoading !== null}
-            >
-              {actionLoading === 'confirm' ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Check className="h-4 w-4 mr-2" />
-              )}
-              Accept
-            </Button>
-            <Button
-              variant="destructive"
-              className="flex-1"
-              onClick={() => void handleReject()}
-              disabled={actionLoading !== null}
-            >
-              {actionLoading === 'reject' ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <X className="h-4 w-4 mr-2" />
-              )}
-              Reject
-            </Button>
-          </div>
+          {showDecisionActions && (
+            <div className="flex flex-col sm:flex-row gap-2 w-full">
+              <Button
+                variant="default"
+                className="w-full sm:flex-1"
+                onClick={() => void handleAccept()}
+                disabled={actionLoading !== null}
+              >
+                {actionLoading === 'accept' ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Check className="h-4 w-4 mr-2" />
+                )}
+                Accept
+              </Button>
+              <Button
+                variant="destructive"
+                className="w-full sm:flex-1"
+                onClick={() => void handleReject()}
+                disabled={actionLoading !== null}
+              >
+                {actionLoading === 'reject' ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <X className="h-4 w-4 mr-2" />
+                )}
+                Reject
+              </Button>
+            </div>
+          )}
           <DrawerClose asChild>
             <Button variant="outline">Close</Button>
           </DrawerClose>

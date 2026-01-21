@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications;
 
 use App\Models\Invitation;
@@ -69,7 +71,7 @@ class InvitationToEmail extends Notification implements ShouldQueue
             'inviter' => $inviter,
             'invitation' => $invitation,
             'invitationUrl' => $invitationUrl,
-        ], function ($message) use ($email, $appName) {
+        ], function ($message) use ($email, $appName): void {
             $message->to($email)
                 ->subject("You're invited to join {$appName}!");
         });

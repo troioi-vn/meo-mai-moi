@@ -10,3 +10,6 @@ test-results/
 
 # Ignore local env files for E2E/config
 .env*
+
+# Ignore debug files
+debug-*.png

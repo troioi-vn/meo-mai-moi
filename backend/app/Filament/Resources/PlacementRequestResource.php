@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources;
 
 use App\Enums\PlacementRequestStatus;
@@ -10,16 +12,13 @@ use App\Filament\Resources\PlacementRequestResource\RelationManagers;
 use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Models\User;
+use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ExportBulkAction;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -33,9 +32,9 @@ class PlacementRequestResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
 
-    protected static ?string $navigationGroup = 'Pet Management';
+    protected static ?string $navigationGroup = 'Requests';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $navigationLabel = 'Placement Requests';
 
@@ -54,20 +53,8 @@ class PlacementRequestResource extends Resource
     {
         return [
             'Owner' => $record->user->name,
-            'Type' => match ($record->request_type) {
-                PlacementRequestType::FOSTER_PAYED => 'Foster (Paid)',
-                PlacementRequestType::FOSTER_FREE => 'Foster (Free)',
-                PlacementRequestType::PERMANENT => 'Permanent',
-                default => $record->request_type->value ?? $record->request_type,
-            },
-            'Status' => match ($record->status) {
-                PlacementRequestStatus::OPEN => 'Open',
-                PlacementRequestStatus::FINALIZED => 'Finalized',
-                PlacementRequestStatus::FULFILLED => 'Fulfilled',
-                PlacementRequestStatus::EXPIRED => 'Expired',
-                PlacementRequestStatus::CANCELLED => 'Cancelled',
-                default => $record->status->value ?? $record->status,
-            },
+            'Type' => $record->request_type->getLabel(),
+            'Status' => $record->status->getLabel(),
         ];
     }
 
@@ -80,57 +67,56 @@ class PlacementRequestResource extends Resource
     {
         return $form
             ->schema([
-                Select::make('pet_id')
-                    ->label('Pet')
-                    ->relationship('pet', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->required()
-                    ->getOptionLabelFromRecordUsing(fn (Pet $record): string => "{$record->name} - {$record->petType->name}"),
+                Forms\Components\Section::make('Request Info')
+                    ->schema([
+                        Forms\Components\Select::make('pet_id')
+                            ->label('Pet')
+                            ->relationship('pet', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->required()
+                            ->getOptionLabelFromRecordUsing(fn (Pet $record): string => "{$record->name} - {$record->petType->name}"),
 
-                Select::make('user_id')
-                    ->label('Owner')
-                    ->relationship('user', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->required()
-                    ->getOptionLabelFromRecordUsing(fn (User $record): string => "{$record->name} ({$record->email})"),
+                        Forms\Components\Select::make('user_id')
+                            ->label('Owner')
+                            ->relationship('user', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->required()
+                            ->getOptionLabelFromRecordUsing(fn (User $record): string => "{$record->name} ({$record->email})"),
 
-                Select::make('request_type')
-                    ->label('Request Type')
-                    ->options([
-                        PlacementRequestType::FOSTER_PAYED->value => 'Foster (Paid)',
-                        PlacementRequestType::FOSTER_FREE->value => 'Foster (Free)',
-                        PlacementRequestType::PERMANENT->value => 'Permanent Adoption',
+                        Forms\Components\Select::make('request_type')
+                            ->label('Request Type')
+                            ->options(PlacementRequestType::class)
+                            ->required(),
+
+                        Forms\Components\Select::make('status')
+                            ->options(PlacementRequestStatus::class)
+                            ->required()
+                            ->default(PlacementRequestStatus::OPEN->value),
                     ])
-                    ->required(),
+                    ->columns(2),
 
-                Textarea::make('notes')
-                    ->label('Description')
-                    ->rows(4)
-                    ->columnSpanFull(),
+                Forms\Components\Section::make('Dates')
+                    ->schema([
+                        Forms\Components\DatePicker::make('start_date')
+                            ->label('Start Date'),
 
-                Select::make('status')
-                    ->options([
-                        PlacementRequestStatus::OPEN->value => 'Open',
-                        PlacementRequestStatus::FINALIZED->value => 'Finalized',
-                        PlacementRequestStatus::FULFILLED->value => 'Fulfilled',
-                        PlacementRequestStatus::EXPIRED->value => 'Expired',
-                        PlacementRequestStatus::CANCELLED->value => 'Cancelled',
+                        Forms\Components\DatePicker::make('end_date')
+                            ->label('End Date'),
+
+                        Forms\Components\DateTimePicker::make('expires_at')
+                            ->label('Expires At'),
                     ])
-                    ->required()
-                    ->default(PlacementRequestStatus::OPEN->value),
+                    ->columns(3),
 
-                DatePicker::make('start_date')
-                    ->label('Start Date'),
-
-                DatePicker::make('end_date')
-                    ->label('End Date'),
-
-                DateTimePicker::make('expires_at')
-                    ->label('Expires At'),
-
-                // Status is managed through the status field above
+                Forms\Components\Section::make('Notes')
+                    ->schema([
+                        Forms\Components\Textarea::make('notes')
+                            ->label('Description')
+                            ->rows(4)
+                            ->columnSpanFull(),
+                    ]),
             ]);
     }
 
@@ -157,35 +143,13 @@ class PlacementRequestResource extends Resource
                     ->sortable()
                     ->description(fn (PlacementRequest $record): string => $record->user->email ?? ''),
 
-                BadgeColumn::make('request_type')
+                TextColumn::make('request_type')
                     ->label('Type')
-                    ->formatStateUsing(fn (PlacementRequestType $state): string => match ($state) {
-                        PlacementRequestType::FOSTER_PAYED => 'Foster (Paid)',
-                        PlacementRequestType::FOSTER_FREE => 'Foster (Free)',
-                        PlacementRequestType::PERMANENT => 'Permanent',
-                        default => $state->value,
-                    })
-                    ->colors([
-                        'success' => PlacementRequestType::PERMANENT->value,
-                        'warning' => PlacementRequestType::FOSTER_PAYED->value,
-                        'info' => PlacementRequestType::FOSTER_FREE->value,
-                    ]),
+                    ->badge(),
 
-                BadgeColumn::make('status')
-                    ->formatStateUsing(fn (PlacementRequestStatus $state): string => match ($state) {
-                        PlacementRequestStatus::OPEN => 'Open',
-                        PlacementRequestStatus::FINALIZED => 'Finalized',
-                        PlacementRequestStatus::FULFILLED => 'Fulfilled',
-                        PlacementRequestStatus::EXPIRED => 'Expired',
-                        PlacementRequestStatus::CANCELLED => 'Cancelled',
-                        default => $state->value,
-                    })
-                    ->colors([
-                        'success' => PlacementRequestStatus::FULFILLED->value,
-                        'warning' => PlacementRequestStatus::FINALIZED->value,
-                        'info' => PlacementRequestStatus::OPEN->value,
-                        'danger' => [PlacementRequestStatus::EXPIRED->value, PlacementRequestStatus::CANCELLED->value],
-                    ]),
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->badge(),
 
                 TextColumn::make('notes')
                     ->label('Description')
@@ -200,9 +164,9 @@ class PlacementRequestResource extends Resource
                     })
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                TextColumn::make('transfer_requests_count')
+                TextColumn::make('responses_count')
                     ->label('Responses')
-                    ->counts('transferRequests')
+                    ->counts('responses')
                     ->sortable(),
 
                 TextColumn::make('created_at')
@@ -229,39 +193,17 @@ class PlacementRequestResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->color(fn ($state) => $state && $state < now() ? 'danger' : null),
-
-                TextColumn::make('status')
-                    ->label('Status')
-                    ->badge()
-                    ->getStateUsing(fn ($record) => $record->isActive() ? 'Active' : 'Inactive')
-                    ->color(fn ($record) => $record->isActive() ? 'success' : 'gray')
-                    ->formatStateUsing(fn (bool $state): string => $state ? 'Active' : 'Inactive')
-                    ->colors([
-                        'success' => true,
-                        'danger' => false,
-                    ])
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('status')
                     ->label('Status')
-                    ->options([
-                        PlacementRequestStatus::OPEN->value => 'Open',
-                        PlacementRequestStatus::FINALIZED->value => 'Finalized',
-                        PlacementRequestStatus::FULFILLED->value => 'Fulfilled',
-                        PlacementRequestStatus::EXPIRED->value => 'Expired',
-                        PlacementRequestStatus::CANCELLED->value => 'Cancelled',
-                    ])
+                    ->options(PlacementRequestStatus::class)
                     ->multiple()
                     ->searchable(),
 
                 SelectFilter::make('request_type')
                     ->label('Request Type')
-                    ->options([
-                        PlacementRequestType::FOSTER_PAYED->value => 'Foster (Paid)',
-                        PlacementRequestType::FOSTER_FREE->value => 'Foster (Free)',
-                        PlacementRequestType::PERMANENT->value => 'Permanent',
-                    ])
+                    ->options(PlacementRequestType::class)
                     ->multiple()
                     ->searchable(),
 
@@ -357,16 +299,16 @@ class PlacementRequestResource extends Resource
 
                 Filter::make('active_only')
                     ->label('Active Only')
-                    ->query(fn (Builder $query): Builder => $query->where('status', \App\Enums\PlacementRequestStatus::OPEN))
+                    ->query(fn (Builder $query): Builder => $query->where('status', PlacementRequestStatus::OPEN))
                     ->default(),
 
                 Filter::make('has_responses')
                     ->label('Has Responses')
-                    ->query(fn (Builder $query): Builder => $query->has('transferRequests')),
+                    ->query(fn (Builder $query): Builder => $query->has('responses')),
 
                 Filter::make('no_responses')
                     ->label('No Responses')
-                    ->query(fn (Builder $query): Builder => $query->doesntHave('transferRequests')),
+                    ->query(fn (Builder $query): Builder => $query->doesntHave('responses')),
 
                 Filter::make('expiring_soon')
                     ->label('Expiring Soon (7 days)')
@@ -408,6 +350,7 @@ class PlacementRequestResource extends Resource
     public static function getRelations(): array
     {
         return [
+            RelationManagers\ResponsesRelationManager::class,
             RelationManagers\TransferRequestsRelationManager::class,
         ];
     }

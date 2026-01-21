@@ -11,12 +11,14 @@ mkdir -p /var/www/storage/logs
 mkdir -p /var/www/storage/app/public
 mkdir -p /var/log
 
-# Create log files for scheduler and queue worker (supervisor needs them to exist)
+# Create log files for scheduler, queue worker, and reverb (supervisor needs them to exist)
 touch /var/www/storage/logs/scheduler.log
 touch /var/www/storage/logs/scheduler-stdout.log
 touch /var/www/storage/logs/scheduler-stderr.log
 touch /var/www/storage/logs/queue-worker-stdout.log
 touch /var/www/storage/logs/queue-worker-stderr.log
+touch /var/www/storage/logs/reverb-stdout.log
+touch /var/www/storage/logs/reverb-stderr.log
 echo "Directories created."
 
 echo "[Step 1.5] Waiting for database to be ready..."
@@ -68,34 +70,40 @@ chmod 777 /var/www/public || true
 # The backend container serves HTTP on port 80 only to avoid duplication and confusion.
 
 echo "[Step 4] Preparing environment file and APP_KEY..."
-# Ensure an application .env exists inside the container
-if [ ! -f /var/www/.env ]; then
-    if [ -f /var/www/.env.example ]; then
-        echo "No .env found, copying from .env.example"
-        cp /var/www/.env.example /var/www/.env
-    else
-        echo "Warning: No .env or .env.example found"
-    fi
-    if [ -f /var/www/.env ]; then
-        chown www-data:www-data /var/www/.env
-    fi
+
+# IMPORTANT:
+# - APP_KEY must be stable across deployments. If it changes, all encrypted cookies
+#   (including session cookies) become invalid and every user will be logged out.
+# - Therefore we do NOT auto-generate APP_KEY on boot.
+#
+# Provide APP_KEY via docker-compose env_file (backend/.env), environment variables,
+# or your secret manager.
+
+if [ -z "${APP_KEY:-}" ]; then
+    echo "ERROR: APP_KEY is not set. Refusing to start because regenerating APP_KEY would log out all users."
+    echo "Set APP_KEY in backend/.env (or your deployment secret store) to a stable value (base64:...)."
+    exit 1
 fi
 
-# Generate the APP_KEY directly into .env if missing
-if ! grep -q '^APP_KEY=base64:' /var/www/.env; then
-    echo "No APP_KEY in .env, generating one..."
-    su -s /bin/sh -c "php artisan key:generate --force" www-data
-    echo "APP_KEY generated in .env."
+echo "APP_KEY is present in environment."
+
+echo "[Step 4.5] Ensuring Laravel package discovery and Filament assets..."
+
+# Docker image build installs composer deps with --no-scripts to avoid running
+# artisan without runtime env. Do the minimum runtime setup here.
+if [ ! -f /var/www/bootstrap/cache/packages.php ]; then
+    echo "bootstrap/cache/packages.php missing; running package:discover..."
+    su -s /bin/sh -c "php artisan package:discover --ansi" www-data
 else
-    echo "APP_KEY already present in .env."
+    echo "Package discovery cache present; skipping package:discover."
 fi
 
-# Ensure the process environment gets a valid APP_KEY even if docker env_file provided an empty one
-APP_KEY_FROM_ENV_FILE=${APP_KEY:-}
-APP_KEY_FROM_DOTENV=$(grep '^APP_KEY=' /var/www/.env | cut -d '=' -f2-)
-if [ -n "$APP_KEY_FROM_DOTENV" ] && [ "$APP_KEY_FROM_DOTENV" != "$APP_KEY_FROM_ENV_FILE" ]; then
-    export APP_KEY="$APP_KEY_FROM_DOTENV"
-    echo "Exported APP_KEY from .env for runtime."
+# Filament assets are expected under public/js/filament...
+if [ ! -f /var/www/public/js/filament/filament/app.js ]; then
+    echo "Filament assets missing; running filament:upgrade..."
+    su -s /bin/sh -c "php artisan filament:upgrade" www-data
+else
+    echo "Filament assets present; skipping filament:upgrade."
 fi
 
 # --- MIGRATION CONTROL ---

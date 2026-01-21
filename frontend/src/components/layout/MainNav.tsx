@@ -1,5 +1,5 @@
 import React from 'react'
-import { Cat, PawPrint } from 'lucide-react'
+import { Cat, PawPrint, MessageCircle } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
@@ -8,44 +8,98 @@ import { UserMenu } from '@/components/user/UserMenu'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ImpersonationIndicator } from '@/components/layout/ImpersonationBanner'
 import { AdminPanelLink } from '@/components/user/AdminPanelLink'
+import { useNotifications } from '@/contexts/NotificationProvider'
+
+interface NavIconLinkProps {
+  to: string
+  label: string
+  icon: React.ReactNode
+  badgeCount?: number
+}
+
+function NavIconLink({ to, label, icon, badgeCount = 0 }: NavIconLinkProps) {
+  const hasBadge = badgeCount > 0
+  const badgeText = badgeCount > 9 ? '9+' : String(badgeCount)
+  const ariaLabel = hasBadge ? `${label} (${badgeText} unread)` : label
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      aria-label={ariaLabel}
+      title={label}
+      className="relative"
+      asChild
+    >
+      <Link to={to}>
+        {icon}
+        <span className="sr-only">{label}</span>
+        {hasBadge && (
+          <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] leading-none text-white">
+            {badgeText}
+          </span>
+        )}
+      </Link>
+    </Button>
+  )
+}
 
 const MainNav: React.FC = () => {
   const { isAuthenticated, isLoading, user } = useAuth()
   const isVerified = Boolean(user?.email_verified_at)
+  const { unreadMessageCount } = useNotifications()
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 border-b p-2">
       <nav className="container flex h-16 items-center justify-between">
         {/* Left: Brand */}
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           {isAuthenticated && (
-            <Link
-              to="/"
-              className="text-foreground ml-6 hover:text-primary transition-colors"
-              title="Cats"
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Pets"
+              title="Pets"
+              className="ml-6"
+              asChild
             >
-              <Cat className="h-6 w-6" />
-              <span className="sr-only">Cats</span>
-            </Link>
+              <Link to="/">
+                <Cat className="size-6" />
+                <span className="sr-only">Pets</span>
+              </Link>
+            </Button>
           )}
-          <Link
-            to="/requests"
-            className="text-foreground ml-6 hover:text-primary transition-colors"
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Requests"
             title="Requests"
+            className="ml-6"
+            asChild
           >
-            <PawPrint className="h-6 w-6" />
-            <span className="sr-only">Requests</span>
-          </Link>
+            <Link to="/requests">
+              <PawPrint className="size-6" />
+              <span className="sr-only">Requests</span>
+            </Link>
+          </Button>
         </div>
 
         {/* Right: Actions padding right 5 */}
-        <div className="flex items-center space-x-4 pr-5">
+        <div className="flex items-center gap-2 pr-5">
           {isLoading ? (
             <Skeleton className="h-9 w-24" />
           ) : isAuthenticated ? (
             <>
               {isVerified && <ImpersonationIndicator />}
               {isVerified && <AdminPanelLink />}
+              {isVerified && (
+                <NavIconLink
+                  to="/messages"
+                  label="Messages"
+                  icon={<MessageCircle className="size-6" />}
+                  badgeCount={unreadMessageCount}
+                />
+              )}
               {isVerified && <NotificationBell />}
               <UserMenu />
             </>

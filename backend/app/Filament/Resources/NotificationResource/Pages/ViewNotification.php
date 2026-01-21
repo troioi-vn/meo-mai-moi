@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\NotificationResource\Pages;
 
 use App\Filament\Resources\NotificationResource;
@@ -11,94 +13,6 @@ use Filament\Resources\Pages\ViewRecord;
 class ViewNotification extends ViewRecord
 {
     protected static string $resource = NotificationResource::class;
-
-    private function getNotification(): ?\App\Models\Notification
-    {
-        return $this->record instanceof \App\Models\Notification ? $this->record : null;
-    }
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\EditAction::make(),
-
-            Actions\Action::make('mark_as_read')
-                ->label('Mark as Read')
-                ->icon('heroicon-o-check')
-                ->color('success')
-                ->visible(fn (): bool => ($notification = $this->getNotification()) && ! $notification->isRead())
-                ->action(function (): void {
-                    $notification = $this->getNotification();
-                    if (! $notification) {
-                        return;
-                    }
-
-                    $notification->markAsRead();
-
-                    $this->refreshFormData(['read_at']);
-                }),
-
-            Actions\Action::make('mark_as_delivered')
-                ->label('Mark as Delivered')
-                ->icon('heroicon-o-paper-airplane')
-                ->color('success')
-                ->visible(fn (): bool => ($notification = $this->getNotification()) && ! $notification->delivered_at)
-                ->action(function (): void {
-                    $notification = $this->getNotification();
-                    if (! $notification) {
-                        return;
-                    }
-
-                    $notification->update([
-                        'delivered_at' => now(),
-                        'failed_at' => null,
-                        'failure_reason' => null,
-                    ]);
-
-                    $this->refreshFormData(['delivered_at', 'failed_at', 'failure_reason']);
-                }),
-
-            Actions\Action::make('retry_delivery')
-                ->label('Retry Delivery')
-                ->icon('heroicon-o-arrow-path')
-                ->color('info')
-                ->visible(fn (): bool => ($notification = $this->getNotification()) && $notification->failed_at !== null)
-                ->requiresConfirmation()
-                ->action(function (): void {
-                    $notification = $this->getNotification();
-                    if (! $notification) {
-                        return;
-                    }
-
-                    $notification->update([
-                        'failed_at' => null,
-                        'failure_reason' => null,
-                        'delivered_at' => null,
-                    ]);
-
-                    // Here you would typically trigger the notification delivery system
-                    // For now, we'll just mark it as delivered
-                    $notification->update(['delivered_at' => now()]);
-
-                    $this->refreshFormData(['delivered_at', 'failed_at', 'failure_reason']);
-                }),
-
-            Actions\Action::make('test_email_config')
-                ->label('Test Email Configuration')
-                ->icon('heroicon-o-wrench-screwdriver')
-                ->color('warning')
-                ->visible(fn (): bool => ($notification = $this->getNotification()) && $notification->failed_at !== null)
-                ->action(function (): void {
-                    // This would test the email configuration
-                    // For now, we'll just show a success message
-                    \Filament\Notifications\Notification::make()
-                        ->title('Email Configuration Test')
-                        ->body('Email configuration test completed successfully.')
-                        ->success()
-                        ->send();
-                }),
-        ];
-    }
 
     public function infolist(Infolist $infolist): Infolist
     {
@@ -219,5 +133,93 @@ class ViewNotification extends ViewRecord
                     ])
                     ->visible(fn (): bool => ($notification = $this->getNotification()) && ($notification->created_at || $notification->delivered_at || $notification->failed_at || $notification->read_at)),
             ]);
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+
+            Actions\Action::make('mark_as_read')
+                ->label('Mark as Read')
+                ->icon('heroicon-o-check')
+                ->color('success')
+                ->visible(fn (): bool => ($notification = $this->getNotification()) && ! $notification->isRead())
+                ->action(function (): void {
+                    $notification = $this->getNotification();
+                    if (! $notification) {
+                        return;
+                    }
+
+                    $notification->markAsRead();
+
+                    $this->refreshFormData(['read_at']);
+                }),
+
+            Actions\Action::make('mark_as_delivered')
+                ->label('Mark as Delivered')
+                ->icon('heroicon-o-paper-airplane')
+                ->color('success')
+                ->visible(fn (): bool => ($notification = $this->getNotification()) && ! $notification->delivered_at)
+                ->action(function (): void {
+                    $notification = $this->getNotification();
+                    if (! $notification) {
+                        return;
+                    }
+
+                    $notification->update([
+                        'delivered_at' => now(),
+                        'failed_at' => null,
+                        'failure_reason' => null,
+                    ]);
+
+                    $this->refreshFormData(['delivered_at', 'failed_at', 'failure_reason']);
+                }),
+
+            Actions\Action::make('retry_delivery')
+                ->label('Retry Delivery')
+                ->icon('heroicon-o-arrow-path')
+                ->color('info')
+                ->visible(fn (): bool => ($notification = $this->getNotification()) && $notification->failed_at !== null)
+                ->requiresConfirmation()
+                ->action(function (): void {
+                    $notification = $this->getNotification();
+                    if (! $notification) {
+                        return;
+                    }
+
+                    $notification->update([
+                        'failed_at' => null,
+                        'failure_reason' => null,
+                        'delivered_at' => null,
+                    ]);
+
+                    // Here you would typically trigger the notification delivery system
+                    // For now, we'll just mark it as delivered
+                    $notification->update(['delivered_at' => now()]);
+
+                    $this->refreshFormData(['delivered_at', 'failed_at', 'failure_reason']);
+                }),
+
+            Actions\Action::make('test_email_config')
+                ->label('Test Email Configuration')
+                ->icon('heroicon-o-wrench-screwdriver')
+                ->color('warning')
+                ->visible(fn (): bool => ($notification = $this->getNotification()) && $notification->failed_at !== null)
+                ->action(function (): void {
+                    // This would test the email configuration
+                    // For now, we'll just show a success message
+                    \Filament\Notifications\Notification::make()
+                        ->title('Email Configuration Test')
+                        ->body('Email configuration test completed successfully.')
+                        ->success()
+                        ->send();
+                }),
+        ];
+    }
+
+    private function getNotification(): ?\App\Models\Notification
+    {
+        return $this->record instanceof \App\Models\Notification ? $this->record : null;
     }
 }

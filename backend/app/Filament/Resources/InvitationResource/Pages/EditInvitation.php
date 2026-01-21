@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\InvitationResource\Pages;
 
 use App\Filament\Resources\InvitationResource;

@@ -43,9 +43,7 @@ export function ThemeProvider({
 
     let effectiveTheme: 'dark' | 'light'
     if (theme === 'system') {
-      effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light'
+      effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 
       root.classList.add(effectiveTheme)
     } else {
@@ -56,7 +54,7 @@ export function ThemeProvider({
     // Update theme-color meta tag dynamically
     const themeColorMeta = document.querySelector('meta[name="theme-color"]')
     if (themeColorMeta) {
-      const themeColor = effectiveTheme === 'dark' ? '#111827' : '#ffffff'
+      const themeColor = effectiveTheme === 'dark' ? '#020817' : '#ffffff'
       themeColorMeta.setAttribute('content', themeColor)
     }
 

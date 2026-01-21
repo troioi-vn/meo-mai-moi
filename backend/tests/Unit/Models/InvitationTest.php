@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Models;
 
+use App\Enums\InvitationStatus;
 use App\Models\Invitation;
 use App\Models\User;
 use Carbon\Carbon;
@@ -89,7 +90,7 @@ class InvitationTest extends TestCase
         $invitation->isValid();
 
         $invitation->refresh();
-        $this->assertEquals('expired', $invitation->status);
+        $this->assertEquals(InvitationStatus::EXPIRED, $invitation->status);
     }
 
     public function test_is_valid_returns_true_for_invitation_without_expiry()
@@ -111,7 +112,7 @@ class InvitationTest extends TestCase
         $invitation->markAsAccepted($this->recipient);
 
         $invitation->refresh();
-        $this->assertEquals('accepted', $invitation->status);
+        $this->assertEquals(InvitationStatus::ACCEPTED, $invitation->status);
         $this->assertEquals($this->recipient->id, $invitation->recipient_user_id);
     }
 
@@ -124,7 +125,7 @@ class InvitationTest extends TestCase
         $invitation->markAsRevoked();
 
         $invitation->refresh();
-        $this->assertEquals('revoked', $invitation->status);
+        $this->assertEquals(InvitationStatus::REVOKED, $invitation->status);
     }
 
     public function test_generate_unique_code_creates_32_character_string()

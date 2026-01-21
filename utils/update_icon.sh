@@ -102,8 +102,8 @@ cat >"$FRONTEND_PUBLIC/site-dark.webmanifest" <<'JSON'
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#111827",
+  "background_color": "#020817",
+  "theme_color": "#020817",
   "orientation": "portrait-primary",
   "icons": [
     {

@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
+use App\Enums\InvitationStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,6 +23,7 @@ class Invitation extends Model
     ];
 
     protected $casts = [
+        'status' => InvitationStatus::class,
         'expires_at' => 'datetime',
     ];
 
@@ -44,12 +48,12 @@ class Invitation extends Model
      */
     public function isValid(): bool
     {
-        if ($this->status !== 'pending') {
+        if ($this->status !== InvitationStatus::PENDING) {
             return false;
         }
 
         if ($this->expires_at && $this->expires_at->isPast()) {
-            $this->update(['status' => 'expired']);
+            $this->update(['status' => InvitationStatus::EXPIRED]);
 
             return false;
         }
@@ -63,7 +67,7 @@ class Invitation extends Model
     public function markAsAccepted(User $user): void
     {
         $this->update([
-            'status' => 'accepted',
+            'status' => InvitationStatus::ACCEPTED,
             'recipient_user_id' => $user->id,
         ]);
     }
@@ -73,7 +77,7 @@ class Invitation extends Model
      */
     public function markAsRevoked(): void
     {
-        $this->update(['status' => 'revoked']);
+        $this->update(['status' => InvitationStatus::REVOKED]);
     }
 
     /**
@@ -93,7 +97,7 @@ class Invitation extends Model
      */
     public function scopePending($query)
     {
-        return $query->where('status', 'pending');
+        return $query->where('status', InvitationStatus::PENDING);
     }
 
     /**
@@ -110,7 +114,7 @@ class Invitation extends Model
     public function scopeExpired($query)
     {
         return $query->where('status', 'expired')
-            ->orWhere(function ($query) {
+            ->orWhere(function ($query): void {
                 $query->where('expires_at', '<', now())
                     ->where('status', 'pending');
             });

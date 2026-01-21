@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\PushSubscription;
 
 use App\Http\Controllers\Controller;
@@ -15,15 +17,17 @@ class ListPushSubscriptionsController extends Controller
     {
         $user = $request->user();
 
-        $subscriptions = PushSubscription::where('user_id', $user->id)
-            ->get()
-            ->map(fn (PushSubscription $subscription) => [
+        $items = PushSubscription::where('user_id', $user->id)->get();
+        $subscriptions = [];
+        foreach ($items as $subscription) {
+            $subscriptions[] = [
                 'id' => $subscription->id,
                 'endpoint' => $subscription->endpoint,
                 'content_encoding' => $subscription->content_encoding,
-                'expires_at' => optional($subscription->expires_at)->toISOString(),
-                'last_seen_at' => optional($subscription->last_seen_at)->toISOString(),
-            ]);
+                'expires_at' => $subscription->expires_at?->toISOString(),
+                'last_seen_at' => $subscription->last_seen_at?->toISOString(),
+            ];
+        }
 
         return $this->sendSuccess($subscriptions);
     }

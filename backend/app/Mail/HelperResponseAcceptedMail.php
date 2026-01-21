@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Mail;
 
 class HelperResponseAcceptedMail extends NotificationMail
@@ -20,7 +22,7 @@ class HelperResponseAcceptedMail extends NotificationMail
         $petName = 'a pet';
         if (isset($this->data['pet_id'])) {
             $pet = \App\Models\Pet::find($this->data['pet_id']);
-            if ($pet) {
+            if ($pet instanceof \App\Models\Pet) {
                 $petName = $pet->name;
             }
         }

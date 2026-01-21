@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\PetPhoto;
 
 use App\Http\Controllers\Controller;
@@ -10,66 +12,64 @@ use App\Traits\HandlesAuthentication;
 use App\Traits\HandlesPetResources;
 use App\Traits\HandlesValidation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use OpenApi\Attributes as OA;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-/**
- * @OA\Post(
- *     path="/api/pets/{pet}/photos",
- *     summary="Upload a photo for a specific pet",
- *     tags={"Pet Photos"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\Parameter(
- *         name="pet",
- *         in="path",
- *         required=true,
- *         description="ID of the pet",
- *
- *         @OA\Schema(type="integer")
- *     ),
- *
- *     @OA\RequestBody(
- *         required=true,
- *
- *         @OA\MediaType(
- *             mediaType="multipart/form-data",
- *
- *             @OA\Schema(
- *
- *                 @OA\Property(
- *                     property="photo",
- *                     type="string",
- *                     format="binary",
- *                     description="The photo file (max 10MB, jpeg, png, jpg, gif, svg)"
- *                 )
- *             )
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=200,
- *         description="Photo uploaded successfully",
- *
- *         @OA\JsonContent(
- *
- *             @OA\Property(property="data", ref="#/components/schemas/Pet")
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=401,
- *         description="Unauthenticated"
- *     ),
- *     @OA\Response(
- *         response=403,
- *         description="Unauthorized"
- *     ),
- *     @OA\Response(
- *         response=422,
- *         description="Validation error or feature not available for pet type"
- *     )
- * )
- */
+#[OA\Post(
+    path: '/api/pets/{pet}/photos',
+    summary: 'Upload a photo for a specific pet',
+    tags: ['Pet Photos'],
+    security: [['sanctum' => []]],
+    parameters: [
+        new OA\Parameter(
+            name: 'pet',
+            in: 'path',
+            required: true,
+            description: 'ID of the pet',
+            schema: new OA\Schema(type: 'integer')
+        ),
+    ],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\MediaType(
+            mediaType: 'multipart/form-data',
+            schema: new OA\Schema(
+                properties: [
+                    new OA\Property(
+                        property: 'photo',
+                        type: 'string',
+                        format: 'binary',
+                        description: 'The photo file (max 10MB, jpeg, png, jpg, gif, svg)'
+                    ),
+                ]
+            )
+        )
+    ),
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: 'Photo uploaded successfully',
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'data', ref: '#/components/schemas/Pet'),
+                ]
+            )
+        ),
+        new OA\Response(
+            response: 401,
+            description: 'Unauthenticated'
+        ),
+        new OA\Response(
+            response: 403,
+            description: 'Unauthorized'
+        ),
+        new OA\Response(
+            response: 422,
+            description: 'Validation error or feature not available for pet type'
+        ),
+    ]
+)]
 class StorePetPhotoController extends Controller
 {
     use ApiResponseTrait;
@@ -83,7 +83,7 @@ class StorePetPhotoController extends Controller
 
     public function __invoke(Request $request, Pet $pet)
     {
-        \Log::info('Pet photo upload request received', [
+        Log::info('Pet photo upload request received', [
             'pet_id' => $pet->id,
             'user_id' => $request->user()->id,
             'has_file' => $request->hasFile('photo'),
@@ -97,7 +97,7 @@ class StorePetPhotoController extends Controller
             'photo' => $this->imageValidationRules(),
         ]);
 
-        \Log::info('Pet photo validation passed', [
+        Log::info('Pet photo validation passed', [
             'pet_id' => $pet->id,
             'file_info' => $request->file('photo') ? [
                 'name' => $request->file('photo')->getClientOriginalName(),
@@ -110,7 +110,7 @@ class StorePetPhotoController extends Controller
         $media = $pet->addMediaFromRequest('photo')
             ->toMediaCollection('photos');
 
-        \Log::info('Pet photo uploaded successfully', [
+        Log::info('Pet photo uploaded successfully', [
             'pet_id' => $pet->id,
             'media_id' => $media->id,
             'media_url' => $media->getUrl(),

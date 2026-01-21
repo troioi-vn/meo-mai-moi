@@ -20,6 +20,25 @@ export default function LoginPage() {
       return 'Unable to retrieve your email from Google. Please try another login method.'
     }
 
+    if (error === 'already_on_waitlist') {
+      return 'You are already in the waiting list. We will notify you when an invitation is available.'
+    }
+
+    if (error === 'waitlist_failed') {
+      return 'Failed to add you to the waiting list. Please try again later.'
+    }
+
+    return null
+  }, [location.search])
+
+  const successMessage = useMemo(() => {
+    const params = new URLSearchParams(location.search)
+    const status = params.get('status')
+
+    if (status === 'added_to_waitlist') {
+      return "We're currently invite-only. You've been added to our waiting list and we'll notify you as soon as we have space!"
+    }
+
     return null
   }, [location.search])
 
@@ -41,7 +60,12 @@ export default function LoginPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
-      <div className="w-full max-w-lg">
+      <div className="w-full max-w-lg space-y-4">
+        {successMessage && (
+          <div className="bg-green-50 dark:bg-green-950/50 border border-green-200 dark:border-green-800 rounded-lg p-4">
+            <p className="text-green-800 dark:text-green-200 text-sm">{successMessage}</p>
+          </div>
+        )}
         <LoginForm initialErrorMessage={errorMessage} />
       </div>
     </div>

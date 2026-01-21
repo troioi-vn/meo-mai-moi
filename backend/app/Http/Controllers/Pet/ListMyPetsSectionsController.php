@@ -1,43 +1,43 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Pet;
 
+use App\Enums\PetRelationshipType;
 use App\Http\Controllers\Controller;
-use App\Models\FosterAssignment;
-use App\Models\OwnershipHistory;
 use App\Models\Pet;
+use App\Models\PetRelationship;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Schema;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Get(
- *     path="/api/my-pets/sections",
- *     summary="Get the pets of the authenticated user, organized by section",
- *     tags={"Pets"},
- *     security={{"sanctum": {}}},
- *
- *     @OA\Response(
- *         response=200,
- *         description="A list of the user's pets, organized by section",
- *
- *         @OA\JsonContent(
- *             type="object",
- *
- *             @OA\Property(property="owned", type="array", @OA\Items(ref="#/components/schemas/Pet")),
- *             @OA\Property(property="fostering_active", type="array", @OA\Items(ref="#/components/schemas/Pet")),
- *             @OA\Property(property="fostering_past", type="array", @OA\Items(ref="#/components/schemas/Pet")),
- *             @OA\Property(property="transferred_away", type="array", @OA\Items(ref="#/components/schemas/Pet"))
- *         )
- *     ),
- *
- *     @OA\Response(
- *         response=401,
- *         description="Unauthenticated"
- *     )
- * )
- */
+#[OA\Get(
+    path: '/api/my-pets/sections',
+    summary: 'Get the pets of the authenticated user, organized by section',
+    tags: ['Pets'],
+    security: [['sanctum' => []]],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "A list of the user's pets, organized by section",
+            content: new OA\JsonContent(
+                type: 'object',
+                properties: [
+                    new OA\Property(property: 'owned', type: 'array', items: new OA\Items(ref: '#/components/schemas/Pet')),
+                    new OA\Property(property: 'fostering_active', type: 'array', items: new OA\Items(ref: '#/components/schemas/Pet')),
+                    new OA\Property(property: 'fostering_past', type: 'array', items: new OA\Items(ref: '#/components/schemas/Pet')),
+                    new OA\Property(property: 'transferred_away', type: 'array', items: new OA\Items(ref: '#/components/schemas/Pet')),
+                ]
+            )
+        ),
+        new OA\Response(
+            response: 401,
+            description: 'Unauthenticated'
+        ),
+    ]
+)]
 class ListMyPetsSectionsController extends Controller
 {
     use ApiResponseTrait;
@@ -48,41 +48,39 @@ class ListMyPetsSectionsController extends Controller
         $user = $this->requireAuth($request);
 
         // Owned (current owner)
-        $owned = Pet::where('user_id', $user->id)->with('petType')->get();
+        $owned = Pet::whereHas('owners', function ($query) use ($user): void {
+            $query->where('users.id', $user->id);
+        })->with('petType')->get();
 
-        // Fostering active/past via assignments (guard if table not yet migrated in local/test envs)
-        if (Schema::hasTable('foster_assignments')) {
-            $activeFostering = FosterAssignment::where('foster_user_id', $user->id)
-                ->where('status', 'active')
-                ->with(['pet.petType'])
-                ->get()
-                ->pluck('pet');
+        // Fostering active/past via relationships
+        $activeFostering = Pet::whereHas('relationships', function ($query) use ($user): void {
+            $query->where('user_id', $user->id)
+                ->where('relationship_type', PetRelationshipType::FOSTER)
+                ->whereNull('end_at');
+        })->with('petType')->get();
 
-            $pastFostering = FosterAssignment::where('foster_user_id', $user->id)
-                ->whereIn('status', ['completed', 'canceled'])
-                ->with(['pet.petType'])
-                ->get()
-                ->pluck('pet');
-        } else {
-            $activeFostering = collect();
-            $pastFostering = collect();
-        }
+        $pastFostering = Pet::whereHas('relationships', function ($query) use ($user): void {
+            $query->where('user_id', $user->id)
+                ->where('relationship_type', PetRelationshipType::FOSTER)
+                ->whereNotNull('end_at');
+        })->with('petType')->get();
 
         // Transferred away: pets that the user used to own but no longer does
-        // Uses ownership_history if available
-        if (Schema::hasTable('ownership_history')) {
-            $transferredPetIds = OwnershipHistory::where('user_id', $user->id)
-                ->whereNotNull('to_ts')
-                ->pluck('pet_id')
-                ->unique();
+        // Uses pet_relationships to find pets with ended ownership
+        $transferredPetIds = PetRelationship::where('user_id', $user->id)
+            ->where('relationship_type', PetRelationshipType::OWNER)
+            ->whereNotNull('end_at')
+            ->pluck('pet_id')
+            ->unique();
 
-            $transferredAway = Pet::whereIn('id', $transferredPetIds)
-                ->where('user_id', '!=', $user->id)
-                ->with('petType')
-                ->get();
-        } else {
-            $transferredAway = collect();
-        }
+        $transferredAway = Pet::whereIn('id', $transferredPetIds)
+            ->whereDoesntHave('relationships', function ($query) use ($user): void {
+                $query->where('user_id', $user->id)
+                    ->where('relationship_type', PetRelationshipType::OWNER)
+                    ->whereNull('end_at');
+            })
+            ->with('petType')
+            ->get();
 
         return $this->sendSuccess([
             'owned' => $owned->values(),

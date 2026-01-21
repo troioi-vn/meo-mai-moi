@@ -1,0 +1,56 @@
+import { Clock, MessageCircle } from 'lucide-react'
+import type { PlacementRequestDetail, PlacementRequestResponse } from '@/types/placement'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
+interface PendingTransferSectionProps {
+  request: PlacementRequestDetail
+  acceptedResponse: PlacementRequestResponse
+  creatingChat: boolean
+  onChat: (userId: number) => Promise<void>
+}
+
+export function PendingTransferSection({
+  request,
+  acceptedResponse,
+  creatingChat,
+  onChat,
+}: PendingTransferSectionProps) {
+  if (request.status !== 'pending_transfer') return null
+
+  return (
+    <Card className="mb-6">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg">Awaiting Handover</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="rounded-md bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 p-4 space-y-3">
+          <div className="flex items-center gap-2 text-sm text-yellow-700 dark:text-yellow-400">
+            <Clock className="h-4 w-4" />
+            <span>
+              Waiting for {acceptedResponse.helper_profile?.user?.name ?? 'the helper'} to confirm
+              handover
+            </span>
+          </div>
+
+          {acceptedResponse.helper_profile?.user?.id && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                const id = acceptedResponse.helper_profile?.user?.id
+                if (id) {
+                  void onChat(id)
+                }
+              }}
+              disabled={creatingChat}
+              className="w-full"
+            >
+              <MessageCircle className="h-4 w-4 mr-2" />
+              {creatingChat ? 'Starting chat...' : 'Chat with Helper'}
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}

@@ -246,7 +246,7 @@ cd frontend && bun run test:e2e:keep  # Keep services running for debugging
 - Frontend build feeds backend views (see `welcome.blade.php`). Docker build compiles frontend first, then copies assets into the backend image.
 - Runtime setup happens in `backend/docker-entrypoint.sh` (e.g., `storage:link`). Check here for upload issues.
 - Email settings are database-driven via Filament at `/admin/email-configurations`. An active DB config overrides `.env` `MAIL_*`.
-- E2E tests use separate database (`meo_mai_moi_test`) and MailHog email configuration. The `E2ETestingSeeder` automatically sets up the complete test environment including email provider configuration.
+- E2E tests use separate database (`meo_mai_moi_testing`) and MailHog email configuration. The `E2ETestingSeeder` automatically sets up the complete test environment including email provider configuration.
 
 ## 7) Troubleshooting Guide
 
@@ -289,7 +289,7 @@ cd frontend && bun run test:e2e:keep  # Keep services running for debugging
   - Verify config: `docker compose exec backend php artisan email:verify-config --env=e2e`
   - Reset email config: `docker compose exec backend php artisan db:seed --class=E2EEmailConfigurationSeeder --env=e2e`
 - **Test Database Issues**:
-  - Use test database: `DB_DATABASE=meo_mai_moi_test` in backend/.env.e2e
+  - Use test database: `DB_DATABASE=meo_mai_moi_testing` in backend/.env.e2e
   - Fresh setup: `docker compose exec backend php artisan migrate:fresh --env=e2e`
 
 ## 8) Linting & formatting

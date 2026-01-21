@@ -79,7 +79,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
       # Create additional test database for PHPUnit tests to prevent wiping dev data
-      POSTGRES_TEST_DB: meo_mai_moi_test
+      POSTGRES_TEST_DB: ${POSTGRES_TEST_DB:-meo_mai_moi_testing}
     ports:
       - "5432:5432"
     volumes:

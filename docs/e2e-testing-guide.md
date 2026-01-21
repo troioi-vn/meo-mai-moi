@@ -142,7 +142,7 @@ test.beforeEach(async () => {
 
 ```bash
 # E2E tests use separate database
-DB_DATABASE=meo_mai_moi_test
+DB_DATABASE=meo_mai_moi_testing
 ```
 
 ### 6. **Handle Timing Issues**
@@ -229,7 +229,7 @@ echo "debug-*.png" >> frontend/.gitignore
 ```env
 # E2E Testing Environment
 APP_ENV=testing
-DB_DATABASE=meo_mai_moi_test
+DB_DATABASE=meo_mai_moi_testing
 
 # Email settings (fallback - database config takes precedence)
 MAIL_MAILER=smtp
@@ -305,7 +305,7 @@ test("sends welcome email after verification", async () => {
   expect(emails).toHaveLength(2); // Verification + Welcome
 
   const welcomeEmail = emails.find((e) =>
-    e.Content.Headers["Subject"][0].includes("Welcome")
+    e.Content.Headers["Subject"][0].includes("Welcome"),
   );
   expect(welcomeEmail).toBeTruthy();
 });

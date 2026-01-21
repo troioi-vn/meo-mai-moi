@@ -48,6 +48,15 @@ All notable changes to this project are documented here, following the [Keep a C
 
 - **Doubled Bell Notifications**: Fixed an issue where rehoming flow notifications appeared twice in the bell UI (once for 'in_app' channel and once for 'email' channel). The `bellVisible` scope now correctly filters out non-in-app notification channels from the bell count and list. Marking all notifications as read also now only affects bell-visible records to preserve engagement state for other channels. (Tests: `UnifiedNotificationsBellVisibilityTest` passed.)
 
+- **PostgreSQL Schema Compatibility**: Removed `SET transaction_timeout = 0;` from `pgsql-schema.sql` to fix "unrecognized configuration parameter" errors during parallel testing, as the schema was dumped with pg_dump 17 but Docker uses PostgreSQL 14.
+
+### Changed
+
+- **Test Database Configuration**: Improved test database setup for better parallel testing:
+  - Made `backend/scripts/init-test-db.sh` configurable via `POSTGRES_TEST_DB` environment variable with default `meo_mai_moi_testing`
+  - Updated default test database name from `meo_mai_moi_test` to `meo_mai_moi_testing` to avoid confusing double suffixes like `meo_mai_moi_test_test_1`
+  - Updated `phpunit.xml`, `docker-compose.yml`, and related docs to use the new naming convention
+
 - **Accessibility Improvements**: Fixed screen-reader labels to notification level icons (Success, Warning, Info, Error) and enhanced the notification bell's aria-label to include unread count for better accessibility.
 
 - **Duplicate native notifications**: Fixed an issue where bell notifications could appear twice (push + in-page native notification) during flows like rehoming. The `NotificationProvider` now detects an active Service Worker push subscription and suppresses in-page native notifications when device push is enabled; in-app toasts remain unaffected. (See `frontend/src/contexts/NotificationProvider.tsx` — tests: frontend suite passed.)

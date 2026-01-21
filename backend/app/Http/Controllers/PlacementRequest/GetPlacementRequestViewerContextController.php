@@ -138,7 +138,9 @@ class GetPlacementRequestViewerContextController extends Controller
         }
 
         // Owner check
-        if ($placementRequest->pet->isOwnedBy($user)) {
+        /** @var \App\Models\Pet $pet */
+        $pet = $placementRequest->pet;
+        if ($pet && $pet->isOwnedBy($user)) {
             return 'owner';
         }
 
@@ -200,8 +202,9 @@ class GetPlacementRequestViewerContextController extends Controller
 
         // Can confirm handover: is accepted helper with pending transfer
         $canConfirmHandover = $hasAcceptedResponse
-            && $myTransfer?->status === TransferRequestStatus::PENDING
-            && $myTransfer?->to_user_id === $user->id;
+            && $myTransfer
+            && $myTransfer->status === TransferRequestStatus::PENDING
+            && $myTransfer->to_user_id === $user->id;
 
         // Can finalize: is owner, request is active, and is temporary type
         $canFinalize = ($viewerRole === 'owner' || $viewerRole === 'admin')

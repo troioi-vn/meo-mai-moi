@@ -34,7 +34,7 @@ class GetUnifiedNotificationsController extends Controller
         if ($includeBellNotifications) {
             $items = (clone $baseBellQuery)->limit($limit)->get();
 
-            $bellNotifications = $items->map(function (Notification $n) {
+            $bellNotifications = $items->map(function ($n) {
                 return [
                     'id' => (string) $n->id,
                     'level' => $n->getBellLevel(),

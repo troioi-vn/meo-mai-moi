@@ -106,12 +106,16 @@ class FinalizePlacementRequestController extends Controller
             }
 
             if ($helperUser) {
-                // End the active placement relationship for the helper (sitter or foster)
-                $this->petRelationshipService->endActiveRelationshipsByTypes(
-                    $helperUser,
-                    $placementRequest->pet,
-                    [PetRelationshipType::FOSTER, PetRelationshipType::SITTER]
-                );
+                /** @var \App\Models\Pet $pet */
+                $pet = $placementRequest->pet;
+                if ($pet) {
+                    // End the active placement relationship for the helper (sitter or foster)
+                    $this->petRelationshipService->endActiveRelationshipsByTypes(
+                        $helperUser,
+                        $pet,
+                        [PetRelationshipType::FOSTER, PetRelationshipType::SITTER]
+                    );
+                }
 
                 // Notify helper that the placement has ended
                 $this->notificationService->send(

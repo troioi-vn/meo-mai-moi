@@ -76,7 +76,7 @@ class CancelTransferRequestController extends Controller
                     /** @var \App\Models\User|null $helper */
                     $helper = User::find($transferRequest->to_user_id);
                     $helperName = $helper ? $helper->name : 'A helper';
-                    $placementRequestId = $transferRequest->placementRequest?->id
+                    $placementRequestId = ($transferRequest->placementRequest ? $transferRequest->placementRequest->id : null)
                         ?? $transferRequest->placementRequestResponse?->placement_request_id;
 
                     $this->notificationService->send(

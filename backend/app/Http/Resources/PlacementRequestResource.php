@@ -45,10 +45,10 @@ class PlacementRequestResource extends JsonResource
             'response_count' => $this->whenLoaded('responses', fn () => $this->responses->count(), 0),
 
             // Pet snapshot (breadcrumb context)
-            'pet' => $this->when($this->relationLoaded('pet'), fn () => $this->formatPetSnapshot()),
+            'pet' => $this->when($this->resource->relationLoaded('pet'), fn () => $this->formatPetSnapshot()),
 
             // Owner info (privacy-safe: only display name, no email/phone)
-            'owner' => $this->when($this->relationLoaded('user') && $this->user, fn () => [
+            'owner' => $this->when($this->resource->relationLoaded('user') && $this->user, fn () => [
                 'id' => $this->user->id,
                 'name' => $this->user->name,
             ]),
@@ -59,7 +59,7 @@ class PlacementRequestResource extends JsonResource
 
         // Transfer requests (for owner/admin or parties involved)
         $data['transfer_requests'] = $this->when(
-            $this->relationLoaded('transferRequests'),
+            $this->resource->relationLoaded('transferRequests'),
             fn () => $this->formatTransferRequestsForRole($user, $viewerRole)
         );
 
@@ -99,12 +99,12 @@ class PlacementRequestResource extends JsonResource
         }
 
         // Owner check
-        if ($this->relationLoaded('pet') && $this->pet->isOwnedBy($user)) {
+        if ($this->resource->relationLoaded('pet') && $this->pet && $this->pet->isOwnedBy($user)) {
             return 'owner';
         }
 
         // Helper check
-        if ($this->relationLoaded('responses')) {
+        if ($this->resource->relationLoaded('responses')) {
             $hasResponded = $this->responses
                 ->contains(fn ($r) => $r->helperProfile?->user_id === $user->id);
             if ($hasResponded) {
@@ -112,7 +112,7 @@ class PlacementRequestResource extends JsonResource
             }
         }
 
-        if ($this->relationLoaded('transferRequests')) {
+        if ($this->resource->relationLoaded('transferRequests')) {
             $isTransferParty = $this->transferRequests
                 ->contains(fn ($t) => $t->from_user_id === $user->id || $t->to_user_id === $user->id);
             if ($isTransferParty) {
@@ -164,7 +164,7 @@ class PlacementRequestResource extends JsonResource
      */
     private function formatResponsesForRole(?\App\Models\User $user, string $viewerRole): array
     {
-        if (! $this->relationLoaded('responses')) {
+        if (! $this->resource->relationLoaded('responses')) {
             return [];
         }
 
@@ -301,7 +301,7 @@ class PlacementRequestResource extends JsonResource
      */
     private function findMyResponseId(?\App\Models\User $user): ?int
     {
-        if (! $user || ! $this->relationLoaded('responses')) {
+        if (! $user || ! $this->resource->relationLoaded('responses')) {
             return null;
         }
 
@@ -339,7 +339,7 @@ class PlacementRequestResource extends JsonResource
 
         // Find user's response
         $myResponse = null;
-        if ($this->relationLoaded('responses')) {
+        if ($this->resource->relationLoaded('responses')) {
             $myResponse = $this->responses->first(fn ($r) => $r->helperProfile?->user_id === $user->id);
         }
 
@@ -347,7 +347,7 @@ class PlacementRequestResource extends JsonResource
         $myTransfer = null;
         if ($myResponse?->relationLoaded('transferRequest')) {
             $myTransfer = $myResponse->transferRequest;
-        } elseif ($this->relationLoaded('transferRequests')) {
+        } elseif ($this->resource->relationLoaded('transferRequests')) {
             $myTransfer = $this->transferRequests
                 ->first(fn ($t) => $t->from_user_id === $user->id || $t->to_user_id === $user->id);
         }
@@ -373,8 +373,9 @@ class PlacementRequestResource extends JsonResource
             'can_accept_responses' => ($viewerRole === 'owner' || $viewerRole === 'admin') && $isOpen,
             'can_reject_responses' => ($viewerRole === 'owner' || $viewerRole === 'admin') && $isOpen,
             'can_confirm_handover' => $hasAcceptedResponse
-                && $myTransfer?->status === TransferRequestStatus::PENDING
-                && $myTransfer?->to_user_id === $user->id,
+                && $myTransfer
+                && $myTransfer->status === TransferRequestStatus::PENDING
+                && $myTransfer->to_user_id === $user->id,
             'can_finalize' => ($viewerRole === 'owner' || $viewerRole === 'admin') && $isActive && $isTemporary,
             'can_delete_request' => ($viewerRole === 'owner' || $viewerRole === 'admin') && $isOpen,
         ];
@@ -393,7 +394,7 @@ class PlacementRequestResource extends JsonResource
 
         if ($viewerRole === 'owner') {
             // Owner chatting with accepted helper
-            if ($this->relationLoaded('responses')) {
+            if ($this->resource->relationLoaded('responses')) {
                 $acceptedResponse = $this->responses
                     ->first(fn ($r) => $r->status === PlacementResponseStatus::ACCEPTED);
                 $counterpartyId = $acceptedResponse?->helperProfile?->user_id;

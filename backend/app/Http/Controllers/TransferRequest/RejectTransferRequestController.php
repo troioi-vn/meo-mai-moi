@@ -71,7 +71,7 @@ class RejectTransferRequestController extends Controller
             if ($pet) {
                 $helper = User::find($transferRequest->to_user_id);
                 if ($helper) {
-                    $placementRequestId = $transferRequest->placementRequest?->id
+                    $placementRequestId = ($transferRequest->placementRequest ? $transferRequest->placementRequest->id : null)
                         ?? $transferRequest->placementRequestResponse?->placement_request_id;
 
                     $this->notificationService->send(

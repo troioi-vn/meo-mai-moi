@@ -44,7 +44,9 @@ class PlacementRequestPolicy
         }
 
         // Pet owner check
-        if ($placementRequest->pet->isOwnedBy($user)) {
+        /** @var \App\Models\Pet $pet */
+        $pet = $placementRequest->pet;
+        if ($pet && $pet->isOwnedBy($user)) {
             return true;
         }
 
@@ -73,7 +75,9 @@ class PlacementRequestPolicy
         }
 
         // Helper check: has active placement relationship (foster/sitter) for this pet
-        $hasActiveRelationship = $placementRequest->pet->relationships()
+        /** @var \App\Models\Pet $pet */
+        $pet = $placementRequest->pet;
+        $hasActiveRelationship = $pet->relationships()
             ->where('user_id', $user->id)
             ->whereIn('relationship_type', ['foster', 'sitter'])
             ->whereNull('end_at')
@@ -94,23 +98,31 @@ class PlacementRequestPolicy
 
     public function update(User $user, PlacementRequest $placementRequest): bool
     {
-        return $this->isAdmin($user) || $placementRequest->pet->isOwnedBy($user);
+        /** @var \App\Models\Pet $pet */
+        $pet = $placementRequest->pet;
+        return $this->isAdmin($user) || ($pet && $pet->isOwnedBy($user));
     }
 
     public function delete(User $user, PlacementRequest $placementRequest): bool
     {
-        return $this->isAdmin($user) || $placementRequest->pet->isOwnedBy($user);
+        /** @var \App\Models\Pet $pet */
+        $pet = $placementRequest->pet;
+        return $this->isAdmin($user) || ($pet && $pet->isOwnedBy($user));
     }
 
     // Custom abilities for owner actions
     public function confirm(User $user, PlacementRequest $placementRequest): bool
     {
-        return $this->isAdmin($user) || $placementRequest->pet->isOwnedBy($user);
+        /** @var \App\Models\Pet $pet */
+        $pet = $placementRequest->pet;
+        return $this->isAdmin($user) || ($pet && $pet->isOwnedBy($user));
     }
 
     public function reject(User $user, PlacementRequest $placementRequest): bool
     {
-        return $this->isAdmin($user) || $placementRequest->pet->isOwnedBy($user);
+        /** @var \App\Models\Pet $pet */
+        $pet = $placementRequest->pet;
+        return $this->isAdmin($user) || ($pet && $pet->isOwnedBy($user));
     }
 
     // Admin-only for bulk/advanced actions

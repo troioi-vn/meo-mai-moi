@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\MedicalNote;
 
 use App\Http\Controllers\Controller;

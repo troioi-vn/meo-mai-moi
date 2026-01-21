@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Enums\PetRelationshipType;
@@ -190,11 +192,11 @@ class PetRelationshipService
      */
     public function getPetsByRelationshipType(User $user, PetRelationshipType $type): Collection
     {
-        return Pet::whereHas('relationships', function ($query) use ($user, $type) {
+        return Pet::whereHas('relationships', function ($query) use ($user, $type): void {
             $query->where('user_id', $user->id)
                 ->where('relationship_type', $type)
                 ->whereNull('end_at');
-        })->with(['petType', 'relationships' => function ($query) use ($user, $type) {
+        })->with(['petType', 'relationships' => function ($query) use ($user, $type): void {
             $query->where('user_id', $user->id)
                 ->where('relationship_type', $type)
                 ->whereNull('end_at');

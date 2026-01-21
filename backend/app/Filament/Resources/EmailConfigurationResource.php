@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\EmailConfigurationResource\Pages;
@@ -63,7 +65,7 @@ class EmailConfigurationResource extends Resource
                             ])
                             ->required()
                             ->live()
-                            ->afterStateUpdated(function (Forms\Set $set) {
+                            ->afterStateUpdated(function (Forms\Set $set): void {
                                 // Clear config when provider changes (interactive UX) but keep
                                 // provided test data intact during automated tests where we
                                 // set provider + config in a single fillForm() call.
@@ -463,7 +465,6 @@ class EmailConfigurationResource extends Resource
                                 ->body('Email configuration has been activated and tested successfully. Email notifications are now enabled.')
                                 ->success()
                                 ->send();
-
                         } catch (\App\Exceptions\EmailConfigurationException $e) {
                             $body = $e->getMessage();
                             if ($e->hasValidationErrors()) {

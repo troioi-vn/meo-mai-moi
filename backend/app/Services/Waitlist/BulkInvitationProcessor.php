@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Waitlist;
 
 use App\Models\User;
@@ -19,7 +21,7 @@ class BulkInvitationProcessor
     {
         $results = [];
 
-        DB::transaction(function () use ($emails, $inviter, $inviteCallback, &$results) {
+        DB::transaction(function () use ($emails, $inviter, $inviteCallback, &$results): void {
             foreach ($emails as $email) {
                 $results[] = $this->processInvitation($email, $inviter, $inviteCallback);
             }

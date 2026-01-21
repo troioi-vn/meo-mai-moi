@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources;
 
 use App\Enums\HelperProfileStatus;
@@ -247,7 +249,7 @@ class HelperProfileResource extends Resource
                             return $query;
                         }
 
-                        return $query->where(function (Builder $q) use ($data) {
+                        return $query->where(function (Builder $q) use ($data): void {
                             foreach ($data['values'] as $type) {
                                 $q->orWhereJsonContains('request_types', $type);
                             }

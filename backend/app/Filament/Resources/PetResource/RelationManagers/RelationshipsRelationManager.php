@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\PetResource\RelationManagers;
 
 use App\Enums\PetRelationshipType;
@@ -112,7 +114,7 @@ class RelationshipsRelationManager extends RelationManager
                             ->default(now())
                             ->required(),
                     ])
-                    ->action(function (RelationManager $livewire, array $data) {
+                    ->action(function (RelationManager $livewire, array $data): void {
                         /** @var \App\Models\Pet $pet */
                         $pet = $livewire->getOwnerRecord();
 
@@ -143,7 +145,7 @@ class RelationshipsRelationManager extends RelationManager
                     ->color('danger')
                     ->requiresConfirmation()
                     ->visible(fn (PetRelationship $record) => $record->isActive())
-                    ->action(function (PetRelationship $record) {
+                    ->action(function (PetRelationship $record): void {
                         $record->update(['end_at' => now()]);
 
                         Notification::make()

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -26,7 +28,7 @@ class DeleteAccountRequest extends FormRequest
             'password' => [
                 'required',
                 'string',
-                function ($attribute, $value, $fail) {
+                function ($attribute, $value, $fail): void {
                     if (! Hash::check($value, $this->user()->password)) {
                         $fail('The provided password does not match your current password.');
                     }

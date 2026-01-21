@@ -1,15 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Traits;
 
 use Illuminate\Http\JsonResponse;
 
 trait ApiResponseTrait
 {
-    /**
-     * @param  mixed  $data
-     */
-    public function sendSuccess($data, int $statusCode = 200): JsonResponse
+    public function sendSuccess(mixed $data, int $statusCode = 200): JsonResponse
     {
         return response()->json([
             'data' => $data,
@@ -23,10 +22,7 @@ trait ApiResponseTrait
         ], $statusCode);
     }
 
-    /**
-     * @param  mixed  $data
-     */
-    public function sendSuccessWithMeta($data, ?string $message = null, int $statusCode = 200): JsonResponse
+    public function sendSuccessWithMeta(mixed $data, ?string $message = null, int $statusCode = 200): JsonResponse
     {
         $response = [
             'data' => $data,

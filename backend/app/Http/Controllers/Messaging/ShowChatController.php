@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Messaging;
 
 use App\Http\Controllers\Controller;
@@ -18,7 +20,7 @@ class ShowChatController extends Controller
         $this->authorize('view', $chat);
 
         $chat->load([
-            'activeParticipants' => function ($query) {
+            'activeParticipants' => function ($query): void {
                 $query->select('users.id', 'users.name', 'users.email');
             },
         ]);

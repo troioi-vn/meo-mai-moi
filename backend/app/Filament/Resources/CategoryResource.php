@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CategoryResource\Pages;
@@ -41,7 +43,7 @@ class CategoryResource extends Resource
                     ->required()
                     ->maxLength(50)
                     ->live(onBlur: true)
-                    ->afterStateUpdated(function (string $context, $state, callable $set) {
+                    ->afterStateUpdated(function (string $context, $state, callable $set): void {
                         if ($context === 'create') {
                             $set('slug', Str::slug($state));
                         }
@@ -68,7 +70,7 @@ class CategoryResource extends Resource
                     ->label('Approved')
                     ->helperText('Approved categories are visible to all users')
                     ->dehydrated(false)
-                    ->afterStateHydrated(function ($component, $record) {
+                    ->afterStateHydrated(function ($component, $record): void {
                         if ($record) {
                             $component->state($record->approved_at !== null);
                         }
@@ -79,7 +81,7 @@ class CategoryResource extends Resource
                     ->disabled()
                     ->dehydrated(false)
                     ->visible(fn ($record) => $record && $record->creator)
-                    ->afterStateHydrated(function ($component, $record) {
+                    ->afterStateHydrated(function ($component, $record): void {
                         if ($record && $record->creator) {
                             $component->state($record->creator->name);
                         }
@@ -183,7 +185,7 @@ class CategoryResource extends Resource
                     ->modalDescription(fn ($record) => $record->approved_at
                         ? 'This will hide the category from users who did not create it.'
                         : 'This will make the category visible to all users.')
-                    ->action(function ($record) {
+                    ->action(function ($record): void {
                         if ($record->approved_at) {
                             $record->update(['approved_at' => null]);
                             Notification::make()
@@ -207,7 +209,7 @@ class CategoryResource extends Resource
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
                         ->requiresConfirmation()
-                        ->action(function ($records) {
+                        ->action(function ($records): void {
                             $records->each(fn ($record) => $record->update(['approved_at' => now()]));
                             Notification::make()
                                 ->title('Categories approved')

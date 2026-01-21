@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Notification;
 
 use App\Enums\NotificationType;
@@ -18,11 +20,15 @@ use OpenApi\Attributes as OA;
         new OA\Parameter(name: 'status', in: 'query', required: false, schema: new OA\Schema(type: 'string', enum: ['all', 'unread'])),
     ],
     responses: [
-        new OA\Response(response: 200, description: 'OK',
+        new OA\Response(
+            response: 200,
+            description: 'OK',
             content: new OA\JsonContent(
                 type: 'object',
                 properties: [
-                    new OA\Property(property: 'data', type: 'array',
+                    new OA\Property(
+                        property: 'data',
+                        type: 'array',
                         items: new OA\Items(
                             properties: [
                                 new OA\Property(property: 'id', type: 'string'),
@@ -49,11 +55,11 @@ class ListNotificationsController extends Controller
         $status = $request->query('status', 'all');
         $query = Notification::where('user_id', Auth::id())
             // Hide email verification reminders from the bell menu
-            ->where(function ($q) {
+            ->where(function ($q): void {
                 $q->whereNull('type')
                     ->orWhere('type', '!=', NotificationType::EMAIL_VERIFICATION->value);
             })
-            ->when($status === 'unread', function ($q) {
+            ->when($status === 'unread', function ($q): void {
                 $q->unread();
             })
             ->latest();

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Models\Invitation;
@@ -12,15 +14,11 @@ class TestEmailSystem extends Command
 {
     /**
      * The name and signature of the console command.
-     *
-     * @var string
      */
     protected $signature = 'test:email-system';
 
     /**
      * The console command description.
-     *
-     * @var string
      */
     protected $description = 'Test the email notification system';
 
@@ -42,7 +40,7 @@ class TestEmailSystem extends Command
             try {
                 Mail::send('emails.waitlist-confirmation', [
                     'waitlistEntry' => $waitlistEntry,
-                ], function ($message) use ($waitlistEntry) {
+                ], function ($message) use ($waitlistEntry): void {
                     $message->to($waitlistEntry->email)
                         ->subject('You\'re on the waitlist for '.config('app.name').'!');
                 });
@@ -65,7 +63,7 @@ class TestEmailSystem extends Command
                     'inviter' => $inviter,
                     'invitation' => $invitation,
                     'invitationUrl' => $invitation->getInvitationUrl(),
-                ], function ($message) {
+                ], function ($message): void {
                     $message->to('test-invite@example.com')
                         ->subject('You\'re invited to join '.config('app.name').'!');
                 });

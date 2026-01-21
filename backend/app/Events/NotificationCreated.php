@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Events;
 
 use App\Models\Notification;
@@ -13,7 +15,9 @@ class NotificationCreated implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public Notification $notification) {}
+    public function __construct(public Notification $notification)
+    {
+    }
 
     public function broadcastOn(): array
     {

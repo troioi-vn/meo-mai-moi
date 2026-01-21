@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TransferRequestResource\Pages;
@@ -188,7 +190,7 @@ class TransferRequestResource extends Resource
                     ->color('success')
                     ->visible(fn ($record) => $record->status->value === 'pending')
                     ->requiresConfirmation()
-                    ->action(function ($record) {
+                    ->action(function ($record): void {
                         $record->update([
                             'status' => 'confirmed',
                             'confirmed_at' => now(),
@@ -206,7 +208,7 @@ class TransferRequestResource extends Resource
                     ->color('danger')
                     ->visible(fn ($record) => $record->status->value === 'pending')
                     ->requiresConfirmation()
-                    ->action(function ($record) {
+                    ->action(function ($record): void {
                         $record->update([
                             'status' => 'rejected',
                             'rejected_at' => now(),
@@ -227,7 +229,7 @@ class TransferRequestResource extends Resource
                         ->icon('heroicon-o-check')
                         ->color('success')
                         ->requiresConfirmation()
-                        ->action(function ($records) {
+                        ->action(function ($records): void {
                             $count = 0;
                             foreach ($records as $record) {
                                 if ($record->status->value === 'pending') {
@@ -250,7 +252,7 @@ class TransferRequestResource extends Resource
                         ->icon('heroicon-o-x-mark')
                         ->color('danger')
                         ->requiresConfirmation()
-                        ->action(function ($records) {
+                        ->action(function ($records): void {
                             $count = 0;
                             foreach ($records as $record) {
                                 if ($record->status->value === 'pending') {

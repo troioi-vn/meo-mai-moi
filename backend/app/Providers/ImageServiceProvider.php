@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
@@ -18,7 +20,7 @@ class ImageServiceProvider extends ServiceProvider
             $driver = $app->make('config')->get('image.driver', 'gd');
 
             return new ImageManager(
-                $driver === 'imagick' ? new ImagickDriver : new GdDriver
+                $driver === 'imagick' ? new ImagickDriver() : new GdDriver()
             );
         });
     }

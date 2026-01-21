@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources;
 
 use App\Enums\PetTypeStatus;
@@ -44,7 +46,7 @@ class PetTypeResource extends Resource
                     ->maxLength(255)
                     ->unique(ignoreRecord: true)
                     ->live(onBlur: true)
-                    ->afterStateUpdated(function (string $context, $state, callable $set) {
+                    ->afterStateUpdated(function (string $context, $state, callable $set): void {
                         if ($context === 'create') {
                             $set('slug', Str::slug($state));
                         }
@@ -205,7 +207,7 @@ class PetTypeResource extends Resource
                             ? 'This will prevent new pets of this type from being created.'
                             : 'This will allow new pets of this type to be created again.';
                     })
-                    ->action(function ($record) {
+                    ->action(function ($record): void {
                         if ($record->slug === 'cat' && $record->isActive()) {
                             Notification::make()
                                 ->title('Cannot deactivate Cat pet type')
@@ -280,7 +282,9 @@ class PetTypeResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::count();
+        $count = static::getModel()::count();
+
+        return $count > 0 ? (string) $count : null;
     }
 
     public static function canDelete($record): bool

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications;
 
 use App\Enums\NotificationType;
@@ -49,7 +51,7 @@ class VerifyEmail extends BaseVerifyEmail implements ShouldQueue
     {
         $verificationUrl = $this->verificationUrl($notifiable);
 
-        return (new MailMessage)
+        return (new MailMessage())
             ->subject('Verify Your Email Address - '.config('app.name'))
             ->markdown('emails.email-verification', [
                 'user' => $notifiable,

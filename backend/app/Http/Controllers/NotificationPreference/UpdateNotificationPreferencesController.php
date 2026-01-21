@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\NotificationPreference;
 
 use App\Http\Controllers\Controller;
@@ -18,7 +20,9 @@ use OpenApi\Attributes as OA;
         content: new OA\JsonContent(
             type: 'object',
             properties: [
-                new OA\Property(property: 'preferences', type: 'array',
+                new OA\Property(
+                    property: 'preferences',
+                    type: 'array',
                     items: new OA\Items(
                         properties: [
                             new OA\Property(property: 'type', type: 'string'),
@@ -31,7 +35,9 @@ use OpenApi\Attributes as OA;
         )
     ),
     responses: [
-        new OA\Response(response: 200, description: 'OK',
+        new OA\Response(
+            response: 200,
+            description: 'OK',
             content: new OA\JsonContent(
                 type: 'object',
                 properties: [

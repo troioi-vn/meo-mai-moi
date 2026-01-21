@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Enums\NotificationType;
@@ -29,7 +31,7 @@ class SendBirthdayReminders extends Command
         $query = Pet::query()
             ->whereNotNull('birthday')
             ->with(['owners', 'petType'])
-            ->where(function ($q) use ($month, $day) {
+            ->where(function ($q) use ($month, $day): void {
                 // For pets with exact birthday (precision = day)
                 $q->whereRaw('EXTRACT(MONTH FROM birthday) = ? AND EXTRACT(DAY FROM birthday) = ?', [$month, $day]);
             });
@@ -37,7 +39,7 @@ class SendBirthdayReminders extends Command
         $count = 0;
         $service = app(NotificationService::class);
 
-        $query->chunkById(100, function ($pets) use (&$count, $service) {
+        $query->chunkById(100, function ($pets) use (&$count, $service): void {
             foreach ($pets as $pet) {
                 // Get current owners of the pet
                 $owners = $pet->owners;

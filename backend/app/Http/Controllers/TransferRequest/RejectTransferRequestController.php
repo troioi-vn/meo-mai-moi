@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\TransferRequest;
 
 use App\Enums\NotificationType;
@@ -43,7 +45,8 @@ class RejectTransferRequestController extends Controller
 
     public function __construct(
         protected NotificationService $notificationService
-    ) {}
+    ) {
+    }
 
     public function __invoke(Request $request, TransferRequest $transferRequest)
     {

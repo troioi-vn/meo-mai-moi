@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\PetResource\Pages;
 
 use App\Filament\Resources\PetResource;
@@ -24,48 +26,6 @@ class ManagePhotos extends ManageRelatedRecords
     public static function getNavigationLabel(): string
     {
         return 'Photos';
-    }
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\Action::make('upload_photo')
-                ->label('Upload Photo')
-                ->icon('heroicon-o-plus')
-                ->form([
-                    \Filament\Forms\Components\FileUpload::make('photo')
-                        ->label('Photo')
-                        ->image()
-                        ->imageEditor()
-                        ->imageEditorAspectRatios(['4:3', '16:9', '1:1'])
-                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif'])
-                        ->maxSize(10240)
-                        ->required(),
-                ])
-                ->action(function (array $data) {
-                    /** @var \App\Models\Pet $pet */
-                    $pet = $this->getOwnerRecord();
-
-                    // Get the uploaded file path
-                    $filePath = storage_path('app/public/'.$data['photo']);
-
-                    // Add new photo from uploaded file
-                    if (file_exists($filePath)) {
-                        $pet->addMedia($filePath)
-                            ->toMediaCollection('photos');
-
-                        \Filament\Notifications\Notification::make()
-                            ->title('Photo uploaded successfully')
-                            ->success()
-                            ->send();
-                    } else {
-                        \Filament\Notifications\Notification::make()
-                            ->title('Failed to upload photo')
-                            ->danger()
-                            ->send();
-                    }
-                }),
-        ];
     }
 
     public function table(Table $table): Table
@@ -104,5 +64,47 @@ class ManagePhotos extends ManageRelatedRecords
                 ]),
             ])
             ->modifyQueryUsing(fn ($query) => $query->where('collection_name', 'photos'));
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\Action::make('upload_photo')
+                ->label('Upload Photo')
+                ->icon('heroicon-o-plus')
+                ->form([
+                    \Filament\Forms\Components\FileUpload::make('photo')
+                        ->label('Photo')
+                        ->image()
+                        ->imageEditor()
+                        ->imageEditorAspectRatios(['4:3', '16:9', '1:1'])
+                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif'])
+                        ->maxSize(10240)
+                        ->required(),
+                ])
+                ->action(function (array $data): void {
+                    /** @var \App\Models\Pet $pet */
+                    $pet = $this->getOwnerRecord();
+
+                    // Get the uploaded file path
+                    $filePath = storage_path('app/public/'.$data['photo']);
+
+                    // Add new photo from uploaded file
+                    if (file_exists($filePath)) {
+                        $pet->addMedia($filePath)
+                            ->toMediaCollection('photos');
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('Photo uploaded successfully')
+                            ->success()
+                            ->send();
+                    } else {
+                        \Filament\Notifications\Notification::make()
+                            ->title('Failed to upload photo')
+                            ->danger()
+                            ->send();
+                    }
+                }),
+        ];
     }
 }

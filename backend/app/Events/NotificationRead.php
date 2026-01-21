@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Events;
 
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -17,7 +19,8 @@ class NotificationRead implements ShouldBroadcast
         public ?string $notificationId,
         public bool $all,
         public int $unreadBellCount,
-    ) {}
+    ) {
+    }
 
     public function broadcastOn(): array
     {

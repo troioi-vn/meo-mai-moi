@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Unsubscribe;
 
 use App\Http\Controllers\Controller;
@@ -14,7 +16,8 @@ class ProcessUnsubscribeController extends Controller
 {
     public function __construct(
         protected UnsubscribeService $unsubscribeService
-    ) {}
+    ) {
+    }
 
     public function __invoke(Request $request): JsonResponse
     {
@@ -25,7 +28,7 @@ class ProcessUnsubscribeController extends Controller
         ]);
 
         $success = $this->unsubscribeService->unsubscribe(
-            $request->input('user'),
+            (int) $request->input('user'),
             $request->input('type'),
             $request->input('token')
         );

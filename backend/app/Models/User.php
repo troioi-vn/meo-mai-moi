@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Enums\PetRelationshipType;
@@ -279,11 +281,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
     /**
      * Send the password reset notification.
      * Uses Laravel's native notification system with custom EmailLog integration.
-     *
-     * @param  string  $token
-     * @return void
      */
-    public function sendPasswordResetNotification($token)
+    public function sendPasswordResetNotification($token): void
     {
         // Use Laravel's proper notification system
         // This will integrate with your EmailLog system via the CustomPasswordReset notification
@@ -293,12 +292,10 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
     /**
      * Send the email verification notification.
      * Uses our custom notification system for consistent email handling.
-     *
-     * @return void
      */
-    public function sendEmailVerificationNotification()
+    public function sendEmailVerificationNotification(): void
     {
-        $this->notify(new \App\Notifications\VerifyEmail);
+        $this->notify(new \App\Notifications\VerifyEmail());
     }
 
     /**
@@ -346,7 +343,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
             $convertedUrl = $this->getFirstMediaUrl('avatar');
         }
 
-        return $convertedUrl ?: null;
+        return $convertedUrl ? $convertedUrl : null;
     }
 
     /**

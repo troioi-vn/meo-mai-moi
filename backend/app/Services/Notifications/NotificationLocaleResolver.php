@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Notifications;
 
 use Illuminate\Http\Request;
@@ -27,7 +29,7 @@ class NotificationLocaleResolver
         // Normalize
         $candidate = substr((string) $candidate, 0, 5);
 
-        return $candidate ?: 'en';
+        return $candidate ? $candidate : 'en';
     }
 
     public function fallbackChain(string $primary): array

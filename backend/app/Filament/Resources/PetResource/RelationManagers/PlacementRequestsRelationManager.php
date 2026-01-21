@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\PetResource\RelationManagers;
 
 use App\Services\PetCapabilityService;
@@ -172,7 +174,7 @@ class PlacementRequestsRelationManager extends RelationManager
                     ->color('success')
                     ->visible(fn ($record) => $record->status === 'active')
                     ->requiresConfirmation()
-                    ->action(function ($record) {
+                    ->action(function ($record): void {
                         $record->update(['status' => 'fulfilled']);
 
                         Notification::make()
@@ -187,7 +189,7 @@ class PlacementRequestsRelationManager extends RelationManager
                     ->color('danger')
                     ->visible(fn ($record) => $record->status === 'active')
                     ->requiresConfirmation()
-                    ->action(function ($record) {
+                    ->action(function ($record): void {
                         $record->update(['status' => 'canceled']);
 
                         Notification::make()

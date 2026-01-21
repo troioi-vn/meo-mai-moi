@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Channels;
 
 use App\Jobs\SendNotificationEmail;
@@ -12,7 +14,7 @@ class NotificationEmailChannel
     /**
      * Send the given notification.
      */
-    public function send($notifiable, LaravelNotification $notification)
+    public function send($notifiable, LaravelNotification $notification): void
     {
         // Get the notification data from the notification class
         if (! method_exists($notification, 'toNotificationEmail')) {

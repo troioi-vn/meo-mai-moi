@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Waitlist;
 
 use App\Http\Controllers\Controller;
@@ -69,7 +71,8 @@ class JoinWaitlistController extends Controller
 
     public function __construct(
         private WaitlistService $waitlistService
-    ) {}
+    ) {
+    }
 
     public function __invoke(Request $request)
     {

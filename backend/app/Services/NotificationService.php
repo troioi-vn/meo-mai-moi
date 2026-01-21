@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\NotificationPreference;
@@ -26,8 +28,8 @@ class NotificationService
     ) {
         $emailConfigService = $emailConfigurationService ?? app(EmailConfigurationService::class);
 
-        $this->emailChannel = $emailChannel ?? new EmailNotificationChannel;
-        $this->inAppChannel = $inAppChannel ?? new InAppNotificationChannel;
+        $this->emailChannel = $emailChannel ?? new EmailNotificationChannel();
+        $this->inAppChannel = $inAppChannel ?? new InAppNotificationChannel();
         $this->fallbackChannel = new InAppNotificationChannel(true);
         $this->configStatusBuilder = new EmailConfigurationStatusBuilder($emailConfigService);
     }

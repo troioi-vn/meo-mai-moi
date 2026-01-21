@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Settings;
@@ -20,7 +22,8 @@ class GoogleAuthController extends Controller
     public function __construct(
         private readonly InvitationService $invitationService,
         private readonly WaitlistService $waitlistService,
-    ) {}
+    ) {
+    }
 
     public function redirect(Request $request): RedirectResponse
     {

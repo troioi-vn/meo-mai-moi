@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\EmailConfigurationResource\Pages;
 
 use App\Filament\Resources\EmailConfigurationResource;
@@ -13,6 +15,129 @@ use Filament\Resources\Pages\ViewRecord;
 class ViewEmailConfiguration extends ViewRecord
 {
     protected static string $resource = EmailConfigurationResource::class;
+
+    public function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Infolists\Components\Section::make('Configuration Overview')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('provider')
+                            ->label('Provider')
+                            ->badge()
+                            ->color(fn (string $state): string => match ($state) {
+                                'smtp' => 'info',
+                                'mailgun' => 'success',
+                                default => 'gray',
+                            })
+                            ->formatStateUsing(fn (string $state): string => strtoupper($state)),
+
+                        Infolists\Components\TextEntry::make('status')
+                            ->label('Active Status')
+                            ->badge()
+                            ->formatStateUsing(fn (\App\Enums\EmailConfigurationStatus $state): string => match ($state) {
+                                \App\Enums\EmailConfigurationStatus::ACTIVE => 'Active',
+                                \App\Enums\EmailConfigurationStatus::INACTIVE => 'Inactive',
+                                \App\Enums\EmailConfigurationStatus::DRAFT => 'Draft',
+                            })
+                            ->color(fn (\App\Enums\EmailConfigurationStatus $state): string => match ($state) {
+                                \App\Enums\EmailConfigurationStatus::ACTIVE => 'success',
+                                \App\Enums\EmailConfigurationStatus::INACTIVE => 'gray',
+                                \App\Enums\EmailConfigurationStatus::DRAFT => 'warning',
+                            }),
+
+                        Infolists\Components\TextEntry::make('validation_status')
+                            ->label('Configuration Status')
+                            ->badge()
+                            ->color(fn (): string => $this->record instanceof \App\Models\EmailConfiguration && $this->record->isValid() ? 'success' : 'danger')
+                            ->formatStateUsing(fn (): string => $this->record instanceof \App\Models\EmailConfiguration && $this->record->isValid() ? 'Valid' : 'Invalid'),
+
+                        Infolists\Components\TextEntry::make('created_at')
+                            ->label('Created')
+                            ->dateTime(),
+
+                        Infolists\Components\TextEntry::make('updated_at')
+                            ->label('Last Updated')
+                            ->dateTime(),
+                    ])
+                    ->columns(3),
+
+                Infolists\Components\Section::make('Email Settings')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('config.from_address')
+                            ->label('From Email Address')
+                            ->copyable()
+                            ->copyMessage('Email address copied')
+                            ->copyMessageDuration(1500),
+
+                        Infolists\Components\TextEntry::make('config.from_name')
+                            ->label('From Name')
+                            ->placeholder('Not set'),
+                    ])
+                    ->columns(2),
+
+                Infolists\Components\Section::make('Provider Configuration')
+                    ->schema([
+                        // SMTP Configuration
+                        Infolists\Components\TextEntry::make('config.host')
+                            ->label('SMTP Host')
+                            ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'),
+
+                        Infolists\Components\TextEntry::make('config.port')
+                            ->label('SMTP Port')
+                            ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'),
+
+                        Infolists\Components\TextEntry::make('config.username')
+                            ->label('Username')
+                            ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'),
+
+                        Infolists\Components\TextEntry::make('config.encryption')
+                            ->label('Encryption')
+                            ->badge()
+                            ->color('info')
+                            ->formatStateUsing(fn (?string $state): string => $state ? strtoupper($state) : 'None')
+                            ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'),
+
+                        // Mailgun Configuration
+                        Infolists\Components\TextEntry::make('config.domain')
+                            ->label('Mailgun Domain')
+                            ->copyable()
+                            ->copyMessage('Domain copied')
+                            ->copyMessageDuration(1500)
+                            ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'mailgun'),
+
+                        Infolists\Components\TextEntry::make('config.endpoint')
+                            ->label('API Endpoint')
+                            ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'mailgun'),
+                    ])
+                    ->columns(2),
+
+                Infolists\Components\Section::make('Validation Results')
+                    ->schema([
+                        Infolists\Components\RepeatableEntry::make('validation_errors')
+                            ->label('Configuration Issues')
+                            ->schema([
+                                Infolists\Components\TextEntry::make('error')
+                                    ->label('')
+                                    ->color('danger'),
+                            ])
+                            ->state(
+                                fn (): array => $this->record instanceof \App\Models\EmailConfiguration ? collect($this->record->validateConfig())
+                                    ->map(fn (string $error) => ['error' => $error])
+                                    ->toArray() : []
+                            )
+                            ->visible(fn (): bool => ($this->record instanceof \App\Models\EmailConfiguration) && ! $this->record->isValid()),
+
+                        Infolists\Components\TextEntry::make('validation_status')
+                            ->label('Validation Status')
+                            ->badge()
+                            ->color('success')
+                            ->state('All configuration requirements are met')
+                            ->visible(fn (): bool => ($this->record instanceof \App\Models\EmailConfiguration) && $this->record->isValid()),
+                    ])
+                    ->visible(fn (): bool => ($this->record instanceof \App\Models\EmailConfiguration) && (! empty($this->record->validateConfig()) || $this->record->isValid())),
+            ]);
+    }
 
     protected function getHeaderActions(): array
     {
@@ -130,128 +255,5 @@ class ViewEmailConfiguration extends ViewRecord
             Actions\DeleteAction::make()
                 ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && ! $this->record->isActive()),
         ];
-    }
-
-    public function infolist(Infolist $infolist): Infolist
-    {
-        return $infolist
-            ->schema([
-                Infolists\Components\Section::make('Configuration Overview')
-                    ->schema([
-                        Infolists\Components\TextEntry::make('provider')
-                            ->label('Provider')
-                            ->badge()
-                            ->color(fn (string $state): string => match ($state) {
-                                'smtp' => 'info',
-                                'mailgun' => 'success',
-                                default => 'gray',
-                            })
-                            ->formatStateUsing(fn (string $state): string => strtoupper($state)),
-
-                        Infolists\Components\TextEntry::make('status')
-                            ->label('Active Status')
-                            ->badge()
-                            ->formatStateUsing(fn (\App\Enums\EmailConfigurationStatus $state): string => match ($state) {
-                                \App\Enums\EmailConfigurationStatus::ACTIVE => 'Active',
-                                \App\Enums\EmailConfigurationStatus::INACTIVE => 'Inactive',
-                                \App\Enums\EmailConfigurationStatus::DRAFT => 'Draft',
-                            })
-                            ->color(fn (\App\Enums\EmailConfigurationStatus $state): string => match ($state) {
-                                \App\Enums\EmailConfigurationStatus::ACTIVE => 'success',
-                                \App\Enums\EmailConfigurationStatus::INACTIVE => 'gray',
-                                \App\Enums\EmailConfigurationStatus::DRAFT => 'warning',
-                            }),
-
-                        Infolists\Components\TextEntry::make('validation_status')
-                            ->label('Configuration Status')
-                            ->badge()
-                            ->color(fn (): string => ($this->record instanceof \App\Models\EmailConfiguration && $this->record->isValid()) ? 'success' : 'danger')
-                            ->formatStateUsing(fn (): string => ($this->record instanceof \App\Models\EmailConfiguration && $this->record->isValid()) ? 'Valid' : 'Invalid'),
-
-                        Infolists\Components\TextEntry::make('created_at')
-                            ->label('Created')
-                            ->dateTime(),
-
-                        Infolists\Components\TextEntry::make('updated_at')
-                            ->label('Last Updated')
-                            ->dateTime(),
-                    ])
-                    ->columns(3),
-
-                Infolists\Components\Section::make('Email Settings')
-                    ->schema([
-                        Infolists\Components\TextEntry::make('config.from_address')
-                            ->label('From Email Address')
-                            ->copyable()
-                            ->copyMessage('Email address copied')
-                            ->copyMessageDuration(1500),
-
-                        Infolists\Components\TextEntry::make('config.from_name')
-                            ->label('From Name')
-                            ->placeholder('Not set'),
-                    ])
-                    ->columns(2),
-
-                Infolists\Components\Section::make('Provider Configuration')
-                    ->schema([
-                        // SMTP Configuration
-                        Infolists\Components\TextEntry::make('config.host')
-                            ->label('SMTP Host')
-                            ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'),
-
-                        Infolists\Components\TextEntry::make('config.port')
-                            ->label('SMTP Port')
-                            ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'),
-
-                        Infolists\Components\TextEntry::make('config.username')
-                            ->label('Username')
-                            ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'),
-
-                        Infolists\Components\TextEntry::make('config.encryption')
-                            ->label('Encryption')
-                            ->badge()
-                            ->color('info')
-                            ->formatStateUsing(fn (?string $state): string => $state ? strtoupper($state) : 'None')
-                            ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'),
-
-                        // Mailgun Configuration
-                        Infolists\Components\TextEntry::make('config.domain')
-                            ->label('Mailgun Domain')
-                            ->copyable()
-                            ->copyMessage('Domain copied')
-                            ->copyMessageDuration(1500)
-                            ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'mailgun'),
-
-                        Infolists\Components\TextEntry::make('config.endpoint')
-                            ->label('API Endpoint')
-                            ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'mailgun'),
-                    ])
-                    ->columns(2),
-
-                Infolists\Components\Section::make('Validation Results')
-                    ->schema([
-                        Infolists\Components\RepeatableEntry::make('validation_errors')
-                            ->label('Configuration Issues')
-                            ->schema([
-                                Infolists\Components\TextEntry::make('error')
-                                    ->label('')
-                                    ->color('danger'),
-                            ])
-                            ->state(
-                                fn (): array => ($this->record instanceof \App\Models\EmailConfiguration) ? collect($this->record->validateConfig())
-                                    ->map(fn (string $error) => ['error' => $error])
-                                    ->toArray() : []
-                            )
-                            ->visible(fn (): bool => ($this->record instanceof \App\Models\EmailConfiguration) && ! $this->record->isValid()),
-
-                        Infolists\Components\TextEntry::make('validation_status')
-                            ->label('Validation Status')
-                            ->badge()
-                            ->color('success')
-                            ->state('All configuration requirements are met')
-                            ->visible(fn (): bool => ($this->record instanceof \App\Models\EmailConfiguration) && $this->record->isValid()),
-                    ])
-                    ->visible(fn (): bool => ($this->record instanceof \App\Models\EmailConfiguration) && (! empty($this->record->validateConfig()) || $this->record->isValid())),
-            ]);
     }
 }

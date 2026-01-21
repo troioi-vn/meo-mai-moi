@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Pages;
 
 use App\Services\SettingsService;
@@ -12,6 +14,7 @@ use Filament\Pages\Page;
 
 class SystemSettings extends Page
 {
+    protected array $data = [];
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
 
     protected static string $view = 'filament.pages.system-settings';
@@ -23,8 +26,6 @@ class SystemSettings extends Page
     protected static ?string $title = 'Configuration';
 
     protected static ?int $navigationSort = 100;
-
-    public array $data = [];
 
     private SettingsService $settingsService;
 
@@ -58,7 +59,7 @@ class SystemSettings extends Page
                             ->label('Enable Invite-Only Registration')
                             ->helperText('When enabled, only users with valid invitation codes can register. Others can join the waitlist.')
                             ->live()
-                            ->afterStateUpdated(function (bool $state) {
+                            ->afterStateUpdated(function (bool $state): void {
                                 $this->settingsService->configureInviteOnlyMode($state);
 
                                 $message = $state
@@ -76,7 +77,7 @@ class SystemSettings extends Page
                             ->label('Require Email Verification')
                             ->helperText('When enabled, users must verify their email address before accessing the application.')
                             ->live()
-                            ->afterStateUpdated(function (bool $state) {
+                            ->afterStateUpdated(function (bool $state): void {
                                 $this->settingsService->configureEmailVerificationRequirement($state);
 
                                 $message = $state
@@ -93,26 +94,6 @@ class SystemSettings extends Page
                     ->columns(1),
             ])
             ->statePath('data');
-    }
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Action::make('refresh')
-                ->label('Refresh Settings')
-                ->icon('heroicon-m-arrow-path')
-                ->action(function () {
-                    $this->form->fill([
-                        'invite_only_enabled' => $this->settingsService->isInviteOnlyEnabled(),
-                        'email_verification_required' => $this->settingsService->isEmailVerificationRequired(),
-                    ]);
-
-                    Notification::make()
-                        ->title('Settings Refreshed')
-                        ->success()
-                        ->send();
-                }),
-        ];
     }
 
     /**
@@ -150,5 +131,25 @@ class SystemSettings extends Page
     public function getInviteOnlyEnabledProperty(): bool
     {
         return $this->settingsService->isInviteOnlyEnabled();
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('refresh')
+                ->label('Refresh Settings')
+                ->icon('heroicon-m-arrow-path')
+                ->action(function (): void {
+                    $this->form->fill([
+                        'invite_only_enabled' => $this->settingsService->isInviteOnlyEnabled(),
+                        'email_verification_required' => $this->settingsService->isEmailVerificationRequired(),
+                    ]);
+
+                    Notification::make()
+                        ->title('Settings Refreshed')
+                        ->success()
+                        ->send();
+                }),
+        ];
     }
 }

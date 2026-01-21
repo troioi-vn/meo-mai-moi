@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CityResource\Pages;
@@ -37,7 +39,7 @@ class CityResource extends Resource
                 ->required()
                 ->maxLength(100)
                 ->live(onBlur: true)
-                ->afterStateUpdated(function (string $context, $state, callable $set) {
+                ->afterStateUpdated(function (string $context, $state, callable $set): void {
                     if ($context === 'create') {
                         $set('slug', Str::slug($state));
                     }
@@ -57,7 +59,7 @@ class CityResource extends Resource
             Toggle::make('is_approved')
                 ->label('Approved')
                 ->dehydrated(false)
-                ->afterStateHydrated(function ($component, $record) {
+                ->afterStateHydrated(function ($component, $record): void {
                     if ($record) {
                         $component->state($record->approved_at !== null);
                     }
@@ -67,7 +69,7 @@ class CityResource extends Resource
                 ->disabled()
                 ->dehydrated(false)
                 ->visible(fn ($record) => $record && $record->creator)
-                ->afterStateHydrated(function ($component, $record) {
+                ->afterStateHydrated(function ($component, $record): void {
                     if ($record && $record->creator) {
                         $component->state($record->creator->name);
                     }
@@ -144,7 +146,7 @@ class CityResource extends Resource
                     ->icon(fn ($record) => $record->approved_at ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
                     ->color(fn ($record) => $record->approved_at ? 'danger' : 'success')
                     ->requiresConfirmation()
-                    ->action(function ($record) {
+                    ->action(function ($record): void {
                         if ($record->approved_at) {
                             $record->update(['approved_at' => null]);
                         } else {
@@ -160,7 +162,7 @@ class CityResource extends Resource
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
                         ->requiresConfirmation()
-                        ->action(function ($records) {
+                        ->action(function ($records): void {
                             $records->each(fn ($record) => $record->update(['approved_at' => now()]));
                         }),
                 ]),

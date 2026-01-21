@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Notification;
 
 use App\Events\NotificationRead;
@@ -35,17 +37,13 @@ class MarkNotificationReadController extends Controller
             $notification->markAsRead();
         }
 
-        try {
-            $unreadBellCount = Notification::query()
-                ->where('user_id', Auth::id())
-                ->bellVisible()
-                ->unread()
-                ->count();
+        $unreadBellCount = Notification::query()
+            ->where('user_id', Auth::id())
+            ->bellVisible()
+            ->unread()
+            ->count();
 
-            event(new NotificationRead((int) Auth::id(), (string) $notification->id, false, $unreadBellCount));
-        } catch (\Throwable) {
-            // Best-effort: marking read should succeed even if broadcasting fails.
-        }
+        event(new NotificationRead((int) Auth::id(), (string) $notification->id, false, $unreadBellCount));
 
         return $this->sendSuccess(null, 204);
     }

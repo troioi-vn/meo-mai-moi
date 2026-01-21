@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Invitation;
 
 use App\Http\Controllers\Controller;
@@ -20,8 +22,11 @@ use OpenApi\Attributes as OA;
             description: 'List of sent invitations',
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: 'data', type: 'array',
-                        items: new OA\Items(type: 'object',
+                    new OA\Property(
+                        property: 'data',
+                        type: 'array',
+                        items: new OA\Items(
+                            type: 'object',
                             properties: [
                                 new OA\Property(property: 'id', type: 'integer'),
                                 new OA\Property(property: 'code', type: 'string'),
@@ -48,7 +53,8 @@ class ListInvitationsController extends Controller
 
     public function __construct(
         private InvitationService $invitationService
-    ) {}
+    ) {
+    }
 
     public function __invoke(Request $request)
     {

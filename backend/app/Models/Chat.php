@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Enums\ChatType;
@@ -131,7 +133,7 @@ class Chat extends Model
     ): self {
         // Look for existing direct chat between these users with the same context
         $existingChat = self::where('type', ChatType::DIRECT)
-            ->where(function ($query) use ($contextableType, $contextableId) {
+            ->where(function ($query) use ($contextableType, $contextableId): void {
                 if ($contextableType && $contextableId) {
                     $query->where('contextable_type', $contextableType)
                         ->where('contextable_id', $contextableId);
@@ -140,10 +142,10 @@ class Chat extends Model
                         ->whereNull('contextable_id');
                 }
             })
-            ->whereHas('activeParticipants', function ($query) use ($user1) {
+            ->whereHas('activeParticipants', function ($query) use ($user1): void {
                 $query->where('user_id', $user1->id);
             })
-            ->whereHas('activeParticipants', function ($query) use ($user2) {
+            ->whereHas('activeParticipants', function ($query) use ($user2): void {
                 $query->where('user_id', $user2->id);
             })
             ->first();
@@ -173,7 +175,7 @@ class Chat extends Model
      */
     public function scopeForUser($query, User $user)
     {
-        return $query->whereHas('activeParticipants', function ($q) use ($user) {
+        return $query->whereHas('activeParticipants', function ($q) use ($user): void {
             $q->where('user_id', $user->id);
         });
     }
@@ -184,14 +186,14 @@ class Chat extends Model
     public function scopeWithUnreadCount($query, User $user)
     {
         return $query->withCount([
-            'messages as unread_count' => function ($query) use ($user) {
+            'messages as unread_count' => function ($query) use ($user): void {
                 $query->where('sender_id', '!=', $user->id)
-                    ->join('chat_users', function ($join) use ($user) {
+                    ->join('chat_users', function ($join) use ($user): void {
                         $join->on('chat_messages.chat_id', '=', 'chat_users.chat_id')
                             ->where('chat_users.user_id', '=', $user->id)
                             ->whereNull('chat_users.left_at');
                     })
-                    ->where(function ($q) {
+                    ->where(function ($q): void {
                         $q->whereNull('chat_users.last_read_at')
                             ->orWhere('chat_messages.created_at', '>', \DB::raw('chat_users.last_read_at'));
                     });

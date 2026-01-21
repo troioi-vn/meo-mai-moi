@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
@@ -16,6 +18,58 @@ use Filament\Resources\Pages\ViewRecord;
 class ViewUser extends ViewRecord
 {
     protected static string $resource = UserResource::class;
+
+    public function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Section::make('User Information')
+                    ->schema([
+                        ImageEntry::make('avatar_url')
+                            ->label('Avatar')
+                            ->height(150)
+                            ->width(150)
+                            ->circular()
+                            ->columnSpan(1),
+
+                        Section::make()
+                            ->schema([
+                                TextEntry::make('name')
+                                    ->size('lg')
+                                    ->weight('bold'),
+                                TextEntry::make('email')
+                                    ->icon('heroicon-m-envelope'),
+                                TextEntry::make('email_verified_at')
+                                    ->label('Email Verified')
+                                    ->badge()
+                                    ->color(fn ($state) => $state ? 'success' : 'danger')
+                                    ->formatStateUsing(fn ($state) => $state ? 'Verified' : 'Not Verified'),
+                                TextEntry::make('roles.name')
+                                    ->label('Roles')
+                                    ->badge()
+                                    ->separator(',')
+                                    ->visible(fn ($record) => $record->roles->isNotEmpty()),
+                                TextEntry::make('created_at')
+                                    ->label('Member Since')
+                                    ->date(),
+                            ])
+                            ->columnSpan(2),
+                    ])
+                    ->columns(3),
+
+                Section::make('Statistics')
+                    ->schema([
+                        TextEntry::make('pets_count')
+                            ->label('Total Pets')
+                            ->state(fn ($record) => $record->pets()->count()),
+                        TextEntry::make('active_pets_count')
+                            ->label('Active Pets')
+                            ->state(fn ($record) => $record->pets()->where('status', 'active')->count()),
+                    ])
+                    ->columns(2)
+                    ->collapsible(),
+            ]);
+    }
 
     protected function getHeaderActions(): array
     {
@@ -72,7 +126,7 @@ class ViewUser extends ViewRecord
                 ->color('danger')
                 ->requiresConfirmation()
                 ->visible(fn () => $this->record->getMedia('avatar')->count() > 0)
-                ->action(function () {
+                ->action(function (): void {
                     $this->record->clearMediaCollection('avatar');
 
                     // Refresh the page to show the change
@@ -81,57 +135,5 @@ class ViewUser extends ViewRecord
 
             Actions\EditAction::make(),
         ];
-    }
-
-    public function infolist(Infolist $infolist): Infolist
-    {
-        return $infolist
-            ->schema([
-                Section::make('User Information')
-                    ->schema([
-                        ImageEntry::make('avatar_url')
-                            ->label('Avatar')
-                            ->height(150)
-                            ->width(150)
-                            ->circular()
-                            ->columnSpan(1),
-
-                        Section::make()
-                            ->schema([
-                                TextEntry::make('name')
-                                    ->size('lg')
-                                    ->weight('bold'),
-                                TextEntry::make('email')
-                                    ->icon('heroicon-m-envelope'),
-                                TextEntry::make('email_verified_at')
-                                    ->label('Email Verified')
-                                    ->badge()
-                                    ->color(fn ($state) => $state ? 'success' : 'danger')
-                                    ->formatStateUsing(fn ($state) => $state ? 'Verified' : 'Not Verified'),
-                                TextEntry::make('roles.name')
-                                    ->label('Roles')
-                                    ->badge()
-                                    ->separator(',')
-                                    ->visible(fn ($record) => $record->roles->isNotEmpty()),
-                                TextEntry::make('created_at')
-                                    ->label('Member Since')
-                                    ->date(),
-                            ])
-                            ->columnSpan(2),
-                    ])
-                    ->columns(3),
-
-                Section::make('Statistics')
-                    ->schema([
-                        TextEntry::make('pets_count')
-                            ->label('Total Pets')
-                            ->state(fn ($record) => $record->pets()->count()),
-                        TextEntry::make('active_pets_count')
-                            ->label('Active Pets')
-                            ->state(fn ($record) => $record->pets()->where('status', 'active')->count()),
-                    ])
-                    ->columns(2)
-                    ->collapsible(),
-            ]);
     }
 }

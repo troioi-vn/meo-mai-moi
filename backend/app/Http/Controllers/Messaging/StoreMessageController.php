@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Messaging;
 
 use App\Enums\ChatMessageType;
@@ -18,7 +20,8 @@ class StoreMessageController extends Controller
 
     public function __construct(
         protected NotificationService $notificationService
-    ) {}
+    ) {
+    }
 
     public function __invoke(Request $request, Chat $chat)
     {

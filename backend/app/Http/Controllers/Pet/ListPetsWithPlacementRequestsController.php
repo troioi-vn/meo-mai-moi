@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Pet;
 
 use App\Enums\PlacementRequestStatus;
@@ -30,7 +32,7 @@ class ListPetsWithPlacementRequestsController extends Controller
 
     public function __invoke(Request $request)
     {
-        $pets = Pet::whereHas('placementRequests', function ($query) {
+        $pets = Pet::whereHas('placementRequests', function ($query): void {
             $query->where('status', PlacementRequestStatus::OPEN);
         })
             ->with(['placementRequests', 'petType', 'city'])

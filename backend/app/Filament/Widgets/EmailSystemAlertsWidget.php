@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Widgets;
 
 use App\Models\EmailConfiguration;
@@ -47,7 +49,7 @@ class EmailSystemAlertsWidget extends Widget
         $recentTotal = Notification::where('created_at', '>=', $last24Hours)->count();
 
         if ($recentTotal > 10) { // Only alert if we have significant volume
-            $failureRate = ($recentFailed / $recentTotal) * 100;
+            $failureRate = $recentFailed / $recentTotal * 100;
             if ($failureRate > 20) {
                 $alerts[] = [
                     'type' => 'danger',

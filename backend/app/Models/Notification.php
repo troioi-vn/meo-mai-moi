@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Enums\NotificationType;
@@ -114,13 +116,13 @@ class Notification extends Model
     public function scopeBellVisible($query)
     {
         return $query
-            ->where(function ($q) {
+            ->where(function ($q): void {
                 $q->whereNull('type')
                     ->orWhere('type', '!=', NotificationType::EMAIL_VERIFICATION->value);
             })
             // The bell UI only represents in-app notifications.
             // Email notifications are persisted for delivery/audit but must not affect bell count.
-            ->where(function ($q) {
+            ->where(function ($q): void {
                 $q->whereNull('data->channel')
                     ->orWhere('data->channel', 'like', 'in_app%');
             });

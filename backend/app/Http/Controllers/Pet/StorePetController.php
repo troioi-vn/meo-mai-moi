@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Pet;
 
 use App\Enums\PetRelationshipType;
@@ -70,7 +72,7 @@ class StorePetController extends Controller
         ];
 
         $validator = Validator::make($request->all(), $rules);
-        $validator->after(function ($v) use ($request) {
+        $validator->after(function ($v) use ($request): void {
             $precision = $request->input('birthday_precision');
             $legacyBirthday = $request->input('birthday');
 

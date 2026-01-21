@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\MedicalRecord;
 
 use App\Http\Controllers\Controller;
@@ -27,7 +29,9 @@ use OpenApi\Attributes as OA;
             description: 'List of medical records',
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: 'data', type: 'object',
+                    new OA\Property(
+                        property: 'data',
+                        type: 'object',
                         properties: [
                             new OA\Property(property: 'data', type: 'array', items: new OA\Items(ref: '#/components/schemas/MedicalRecord')),
                             new OA\Property(property: 'links', type: 'object'),

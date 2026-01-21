@@ -160,7 +160,7 @@ Route::post('/invitations/validate', ValidateInvitationCodeController::class)->m
 // Unsubscribe endpoint (no auth required)
 Route::post('/unsubscribe', ProcessUnsubscribeController::class);
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/email/verification-notification', ResendVerificationEmailController::class)
         ->middleware('throttle:6,1')
         ->name('api.verification.send');
@@ -174,13 +174,13 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::post('/check-email', CheckEmailController::class)->middleware('throttle:20,1');
 
 // Impersonation routes
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/impersonation/status', GetImpersonationStatusController::class);
     Route::post('/impersonation/leave', LeaveImpersonationController::class);
 });
 
 // Main application routes that require email verification
-Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+Route::middleware(['auth:sanctum', 'verified'])->group(function (): void {
     Route::get('/user', function (Request $request) {
         return response()->json(['data' => $request->user()]);
     });
@@ -304,7 +304,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // Route::post('/reviews', [ReviewController::class, 'store']);
 
     // Messaging Routes (prefix: /msg)
-    Route::prefix('msg')->group(function () {
+    Route::prefix('msg')->group(function (): void {
         // Chats
         Route::get('/chats', ListChatsController::class);
         Route::post('/chats', StoreChatController::class);

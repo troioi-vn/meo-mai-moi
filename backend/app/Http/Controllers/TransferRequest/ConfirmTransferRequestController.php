@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\TransferRequest;
 
 use App\Enums\NotificationType;
@@ -57,7 +59,8 @@ class ConfirmTransferRequestController extends Controller
     public function __construct(
         protected NotificationService $notificationService,
         protected PetRelationshipService $petRelationshipService
-    ) {}
+    ) {
+    }
 
     public function __invoke(Request $request, TransferRequest $transferRequest)
     {
@@ -75,7 +78,7 @@ class ConfirmTransferRequestController extends Controller
 
         $actor = $request->user();
 
-        DB::transaction(function () use ($transferRequest, $actor) {
+        DB::transaction(function () use ($transferRequest, $actor): void {
             $transferRequest = TransferRequest::whereKey($transferRequest->id)
                 ->lockForUpdate()
                 ->firstOrFail();

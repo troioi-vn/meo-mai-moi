@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\OpenApi\Schemas;
 
 use OpenApi\Attributes as OA;
@@ -24,4 +26,6 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'total', type: 'integer', description: 'Total number of items'),
     ]
 )]
-class PaginationSchema {}
+class PaginationSchema
+{
+}

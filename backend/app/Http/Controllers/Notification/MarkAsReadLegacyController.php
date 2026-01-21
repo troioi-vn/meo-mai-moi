@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Notification;
 
 use App\Events\NotificationRead;
@@ -31,17 +33,13 @@ class MarkAsReadLegacyController extends Controller
             ->unread()
             ->update(['read_at' => now()]);
 
-        try {
-            $unreadBellCount = Notification::query()
-                ->where('user_id', Auth::id())
-                ->bellVisible()
-                ->unread()
-                ->count();
+        $unreadBellCount = Notification::query()
+            ->where('user_id', Auth::id())
+            ->bellVisible()
+            ->unread()
+            ->count();
 
-            event(new NotificationRead((int) Auth::id(), null, true, $unreadBellCount));
-        } catch (\Throwable) {
-            // Best-effort: marking read should succeed even if broadcasting fails.
-        }
+        event(new NotificationRead((int) Auth::id(), null, true, $unreadBellCount));
 
         return $this->sendSuccess(null, 204);
     }

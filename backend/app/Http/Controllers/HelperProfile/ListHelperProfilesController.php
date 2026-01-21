@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\HelperProfile;
 
 use App\Enums\HelperProfileStatus;
@@ -37,8 +39,8 @@ class ListHelperProfilesController extends Controller
         // Get helper profiles that responded to user's placement requests (excluding deleted)
         $respondedProfileIds = HelperProfile::query()
             ->where('status', '!=', HelperProfileStatus::DELETED)
-            ->whereHas('placementResponses', function ($query) use ($user) {
-                $query->whereHas('placementRequest', function ($prQuery) use ($user) {
+            ->whereHas('placementResponses', function ($query) use ($user): void {
+                $query->whereHas('placementRequest', function ($prQuery) use ($user): void {
                     $prQuery->where('user_id', $user->id);
                 });
             })

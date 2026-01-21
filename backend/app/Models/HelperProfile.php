@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Enums\HelperProfileStatus;
@@ -128,7 +130,7 @@ class HelperProfile extends Model
         // Check if user has a pet with a PlacementRequest that has a response from this helper profile
         return PlacementRequestResponse::query()
             ->where('helper_profile_id', $this->id)
-            ->whereHas('placementRequest.pet.owners', function ($query) use ($user) {
+            ->whereHas('placementRequest.pet.owners', function ($query) use ($user): void {
                 $query->where('users.id', $user->id);
             })
             ->exists();

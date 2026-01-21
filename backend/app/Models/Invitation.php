@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -110,7 +112,7 @@ class Invitation extends Model
     public function scopeExpired($query)
     {
         return $query->where('status', 'expired')
-            ->orWhere(function ($query) {
+            ->orWhere(function ($query): void {
                 $query->where('expires_at', '<', now())
                     ->where('status', 'pending');
             });

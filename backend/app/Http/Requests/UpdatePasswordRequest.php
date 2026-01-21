@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -26,7 +28,7 @@ class UpdatePasswordRequest extends FormRequest
             'current_password' => [
                 'required',
                 'string',
-                function ($attribute, $value, $fail) {
+                function ($attribute, $value, $fail): void {
                     $user = $this->user();
                     // Check if user has no password set (e.g., OAuth user)
                     if (empty($user->password)) {

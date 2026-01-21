@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Enums\PetRelationshipType;
@@ -420,14 +422,14 @@ class Pet extends Model implements HasMedia
     /**
      * Boot the model and add global scope to hide deleted pets.
      */
-    protected static function booted()
+    protected static function booted(): void
     {
-        static::addGlobalScope('not_deleted', function ($query) {
+        static::addGlobalScope('not_deleted', function ($query): void {
             $query->where('status', '!=', PetStatus::DELETED->value);
         });
 
         // Create ownership relationship when pet is created
-        static::created(function (Pet $pet) {
+        static::created(function (Pet $pet): void {
             if ($pet->created_by) {
                 // Check if relationship already exists (to avoid duplicates from factory)
                 $exists = PetRelationship::where('pet_id', $pet->id)

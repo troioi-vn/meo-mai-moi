@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\PetCapability;
 
 use App\Models\Pet;
@@ -11,7 +13,7 @@ final class CapabilityValidator
 
     public function __construct(?CapabilityChecker $checker = null)
     {
-        $this->checker = $checker ?? new CapabilityChecker;
+        $this->checker = $checker ?? new CapabilityChecker();
     }
 
     /**

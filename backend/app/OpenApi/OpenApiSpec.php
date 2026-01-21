@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\OpenApi;
 
 use OpenApi\Attributes as OA;
@@ -14,4 +16,6 @@ use OpenApi\Attributes as OA;
     url: 'http://localhost:8000',
     description: 'Development server'
 )]
-class OpenApiSpec {}
+class OpenApiSpec
+{
+}

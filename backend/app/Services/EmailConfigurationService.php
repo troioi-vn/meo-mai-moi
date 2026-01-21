@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\EmailConfiguration;
@@ -14,7 +16,7 @@ class EmailConfigurationService
 
     public function __construct(?ConfigurationTester $tester = null)
     {
-        $this->tester = $tester ?? new ConfigurationTester;
+        $this->tester = $tester ?? new ConfigurationTester();
     }
 
     /**

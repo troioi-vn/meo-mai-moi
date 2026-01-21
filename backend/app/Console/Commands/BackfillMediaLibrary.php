@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Models\User;
@@ -10,15 +12,11 @@ class BackfillMediaLibrary extends Command
 {
     /**
      * The name and signature of the console command.
-     *
-     * @var string
      */
     protected $signature = 'medialibrary:backfill {--dry-run : Show what would be migrated without actually doing it}';
 
     /**
      * The console command description.
-     *
-     * @var string
      */
     protected $description = 'Backfill existing user avatars and pet photos into MediaLibrary';
 

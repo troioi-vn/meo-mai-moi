@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\PetMicrochip;
 
 use App\Http\Controllers\Controller;
@@ -26,7 +28,9 @@ use OpenApi\Attributes as OA;
             description: 'List of microchips',
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: 'data', type: 'object',
+                    new OA\Property(
+                        property: 'data',
+                        type: 'object',
                         properties: [
                             new OA\Property(property: 'data', type: 'array', items: new OA\Items(ref: '#/components/schemas/PetMicrochip')),
                             new OA\Property(property: 'links', type: 'object'),

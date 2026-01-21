@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Pet;
 
 use App\Enums\PetRelationshipType;
@@ -46,18 +48,18 @@ class ListMyPetsSectionsController extends Controller
         $user = $this->requireAuth($request);
 
         // Owned (current owner)
-        $owned = Pet::whereHas('owners', function ($query) use ($user) {
+        $owned = Pet::whereHas('owners', function ($query) use ($user): void {
             $query->where('users.id', $user->id);
         })->with('petType')->get();
 
         // Fostering active/past via relationships
-        $activeFostering = Pet::whereHas('relationships', function ($query) use ($user) {
+        $activeFostering = Pet::whereHas('relationships', function ($query) use ($user): void {
             $query->where('user_id', $user->id)
                 ->where('relationship_type', PetRelationshipType::FOSTER)
                 ->whereNull('end_at');
         })->with('petType')->get();
 
-        $pastFostering = Pet::whereHas('relationships', function ($query) use ($user) {
+        $pastFostering = Pet::whereHas('relationships', function ($query) use ($user): void {
             $query->where('user_id', $user->id)
                 ->where('relationship_type', PetRelationshipType::FOSTER)
                 ->whereNotNull('end_at');
@@ -72,7 +74,7 @@ class ListMyPetsSectionsController extends Controller
             ->unique();
 
         $transferredAway = Pet::whereIn('id', $transferredPetIds)
-            ->whereDoesntHave('relationships', function ($query) use ($user) {
+            ->whereDoesntHave('relationships', function ($query) use ($user): void {
                 $query->where('user_id', $user->id)
                     ->where('relationship_type', PetRelationshipType::OWNER)
                     ->whereNull('end_at');

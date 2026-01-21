@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\WaitlistEntryResource\Pages;
@@ -203,7 +205,6 @@ class WaitlistEntryResource extends Resource
                                     ->body($message)
                                     ->success()
                                     ->send();
-
                             } catch (\Exception $e) {
                                 Notification::make()
                                     ->title('Error')
@@ -244,7 +245,9 @@ class WaitlistEntryResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::pending()->count() ?: null;
+        $count = static::getModel()::pending()->count();
+
+        return $count > 0 ? (string) $count : null;
     }
 
     public static function getNavigationBadgeColor(): ?string

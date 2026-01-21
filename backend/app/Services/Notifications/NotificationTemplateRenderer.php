@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Notifications;
 
 use Illuminate\Support\Facades\Blade;
@@ -12,7 +14,7 @@ class NotificationTemplateRenderer
         private ?CommonMarkConverter $markdown = null
     ) {
         if ($this->markdown === null && class_exists(CommonMarkConverter::class)) {
-            $this->markdown = new CommonMarkConverter;
+            $this->markdown = new CommonMarkConverter();
         }
     }
 

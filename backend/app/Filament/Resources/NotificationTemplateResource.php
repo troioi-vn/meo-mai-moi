@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\NotificationTemplateResource\Pages;
@@ -56,7 +58,7 @@ class NotificationTemplateResource extends Resource
                     ->required()
                     ->columnSpan(2)
                     ->reactive()
-                    ->afterStateUpdated(function (Set $set, Get $get) {
+                    ->afterStateUpdated(function (Set $set, Get $get): void {
                         self::prefillFromDefaults($set, $get);
                     }),
                 Forms\Components\Select::make('channel')
@@ -66,14 +68,14 @@ class NotificationTemplateResource extends Resource
                     ])
                     ->required()
                     ->reactive()
-                    ->afterStateUpdated(function (Set $set, Get $get) {
+                    ->afterStateUpdated(function (Set $set, Get $get): void {
                         self::prefillFromDefaults($set, $get);
                     }),
                 Forms\Components\TextInput::make('locale')
                     ->default(config('notification_templates.default_locale', 'en'))
                     ->required()
                     ->reactive()
-                    ->afterStateUpdated(function (Set $set, Get $get) {
+                    ->afterStateUpdated(function (Set $set, Get $get): void {
                         self::prefillFromDefaults($set, $get);
                     }),
                 Forms\Components\Select::make('engine')->options([
@@ -224,7 +226,8 @@ class NotificationTemplateResource extends Resource
                     ->modalHeading('Compare with Default')
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Close')
-                    ->action(function () {})
+                    ->action(function (): void {
+                    })
                     ->modalContent(function (NotificationTemplate $record) {
                         $type = $record->type;
                         $locale = $record->locale;
@@ -281,7 +284,7 @@ class NotificationTemplateResource extends Resource
                     ->label('Reset to Default')
                     ->requiresConfirmation()
                     ->visible(fn ($record) => $record->status === 'active')
-                    ->action(function (NotificationTemplate $record) {
+                    ->action(function (NotificationTemplate $record): void {
                         $record->delete();
                         FilamentNotification::make()->title('Template reset')->body('DB override removed. File/default will be used.')->success()->send();
                     }),
@@ -290,7 +293,7 @@ class NotificationTemplateResource extends Resource
                     ->icon('heroicon-o-paper-airplane')
                     ->visible(fn (NotificationTemplate $record) => $record->channel === 'email')
                     ->requiresConfirmation()
-                    ->action(function (NotificationTemplate $record) {
+                    ->action(function (NotificationTemplate $record): void {
                         $renderer = app(\App\Services\Notifications\NotificationTemplateRenderer::class);
                         $template = [
                             'source' => 'db',
@@ -307,9 +310,10 @@ class NotificationTemplateResource extends Resource
                         $html = $rendered['html'] ?? '<p>(no content)</p>';
 
                         // Send using a lightweight anonymous mailable
-                        Mail::to($user->email)->send(new class($subject, $html) extends Mailable
-                        {
-                            public function __construct(private string $s, private string $h) {}
+                        Mail::to($user->email)->send(new class($subject, $html) extends Mailable {
+                            public function __construct(private string $s, private string $h)
+                            {
+                            }
 
                             public function build(): self
                             {
@@ -323,6 +327,15 @@ class NotificationTemplateResource extends Resource
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListNotificationTemplates::route('/'),
+            'create' => Pages\CreateNotificationTemplate::route('/create'),
+            'edit' => Pages\EditNotificationTemplate::route('/{record}/edit'),
+        ];
     }
 
     /**
@@ -380,14 +393,5 @@ class NotificationTemplateResource extends Resource
         // Fallback: set engine default by channel if nothing found
         $defaultEngine = config("notification_templates.channels.{$channel}.engine", 'blade');
         $set('engine', $defaultEngine);
-    }
-
-    public static function getPages(): array
-    {
-        return [
-            'index' => Pages\ListNotificationTemplates::route('/'),
-            'create' => Pages\CreateNotificationTemplate::route('/create'),
-            'edit' => Pages\EditNotificationTemplate::route('/{record}/edit'),
-        ];
     }
 }

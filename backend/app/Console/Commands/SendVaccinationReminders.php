@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Enums\NotificationType;
@@ -32,7 +34,7 @@ class SendVaccinationReminders extends Command
             ->whereDate('due_at', '<=', $cutoff)
             ->whereNull('reminder_sent_at')
             ->with([
-                'pet' => function ($q) {
+                'pet' => function ($q): void {
                     $q->with('owners', 'petType');
                 },
             ]);

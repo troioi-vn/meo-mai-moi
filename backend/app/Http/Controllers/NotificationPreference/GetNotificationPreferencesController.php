@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\NotificationPreference;
 
 use App\Enums\NotificationType;
@@ -14,11 +16,15 @@ use OpenApi\Attributes as OA;
     tags: ['Notification Preferences'],
     security: [['sanctum' => []]],
     responses: [
-        new OA\Response(response: 200, description: 'OK',
+        new OA\Response(
+            response: 200,
+            description: 'OK',
             content: new OA\JsonContent(
                 type: 'object',
                 properties: [
-                    new OA\Property(property: 'data', type: 'array',
+                    new OA\Property(
+                        property: 'data',
+                        type: 'array',
                         items: new OA\Items(
                             properties: [
                                 new OA\Property(property: 'type', type: 'string'),

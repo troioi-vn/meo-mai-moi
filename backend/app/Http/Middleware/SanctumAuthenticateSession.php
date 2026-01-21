@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
 use Closure;
@@ -84,7 +86,7 @@ class SanctumAuthenticateSession
             throw new AuthenticationException('Unauthenticated.', [...$shouldLogout->keys()->all(), 'sanctum']);
         }
 
-        return tap($next($request), function () use ($request, $guards) {
+        return tap($next($request), function () use ($request, $guards): void {
             $guard = $this->getFirstGuardWithUser($guards->keys());
 
             if ($guard !== null) {

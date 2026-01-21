@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Resources;
 
 use App\Enums\PlacementRequestStatus;
@@ -329,7 +331,6 @@ class PlacementRequestResource extends JsonResource
         }
 
         $isOpen = $this->status === PlacementRequestStatus::OPEN;
-        $isPendingTransfer = $this->status === PlacementRequestStatus::PENDING_TRANSFER;
         $isActive = $this->status === PlacementRequestStatus::ACTIVE;
         $isTemporary = in_array($this->request_type, [
             PlacementRequestType::FOSTER_FREE,

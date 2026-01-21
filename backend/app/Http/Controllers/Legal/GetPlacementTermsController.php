@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Legal;
 
 use App\Http\Controllers\Controller;
@@ -17,7 +19,9 @@ use OpenApi\Attributes as OA;
             description: 'Placement terms retrieved successfully',
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: 'data', type: 'object',
+                    new OA\Property(
+                        property: 'data',
+                        type: 'object',
                         properties: [
                             new OA\Property(property: 'content', type: 'string', description: 'Markdown content of the placement terms'),
                             new OA\Property(property: 'version', type: 'string', example: '2025-12-02', description: 'Version date of the terms'),

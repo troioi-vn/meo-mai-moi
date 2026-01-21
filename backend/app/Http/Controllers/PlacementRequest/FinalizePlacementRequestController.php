@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\PlacementRequest;
 
 use App\Enums\NotificationType;
@@ -53,7 +55,8 @@ class FinalizePlacementRequestController extends Controller
     public function __construct(
         protected NotificationService $notificationService,
         protected PetRelationshipService $petRelationshipService
-    ) {}
+    ) {
+    }
 
     public function __invoke(Request $request, PlacementRequest $placementRequest)
     {
@@ -81,7 +84,7 @@ class FinalizePlacementRequestController extends Controller
             return $this->sendError('Only temporary placements can be finalized this way.', 409);
         }
 
-        DB::transaction(function () use ($placementRequest) {
+        DB::transaction(function () use ($placementRequest): void {
             // Update placement request status to finalized
             $placementRequest->status = PlacementRequestStatus::FINALIZED;
             $placementRequest->save();

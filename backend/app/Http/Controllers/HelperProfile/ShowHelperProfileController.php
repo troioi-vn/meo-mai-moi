@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\HelperProfile;
 
 use App\Http\Controllers\Controller;
@@ -45,10 +47,10 @@ class ShowHelperProfileController extends Controller
                 'user',
                 'petTypes',
                 'cities',
-                'placementResponses' => function ($query) use ($helperProfile) {
+                'placementResponses' => function ($query) use ($helperProfile): void {
                     // Helpers can cancel and re-respond, which creates multiple rows for the same
                     // placement_request_id. For profile views, only show the latest response per request.
-                    $query->whereIn('id', function ($subQuery) use ($helperProfile) {
+                    $query->whereIn('id', function ($subQuery) use ($helperProfile): void {
                         $subQuery
                             ->selectRaw('MAX(id)')
                             ->from('placement_request_responses')

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\PlacementRequest;
 
 use App\Enums\PlacementRequestStatus;
@@ -166,7 +168,6 @@ class GetPlacementRequestViewerContextController extends Controller
         $myTransfer
     ): array {
         $isOpen = $placementRequest->status === PlacementRequestStatus::OPEN;
-        $isPendingTransfer = $placementRequest->status === PlacementRequestStatus::PENDING_TRANSFER;
         $isActive = $placementRequest->status === PlacementRequestStatus::ACTIVE;
         $isTemporary = in_array($placementRequest->request_type, [
             PlacementRequestType::FOSTER_FREE,
@@ -178,7 +179,6 @@ class GetPlacementRequestViewerContextController extends Controller
         $hasHelperProfile = $user->helperProfiles()->where('status', 'active')->exists();
 
         // Check if user has already responded (any status)
-        $hasExistingResponse = $myResponse !== null;
         $hasPendingResponse = $myResponse?->status === PlacementResponseStatus::RESPONDED;
         $hasAcceptedResponse = $myResponse?->status === PlacementResponseStatus::ACCEPTED;
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 // app/Http/Controllers/VersionController.php
 
 namespace App\Http\Controllers;

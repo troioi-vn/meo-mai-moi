@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\NotificationResource\Pages;
@@ -473,7 +475,9 @@ class NotificationResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::unread()->count();
+        $count = static::getModel()::unread()->count();
+
+        return $count > 0 ? (string) $count : null;
     }
 
     public static function getNavigationBadgeColor(): ?string

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\EmailLogResource\Pages;
@@ -283,7 +285,7 @@ class EmailLogResource extends Resource
                     ->requiresConfirmation()
                     ->modalHeading('Retry Email Delivery')
                     ->modalDescription('This will attempt to resend the email. Continue?')
-                    ->action(function (EmailLog $record) {
+                    ->action(function (EmailLog $record): void {
                         if (! $record->canRetry()) {
                             Notification::make()
                                 ->title('Cannot Retry')
@@ -328,7 +330,7 @@ class EmailLogResource extends Resource
                         ->icon('heroicon-o-arrow-path')
                         ->color('warning')
                         ->requiresConfirmation()
-                        ->action(function ($records) {
+                        ->action(function ($records): void {
                             $retried = 0;
                             $skipped = 0;
 

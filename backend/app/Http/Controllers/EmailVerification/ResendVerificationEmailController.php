@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\EmailVerification;
 
 use App\Http\Controllers\Controller;

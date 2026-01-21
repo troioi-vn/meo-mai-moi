@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\PetPhoto;
 
 use App\Http\Controllers\Controller;
@@ -77,7 +79,8 @@ class StorePetPhotoController extends Controller
 
     public function __construct(
         protected PetCapabilityService $capabilityService
-    ) {}
+    ) {
+    }
 
     public function __invoke(Request $request, Pet $pet)
     {

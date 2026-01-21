@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Widgets;
 
 use App\Models\EmailConfiguration;
@@ -32,7 +34,7 @@ class NotificationStatsWidget extends BaseWidget
 
         // Calculate rates
         $deliveryRate = $totalNotifications > 0
-            ? round(($deliveredNotifications / $totalNotifications) * 100, 1)
+            ? round($deliveredNotifications / $totalNotifications * 100, 1)
             : 0;
 
         $engagementRate = $deliveredNotifications > 0

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\VaccinationRecord;
 
 use App\Http\Controllers\Controller;

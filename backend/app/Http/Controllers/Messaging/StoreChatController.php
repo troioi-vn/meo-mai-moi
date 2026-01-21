@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Messaging;
 
 use App\Enums\ChatType;
@@ -72,7 +74,7 @@ class StoreChatController extends Controller
                         // And require the recipient is a helper who has responded to this placement request
                         $recipientHasResponded = PlacementRequestResponse::query()
                             ->where('placement_request_id', $placementRequest->id)
-                            ->whereHas('helperProfile', function ($query) use ($recipientId) {
+                            ->whereHas('helperProfile', function ($query) use ($recipientId): void {
                                 $query->where('user_id', $recipientId);
                             })
                             ->exists();

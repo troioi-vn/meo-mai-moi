@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\PetResource\Pages;
 
 use App\Enums\PetStatus;
@@ -17,48 +19,6 @@ use Filament\Resources\Pages\ViewRecord;
 class ViewPet extends ViewRecord
 {
     protected static string $resource = PetResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\Action::make('upload_photo')
-                ->label('Upload Photo')
-                ->icon('heroicon-o-camera')
-                ->form([
-                    \Filament\Forms\Components\FileUpload::make('photo')
-                        ->label('Photo')
-                        ->image()
-                        ->imageEditor()
-                        ->imageEditorAspectRatios(['4:3', '16:9', '1:1'])
-                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif'])
-                        ->maxSize(10240)
-                        ->required(),
-                ])
-                ->action(function (array $data) {
-                    $pet = $this->record;
-
-                    // Get the uploaded file path
-                    $filePath = storage_path('app/public/'.$data['photo']);
-
-                    // Add new photo from uploaded file
-                    if (file_exists($filePath)) {
-                        $pet->addMedia($filePath)
-                            ->toMediaCollection('photos');
-                    }
-
-                    // Refresh the page to show the new photo
-                    $this->redirect(request()->header('Referer'));
-                }),
-
-            Actions\Action::make('manage_photos')
-                ->label('Manage Photos')
-                ->icon('heroicon-o-photo')
-                ->visible(fn () => $this->record->getMedia('photos')->count() > 0)
-                ->url(fn () => static::getResource()::getUrl('photos', ['record' => $this->record])),
-
-            Actions\EditAction::make(),
-        ];
-    }
 
     public function infolist(Infolist $infolist): Infolist
     {
@@ -137,5 +97,47 @@ class ViewPet extends ViewRecord
                     ->collapsible()
                     ->visible(fn ($record) => ! empty($record->description)),
             ]);
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\Action::make('upload_photo')
+                ->label('Upload Photo')
+                ->icon('heroicon-o-camera')
+                ->form([
+                    \Filament\Forms\Components\FileUpload::make('photo')
+                        ->label('Photo')
+                        ->image()
+                        ->imageEditor()
+                        ->imageEditorAspectRatios(['4:3', '16:9', '1:1'])
+                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif'])
+                        ->maxSize(10240)
+                        ->required(),
+                ])
+                ->action(function (array $data): void {
+                    $pet = $this->record;
+
+                    // Get the uploaded file path
+                    $filePath = storage_path('app/public/'.$data['photo']);
+
+                    // Add new photo from uploaded file
+                    if (file_exists($filePath)) {
+                        $pet->addMedia($filePath)
+                            ->toMediaCollection('photos');
+                    }
+
+                    // Refresh the page to show the new photo
+                    $this->redirect(request()->header('Referer'));
+                }),
+
+            Actions\Action::make('manage_photos')
+                ->label('Manage Photos')
+                ->icon('heroicon-o-photo')
+                ->visible(fn () => $this->record->getMedia('photos')->count() > 0)
+                ->url(fn () => static::getResource()::getUrl('photos', ['record' => $this->record])),
+
+            Actions\EditAction::make(),
+        ];
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\EmailConfiguration;
 
 use App\Models\EmailConfiguration;
@@ -141,7 +143,7 @@ class ConfigurationTester
         ]);
 
         try {
-            Mail::raw($body, function (Message $message) use ($recipientEmail, $subject) {
+            Mail::raw($body, function (Message $message) use ($recipientEmail, $subject): void {
                 $message->to($recipientEmail)
                     ->subject($subject);
             });

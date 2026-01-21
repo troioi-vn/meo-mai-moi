@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\InvitationResource\Pages;
@@ -293,7 +295,9 @@ JS, json_encode($url));
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::pending()->count() ?: null;
+        $count = static::getModel()::pending()->count();
+
+        return $count > 0 ? (string) $count : null;
     }
 
     public static function getNavigationBadgeColor(): ?string

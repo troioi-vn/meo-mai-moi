@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jobs;
 
 use App\Enums\NotificationType;
@@ -31,14 +33,6 @@ class SendNotificationEmail implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    /**
-     * The number of times the job may be attempted.
-     */
-    public function tries(): int
-    {
-        return 3;
-    }
-
     // Replace public $backoff property with method to avoid forbidden public property rule.
     // 1 min, 5 min, 15 min
     protected array $backoffSchedule = [60, 300, 900];
@@ -55,6 +49,14 @@ class SendNotificationEmail implements ShouldQueue
         public int $notificationId
     ) {
         // NOTE: These are public for legacy tests that introspect queued job properties
+    }
+
+    /**
+     * The number of times the job may be attempted.
+     */
+    public function tries(): int
+    {
+        return 3;
     }
 
     /**
@@ -173,7 +175,7 @@ class SendNotificationEmail implements ShouldQueue
             try {
                 $emailLogId = $this->emailLog->id;
                 $notificationId = $this->notificationId;
-                $mail->withSymfonyMessage(function ($message) use ($emailLogId, $notificationId) {
+                $mail->withSymfonyMessage(function ($message) use ($emailLogId, $notificationId): void {
                     $headers = $message->getHeaders();
                     $variables = json_encode([
                         'email_log_id' => $emailLogId,

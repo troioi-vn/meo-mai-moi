@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Messaging;
 
 use App\Http\Controllers\Controller;
@@ -17,11 +19,11 @@ class ListChatsController extends Controller
 
         $chats = Chat::forUser($user)
             ->with([
-                'activeParticipants' => function ($query) {
+                'activeParticipants' => function ($query): void {
                     $query->select('users.id', 'users.name', 'users.email');
                 },
                 'latestMessage.sender:id,name',
-                'chatUsers' => function ($query) use ($user) {
+                'chatUsers' => function ($query) use ($user): void {
                     $query->where('user_id', $user->id);
                 },
             ])

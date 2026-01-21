@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications;
 
 use App\Models\WaitlistEntry;
@@ -40,7 +42,7 @@ class WaitlistConfirmation extends Notification implements ShouldQueue
     {
         $appName = config('app.name', 'Our Platform');
 
-        return (new MailMessage)
+        return (new MailMessage())
             ->subject("You're on the waitlist for {$appName}!")
             ->markdown('emails.waitlist-confirmation', [
                 'waitlistEntry' => $this->waitlistEntry,
@@ -56,7 +58,7 @@ class WaitlistConfirmation extends Notification implements ShouldQueue
 
         Mail::send('emails.waitlist-confirmation', [
             'waitlistEntry' => $waitlistEntry,
-        ], function ($message) use ($email, $appName) {
+        ], function ($message) use ($email, $appName): void {
             $message->to($email)
                 ->subject("You're on the waitlist for {$appName}!");
         });

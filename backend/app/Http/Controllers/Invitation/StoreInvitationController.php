@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Invitation;
 
 use App\Http\Controllers\Controller;
@@ -34,7 +36,9 @@ use OpenApi\Attributes as OA;
             content: new OA\JsonContent(
                 properties: [
                     new OA\Property(property: 'message', type: 'string', example: 'Invitation created successfully'),
-                    new OA\Property(property: 'data', type: 'object',
+                    new OA\Property(
+                        property: 'data',
+                        type: 'object',
                         properties: [
                             new OA\Property(property: 'id', type: 'integer'),
                             new OA\Property(property: 'code', type: 'string'),
@@ -70,7 +74,8 @@ class StoreInvitationController extends Controller
 
     public function __construct(
         private InvitationService $invitationService
-    ) {}
+    ) {
+    }
 
     public function __invoke(Request $request)
     {

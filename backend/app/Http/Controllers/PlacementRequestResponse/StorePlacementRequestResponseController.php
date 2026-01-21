@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\PlacementRequestResponse;
 
 use App\Enums\NotificationType;
@@ -59,7 +61,8 @@ class StorePlacementRequestResponseController extends Controller
 
     public function __construct(
         protected NotificationService $notificationService
-    ) {}
+    ) {
+    }
 
     public function __invoke(Request $request, int $placementRequestId)
     {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
@@ -15,7 +17,8 @@ class GetInviteOnlyStatusController extends Controller
 
     public function __construct(
         private SettingsService $settingsService
-    ) {}
+    ) {
+    }
 
     public function __invoke()
     {

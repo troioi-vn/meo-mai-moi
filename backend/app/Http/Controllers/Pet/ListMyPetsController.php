@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Pet;
 
 use App\Http\Controllers\Controller;
@@ -43,13 +45,13 @@ class ListMyPetsController extends Controller
         }
 
         // Get pets where the user is an owner
-        $query = Pet::whereHas('owners', function ($q) use ($request) {
+        $query = Pet::whereHas('owners', function ($q) use ($request): void {
             $q->where('users.id', $request->user()->id);
         })->with('petType');
 
         if ($request->filled('pet_type')) {
             $slug = $request->query('pet_type');
-            $query->whereHas('petType', function ($q) use ($slug) {
+            $query->whereHas('petType', function ($q) use ($slug): void {
                 $q->where('slug', $slug);
             });
         }

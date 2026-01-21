@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
 use App\Enums\PetStatus;
@@ -82,7 +84,7 @@ class PetPolicy
     {
         return $pet->placementRequests()
             ->where('status', PlacementRequestStatus::PENDING_TRANSFER)
-            ->whereHas('transferRequests', function ($query) use ($user) {
+            ->whereHas('transferRequests', function ($query) use ($user): void {
                 $query->where('to_user_id', $user->id)
                     ->where('status', TransferRequestStatus::PENDING);
             })

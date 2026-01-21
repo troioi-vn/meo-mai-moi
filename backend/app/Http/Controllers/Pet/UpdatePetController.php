@@ -58,8 +58,7 @@ class UpdatePetController extends Controller
 
     public function __construct(
         protected PetRelationshipService $relationshipService
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, Pet $pet)
     {

@@ -55,8 +55,7 @@ class AcceptPlacementRequestResponseController extends Controller
 
     public function __construct(
         protected NotificationService $notificationService
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, int $id)
     {

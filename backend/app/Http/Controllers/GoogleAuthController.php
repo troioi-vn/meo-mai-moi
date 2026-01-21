@@ -22,8 +22,7 @@ class GoogleAuthController extends Controller
     public function __construct(
         private readonly InvitationService $invitationService,
         private readonly WaitlistService $waitlistService,
-    ) {
-    }
+    ) {}
 
     public function redirect(Request $request): RedirectResponse
     {

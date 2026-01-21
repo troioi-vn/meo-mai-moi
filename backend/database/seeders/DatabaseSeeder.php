@@ -161,7 +161,7 @@ class DatabaseSeeder extends Seeder
         // Generate evenly spaced dates starting from 5 years ago
         $startDate = now()->subYears(5)->startOfDay();
         $daysPerRecord = (int) (1825 / max($count, 1)); // Spread evenly across 5 years
-        
+
         for ($i = 0; $i < $count; $i++) {
             $recordDate = $startDate->copy()->addDays($i * $daysPerRecord);
 

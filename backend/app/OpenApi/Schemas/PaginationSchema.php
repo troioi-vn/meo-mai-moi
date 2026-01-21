@@ -26,6 +26,4 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'total', type: 'integer', description: 'Total number of items'),
     ]
 )]
-class PaginationSchema
-{
-}
+class PaginationSchema {}

@@ -18,8 +18,7 @@ class GetInvitationStatsController extends Controller
 
     public function __construct(
         private InvitationService $invitationService
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request)
     {

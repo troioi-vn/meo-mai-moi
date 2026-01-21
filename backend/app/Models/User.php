@@ -295,7 +295,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
      */
     public function sendEmailVerificationNotification(): void
     {
-        $this->notify(new \App\Notifications\VerifyEmail());
+        $this->notify(new \App\Notifications\VerifyEmail);
     }
 
     /**

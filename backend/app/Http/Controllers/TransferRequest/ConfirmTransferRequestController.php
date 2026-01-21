@@ -59,8 +59,7 @@ class ConfirmTransferRequestController extends Controller
     public function __construct(
         protected NotificationService $notificationService,
         protected PetRelationshipService $petRelationshipService
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, TransferRequest $transferRequest)
     {

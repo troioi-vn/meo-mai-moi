@@ -102,6 +102,7 @@ class PlacementRequestPolicy
     {
         /** @var \App\Models\Pet $pet */
         $pet = $placementRequest->pet;
+
         return $this->isAdmin($user) || ($pet && $pet->isOwnedBy($user));
     }
 
@@ -109,6 +110,7 @@ class PlacementRequestPolicy
     {
         /** @var \App\Models\Pet $pet */
         $pet = $placementRequest->pet;
+
         return $this->isAdmin($user) || ($pet && $pet->isOwnedBy($user));
     }
 
@@ -117,6 +119,7 @@ class PlacementRequestPolicy
     {
         /** @var \App\Models\Pet $pet */
         $pet = $placementRequest->pet;
+
         return $this->isAdmin($user) || ($pet && $pet->isOwnedBy($user));
     }
 
@@ -124,6 +127,7 @@ class PlacementRequestPolicy
     {
         /** @var \App\Models\Pet $pet */
         $pet = $placementRequest->pet;
+
         return $this->isAdmin($user) || ($pet && $pet->isOwnedBy($user));
     }
 

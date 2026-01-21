@@ -17,6 +17,8 @@ All notable changes to this project are documented here, following the [Keep a C
   - Ensured no linter errors remain after cleanup
   - Tests still pass after cleanup (verified with test suite)
 
+- **Top Bar UI Consistency**: Refactored top bar icons to use consistent hover and focus effects, and updated the home icon alt text from "Cats" to "Pets" for accuracy.
+
 ### Added
 
 - **Notifications System**: Implemented a dedicated notifications page with a list view, mark as read functionality, and automatic marking of all notifications as read upon page visit. Added `NotificationList` component for displaying notifications with icons, timestamps, and links.

@@ -29,7 +29,7 @@ describe('MainNav', () => {
     expect(screen.getByText('Login')).toBeInTheDocument()
     expect(screen.getByText('Register')).toBeInTheDocument()
     expect(screen.getByTitle('Requests')).toBeInTheDocument()
-    expect(screen.queryByTitle('Cats')).not.toBeInTheDocument()
+    expect(screen.queryByTitle('Pets')).not.toBeInTheDocument()
   })
 
   it('renders notification bell and user menu when authenticated', async () => {
@@ -52,6 +52,6 @@ describe('MainNav', () => {
     })
     expect(screen.getByText(/TU/i)).toBeInTheDocument() // User menu avatar with initials
     expect(screen.getByTitle('Requests')).toBeInTheDocument()
-    expect(screen.getByTitle('Cats')).toBeInTheDocument()
+    expect(screen.getByTitle('Pets')).toBeInTheDocument()
   })
 })

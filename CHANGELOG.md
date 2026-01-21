@@ -4,6 +4,19 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ## [Unreleased]
 
+### Changed
+
+- **Frontend Code Cleanup**: Comprehensive cleanup of `frontend/src` folder to remove unused and misplaced files:
+  - Removed empty `components/shared/icons.tsx` file
+  - Removed unused `components/user/OwnerButtonGroup.tsx` component
+  - Removed unused `assets/react.svg` asset file
+  - Removed duplicate form context files (`components/ui/form-context.tsx` and `components/ui/form-item-context.tsx`) that were already defined in `form.tsx`
+  - Removed duplicate `lib/utils/cn.ts` utility file (same function existed in `lib/utils.ts`)
+  - Verified all test files correspond to actual components and removed orphaned tests
+  - Confirmed all utility functions, hooks, and type definitions are properly used
+  - Ensured no linter errors remain after cleanup
+  - Tests still pass after cleanup (verified with test suite)
+
 ### Added
 
 - **Notifications System**: Implemented a dedicated notifications page with a list view, mark as read functionality, and automatic marking of all notifications as read upon page visit. Added `NotificationList` component for displaying notifications with icons, timestamps, and links.

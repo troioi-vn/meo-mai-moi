@@ -671,6 +671,10 @@ if [ "$FRESH" = "true" ]; then
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         echo ""
     } >> "$VOLUME_DELETE_LOG"
+    
+    # In fresh mode we still need to build images so the new containers run the latest code.
+    # Note: docker compose down -v removes containers/volumes, not images.
+    deploy_docker_prepare "$NO_CACHE"
 else
     echo ""
     note "ℹ️  Standard deployment (data preservation mode)"

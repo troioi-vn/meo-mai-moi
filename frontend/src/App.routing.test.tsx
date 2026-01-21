@@ -69,10 +69,10 @@ describe('App Routing', () => {
     it('shows main navigation and breadcrumb on pet profile page', async () => {
       renderWithRouter(<App />, { route: '/pets/1' })
 
-      // Wait for pet data to load
-      await waitFor(async () => {
-        expect(await screen.findAllByText('Fluffy')).toHaveLength(2)
-      })
+      // Wait for lazy route + pet data to load
+      expect(
+        await screen.findByRole('heading', { name: 'Fluffy' }, { timeout: 5000 })
+      ).toBeInTheDocument()
 
       // MainNav should be present (Requests link is always visible)
       expect(screen.getByRole('link', { name: 'Requests' })).toBeInTheDocument()
@@ -97,18 +97,14 @@ describe('App Routing', () => {
       renderWithRouter(<App />, { route: '/cats/1' })
 
       // Legacy /cats routes are no longer supported and should show 404
-      await waitFor(async () => {
-        expect(await screen.findByText(/not found/i)).toBeInTheDocument()
-      })
+      expect(await screen.findByText(/not found/i)).toBeInTheDocument()
     })
 
     it('shows not found page for /cats/:id/edit route (legacy routes removed)', async () => {
       renderWithRouter(<App />, { route: '/cats/1/edit' })
 
       // Legacy /cats routes are no longer supported and should show 404
-      await waitFor(async () => {
-        expect(await screen.findByText(/not found/i)).toBeInTheDocument()
-      })
+      expect(await screen.findByText(/not found/i)).toBeInTheDocument()
     })
   })
 

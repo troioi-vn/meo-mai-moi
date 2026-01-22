@@ -705,7 +705,7 @@ setup_initialize() {
 
 print_help() {
     cat <<'EOF'
-Usage: ./utils/deploy.sh [--fresh] [--seed] [--no-cache] [--skip-build] [--no-interactive] [--quiet] [--allow-empty-db] [--test-notify] [--skip-git-sync] [--clean-up]
+Usage: ./utils/deploy.sh [--fresh] [--seed] [--no-cache] [--skip-build] [--no-interactive] [--quiet] [--allow-empty-db] [--test-notify] [--skip-git-sync] [--clean-up] [--auto-backup] [--restore] [--restore-db] [--restore-uploads]
 
 Flags:
     --fresh          Drop and recreate database, re-run all migrations; also clears volumes/containers.
@@ -718,6 +718,10 @@ Flags:
     --test-notify    Test both Telegram and in-app notifications and exit.
     --skip-git-sync  Skip git repository synchronization (useful for deploying local uncommitted changes).
     --clean-up       Clean up old Docker images, containers, and build cache after successful deployment.
+    --auto-backup    Automatically create database and uploads backup before deployment (non-fresh only).
+    --restore        Restore both database and uploads from backup before deployment.
+    --restore-db     Restore database from backup before deployment.
+    --restore-uploads Restore uploads from backup before deployment.
 
 Default behavior (no flags):
     - Sync with remote git repository (fetch and merge/reset)
@@ -728,6 +732,7 @@ Default behavior (no flags):
 Examples:
     ./utils/deploy.sh                          # normal deploy (migrate only, preserves data)
     ./utils/deploy.sh --seed                   # migrate + seed
+    ./utils/deploy.sh --auto-backup            # create backup before deploying
     ./utils/deploy.sh --fresh                  # reset DB/volumes (asks for confirmation)
     ./utils/deploy.sh --fresh --seed           # fresh + seed (asks for confirmation)
     ./utils/deploy.sh --fresh --no-interactive # fresh without prompts (for CI/automation)

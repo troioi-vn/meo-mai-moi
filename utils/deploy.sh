@@ -89,6 +89,9 @@ ALLOW_EMPTY_DB="false"
 TEST_NOTIFY="false"
 SKIP_GIT_SYNC="false"
 CLEAN_UP="false"
+AUTO_BACKUP="false"
+RESTORE_DB="false"
+RESTORE_UPLOADS="false"
 
 for arg in "$@"; do
     case "$arg" in
@@ -122,6 +125,19 @@ for arg in "$@"; do
             ;;
         --clean-up)
             CLEAN_UP="true"
+            ;;
+        --restore-db)
+            RESTORE_DB="true"
+            ;;
+        --restore-uploads)
+            RESTORE_UPLOADS="true"
+            ;;
+        --restore)
+            RESTORE_DB="true"
+            RESTORE_UPLOADS="true"
+            ;;
+        --auto-backup)
+            AUTO_BACKUP="true"
             ;;
         -h|--help)
             print_help
@@ -157,6 +173,167 @@ run_cmd_with_console() {
 }
 
 deploy_notify_initialize
+
+# Handle restore flags
+if [ "$RESTORE_DB" = "true" ] || [ "$RESTORE_UPLOADS" = "true" ]; then
+    if [ ! -f "$SCRIPT_DIR/backup.sh" ]; then
+        echo "✗ Backup script not found at $SCRIPT_DIR/backup.sh" >&2
+        exit 1
+    fi
+
+    echo ""
+    echo "=========================================="
+    echo "Data Restoration"
+    echo "=========================================="
+    echo ""
+
+    if [ "$NO_INTERACTIVE" = "true" ]; then
+        echo "⚠️  --no-interactive is enabled. Restore requires explicit targets via env vars." >&2
+        echo "  For full restore: set DEPLOY_RESTORE_TIMESTAMP=YYYY-MM-DD_HH-MM-SS" >&2
+        echo "  For DB restore:   set DEPLOY_RESTORE_DB_FILE=backups/backup-....sql.gz" >&2
+        echo "  For uploads:      set DEPLOY_RESTORE_UPLOADS_FILE=backups/uploads_backup-....tar.gz" >&2
+        echo "" >&2
+    fi
+
+    if [ "$RESTORE_DB" = "true" ] && [ "$RESTORE_UPLOADS" = "true" ]; then
+        echo "Restoring both database and uploads..."
+        if [ "$NO_INTERACTIVE" = "true" ]; then
+            selected_stamp="${DEPLOY_RESTORE_TIMESTAMP:-}"
+            if [ -z "$selected_stamp" ]; then
+                echo "✗ Missing DEPLOY_RESTORE_TIMESTAMP for non-interactive restore" >&2
+                exit 1
+            fi
+        else
+            if ! "$SCRIPT_DIR/backup.sh" --list >/dev/null 2>&1; then
+                echo "✗ No backups found" >&2
+                exit 1
+            fi
+
+            # Get list of timestamps from both database and uploads backups
+            STAMPS=$(ls -t "$PROJECT_ROOT/backups"/backup-*.sql.gz "$PROJECT_ROOT/backups"/uploads_backup-*.tar.gz 2>/dev/null | sed -E 's/.*backup-(.*)\.(sql\.gz|tar\.gz)/\1/' | sort -u -r | head -5)
+            
+            if [ -z "$STAMPS" ]; then
+                echo "✗ No coordinated backups found" >&2
+                exit 1
+            fi
+
+            echo "Available backup timestamps:"
+            echo "$STAMPS"
+            echo ""
+            read -r -p "Enter timestamp to restore from (e.g. 2026-01-22_15-36-39) or 'cancel': " selected_stamp
+        fi
+
+        if [ "$selected_stamp" != "cancel" ] && [ -n "$selected_stamp" ]; then
+            if "$SCRIPT_DIR/backup.sh" --restore-all "$selected_stamp"; then
+                echo "✓ Coordinated restoration complete"
+            else
+                echo "✗ Coordinated restoration failed" >&2
+                exit 1
+            fi
+        fi
+    elif [ "$RESTORE_DB" = "true" ]; then
+        echo "Restoring database..."
+        if [ "$NO_INTERACTIVE" = "true" ]; then
+            selected_backup="${DEPLOY_RESTORE_DB_FILE:-}"
+            if [ -z "$selected_backup" ]; then
+                echo "✗ Missing DEPLOY_RESTORE_DB_FILE for non-interactive DB restore" >&2
+                exit 1
+            fi
+            if "$SCRIPT_DIR/backup.sh" --restore-database "$selected_backup"; then
+                echo "✓ Database restoration complete"
+            else
+                echo "✗ Database restoration failed" >&2
+                exit 1
+            fi
+        else
+            # List available backups and let user choose
+            if ! "$SCRIPT_DIR/backup.sh" --list >/dev/null 2>&1; then
+                echo "✗ No database backups found" >&2
+                exit 1
+            fi
+
+            # Get list of backups
+            BACKUP_LIST=$(ls -t "$PROJECT_ROOT/backups"/backup-*.sql.gz 2>/dev/null | xargs -n1 basename | head -5)
+            if [ -z "$BACKUP_LIST" ]; then
+                echo "✗ No database backups found" >&2
+                exit 1
+            fi
+
+            echo "Available database backups:"
+            echo "$BACKUP_LIST"
+            echo ""
+            read -r -p "Enter backup filename to restore (or 'cancel' to skip): " selected_backup
+
+            if [ "$selected_backup" != "cancel" ] && [ -n "$selected_backup" ]; then
+                if [ -f "$PROJECT_ROOT/backups/$selected_backup" ]; then
+                    echo "Restoring from: $selected_backup"
+                    if "$SCRIPT_DIR/backup.sh" --restore-database "$PROJECT_ROOT/backups/$selected_backup"; then
+                        echo "✓ Database restoration complete"
+                    else
+                        echo "✗ Database restoration failed" >&2
+                        exit 1
+                    fi
+                else
+                    echo "✗ Backup file not found: $selected_backup" >&2
+                    exit 1
+                fi
+            fi
+        fi
+    elif [ "$RESTORE_UPLOADS" = "true" ]; then
+        echo "Restoring uploads..."
+        if [ "$NO_INTERACTIVE" = "true" ]; then
+            selected_backup="${DEPLOY_RESTORE_UPLOADS_FILE:-}"
+            if [ -z "$selected_backup" ]; then
+                echo "✗ Missing DEPLOY_RESTORE_UPLOADS_FILE for non-interactive uploads restore" >&2
+                exit 1
+            fi
+            if "$SCRIPT_DIR/backup.sh" --restore-uploads "$selected_backup"; then
+                echo "✓ Uploads restoration complete"
+            else
+                echo "✗ Uploads restoration failed" >&2
+                exit 1
+            fi
+        else
+            if ! "$SCRIPT_DIR/backup.sh" --list >/dev/null 2>&1; then
+                echo "✗ No uploads backups found" >&2
+                exit 1
+            fi
+
+            # Get list of backups
+            BACKUP_LIST=$(ls -t "$PROJECT_ROOT/backups"/uploads_backup-*.tar.gz 2>/dev/null | xargs -n1 basename | head -5)
+            if [ -z "$BACKUP_LIST" ]; then
+                echo "✗ No uploads backups found" >&2
+                exit 1
+            fi
+
+            echo "Available uploads backups:"
+            echo "$BACKUP_LIST"
+            echo ""
+            read -r -p "Enter backup filename to restore (or 'cancel' to skip): " selected_backup
+
+            if [ "$selected_backup" != "cancel" ] && [ -n "$selected_backup" ]; then
+                if [ -f "$PROJECT_ROOT/backups/$selected_backup" ]; then
+                    echo "Restoring from: $selected_backup"
+                    if "$SCRIPT_DIR/backup.sh" --restore-uploads "$PROJECT_ROOT/backups/$selected_backup"; then
+                        echo "✓ Uploads restoration complete"
+                    else
+                        echo "✗ Uploads restoration failed" >&2
+                        exit 1
+                    fi
+                else
+                    echo "✗ Backup file not found: $selected_backup" >&2
+                    exit 1
+                fi
+            fi
+        fi
+    fi
+
+    echo ""
+    echo "=========================================="
+    echo "✓ Data restoration complete"
+    echo "=========================================="
+    echo ""
+fi
 
 # Handle --test-notify flag
 if [ "$TEST_NOTIFY" = "true" ]; then
@@ -267,6 +444,7 @@ export DEPLOY_FLAG_SEED="$SEED"
 export DEPLOY_FLAG_NO_INTERACTIVE="$NO_INTERACTIVE"
 export DEPLOY_FLAG_SKIP_GIT_SYNC="$SKIP_GIT_SYNC"
 export DEPLOY_FLAG_CLEAN_UP="$CLEAN_UP"
+export DEPLOY_FLAG_AUTO_BACKUP="$AUTO_BACKUP"
 
 deploy_notify_send_start
 
@@ -475,10 +653,10 @@ fi
 # Optional backup before making changes (recommended for production)
 if [ "$FRESH" = "false" ] && [ "$NO_INTERACTIVE" = "false" ]; then
     echo ""
-    read -r -p "Would you like to backup the database first? (Y/n): " do_backup
+    read -r -p "Would you like to backup database and uploads first? (Y/n): " do_backup
     if [[ ! "$do_backup" =~ ^[nN]([oO])?$ ]]; then
         note "Preparing to run backup..."
-        # Ensure DB container is running for backup script
+        # Ensure containers are running for backup script
         if ! docker compose ps --status=running 2>/dev/null | grep -q " db "; then
             note "Starting database container for backup..."
             run_cmd_with_console docker compose up -d db
@@ -496,12 +674,54 @@ if [ "$FRESH" = "false" ] && [ "$NO_INTERACTIVE" = "false" ]; then
             done
         fi
 
+        if ! docker compose ps --status=running 2>/dev/null | grep -q " backend "; then
+            note "Starting backend container for backup..."
+            run_cmd_with_console docker compose up -d backend
+            # Wait briefly for backend to be ready
+            sleep 5
+        fi
+
         if [ -f "$SCRIPT_DIR/backup.sh" ]; then
-            run_cmd_with_console "$SCRIPT_DIR/backup.sh"
+            run_cmd_with_console "$SCRIPT_DIR/backup.sh" all
             note "✓ Backup complete"
         else
             note "⚠️  Backup script not found at $SCRIPT_DIR/backup.sh"
         fi
+    fi
+fi
+
+# Automatic backup if --auto-backup flag is used
+if [ "$AUTO_BACKUP" = "true" ] && [ "$FRESH" = "false" ]; then
+    note "Auto-backup enabled: Creating backup before deployment..."
+    # Ensure containers are running for backup script
+    if ! docker compose ps --status=running 2>/dev/null | grep -q " db "; then
+        note "Starting database container for backup..."
+        run_cmd_with_console docker compose up -d db
+        # Wait briefly for db health
+        WAIT_TIMEOUT=60
+        WAIT_INTERVAL=2
+        elapsed=0
+        while [ "$elapsed" -lt "$WAIT_TIMEOUT" ]; do
+            if docker compose ps db 2>/dev/null | grep -q '(healthy)'; then
+                note "✓ Database is healthy for backup"
+                break
+            fi
+            sleep "$WAIT_INTERVAL"
+            elapsed=$((elapsed + WAIT_INTERVAL))
+        done
+    fi
+
+    if ! docker compose ps --status=running 2>/dev/null | grep -q " backend "; then
+        note "Starting backend container for backup..."
+        run_cmd_with_console docker compose up -d backend
+        sleep 5
+    fi
+
+    if [ -f "$SCRIPT_DIR/backup.sh" ]; then
+        run_cmd_with_console "$SCRIPT_DIR/backup.sh" all
+        note "✓ Auto-backup complete"
+    else
+        note "⚠️  Backup script not found at $SCRIPT_DIR/backup.sh"
     fi
 fi
 

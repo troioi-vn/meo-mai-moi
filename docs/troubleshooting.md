@@ -15,7 +15,7 @@ This guide provides solutions to common issues encountered during development.
 - **Cause**: Race condition if migrations run in both entrypoint and deploy.sh
 - **Solution**: Ensure `RUN_MIGRATIONS=false` in docker-compose.yml (default setting)
 - Migrations should ONLY run via `./utils/deploy.sh`, not during container startup
-- If corruption occurs, restore from backup: `./utils/restore.sh`
+- If corruption occurs, restore from backup: `./utils/backup.sh --restore-database BACKUP_FILE` (or `./utils/restore.sh` for legacy interactive menu)
 
 **Login Issues (Admin Password Corruption)**
 

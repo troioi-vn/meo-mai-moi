@@ -5,7 +5,7 @@ This is the authoritative guide for deploying Meo Mai Moi in development, stagin
 The single entrypoint for all deployments is:
 
 ```bash
-./utils/deploy.sh [--seed] [--fresh] [--no-cache] [--skip-build] [--no-interactive] [--quiet]
+./utils/deploy.sh [--seed] [--fresh] [--no-cache] [--skip-build] [--no-interactive] [--quiet] [--auto-backup] [--restore]
 ```
 
 See `./utils/deploy.sh --help` for full options.
@@ -45,6 +45,7 @@ If these files don't exist, the deploy script will create them interactively (or
 ```bash
 ./utils/deploy.sh          # migrate only, preserves data
 ./utils/deploy.sh --seed   # migrate + seed sample data
+./utils/deploy.sh --auto-backup  # create backup before deploying
 ./utils/deploy.sh --skip-build  # skip Docker image builds (uses existing images)
 ```
 
@@ -84,14 +85,15 @@ Access:
 Use the same command on the server:
 
 ```bash
-./utils/deploy.sh --no-interactive --quiet
+./utils/deploy.sh --no-interactive --quiet --auto-backup
 ```
 
 Notes:
 
 - The backend container serves HTTP on port 80. In production, terminate HTTPS at your reverse proxy and forward to port 8000 on the host.
 - Migrations run via the deploy script only (the container’s entrypoint has `RUN_MIGRATIONS=false` to avoid race conditions).
-- Consider running `./utils/backup.sh` before deployments to production.
+- The `--auto-backup` flag automatically creates a backup before deployment for safety.
+- For production environments, consider setting up automated daily backups using the backup scheduler.
 
 ## Branch strategy
 
@@ -237,23 +239,148 @@ Alerts are sent to Telegram with diagnostic information. Check logs:
 docker compose exec backend tail -f /var/www/storage/logs/db-monitor.log
 ```
 
-## Backups
+## 🔑 Seeder Overrides
 
-Create a database backup:
+Configure the initial Super Admin credentials via environment variables in `backend/.env*`:
 
-```bash
-./utils/backup.sh
+```
+SEED_ADMIN_EMAIL=admin@catarchy.space
+SEED_ADMIN_PASSWORD=password
+# Optional: SEED_ADMIN_NAME="Super Admin"
 ```
 
-This produces gzip‑compressed files like `backups/backup-YYYY-MM-DD_HH-MM-SS.sql.gz`.
+`DatabaseSeeder` and `deploy.sh` will honor these values when seeding and when checking for the admin user during deployments.
 
-Restore interactively:
+## 💾 Backup & Restore System
 
+The backup system supports both database and user uploads, with comprehensive safety features and automated scheduling options.
+
+### Creating Backups
+
+#### Manual Backups
 ```bash
-./utils/restore.sh
+./utils/backup.sh all                    # Create both database and uploads backup
+./utils/backup.sh database               # Create only database backup
+./utils/backup.sh uploads                # Create only uploads backup
+./utils/backup.sh --list                 # List all available backups
+./utils/backup.sh --clean                # Remove backups older than 30 days
 ```
 
-The restore tool supports both the new `.sql.gz` files and legacy `db_backup_*.sql`.
+#### Automated Backups
+```bash
+./utils/backup-scheduler.sh              # Run scheduled backup (respects schedule)
+./utils/backup-scheduler.sh --run-now    # Force immediate backup
+./utils/backup-scheduler.sh --dry-run    # Test backup configuration without running
+```
+
+#### Cron Job Setup
+```bash
+./utils/setup-backup-cron.sh --interactive    # Interactive cron setup
+./utils/setup-backup-cron.sh --add-daily      # Add daily backup cron job
+./utils/setup-backup-cron.sh --add-weekly     # Add weekly backup cron job
+./utils/setup-backup-cron.sh --remove         # Remove backup cron jobs
+```
+
+**Backup Features:**
+- **Comprehensive Coverage**: Database + user uploads in coordinated backups
+- **Compressed Formats**:
+  - Database: `backups/backup-YYYY-MM-DD_HH-MM-SS.sql.gz`
+  - Uploads: `backups/uploads_backup-YYYY-MM-DD_HH-MM-SS.tar.gz`
+- **Integrity Verification**: SHA256 checksums for all backups
+- **Automatic Cleanup**: Configurable retention (default: 30 days)
+- **Health Checks**: Container status and connectivity validation
+- **Flexible Scheduling**: Hourly, daily, weekly, monthly options
+- **Smart Scheduling**: Only runs when needed based on last backup time
+
+### Restoring from Backups
+
+#### Individual Component Restoration
+```bash
+./utils/backup.sh --restore-database backups/backup-2026-01-22_14-51-10.sql.gz
+./utils/backup.sh --restore-uploads backups/uploads_backup-2026-01-22_14-51-10.tar.gz
+```
+
+#### Coordinated Restoration (Recommended)
+```bash
+./utils/backup.sh --restore-all 2026-01-22_14-51-10    # Restore both by timestamp
+```
+
+#### During Deployment (Automated)
+```bash
+./utils/deploy.sh --auto-backup         # Create backup before deploying
+./utils/deploy.sh --restore-db          # Restore database before deploying
+./utils/deploy.sh --restore-uploads     # Restore uploads before deploying
+./utils/deploy.sh --restore             # Restore both database and uploads
+```
+
+When using `--no-interactive` together with restore flags, you must provide the restore target explicitly:
+
+```bash
+# Restore both (timestamp)
+DEPLOY_RESTORE_TIMESTAMP=2026-01-22_14-51-10 ./utils/deploy.sh --no-interactive --restore
+
+# Restore DB only (file path)
+DEPLOY_RESTORE_DB_FILE=backups/backup-2026-01-22_14-51-10.sql.gz ./utils/deploy.sh --no-interactive --restore-db
+
+# Restore uploads only (file path)
+DEPLOY_RESTORE_UPLOADS_FILE=backups/uploads_backup-2026-01-22_14-51-10.tar.gz ./utils/deploy.sh --no-interactive --restore-uploads
+```
+
+#### Legacy Interactive Method
+```bash
+./utils/restore.sh                      # Interactive menu (database, uploads, or both)
+```
+
+### Safety Features
+
+- **Pre-restoration Validation**: Disk space, connectivity, checksum verification
+- **Confirmation Prompts**: Prevent accidental data loss with clear warnings
+- **Post-restoration Verification**: Database connectivity and file count validation
+- **Detailed Logging**: All operations logged with timestamps and error details
+- **Non-destructive Testing**: Dry-run modes for backup scheduler
+
+### Rollback vs Restore
+
+- **Rollback** (`rollback.sh`): Revert code changes to a previous deployment snapshot while preserving database data
+- **Restore**: Replace current data with data from a backup file (destructive operation)
+
+Use rollback for code issues, use restore for data recovery.
+
+### Configuration Options
+
+#### Environment Variables for Backup Scheduler
+```bash
+BACKUP_SCHEDULE=daily          # hourly, daily, weekly, monthly
+BACKUP_RETENTION_DAYS=30       # Days to keep backups
+BACKUP_TYPE=all               # all, database, uploads
+BACKUP_NOTIFICATION=true      # Enable Telegram notifications
+LOG_FILE=/path/to/logfile     # Custom log file path
+```
+
+#### Environment Variables for Manual Backups
+```bash
+BACKUP_RETENTION_DAYS=7       # Override default retention
+DB_USERNAME=user              # Database username
+DB_DATABASE=meo_mai_moi       # Database name
+```
+
+### Utility Scripts
+
+- **backup.sh** - Comprehensive backup creation and restoration utility
+- **backup-scheduler.sh** - Automated backup scheduler with health checks
+- **setup-backup-cron.sh** - Cron job setup and management
+- **restore.sh** - Legacy interactive restore utility (still supported)
+- **rollback.sh** - Code rollback utility (preserves data)
+
+### Production Recommendations
+
+1. **Enable Automated Backups**: Set up daily or weekly cron jobs for production
+2. **Use Coordinated Backups**: Always backup both database and uploads together
+3. **Test Restore Procedures**: Regularly test restoration in staging environments
+4. **Monitor Backup Health**: Check logs and backup file integrity
+5. **Configure Notifications**: Enable Telegram alerts for backup failures
+6. **Plan Retention Policy**: Balance storage costs with recovery needs
+7. **Secure Backup Storage**: Consider off-site backup storage for critical data
 
 ## Production HTTPS
 

@@ -210,7 +210,7 @@ if [ "$RESTORE_DB" = "true" ] || [ "$RESTORE_UPLOADS" = "true" ]; then
             fi
 
             # Get list of timestamps from both database and uploads backups
-            STAMPS=$(ls -t "$PROJECT_ROOT/backups"/backup-*.sql.gz "$PROJECT_ROOT/backups"/uploads_backup-*.tar.gz 2>/dev/null | sed -E 's/.*backup-(.*)\.(sql\.gz|tar\.gz)/\1/' | sort -u -r | head -5)
+            STAMPS=$(ls -t "$PROJECT_ROOT/backups"/backup-*.sql.gz "$PROJECT_ROOT/backups"/uploads_backup-*.tar.gz 2>/dev/null | sed -E 's/.*backup-(.*)\.( sql\.gz|tar\.gz)/\1/' | sort -u -r | head -5 || true)
             
             if [ -z "$STAMPS" ]; then
                 echo "✗ No coordinated backups found" >&2

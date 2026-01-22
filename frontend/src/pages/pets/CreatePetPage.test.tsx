@@ -189,7 +189,8 @@ describe('CreatePetPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Name is required')).toBeInTheDocument()
-      expect(screen.getByText('City is required')).toBeInTheDocument()
+      // City is no longer required
+      expect(screen.queryByText('City is required')).not.toBeInTheDocument()
       // Birthday no longer universally required
       expect(screen.queryByText('Birthday is required')).not.toBeInTheDocument()
       // Country defaults to 'VN' so it won't show validation error

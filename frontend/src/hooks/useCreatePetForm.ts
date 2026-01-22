@@ -45,7 +45,6 @@ const VALIDATION_MESSAGES = {
   REQUIRED_MONTH: 'Month required',
   REQUIRED_PET_TYPE: 'Pet type is required',
   REQUIRED_COUNTRY: 'Country is required',
-  REQUIRED_CITY: 'City is required',
   INVALID_YEAR: 'Year must be between 1900 and current year',
   INVALID_MONTH: 'Month must be between 1 and 12',
   INVALID_DAY: 'Day must be between 1 and 31',
@@ -237,9 +236,6 @@ export const useCreatePetForm = (petId?: string) => {
     // Country is required, other location fields are optional
     if (!formData.country.trim()) {
       newErrors.country = VALIDATION_MESSAGES.REQUIRED_COUNTRY
-    }
-    if (!formData.city_id) {
-      newErrors.city = VALIDATION_MESSAGES.REQUIRED_CITY
     }
     if (!formData.pet_type_id) {
       newErrors.pet_type_id = VALIDATION_MESSAGES.REQUIRED_PET_TYPE

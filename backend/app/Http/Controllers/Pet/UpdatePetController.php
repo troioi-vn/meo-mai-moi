@@ -70,7 +70,7 @@ class UpdatePetController extends Controller
             'sex' => 'nullable|in:male,female,not_specified',
             'country' => 'sometimes|required|string|size:2',
             'state' => 'nullable|string|max:255',
-            'city_id' => 'sometimes|required|integer|exists:cities,id',
+            'city_id' => 'nullable|integer|exists:cities,id',
             'address' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'pet_type_id' => 'sometimes|required|exists:pet_types,id',

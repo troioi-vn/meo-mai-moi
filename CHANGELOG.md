@@ -8,6 +8,8 @@ All notable changes to this project are documented here, following the [Keep a C
 
 - **Backup and Deployment Scripts**: Enhanced `utils/backup.sh` with separate handling for database and uploads backups, improved error handling, and new command-line options. Updated `utils/deploy.sh` with restore options (`--restore`, `--restore-db`, `--restore-uploads`) and auto-backup functionality (`--auto-backup`). Deprecated `utils/restore.sh` in favor of the improved backup script.
 
+- **Pet Profile Creation/Editing**: Made the City field optional when creating or editing pet profiles (`/pets/create` and `/pets/{id}/edit`).
+
 ## [v0.6.0] - 2026-01-22
 
 ### Added

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { PlacementRequestDetail } from '@/types/placement'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 
 interface PetInformationCardProps {
   request: PlacementRequestDetail
@@ -32,12 +33,9 @@ export function PetInformationCard({ request, petCity }: PetInformationCardProps
               {request.pet.state && `, ${request.pet.state}`}
               {request.pet.country && `, ${request.pet.country}`}
             </p>
-            <Link
-              to={`/pets/${String(request.pet.id)}/view`}
-              className="text-sm text-primary hover:underline"
-            >
-              View Pet Profile →
-            </Link>
+            <Button variant="link" asChild>
+              <Link to={`/pets/${String(request.pet.id)}/view`}>View Profile</Link>
+            </Button>
           </div>
         </div>
 

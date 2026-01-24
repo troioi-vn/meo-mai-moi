@@ -1,4 +1,4 @@
-import { screen, waitFor, act } from '@testing-library/react'
+import { screen, waitFor, act, within } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderWithRouter, userEvent } from '@/testing'
 import InvitationsPage from './InvitationsPage'
@@ -109,6 +109,41 @@ describe('InvitationsPage', () => {
       // Check recipient info
       expect(screen.getByText(/Accepted by Jane Doe/)).toBeInTheDocument()
     })
+  })
+
+  it('hides the revoked stats card when revoked is 0', async () => {
+    renderInvitationsPage()
+
+    await waitFor(() => {
+      expect(screen.getByText(/abc123xy/)).toBeInTheDocument()
+    })
+
+    expect(screen.queryByText('Revoked')).not.toBeInTheDocument()
+  })
+
+  it('shows the revoked stats card when revoked is greater than 0', async () => {
+    server.use(
+      http.get('http://localhost:3000/api/invitations/stats', () => {
+        return HttpResponse.json({
+          data: { total: 3, pending: 1, accepted: 1, expired: 1, revoked: 2 },
+        })
+      })
+    )
+
+    renderInvitationsPage()
+
+    await waitFor(() => {
+      expect(screen.getByText(/abc123xy/)).toBeInTheDocument()
+    })
+
+    const revokedTitle = screen.getByText('Revoked')
+    expect(revokedTitle).toBeInTheDocument()
+
+    const revokedCard = revokedTitle.closest('[data-slot="card"]')
+    expect(revokedCard).toBeTruthy()
+
+    const revokedNumber = within(revokedCard as HTMLElement).getByText('2')
+    expect(revokedNumber).toHaveClass('text-left')
   })
 
   it('generates new invitation successfully', async () => {

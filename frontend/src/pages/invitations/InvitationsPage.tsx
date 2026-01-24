@@ -38,6 +38,7 @@ export default function InvitationsPage() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const isRefreshingRef = useRef(false)
+  const showRevoked = (stats?.revoked ?? 0) > 0
 
   const loadData = useCallback(async (params?: { showLoading?: boolean }) => {
     const { showLoading = true } = params ?? {}
@@ -200,56 +201,74 @@ export default function InvitationsPage() {
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <div
+          className={
+            showRevoked
+              ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3'
+              : 'grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3'
+          }
+        >
+          <Card size="sm" className="py-3 gap-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
               <CardTitle className="text-sm font-medium">Total</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.total}</div>
+            <CardContent className="pt-1">
+              <div className="text-left text-xl font-semibold leading-none tabular-nums">
+                {stats.total}
+              </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <Card size="sm" className="py-3 gap-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
               <CardTitle className="text-sm font-medium">Pending</CardTitle>
               <Clock className="h-4 w-4 text-yellow-600" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.pending}</div>
+            <CardContent className="pt-1">
+              <div className="text-left text-xl font-semibold leading-none tabular-nums">
+                {stats.pending}
+              </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <Card size="sm" className="py-3 gap-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
               <CardTitle className="text-sm font-medium">Accepted</CardTitle>
               <CheckCircle className="h-4 w-4 text-green-600" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.accepted}</div>
+            <CardContent className="pt-1">
+              <div className="text-left text-xl font-semibold leading-none tabular-nums">
+                {stats.accepted}
+              </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <Card size="sm" className="py-3 gap-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
               <CardTitle className="text-sm font-medium">Expired</CardTitle>
               <XCircle className="h-4 w-4 text-red-600" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.expired}</div>
+            <CardContent className="pt-1">
+              <div className="text-left text-xl font-semibold leading-none tabular-nums">
+                {stats.expired}
+              </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Revoked</CardTitle>
-              <XCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.revoked}</div>
-            </CardContent>
-          </Card>
+          {showRevoked && (
+            <Card size="sm" className="py-3 gap-2 col-span-2 sm:col-span-1">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
+                <CardTitle className="text-sm font-medium">Revoked</CardTitle>
+                <XCircle className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent className="pt-1">
+                <div className="text-left text-xl font-semibold leading-none tabular-nums">
+                  {stats.revoked}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
 

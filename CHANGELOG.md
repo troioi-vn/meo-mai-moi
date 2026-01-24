@@ -10,6 +10,8 @@ All notable changes to this project are documented here, following the [Keep a C
 
 - **City Creation Notifications**: Cities are now auto-approved upon creation, and notifications are sent to all admin users for review. Added rate limiting of 10 cities per user per 24 hours to prevent abuse.
 
+- **Invitations page (tests)**: Added unit tests for the Invitations page to cover stats card rendering and behaviors (including revoked card visibility and numeric alignment).
+
 ### Changed
 
 - **Backup and Deployment Scripts**: Enhanced `utils/backup.sh` with separate handling for database and uploads backups, improved error handling, and new command-line options. Updated `utils/deploy.sh` with restore options (`--restore`, `--restore-db`, `--restore-uploads`) and auto-backup functionality (`--auto-backup`). Deprecated `utils/restore.sh` in favor of the improved backup script.
@@ -19,6 +21,8 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Notification Model**: Improved synchronization logic for `read_at` and `is_read` fields to prefer `read_at` as the canonical source and handle updates more reliably.
 
 - **City Creation Success Message**: Updated success toast from "City created (pending approval)" to "City created" since cities are now auto-approved.
+
+- **Invitations page (UI)**: Made the invitations stats cards more compact and improved responsive layout; numeric counters are now left-aligned and use tabular numerals for better readability. The "Revoked" stats card is hidden when its value is zero to avoid showing empty/placeholder stats.
 
 ## [v0.6.0] - 2026-01-22
 

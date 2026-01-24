@@ -19,7 +19,11 @@ vi.mock('@/components/location/CitySelect', () => ({
   CitySelect: ({ onChange, error }: any) => (
     <div data-testid="mock-city-select">
       <label htmlFor="city-mock">City</label>
-      <button id="city-mock" onClick={() => onChange({ id: 1, name: 'Hanoi', country: 'VN' })}>
+      <button
+        id="city-mock"
+        type="button"
+        onClick={() => onChange({ id: 1, name: 'Hanoi', country: 'VN' })}
+      >
         Select Hanoi
       </button>
       {error && <span>{error}</span>}

@@ -9,6 +9,26 @@ export async function markRead(id: string) {
   await api.patch(`/notifications/${id}/read`)
 }
 
+export interface ExecuteNotificationActionData {
+  notification: AppNotification
+  unread_bell_count: number
+}
+
+export interface ExecuteNotificationActionResponse {
+  data: ExecuteNotificationActionData
+  message?: string
+}
+
+export async function executeNotificationAction(
+  notificationId: string,
+  actionKey: string
+): Promise<ExecuteNotificationActionResponse> {
+  const res = await api.post<ExecuteNotificationActionResponse>(
+    `/notifications/${notificationId}/actions/${actionKey}`
+  )
+  return res.data
+}
+
 export interface UnifiedNotificationsResponse {
   bell_notifications: AppNotification[]
   unread_bell_count: number

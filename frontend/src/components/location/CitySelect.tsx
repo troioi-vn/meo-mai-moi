@@ -164,7 +164,7 @@ export const CitySelect: React.FC<Props> = (props) => {
 
       setSearchValue('')
       setOpen(false)
-      toast.success('City created (pending approval)')
+      toast.success('City created')
     } catch (err: unknown) {
       console.error('Failed to create city:', err)
       toast.error('Failed to create city')

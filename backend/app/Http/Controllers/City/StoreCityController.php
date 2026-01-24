@@ -6,6 +6,8 @@ namespace App\Http\Controllers\City;
 
 use App\Http\Controllers\Controller;
 use App\Models\City;
+use App\Models\User;
+use App\Services\NotificationService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -24,6 +26,15 @@ class StoreCityController extends Controller
 
         $country = strtoupper($validated['country']);
         $slug = Str::slug($validated['name']);
+
+        // Rate limiting: Check if user has reached the limit of 10 cities per 24 hours
+        $citiesCreatedInLast24Hours = City::where('created_by', $request->user()->id)
+            ->where('created_at', '>=', now()->subDay())
+            ->count();
+
+        if ($citiesCreatedInLast24Hours >= 10) {
+            return $this->sendError('You have reached the limit of 10 cities per 24 hours. Please try again later.', 422);
+        }
 
         // Unique name per country
         $existingByName = City::where('name', $validated['name'])
@@ -56,8 +67,23 @@ class StoreCityController extends Controller
             'country' => $country,
             'description' => $validated['description'] ?? null,
             'created_by' => $request->user()->id,
-            'approved_at' => null,
+            'approved_at' => now(),
         ]);
+
+        // Send notifications to all admin users
+        $adminUsers = User::whereHas('roles', function ($query): void {
+            $query->whereIn('name', ['admin', 'super_admin']);
+        })->get();
+
+        $notificationService = app(NotificationService::class);
+
+        foreach ($adminUsers as $admin) {
+            $notificationService->sendInApp($admin, 'city_created', [
+                'message' => "New City created by {$request->user()->name}: {$city->name}",
+                'link' => url("/admin/cities/{$city->id}/edit"),
+                'city_id' => $city->id,
+            ]);
+        }
 
         return $this->sendSuccess($city, 201);
     }

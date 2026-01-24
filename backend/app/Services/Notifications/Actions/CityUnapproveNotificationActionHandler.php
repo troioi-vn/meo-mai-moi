@@ -21,6 +21,8 @@ final class CityUnapproveNotificationActionHandler implements NotificationAction
         return 'unapprove';
     }
 
+    private static array $cityCache = [];
+
     public function describe(Notification $notification): ?array
     {
         $cityId = data_get($notification->data, 'city_id');
@@ -28,7 +30,7 @@ final class CityUnapproveNotificationActionHandler implements NotificationAction
             return null;
         }
 
-        $city = City::query()->find($cityId);
+        $city = self::$cityCache[(int) $cityId] ??= City::find($cityId);
         if (! $city) {
             return [
                 'key' => $this->actionKey(),
@@ -70,6 +72,8 @@ final class CityUnapproveNotificationActionHandler implements NotificationAction
         if (! $cityId) {
             throw new \InvalidArgumentException('City id missing');
         }
+
+        unset(self::$cityCache[(int) $cityId]);
 
         $city = City::query()->findOrFail($cityId);
 

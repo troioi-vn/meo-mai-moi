@@ -47,6 +47,7 @@ use App\Http\Controllers\Messaging\StoreChatController;
 use App\Http\Controllers\Messaging\StoreMessageController;
 use App\Http\Controllers\Notification\GetUnifiedNotificationsController;
 use App\Http\Controllers\Notification\ListNotificationsController;
+use App\Http\Controllers\Notification\ExecuteNotificationActionController;
 use App\Http\Controllers\Notification\MarkAllNotificationsReadController;
 use App\Http\Controllers\Notification\MarkAsReadLegacyController;
 use App\Http\Controllers\Notification\MarkNotificationReadController;
@@ -193,6 +194,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function (): void {
     Route::post('/notifications/mark-as-read', MarkAsReadLegacyController::class); // legacy alias
     Route::post('/notifications/mark-all-read', MarkAllNotificationsReadController::class);
     Route::patch('/notifications/{notification}/read', MarkNotificationReadController::class);
+    Route::post('/notifications/{notification}/actions/{actionKey}', ExecuteNotificationActionController::class);
 
     // Push subscriptions
     Route::get('/push-subscriptions', ListPushSubscriptionsController::class);

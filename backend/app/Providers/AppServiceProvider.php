@@ -9,6 +9,8 @@ use App\Listeners\CreateHelperProfileNotification;
 use App\Listeners\UpdateEmailLogOnSent;
 use App\Models\Notification;
 use App\Observers\NotificationObserver;
+use App\Services\Notifications\Actions\CityUnapproveNotificationActionHandler;
+use App\Services\Notifications\Actions\NotificationActionRegistry;
 use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
@@ -24,6 +26,15 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(\App\Services\EmailConfigurationService::class);
         $this->app->singleton(\App\Services\Notifications\WebPushDispatcher::class);
+
+        $this->app->singleton(NotificationActionRegistry::class, function ($app) {
+            $registry = new NotificationActionRegistry;
+
+            // Built-in action handlers
+            $registry->register($app->make(CityUnapproveNotificationActionHandler::class));
+
+            return $registry;
+        });
     }
 
     /**

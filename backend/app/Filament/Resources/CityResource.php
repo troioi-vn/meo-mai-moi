@@ -6,6 +6,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CityResource\Pages;
 use App\Models\City;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -19,6 +20,7 @@ use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 
 class CityResource extends Resource
@@ -34,7 +36,7 @@ class CityResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Section::make('General Information')
+            Section::make('General Information')
                 ->schema([
                     TextInput::make('name')
                         ->required()
@@ -61,7 +63,7 @@ class CityResource extends Resource
                 ])
                 ->columns(2),
 
-            Forms\Components\Section::make('Status & Metadata')
+            Section::make('Status & Metadata')
                 ->schema([
                     Toggle::make('is_approved')
                         ->label('Approved')

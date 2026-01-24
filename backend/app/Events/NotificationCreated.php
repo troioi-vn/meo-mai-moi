@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Events;
 
 use App\Models\Notification;
+use App\Services\Notifications\Actions\NotificationActionRegistry;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -28,6 +29,8 @@ class NotificationCreated implements ShouldBroadcast
     {
         $n = $this->notification;
 
+        $actionRegistry = app(NotificationActionRegistry::class);
+
         $title = $n->getBellTitle();
         $body = $n->getBellBody();
         $level = $n->getBellLevel();
@@ -45,6 +48,7 @@ class NotificationCreated implements ShouldBroadcast
                 'title' => $title,
                 'body' => $body,
                 'url' => $n->link,
+                'actions' => $actionRegistry->actionsFor($n),
                 'created_at' => $n->created_at?->toISOString(),
                 // Keep contract stable for the frontend type.
                 // On create, the notification is always unread.

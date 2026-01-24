@@ -23,10 +23,6 @@ class PetPhotoManagementTest extends TestCase
         parent::setUp();
         Storage::fake('public');
 
-        if (! extension_loaded('gd')) {
-            $this->markTestSkipped('The GD extension is not available.');
-        }
-
         $this->owner = User::factory()->create();
         $this->pet = Pet::factory()->create(['created_by' => $this->owner->id]);
     }

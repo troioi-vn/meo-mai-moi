@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Notification;
 use App\Http\Controllers\Controller;
 use App\Models\ChatMessage;
 use App\Models\Notification;
+use App\Services\Notifications\Actions\NotificationActionRegistry;
 use Illuminate\Http\Request;
 
 class GetUnifiedNotificationsController extends Controller
@@ -14,6 +15,8 @@ class GetUnifiedNotificationsController extends Controller
     public function __invoke(Request $request)
     {
         $user = $request->user();
+
+        $actionRegistry = app(NotificationActionRegistry::class);
 
         $limit = (int) $request->query('limit', 20);
         if ($limit < 1) {
@@ -36,13 +39,14 @@ class GetUnifiedNotificationsController extends Controller
         if ($includeBellNotifications) {
             $items = (clone $baseBellQuery)->limit($limit)->get();
 
-            $bellNotifications = $items->map(function ($n) {
+            $bellNotifications = $items->map(function ($n) use ($actionRegistry) {
                 return [
                     'id' => (string) $n->id,
                     'level' => $n->getBellLevel(),
                     'title' => $n->getBellTitle(),
                     'body' => $n->getBellBody(),
                     'url' => $n->link,
+                    'actions' => $actionRegistry->actionsFor($n),
                     'created_at' => $n->created_at?->toISOString(),
                     'read_at' => $n->read_at?->toISOString(),
                 ];

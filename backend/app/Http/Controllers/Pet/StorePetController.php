@@ -50,7 +50,7 @@ class StorePetController extends Controller
             'sex' => 'nullable|in:male,female,not_specified',
             'country' => 'required|string|size:2',
             'state' => 'nullable|string|max:255',
-            'city_id' => 'required|integer|exists:cities,id',
+            'city_id' => 'nullable|integer|exists:cities,id',
             'address' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'pet_type_id' => 'nullable|exists:pet_types,id',

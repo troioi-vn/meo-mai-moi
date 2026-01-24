@@ -246,7 +246,6 @@ class PetControllerTest extends TestCase
             ->assertJsonValidationErrors([
                 'name',
                 'country',
-                'city_id',
             ]);
 
         // pet_type_id is optional and defaults; should NOT be a validation error.

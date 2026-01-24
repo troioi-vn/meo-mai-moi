@@ -197,13 +197,11 @@ The system supports Telegram notifications for:
 ### Setup
 
 1. **Create a Telegram bot** (one-time):
-
    - Message [@BotFather](https://t.me/BotFather) on Telegram
    - Send `/newbot` and follow instructions
    - Copy the bot token (format: `123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11`)
 
 2. **Get your Chat ID**:
-
    - Message [@userinfobot](https://t.me/userinfobot) on Telegram
    - Copy your Chat ID (numeric, e.g., `127529747`)
 
@@ -258,6 +256,7 @@ The backup system supports both database and user uploads, with comprehensive sa
 ### Creating Backups
 
 #### Manual Backups
+
 ```bash
 ./utils/backup.sh all                    # Create both database and uploads backup
 ./utils/backup.sh database               # Create only database backup
@@ -267,6 +266,7 @@ The backup system supports both database and user uploads, with comprehensive sa
 ```
 
 #### Automated Backups
+
 ```bash
 ./utils/backup-scheduler.sh              # Run scheduled backup (respects schedule)
 ./utils/backup-scheduler.sh --run-now    # Force immediate backup
@@ -274,6 +274,7 @@ The backup system supports both database and user uploads, with comprehensive sa
 ```
 
 #### Cron Job Setup
+
 ```bash
 ./utils/setup-backup-cron.sh --interactive    # Interactive cron setup
 ./utils/setup-backup-cron.sh --add-daily      # Add daily backup cron job
@@ -282,6 +283,7 @@ The backup system supports both database and user uploads, with comprehensive sa
 ```
 
 **Backup Features:**
+
 - **Comprehensive Coverage**: Database + user uploads in coordinated backups
 - **Compressed Formats**:
   - Database: `backups/backup-YYYY-MM-DD_HH-MM-SS.sql.gz`
@@ -295,17 +297,20 @@ The backup system supports both database and user uploads, with comprehensive sa
 ### Restoring from Backups
 
 #### Individual Component Restoration
+
 ```bash
 ./utils/backup.sh --restore-database backups/backup-2026-01-22_14-51-10.sql.gz
 ./utils/backup.sh --restore-uploads backups/uploads_backup-2026-01-22_14-51-10.tar.gz
 ```
 
 #### Coordinated Restoration (Recommended)
+
 ```bash
 ./utils/backup.sh --restore-all 2026-01-22_14-51-10    # Restore both by timestamp
 ```
 
 #### During Deployment (Automated)
+
 ```bash
 ./utils/deploy.sh --auto-backup         # Create backup before deploying
 ./utils/deploy.sh --restore-db          # Restore database before deploying
@@ -327,6 +332,7 @@ DEPLOY_RESTORE_UPLOADS_FILE=backups/uploads_backup-2026-01-22_14-51-10.tar.gz ./
 ```
 
 #### Legacy Interactive Method
+
 ```bash
 ./utils/restore.sh                      # Interactive menu (database, uploads, or both)
 ```
@@ -349,6 +355,7 @@ Use rollback for code issues, use restore for data recovery.
 ### Configuration Options
 
 #### Environment Variables for Backup Scheduler
+
 ```bash
 BACKUP_SCHEDULE=daily          # hourly, daily, weekly, monthly
 BACKUP_RETENTION_DAYS=30       # Days to keep backups
@@ -358,6 +365,7 @@ LOG_FILE=/path/to/logfile     # Custom log file path
 ```
 
 #### Environment Variables for Manual Backups
+
 ```bash
 BACKUP_RETENTION_DAYS=7       # Override default retention
 DB_USERNAME=user              # Database username

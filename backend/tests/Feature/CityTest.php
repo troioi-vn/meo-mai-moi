@@ -112,4 +112,37 @@ class CityTest extends TestCase
 
         $response->assertStatus(422);
     }
+
+    public function test_city_creation_is_rate_limited_to_10_per_24_hours(): void
+    {
+        Sanctum::actingAs($this->user);
+
+        // Create 10 cities for the user
+        for ($i = 1; $i <= 10; $i++) {
+            City::factory()->create([
+                'name' => "City {$i}",
+                'country' => 'VN',
+                'created_by' => $this->user->id,
+                'created_at' => now(),
+            ]);
+        }
+
+        // Attempt to create an 11th city, which should be rate limited
+        $response = $this->postJson('/api/cities', [
+            'name' => 'City 11',
+            'country' => 'VN',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJson([
+                'error' => 'You have reached the limit of 10 cities per 24 hours. Please try again later.',
+            ]);
+
+        // Verify that the city was not created
+        $this->assertDatabaseMissing('cities', [
+            'name' => 'City 11',
+            'country' => 'VN',
+            'created_by' => $this->user->id,
+        ]);
+    }
 }

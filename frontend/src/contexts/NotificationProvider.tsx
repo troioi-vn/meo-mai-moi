@@ -14,6 +14,7 @@ interface NotificationContextValue {
   loading: boolean
   refresh: (opts?: { includeBellNotifications?: boolean }) => Promise<void>
   markBellRead: (id: string) => Promise<void>
+  applyBellUpdate: (payload: { notification: AppNotification; unreadBellCount?: number }) => void
   markAllBellReadNow: () => Promise<void>
 }
 
@@ -359,6 +360,21 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     [refresh]
   )
 
+  const applyBellUpdate = useCallback(
+    (payload: { notification: AppNotification; unreadBellCount?: number }) => {
+      const incoming = payload.notification
+      setBellNotifications((prev) => {
+        const next = [incoming, ...prev.filter((n) => n.id !== incoming.id)]
+        return next.slice(0, DEFAULT_BELL_LIMIT)
+      })
+
+      if (typeof payload.unreadBellCount === 'number') {
+        setUnreadBellCount(payload.unreadBellCount)
+      }
+    },
+    []
+  )
+
   const value = useMemo<NotificationContextValue>(
     () => ({
       bellNotifications,
@@ -367,10 +383,12 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
       loading,
       refresh,
       markBellRead,
+      applyBellUpdate,
       markAllBellReadNow,
     }),
     [
       bellNotifications,
+      applyBellUpdate,
       loading,
       markAllBellReadNow,
       markBellRead,

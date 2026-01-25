@@ -10,6 +10,10 @@ interface ImpersonationStatus {
   }
 }
 
+interface UserData {
+  can_access_admin: boolean
+}
+
 export function AdminPanelLink() {
   const { data: userData } = useQuery<{ data: UserData }>({
     queryKey: ['users', 'me'],

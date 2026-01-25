@@ -6,6 +6,10 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Real-time Type Safety**: Added custom TypeScript definitions for `laravel-echo` and integrated `@types/pusher-js` to improve developer experience and catch potential errors in messaging and notification hooks.
+
+### Changed
+
 - **Notification Actions System**: Implemented actionable buttons on notifications, allowing users to perform actions directly from notification items (e.g., unapproving cities). Includes a handler registry system for extensible action definitions and confirmation dialogs for destructive actions.
 
 - **City Creation Notifications**: Cities are now auto-approved upon creation, and notifications are sent to all admin users for review. Added rate limiting of 10 cities per user per 24 hours to prevent abuse.
@@ -34,4 +38,6 @@ All notable changes to this project are documented here, following the [Keep a C
 
 - **Docker Backend Setup**: Fixed missing Laravel `storage/framework/cache` directories in Docker container, preventing `file_put_contents` errors on Livewire requests by ensuring cache directories are created during both image build and container startup.
 
-- **Impersonation UI**: Fixed avatar and main menu visibility during impersonation. Redesigned the impersonation banner to be more compact, showing "🕵 [user_name] x" instead of the longer text. Ensured the admin panel link remains visible to impersonating admins.
+- **Impersonation UI**: Fixed avatar and main menu visibility during impersonation. Redesigned the impersonation banner to be more compact, showing "🕵 [user_name] x" instead of the longer text. Ensured the admin panel link remains visible to impersonating admins even when checking the impersonated user's permissions.
+
+- **Messaging Hook Typing**: Refactored `useMessaging` hooks to use typed `Channel` objects instead of `any`, reducing technical debt and improving code reliability.

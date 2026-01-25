@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/axios'
-import { Button } from '@/components/ui/button'
-import { AlertTriangle, X, Settings } from 'lucide-react'
+import { X } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface ImpersonationStatus {

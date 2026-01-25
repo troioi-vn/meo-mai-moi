@@ -23,3 +23,7 @@ All notable changes to this project are documented here, following the [Keep a C
 - **City Creation Success Message**: Updated success toast from "City created (pending approval)" to "City created" since cities are now auto-approved.
 
 - **Invitations page (UI)**: Made the invitations stats cards more compact and improved responsive layout; numeric counters are now left-aligned and use tabular numerals for better readability. The "Revoked" stats card is hidden when its value is zero to avoid showing empty/placeholder stats.
+
+### Fixed
+
+- **Impersonation UI**: Fixed avatar and main menu visibility during impersonation. Redesigned the impersonation banner to be more compact, showing "🕵 [user_name] x" instead of the longer text. Ensured the admin panel link remains visible to impersonating admins.

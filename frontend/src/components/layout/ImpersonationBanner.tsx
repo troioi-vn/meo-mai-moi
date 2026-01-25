@@ -50,47 +50,27 @@ export function ImpersonationIndicator() {
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex items-center gap-1 text-yellow-600 dark:text-yellow-400">
-        <AlertTriangle className="h-4 w-4" />
-        <span className="text-sm font-medium hidden md:inline">
-          Impersonating{' '}
-          <span className="font-semibold">{status.impersonated_user?.name ?? 'User'}</span>
+    <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-200 shadow-sm transition-all hover:bg-yellow-100 dark:hover:bg-yellow-900/30">
+      <div className="flex items-center gap-1.5 text-xs font-medium">
+        <span role="img" aria-label="impersonating">
+          🕵️
         </span>
-        <span className="text-sm font-medium md:hidden">
+        <span className="max-w-24 truncate sm:max-w-48 text-yellow-900 dark:text-yellow-100 font-semibold uppercase tracking-tight">
           {status.impersonated_user?.name ?? 'User'}
         </span>
       </div>
 
-      <div className="flex items-center gap-1">
-        {status.impersonator?.can_access_admin && (
-          <Button variant="outline" size="sm" asChild className="h-8 px-2 text-xs">
-            <a href="/admin" target="_blank" rel="noopener noreferrer">
-              <Settings className="h-3 w-3 mr-1" />
-              <span className="hidden sm:inline">Admin</span>
-            </a>
-          </Button>
-        )}
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            leaveMutation.mutate()
-          }}
-          disabled={leaveMutation.isPending}
-          className="h-8 px-2 text-xs border-yellow-500/50 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-950/50"
-        >
-          {leaveMutation.isPending ? (
-            'Ending...'
-          ) : (
-            <>
-              <X className="h-3 w-3 mr-1" />
-              <span className="hidden sm:inline">Stop</span>
-            </>
-          )}
-        </Button>
-      </div>
+      <button
+        onClick={() => {
+          leaveMutation.mutate()
+        }}
+        disabled={leaveMutation.isPending}
+        className="ml-0.5 rounded-full p-0.5 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition-colors disabled:opacity-50"
+        title="Stop impersonating"
+      >
+        <X className="h-3 w-3" />
+        <span className="sr-only">Stop</span>
+      </button>
     </div>
   )
 }

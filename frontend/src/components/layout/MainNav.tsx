@@ -50,17 +50,17 @@ const MainNav: React.FC = () => {
   const { unreadMessageCount } = useNotifications()
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 border-b p-2">
-      <nav className="container flex h-16 items-center justify-between">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 border-b py-2">
+      <nav className="container flex h-16 items-center justify-between px-3 sm:px-4">
         {/* Left: Brand */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           {isAuthenticated && (
             <Button
               variant="ghost"
               size="icon"
               aria-label="Pets"
               title="Pets"
-              className="ml-6"
+              className="ml-0 sm:ml-6"
               asChild
             >
               <Link to="/">
@@ -74,7 +74,7 @@ const MainNav: React.FC = () => {
             size="icon"
             aria-label="Requests"
             title="Requests"
-            className="ml-6"
+            className="ml-0 sm:ml-6"
             asChild
           >
             <Link to="/requests">
@@ -85,13 +85,13 @@ const MainNav: React.FC = () => {
         </div>
 
         {/* Right: Actions padding right 5 */}
-        <div className="flex items-center gap-2 pr-5">
+        <div className="flex items-center gap-1 sm:gap-2">
           {isLoading ? (
             <Skeleton className="h-9 w-24" />
           ) : isAuthenticated ? (
             <>
-              {isVerified && <ImpersonationIndicator />}
-              {isVerified && <AdminPanelLink />}
+              <ImpersonationIndicator />
+              <AdminPanelLink />
               {isVerified && (
                 <NavIconLink
                   to="/messages"

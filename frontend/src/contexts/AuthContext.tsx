@@ -95,16 +95,7 @@ export function AuthProvider({
 
   useEffect(() => {
     if (!skipInitialLoad) {
-      // Don't load user on public pages to avoid 401 redirects
-      const publicPaths = ['/register', '/login', '/forgot-password', '/password/reset', '/email/verify']
-      const isPublicPath = publicPaths.some(path => window.location.pathname.startsWith(path))
-      
-      if (!isPublicPath) {
-        void loadUser()
-      } else {
-        // On public pages, just set loading to false without making API call
-        setIsLoading(false)
-      }
+      void loadUser()
     }
   }, [loadUser, skipInitialLoad])
 
@@ -117,9 +108,15 @@ export function AuthProvider({
       const { pathname, search, hash } = window.location
 
       // Avoid redirect loops and don't redirect from public pages
-      const publicPaths = ['/login', '/register', '/forgot-password', '/password/reset', '/email/verify']
-      const isPublicPath = publicPaths.some(path => pathname.startsWith(path))
-      
+      const publicPaths = [
+        '/login',
+        '/register',
+        '/forgot-password',
+        '/password/reset',
+        '/email/verify',
+      ]
+      const isPublicPath = publicPaths.some((path) => pathname.startsWith(path))
+
       if (isPublicPath) {
         return
       }

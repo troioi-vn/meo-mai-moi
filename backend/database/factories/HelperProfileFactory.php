@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\HelperProfileStatus;
 use App\Enums\PlacementRequestType;
 use App\Models\City;
 use App\Models\HelperProfile;
@@ -35,6 +36,7 @@ class HelperProfileFactory extends Factory
             'has_children' => $this->faker->boolean(),
             'request_types' => $selectedTypes,
             'approval_status' => 'approved',
+            'status' => HelperProfileStatus::ACTIVE,
         ];
     }
 

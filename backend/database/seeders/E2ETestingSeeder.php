@@ -18,7 +18,9 @@ class E2ETestingSeeder extends Seeder
 
         // Run essential seeders for basic functionality
         $this->call([
+            CitySeeder::class,
             PetTypeSeeder::class,
+            CategorySeeder::class,
             RolesAndPermissionsSeeder::class,  // Must run before UserSeeder
             UserSeeder::class,
         ]);

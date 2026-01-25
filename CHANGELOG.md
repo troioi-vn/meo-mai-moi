@@ -14,6 +14,8 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Changed
 
+- **Deployment Script**: Modified `utils/deploy.sh` to stop containers before building in development environment (`APP_ENV=development`) to reduce peak memory usage and prevent out-of-memory failures. Production and staging environments retain the existing behavior of building while services are running to minimize downtime.
+
 - **Backup and Deployment Scripts**: Enhanced `utils/backup.sh` with separate handling for database and uploads backups, improved error handling, and new command-line options. Updated `utils/deploy.sh` with restore options (`--restore`, `--restore-db`, `--restore-uploads`) and auto-backup functionality (`--auto-backup`). Deprecated `utils/restore.sh` in favor of the improved backup script.
 
 - **Pet Profile Creation/Editing**: Made the City field optional when creating or editing pet profiles (`/pets/create` and `/pets/{id}/edit`).

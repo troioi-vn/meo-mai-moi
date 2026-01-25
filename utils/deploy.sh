@@ -907,6 +907,14 @@ else
     echo ""
     note "ℹ️  Standard deployment (data preservation mode)"
     note "ℹ️  Data preservation: Docker volumes will be preserved (no data loss)"
+
+    # Development: stop containers before build to reduce peak memory usage.
+    # Production/staging: keep existing behavior (build first to minimize downtime).
+    if [ "${APP_ENV_CURRENT:-development}" = "development" ]; then
+        note "ℹ️  Development environment detected: stopping containers before build to reduce memory usage"
+        note "Stopping containers..."
+        docker compose stop 2>/dev/null || true
+    fi
     
     # Pre-build to minimize downtime
     # (Documentation and Docker images are built while old containers are still running)
@@ -915,9 +923,11 @@ else
     else
         deploy_docker_prepare "$NO_CACHE"
     fi
-    
-    note "Stopping containers..."
-    docker compose stop 2>/dev/null || true
+
+    if [ "${APP_ENV_CURRENT:-development}" != "development" ]; then
+        note "Stopping containers..."
+        docker compose stop 2>/dev/null || true
+    fi
 fi
 
 echo ""

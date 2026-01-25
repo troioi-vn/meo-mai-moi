@@ -73,6 +73,9 @@ class EditUser extends EditRecord
                         $user->addMedia($filePath)
                             ->toMediaCollection('avatar');
 
+                        // Clean up the temporary file after MediaLibrary has processed it
+                        @unlink($filePath);
+
                         \Filament\Notifications\Notification::make()
                             ->title('Avatar updated successfully')
                             ->success()

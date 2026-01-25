@@ -15,7 +15,9 @@ import type {
  * Returns role-shaped data based on the viewer (owner/helper/admin/public)
  */
 export async function getPlacementRequest(id: number): Promise<PlacementRequestDetail> {
-  const { data } = await api.get<{ data: PlacementRequestDetail }>(`/placement-requests/${String(id)}`)
+  const { data } = await api.get<{ data: PlacementRequestDetail }>(
+    `/placement-requests/${String(id)}`
+  )
   return data.data
 }
 

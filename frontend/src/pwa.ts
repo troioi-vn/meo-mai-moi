@@ -7,8 +7,7 @@ let updateSW: ((reloadPage?: boolean) => Promise<void>) | undefined
 let needsRefreshCallback: (() => void) | null = null
 let pwaUpdatePending = false
 
-const FORCE_RELOAD_ON_UPDATE =
-  import.meta.env.VITE_FORCE_RELOAD_ON_UPDATE === 'true'
+const FORCE_RELOAD_ON_UPDATE = import.meta.env.VITE_FORCE_RELOAD_ON_UPDATE === 'true'
 
 export function setNeedsRefreshCallback(callback: (() => void) | null) {
   needsRefreshCallback = callback

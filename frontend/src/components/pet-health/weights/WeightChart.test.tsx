@@ -36,9 +36,7 @@ describe('WeightChart', () => {
 
   it('handles string weight_kg values from API', () => {
     // API sometimes returns weight_kg as string
-    const weights = [
-      createWeight({ weight_kg: '5.5' as unknown as number }),
-    ]
+    const weights = [createWeight({ weight_kg: '5.5' as unknown as number })]
     // Should not throw error
     const { container } = render(<WeightChart weights={weights} />)
     expect(container.querySelector('[data-chart]')).toBeInTheDocument()
@@ -65,5 +63,3 @@ describe('WeightChart', () => {
     expect(container.querySelector('[data-chart]')).toBeInTheDocument()
   })
 })
-
-

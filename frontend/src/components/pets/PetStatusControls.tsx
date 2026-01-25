@@ -86,9 +86,7 @@ export const PetStatusControls: React.FC<Props> = ({
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={onUpdateStatus}>
-                  Confirm
-                </AlertDialogAction>
+                <AlertDialogAction onClick={onUpdateStatus}>Confirm</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

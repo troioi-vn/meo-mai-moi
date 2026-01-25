@@ -27,4 +27,3 @@ export const createCity = async (payload: CreateCityPayload): Promise<City> => {
   const response = await api.post<{ data: City }>('/cities', payload)
   return response.data.data
 }
-

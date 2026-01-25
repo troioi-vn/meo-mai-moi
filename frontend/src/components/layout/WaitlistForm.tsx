@@ -79,8 +79,8 @@ const WaitlistForm: React.FC<WaitlistFormProps> = ({ onSuccess }) => {
           You&apos;re on the waitlist! 🎉
         </h2>
         <p className="text-muted-foreground">
-          We&apos;ve sent a confirmation email to <strong>{email}</strong>. You&apos;ll be among the first to
-          know when we have space available!
+          We&apos;ve sent a confirmation email to <strong>{email}</strong>. You&apos;ll be among the
+          first to know when we have space available!
         </p>
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 text-sm text-green-800 dark:text-green-200">
           <p className="font-medium">What happens next?</p>

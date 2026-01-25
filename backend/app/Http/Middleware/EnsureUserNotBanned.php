@@ -31,8 +31,11 @@ class EnsureUserNotBanned
 
         $method = strtoupper($request->getMethod());
         $isReadOnlyMethod = in_array($method, ['GET', 'HEAD', 'OPTIONS'], true);
+        // PATCH is a write operation and must be blocked for banned users.
+        // We intentionally treat any non-safe HTTP method as a write.
+        $isWriteMethod = in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'], true) || ! $isReadOnlyMethod;
 
-        if ($user->is_banned && ! $isReadOnlyMethod) {
+        if ($user->is_banned && $isWriteMethod) {
             return response()->json([
                 'error' => 'Your account is banned. Read-only access only.',
                 'code' => 'USER_BANNED',

@@ -191,8 +191,6 @@ class UserResource extends Resource
                     DeleteAction::make(),
                 ]),
             ]);
-
-        return $table;
     }
 
     public static function getPages(): array

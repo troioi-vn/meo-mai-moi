@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
 import MainNav from '@/components/layout/MainNav'
+import { BannedReadOnlyBanner } from '@/components/layout/BannedReadOnlyBanner'
 import { usePwaUpdate } from '@/hooks/use-pwa-update'
 import { PageLoadingSpinner } from '@/components/ui/page-loading-spinner'
 
@@ -205,6 +206,7 @@ export default function App() {
   return (
     <>
       <MainNav />
+      <BannedReadOnlyBanner />
       <main className="pt-16">
         <Suspense fallback={<PageLoadingSpinner />}>
           <AppRoutes />

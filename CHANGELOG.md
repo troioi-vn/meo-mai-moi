@@ -6,6 +6,8 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Admin User Ban Feature**: Added ability for admins to ban users, putting them into read-only mode. Banned users can view content but cannot perform write actions (posting, editing, messaging). Includes database fields (`is_banned`, `banned_at`, `ban_reason`), middleware enforcement, Filament admin UI actions, and frontend read-only banner. Admins cannot ban other admins.
+
 - **Real-time Type Safety**: Added custom TypeScript definitions for `laravel-echo` and integrated `@types/pusher-js` to improve developer experience and catch potential errors in messaging and notification hooks.
 
 ### Changed

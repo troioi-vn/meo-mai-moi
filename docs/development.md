@@ -19,7 +19,6 @@ This guide provides a comprehensive overview of how to get started with developm
     > **Tip**: Use `./utils/deploy.sh --skip-build` for faster deployments when you've already built the Docker images and just need to restart containers or run database migrations.
 
 2.  **Access the app**
-
     - **Main App**: http://localhost:8000
     - **Admin Panel**: http://localhost:8000/admin (admin@catarchy.space / password)
     - **API Docs**: http://localhost:8000/api/documentation
@@ -46,7 +45,6 @@ This guide provides a comprehensive overview of how to get started with developm
     ```
 
     **Why HTTPS in dev?**
-
     - Test features requiring secure context (Service Workers, Web Crypto API, etc.)
     - Match production behavior more closely
     - Test HTTPS-specific security headers
@@ -63,6 +61,7 @@ This guide provides a comprehensive overview of how to get started with developm
 
 - **User Impersonation**: Click 👤 icon in Users table to impersonate any user
 - **Stop Impersonating**: Use navbar indicator or admin panel to return
+- **User Ban/Unban**: Ban users to put them in read-only mode (view-only, no writes); unban to restore full access
 
 ## Testing
 

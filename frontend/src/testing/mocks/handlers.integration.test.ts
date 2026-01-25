@@ -155,7 +155,9 @@ describe('MSW Pet Handlers Integration', () => {
               'expired',
               'cancelled',
             ]).toContain(request.status)
-            expect(request.request_type).toMatch(/^(foster_paid|foster_free|permanent|pet_sitting)$/)
+            expect(request.request_type).toMatch(
+              /^(foster_paid|foster_free|permanent|pet_sitting)$/
+            )
           })
         })
       }

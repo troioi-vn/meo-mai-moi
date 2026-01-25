@@ -50,6 +50,25 @@ describe('UserMenu', () => {
     expect(fallback).toBeInTheDocument()
   })
 
+  it('renders complex emoji initials correctly', () => {
+    vi.mocked(useAuth).mockReturnValue({
+      user: { ...mockUser, name: '👨‍👩‍👧‍👦 Smith', avatar_url: undefined },
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: mockLogout,
+      register: vi.fn(),
+      isLoading: false,
+      loadUser: vi.fn(),
+      changePassword: vi.fn(),
+      deleteAccount: vi.fn(),
+      checkEmail: vi.fn(),
+    })
+
+    renderWithRouter(<UserMenu />)
+
+    expect(screen.getByText('👨‍👩‍👧‍👦S')).toBeInTheDocument()
+  })
+
   it('shows user initials as fallback when avatar fails to load', () => {
     // Mock a user without avatar_url
     vi.mocked(useAuth).mockReturnValue({

@@ -49,8 +49,7 @@ export function UpcomingVaccinationsSection({
   onVaccinationChange,
   mode = 'view',
 }: UpcomingVaccinationsSectionProps) {
-  const { items, loading, create, update, remove, renew, setStatus } =
-    useVaccinations(petId)
+  const { items, loading, create, update, remove, renew, setStatus } = useVaccinations(petId)
   const [adding, setAdding] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [renewingRecord, setRenewingRecord] = useState<VaccinationRecord | null>(null)
@@ -385,14 +384,9 @@ export function UpcomingVaccinationsSection({
                 </ul>
               )}
 
-
               {canEdit && mode === 'view' && (
                 <>
-                  <Button
-                    variant="outline"
-                    className="w-full mt-3"
-                    onClick={handleAddClick}
-                  >
+                  <Button variant="outline" className="w-full mt-3" onClick={handleAddClick}>
                     + Add New Vaccination Entry
                   </Button>
                 </>
@@ -400,11 +394,7 @@ export function UpcomingVaccinationsSection({
 
               {canEdit && mode === 'edit' && (
                 <>
-                  <Button
-                    variant="outline"
-                    className="w-full mt-3"
-                    onClick={handleAddClick}
-                  >
+                  <Button variant="outline" className="w-full mt-3" onClick={handleAddClick}>
                     + Add Vaccination
                   </Button>
                 </>

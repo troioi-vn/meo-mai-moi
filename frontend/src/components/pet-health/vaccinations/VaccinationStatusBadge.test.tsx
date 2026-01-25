@@ -43,5 +43,3 @@ describe('VaccinationStatusBadge', () => {
     expect(badge).toHaveClass('text-red-800')
   })
 })
-
-

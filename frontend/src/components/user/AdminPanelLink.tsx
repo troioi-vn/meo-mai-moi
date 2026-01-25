@@ -3,12 +3,11 @@ import { api } from '@/api/axios'
 import { Button } from '@/components/ui/button'
 import { Settings } from 'lucide-react'
 
-interface UserData {
-  id: number
-  name: string
-  email: string
-  can_access_admin: boolean
-  roles: string[]
+interface ImpersonationStatus {
+  is_impersonating: boolean
+  impersonator?: {
+    can_access_admin: boolean
+  }
 }
 
 export function AdminPanelLink() {
@@ -20,7 +19,18 @@ export function AdminPanelLink() {
     },
   })
 
-  if (!userData?.data.can_access_admin) {
+  const { data: impersonationStatus } = useQuery<ImpersonationStatus>({
+    queryKey: ['impersonation-status'],
+    queryFn: async () => {
+      const response = await api.get<ImpersonationStatus>('/impersonation/status')
+      return response.data
+    },
+  })
+
+  const canAccessAdmin =
+    userData?.data.can_access_admin || impersonationStatus?.impersonator?.can_access_admin
+
+  if (!canAccessAdmin) {
     return null
   }
 

@@ -17,10 +17,13 @@ class NotificationFactory extends Factory
      */
     public function definition(): array
     {
+        $readAt = $this->faker->boolean ? $this->faker->dateTime : null;
+
         return [
             'user_id' => User::factory(),
             'message' => $this->faker->sentence,
-            'read_at' => $this->faker->boolean ? $this->faker->dateTime : null,
+            'read_at' => $readAt,
+            'is_read' => $readAt !== null,
             'link' => $this->faker->url,
         ];
     }

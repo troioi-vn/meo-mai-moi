@@ -81,6 +81,7 @@ COPY --from=app-build --chown=www-data:www-data /app/backend .
 # Create Laravel's cache and storage directories with correct ownership
 RUN install -d -o www-data -g www-data \
 	bootstrap/cache \
+	storage/framework/cache/data \
 	storage/framework/sessions \
 	storage/framework/views \
 	storage/logs \

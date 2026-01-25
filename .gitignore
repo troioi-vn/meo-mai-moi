@@ -49,6 +49,10 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Bundle analysis reports
+bundle-analysis.html
+frontend/bundle-analysis.html
+
 # ESLint
 .eslintcache
 

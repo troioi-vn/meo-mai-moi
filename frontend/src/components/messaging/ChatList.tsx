@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import type { Chat } from '@/types/messaging'
 import { formatRelativeTime } from '@/utils/date'
+import { getInitials } from '@/utils/initials'
 
 interface ChatListProps {
   chats: Chat[]
@@ -80,12 +81,7 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onClick }
   const otherParticipant = chat.other_participant
   const displayName = otherParticipant?.name ?? 'Unknown'
   const avatarUrl = otherParticipant?.avatar_url ?? undefined
-  const initials = displayName
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
+  const initials = getInitials(displayName)
 
   const lastMessage = chat.latest_message
   const hasUnread = chat.unread_count > 0

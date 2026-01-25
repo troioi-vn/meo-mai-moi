@@ -18,10 +18,7 @@ interface Props {
   onDelete: (password: string) => void
 }
 
-export const PetDangerZone: React.FC<Props> = ({
-  isDeleting,
-  onDelete,
-}) => {
+export const PetDangerZone: React.FC<Props> = ({ isDeleting, onDelete }) => {
   const [password, setPassword] = useState('')
   const [open, setOpen] = useState(false)
 
@@ -64,7 +61,9 @@ export const PetDangerZone: React.FC<Props> = ({
                 type="password"
                 placeholder="Enter your password"
                 value={password}
-                onChange={(e) => { setPassword(e.target.value); }}
+                onChange={(e) => {
+                  setPassword(e.target.value)
+                }}
                 autoFocus
               />
             </div>

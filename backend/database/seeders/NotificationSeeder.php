@@ -94,6 +94,7 @@ class NotificationSeeder extends Seeder
                         'priority' => ['low', 'medium', 'high'][array_rand(['low', 'medium', 'high'])],
                     ] : null,
                     'read_at' => $read_at,
+                    'is_read' => $read_at !== null,
                     'delivered_at' => $delivered_at,
                     'failed_at' => $failed_at,
                     'failure_reason' => $failure_reason,

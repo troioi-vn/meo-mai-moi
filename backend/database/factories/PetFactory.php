@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\PetSex;
 use App\Enums\PetStatus;
+use App\Models\City;
 use App\Models\Pet;
 use App\Models\PetType;
 use App\Models\User;
@@ -50,6 +51,8 @@ class PetFactory extends Factory
             $birthday_year = $year;
         }
 
+        $city = City::inRandomOrder()->first();
+
         return [
             'name' => $this->faker->firstName(),
             'sex' => $this->faker->randomElement([PetSex::MALE, PetSex::FEMALE, PetSex::NOT_SPECIFIED]),
@@ -58,9 +61,10 @@ class PetFactory extends Factory
             'birthday_month' => $birthday_month,
             'birthday_day' => $birthday_day,
             'birthday_precision' => $precision,
-            'country' => $this->faker->randomElement(['VN', 'US', 'JP', 'TH', 'SG']),
+            'country' => $city ? $city->country : $this->faker->randomElement(['VN', 'US', 'JP', 'TH', 'SG']),
             'state' => $this->faker->optional(0.3)->randomElement(['Hanoi', 'Ho Chi Minh City', 'Da Nang', 'Hai Phong', 'Can Tho']),
-            'city' => $this->faker->city(),
+            'city_id' => $city?->id,
+            'city' => $city ? $city->name : $this->faker->city(),
             'address' => $this->faker->optional(0.5)->streetAddress(),
             'description' => $this->faker->paragraph(),
             'status' => PetStatus::ACTIVE,
@@ -78,6 +82,9 @@ class PetFactory extends Factory
                     'status' => \App\Enums\PetTypeStatus::ACTIVE,
                     'is_system' => true,
                     'display_order' => 1,
+                    'placement_requests_allowed' => true,
+                    'weight_tracking_allowed' => true,
+                    'microchips_allowed' => true,
                 ])->id;
             },
         ];

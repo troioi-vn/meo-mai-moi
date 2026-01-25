@@ -181,7 +181,9 @@ export function NotificationList() {
         const textBlock = (
           <div className="flex items-center justify-between gap-2">
             <p className="text-sm font-medium truncate">{n.title}</p>
-            <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(n.created_at)}</span>
+            <span className="text-[10px] text-muted-foreground shrink-0">
+              {timeAgo(n.created_at)}
+            </span>
           </div>
         )
 

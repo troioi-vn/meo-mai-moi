@@ -95,9 +95,7 @@ describe('EmailVerificationPrompt', () => {
     await waitFor(() => {
       const disabledButton = screen.getByRole('button', { name: /use another email/i })
       expect(disabledButton).toBeDisabled()
-      expect(
-        screen.getByText(/invited accounts must use the original email/i)
-      ).toBeInTheDocument()
+      expect(screen.getByText(/invited accounts must use the original email/i)).toBeInTheDocument()
     })
   })
 

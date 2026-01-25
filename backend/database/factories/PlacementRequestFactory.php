@@ -15,15 +15,18 @@ class PlacementRequestFactory extends Factory
 
     public function definition()
     {
+        $requestType = $this->faker->randomElement(PlacementRequestType::cases());
+        $isPermanent = $requestType === PlacementRequestType::PERMANENT;
+
         return [
             'pet_id' => Pet::factory(),
             'user_id' => User::factory(),
-            'request_type' => $this->faker->randomElement(PlacementRequestType::cases()),
+            'request_type' => $requestType,
             'status' => PlacementRequestStatus::OPEN,
             'notes' => $this->faker->paragraph(),
             'expires_at' => $this->faker->dateTimeBetween('+1 week', '+1 month'),
             'start_date' => $this->faker->dateTimeBetween('now', '+1 week'),
-            'end_date' => $this->faker->dateTimeBetween('+1 month', '+2 months'),
+            'end_date' => $isPermanent ? null : $this->faker->dateTimeBetween('+1 month', '+2 months'),
 
         ];
     }

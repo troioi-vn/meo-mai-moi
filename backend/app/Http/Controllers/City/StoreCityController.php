@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\NotificationService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class StoreCityController extends Controller
@@ -78,11 +79,21 @@ class StoreCityController extends Controller
         $notificationService = app(NotificationService::class);
 
         foreach ($adminUsers as $admin) {
-            $notificationService->sendInApp($admin, 'city_created', [
-                'message' => "New City created by {$request->user()->name}: {$city->name}",
-                'link' => url("/admin/cities/{$city->id}/edit"),
-                'city_id' => $city->id,
-            ]);
+            try {
+                $notificationService->sendInApp($admin, 'city_created', [
+                    'message' => "New City created by {$request->user()->name}: {$city->name}",
+                    'link' => url("/admin/cities/{$city->id}/edit"),
+                    'city_id' => $city->id,
+                ]);
+            } catch (\Throwable $e) {
+                Log::warning('Failed to send city_created notification to admin', [
+                    'admin_id' => $admin->id,
+                    'city_id' => $city->id,
+                    'exception' => $e,
+                ]);
+
+                continue;
+            }
         }
 
         return $this->sendSuccess($city, 201);

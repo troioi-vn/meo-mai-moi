@@ -9,6 +9,10 @@ echo "[Step 1] Creating required directories..."
 mkdir -p /var/run/php-fpm
 mkdir -p /var/www/storage/logs
 mkdir -p /var/www/storage/app/public
+mkdir -p /var/www/storage/framework/cache/data
+mkdir -p /var/www/storage/framework/sessions
+mkdir -p /var/www/storage/framework/views
+mkdir -p /var/www/bootstrap/cache
 mkdir -p /var/log
 
 # Create log files for scheduler, queue worker, and reverb (supervisor needs them to exist)

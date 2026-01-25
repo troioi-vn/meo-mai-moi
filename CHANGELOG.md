@@ -26,4 +26,6 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Fixed
 
+- **Docker Backend Setup**: Fixed missing Laravel `storage/framework/cache` directories in Docker container, preventing `file_put_contents` errors on Livewire requests by ensuring cache directories are created during both image build and container startup.
+
 - **Impersonation UI**: Fixed avatar and main menu visibility during impersonation. Redesigned the impersonation banner to be more compact, showing "🕵 [user_name] x" instead of the longer text. Ensured the admin panel link remains visible to impersonating admins.

@@ -36,6 +36,8 @@ All notable changes to this project are documented here, following the [Keep a C
 
 - **Emoji Initials in Chat and Avatars**: Fixed broken initials display when user names contain multi-character emojis (e.g., flags, family emojis) in chat list, chat windows, message bubbles, and user avatars. Implemented grapheme-aware initials generation using `Intl.Segmenter` with a fallback to `grapheme-splitter` library. Added comprehensive unit tests for emoji handling.
 
+- **Database Seeders**: Updated `DatabaseSeeder` to create placement requests for all seeded pets (excluding birds), and implemented `PlacementRequestSeeder` as an idempotent seeder to backfill placement requests for existing cats and dogs in the database.
+
 - **Database Seeders and Factories**: Updated factories and seeders to be compatible with recent database schema changes, including new fields like `city_id`, `is_read`, and `status`, and improved business logic for placement requests. Enhanced E2E testing seeder to include essential seeders for complete test data setup.
 
 - **Docker Backend Setup**: Fixed missing Laravel `storage/framework/cache` directories in Docker container, preventing `file_put_contents` errors on Livewire requests by ensuring cache directories are created during both image build and container startup.

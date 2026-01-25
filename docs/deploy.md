@@ -51,6 +51,8 @@ If these files don't exist, the deploy script will create them interactively (or
 
 **Note**: Use `--skip-build` for faster deployments when you have already built the Docker images and just need to restart containers or run migrations.
 
+**Memory Optimization**: In development environments (`APP_ENV=development`), containers are stopped before building Docker images to reduce peak memory usage and prevent out-of-memory failures on resource-constrained systems. Production and staging environments build images while services are still running to minimize downtime.
+
 HTTPS in development is handled by the `https-proxy` service (compose profile `https`).
 
 To enable HTTPS locally:

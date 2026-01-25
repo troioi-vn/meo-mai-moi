@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
 import type { ChatMessage } from '@/types/messaging'
 import { formatRelativeTime } from '@/utils/date'
+import { getInitials } from '@/utils/initials'
 
 interface MessageBubbleProps {
   message: ChatMessage
@@ -17,12 +18,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 }) => {
   const isOwn = message.is_mine
   const sender = message.sender
-  const initials = sender.name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
+  const initials = getInitials(sender.name)
 
   return (
     <div className={cn('flex gap-2 group', isOwn ? 'flex-row-reverse' : 'flex-row')}>

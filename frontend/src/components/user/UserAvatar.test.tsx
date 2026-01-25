@@ -78,6 +78,24 @@ describe('UserAvatar', () => {
     expect(screen.getByText('TU')).toBeInTheDocument()
   })
 
+  it('renders emoji initials correctly when user name starts with emoji', () => {
+    mockUseAuth.mockReturnValue({
+      user: { ...mockUser, name: '🐱 Cat', avatar_url: undefined },
+      loadUser: mockLoadUser,
+      isLoading: false,
+      isAuthenticated: true,
+      register: vi.fn(),
+      login: vi.fn(),
+      logout: vi.fn(),
+      changePassword: vi.fn(),
+      deleteAccount: vi.fn(),
+    })
+
+    render(<UserAvatar />)
+
+    expect(screen.getByText('🐱C')).toBeInTheDocument()
+  })
+
   it('shows upload controls when showUploadControls is true', () => {
     render(<UserAvatar showUploadControls={true} />)
 

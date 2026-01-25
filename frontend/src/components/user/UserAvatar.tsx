@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { User as UserIcon, Upload, Trash2 } from 'lucide-react'
 import type { AxiosError } from 'axios'
 import defaultAvatar from '@/assets/images/default-avatar.webp'
+import { getInitials } from '@/utils/initials'
 
 interface UserAvatarProps {
   size?: 'sm' | 'md' | 'lg' | 'xl'
@@ -123,14 +124,7 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
 
   if (!user) return null
 
-  const initials = user.name
-    ? user.name
-        .split(' ')
-        .map((name) => name.charAt(0))
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
-    : ''
+  const initials = user.name ? getInitials(user.name) : ''
 
   return (
     <div className="flex flex-col items-center space-y-4">

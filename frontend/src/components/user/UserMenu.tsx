@@ -24,6 +24,7 @@ import { Moon } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import defaultAvatar from '@/assets/images/default-avatar.webp'
 import { useEffect, useState } from 'react'
+import { getInitials } from '@/utils/initials'
 
 export function UserMenu() {
   const { user, logout, isLoading } = useAuth()
@@ -71,14 +72,7 @@ export function UserMenu() {
         <Avatar className="h-9 w-9 cursor-pointer">
           <AvatarImage key={avatarSrc} src={avatarSrc} alt={user.name} />
           <AvatarFallback className="bg-primary text-primary-foreground font-medium text-sm">
-            {user.name
-              ? user.name
-                  .split(' ')
-                  .map((n) => n[0])
-                  .join('')
-                  .slice(0, 2)
-                  .toUpperCase()
-              : '?'}
+            {user.name ? getInitials(user.name) : '?'}
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>

@@ -9,6 +9,7 @@ import { MessageComposer } from './MessageComposer'
 import { MessageBubble } from './MessageBubble'
 import type { Chat, ChatMessage } from '@/types/messaging'
 import { cn } from '@/lib/utils'
+import { getInitials } from '@/utils/initials'
 
 interface ChatWindowProps {
   chat: Chat | null
@@ -54,12 +55,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const otherParticipant = chat?.other_participant
   const displayName = otherParticipant?.name ?? 'Loading...'
   const avatarUrl = otherParticipant?.avatar_url ?? undefined
-  const initials = displayName
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
+  const initials = getInitials(displayName)
 
   return (
     <div className="h-full flex flex-col">

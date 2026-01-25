@@ -39,4 +39,3 @@ describe('PlacementResponseSection', () => {
     expect(link).toHaveAttribute('href', '/requests/123')
   })
 })
-

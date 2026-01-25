@@ -6092,6 +6092,21 @@
                         "type": "string",
                         "nullable": true
                     },
+                    "is_banned": {
+                        "description": "Whether the user is banned (read-only access)",
+                        "type": "boolean"
+                    },
+                    "banned_at": {
+                        "description": "Timestamp when the user was banned",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "ban_reason": {
+                        "description": "Reason for the ban",
+                        "type": "string",
+                        "nullable": true
+                    },
                     "has_password": {
                         "description": "Whether the user has a local password set",
                         "type": "boolean"

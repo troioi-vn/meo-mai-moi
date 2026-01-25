@@ -78,6 +78,8 @@ use App\Http\Controllers\PlacementRequest\DeletePlacementRequestController;
 use App\Http\Controllers\PlacementRequest\FinalizePlacementRequestController;
 use App\Http\Controllers\PlacementRequest\GetPlacementRequestViewerContextController;
 use App\Http\Controllers\PlacementRequest\RejectPlacementRequestController;
+use App\Http\Controllers\Admin\Users\BanUserController;
+use App\Http\Controllers\Admin\Users\UnbanUserController;
 use App\Http\Controllers\PlacementRequest\ShowPlacementRequestController;
 use App\Http\Controllers\PlacementRequest\StorePlacementRequestController;
 use App\Http\Controllers\PlacementRequestResponse\AcceptPlacementRequestResponseController;
@@ -181,7 +183,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
 });
 
 // Main application routes that require email verification
-Route::middleware(['auth:sanctum', 'verified'])->group(function (): void {
+Route::middleware(['auth:sanctum', 'verified', 'not.banned'])->group(function (): void {
     Route::get('/user', function (Request $request) {
         return response()->json(['data' => $request->user()]);
     });
@@ -217,6 +219,12 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function (): void {
     Route::delete('/users/me', DeleteAccountController::class);
     Route::post('/users/me/avatar', UploadAvatarController::class);
     Route::delete('/users/me/avatar', DeleteAvatarController::class);
+
+    // Admin moderation endpoints (Filament is primary admin UI; these endpoints support programmatic admin tools)
+    Route::middleware('admin')->prefix('admin')->group(function (): void {
+        Route::post('/users/{user}/ban', BanUserController::class);
+        Route::post('/users/{user}/unban', UnbanUserController::class);
+    });
 
     // New pet routes
     Route::get('/my-pets', ListMyPetsController::class);

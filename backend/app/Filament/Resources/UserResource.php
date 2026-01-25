@@ -20,6 +20,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Hash;
+use Filament\Notifications\Notification;
 use STS\FilamentImpersonate\Tables\Actions\Impersonate;
 use Filament\Facades\Filament;
 
@@ -108,6 +109,10 @@ class UserResource extends Resource
                     ->sortable()
                     ->searchable()
                     ->label(trans('filament-users::user.resource.email')),
+                IconColumn::make('is_banned')
+                    ->boolean()
+                    ->label('Banned')
+                    ->sortable(),
                 IconColumn::make('email_verified_at')
                     ->boolean()
                     ->sortable()
@@ -136,6 +141,51 @@ class UserResource extends Resource
                     ->backTo(fn () => Filament::getCurrentPanel()->getUrl())
                     ->redirectTo('/'),
                 ActionGroup::make([
+                    Tables\Actions\Action::make('ban')
+                        ->label('Ban')
+                        ->icon('heroicon-o-no-symbol')
+                        ->color('danger')
+                        ->visible(fn (User $record): bool => ! $record->is_banned && ! $record->hasRole(['admin', 'super_admin']))
+                        ->requiresConfirmation()
+                        ->modalHeading('Ban User')
+                        ->modalDescription('This will put the user into read-only mode (writes will be blocked).')
+                        ->form([
+                            TextInput::make('reason')
+                                ->label('Reason')
+                                ->maxLength(255),
+                        ])
+                        ->action(function (User $record, array $data): void {
+                            $record->update([
+                                'is_banned' => true,
+                                'banned_at' => now(),
+                                'ban_reason' => $data['reason'] ?? null,
+                            ]);
+
+                            Notification::make()
+                                ->title('User banned')
+                                ->success()
+                                ->send();
+                        }),
+                    Tables\Actions\Action::make('unban')
+                        ->label('Unban')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->visible(fn (User $record): bool => (bool) $record->is_banned)
+                        ->requiresConfirmation()
+                        ->modalHeading('Unban User')
+                        ->modalDescription('This will restore normal write access for the user.')
+                        ->action(function (User $record): void {
+                            $record->update([
+                                'is_banned' => false,
+                                'banned_at' => null,
+                                'ban_reason' => null,
+                            ]);
+
+                            Notification::make()
+                                ->title('User unbanned')
+                                ->success()
+                                ->send();
+                        }),
                     ViewAction::make(),
                     EditAction::make(),
                     DeleteAction::make(),

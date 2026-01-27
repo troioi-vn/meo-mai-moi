@@ -49,11 +49,7 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 200,
             description: 'Email verified successfully',
-            content: new OA\JsonContent(
-                properties: [
-                    new OA\Property(property: 'message', type: 'string', example: 'Email verified successfully'),
-                ]
-            )
+            content: new OA\JsonContent(ref: '#/components/schemas/EmailVerificationResponse')
         ),
         new OA\Response(
             response: 400,

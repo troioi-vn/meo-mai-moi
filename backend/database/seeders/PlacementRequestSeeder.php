@@ -36,17 +36,20 @@ class PlacementRequestSeeder extends Seeder
                     $slug = strtolower((string) ($pet->petType->slug ?? ''));
                     if ($slug === 'bird') {
                         $skippedBirds++;
+
                         continue;
                     }
 
                     if (PlacementRequest::where('pet_id', $pet->id)->exists()) {
                         $skippedExisting++;
+
                         continue;
                     }
 
                     $userId = $pet->created_by;
                     if (! $userId) {
                         $skippedNoCreator++;
+
                         continue;
                     }
 

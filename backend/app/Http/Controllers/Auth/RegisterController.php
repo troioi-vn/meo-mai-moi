@@ -38,12 +38,26 @@ use OpenApi\Attributes as OA;
             description: 'User registered successfully',
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: 'message', type: 'string', example: 'We have sent you verification email, please check your inbox and click the link to verify your email address.'),
-                    new OA\Property(property: 'access_token', type: 'string', example: '2|aBcDeFgHiJkLmNoPqRsTuVwXyZ'),
-                    new OA\Property(property: 'token_type', type: 'string', example: 'Bearer'),
-                    new OA\Property(property: 'email_verified', type: 'boolean', example: false),
-                    new OA\Property(property: 'email_sent', type: 'boolean', example: true),
-                    new OA\Property(property: 'requires_verification', type: 'boolean', example: true),
+                    new OA\Property(
+                        property: 'data',
+                        type: 'object',
+                        properties: [
+                            new OA\Property(
+                                property: 'user',
+                                type: 'object',
+                                properties: [
+                                    new OA\Property(property: 'id', type: 'integer', example: 123),
+                                    new OA\Property(property: 'name', type: 'string', example: 'John Doe'),
+                                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'john.doe@example.com'),
+                                    new OA\Property(property: 'email_verified_at', type: 'string', nullable: true, example: '2026-01-27T12:34:56.000000Z'),
+                                ]
+                            ),
+                            new OA\Property(property: 'email_verified', type: 'boolean', example: false),
+                            new OA\Property(property: 'email_sent', type: 'boolean', example: true),
+                            new OA\Property(property: 'requires_verification', type: 'boolean', example: true),
+                            new OA\Property(property: 'message', type: 'string', example: "We've sent a verification email to john.doe@example.com. Please check your inbox and click the link to verify your email address."),
+                        ]
+                    ),
                 ]
             )
         ),

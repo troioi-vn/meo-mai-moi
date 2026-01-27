@@ -70,11 +70,7 @@ describe('PetPhoto', () => {
 
   it('uploads photo successfully', async () => {
     const user = userEvent.setup()
-    const mockResponse = {
-      data: {
-        data: { ...mockPet, photo_url: 'http://example.com/new-photo.jpg' },
-      },
-    }
+    const mockResponse = { ...mockPet, photo_url: 'http://example.com/new-photo.jpg' }
     mockApi.post.mockResolvedValue(mockResponse)
 
     render(<PetPhoto pet={mockPet} onPhotoUpdate={mockOnPhotoUpdate} showUploadControls={true} />)
@@ -96,7 +92,7 @@ describe('PetPhoto', () => {
       )
     })
 
-    expect(mockOnPhotoUpdate).toHaveBeenCalledWith(mockResponse.data.data)
+    expect(mockOnPhotoUpdate).toHaveBeenCalledWith(mockResponse)
   })
 
   it('deletes photo successfully', async () => {

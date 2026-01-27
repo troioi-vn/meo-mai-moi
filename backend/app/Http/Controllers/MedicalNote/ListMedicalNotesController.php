@@ -76,6 +76,6 @@ class ListMedicalNotesController extends Controller
             ],
         ];
 
-        return response()->json(['data' => $payload]);
+        return $this->sendSuccess($payload);
     }
 }

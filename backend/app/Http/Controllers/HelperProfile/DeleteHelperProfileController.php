@@ -7,6 +7,7 @@ namespace App\Http\Controllers\HelperProfile;
 use App\Enums\HelperProfileStatus;
 use App\Http\Controllers\Controller;
 use App\Models\HelperProfile;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use OpenApi\Attributes as OA;
@@ -31,24 +32,26 @@ use OpenApi\Attributes as OA;
         ),
         new OA\Response(
             response: 400,
-            description: 'Cannot delete profile with associated placement requests'
+            description: 'Cannot delete profile with associated placement requests',
+            content: new OA\JsonContent(ref: '#/components/schemas/ApiErrorResponse')
         ),
         new OA\Response(
             response: 403,
-            description: 'Unauthorized'
+            description: 'Unauthorized',
+            content: new OA\JsonContent(ref: '#/components/schemas/ApiErrorResponse')
         ),
     ]
 )]
 class DeleteHelperProfileController extends Controller
 {
+    use ApiResponseTrait;
+
     public function __invoke(HelperProfile $helperProfile)
     {
         $this->authorize('delete', $helperProfile);
 
         if ($helperProfile->hasPlacementRequests()) {
-            return response()->json([
-                'message' => 'Cannot delete profile with associated placement requests.',
-            ], 400);
+            return $this->sendError('Cannot delete profile with associated placement requests.', 400);
         }
 
         // Delete stored photo files first to avoid orphans
@@ -72,6 +75,6 @@ class DeleteHelperProfileController extends Controller
 
         $helperProfile->delete();
 
-        return response()->json(null, 204);
+        return $this->sendSuccess(null, 204);
     }
 }

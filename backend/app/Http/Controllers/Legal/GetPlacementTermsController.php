@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Legal;
 
 use App\Http\Controllers\Controller;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Support\Facades\File;
 use OpenApi\Attributes as OA;
 
@@ -33,35 +34,29 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 404,
             description: 'Terms document not found',
-            content: new OA\JsonContent(
-                properties: [
-                    new OA\Property(property: 'message', type: 'string', example: 'Placement terms not found'),
-                ]
-            )
+            content: new OA\JsonContent(ref: '#/components/schemas/ApiErrorMessageResponse')
         ),
     ]
 )]
 class GetPlacementTermsController extends Controller
 {
+    use ApiResponseTrait;
+
     public function __invoke()
     {
         $path = resource_path('markdown/placement-terms.md');
 
         if (! File::exists($path)) {
-            return response()->json([
-                'message' => 'Placement terms not found',
-            ], 404);
+            return $this->sendError('Placement terms not found', 404);
         }
 
         $content = File::get($path);
         $lastModified = File::lastModified($path);
         $version = date('Y-m-d', $lastModified);
 
-        return response()->json([
-            'data' => [
-                'content' => $content,
-                'version' => $version,
-            ],
+        return $this->sendSuccess([
+            'content' => $content,
+            'version' => $version,
         ])->header('Cache-Control', 'max-age=3600, public'); // Cache for 1 hour
     }
 }

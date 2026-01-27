@@ -82,6 +82,7 @@ class RegisterResponse implements RegisterResponseContract
         }
 
         return response()->json([
+            'success' => true,
             'data' => [
                 'user' => [
                     'id' => $user->id,

@@ -42,6 +42,6 @@ class DeleteVaccinationRecordController extends Controller
         $this->validatePetResource($request, $pet, 'vaccinations', $record);
         $record->delete();
 
-        return response()->json(['data' => true]);
+        return $this->sendSuccess(true);
     }
 }

@@ -28,7 +28,12 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 200,
             description: 'Successful operation',
-            content: new OA\JsonContent(ref: '#/components/schemas/User')
+            content: new OA\JsonContent(
+                type: 'object',
+                properties: [
+                    new OA\Property(property: 'data', ref: '#/components/schemas/User'),
+                ]
+            )
         ),
         new OA\Response(
             response: 422,

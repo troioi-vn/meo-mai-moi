@@ -93,17 +93,20 @@ class JetstreamApiContractTest extends TestCase
 
         $response->assertStatus(200);
 
-        // Verify logout response structure (no nested 'data')
+        // Verify logout response structure
         $response->assertJsonStructure([
-            'message',
-            'redirect',
+            'success',
+            'data' => [
+                'message',
+                'redirect',
+            ],
         ]);
 
-        $data = $response->json();
+        $responseData = $response->json('data');
 
-        $this->assertIsString($data['message']);
-        $this->assertIsString($data['redirect']);
-        $this->assertEquals('/login', $data['redirect']);
+        $this->assertIsString($responseData['message']);
+        $this->assertIsString($responseData['redirect']);
+        $this->assertEquals('/login', $responseData['redirect']);
     }
 
     #[Test]

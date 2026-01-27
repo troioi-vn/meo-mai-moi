@@ -12,11 +12,43 @@ use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use OpenApi\Attributes as OA;
 
 class StoreCityController extends Controller
 {
     use ApiResponseTrait;
 
+    #[OA\Post(
+        path: '/api/cities',
+        summary: 'Create a new city',
+        tags: ['Cities'],
+        security: [['sanctum' => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['name', 'country'],
+                properties: [
+                    new OA\Property(property: 'name', type: 'string', maxLength: 100, example: 'Hanoi'),
+                    new OA\Property(property: 'country', type: 'string', minLength: 2, maxLength: 2, example: 'VN'),
+                    new OA\Property(property: 'description', type: 'string', maxLength: 500, example: 'Capital city of Vietnam'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'City created successfully',
+                content: new OA\JsonContent(
+                    type: 'object',
+                    properties: [
+                        new OA\Property(property: 'data', ref: '#/components/schemas/City'),
+                    ]
+                )
+            ),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 422, description: 'Validation error or limit reached'),
+        ]
+    )]
     public function __invoke(Request $request)
     {
         $validated = $request->validate([

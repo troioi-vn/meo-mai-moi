@@ -26,8 +26,10 @@ class PasswordResetResponse implements PasswordResetResponseContract
         }
 
         return response()->json([
+            'success' => true,
             'data' => [
                 'message' => __('Password reset successfully.'),
+                'redirect' => '/login',
             ],
         ]);
     }

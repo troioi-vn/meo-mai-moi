@@ -59,8 +59,9 @@ export function ThemeProvider({
     }
 
     // Update manifest when theme changes
-    if (typeof window.__updateManifest === 'function') {
-      window.__updateManifest()
+    const win = window as unknown as { __updateManifest?: () => void }
+    if (typeof win.__updateManifest === 'function') {
+      win.__updateManifest()
     }
   }, [theme])
 

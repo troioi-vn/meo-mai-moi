@@ -1,4 +1,4 @@
-import { api } from './axios'
+import { getLegalPlacementTerms as generatedGetLegalPlacementTerms } from './generated/legal/legal'
 
 export interface PlacementTerms {
   content: string
@@ -9,6 +9,6 @@ export interface PlacementTerms {
  * Get the placement terms and conditions document
  */
 export const getPlacementTerms = async (): Promise<PlacementTerms> => {
-  const { data } = await api.get<{ data: PlacementTerms }>('/legal/placement-terms')
-  return data.data
+  const data = await generatedGetLegalPlacementTerms()
+  return data as unknown as PlacementTerms
 }

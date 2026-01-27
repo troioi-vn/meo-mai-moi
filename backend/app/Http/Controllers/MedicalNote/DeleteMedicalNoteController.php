@@ -49,6 +49,6 @@ class DeleteMedicalNoteController extends Controller
         }
         $note->delete();
 
-        return response()->json(['data' => true]);
+        return $this->sendSuccess(true);
     }
 }

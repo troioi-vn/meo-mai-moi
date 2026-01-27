@@ -8,6 +8,7 @@ use App\Enums\PlacementRequestType;
 use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\HelperProfile;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
@@ -34,7 +35,7 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 200,
             description: 'Helper profile updated successfully',
-            content: new OA\JsonContent(ref: '#/components/schemas/HelperProfile')
+            content: new OA\JsonContent(ref: '#/components/schemas/HelperProfileResponse')
         ),
         new OA\Response(
             response: 403,
@@ -69,7 +70,7 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 200,
             description: 'Helper profile updated successfully',
-            content: new OA\JsonContent(ref: '#/components/schemas/HelperProfile')
+            content: new OA\JsonContent(ref: '#/components/schemas/HelperProfileResponse')
         ),
         new OA\Response(
             response: 403,
@@ -83,6 +84,8 @@ use OpenApi\Attributes as OA;
 )]
 class UpdateHelperProfileController extends Controller
 {
+    use ApiResponseTrait;
+
     public function __invoke(Request $request, HelperProfile $helperProfile)
     {
         Log::info('Update request received', ['request_data' => $request->all(), 'files' => $request->files->all()]);
@@ -119,12 +122,12 @@ class UpdateHelperProfileController extends Controller
             $country = $validatedData['country'] ?? $helperProfile->country;
             $cities = City::whereIn('id', $validatedData['city_ids'])->get();
             if ($cities->count() !== count($validatedData['city_ids'])) {
-                return response()->json(['message' => 'One or more cities not found'], 422);
+                return $this->sendError('One or more cities not found', 422);
             }
 
             foreach ($cities as $city) {
-                if ($city->country !== strtoupper($country)) {
-                    return response()->json(['message' => "City {$city->name} does not belong to the specified country."], 422);
+                if ($city->country !== $country) {
+                    return $this->sendError("City {$city->name} does not belong to the specified country.", 422);
                 }
             }
 
@@ -155,6 +158,6 @@ class UpdateHelperProfileController extends Controller
             Log::info('No photos found in request');
         }
 
-        return response()->json(['data' => $helperProfile->load('photos', 'cities')]);
+        return $this->sendSuccess($helperProfile->load('photos', 'cities'));
     }
 }

@@ -6,6 +6,20 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Full-stack Type Safety via Orval**: Integrated Orval to automatically generate TypeScript API clients and React Query hooks from the backend's OpenAPI specification.
+  - Automated stripping of `/api` prefix and unwrapping of `{ data: T }` envelope at the type level for optimal DX.
+  - Added `api:generate` and `api:check` scripts to [frontend/package.json](frontend/package.json).
+  - Integrated with custom Axios mutator to maintain centralized 401 handling and standardized envelope extraction.
+  - Completed OpenAPI spec coverage for **Cities**, **Messaging/Chats**, **Push Subscriptions**, and **Notification Actions** by adding PHP attributes to backend controllers.
+  - Migrated core API modules (`pets.ts`, `placement.ts`, `notifications.ts`, `cities.ts`, `messaging.ts`, `push-subscriptions.ts`) to use generated typesafe hooks.
+  - Resolved request body mapping issues (Orval `body` vs Axios `data`) by switching to `httpClient: 'axios'`.
+  - Fixed an inconsistency in the Orval mutator where response data was being incorrectly re-wrapped, ensuring runtime behavior matches generated TypeScript definitions.
+
+- **API Standardization Framework**: Implemented a unified JSON response envelope `{ success, data, message, error }` across all backend controllers. This includes a robust `ApiResponseTrait` for consistent output and centralized OpenAPI schema definitions in `ResponseSchemas.php`.
+
+### Changed
+
+- **Frontend API Consumption**: Updated the Axios interceptor to automatically "unwrap" the backend's data envelope. Components now receive the direct payload (e.g., as `const user = await api.get('/user')`) instead of having to manually navigate `.data.data`.
 - **Admin User Ban Feature**: Added ability for admins to ban users, putting them into read-only mode. Banned users can view content but cannot perform write actions (posting, editing, messaging). Includes database fields (`is_banned`, `banned_at`, `ban_reason`), middleware enforcement, Filament admin UI actions, and frontend read-only banner. Admins cannot ban other admins.
 
 - **Real-time Type Safety**: Added custom TypeScript definitions for `laravel-echo` and integrated `@types/pusher-js` to improve developer experience and catch potential errors in messaging and notification hooks.
@@ -45,3 +59,10 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Impersonation UI**: Fixed avatar and main menu visibility during impersonation. Redesigned the impersonation banner to be more compact, showing "🕵 [user_name] x" instead of the longer text. Ensured the admin panel link remains visible to impersonating admins even when checking the impersonated user's permissions.
 
 - **Messaging Hook Typing**: Refactored `useMessaging` hooks to use typed `Channel` objects instead of `any`, reducing technical debt and improving code reliability.
+
+### Changed
+
+- **API Response Handling**: Enhanced Axios interceptors with proper TypeScript types and improved API envelope unwrapping logic for consistent data handling across the frontend.
+- **Type Safety Improvements**: Added comprehensive TypeScript definitions for Axios instance methods and improved null safety checks using nullish coalescing operators.
+- **Code Consistency**: Standardized quote usage and removed unused imports to maintain consistent code style throughout the frontend codebase.
+- **Authentication Flow**: Updated public path handling to include requests page in unauthorized redirect logic.

@@ -30,20 +30,12 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 200,
             description: 'Invitation revoked successfully',
-            content: new OA\JsonContent(
-                properties: [
-                    new OA\Property(property: 'message', type: 'string', example: 'Invitation revoked successfully'),
-                ]
-            )
+            content: new OA\JsonContent(ref: '#/components/schemas/ApiEmptyDataResponse')
         ),
         new OA\Response(
             response: 404,
             description: 'Invitation not found or cannot be revoked',
-            content: new OA\JsonContent(
-                properties: [
-                    new OA\Property(property: 'message', type: 'string', example: 'Invitation not found or cannot be revoked'),
-                ]
-            )
+            content: new OA\JsonContent(ref: '#/components/schemas/ApiErrorMessageResponse')
         ),
         new OA\Response(
             response: 401,

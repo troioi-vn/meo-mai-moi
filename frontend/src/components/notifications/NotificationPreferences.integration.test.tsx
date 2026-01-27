@@ -76,7 +76,7 @@ describe('NotificationPreferences Integration Tests', () => {
   })
 
   it('handles complete user workflow of loading and updating preferences', async () => {
-    mockGetNotificationPreferences.mockResolvedValue({ data: mockPreferences })
+    mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
     mockUpdateNotificationPreferences.mockResolvedValue({
       data: null,
       message: 'Updated successfully',
@@ -123,7 +123,7 @@ describe('NotificationPreferences Integration Tests', () => {
   })
 
   it('handles multiple rapid preference changes correctly', async () => {
-    mockGetNotificationPreferences.mockResolvedValue({ data: mockPreferences })
+    mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
     mockUpdateNotificationPreferences.mockResolvedValue({
       data: null,
       message: 'Updated successfully',
@@ -149,7 +149,7 @@ describe('NotificationPreferences Integration Tests', () => {
   })
 
   it('handles API errors gracefully and shows error messages', async () => {
-    mockGetNotificationPreferences.mockResolvedValue({ data: mockPreferences })
+    mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
     mockUpdateNotificationPreferences.mockRejectedValue(new Error('Network error'))
 
     renderWithQueryClient(<NotificationPreferences />)
@@ -170,7 +170,7 @@ describe('NotificationPreferences Integration Tests', () => {
   })
 
   it('maintains UI state consistency during updates', async () => {
-    mockGetNotificationPreferences.mockResolvedValue({ data: mockPreferences })
+    mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
 
     // Mock a slow API response
     let resolveUpdate: (value: any) => void
@@ -202,7 +202,7 @@ describe('NotificationPreferences Integration Tests', () => {
     })
 
     // Resolve the API call
-    resolveUpdate!({ data: null, message: 'Updated successfully' })
+    resolveUpdate!({ message: 'Updated successfully' })
 
     // Switches should be re-enabled
     await waitFor(() => {
@@ -213,7 +213,7 @@ describe('NotificationPreferences Integration Tests', () => {
   })
 
   it('handles empty preferences list gracefully', async () => {
-    mockGetNotificationPreferences.mockResolvedValue({ data: [] })
+    mockGetNotificationPreferences.mockResolvedValue([])
 
     renderWithQueryClient(<NotificationPreferences />)
 
@@ -242,7 +242,7 @@ describe('NotificationPreferences Integration Tests', () => {
   })
 
   it('preserves preference state when API calls fail', async () => {
-    mockGetNotificationPreferences.mockResolvedValue({ data: mockPreferences })
+    mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
     mockUpdateNotificationPreferences.mockRejectedValue(new Error('Update failed'))
 
     renderWithQueryClient(<NotificationPreferences />)
@@ -282,7 +282,7 @@ describe('NotificationPreferences Integration Tests', () => {
       },
     ]
 
-    mockGetNotificationPreferences.mockResolvedValue({ data: preferencesWithGroups })
+    mockGetNotificationPreferences.mockResolvedValue(preferencesWithGroups)
 
     renderWithQueryClient(<NotificationPreferences />)
 
@@ -301,7 +301,7 @@ describe('NotificationPreferences Integration Tests', () => {
   })
 
   it('handles partial preference updates correctly', async () => {
-    mockGetNotificationPreferences.mockResolvedValue({ data: mockPreferences })
+    mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
     mockUpdateNotificationPreferences.mockResolvedValue({
       data: null,
       message: 'Updated successfully',

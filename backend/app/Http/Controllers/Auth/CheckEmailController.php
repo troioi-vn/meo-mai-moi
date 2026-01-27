@@ -30,11 +30,7 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 200,
             description: 'Email check result',
-            content: new OA\JsonContent(
-                properties: [
-                    new OA\Property(property: 'exists', type: 'boolean', example: true),
-                ]
-            )
+            content: new OA\JsonContent(ref: '#/components/schemas/EmailExistsResponse')
         ),
         new OA\Response(
             response: 422,
@@ -61,6 +57,6 @@ class CheckEmailController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
-        return response()->json(['data' => ['exists' => $exists]]);
+        return $this->sendSuccess(['exists' => $exists]);
     }
 }

@@ -1,4 +1,15 @@
 import axios, { AxiosError } from 'axios'
+import type { AxiosResponse } from 'axios'
+
+/**
+ * Axios's built-in type for response interceptors.
+ * Our interceptors deliberately return the unwrapped data (not AxiosResponse)
+ * because axios.d.ts overrides make Axios methods return Promise<R> directly.
+ * We use this type to cast the interceptor and satisfy the type system.
+ */
+type AxiosResponseInterceptor = (
+  value: AxiosResponse<unknown>
+) => AxiosResponse<unknown> | Promise<AxiosResponse<unknown>>
 
 // Use absolute API base in tests so MSW handlers match and requests don't hang
 const API_BASE = import.meta.env.MODE === 'test' ? 'http://localhost:3000/api' : '/api'
@@ -41,8 +52,19 @@ api.interceptors.request.use(
   }
 )
 
+// Helper function to unwrap the API envelope { data: <payload> } -> <payload>
+const unwrapEnvelope = (response: AxiosResponse<unknown>): unknown => {
+  const data = response.data
+  if (data && typeof data === 'object' && 'data' in data) {
+    return (data as Record<string, unknown>).data
+  }
+  return data
+}
+
 api.interceptors.response.use(
-  (response) => response,
+  // Return unwrapped data directly - type matches axios.d.ts overrides
+  // Cast to AxiosResponseInterceptor to satisfy Axios's type system
+  ((response: AxiosResponse<unknown>) => unwrapEnvelope(response)) as AxiosResponseInterceptor,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       unauthorizedHandler?.()
@@ -61,7 +83,9 @@ authApi.interceptors.request.use(
 )
 
 authApi.interceptors.response.use(
-  (response) => response,
+  // Return unwrapped data directly - type matches axios.d.ts overrides
+  // Cast to AxiosResponseInterceptor to satisfy Axios's type system
+  ((response: AxiosResponse<unknown>) => unwrapEnvelope(response)) as AxiosResponseInterceptor,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       unauthorizedHandler?.()

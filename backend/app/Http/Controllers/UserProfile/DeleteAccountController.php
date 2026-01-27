@@ -25,8 +25,15 @@ use OpenApi\Attributes as OA;
     ),
     responses: [
         new OA\Response(
-            response: 204,
-            description: 'Account deleted successfully'
+            response: 200,
+            description: 'Account deleted successfully',
+            content: new OA\JsonContent(
+                type: 'object',
+                properties: [
+                    new OA\Property(property: 'data', type: 'string', nullable: true, example: null),
+                    new OA\Property(property: 'message', type: 'string', example: 'Account deleted successfully.'),
+                ]
+            )
         ),
         new OA\Response(
             response: 422,
@@ -54,6 +61,6 @@ class DeleteAccountController extends Controller
         $user->tokens()->delete(); // Revoke all tokens for the user
         $user->delete();
 
-        return $this->sendSuccess(null, 204);
+        return $this->sendSuccessWithMeta(null, 'Account deleted successfully.');
     }
 }

@@ -81,7 +81,7 @@ describe('NotificationPreferences', () => {
   })
 
   it('renders preferences in grouped cards when data loads successfully', async () => {
-    mockGetNotificationPreferences.mockResolvedValue({ data: mockPreferences })
+    mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
 
     render(<NotificationPreferences />)
 
@@ -115,7 +115,7 @@ describe('NotificationPreferences', () => {
   })
 
   it('toggles email preference when switch is clicked', async () => {
-    mockGetNotificationPreferences.mockResolvedValue({ data: mockPreferences })
+    mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
     mockUpdateNotificationPreferences.mockResolvedValue({
       data: null,
       message: 'Updated successfully',
@@ -148,7 +148,7 @@ describe('NotificationPreferences', () => {
   })
 
   it('toggles in-app preference when switch is clicked', async () => {
-    mockGetNotificationPreferences.mockResolvedValue({ data: mockPreferences })
+    mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
     mockUpdateNotificationPreferences.mockResolvedValue({
       data: null,
       message: 'Updated successfully',
@@ -181,7 +181,7 @@ describe('NotificationPreferences', () => {
   })
 
   it('shows success message after successful update', async () => {
-    mockGetNotificationPreferences.mockResolvedValue({ data: mockPreferences })
+    mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
     mockUpdateNotificationPreferences.mockResolvedValue({
       data: null,
       message: 'Updated successfully',
@@ -202,7 +202,7 @@ describe('NotificationPreferences', () => {
   })
 
   it('calls update API and handles errors', async () => {
-    mockGetNotificationPreferences.mockResolvedValue({ data: mockPreferences })
+    mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
     mockUpdateNotificationPreferences.mockRejectedValue(new Error('Update failed'))
 
     render(<NotificationPreferences />)
@@ -230,7 +230,7 @@ describe('NotificationPreferences', () => {
   })
 
   it('disables switches while updating', async () => {
-    mockGetNotificationPreferences.mockResolvedValue({ data: mockPreferences })
+    mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
     mockUpdateNotificationPreferences.mockImplementation(() => new Promise(() => {})) // Never resolves
 
     render(<NotificationPreferences />)
@@ -251,7 +251,7 @@ describe('NotificationPreferences', () => {
   })
 
   it('renders empty state when no preferences are available', async () => {
-    mockGetNotificationPreferences.mockResolvedValue({ data: [] })
+    mockGetNotificationPreferences.mockResolvedValue([])
 
     render(<NotificationPreferences />)
 

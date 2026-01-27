@@ -1,4 +1,42 @@
-import { api } from './axios'
+import {
+  getMyPets as generatedGetMyPets,
+  getMyPetsSections as generatedGetMyPetsSections,
+  postPets as generatedPostPets,
+  getPetsId as generatedGetPetsId,
+  getPetsIdView as generatedGetPetsIdView,
+  putPetsId as generatedPutPetsId,
+  deletePetsId as generatedDeletePetsId,
+  putPetsIdStatus as generatedPutPetsIdStatus,
+  getPetsPlacementRequests as generatedGetPetsPlacementRequests,
+  getPetsFeatured as generatedGetPetsFeatured,
+  getPetsPetWeights as generatedGetPetsPetWeights,
+  postPetsPetWeights as generatedPostPetsPetWeights,
+  putPetsPetWeightsWeight as generatedPutPetsPetWeightsWeight,
+  deletePetsPetWeightsWeight as generatedDeletePetsPetWeightsWeight,
+  getPetsPetMedicalNotes as generatedGetPetsPetMedicalNotes,
+  postPetsPetMedicalNotes as generatedPostPetsPetMedicalNotes,
+  putPetsPetMedicalNotesNote as generatedPutPetsPetMedicalNotesNote,
+  deletePetsPetMedicalNotesNote as generatedDeletePetsPetMedicalNotesNote,
+  getPetsPetVaccinations as generatedGetPetsPetVaccinations,
+  postPetsPetVaccinations as generatedPostPetsPetVaccinations,
+  deletePetsPetVaccinationsRecord as generatedDeletePetsPetVaccinationsRecord,
+  putPetsPetVaccinationsRecord as generatedPutPetsPetVaccinationsRecord,
+  postPetsPetVaccinationsRecordRenew as generatedPostPetsPetVaccinationsRecordRenew,
+  getPetsPetMicrochips as generatedGetPetsPetMicrochips,
+  postPetsPetMicrochips as generatedPostPetsPetMicrochips,
+  putPetsPetMicrochipsMicrochip as generatedPutPetsPetMicrochipsMicrochip,
+  deletePetsPetMicrochipsMicrochip as generatedDeletePetsPetMicrochipsMicrochip,
+  getPetsPetMedicalRecords as generatedGetPetsPetMedicalRecords,
+  postPetsPetMedicalRecords as generatedPostPetsPetMedicalRecords,
+  putPetsPetMedicalRecordsRecord as generatedPutPetsPetMedicalRecordsRecord,
+  deletePetsPetMedicalRecordsRecord as generatedDeletePetsPetMedicalRecordsRecord,
+} from './generated/pets/pets'
+import { getPetTypes as generatedGetPetTypes } from './generated/pet-types/pet-types'
+import {
+  postPetsPetPhotos as generatedPostPetsPetPhotos,
+  deletePetsPetPhotosPhoto as generatedDeletePetsPetPhotosPhoto,
+  postPetsPetPhotosPhotoSetPrimary as generatedPostPetsPetPhotosPhotoSetPrimary,
+} from './generated/pet-photos/pet-photos'
 import type { Pet, PetType, BirthdayPrecision, PetSex, City } from '@/types/pet'
 
 export interface WeightHistory {
@@ -56,14 +94,17 @@ export interface PetMicrochip {
   updated_at: string
 }
 
-export const getAllPets = async (): Promise<Pet[]> => {
-  const response = await api.get<{ data: Pet[] }>('/pets')
-  return response.data.data
+export const getPets = async (
+  page = 1,
+  status?: any
+): Promise<{ data: Pet[]; links: unknown; meta: unknown }> => {
+  const response = await generatedGetMyPets({ params: { page, status } } as any)
+  return response as any
 }
 
 export const getMyPets = async (): Promise<Pet[]> => {
-  const response = await api.get<{ data: Pet[] }>('/my-pets')
-  return response.data.data
+  const response = await generatedGetMyPets()
+  return response as unknown as Pet[]
 }
 
 export const getMyPetsSections = async (): Promise<{
@@ -72,15 +113,13 @@ export const getMyPetsSections = async (): Promise<{
   fostering_past: Pet[]
   transferred_away: Pet[]
 }> => {
-  const response = await api.get<{
-    data: {
-      owned: Pet[]
-      fostering_active: Pet[]
-      fostering_past: Pet[]
-      transferred_away: Pet[]
-    }
-  }>('/my-pets/sections')
-  return response.data.data
+  const response = await generatedGetMyPetsSections()
+  return response as unknown as {
+    owned: Pet[]
+    fostering_active: Pet[]
+    fostering_past: Pet[]
+    transferred_away: Pet[]
+  }
 }
 
 export interface CreatePetPayload {
@@ -104,13 +143,13 @@ export interface CreatePetPayload {
 }
 
 export const createPet = async (petData: CreatePetPayload): Promise<Pet> => {
-  const response = await api.post<{ data: Pet }>('/pets', petData)
-  return response.data.data
+  const response = await generatedPostPets(petData as unknown as Pet)
+  return response as unknown as Pet
 }
 
 export const getPet = async (id: string): Promise<Pet> => {
-  const response = await api.get<{ data: Pet }>(`/pets/${id}`)
-  return response.data.data
+  const response = await generatedGetPetsId(Number(id))
+  return response as unknown as Pet
 }
 
 export interface PublicPet {
@@ -142,69 +181,58 @@ export interface PublicPet {
 }
 
 export const getPetPublic = async (id: string): Promise<PublicPet> => {
-  const response = await api.get<{ data: PublicPet }>(`/pets/${id}/view`)
-  return response.data.data
+  const response = await generatedGetPetsIdView(Number(id))
+  return response as unknown as PublicPet
 }
 
 export type UpdatePetPayload = Partial<CreatePetPayload>
 
 export const updatePet = async (id: string, petData: UpdatePetPayload): Promise<Pet> => {
-  const response = await api.put<{ data: Pet }>(`/pets/${id}`, petData)
-  return response.data.data
+  const response = await generatedPutPetsId(Number(id), petData as unknown as Pet)
+  return response as unknown as Pet
 }
 
 export const deletePet = async (id: string, password: string): Promise<void> => {
-  await api.delete(`/pets/${id}`, {
-    data: { password },
-  })
+  await generatedDeletePetsId(Number(id), { password })
 }
 
 export const updatePetStatus = async (id: string, status: string): Promise<Pet> => {
-  const response = await api.put<{ data: Pet }>(`/pets/${id}/status`, {
-    status,
+  const response = await generatedPutPetsIdStatus(Number(id), {
+    status: status as any,
   })
-  return response.data.data
+  return response as unknown as Pet
 }
 
 export const uploadPetPhoto = async (petId: number, photo: File): Promise<Pet> => {
-  const formData = new FormData()
-  formData.append('photo', photo)
-
-  const response = await api.post<{ data: Pet }>(`/pets/${String(petId)}/photos`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  })
-  return response.data.data
+  const response = await generatedPostPetsPetPhotos(petId, { photo })
+  return response as unknown as Pet
 }
 
 export const deletePetPhoto = async (
   petId: number,
   photoId: number | string = 'current'
 ): Promise<void> => {
-  await api.delete(`/pets/${String(petId)}/photos/${String(photoId)}`)
+  await generatedDeletePetsPetPhotosPhoto(petId, String(photoId))
 }
 
 export const setPrimaryPetPhoto = async (petId: number, photoId: number): Promise<Pet> => {
-  const response = await api.post<{ data: Pet }>(
-    `/pets/${String(petId)}/photos/${String(photoId)}/set-primary`
-  )
-  return response.data.data
+  const response = await generatedPostPetsPetPhotosPhotoSetPrimary(petId, String(photoId))
+  return response as unknown as Pet
 }
 
 export const getPlacementRequests = async (): Promise<Pet[]> => {
-  const response = await api.get<{ data: Pet[] }>('/pets/placement-requests')
-  return response.data.data
+  const response = await generatedGetPetsPlacementRequests()
+  return response as unknown as Pet[]
 }
 
 export const getFeaturedPets = async (): Promise<Pet[]> => {
-  const response = await api.get<{ data: Pet[] }>('/pets/featured')
-  return response.data.data
+  const response = await generatedGetPetsFeatured()
+  return response as unknown as Pet[]
 }
 
 export const getPetTypes = async (): Promise<PetType[]> => {
-  const response = await api.get<{ data: PetType[] }>('/pet-types')
-  return response.data.data
+  const response = await generatedGetPetTypes()
+  return response as unknown as PetType[]
 }
 
 // Weights API
@@ -212,21 +240,16 @@ export const getPetWeights = async (
   petId: number,
   page = 1
 ): Promise<{ data: WeightHistory[]; links: unknown; meta: unknown }> => {
-  const response = await api.get<{
-    data: { data: WeightHistory[]; links: unknown; meta: unknown }
-  }>(`/pets/${String(petId)}/weights`, { params: { page } })
-  return response.data.data
+  const response = await generatedGetPetsPetWeights(petId, { page })
+  return response as any
 }
 
 export const createWeight = async (
   petId: number,
   payload: { weight_kg: number; record_date: string }
 ): Promise<WeightHistory> => {
-  const response = await api.post<{ data: WeightHistory }>(
-    `/pets/${String(petId)}/weights`,
-    payload
-  )
-  return response.data.data
+  const response = await generatedPostPetsPetWeights(petId, payload)
+  return response as unknown as WeightHistory
 }
 
 export const updateWeight = async (
@@ -234,18 +257,13 @@ export const updateWeight = async (
   weightId: number,
   payload: Partial<{ weight_kg: number; record_date: string }>
 ): Promise<WeightHistory> => {
-  const response = await api.put<{ data: WeightHistory }>(
-    `/pets/${String(petId)}/weights/${String(weightId)}`,
-    payload
-  )
-  return response.data.data
+  const response = await generatedPutPetsPetWeightsWeight(petId, weightId, payload)
+  return response as unknown as WeightHistory
 }
 
 export const deleteWeight = async (petId: number, weightId: number): Promise<boolean> => {
-  const response = await api.delete<{ data: boolean }>(
-    `/pets/${String(petId)}/weights/${String(weightId)}`
-  )
-  return response.data.data
+  const response = await generatedDeletePetsPetWeightsWeight(petId, weightId)
+  return true
 }
 
 // Medical Notes API
@@ -253,22 +271,16 @@ export const getMedicalNotes = async (
   petId: number,
   page = 1
 ): Promise<{ data: MedicalNote[]; links: unknown; meta: unknown }> => {
-  const response = await api.get<{ data: { data: MedicalNote[]; links: unknown; meta: unknown } }>(
-    `/pets/${String(petId)}/medical-notes`,
-    { params: { page } }
-  )
-  return response.data.data
+  const response = await generatedGetPetsPetMedicalNotes(petId, { page })
+  return response as any
 }
 
 export const createMedicalNote = async (
   petId: number,
   payload: { note: string; record_date: string }
 ): Promise<MedicalNote> => {
-  const response = await api.post<{ data: MedicalNote }>(
-    `/pets/${String(petId)}/medical-notes`,
-    payload
-  )
-  return response.data.data
+  const response = await generatedPostPetsPetMedicalNotes(petId, payload)
+  return response as unknown as MedicalNote
 }
 
 export const updateMedicalNote = async (
@@ -276,18 +288,13 @@ export const updateMedicalNote = async (
   noteId: number,
   payload: Partial<{ note: string; record_date: string }>
 ): Promise<MedicalNote> => {
-  const response = await api.put<{ data: MedicalNote }>(
-    `/pets/${String(petId)}/medical-notes/${String(noteId)}`,
-    payload
-  )
-  return response.data.data
+  const response = await generatedPutPetsPetMedicalNotesNote(petId, noteId, payload)
+  return response as unknown as MedicalNote
 }
 
 export const deleteMedicalNote = async (petId: number, noteId: number): Promise<boolean> => {
-  const response = await api.delete<{ data: boolean }>(
-    `/pets/${String(petId)}/medical-notes/${String(noteId)}`
-  )
-  return response.data.data
+  const response = await generatedDeletePetsPetMedicalNotesNote(petId, noteId)
+  return true
 }
 
 // Vaccinations API
@@ -298,10 +305,11 @@ export const getVaccinations = async (
   page = 1,
   status: VaccinationStatus = 'active'
 ): Promise<{ data: VaccinationRecord[]; links: unknown; meta: unknown }> => {
-  const response = await api.get<{
-    data: { data: VaccinationRecord[]; links: unknown; meta: unknown }
-  }>(`/pets/${String(petId)}/vaccinations`, { params: { page, status } })
-  return response.data.data
+  const response = await generatedGetPetsPetVaccinations(petId, {
+    page,
+    status: status as any,
+  })
+  return response as any
 }
 
 // Microchips API
@@ -309,22 +317,16 @@ export const getMicrochips = async (
   petId: number,
   page = 1
 ): Promise<{ data: PetMicrochip[]; links: unknown; meta: unknown }> => {
-  const response = await api.get<{ data: { data: PetMicrochip[]; links: unknown; meta: unknown } }>(
-    `/pets/${String(petId)}/microchips`,
-    { params: { page } }
-  )
-  return response.data.data
+  const response = await generatedGetPetsPetMicrochips(petId, { page })
+  return response as any
 }
 
 export const createMicrochip = async (
   petId: number,
   payload: { chip_number: string; issuer?: string | null; implanted_at?: string | null }
 ): Promise<PetMicrochip> => {
-  const response = await api.post<{ data: PetMicrochip }>(
-    `/pets/${String(petId)}/microchips`,
-    payload
-  )
-  return response.data.data
+  const response = await generatedPostPetsPetMicrochips(petId, payload)
+  return response as unknown as PetMicrochip
 }
 
 export const updateMicrochip = async (
@@ -332,18 +334,13 @@ export const updateMicrochip = async (
   microchipId: number,
   payload: Partial<{ chip_number: string; issuer?: string | null; implanted_at?: string | null }>
 ): Promise<PetMicrochip> => {
-  const response = await api.put<{ data: PetMicrochip }>(
-    `/pets/${String(petId)}/microchips/${String(microchipId)}`,
-    payload
-  )
-  return response.data.data
+  const response = await generatedPutPetsPetMicrochipsMicrochip(petId, microchipId, payload)
+  return response as unknown as PetMicrochip
 }
 
 export const deleteMicrochip = async (petId: number, microchipId: number): Promise<boolean> => {
-  const response = await api.delete<{ data: boolean }>(
-    `/pets/${String(petId)}/microchips/${String(microchipId)}`
-  )
-  return response.data.data
+  const response = await generatedDeletePetsPetMicrochipsMicrochip(petId, microchipId)
+  return true
 }
 
 export const createVaccination = async (
@@ -355,11 +352,8 @@ export const createVaccination = async (
     notes?: string | null
   }
 ): Promise<VaccinationRecord> => {
-  const response = await api.post<{ data: VaccinationRecord }>(
-    `/pets/${String(petId)}/vaccinations`,
-    payload
-  )
-  return response.data.data
+  const response = await generatedPostPetsPetVaccinations(petId, payload)
+  return response as unknown as VaccinationRecord
 }
 
 export const updateVaccination = async (
@@ -372,18 +366,13 @@ export const updateVaccination = async (
     notes?: string | null
   }>
 ): Promise<VaccinationRecord> => {
-  const response = await api.put<{ data: VaccinationRecord }>(
-    `/pets/${String(petId)}/vaccinations/${String(recordId)}`,
-    payload
-  )
-  return response.data.data
+  const response = await generatedPutPetsPetVaccinationsRecord(petId, recordId, payload)
+  return response as unknown as VaccinationRecord
 }
 
 export const deleteVaccination = async (petId: number, recordId: number): Promise<boolean> => {
-  const response = await api.delete<{ data: boolean }>(
-    `/pets/${String(petId)}/vaccinations/${String(recordId)}`
-  )
-  return response.data.data
+  const response = await generatedDeletePetsPetVaccinationsRecord(petId, recordId)
+  return true
 }
 
 export const renewVaccination = async (
@@ -396,11 +385,8 @@ export const renewVaccination = async (
     notes?: string | null
   }
 ): Promise<VaccinationRecord> => {
-  const response = await api.post<{ data: VaccinationRecord }>(
-    `/pets/${String(petId)}/vaccinations/${String(recordId)}/renew`,
-    payload
-  )
-  return response.data.data
+  const response = await generatedPostPetsPetVaccinationsRecordRenew(petId, recordId, payload)
+  return response as unknown as VaccinationRecord
 }
 
 // Medical Records API
@@ -409,14 +395,11 @@ export const getMedicalRecords = async (
   page = 1,
   recordType?: MedicalRecordType
 ): Promise<{ data: MedicalRecord[]; links: unknown; meta: unknown }> => {
-  const params: { page: number; record_type?: string } = { page }
-  if (recordType) {
-    params.record_type = recordType
-  }
-  const response = await api.get<{
-    data: { data: MedicalRecord[]; links: unknown; meta: unknown }
-  }>(`/pets/${String(petId)}/medical-records`, { params })
-  return response.data.data
+  const response = await generatedGetPetsPetMedicalRecords(petId, {
+    page,
+    record_type: recordType as any,
+  })
+  return response as any
 }
 
 export const createMedicalRecord = async (
@@ -429,11 +412,8 @@ export const createMedicalRecord = async (
     attachment_url?: string | null
   }
 ): Promise<MedicalRecord> => {
-  const response = await api.post<{ data: MedicalRecord }>(
-    `/pets/${String(petId)}/medical-records`,
-    payload
-  )
-  return response.data.data
+  const response = await generatedPostPetsPetMedicalRecords(petId, payload)
+  return response as unknown as MedicalRecord
 }
 
 export const updateMedicalRecord = async (
@@ -447,16 +427,11 @@ export const updateMedicalRecord = async (
     attachment_url?: string | null
   }>
 ): Promise<MedicalRecord> => {
-  const response = await api.put<{ data: MedicalRecord }>(
-    `/pets/${String(petId)}/medical-records/${String(recordId)}`,
-    payload
-  )
-  return response.data.data
+  const response = await generatedPutPetsPetMedicalRecordsRecord(petId, recordId, payload)
+  return response as unknown as MedicalRecord
 }
 
 export const deleteMedicalRecord = async (petId: number, recordId: number): Promise<boolean> => {
-  const response = await api.delete<{ data: boolean }>(
-    `/pets/${String(petId)}/medical-records/${String(recordId)}`
-  )
-  return response.data.data
+  const response = await generatedDeletePetsPetMedicalRecordsRecord(petId, recordId)
+  return true
 }

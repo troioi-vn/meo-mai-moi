@@ -10,6 +10,7 @@ use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesErrors;
 use App\Traits\HandlesValidation;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 /**
  * Validate an invitation code (public endpoint for registration)
@@ -24,6 +25,40 @@ class ValidateInvitationCodeController extends Controller
         private InvitationService $invitationService
     ) {}
 
+    #[OA\Post(
+        path: '/api/invitations/validate',
+        summary: 'Validate an invitation code',
+        tags: ['Invitations'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['code'],
+                properties: [
+                    new OA\Property(property: 'code', type: 'string', example: 'ABC-123'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Validation result',
+                content: new OA\JsonContent(
+                    type: 'object',
+                    properties: [
+                        new OA\Property(property: 'data', properties: [
+                            new OA\Property(property: 'valid', type: 'boolean'),
+                            new OA\Property(property: 'inviter', properties: [
+                                new OA\Property(property: 'name', type: 'string'),
+                            ], type: 'object'),
+                            new OA\Property(property: 'expires_at', type: 'string', format: 'date-time', nullable: true),
+                        ], type: 'object'),
+                    ]
+                )
+            ),
+            new OA\Response(response: 404, description: 'Invalid or expired code'),
+            new OA\Response(response: 422, description: 'Validation error'),
+        ]
+    )]
     public function __invoke(Request $request)
     {
         $this->validateWithErrorHandling($request, [

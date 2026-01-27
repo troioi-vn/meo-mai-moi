@@ -37,12 +37,18 @@ use OpenApi\Attributes as OA;
             content: new OA\JsonContent(
                 type: 'object',
                 properties: [
-                    new OA\Property(property: 'viewer_role', type: 'string', enum: ['owner', 'helper', 'admin', 'public']),
-                    new OA\Property(property: 'my_response', type: 'object', nullable: true),
-                    new OA\Property(property: 'my_response_id', type: 'integer', nullable: true),
-                    new OA\Property(property: 'my_transfer', type: 'object', nullable: true),
-                    new OA\Property(property: 'available_actions', type: 'object'),
-                    new OA\Property(property: 'chat_id', type: 'integer', nullable: true),
+                    new OA\Property(
+                        property: 'data',
+                        type: 'object',
+                        properties: [
+                            new OA\Property(property: 'viewer_role', type: 'string', enum: ['owner', 'helper', 'admin', 'public']),
+                            new OA\Property(property: 'my_response', type: 'object', nullable: true),
+                            new OA\Property(property: 'my_response_id', type: 'integer', nullable: true),
+                            new OA\Property(property: 'my_transfer', type: 'object', nullable: true),
+                            new OA\Property(property: 'available_actions', type: 'object'),
+                            new OA\Property(property: 'chat_id', type: 'integer', nullable: true),
+                        ]
+                    ),
                 ]
             )
         ),

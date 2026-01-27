@@ -1,9 +1,26 @@
-import { api } from './axios'
+import {
+  getPlacementRequestsId as generatedGetPlacementRequest,
+  getPlacementRequestsIdMe as generatedGetPlacementRequestViewerContext,
+  deletePlacementRequestsId as generatedDeletePlacementRequest,
+  postPlacementRequestsIdFinalize as generatedFinalizePlacementRequest,
+} from './generated/placement-requests/placement-requests'
+import {
+  getPlacementRequestsIdResponses as generatedGetPlacementResponses,
+  postPlacementRequestsIdResponses as generatedSubmitPlacementResponse,
+  postPlacementResponsesIdAccept as generatedAcceptPlacementResponse,
+  postPlacementResponsesIdReject as generatedRejectPlacementResponse,
+  postPlacementResponsesIdCancel as generatedCancelPlacementResponse,
+} from './generated/placement-request-responses/placement-request-responses'
+import {
+  postTransferRequestsIdConfirm as generatedConfirmTransfer,
+  postTransferRequestsIdReject as generatedRejectTransfer,
+  deleteTransferRequestsId as generatedCancelTransfer,
+} from './generated/transfer-requests/transfer-requests'
 import type {
   PlacementRequestResponse,
-  TransferRequest,
   PlacementRequestDetail,
   PlacementRequestViewerContext,
+  TransferRequest,
 } from '@/types/placement'
 
 // ============================================================
@@ -15,10 +32,8 @@ import type {
  * Returns role-shaped data based on the viewer (owner/helper/admin/public)
  */
 export async function getPlacementRequest(id: number): Promise<PlacementRequestDetail> {
-  const { data } = await api.get<{ data: PlacementRequestDetail }>(
-    `/placement-requests/${String(id)}`
-  )
-  return data.data
+  const response = await generatedGetPlacementRequest(id)
+  return response as unknown as PlacementRequestDetail
 }
 
 /**
@@ -28,24 +43,22 @@ export async function getPlacementRequest(id: number): Promise<PlacementRequestD
 export async function getPlacementRequestViewerContext(
   id: number
 ): Promise<PlacementRequestViewerContext> {
-  const { data } = await api.get<{ data: PlacementRequestViewerContext }>(
-    `/placement-requests/${String(id)}/me`
-  )
-  return data.data
+  const response = await generatedGetPlacementRequestViewerContext(id)
+  return response as unknown as PlacementRequestViewerContext
 }
 
 /**
  * Delete a placement request (owner/admin only, when open)
  */
 export async function deletePlacementRequest(id: number): Promise<void> {
-  await api.delete(`/placement-requests/${String(id)}`)
+  await generatedDeletePlacementRequest(id)
 }
 
 /**
  * Finalize a placement request (mark pet as returned - owner only, for temporary placements)
  */
 export async function finalizePlacementRequest(id: number): Promise<void> {
-  await api.post(`/placement-requests/${String(id)}/finalize`)
+  await generatedFinalizePlacementRequest(id)
 }
 
 // ============================================================
@@ -58,10 +71,8 @@ export async function finalizePlacementRequest(id: number): Promise<void> {
 export async function getPlacementResponses(
   placementRequestId: number
 ): Promise<PlacementRequestResponse[]> {
-  const { data } = await api.get<{ data: PlacementRequestResponse[] }>(
-    `/placement-requests/${String(placementRequestId)}/responses`
-  )
-  return data.data
+  const response = await generatedGetPlacementResponses(placementRequestId)
+  return response as unknown as PlacementRequestResponse[]
 }
 
 /**
@@ -71,11 +82,8 @@ export async function submitPlacementResponse(
   placementRequestId: number,
   payload: { helper_profile_id?: number; message?: string }
 ): Promise<PlacementRequestResponse> {
-  const { data } = await api.post<{ data: PlacementRequestResponse }>(
-    `/placement-requests/${String(placementRequestId)}/responses`,
-    payload
-  )
-  return data.data
+  const response = await generatedSubmitPlacementResponse(placementRequestId, payload as any)
+  return response as unknown as PlacementRequestResponse
 }
 
 /**
@@ -84,10 +92,8 @@ export async function submitPlacementResponse(
 export async function acceptPlacementResponse(
   responseId: number
 ): Promise<PlacementRequestResponse> {
-  const { data } = await api.post<{ data: PlacementRequestResponse }>(
-    `/placement-responses/${String(responseId)}/accept`
-  )
-  return data.data
+  const response = await generatedAcceptPlacementResponse(responseId)
+  return response as unknown as PlacementRequestResponse
 }
 
 /**
@@ -96,10 +102,8 @@ export async function acceptPlacementResponse(
 export async function rejectPlacementResponse(
   responseId: number
 ): Promise<PlacementRequestResponse> {
-  const { data } = await api.post<{ data: PlacementRequestResponse }>(
-    `/placement-responses/${String(responseId)}/reject`
-  )
-  return data.data
+  const response = await generatedRejectPlacementResponse(responseId)
+  return response as unknown as PlacementRequestResponse
 }
 
 /**
@@ -108,10 +112,8 @@ export async function rejectPlacementResponse(
 export async function cancelPlacementResponse(
   responseId: number
 ): Promise<PlacementRequestResponse> {
-  const { data } = await api.post<{ data: PlacementRequestResponse }>(
-    `/placement-responses/${String(responseId)}/cancel`
-  )
-  return data.data
+  const response = await generatedCancelPlacementResponse(responseId)
+  return response as unknown as PlacementRequestResponse
 }
 
 // ============================================================
@@ -123,25 +125,21 @@ export async function cancelPlacementResponse(
  * Only for permanent, foster_free, foster_paid request types
  */
 export async function confirmTransfer(transferId: number): Promise<TransferRequest> {
-  const { data } = await api.post<{ data: TransferRequest }>(
-    `/transfer-requests/${String(transferId)}/confirm`
-  )
-  return data.data
+  const response = await generatedConfirmTransfer(transferId)
+  return response as unknown as TransferRequest
 }
 
 /**
  * Reject transfer (owner action - decides not to proceed with accepted response)
  */
 export async function rejectTransfer(transferId: number): Promise<TransferRequest> {
-  const { data } = await api.post<{ data: TransferRequest }>(
-    `/transfer-requests/${String(transferId)}/reject`
-  )
-  return data.data
+  const response = await generatedRejectTransfer(transferId)
+  return response as unknown as TransferRequest
 }
 
 /**
  * Cancel transfer (either party)
  */
 export async function cancelTransfer(transferId: number): Promise<void> {
-  await api.delete(`/transfer-requests/${String(transferId)}`)
+  await generatedCancelTransfer(transferId)
 }

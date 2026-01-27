@@ -6,6 +6,7 @@ namespace App\Http\Controllers\HelperProfile;
 
 use App\Http\Controllers\Controller;
 use App\Models\HelperProfile;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -26,7 +27,7 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 200,
             description: 'The helper profile',
-            content: new OA\JsonContent(ref: '#/components/schemas/HelperProfile')
+            content: new OA\JsonContent(ref: '#/components/schemas/HelperProfileResponse')
         ),
         new OA\Response(
             response: 404,
@@ -36,6 +37,8 @@ use OpenApi\Attributes as OA;
 )]
 class ShowHelperProfileController extends Controller
 {
+    use ApiResponseTrait;
+
     public function __invoke(Request $request, HelperProfile $helperProfile)
     {
         $user = $request->user();
@@ -65,9 +68,9 @@ class ShowHelperProfileController extends Controller
                 },
             ]);
 
-            return response()->json(['data' => $helperProfile]);
+            return $this->sendSuccess($helperProfile);
         }
 
-        return response()->json(['message' => 'Forbidden'], 403);
+        return $this->sendError('Forbidden', 403);
     }
 }

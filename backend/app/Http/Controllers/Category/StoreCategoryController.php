@@ -31,7 +31,7 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 201,
             description: 'Category created successfully',
-            content: new OA\JsonContent(ref: '#/components/schemas/Category')
+            content: new OA\JsonContent(ref: '#/components/schemas/CategoryResponse')
         ),
         new OA\Response(
             response: 422,

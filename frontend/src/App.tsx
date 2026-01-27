@@ -9,7 +9,6 @@ import { usePwaUpdate } from '@/hooks/use-pwa-update'
 import { PageLoadingSpinner } from '@/components/ui/page-loading-spinner'
 
 // Lazy loaded components
-const MainPage = lazy(() => import('./pages/home/MainPage'))
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
 const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'))
 const EmailVerificationPage = lazy(() => import('./pages/auth/EmailVerificationPage'))
@@ -62,7 +61,7 @@ function HomePage() {
     )
   }
 
-  return isAuthenticated ? <MyPetsPage /> : <MainPage />
+  return isAuthenticated ? <MyPetsPage /> : <Navigate to="/requests" replace />
 }
 
 export function AppRoutes() {

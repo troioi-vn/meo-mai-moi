@@ -54,8 +54,14 @@ class PasswordResetController extends Controller
                 description: 'Token is valid',
                 content: new OA\JsonContent(
                     properties: [
-                        new OA\Property(property: 'valid', type: 'boolean', example: true),
-                        new OA\Property(property: 'email', type: 'string', example: 'user@example.com'),
+                        new OA\Property(
+                            property: 'data',
+                            type: 'object',
+                            properties: [
+                                new OA\Property(property: 'valid', type: 'boolean', example: true),
+                                new OA\Property(property: 'email', type: 'string', example: 'user@example.com'),
+                            ]
+                        ),
                     ]
                 )
             ),

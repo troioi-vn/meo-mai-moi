@@ -30,7 +30,7 @@ export default function HelperProfilePage() {
     )
   }
 
-  const profiles = data?.data ?? []
+  const profiles = data ?? []
   const activeProfiles = profiles.filter((p) => p.status === 'active' || !p.status)
   const archivedProfiles = profiles.filter((p) => p.status === 'archived')
 

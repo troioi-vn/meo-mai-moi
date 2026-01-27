@@ -21,10 +21,7 @@ export function ImpersonationIndicator() {
 
   const { data: status } = useQuery<ImpersonationStatus>({
     queryKey: ['impersonation-status'],
-    queryFn: async () => {
-      const response = await api.get<ImpersonationStatus>('/impersonation/status')
-      return response.data
-    },
+    queryFn: () => api.get<ImpersonationStatus>('/impersonation/status'),
     refetchInterval: 30000, // Check every 30 seconds
   })
 

@@ -31,14 +31,7 @@ class EmailConfigurationStatusController extends Controller
             new OA\Response(
                 response: 200,
                 description: 'Email configuration status',
-                content: new OA\JsonContent(
-                    properties: [
-                        new OA\Property(property: 'enabled', type: 'boolean', example: true),
-                        new OA\Property(property: 'provider', type: 'string', example: 'smtp'),
-                        new OA\Property(property: 'from_address', type: 'string', example: 'noreply@example.com'),
-                        new OA\Property(property: 'status', type: 'string', example: 'active'),
-                    ]
-                )
+                content: new OA\JsonContent(ref: '#/components/schemas/EmailConfigurationStatusResponse')
             ),
         ]
     )]

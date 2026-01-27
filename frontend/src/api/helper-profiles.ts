@@ -1,31 +1,29 @@
-import { api } from './axios'
+import {
+  getHelperProfiles as generatedGetHelperProfiles,
+  getHelperProfilesId as generatedGetHelperProfilesId,
+  postHelperProfiles as generatedPostHelperProfiles,
+  postHelperProfilesId as generatedPostHelperProfilesId,
+  deleteHelperProfilesId as generatedDeleteHelperProfilesId,
+  postHelperProfilesIdArchive as generatedPostHelperProfilesIdArchive,
+  postHelperProfilesIdRestore as generatedPostHelperProfilesIdRestore,
+  deleteHelperProfilesHelperProfilePhotosPhoto as generatedDeletePhoto,
+} from './generated/helper-profiles/helper-profiles'
+import { getTransferRequestsIdResponderProfile as generatedGetResponderProfile } from './generated/transfer-requests/transfer-requests'
 import type { HelperProfile } from '../types/helper-profile'
 
-interface HelperProfileResponse {
-  data: HelperProfile
+export const getHelperProfiles = async (): Promise<HelperProfile[]> => {
+  const response = await generatedGetHelperProfiles()
+  return response as unknown as HelperProfile[]
 }
 
-interface HelperProfilesResponse {
-  data: HelperProfile[]
+export const getHelperProfile = async (id: string): Promise<HelperProfile> => {
+  const response = await generatedGetHelperProfilesId(Number(id))
+  return response as unknown as HelperProfile
 }
 
-export const getHelperProfiles = async (): Promise<HelperProfilesResponse> => {
-  const response = await api.get<HelperProfilesResponse>('/helper-profiles')
-  return response.data
-}
-
-export const getHelperProfile = async (id: string): Promise<HelperProfileResponse> => {
-  const response = await api.get<HelperProfileResponse>(`/helper-profiles/${id}`)
-  return response.data
-}
-
-export const createHelperProfile = async (data: FormData): Promise<HelperProfileResponse> => {
-  const response = await api.post<HelperProfileResponse>('/helper-profiles', data, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  })
-  return response.data
+export const createHelperProfile = async (data: FormData): Promise<HelperProfile> => {
+  const response = await generatedPostHelperProfiles(data as any)
+  return response as unknown as HelperProfile
 }
 
 export const updateHelperProfile = async ({
@@ -34,42 +32,37 @@ export const updateHelperProfile = async ({
 }: {
   id: string | number
   data: FormData
-}): Promise<HelperProfileResponse> => {
-  const response = await api.post<HelperProfileResponse>(`/helper-profiles/${String(id)}`, data, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  })
-  return response.data
+}): Promise<HelperProfile> => {
+  // postHelperProfilesId is used for multipart updates since Laravel doesn't handle PUT with multipart well
+  const response = await generatedPostHelperProfilesId(Number(id), data as any)
+  return response as unknown as HelperProfile
 }
 
 export const deleteHelperProfile = async (id: string): Promise<void> => {
-  await api.delete(`/helper-profiles/${id}`)
+  await generatedDeleteHelperProfilesId(Number(id))
 }
 
-export const archiveHelperProfile = async (id: string): Promise<HelperProfileResponse> => {
-  const response = await api.post<HelperProfileResponse>(`/helper-profiles/${id}/archive`)
-  return response.data
+export const archiveHelperProfile = async (id: string): Promise<HelperProfile> => {
+  const response = await generatedPostHelperProfilesIdArchive(Number(id))
+  return response as unknown as HelperProfile
 }
 
-export const restoreHelperProfile = async (id: string): Promise<HelperProfileResponse> => {
-  const response = await api.post<HelperProfileResponse>(`/helper-profiles/${id}/restore`)
-  return response.data
+export const restoreHelperProfile = async (id: string): Promise<HelperProfile> => {
+  const response = await generatedPostHelperProfilesIdRestore(Number(id))
+  return response as unknown as HelperProfile
 }
 
 export const deleteHelperProfilePhoto = async (
   profileId: string,
   photoId: number
 ): Promise<void> => {
-  await api.delete(`/helper-profiles/${profileId}/photos/${String(photoId)}`)
+  await generatedDeletePhoto(Number(profileId), photoId)
 }
 
 // Owner-only fetch: get the responder's helper profile for a transfer request
 export const getResponderHelperProfile = async (
   transferRequestId: number
 ): Promise<HelperProfile> => {
-  const res = await api.get<{ data: HelperProfile }>(
-    `/transfer-requests/${String(transferRequestId)}/responder-profile`
-  )
-  return res.data.data
+  const response = await generatedGetResponderProfile(transferRequestId)
+  return response as unknown as HelperProfile
 }

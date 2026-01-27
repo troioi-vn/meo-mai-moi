@@ -8,11 +8,58 @@ use App\Http\Controllers\Controller;
 use App\Models\Chat;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 class ListMessagesController extends Controller
 {
     use ApiResponseTrait;
 
+    #[OA\Get(
+        path: '/api/msg/chats/{id}/messages',
+        summary: 'List messages in a chat (cursor pagination)',
+        tags: ['Messaging'],
+        security: [['sanctum' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'integer')
+            ),
+            new OA\Parameter(
+                name: 'cursor',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'string')
+            ),
+            new OA\Parameter(
+                name: 'limit',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'integer', default: 50)
+            ),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'List of messages',
+                content: new OA\JsonContent(
+                    type: 'object',
+                    properties: [
+                        new OA\Property(
+                            property: 'data',
+                            type: 'array',
+                            items: new OA\Items(ref: '#/components/schemas/ChatMessage')
+                        ),
+                        new OA\Property(property: 'next_cursor', type: 'string', nullable: true),
+                    ]
+                )
+            ),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Unauthorized'),
+            new OA\Response(response: 404, description: 'Chat not found'),
+        ]
+    )]
     public function __invoke(Request $request, Chat $chat)
     {
         $user = $request->user();

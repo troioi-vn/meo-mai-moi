@@ -42,6 +42,6 @@ class LeaveImpersonationController extends Controller
 
         $manager->leave();
 
-        return $this->sendSuccess([], 'Impersonation ended');
+        return $this->sendSuccessWithMeta([], 'Impersonation ended');
     }
 }

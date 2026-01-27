@@ -283,6 +283,135 @@
                 ]
             }
         },
+        "/api/cities": {
+            "get": {
+                "tags": [
+                    "Cities"
+                ],
+                "summary": "List cities for a country",
+                "operationId": "ea87c7f39f7c62511c989d7d42a3871c",
+                "parameters": [
+                    {
+                        "name": "country",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 2,
+                            "minLength": 2,
+                            "example": "VN"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 50
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of cities",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/City"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Cities"
+                ],
+                "summary": "Create a new city",
+                "operationId": "26bc683208d789de2ab25370e01fe21f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "country"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "example": "Hanoi"
+                                    },
+                                    "country": {
+                                        "type": "string",
+                                        "maxLength": 2,
+                                        "minLength": 2,
+                                        "example": "VN"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "maxLength": 500,
+                                        "example": "Capital city of Vietnam"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "City created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/City"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "422": {
+                        "description": "Validation error or limit reached"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/email/configuration-status": {
             "get": {
                 "tags": [
@@ -663,6 +792,51 @@
                 }
             }
         },
+        "/helper-profiles/{helper_profile}/photos/{photo}": {
+            "delete": {
+                "tags": [
+                    "Helper Profiles"
+                ],
+                "summary": "Delete a helper profile photo",
+                "operationId": "6df552c03bf15938c72d54f5c59186b7",
+                "parameters": [
+                    {
+                        "name": "helper_profile",
+                        "in": "path",
+                        "description": "The ID of the helper profile",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "photo",
+                        "in": "path",
+                        "description": "The ID of the photo to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Photo deleted successfully"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/helper-profiles": {
             "get": {
                 "tags": [
@@ -871,6 +1045,57 @@
                 ]
             }
         },
+        "/api/invitations/stats": {
+            "get": {
+                "tags": [
+                    "Invitations"
+                ],
+                "summary": "Get invitation statistics for the authenticated user",
+                "operationId": "37a9b0ba30490fe76b881d83c74d66cb",
+                "responses": {
+                    "200": {
+                        "description": "Invitation statistics",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "total": {
+                                                    "type": "integer"
+                                                },
+                                                "pending": {
+                                                    "type": "integer"
+                                                },
+                                                "accepted": {
+                                                    "type": "integer"
+                                                },
+                                                "expired": {
+                                                    "type": "integer"
+                                                },
+                                                "revoked": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/invitations": {
             "get": {
                 "tags": [
@@ -1030,6 +1255,75 @@
                         "sanctum": []
                     }
                 ]
+            }
+        },
+        "/api/invitations/validate": {
+            "post": {
+                "tags": [
+                    "Invitations"
+                ],
+                "summary": "Validate an invitation code",
+                "operationId": "f0345416e9ace827c2813ba77df7691c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "code"
+                                ],
+                                "properties": {
+                                    "code": {
+                                        "type": "string",
+                                        "example": "ABC-123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Validation result",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "valid": {
+                                                    "type": "boolean"
+                                                },
+                                                "inviter": {
+                                                    "properties": {
+                                                        "name": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "expires_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "nullable": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Invalid or expired code"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
             }
         },
         "/api/legal/placement-terms": {
@@ -2043,6 +2337,540 @@
                 ]
             }
         },
+        "/api/msg/chats/{id}": {
+            "get": {
+                "tags": [
+                    "Messaging"
+                ],
+                "summary": "Get details of a specific chat",
+                "operationId": "12956fe3a1302112a6cfea27d03c3d60",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Chat details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Chat"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Chat not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Messaging"
+                ],
+                "summary": "Leave or delete a chat",
+                "operationId": "2fe3e0b8fb5d4f8a26ae715b8b5fd873",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Successfully left/deleted"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Chat not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/msg/messages/{id}": {
+            "delete": {
+                "tags": [
+                    "Messaging"
+                ],
+                "summary": "Delete a message",
+                "operationId": "226866cbfe05ef543f78c820a83a7b6f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Success"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Message not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/msg/unread-count": {
+            "get": {
+                "tags": [
+                    "Messaging"
+                ],
+                "summary": "Get count of unread chats",
+                "operationId": "3701afa6c271dcd57eb7ba71ba1f1c53",
+                "responses": {
+                    "200": {
+                        "description": "Unread count",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "unread_message_count": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/msg/chats": {
+            "get": {
+                "tags": [
+                    "Messaging"
+                ],
+                "summary": "List all chats for authenticated user",
+                "operationId": "9df147ff61c013c86c6042ed3b4ce6ec",
+                "responses": {
+                    "200": {
+                        "description": "List of chats",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Chat"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Messaging"
+                ],
+                "summary": "Create or find a chat",
+                "operationId": "45b49be6b44f0b36798a1ba785ad5e67",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "type"
+                                ],
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "direct",
+                                            "group"
+                                        ]
+                                    },
+                                    "recipient_id": {
+                                        "description": "Required if type is direct",
+                                        "type": "integer"
+                                    },
+                                    "contextable_type": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "contextable_id": {
+                                        "type": "integer",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Chat object",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Chat"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "Created successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/msg/chats/{id}/messages": {
+            "get": {
+                "tags": [
+                    "Messaging"
+                ],
+                "summary": "List messages in a chat (cursor pagination)",
+                "operationId": "36f3e09eba6de78f30079cce84ddc1ea",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 50
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of messages",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ChatMessage"
+                                            }
+                                        },
+                                        "next_cursor": {
+                                            "type": "string",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Chat not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Messaging"
+                ],
+                "summary": "Send a message in a chat",
+                "operationId": "62fa0250e5eb95b09e7442838592c070",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "content"
+                                ],
+                                "properties": {
+                                    "content": {
+                                        "type": "string",
+                                        "example": "Hello!"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "default": "text",
+                                        "enum": [
+                                            "text",
+                                            "image"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Message sent",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/ChatMessage"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Chat not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/msg/chats/{id}/read": {
+            "post": {
+                "tags": [
+                    "Messaging"
+                ],
+                "summary": "Mark all messages in a chat as read",
+                "operationId": "d595d535ddbfa67b5bded7dedd1d57f8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Chat not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/notifications/{notification}/actions/{actionKey}": {
+            "post": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Execute a notification action",
+                "operationId": "745940d9ec20614143d5508c26b7f96e",
+                "parameters": [
+                    {
+                        "name": "notification",
+                        "in": "path",
+                        "description": "The ID of the notification",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "actionKey",
+                        "in": "path",
+                        "description": "The key of the action to execute",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Action executed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Action executed"
+                                                },
+                                                "notification": {
+                                                    "$ref": "#/components/schemas/AppNotification"
+                                                },
+                                                "unread_bell_count": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
         "/api/notifications/unified": {
             "get": {
                 "tags": [
@@ -2676,6 +3504,17 @@
                 "summary": "Get viewable profile of a specific pet",
                 "description": "Returns whitelisted fields for view. Accessible to: pet owner, users with viewer/owner PetRelationship, helpers involved in pending transfers, and anyone when pet is lost or has active placement requests.",
                 "operationId": "b322a3f36ecb60da84d399ce1815a16d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the pet",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "The pet view profile",
@@ -4032,6 +4871,135 @@
                 ]
             }
         },
+        "/api/push-subscriptions": {
+            "get": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "List push subscriptions for active user",
+                "operationId": "b113a28e932a7e2b77f372104dfe5d52",
+                "responses": {
+                    "200": {
+                        "description": "List of push subscriptions",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PushSubscriptionSummary"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Store or update a push subscription",
+                "operationId": "6f842ceff3ce89c38f8660546931fe85",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PushSubscriptionPayload"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Subscription stored successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Delete a push subscription",
+                "operationId": "0f43df61c9c0928ac3d3f377056852d1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "endpoint"
+                                ],
+                                "properties": {
+                                    "endpoint": {
+                                        "type": "string",
+                                        "example": "https://fcm.googleapis.com/..."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "Subscription deleted successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/settings/public": {
             "get": {
                 "tags": [
@@ -4493,7 +5461,8 @@
                                 "schema": {
                                     "properties": {
                                         "data": {
-                                            "type": "null",
+                                            "type": "string",
+                                            "example": null,
                                             "nullable": true
                                         },
                                         "message": {
@@ -4703,7 +5672,8 @@
                                 "schema": {
                                     "properties": {
                                         "data": {
-                                            "type": "null",
+                                            "type": "string",
+                                            "example": null,
                                             "nullable": true
                                         },
                                         "message": {
@@ -5228,6 +6198,69 @@
                                 }
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/api/waitlist/check": {
+            "post": {
+                "tags": [
+                    "Waitlist"
+                ],
+                "summary": "Check waitlist status of an email",
+                "operationId": "ea41b8c5cf77c8b1506c6e1ea1423892",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Waitlist status result",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "on_waitlist": {
+                                                    "type": "boolean"
+                                                },
+                                                "is_registered": {
+                                                    "type": "boolean"
+                                                },
+                                                "can_join_waitlist": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
                     }
                 }
             }
@@ -6316,6 +7349,169 @@
                 },
                 "type": "object"
             },
+            "Chat": {
+                "title": "Chat",
+                "required": [
+                    "id",
+                    "type"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "direct",
+                            "group"
+                        ],
+                        "example": "direct"
+                    },
+                    "contextable_type": {
+                        "type": "string",
+                        "example": "PlacementRequest",
+                        "nullable": true
+                    },
+                    "contextable_id": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "participants": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/User"
+                        }
+                    },
+                    "latest_message": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/ChatMessage"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "unread_count": {
+                        "type": "integer",
+                        "example": 2
+                    }
+                },
+                "type": "object"
+            },
+            "ChatMessage": {
+                "title": "Chat Message",
+                "required": [
+                    "id",
+                    "chat_id",
+                    "sender_id",
+                    "type",
+                    "content"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "chat_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "sender_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "text",
+                            "image",
+                            "system"
+                        ],
+                        "example": "text"
+                    },
+                    "content": {
+                        "type": "string",
+                        "example": "Hello!"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "read_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "City": {
+                "title": "City",
+                "required": [
+                    "id",
+                    "name",
+                    "country"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Hanoi"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "hanoi"
+                    },
+                    "country": {
+                        "type": "string",
+                        "example": "VN"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Capital city of Vietnam",
+                        "nullable": true
+                    },
+                    "created_by": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "approved_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "usage_count": {
+                        "type": "integer",
+                        "example": 5
+                    }
+                },
+                "type": "object"
+            },
             "MedicalNote": {
                 "title": "MedicalNote",
                 "description": "Medical note model",
@@ -6503,6 +7699,82 @@
                 },
                 "type": "object"
             },
+            "PushSubscriptionSummary": {
+                "title": "Push Subscription Summary",
+                "required": [
+                    "id",
+                    "endpoint"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "endpoint": {
+                        "type": "string",
+                        "example": "https://fcm.googleapis.com/fcm/send/f1..."
+                    },
+                    "content_encoding": {
+                        "type": "string",
+                        "example": "aes128gcm",
+                        "nullable": true
+                    },
+                    "expires_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "last_seen_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "PushSubscriptionKeys": {
+                "title": "Push Subscription Keys",
+                "required": [
+                    "p256dh",
+                    "auth"
+                ],
+                "properties": {
+                    "p256dh": {
+                        "type": "string",
+                        "example": "BIP6az..."
+                    },
+                    "auth": {
+                        "type": "string",
+                        "example": "6S6A..."
+                    }
+                },
+                "type": "object"
+            },
+            "PushSubscriptionPayload": {
+                "title": "Push Subscription Payload",
+                "required": [
+                    "endpoint",
+                    "keys"
+                ],
+                "properties": {
+                    "endpoint": {
+                        "type": "string",
+                        "example": "https://fcm.googleapis.com/fcm/send/f1..."
+                    },
+                    "keys": {
+                        "$ref": "#/components/schemas/PushSubscriptionKeys"
+                    },
+                    "content_encoding": {
+                        "type": "string",
+                        "example": "aes128gcm"
+                    },
+                    "expiration_time": {
+                        "type": "integer",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
             "ApiErrorResponse": {
                 "title": "API Error Response",
                 "properties": {
@@ -6554,7 +7826,8 @@
                         "example": true
                     },
                     "data": {
-                        "type": "null",
+                        "type": "string",
+                        "example": null,
                         "nullable": true
                     },
                     "message": {
@@ -7123,6 +8396,10 @@
             "description": "Categories"
         },
         {
+            "name": "Cities",
+            "description": "Cities"
+        },
+        {
             "name": "Email Configuration",
             "description": "Email Configuration"
         },
@@ -7153,6 +8430,10 @@
         {
             "name": "Messages",
             "description": "Messages"
+        },
+        {
+            "name": "Messaging",
+            "description": "Messaging"
         },
         {
             "name": "Notifications",

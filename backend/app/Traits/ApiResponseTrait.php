@@ -20,6 +20,7 @@ trait ApiResponseTrait
     {
         return response()->json([
             'success' => false,
+            'data' => null,
             'message' => $message,
             'error' => $message,
         ], $statusCode);

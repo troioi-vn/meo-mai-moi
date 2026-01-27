@@ -63,17 +63,31 @@ All endpoints must be annotated with OpenAPI attributes. Use the centralized sch
 
 ## Frontend Consumption
 
-### Automatic Unwrapping
+### Typesafe API Client (Orval)
 
-The frontend uses an Axios interceptor (defined in `frontend/src/api/axios.ts`) that automatically unwraps the `data` key from the envelope.
+We use [Orval](https://orval.dev/) to generate a fully typesafe API client and React Query hooks from our backend's OpenAPI `api-docs.json`. This eliminates manual wiring of query keys, response types, and invalidations.
 
-**Calling an API:**
+**Workflow:**
+
+1. Update backend OpenAPI annotations.
+2. Run `bun run api:generate` in the `frontend` directory.
+3. Import the generated hooks from `@/api/generated/`.
+
+**Example:**
 
 ```typescript
-// The interceptor returns response.data.data
-const pet = await api.get<Pet>("/pets/1");
+import { useGetPets } from "@/api/generated/pets/pets";
 
-console.log(pet.name); // "Fluffy"
+const { data: pets } = useGetPets(); // pets is automatically typed as Pet[]
 ```
 
-This means frontend components and hooks do not need to access `.data.data` manually.
+The generated client is configured via `frontend/src/api/orval-mutator.ts`. It uses our centralized Axios instance and automatically accounts for the data envelope unwrapping at both the runtime (via interceptors) and type level (via Orval transformers).
+
+### Automatic Unwrapping
+
+We use two mechanisms to simplify data access:
+
+1.  **Axios Interceptor**: Defined in `frontend/src/api/axios.ts`, it automatically unwraps the `data` key from the backend's JSON envelope.
+2.  **Orval Transformer**: Defined in `frontend/orval.config.ts`, it unwraps the `{ data: T }` type in the generated hooks, so callers receive the payload directly.
+
+Both work together to ensure that `const { data } = useGetPets()` gives you the actual list of pets, not the `{ data: pets }` structure.

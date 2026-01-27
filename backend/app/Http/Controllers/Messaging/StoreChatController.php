@@ -14,11 +14,43 @@ use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Enum;
+use OpenApi\Attributes as OA;
 
 class StoreChatController extends Controller
 {
     use ApiResponseTrait;
 
+    #[OA\Post(
+        path: '/api/msg/chats',
+        summary: 'Create or find a chat',
+        tags: ['Messaging'],
+        security: [['sanctum' => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['type'],
+                properties: [
+                    new OA\Property(property: 'type', type: 'string', enum: ['direct', 'group']),
+                    new OA\Property(property: 'recipient_id', type: 'integer', description: 'Required if type is direct'),
+                    new OA\Property(property: 'contextable_type', type: 'string', nullable: true),
+                    new OA\Property(property: 'contextable_id', type: 'integer', nullable: true),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Chat object',
+                content: new OA\JsonContent(
+                    type: 'object',
+                    properties: [new OA\Property(property: 'data', ref: '#/components/schemas/Chat')]
+                )
+            ),
+            new OA\Response(response: 201, description: 'Created successfully'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 422, description: 'Validation error'),
+        ]
+    )]
     public function __invoke(Request $request)
     {
         $user = $request->user();

@@ -39,7 +39,7 @@ use OpenApi\Attributes as OA;
     title: 'API Success Message Response',
     properties: [
         new OA\Property(property: 'success', type: 'boolean', example: true),
-        new OA\Property(property: 'data', type: 'null', nullable: true),
+        new OA\Property(property: 'data', type: 'string', nullable: true, example: null),
         new OA\Property(property: 'message', type: 'string', example: 'Operation successful'),
     ]
 )]

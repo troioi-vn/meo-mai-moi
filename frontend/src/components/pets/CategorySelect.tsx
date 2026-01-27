@@ -13,7 +13,8 @@ import {
 } from '@/components/ui/shadcn-io/tags'
 import { Badge } from '@/components/ui/badge'
 import type { Category } from '@/types/pet'
-import { getCategories, createCategory } from '@/api/categories'
+import { createCategory } from '@/api/categories'
+import { useGetCategories } from '@/api/generated/categories/categories'
 import { toast } from 'sonner'
 
 interface Props {
@@ -31,33 +32,14 @@ export const CategorySelect: React.FC<Props> = ({
   maxCategories = 10,
   disabled = false,
 }) => {
-  const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading] = useState(false)
+  const { data: categoriesResponse, isLoading: loading } = useGetCategories(
+    { pet_type_id: petTypeId as number },
+    { query: { enabled: !!petTypeId } }
+  )
+  const categories = (categoriesResponse || []) as Category[]
+
   const [searchValue, setSearchValue] = useState('')
   const [creating, setCreating] = useState(false)
-
-  // Load categories when pet type changes
-  const loadCategories = useCallback(async () => {
-    if (!petTypeId) {
-      setCategories([])
-      return
-    }
-
-    setLoading(true)
-    try {
-      const result = await getCategories({ pet_type_id: petTypeId })
-      setCategories(result)
-    } catch (err: unknown) {
-      console.error('Failed to load categories:', err)
-      toast.error('Failed to load categories')
-    } finally {
-      setLoading(false)
-    }
-  }, [petTypeId])
-
-  useEffect(() => {
-    void loadCategories()
-  }, [loadCategories])
 
   // Clear selected categories when pet type changes
   useEffect(() => {

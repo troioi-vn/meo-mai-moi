@@ -33,7 +33,7 @@ use OpenApi\Attributes as OA;
             content: new OA\JsonContent(
                 type: 'object',
                 properties: [
-                    new OA\Property(property: 'data', type: 'null', nullable: true),
+                    new OA\Property(property: 'data', type: 'string', nullable: true, example: null),
                     new OA\Property(property: 'message', type: 'string', example: 'Password updated successfully.'),
                 ]
             )

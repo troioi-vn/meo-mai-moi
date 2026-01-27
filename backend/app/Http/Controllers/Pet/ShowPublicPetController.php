@@ -18,6 +18,15 @@ use OpenApi\Attributes as OA;
     summary: 'Get viewable profile of a specific pet',
     description: 'Returns whitelisted fields for view. Accessible to: pet owner, users with viewer/owner PetRelationship, helpers involved in pending transfers, and anyone when pet is lost or has active placement requests.',
     tags: ['Pets'],
+    parameters: [
+        new OA\Parameter(
+            name: 'id',
+            description: 'The ID of the pet',
+            in: 'path',
+            required: true,
+            schema: new OA\Schema(type: 'integer')
+        ),
+    ],
     responses: [
         new OA\Response(
             response: 200,

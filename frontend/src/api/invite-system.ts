@@ -1,85 +1,57 @@
-import { api } from './axios'
-
-export interface PublicSettings {
-  invite_only_enabled: boolean
-}
-
-export interface WaitlistEntry {
-  email: string
-  status: string
-  created_at: string
-}
-
-export interface InvitationValidation {
-  valid: boolean
-  inviter: {
-    name: string
-  }
-  expires_at: string | null
-}
-
-export interface WaitlistCheckResult {
-  email: string
-  on_waitlist: boolean
-  is_registered: boolean
-  can_join_waitlist: boolean
-}
+import { getSettingsPublic as generatedGetSettingsPublic } from './generated/settings/settings'
+import {
+  postWaitlist as generatedPostWaitlist,
+  postWaitlistCheck as generatedPostWaitlistCheck,
+} from './generated/waitlist/waitlist'
+import {
+  getInvitations as generatedGetInvitations,
+  postInvitations as generatedPostInvitations,
+  deleteInvitationsId as generatedDeleteInvitationsId,
+  postInvitationsValidate as generatedPostInvitationsValidate,
+  getInvitationsStats as generatedGetInvitationsStats,
+} from './generated/invitations/invitations'
+import type {
+  GetSettingsPublic200 as PublicSettings,
+  GetInvitations200Item as Invitation,
+  GetInvitationsStats200 as InvitationStats,
+  PostInvitationsValidate200 as InvitationValidation,
+  PostWaitlistCheck200 as WaitlistCheckResult,
+  PostWaitlist201Data as WaitlistEntry,
+} from './generated/model'
 
 /**
  * Get public settings including invite-only status
  */
 export const getPublicSettings = async (): Promise<PublicSettings> => {
-  return await api.get<PublicSettings>('/settings/public')
+  return await generatedGetSettingsPublic()
 }
 
 /**
  * Join the waitlist
  */
 export const joinWaitlist = async (email: string): Promise<WaitlistEntry> => {
-  return await api.post<WaitlistEntry>('/waitlist', { email })
+  return await generatedPostWaitlist({ email })
 }
 
 /**
  * Check if email is on waitlist or registered
  */
 export const checkWaitlistStatus = async (email: string): Promise<WaitlistCheckResult> => {
-  return await api.post<WaitlistCheckResult>('/waitlist/check', { email })
+  return await generatedPostWaitlistCheck({ email })
 }
 
 /**
  * Validate an invitation code
  */
 export const validateInvitationCode = async (code: string): Promise<InvitationValidation> => {
-  return await api.post<InvitationValidation>('/invitations/validate', { code })
-}
-
-export interface Invitation {
-  id: number
-  code: string
-  status: 'pending' | 'accepted' | 'expired' | 'revoked'
-  expires_at: string | null
-  created_at: string
-  invitation_url: string
-  recipient: {
-    id: number
-    name: string
-    email: string
-  } | null
-}
-
-export interface InvitationStats {
-  total: number
-  pending: number
-  accepted: number
-  expired: number
-  revoked: number
+  return await generatedPostInvitationsValidate({ token: code })
 }
 
 /**
  * Get user's sent invitations
  */
 export const getUserInvitations = async (): Promise<Invitation[]> => {
-  return await api.get<Invitation[]>('/invitations')
+  return await generatedGetInvitations()
 }
 
 /**
@@ -87,19 +59,19 @@ export const getUserInvitations = async (): Promise<Invitation[]> => {
  */
 export const generateInvitation = async (expiresAt?: string): Promise<Invitation> => {
   const payload = expiresAt ? { expires_at: expiresAt } : {}
-  return await api.post<Invitation>('/invitations', payload)
+  return await generatedPostInvitations(payload)
 }
 
 /**
  * Revoke an invitation
  */
 export const revokeInvitation = async (id: number): Promise<void> => {
-  await api.delete(`/invitations/${String(id)}`)
+  await generatedDeleteInvitationsId(id)
 }
 
 /**
  * Get invitation statistics
  */
 export const getInvitationStats = async (): Promise<InvitationStats> => {
-  return await api.get<InvitationStats>('/invitations/stats')
+  return await generatedGetInvitationsStats()
 }

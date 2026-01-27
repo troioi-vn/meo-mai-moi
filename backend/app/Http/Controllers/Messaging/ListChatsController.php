@@ -8,11 +8,35 @@ use App\Http\Controllers\Controller;
 use App\Models\Chat;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 class ListChatsController extends Controller
 {
     use ApiResponseTrait;
 
+    #[OA\Get(
+        path: '/api/msg/chats',
+        summary: 'List all chats for authenticated user',
+        tags: ['Messaging'],
+        security: [['sanctum' => []]],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'List of chats',
+                content: new OA\JsonContent(
+                    type: 'object',
+                    properties: [
+                        new OA\Property(
+                            property: 'data',
+                            type: 'array',
+                            items: new OA\Items(ref: '#/components/schemas/Chat')
+                        ),
+                    ]
+                )
+            ),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+        ]
+    )]
     public function __invoke(Request $request)
     {
         $user = $request->user();

@@ -29,10 +29,15 @@ class JsonResponseEnvelopeTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+
     private PetType $petType;
+
     private Category $category;
+
     private City $city;
+
     private Pet $pet;
+
     private HelperProfile $helperProfile;
 
     protected function setUp(): void
@@ -131,6 +136,7 @@ class JsonResponseEnvelopeTest extends TestCase
         $endpoints = [
             ['GET', '/api/version', 200],
             ['GET', '/api/impersonation/status', 200],
+            ['POST', '/api/impersonation/leave', 400],
         ];
 
         $this->assertEnvelopedResponses($endpoints);
@@ -166,7 +172,7 @@ class JsonResponseEnvelopeTest extends TestCase
     /**
      * Helper method to assert that multiple endpoints return the standardized envelope.
      *
-     * @param array<array<string|int>> $endpoints Array of [METHOD, URI, expectedStatus]
+     * @param  array<array<string|int>>  $endpoints  Array of [METHOD, URI, expectedStatus]
      */
     private function assertEnvelopedResponses(array $endpoints): void
     {
@@ -177,15 +183,15 @@ class JsonResponseEnvelopeTest extends TestCase
             if ($response->status() !== $expectedStatus) {
                 $this->fail(
                     "Unexpected status for $method $uri. Expected: $expectedStatus, Got: {$response->status()}\n"
-                    ."Response: ".$response->getContent()
+                    .'Response: '.$response->getContent()
                 );
             }
 
             $json = $response->json();
-            if (! isset($json['success']) || ! isset($json['data'])) {
+            if (! array_key_exists('success', $json) || ! array_key_exists('data', $json)) {
                 $this->fail(
                     "Envelope missing for $method $uri. Expected keys: 'success' and 'data'\n"
-                    ."Response structure: ".json_encode(array_keys($json))
+                    .'Response structure: '.json_encode(array_keys($json))
                 );
             }
 

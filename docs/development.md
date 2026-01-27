@@ -56,14 +56,27 @@ This guide provides a comprehensive overview of how to get started with developm
     If you change the backend API (@OA annotations), you must regenerate the frontend types and hooks:
 
     ```bash
-    cd frontend
+    # Run from root to sync both backend and frontend
     bun run api:generate
     ```
 
-    This command:
-    1.  Fetches `storage/api-docs/api-docs.json` (ensure your backend is running or you've run `php artisan l5-swagger:generate`).
-    2.  Generates TypeScript interfaces and React Query hooks using **Orval**.
-    3.  Applies custom transformations (e.g., stripping `/api` prefix, unwrapping data envelopes).
+    Alternatively, run separately:
+
+    ```bash
+    cd backend && php artisan l5-swagger:generate
+    cd ../frontend && bun run api:generate
+    ```
+
+    **CI/Commit Guardrail**
+    To ensure your generated code matches the current backend attributes, run:
+
+    ```bash
+    bun run api:check
+    ```
+
+    (Exits with code 1 if there are uncommitted changes to generated files).
+
+    **Deployment**: The `./utils/deploy.sh` script automatically regenerates both the OpenAPI spec and the frontend client during the pre-build stage to ensure the production image is always consistent.
 
     **Usage**: Refer to `frontend/src/api/generated/` for the output. Prefer using the generated hooks (`useGetPets`, `usePostPets`, etc.) over manual Axios calls for full type safety.
 

@@ -30,6 +30,34 @@ _deploy_docker_build_docs() {
     note "✓ Docs built successfully"
 }
 
+_deploy_docker_generate_api() {
+    if ! command -v php >/dev/null 2>&1; then
+        note "⚠️  php not found; skipping OpenAPI spec generation."
+        return 0
+    fi
+    if ! command -v bun >/dev/null 2>&1; then
+        note "⚠️  bun not found; skipping Orval API client generation."
+        return 0
+    fi
+
+    note "Generating OpenAPI spec (L5-Swagger)..."
+    (
+        cd "$PROJECT_ROOT/backend" && php artisan l5-swagger:generate
+    ) || {
+        note "✗ Failed to generate OpenAPI spec. Aborting deployment to prevent invalid build."
+        return 1
+    }
+
+    note "Generating Orval API client..."
+    (
+        cd "$PROJECT_ROOT/frontend" && bun run api:generate
+    ) || {
+        note "✗ Failed to generate Orval API client. Aborting deployment to prevent type-mismatched build."
+        return 1
+    }
+    note "✓ API spec and client generated successfully"
+}
+
 _deploy_docker_ensure_dev_certs() {
     local app_env_val
     local enable_https_val
@@ -55,6 +83,7 @@ _deploy_docker_ensure_dev_certs() {
 deploy_docker_prepare() {
     local no_cache="${1:-false}"
     
+    _deploy_docker_generate_api
     _deploy_docker_build_docs
     _deploy_docker_ensure_dev_certs
     

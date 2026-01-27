@@ -29,6 +29,11 @@ RUN bun install --frozen-lockfile
 COPY ./frontend /app/frontend
 COPY ./backend /app/backend
 
+# Generate typesafe API client from committed OpenAPI spec
+# (required because frontend/src/api/generated is not committed)
+WORKDIR /app/frontend
+RUN bun run api:generate
+
 # Build the frontend SPA (copies to /app/backend/public/build via script)
 WORKDIR /app/frontend
 RUN bun run build:docker

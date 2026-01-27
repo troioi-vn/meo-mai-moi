@@ -62,7 +62,7 @@ function HomePage() {
     )
   }
 
-  return isAuthenticated ? <MyPetsPage /> : <MainPage />
+  return isAuthenticated ? <MyPetsPage /> : <Navigate to="/requests" replace />
 }
 
 export function AppRoutes() {

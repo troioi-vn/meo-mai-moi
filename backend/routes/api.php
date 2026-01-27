@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Admin\Users\BanUserController;
+use App\Http\Controllers\Admin\Users\UnbanUserController;
 use App\Http\Controllers\Auth\CheckEmailController;
 use App\Http\Controllers\Category\ListCategoriesController;
 use App\Http\Controllers\Category\StoreCategoryController;
@@ -45,9 +47,9 @@ use App\Http\Controllers\Messaging\MarkChatReadController;
 use App\Http\Controllers\Messaging\ShowChatController;
 use App\Http\Controllers\Messaging\StoreChatController;
 use App\Http\Controllers\Messaging\StoreMessageController;
+use App\Http\Controllers\Notification\ExecuteNotificationActionController;
 use App\Http\Controllers\Notification\GetUnifiedNotificationsController;
 use App\Http\Controllers\Notification\ListNotificationsController;
-use App\Http\Controllers\Notification\ExecuteNotificationActionController;
 use App\Http\Controllers\Notification\MarkAllNotificationsReadController;
 use App\Http\Controllers\Notification\MarkAsReadLegacyController;
 use App\Http\Controllers\Notification\MarkNotificationReadController;
@@ -78,8 +80,6 @@ use App\Http\Controllers\PlacementRequest\DeletePlacementRequestController;
 use App\Http\Controllers\PlacementRequest\FinalizePlacementRequestController;
 use App\Http\Controllers\PlacementRequest\GetPlacementRequestViewerContextController;
 use App\Http\Controllers\PlacementRequest\RejectPlacementRequestController;
-use App\Http\Controllers\Admin\Users\BanUserController;
-use App\Http\Controllers\Admin\Users\UnbanUserController;
 use App\Http\Controllers\PlacementRequest\ShowPlacementRequestController;
 use App\Http\Controllers\PlacementRequest\StorePlacementRequestController;
 use App\Http\Controllers\PlacementRequestResponse\AcceptPlacementRequestResponseController;

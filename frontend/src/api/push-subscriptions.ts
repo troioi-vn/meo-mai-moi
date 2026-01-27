@@ -21,13 +21,11 @@ export interface PushSubscriptionSummary {
 }
 
 export async function listPushSubscriptions() {
-  const res = await api.get<{ data: PushSubscriptionSummary[] }>('/push-subscriptions')
-  return res.data
+  return await api.get<PushSubscriptionSummary[]>('/push-subscriptions')
 }
 
 export async function upsertPushSubscription(payload: PushSubscriptionPayload) {
-  const res = await api.post<{ data: { id: number } }>('/push-subscriptions', payload)
-  return res.data
+  return await api.post<{ id: number }>('/push-subscriptions', payload)
 }
 
 export async function deletePushSubscription(endpoint: string) {

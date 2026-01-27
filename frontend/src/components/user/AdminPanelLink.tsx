@@ -15,24 +15,18 @@ interface UserData {
 }
 
 export function AdminPanelLink() {
-  const { data: userData } = useQuery<{ data: UserData }>({
+  const { data: userData } = useQuery<UserData>({
     queryKey: ['users', 'me'],
-    queryFn: async () => {
-      const response = await api.get<{ data: UserData }>('/users/me')
-      return response.data
-    },
+    queryFn: () => api.get<UserData>('/users/me'),
   })
 
   const { data: impersonationStatus } = useQuery<ImpersonationStatus>({
     queryKey: ['impersonation-status'],
-    queryFn: async () => {
-      const response = await api.get<ImpersonationStatus>('/impersonation/status')
-      return response.data
-    },
+    queryFn: () => api.get<ImpersonationStatus>('/impersonation/status'),
   })
 
   const canAccessAdmin =
-    userData?.data.can_access_admin || impersonationStatus?.impersonator?.can_access_admin
+    userData?.can_access_admin || impersonationStatus?.impersonator?.can_access_admin
 
   if (!canAccessAdmin) {
     return null

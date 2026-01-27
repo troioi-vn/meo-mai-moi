@@ -29,32 +29,28 @@ export interface WaitlistCheckResult {
  * Get public settings including invite-only status
  */
 export const getPublicSettings = async (): Promise<PublicSettings> => {
-  const { data } = await api.get<{ data: PublicSettings }>('/settings/public')
-  return data.data
+  return await api.get<PublicSettings>('/settings/public')
 }
 
 /**
  * Join the waitlist
  */
 export const joinWaitlist = async (email: string): Promise<WaitlistEntry> => {
-  const { data } = await api.post<{ data: WaitlistEntry }>('/waitlist', { email })
-  return data.data
+  return await api.post<WaitlistEntry>('/waitlist', { email })
 }
 
 /**
  * Check if email is on waitlist or registered
  */
 export const checkWaitlistStatus = async (email: string): Promise<WaitlistCheckResult> => {
-  const { data } = await api.post<{ data: WaitlistCheckResult }>('/waitlist/check', { email })
-  return data.data
+  return await api.post<WaitlistCheckResult>('/waitlist/check', { email })
 }
 
 /**
  * Validate an invitation code
  */
 export const validateInvitationCode = async (code: string): Promise<InvitationValidation> => {
-  const { data } = await api.post<{ data: InvitationValidation }>('/invitations/validate', { code })
-  return data.data
+  return await api.post<InvitationValidation>('/invitations/validate', { code })
 }
 
 export interface Invitation {
@@ -83,8 +79,7 @@ export interface InvitationStats {
  * Get user's sent invitations
  */
 export const getUserInvitations = async (): Promise<Invitation[]> => {
-  const { data } = await api.get<{ data: Invitation[] }>('/invitations')
-  return data.data
+  return await api.get<Invitation[]>('/invitations')
 }
 
 /**
@@ -92,8 +87,7 @@ export const getUserInvitations = async (): Promise<Invitation[]> => {
  */
 export const generateInvitation = async (expiresAt?: string): Promise<Invitation> => {
   const payload = expiresAt ? { expires_at: expiresAt } : {}
-  const { data } = await api.post<{ data: Invitation }>('/invitations', payload)
-  return data.data
+  return await api.post<Invitation>('/invitations', payload)
 }
 
 /**
@@ -107,6 +101,5 @@ export const revokeInvitation = async (id: number): Promise<void> => {
  * Get invitation statistics
  */
 export const getInvitationStats = async (): Promise<InvitationStats> => {
-  const { data } = await api.get<{ data: InvitationStats }>('/invitations/stats')
-  return data.data
+  return await api.get<InvitationStats>('/invitations/stats')
 }

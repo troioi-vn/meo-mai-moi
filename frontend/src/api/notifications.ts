@@ -23,10 +23,9 @@ export async function executeNotificationAction(
   notificationId: string,
   actionKey: string
 ): Promise<ExecuteNotificationActionResponse> {
-  const res = await api.post<ExecuteNotificationActionResponse>(
+  return await api.post<ExecuteNotificationActionResponse>(
     `/notifications/${notificationId}/actions/${actionKey}`
   )
-  return res.data
 }
 
 export interface UnifiedNotificationsResponse {
@@ -43,12 +42,10 @@ export async function getUnifiedNotifications(
 ): Promise<UnifiedNotificationsResponse> {
   const { limit = 20, includeBellNotifications = true } = params
 
-  const res = await api.get<UnifiedNotificationsResponse>(`/notifications/unified`, {
+  return await api.get<UnifiedNotificationsResponse>(`/notifications/unified`, {
     params: {
       limit,
       include_bell_notifications: includeBellNotifications ? 1 : 0,
     },
   })
-
-  return res.data
 }

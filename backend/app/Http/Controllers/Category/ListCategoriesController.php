@@ -34,10 +34,7 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 200,
             description: 'A list of categories',
-            content: new OA\JsonContent(
-                type: 'array',
-                items: new OA\Items(ref: '#/components/schemas/Category')
-            )
+            content: new OA\JsonContent(ref: '#/components/schemas/CategoryArrayResponse')
         ),
         new OA\Response(
             response: 422,

@@ -9,6 +9,5 @@ export interface PlacementTerms {
  * Get the placement terms and conditions document
  */
 export const getPlacementTerms = async (): Promise<PlacementTerms> => {
-  const { data } = await api.get<{ data: PlacementTerms }>('/legal/placement-terms')
-  return data.data
+  return await api.get<PlacementTerms>('/legal/placement-terms')
 }

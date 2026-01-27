@@ -51,6 +51,6 @@ class DeleteWeightController extends Controller
 
         $weight->delete();
 
-        return response()->json(['data' => true]);
+        return $this->sendSuccess(true);
     }
 }

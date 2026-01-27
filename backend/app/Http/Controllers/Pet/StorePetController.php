@@ -31,7 +31,7 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 201,
             description: 'Pet created successfully',
-            content: new OA\JsonContent(ref: '#/components/schemas/Pet')
+            content: new OA\JsonContent(ref: '#/components/schemas/PetResponse')
         ),
         new OA\Response(
             response: 422,

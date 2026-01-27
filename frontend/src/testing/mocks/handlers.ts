@@ -34,7 +34,10 @@ const userHandlers = [
 
   // Delete authenticated user's account
   http.delete('http://localhost:3000/api/users/me', () => {
-    return HttpResponse.json({ message: 'Account deleted successfully.' })
+    return HttpResponse.json({
+      data: null,
+      message: 'Account deleted successfully.',
+    })
   }),
 
   // Update authenticated user's password
@@ -84,14 +87,22 @@ const userHandlers = [
         { status: 422 }
       )
     }
-    return HttpResponse.json({ message: 'Password updated successfully.' }, { status: 200 })
+    return HttpResponse.json(
+      {
+        data: null,
+        message: 'Password updated successfully.',
+      },
+      { status: 200 }
+    )
   }),
 
   // Upload or update authenticated user's avatar
   http.post('http://localhost:3000/api/users/me/avatar', () => {
     return HttpResponse.json({
+      data: {
+        avatar_url: 'http://localhost:8000/storage/users/avatars/user_1_1678886400.png',
+      },
       message: 'Avatar uploaded successfully.',
-      avatar_url: 'http://localhost:8000/storage/users/avatars/user_1_1678886400.png',
     })
   }),
 

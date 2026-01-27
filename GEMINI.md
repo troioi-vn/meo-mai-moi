@@ -43,7 +43,8 @@ Meo Mai Moi is a comprehensive cat care management platform that helps cat owner
 ### Key Technical Decisions
 
 - **Authentication**: Session-based with Sanctum
-
+- **API Response Envelope**: Standardized `{ success, data, message }` format across all endpoints.
+- **Frontend API Client**: Axios with automatic unwrap interceptor (strips the top-level `data` key).
 - **File Storage**: Local storage under `storage/app/public`
 
 - **Quality Gates**: PHPStan Level 5, Deptrac architecture enforcement
@@ -75,8 +76,8 @@ Domain (Models, Enums)
 - Models are data containers with relationships
 
 - Policies use `$user->can(...)` for authorization
-
 - Use Spatie Permission as single source of truth for RBAC
+- **Standardized Responses**: All controllers use `ApiResponseTrait` for consistent JSON output.
 
 ### Frontend Architecture (React + TypeScript)
 

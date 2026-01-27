@@ -22,15 +22,7 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 200,
             description: "A list of the user's pets, organized by section",
-            content: new OA\JsonContent(
-                type: 'object',
-                properties: [
-                    new OA\Property(property: 'owned', type: 'array', items: new OA\Items(ref: '#/components/schemas/Pet')),
-                    new OA\Property(property: 'fostering_active', type: 'array', items: new OA\Items(ref: '#/components/schemas/Pet')),
-                    new OA\Property(property: 'fostering_past', type: 'array', items: new OA\Items(ref: '#/components/schemas/Pet')),
-                    new OA\Property(property: 'transferred_away', type: 'array', items: new OA\Items(ref: '#/components/schemas/Pet')),
-                ]
-            )
+            content: new OA\JsonContent(ref: '#/components/schemas/PetSectionsResponse')
         ),
         new OA\Response(
             response: 401,

@@ -15,10 +15,7 @@ import type {
  * Returns role-shaped data based on the viewer (owner/helper/admin/public)
  */
 export async function getPlacementRequest(id: number): Promise<PlacementRequestDetail> {
-  const { data } = await api.get<{ data: PlacementRequestDetail }>(
-    `/placement-requests/${String(id)}`
-  )
-  return data.data
+  return await api.get<PlacementRequestDetail>(`/placement-requests/${String(id)}`)
 }
 
 /**
@@ -28,10 +25,7 @@ export async function getPlacementRequest(id: number): Promise<PlacementRequestD
 export async function getPlacementRequestViewerContext(
   id: number
 ): Promise<PlacementRequestViewerContext> {
-  const { data } = await api.get<{ data: PlacementRequestViewerContext }>(
-    `/placement-requests/${String(id)}/me`
-  )
-  return data.data
+  return await api.get<PlacementRequestViewerContext>(`/placement-requests/${String(id)}/me`)
 }
 
 /**
@@ -58,10 +52,9 @@ export async function finalizePlacementRequest(id: number): Promise<void> {
 export async function getPlacementResponses(
   placementRequestId: number
 ): Promise<PlacementRequestResponse[]> {
-  const { data } = await api.get<{ data: PlacementRequestResponse[] }>(
+  return await api.get<PlacementRequestResponse[]>(
     `/placement-requests/${String(placementRequestId)}/responses`
   )
-  return data.data
 }
 
 /**
@@ -71,11 +64,10 @@ export async function submitPlacementResponse(
   placementRequestId: number,
   payload: { helper_profile_id?: number; message?: string }
 ): Promise<PlacementRequestResponse> {
-  const { data } = await api.post<{ data: PlacementRequestResponse }>(
+  return await api.post<PlacementRequestResponse>(
     `/placement-requests/${String(placementRequestId)}/responses`,
     payload
   )
-  return data.data
 }
 
 /**
@@ -84,10 +76,9 @@ export async function submitPlacementResponse(
 export async function acceptPlacementResponse(
   responseId: number
 ): Promise<PlacementRequestResponse> {
-  const { data } = await api.post<{ data: PlacementRequestResponse }>(
+  return await api.post<PlacementRequestResponse>(
     `/placement-responses/${String(responseId)}/accept`
   )
-  return data.data
 }
 
 /**
@@ -96,10 +87,9 @@ export async function acceptPlacementResponse(
 export async function rejectPlacementResponse(
   responseId: number
 ): Promise<PlacementRequestResponse> {
-  const { data } = await api.post<{ data: PlacementRequestResponse }>(
+  return await api.post<PlacementRequestResponse>(
     `/placement-responses/${String(responseId)}/reject`
   )
-  return data.data
 }
 
 /**
@@ -108,10 +98,9 @@ export async function rejectPlacementResponse(
 export async function cancelPlacementResponse(
   responseId: number
 ): Promise<PlacementRequestResponse> {
-  const { data } = await api.post<{ data: PlacementRequestResponse }>(
+  return await api.post<PlacementRequestResponse>(
     `/placement-responses/${String(responseId)}/cancel`
   )
-  return data.data
 }
 
 // ============================================================
@@ -123,20 +112,14 @@ export async function cancelPlacementResponse(
  * Only for permanent, foster_free, foster_paid request types
  */
 export async function confirmTransfer(transferId: number): Promise<TransferRequest> {
-  const { data } = await api.post<{ data: TransferRequest }>(
-    `/transfer-requests/${String(transferId)}/confirm`
-  )
-  return data.data
+  return await api.post<TransferRequest>(`/transfer-requests/${String(transferId)}/confirm`)
 }
 
 /**
  * Reject transfer (owner action - decides not to proceed with accepted response)
  */
 export async function rejectTransfer(transferId: number): Promise<TransferRequest> {
-  const { data } = await api.post<{ data: TransferRequest }>(
-    `/transfer-requests/${String(transferId)}/reject`
-  )
-  return data.data
+  return await api.post<TransferRequest>(`/transfer-requests/${String(transferId)}/reject`)
 }
 
 /**

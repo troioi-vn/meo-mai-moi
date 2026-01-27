@@ -12,24 +12,21 @@ import type {
  * Get all chats for the current user
  */
 export async function getChats(): Promise<Chat[]> {
-  const res = await api.get<{ data: Chat[] }>('/msg/chats')
-  return res.data.data
+  return await api.get<Chat[]>('/msg/chats')
 }
 
 /**
  * Create a new chat (direct message)
  */
 export async function createChat(payload: CreateChatPayload): Promise<Chat> {
-  const res = await api.post<{ data: Chat }>('/msg/chats', payload)
-  return res.data.data
+  return await api.post<Chat>('/msg/chats', payload)
 }
 
 /**
  * Get a specific chat
  */
 export async function getChat(chatId: number): Promise<Chat> {
-  const res = await api.get<{ data: Chat }>(`/msg/chats/${String(chatId)}`)
-  return res.data.data
+  return await api.get<Chat>(`/msg/chats/${String(chatId)}`)
 }
 
 /**
@@ -58,10 +55,9 @@ export async function getMessages(
   if (cursor) {
     params.cursor = cursor
   }
-  const res = await api.get<{ data: MessagesResponse }>(`/msg/chats/${String(chatId)}/messages`, {
+  return await api.get<MessagesResponse>(`/msg/chats/${String(chatId)}/messages`, {
     params,
   })
-  return res.data.data
 }
 
 /**
@@ -71,11 +67,7 @@ export async function sendMessage(
   chatId: number,
   payload: SendMessagePayload
 ): Promise<ChatMessage> {
-  const res = await api.post<{ data: ChatMessage }>(
-    `/msg/chats/${String(chatId)}/messages`,
-    payload
-  )
-  return res.data.data
+  return await api.post<ChatMessage>(`/msg/chats/${String(chatId)}/messages`, payload)
 }
 
 /**
@@ -89,8 +81,8 @@ export async function deleteMessage(messageId: number): Promise<void> {
  * Get unread message count (legacy endpoint)
  */
 export async function getUnreadChatsCount(): Promise<number> {
-  const res = await api.get<{ data: UnreadCountResponse }>('/msg/unread-count')
-  return res.data.data.unread_message_count
+  const res = await api.get<UnreadCountResponse>('/msg/unread-count')
+  return res.unread_message_count
 }
 
 /**

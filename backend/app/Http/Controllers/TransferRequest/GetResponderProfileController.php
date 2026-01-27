@@ -28,7 +28,12 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 200,
             description: "The responder's helper profile",
-            content: new OA\JsonContent(ref: '#/components/schemas/HelperProfile')
+            content: new OA\JsonContent(
+                type: 'object',
+                properties: [
+                    new OA\Property(property: 'data', ref: '#/components/schemas/HelperProfile'),
+                ]
+            )
         ),
         new OA\Response(response: 403, description: 'Forbidden'),
         new OA\Response(response: 404, description: 'Helper profile not found'),

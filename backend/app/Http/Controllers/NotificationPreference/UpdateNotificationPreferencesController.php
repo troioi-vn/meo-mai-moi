@@ -38,12 +38,7 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 200,
             description: 'OK',
-            content: new OA\JsonContent(
-                type: 'object',
-                properties: [
-                    new OA\Property(property: 'message', type: 'string'),
-                ]
-            )
+            content: new OA\JsonContent(ref: '#/components/schemas/ApiSuccessMessageResponse')
         ),
         new OA\Response(response: 422, description: 'Validation Error'),
     ]

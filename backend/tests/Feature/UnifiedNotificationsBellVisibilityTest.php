@@ -40,9 +40,9 @@ class UnifiedNotificationsBellVisibilityTest extends TestCase
         $res = $this->actingAs($user)->getJson('/api/notifications/unified');
 
         $res->assertOk();
-        $res->assertJsonPath('unread_bell_count', 1);
-        $res->assertJsonCount(1, 'bell_notifications');
-        $res->assertJsonPath('bell_notifications.0.title', 'In-app notification');
+        $res->assertJsonPath('data.unread_bell_count', 1);
+        $res->assertJsonCount(1, 'data.bell_notifications');
+        $res->assertJsonPath('data.bell_notifications.0.title', 'In-app notification');
     }
 
     #[Test]

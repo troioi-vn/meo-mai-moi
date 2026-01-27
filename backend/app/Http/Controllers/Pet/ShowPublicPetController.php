@@ -22,36 +22,7 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 200,
             description: 'The pet view profile',
-            content: new OA\JsonContent(
-                type: 'object',
-                properties: [
-                    new OA\Property(property: 'id', type: 'integer'),
-                    new OA\Property(property: 'name', type: 'string'),
-                    new OA\Property(property: 'sex', type: 'string'),
-                    new OA\Property(property: 'birthday_precision', type: 'string'),
-                    new OA\Property(property: 'birthday_year', type: 'integer', nullable: true),
-                    new OA\Property(property: 'birthday_month', type: 'integer', nullable: true),
-                    new OA\Property(property: 'birthday_day', type: 'integer', nullable: true),
-                    new OA\Property(property: 'country', type: 'string'),
-                    new OA\Property(property: 'state', type: 'string', nullable: true),
-                    new OA\Property(property: 'city', type: 'string', nullable: true),
-                    new OA\Property(property: 'description', type: 'string'),
-                    new OA\Property(property: 'status', type: 'string'),
-                    new OA\Property(property: 'pet_type_id', type: 'integer'),
-                    new OA\Property(property: 'photo_url', type: 'string', nullable: true),
-                    new OA\Property(property: 'photos', type: 'array', items: new OA\Items(type: 'object')),
-                    new OA\Property(property: 'pet_type', type: 'object'),
-                    new OA\Property(property: 'categories', type: 'array', items: new OA\Items(type: 'object')),
-                    new OA\Property(property: 'placement_requests', type: 'array', items: new OA\Items(type: 'object')),
-                    new OA\Property(
-                        property: 'viewer_permissions',
-                        type: 'object',
-                        properties: [
-                            new OA\Property(property: 'is_owner', type: 'boolean'),
-                        ]
-                    ),
-                ]
-            )
+            content: new OA\JsonContent(ref: '#/components/schemas/PublicPetResponse')
         ),
         new OA\Response(
             response: 403,

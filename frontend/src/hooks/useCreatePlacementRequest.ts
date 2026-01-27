@@ -16,8 +16,8 @@ export interface PlacementRequestPayload {
 const createPlacementRequest = async (
   payload: PlacementRequestPayload
 ): Promise<PlacementRequest> => {
-  const { data } = await api.post<{ data: PlacementRequest }>('/placement-requests', payload)
-  return data.data
+  const data = await api.post<PlacementRequest>('/placement-requests', payload)
+  return data
 }
 
 interface ApiError {

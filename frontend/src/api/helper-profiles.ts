@@ -1,31 +1,20 @@
 import { api } from './axios'
 import type { HelperProfile } from '../types/helper-profile'
 
-interface HelperProfileResponse {
-  data: HelperProfile
+export const getHelperProfiles = async (): Promise<HelperProfile[]> => {
+  return await api.get<HelperProfile[]>('/helper-profiles')
 }
 
-interface HelperProfilesResponse {
-  data: HelperProfile[]
+export const getHelperProfile = async (id: string): Promise<HelperProfile> => {
+  return await api.get<HelperProfile>(`/helper-profiles/${id}`)
 }
 
-export const getHelperProfiles = async (): Promise<HelperProfilesResponse> => {
-  const response = await api.get<HelperProfilesResponse>('/helper-profiles')
-  return response.data
-}
-
-export const getHelperProfile = async (id: string): Promise<HelperProfileResponse> => {
-  const response = await api.get<HelperProfileResponse>(`/helper-profiles/${id}`)
-  return response.data
-}
-
-export const createHelperProfile = async (data: FormData): Promise<HelperProfileResponse> => {
-  const response = await api.post<HelperProfileResponse>('/helper-profiles', data, {
+export const createHelperProfile = async (data: FormData): Promise<HelperProfile> => {
+  return await api.post<HelperProfile>('/helper-profiles', data, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
   })
-  return response.data
 }
 
 export const updateHelperProfile = async ({
@@ -34,27 +23,24 @@ export const updateHelperProfile = async ({
 }: {
   id: string | number
   data: FormData
-}): Promise<HelperProfileResponse> => {
-  const response = await api.post<HelperProfileResponse>(`/helper-profiles/${String(id)}`, data, {
+}): Promise<HelperProfile> => {
+  return await api.post<HelperProfile>(`/helper-profiles/${String(id)}`, data, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
   })
-  return response.data
 }
 
 export const deleteHelperProfile = async (id: string): Promise<void> => {
   await api.delete(`/helper-profiles/${id}`)
 }
 
-export const archiveHelperProfile = async (id: string): Promise<HelperProfileResponse> => {
-  const response = await api.post<HelperProfileResponse>(`/helper-profiles/${id}/archive`)
-  return response.data
+export const archiveHelperProfile = async (id: string): Promise<HelperProfile> => {
+  return await api.post<HelperProfile>(`/helper-profiles/${id}/archive`)
 }
 
-export const restoreHelperProfile = async (id: string): Promise<HelperProfileResponse> => {
-  const response = await api.post<HelperProfileResponse>(`/helper-profiles/${id}/restore`)
-  return response.data
+export const restoreHelperProfile = async (id: string): Promise<HelperProfile> => {
+  return await api.post<HelperProfile>(`/helper-profiles/${id}/restore`)
 }
 
 export const deleteHelperProfilePhoto = async (
@@ -68,8 +54,7 @@ export const deleteHelperProfilePhoto = async (
 export const getResponderHelperProfile = async (
   transferRequestId: number
 ): Promise<HelperProfile> => {
-  const res = await api.get<{ data: HelperProfile }>(
+  return await api.get<HelperProfile>(
     `/transfer-requests/${String(transferRequestId)}/responder-profile`
   )
-  return res.data.data
 }

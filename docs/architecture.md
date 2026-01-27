@@ -91,6 +91,14 @@ Domain (Models, Enums)
 - Models are data containers with relationships
 - Policies use `$user->can(...)` for authorization
 - Use Spatie Permission as single source of truth for RBAC
+- **API Responses**: All controllers use `ApiResponseTrait` to return a standardized JSON envelope:
+  ```json
+  {
+    "success": true,
+    "data": { ... },
+    "message": "Operation successful"
+  }
+  ```
 
 ### Frontend Architecture (React + TypeScript)
 

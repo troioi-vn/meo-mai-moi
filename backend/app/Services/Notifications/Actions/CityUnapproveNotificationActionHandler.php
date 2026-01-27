@@ -64,7 +64,7 @@ final class CityUnapproveNotificationActionHandler implements NotificationAction
 
     public function execute(Notification $notification, User $actor): NotificationActionResult
     {
-        if (!$actor->hasRole(['admin', 'super_admin'])) {
+        if (! $actor->hasRole(['admin', 'super_admin'])) {
             throw new AuthorizationException('Forbidden');
         }
 

@@ -31,7 +31,9 @@ use OpenApi\Attributes as OA;
             response: 200,
             description: 'Password updated successfully',
             content: new OA\JsonContent(
+                type: 'object',
                 properties: [
+                    new OA\Property(property: 'data', type: 'null', nullable: true),
                     new OA\Property(property: 'message', type: 'string', example: 'Password updated successfully.'),
                 ]
             )
@@ -63,6 +65,6 @@ class UpdatePasswordController extends Controller
         $user->password = Hash::make($request->new_password);
         $user->save();
 
-        return $this->sendSuccess(null, 204);
+        return $this->sendSuccessWithMeta(null, 'Password updated successfully.');
     }
 }

@@ -6,6 +6,11 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **API Standardization Framework**: Implemented a unified JSON response envelope `{ success, data, message, error }` across all backend controllers. This includes a robust `ApiResponseTrait` for consistent output and centralized OpenAPI schema definitions in `ResponseSchemas.php`.
+
+### Changed
+
+- **Frontend API Consumption**: Updated the Axios interceptor to automatically "unwrap" the backend's data envelope. Components now receive the direct payload (e.g., as `const user = await api.get('/user')`) instead of having to manually navigate `.data.data`.
 - **Admin User Ban Feature**: Added ability for admins to ban users, putting them into read-only mode. Banned users can view content but cannot perform write actions (posting, editing, messaging). Includes database fields (`is_banned`, `banned_at`, `ban_reason`), middleware enforcement, Filament admin UI actions, and frontend read-only banner. Admins cannot ban other admins.
 
 - **Real-time Type Safety**: Added custom TypeScript definitions for `laravel-echo` and integrated `@types/pusher-js` to improve developer experience and catch potential errors in messaging and notification hooks.

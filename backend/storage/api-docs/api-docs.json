@@ -50,13 +50,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "exists": {
-                                            "type": "boolean",
-                                            "example": true
-                                        }
-                                    },
-                                    "type": "object"
+                                    "$ref": "#/components/schemas/EmailExistsResponse"
                                 }
                             }
                         }
@@ -126,29 +120,49 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "We have sent you verification email, please check your inbox and click the link to verify your email address."
-                                        },
-                                        "access_token": {
-                                            "type": "string",
-                                            "example": "2|aBcDeFgHiJkLmNoPqRsTuVwXyZ"
-                                        },
-                                        "token_type": {
-                                            "type": "string",
-                                            "example": "Bearer"
-                                        },
-                                        "email_verified": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "email_sent": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "requires_verification": {
-                                            "type": "boolean",
-                                            "example": true
+                                        "data": {
+                                            "properties": {
+                                                "user": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 123
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "example": "John Doe"
+                                                        },
+                                                        "email": {
+                                                            "type": "string",
+                                                            "format": "email",
+                                                            "example": "john.doe@example.com"
+                                                        },
+                                                        "email_verified_at": {
+                                                            "type": "string",
+                                                            "example": "2026-01-27T12:34:56.000000Z",
+                                                            "nullable": true
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "email_verified": {
+                                                    "type": "boolean",
+                                                    "example": false
+                                                },
+                                                "email_sent": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "requires_verification": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "We've sent a verification email to john.doe@example.com. Please check your inbox and click the link to verify your email address."
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -198,10 +212,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Category"
-                                    }
+                                    "$ref": "#/components/schemas/CategoryArrayResponse"
                                 }
                             }
                         }
@@ -253,7 +264,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Category"
+                                    "$ref": "#/components/schemas/CategoryResponse"
                                 }
                             }
                         }
@@ -286,25 +297,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "enabled": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "provider": {
-                                            "type": "string",
-                                            "example": "smtp"
-                                        },
-                                        "from_address": {
-                                            "type": "string",
-                                            "example": "noreply@example.com"
-                                        },
-                                        "status": {
-                                            "type": "string",
-                                            "example": "active"
-                                        }
-                                    },
-                                    "type": "object"
+                                    "$ref": "#/components/schemas/EmailConfigurationStatusResponse"
                                 }
                             }
                         }
@@ -331,17 +324,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "verified": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "email": {
-                                            "type": "string",
-                                            "example": "user@example.com"
-                                        }
-                                    },
-                                    "type": "object"
+                                    "$ref": "#/components/schemas/VerificationStatusResponse"
                                 }
                             }
                         }
@@ -368,13 +351,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Verification email sent"
-                                        }
-                                    },
-                                    "type": "object"
+                                    "$ref": "#/components/schemas/VerificationNotificationResponse"
                                 }
                             }
                         }
@@ -384,6 +361,9 @@
                     },
                     "429": {
                         "description": "Too many requests"
+                    },
+                    "503": {
+                        "description": "Email system not configured"
                     }
                 },
                 "security": [
@@ -445,13 +425,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Email verified successfully"
-                                        }
-                                    },
-                                    "type": "object"
+                                    "$ref": "#/components/schemas/EmailVerificationResponse"
                                 }
                             }
                         }
@@ -489,16 +463,30 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/HelperProfile"
+                                    "$ref": "#/components/schemas/HelperProfileResponse"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Cannot archive profile with associated placement requests"
+                        "description": "Cannot archive profile with associated placement requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
                     },
                     "403": {
-                        "description": "Unauthorized"
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -527,7 +515,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/HelperProfile"
+                                    "$ref": "#/components/schemas/HelperProfileResponse"
                                 }
                             }
                         }
@@ -570,7 +558,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/HelperProfile"
+                                    "$ref": "#/components/schemas/HelperProfileResponse"
                                 }
                             }
                         }
@@ -617,7 +605,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/HelperProfile"
+                                    "$ref": "#/components/schemas/HelperProfileResponse"
                                 }
                             }
                         }
@@ -653,10 +641,24 @@
                         "description": "Helper profile deleted successfully"
                     },
                     "400": {
-                        "description": "Cannot delete profile with associated placement requests"
+                        "description": "Cannot delete profile with associated placement requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
                     },
                     "403": {
-                        "description": "Unauthorized"
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -674,10 +676,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/HelperProfile"
-                                    }
+                                    "$ref": "#/components/schemas/HelperProfileArrayResponse"
                                 }
                             }
                         }
@@ -706,7 +705,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/HelperProfile"
+                                    "$ref": "#/components/schemas/HelperProfileResponse"
                                 }
                             }
                         }
@@ -741,15 +740,84 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/HelperProfile"
+                                    "$ref": "#/components/schemas/HelperProfileResponse"
                                 }
                             }
                         }
                     },
                     "403": {
-                        "description": "Unauthorized"
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
                     }
                 }
+            }
+        },
+        "/api/impersonation/status": {
+            "get": {
+                "tags": [
+                    "Impersonation"
+                ],
+                "summary": "Get current impersonation status",
+                "operationId": "4443df78f0f2bb3773b20058ffa82ee8",
+                "responses": {
+                    "200": {
+                        "description": "Current impersonation status",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ImpersonationStatusResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/impersonation/leave": {
+            "post": {
+                "tags": [
+                    "Impersonation"
+                ],
+                "summary": "Stop impersonating a user",
+                "operationId": "7b4957c0fc991b57fb3af82e14293a9d",
+                "responses": {
+                    "200": {
+                        "description": "Impersonation ended",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiSuccessMessageResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Not impersonating",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorMessageResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             }
         },
         "/api/invitations/{id}": {
@@ -777,13 +845,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Invitation revoked successfully"
-                                        }
-                                    },
-                                    "type": "object"
+                                    "$ref": "#/components/schemas/ApiEmptyDataResponse"
                                 }
                             }
                         }
@@ -793,13 +855,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Invitation not found or cannot be revoked"
-                                        }
-                                    },
-                                    "type": "object"
+                                    "$ref": "#/components/schemas/ApiErrorMessageResponse"
                                 }
                             }
                         }
@@ -1016,13 +1072,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Placement terms not found"
-                                        }
-                                    },
-                                    "type": "object"
+                                    "$ref": "#/components/schemas/ApiErrorMessageResponse"
                                 }
                             }
                         }
@@ -1993,6 +2043,53 @@
                 ]
             }
         },
+        "/api/notifications/unified": {
+            "get": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Get unified notifications status",
+                "description": "Get bell notifications, unread bell count, and unread message count in a single request.",
+                "operationId": "40acf5af86361681d2b439875b0297f7",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Number of bell notifications to return",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "include_bell_notifications",
+                        "in": "query",
+                        "description": "Whether to include the bell notifications list",
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Unified notifications status",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UnifiedNotificationsResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/notifications": {
             "get": {
                 "tags": [
@@ -2233,12 +2330,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "type": "object"
+                                    "$ref": "#/components/schemas/ApiSuccessMessageResponse"
                                 }
                             }
                         }
@@ -2290,13 +2382,18 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "valid": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "email": {
-                                            "type": "string",
-                                            "example": "user@example.com"
+                                        "data": {
+                                            "properties": {
+                                                "valid": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "user@example.com"
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -2334,7 +2431,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Pet"
+                                    "$ref": "#/components/schemas/PetResponse"
                                 }
                             }
                         }
@@ -2377,7 +2474,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Pet"
+                                    "$ref": "#/components/schemas/PetResponse"
                                 }
                             }
                         }
@@ -2463,10 +2560,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Pet"
-                                    }
+                                    "$ref": "#/components/schemas/PetArrayResponse"
                                 }
                             }
                         }
@@ -2487,10 +2581,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Pet"
-                                    }
+                                    "$ref": "#/components/schemas/PetArrayResponse"
                                 }
                             }
                         }
@@ -2519,33 +2610,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "owned": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Pet"
-                                            }
-                                        },
-                                        "fostering_active": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Pet"
-                                            }
-                                        },
-                                        "fostering_past": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Pet"
-                                            }
-                                        },
-                                        "transferred_away": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Pet"
-                                            }
-                                        }
-                                    },
-                                    "type": "object"
+                                    "$ref": "#/components/schemas/PetSectionsResponse"
                                 }
                             }
                         }
@@ -2574,28 +2639,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "properties": {
-                                            "id": {
-                                                "type": "integer",
-                                                "example": 1
-                                            },
-                                            "name": {
-                                                "type": "string",
-                                                "example": "Cat"
-                                            },
-                                            "slug": {
-                                                "type": "string",
-                                                "example": "cat"
-                                            },
-                                            "description": {
-                                                "type": "string",
-                                                "example": "Feline companions"
-                                            }
-                                        },
-                                        "type": "object"
-                                    }
+                                    "$ref": "#/components/schemas/PetTypeArrayResponse"
                                 }
                             }
                         }
@@ -2616,10 +2660,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Pet"
-                                    }
+                                    "$ref": "#/components/schemas/PetArrayResponse"
                                 }
                             }
                         }
@@ -2641,86 +2682,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        },
-                                        "sex": {
-                                            "type": "string"
-                                        },
-                                        "birthday_precision": {
-                                            "type": "string"
-                                        },
-                                        "birthday_year": {
-                                            "type": "integer",
-                                            "nullable": true
-                                        },
-                                        "birthday_month": {
-                                            "type": "integer",
-                                            "nullable": true
-                                        },
-                                        "birthday_day": {
-                                            "type": "integer",
-                                            "nullable": true
-                                        },
-                                        "country": {
-                                            "type": "string"
-                                        },
-                                        "state": {
-                                            "type": "string",
-                                            "nullable": true
-                                        },
-                                        "city": {
-                                            "type": "string",
-                                            "nullable": true
-                                        },
-                                        "description": {
-                                            "type": "string"
-                                        },
-                                        "status": {
-                                            "type": "string"
-                                        },
-                                        "pet_type_id": {
-                                            "type": "integer"
-                                        },
-                                        "photo_url": {
-                                            "type": "string",
-                                            "nullable": true
-                                        },
-                                        "photos": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object"
-                                            }
-                                        },
-                                        "pet_type": {
-                                            "type": "object"
-                                        },
-                                        "categories": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object"
-                                            }
-                                        },
-                                        "placement_requests": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object"
-                                            }
-                                        },
-                                        "viewer_permissions": {
-                                            "properties": {
-                                                "is_owner": {
-                                                    "type": "boolean"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
+                                    "$ref": "#/components/schemas/PublicPetResponse"
                                 }
                             }
                         }
@@ -2757,7 +2719,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Pet"
+                                    "$ref": "#/components/schemas/PetResponse"
                                 }
                             }
                         }
@@ -2828,7 +2790,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Pet"
+                                    "$ref": "#/components/schemas/PetResponse"
                                 }
                             }
                         }
@@ -3404,7 +3366,12 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PlacementRequest"
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/PlacementRequest"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -3445,7 +3412,12 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PlacementRequest"
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/PlacementRequest"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -3514,7 +3486,12 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PlacementRequest"
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/PlacementRequest"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -3559,33 +3536,38 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "viewer_role": {
-                                            "type": "string",
-                                            "enum": [
-                                                "owner",
-                                                "helper",
-                                                "admin",
-                                                "public"
-                                            ]
-                                        },
-                                        "my_response": {
-                                            "type": "object",
-                                            "nullable": true
-                                        },
-                                        "my_response_id": {
-                                            "type": "integer",
-                                            "nullable": true
-                                        },
-                                        "my_transfer": {
-                                            "type": "object",
-                                            "nullable": true
-                                        },
-                                        "available_actions": {
+                                        "data": {
+                                            "properties": {
+                                                "viewer_role": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "owner",
+                                                        "helper",
+                                                        "admin",
+                                                        "public"
+                                                    ]
+                                                },
+                                                "my_response": {
+                                                    "type": "object",
+                                                    "nullable": true
+                                                },
+                                                "my_response_id": {
+                                                    "type": "integer",
+                                                    "nullable": true
+                                                },
+                                                "my_transfer": {
+                                                    "type": "object",
+                                                    "nullable": true
+                                                },
+                                                "available_actions": {
+                                                    "type": "object"
+                                                },
+                                                "chat_id": {
+                                                    "type": "integer",
+                                                    "nullable": true
+                                                }
+                                            },
                                             "type": "object"
-                                        },
-                                        "chat_id": {
-                                            "type": "integer",
-                                            "nullable": true
                                         }
                                     },
                                     "type": "object"
@@ -3634,7 +3616,12 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PlacementRequest"
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/PlacementRequest"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -4118,7 +4105,12 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/TransferRequest"
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/TransferRequest"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -4221,7 +4213,12 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/HelperProfile"
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/HelperProfile"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -4264,7 +4261,12 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/TransferRequest"
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/TransferRequest"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -4284,6 +4286,63 @@
                         "sanctum": []
                     }
                 ]
+            }
+        },
+        "/api/unsubscribe/process": {
+            "post": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Process an unsubscribe request",
+                "operationId": "2c2386c094cbe616e508b25e17bd4b0e",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "token",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Unsubscribed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiSuccessMessageResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid or expired token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorMessageResponse"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         "/api/users/me": {
@@ -4356,7 +4415,12 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/User"
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -4422,8 +4486,25 @@
                     }
                 },
                 "responses": {
-                    "204": {
-                        "description": "Account deleted successfully"
+                    "200": {
+                        "description": "Account deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "null",
+                                            "nullable": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Account deleted successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "422": {
                         "description": "Validation error",
@@ -4491,13 +4572,25 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Avatar uploaded successfully."
-                                        },
-                                        "avatar_url": {
-                                            "type": "string",
-                                            "example": "http://localhost:8000/storage/users/avatars/user_1_1678886400.png"
+                                        "data": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Avatar uploaded successfully"
+                                                },
+                                                "user": {
+                                                    "$ref": "#/components/schemas/User"
+                                                },
+                                                "avatar_url": {
+                                                    "type": "string",
+                                                    "example": "http://localhost:8000/storage/users/avatars/user_1_1678886400.png"
+                                                },
+                                                "media_count": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -4609,6 +4702,10 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "data": {
+                                            "type": "null",
+                                            "nullable": true
+                                        },
                                         "message": {
                                             "type": "string",
                                             "example": "Password updated successfully."
@@ -5127,13 +5224,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "version": {
-                                            "type": "string",
-                                            "example": "v0.4.0"
-                                        }
-                                    },
-                                    "type": "object"
+                                    "$ref": "#/components/schemas/VersionResponse"
                                 }
                             }
                         }
@@ -5726,6 +5817,70 @@
                     },
                     "deleted_at": {
                         "description": "Timestamp when the profile was deleted",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "AppNotification": {
+                "title": "App Notification",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "level": {
+                        "type": "string",
+                        "example": "info"
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "New notification"
+                    },
+                    "body": {
+                        "type": "string",
+                        "example": "You have a new notification"
+                    },
+                    "url": {
+                        "type": "string",
+                        "example": "/pets/1",
+                        "nullable": true
+                    },
+                    "actions": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "example": "mark_as_read"
+                                },
+                                "label": {
+                                    "type": "string",
+                                    "example": "Mark as read"
+                                },
+                                "method": {
+                                    "type": "string",
+                                    "example": "POST"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "example": "/api/notifications/1/read"
+                                },
+                                "style": {
+                                    "type": "string",
+                                    "example": "primary"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "read_at": {
                         "type": "string",
                         "format": "date-time",
                         "nullable": true
@@ -6348,6 +6503,567 @@
                 },
                 "type": "object"
             },
+            "ApiErrorResponse": {
+                "title": "API Error Response",
+                "properties": {
+                    "error": {
+                        "description": "These schemas provide standard envelopes for API responses.\nSince OpenAPI 3.0 does not support generics, we define common response shapes here.",
+                        "type": "string",
+                        "example": "Something went wrong"
+                    }
+                },
+                "type": "object"
+            },
+            "ApiErrorMessageResponse": {
+                "title": "API Error Message Response",
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Something went wrong"
+                    },
+                    "error": {
+                        "type": "string",
+                        "example": "Something went wrong"
+                    }
+                },
+                "type": "object"
+            },
+            "ApiMessageResponse": {
+                "title": "API Message Response",
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Operation successful"
+                    }
+                },
+                "type": "object"
+            },
+            "ApiSuccessMessageResponse": {
+                "title": "API Success Message Response",
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "data": {
+                        "type": "null",
+                        "nullable": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Operation successful"
+                    }
+                },
+                "type": "object"
+            },
+            "ApiEmptyDataResponse": {
+                "title": "API Empty Data Response",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "PetResponse": {
+                "title": "Pet Response",
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/Pet"
+                    }
+                },
+                "type": "object"
+            },
+            "PetTypeArrayResponse": {
+                "title": "Pet Type Array Response",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "id": {
+                                    "type": "integer",
+                                    "example": 1
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "example": "Cat"
+                                },
+                                "slug": {
+                                    "type": "string",
+                                    "example": "cat"
+                                },
+                                "description": {
+                                    "type": "string",
+                                    "example": "Feline companions"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "PetArrayResponse": {
+                "title": "Pet Array Response",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Pet"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "PetSectionsResponse": {
+                "title": "Pet Sections Response",
+                "properties": {
+                    "data": {
+                        "properties": {
+                            "owned": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/Pet"
+                                }
+                            },
+                            "fostering_active": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/Pet"
+                                }
+                            },
+                            "fostering_past": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/Pet"
+                                }
+                            },
+                            "transferred_away": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/Pet"
+                                }
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "PublicPetResponse": {
+                "title": "Public Pet Response",
+                "properties": {
+                    "data": {
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "sex": {
+                                "type": "string"
+                            },
+                            "birthday_precision": {
+                                "type": "string"
+                            },
+                            "birthday_year": {
+                                "type": "integer",
+                                "nullable": true
+                            },
+                            "birthday_month": {
+                                "type": "integer",
+                                "nullable": true
+                            },
+                            "birthday_day": {
+                                "type": "integer",
+                                "nullable": true
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string",
+                                "nullable": true
+                            },
+                            "city": {
+                                "type": "string",
+                                "nullable": true
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "pet_type_id": {
+                                "type": "integer"
+                            },
+                            "photo_url": {
+                                "type": "string",
+                                "nullable": true
+                            },
+                            "photos": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object"
+                                }
+                            },
+                            "pet_type": {
+                                "type": "object"
+                            },
+                            "categories": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object"
+                                }
+                            },
+                            "placement_requests": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object"
+                                }
+                            },
+                            "viewer_permissions": {
+                                "properties": {
+                                    "is_owner": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "UserResponse": {
+                "title": "User Response",
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/User"
+                    }
+                },
+                "type": "object"
+            },
+            "CategoryArrayResponse": {
+                "title": "Category Array Response",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Category"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "CategoryResponse": {
+                "title": "Category Response",
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/Category"
+                    }
+                },
+                "type": "object"
+            },
+            "HelperProfileResponse": {
+                "title": "Helper Profile Response",
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/HelperProfile"
+                    }
+                },
+                "type": "object"
+            },
+            "HelperProfileArrayResponse": {
+                "title": "Helper Profile Array Response",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/HelperProfile"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "PlacementRequestResponse_Schema": {
+                "title": "Placement Request Response Envelope",
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/PlacementRequest"
+                    }
+                },
+                "type": "object"
+            },
+            "TransferRequestResponse": {
+                "title": "Transfer Request Response",
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/TransferRequest"
+                    }
+                },
+                "type": "object"
+            },
+            "MessageResponse": {
+                "title": "Message Response",
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/Message"
+                    }
+                },
+                "type": "object"
+            },
+            "MessageArrayResponse": {
+                "title": "Message Array Response",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Message"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "WeightHistoryArrayResponse": {
+                "title": "Weight History Array Response",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/WeightHistory"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "MedicalNoteArrayResponse": {
+                "title": "Medical Note Array Response",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MedicalNote"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "VaccinationRecordArrayResponse": {
+                "title": "Vaccination Record Array Response",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/VaccinationRecord"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "EmailExistsResponse": {
+                "title": "Email Exists Response",
+                "properties": {
+                    "data": {
+                        "properties": {
+                            "exists": {
+                                "type": "boolean",
+                                "example": true
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "VerificationStatusResponse": {
+                "title": "Verification Status Response",
+                "properties": {
+                    "data": {
+                        "properties": {
+                            "verified": {
+                                "type": "boolean",
+                                "example": true
+                            },
+                            "email": {
+                                "type": "string",
+                                "example": "user@example.com"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "EmailConfigurationStatusResponse": {
+                "title": "Email Configuration Status Response",
+                "properties": {
+                    "data": {
+                        "properties": {
+                            "enabled": {
+                                "type": "boolean",
+                                "example": true
+                            },
+                            "provider": {
+                                "type": "string",
+                                "example": "smtp",
+                                "nullable": true
+                            },
+                            "from_address": {
+                                "type": "string",
+                                "example": "noreply@example.com",
+                                "nullable": true
+                            },
+                            "status": {
+                                "type": "string",
+                                "example": "active"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "VerificationNotificationResponse": {
+                "title": "Verification Notification Response",
+                "properties": {
+                    "data": {
+                        "properties": {
+                            "message": {
+                                "type": "string",
+                                "example": "Verification email sent"
+                            },
+                            "email_sent": {
+                                "type": "boolean",
+                                "example": true
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "EmailVerificationResponse": {
+                "title": "Email Verification Response",
+                "properties": {
+                    "data": {
+                        "properties": {
+                            "message": {
+                                "type": "string",
+                                "example": "Email verified successfully"
+                            },
+                            "verified": {
+                                "type": "boolean",
+                                "example": true
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "VersionResponse": {
+                "title": "Version Response",
+                "properties": {
+                    "data": {
+                        "properties": {
+                            "version": {
+                                "type": "string",
+                                "example": "v1.0.0"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "ImpersonationStatusResponse": {
+                "title": "Impersonation Status Response",
+                "properties": {
+                    "data": {
+                        "properties": {
+                            "is_impersonating": {
+                                "type": "boolean",
+                                "example": true
+                            },
+                            "impersonator": {
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Admin User"
+                                    },
+                                    "can_access_admin": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object",
+                                "nullable": true
+                            },
+                            "impersonated_user": {
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Impersonated User"
+                                    }
+                                },
+                                "type": "object",
+                                "nullable": true
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "UnifiedNotificationsResponse": {
+                "title": "Unified Notifications Response",
+                "properties": {
+                    "data": {
+                        "properties": {
+                            "bell_notifications": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/AppNotification"
+                                }
+                            },
+                            "unread_bell_count": {
+                                "type": "integer",
+                                "example": 5
+                            },
+                            "unread_message_count": {
+                                "type": "integer",
+                                "example": 2
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
             "VaccinationRecord": {
                 "title": "VaccinationRecord",
                 "description": "Vaccination record model",
@@ -6417,6 +7133,10 @@
         {
             "name": "Helper Profiles",
             "description": "Helper Profiles"
+        },
+        {
+            "name": "Impersonation",
+            "description": "Impersonation"
         },
         {
             "name": "Invitations",

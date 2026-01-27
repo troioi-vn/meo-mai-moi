@@ -42,7 +42,13 @@ api.interceptors.request.use(
 )
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Standardize: unwrap the "data" envelope for consistent handling
+    if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+      return response.data.data
+    }
+    return response.data
+  },
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       unauthorizedHandler?.()
@@ -61,7 +67,13 @@ authApi.interceptors.request.use(
 )
 
 authApi.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Standardize: unwrap the "data" envelope for consistent handling
+    if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+      return response.data.data
+    }
+    return response.data
+  },
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       unauthorizedHandler?.()

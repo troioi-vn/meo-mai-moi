@@ -19,11 +19,9 @@ export const getCities = async (params: ListCitiesParams): Promise<City[]> => {
     searchParams.append('search', params.search)
   }
 
-  const response = await api.get<{ data: City[] }>(`/cities?${searchParams.toString()}`)
-  return response.data.data
+  return await api.get<City[]>(`/cities?${searchParams.toString()}`)
 }
 
 export const createCity = async (payload: CreateCityPayload): Promise<City> => {
-  const response = await api.post<{ data: City }>('/cities', payload)
-  return response.data.data
+  return await api.post<City>('/cities', payload)
 }

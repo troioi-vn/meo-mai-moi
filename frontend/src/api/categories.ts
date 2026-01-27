@@ -22,14 +22,13 @@ export const getCategories = async (params: ListCategoriesParams): Promise<Categ
     searchParams.append('search', params.search)
   }
 
-  const response = await api.get<{ data: Category[] }>(`/categories?${searchParams.toString()}`)
-  return response.data.data
+  const response = await api.get<Category[]>(`/categories?${searchParams.toString()}`)
+  return response
 }
 
 /**
  * Create a new category
  */
 export const createCategory = async (data: CreateCategoryPayload): Promise<Category> => {
-  const response = await api.post<{ data: Category }>('/categories', data)
-  return response.data.data
+  return await api.post<Category>('/categories', data)
 }

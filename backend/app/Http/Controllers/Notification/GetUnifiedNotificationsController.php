@@ -8,10 +8,42 @@ use App\Http\Controllers\Controller;
 use App\Models\ChatMessage;
 use App\Models\Notification;
 use App\Services\Notifications\Actions\NotificationActionRegistry;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 class GetUnifiedNotificationsController extends Controller
 {
+    use ApiResponseTrait;
+
+    #[OA\Get(
+        path: '/api/notifications/unified',
+        summary: 'Get unified notifications status',
+        description: 'Get bell notifications, unread bell count, and unread message count in a single request.',
+        tags: ['Notifications'],
+        security: [['sanctum' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'limit',
+                in: 'query',
+                description: 'Number of bell notifications to return',
+                schema: new OA\Schema(type: 'integer', default: 20)
+            ),
+            new OA\Parameter(
+                name: 'include_bell_notifications',
+                in: 'query',
+                description: 'Whether to include the bell notifications list',
+                schema: new OA\Schema(type: 'boolean', default: true)
+            ),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Unified notifications status',
+                content: new OA\JsonContent(ref: '#/components/schemas/UnifiedNotificationsResponse')
+            ),
+        ]
+    )]
     public function __invoke(Request $request)
     {
         $user = $request->user();
@@ -70,7 +102,7 @@ class GetUnifiedNotificationsController extends Controller
             })
             ->count();
 
-        return response()->json([
+        return $this->sendSuccess([
             'bell_notifications' => $bellNotifications,
             'unread_bell_count' => $unreadBellCount,
             'unread_message_count' => $unreadMessageCount,

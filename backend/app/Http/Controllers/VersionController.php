@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
 
@@ -17,21 +18,18 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 200,
             description: 'Current API version',
-            content: new OA\JsonContent(
-                type: 'object',
-                properties: [
-                    new OA\Property(property: 'version', type: 'string', example: 'v0.4.0'),
-                ]
-            )
+            content: new OA\JsonContent(ref: '#/components/schemas/VersionResponse')
         ),
     ]
 )]
 class VersionController extends Controller
 {
+    use ApiResponseTrait;
+
     public function show(): JsonResponse
     {
         $version = config('version.api');
 
-        return response()->json(['version' => $version]);
+        return $this->sendSuccess(['version' => $version]);
     }
 }

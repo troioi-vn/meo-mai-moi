@@ -114,8 +114,9 @@ export function AuthProvider({
         '/forgot-password',
         '/password/reset',
         '/email/verify',
+        '/requests',
       ]
-      const isPublicPath = publicPaths.some((path) => pathname.startsWith(path))
+      const isPublicPath = pathname === '/' || publicPaths.some((path) => pathname.startsWith(path))
 
       if (isPublicPath) {
         return

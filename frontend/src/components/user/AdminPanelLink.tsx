@@ -26,7 +26,8 @@ export function AdminPanelLink() {
   })
 
   const canAccessAdmin =
-    userData?.can_access_admin || impersonationStatus?.impersonator?.can_access_admin
+    (userData?.can_access_admin ?? false) ||
+    (impersonationStatus?.impersonator?.can_access_admin ?? false)
 
   if (!canAccessAdmin) {
     return null

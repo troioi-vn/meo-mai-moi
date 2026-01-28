@@ -50,11 +50,19 @@ function isAppInstalled(): boolean {
  * Checks if the dismiss period has expired.
  */
 function isDismissExpired(): boolean {
-  const dismissedAt = localStorage.getItem(DISMISS_KEY)
-  if (!dismissedAt) return true
+  if (typeof window === 'undefined' || !window.localStorage) return true
 
-  const dismissedTime = parseInt(dismissedAt, 10)
-  return Date.now() - dismissedTime > DISMISS_DURATION_MS
+  try {
+    const dismissedAt = localStorage.getItem(DISMISS_KEY)
+    if (!dismissedAt) return true
+
+    const dismissedTime = parseInt(dismissedAt, 10)
+    if (isNaN(dismissedTime)) return true
+
+    return Date.now() - dismissedTime > DISMISS_DURATION_MS
+  } catch (e) {
+    return true
+  }
 }
 
 /**

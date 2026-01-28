@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { YearMonthDatePicker } from '@/components/ui/YearMonthDatePicker'
 import type { MedicalRecordType } from '@/api/pets'
 
 export interface MedicalRecordFormValues {
@@ -94,14 +95,14 @@ export const MedicalRecordForm: React.FC<{
         </div>
         <div>
           <label className="block text-sm font-medium">Date</label>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => {
-              setDate(e.target.value)
-            }}
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-          />
+          <div className="mt-1">
+            <YearMonthDatePicker
+              value={date}
+              onChange={setDate}
+              placeholder="Select date"
+              className="w-full"
+            />
+          </div>
           {errors.record_date && (
             <p className="text-xs text-destructive mt-1">{errors.record_date}</p>
           )}

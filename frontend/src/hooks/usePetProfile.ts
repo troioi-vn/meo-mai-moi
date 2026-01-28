@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type Dispatch, type SetStateAction } from 'react'
 import { getPet } from '@/api/pets'
 import type { Pet } from '@/types/pet'
 
 interface UsePetProfileResult {
   pet: Pet | null
+  setPet: Dispatch<SetStateAction<Pet | null>>
   loading: boolean
   error: string | null
   refresh: () => void
@@ -50,5 +51,5 @@ export const usePetProfile = (id: string | undefined): UsePetProfileResult => {
     setVersion((v) => v + 1)
   }
 
-  return { pet, loading, error, refresh }
+  return { pet, setPet, loading, error, refresh }
 }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { DatePicker } from '@/components/ui/date-picker'
+import { YearMonthDatePicker } from '@/components/ui/YearMonthDatePicker'
 
 export interface VaccinationFormValues {
   vaccine_name: string
@@ -89,18 +89,9 @@ export const VaccinationForm: React.FC<{
         <div>
           <label className="block text-sm font-medium">Administered on</label>
           <div className="mt-1">
-            <DatePicker
-              date={administeredAt ? new Date(administeredAt + 'T00:00:00') : undefined}
-              setDate={(d) => {
-                if (d) {
-                  const yyyy = String(d.getFullYear())
-                  const mm = String(d.getMonth() + 1).padStart(2, '0')
-                  const dd = String(d.getDate()).padStart(2, '0')
-                  setAdministeredAt(`${yyyy}-${mm}-${dd}`)
-                } else {
-                  setAdministeredAt('')
-                }
-              }}
+            <YearMonthDatePicker
+              value={administeredAt}
+              onChange={setAdministeredAt}
               placeholder="Select date"
               className="w-full"
             />
@@ -112,20 +103,12 @@ export const VaccinationForm: React.FC<{
         <div>
           <label className="block text-sm font-medium">Due at (optional)</label>
           <div className="mt-1">
-            <DatePicker
-              date={dueAt ? new Date(dueAt + 'T00:00:00') : undefined}
-              setDate={(d) => {
-                if (d) {
-                  const yyyy = String(d.getFullYear())
-                  const mm = String(d.getMonth() + 1).padStart(2, '0')
-                  const dd = String(d.getDate()).padStart(2, '0')
-                  setDueAt(`${yyyy}-${mm}-${dd}`)
-                } else {
-                  setDueAt('')
-                }
-              }}
+            <YearMonthDatePicker
+              value={dueAt}
+              onChange={setDueAt}
               placeholder="Select date"
               className="w-full"
+              allowFuture
             />
           </div>
           {errors.due_at && <p className="text-xs text-destructive mt-1">{errors.due_at}</p>}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { DatePicker } from '@/components/ui/date-picker'
+import { YearMonthDatePicker } from '@/components/ui/YearMonthDatePicker'
 
 export interface WeightFormValues {
   weight_kg: number | ''
@@ -70,18 +70,9 @@ export const WeightForm: React.FC<{
         <div>
           <label className="block text-sm font-medium">Date</label>
           <div className="mt-1">
-            <DatePicker
-              date={date ? new Date(date + 'T00:00:00') : undefined}
-              setDate={(d) => {
-                if (d) {
-                  const yyyy = String(d.getFullYear())
-                  const mm = String(d.getMonth() + 1).padStart(2, '0')
-                  const dd = String(d.getDate()).padStart(2, '0')
-                  setDate(`${yyyy}-${mm}-${dd}`)
-                } else {
-                  setDate('')
-                }
-              }}
+            <YearMonthDatePicker
+              value={date}
+              onChange={setDate}
               placeholder="Select date"
               className="w-full"
             />

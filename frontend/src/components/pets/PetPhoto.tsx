@@ -13,6 +13,7 @@ interface PetPhotoProps {
   onPhotoUpdate: (updatedPet: Pet) => void
   showUploadControls?: boolean
   className?: string
+  onClick?: () => void
 }
 
 export function PetPhoto({
@@ -20,6 +21,7 @@ export function PetPhoto({
   onPhotoUpdate,
   showUploadControls = false,
   className = 'w-full h-64 object-cover',
+  onClick,
 }: PetPhotoProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
@@ -107,7 +109,12 @@ export function PetPhoto({
 
   return (
     <div className="flex flex-col items-center space-y-4">
-      <img src={imageUrl} alt={pet.name} className={className} />
+      <img
+        src={imageUrl}
+        alt={pet.name}
+        className={`${className} ${onClick ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
+        onClick={onClick}
+      />
 
       {showUploadControls && (
         <div className="flex space-x-2">

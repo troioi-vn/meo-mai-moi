@@ -31,9 +31,9 @@ vi.mock('@/components/location/CitySelect', () => ({
   ),
 }))
 
-// Mock BirthdayDatePicker to simplify testing
-vi.mock('@/components/ui/BirthdayDatePicker', () => ({
-  BirthdayDatePicker: ({ value, onChange, id }: any) => (
+// Mock YearMonthDatePicker to simplify testing
+vi.mock('@/components/ui/YearMonthDatePicker', () => ({
+  YearMonthDatePicker: ({ value, onChange, id }: any) => (
     <input
       id={id}
       type="date"

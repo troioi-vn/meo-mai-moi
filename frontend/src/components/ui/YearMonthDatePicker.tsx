@@ -14,13 +14,16 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-interface BirthdayDatePickerProps {
+interface YearMonthDatePickerProps {
   value?: string // YYYY-MM-DD format
   onChange: (value: string) => void
   error?: string
   placeholder?: string
   className?: string
   id?: string
+  allowFuture?: boolean
+  startYear?: number
+  endYear?: number
 }
 
 const MONTHS = [
@@ -38,18 +41,17 @@ const MONTHS = [
   'December',
 ]
 
-// Generate years from current year going back (for pets, 30 years should be plenty)
-const currentYear = new Date().getFullYear()
-const YEARS = Array.from({ length: 40 }, (_, i) => currentYear - i)
-
-export function BirthdayDatePicker({
+export function YearMonthDatePicker({
   value,
   onChange,
   error,
-  placeholder = 'Select birthday',
+  placeholder = 'Select date',
   className,
   id,
-}: BirthdayDatePickerProps) {
+  allowFuture = false,
+  startYear,
+  endYear,
+}: YearMonthDatePickerProps) {
   const [open, setOpen] = React.useState(false)
 
   // Parse value to Date object
@@ -74,6 +76,19 @@ export function BirthdayDatePicker({
     const newDate = setMonth(displayMonth, parseInt(month))
     setDisplayMonth(newDate)
   }
+
+  // Generate years
+  const currentYear = new Date().getFullYear()
+  const defaultStartYear = currentYear - 40
+  const defaultEndYear = allowFuture ? currentYear + 10 : currentYear
+
+  const finalStartYear = startYear ?? defaultStartYear
+  const finalEndYear = endYear ?? defaultEndYear
+
+  const YEARS = Array.from(
+    { length: Math.max(0, finalEndYear - finalStartYear + 1) },
+    (_, i) => finalEndYear - i
+  )
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -127,7 +142,7 @@ export function BirthdayDatePicker({
           onSelect={handleSelect}
           month={displayMonth}
           onMonthChange={setDisplayMonth}
-          disabled={(date) => date > new Date()}
+          disabled={(date) => !allowFuture && date > new Date()}
         />
       </PopoverContent>
     </Popover>

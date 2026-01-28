@@ -11,7 +11,7 @@ enum ContextableType: string implements HasLabel
     case PLACEMENT_REQUEST = 'PlacementRequest';
     case PET = 'Pet';
 
-    public function getLabel(): ?string
+    public function getLabel(): string
     {
         return match ($this) {
             self::PLACEMENT_REQUEST => 'Placement Request',

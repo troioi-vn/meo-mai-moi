@@ -15,7 +15,7 @@ enum EmailLogStatus: string implements HasColor, HasLabel
     case FAILED = 'failed';
     case BOUNCED = 'bounced';
 
-    public function getLabel(): ?string
+    public function getLabel(): string
     {
         return match ($this) {
             self::PENDING => 'Pending',
@@ -26,7 +26,7 @@ enum EmailLogStatus: string implements HasColor, HasLabel
         };
     }
 
-    public function getColor(): string|array|null
+    public function getColor(): string
     {
         return match ($this) {
             self::PENDING, self::ACCEPTED => 'warning',

@@ -15,7 +15,7 @@ enum PetRelationshipType: string implements HasColor, HasLabel
     case EDITOR = 'editor';
     case VIEWER = 'viewer';
 
-    public function getLabel(): ?string
+    public function getLabel(): string
     {
         return match ($this) {
             self::OWNER => 'Owner',
@@ -26,7 +26,7 @@ enum PetRelationshipType: string implements HasColor, HasLabel
         };
     }
 
-    public function getColor(): string|array|null
+    public function getColor(): string
     {
         return match ($this) {
             self::OWNER => 'primary',

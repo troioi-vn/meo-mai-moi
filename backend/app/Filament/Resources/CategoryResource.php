@@ -21,6 +21,7 @@ use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 
 class CategoryResource extends Resource
@@ -37,7 +38,7 @@ class CategoryResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('General Information')
+                \Filament\Forms\Components\Section::make('General Information')
                     ->schema([
                         TextInput::make('name')
                             ->required()
@@ -68,7 +69,7 @@ class CategoryResource extends Resource
                             ->columnSpanFull(),
                     ])->columns(2),
 
-                Forms\Components\Section::make('Status & Metadata')
+                \Filament\Forms\Components\Section::make('Status & Metadata')
                     ->schema([
                         Toggle::make('is_approved')
                             ->label('Approved')
@@ -80,7 +81,7 @@ class CategoryResource extends Resource
                                 }
                             }),
 
-                        Forms\Components\Select::make('created_by')
+                        \Filament\Forms\Components\Select::make('created_by')
                             ->label('Created By')
                             ->relationship('creator', 'name')
                             ->disabled()

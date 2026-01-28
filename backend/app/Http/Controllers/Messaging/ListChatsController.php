@@ -63,7 +63,7 @@ class ListChatsController extends Controller
         // Transform the response
         /** @phpstan-ignore-next-line */
         $data = $chats->map(function ($chat) use ($user): array {
-            $latestMessage = $chat->latestMessage->first();
+            $latestMessage = $chat->latestMessage;
             $activeParticipants = $chat->activeParticipants;
             /** @phpstan-ignore-next-line */
             $participants = $activeParticipants->map(function ($participant): array {

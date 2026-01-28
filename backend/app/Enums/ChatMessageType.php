@@ -10,7 +10,7 @@ enum ChatMessageType: string implements HasLabel
 {
     case TEXT = 'text';
 
-    public function getLabel(): ?string
+    public function getLabel(): string
     {
         return match ($this) {
             self::TEXT => 'Text',

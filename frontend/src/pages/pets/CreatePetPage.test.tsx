@@ -31,6 +31,29 @@ vi.mock('@/components/location/CitySelect', () => ({
   ),
 }))
 
+// Mock BirthdayDatePicker to simplify testing
+vi.mock('@/components/ui/BirthdayDatePicker', () => ({
+  BirthdayDatePicker: ({ value, onChange, id }: any) => (
+    <input
+      id={id}
+      type="date"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      aria-label="Birthday"
+    />
+  ),
+}))
+
+// Mock CountrySelect to simplify testing
+vi.mock('@/components/ui/CountrySelect', () => ({
+  CountrySelect: ({ value, onValueChange }: any) => (
+    <select aria-label="Country" value={value} onChange={(e) => onValueChange?.(e.target.value)}>
+      <option value="VN">Vietnam</option>
+      <option value="US">United States</option>
+    </select>
+  ),
+}))
+
 // Mock react-router-dom navigation
 const mockNavigate = vi.fn()
 vi.mock('react-router-dom', async () => {
@@ -202,9 +225,7 @@ describe('CreatePetPage', () => {
     })
   })
 
-  // TODO: This test needs investigation - the form submission mock isn't being called
-  // May be related to CountrySelect component rendering in test environment
-  it.skip('submits form with valid data - full date precision', async () => {
+  it('submits form with valid data - full date precision', async () => {
     const mockPetData = {
       id: 1,
       name: 'Fluffy',

@@ -179,7 +179,7 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!validateForm()) return
     setIsSubmitting(true)

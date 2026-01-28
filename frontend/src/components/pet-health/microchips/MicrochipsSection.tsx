@@ -32,7 +32,7 @@ const MicrochipForm: React.FC<{
   const [implantedAt, setImplantedAt] = useState<string>(initial?.implanted_at ?? '')
   const [errors, setErrors] = useState<{ chip_number?: string }>({})
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (e: React.SubmitEvent) => {
     e.preventDefault()
     const errs: typeof errors = {}
     if (!chipNumber || chipNumber.trim().length < 10)

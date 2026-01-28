@@ -28,7 +28,7 @@ export const WeightForm: React.FC<{
   const [date, setDate] = useState<string>(() => normalizeDate(initial?.record_date))
   const [errors, setErrors] = useState<{ weight_kg?: string; record_date?: string }>({})
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
     const newErrors: typeof errors = {}
     const weightNum = typeof weight === 'string' ? Number(weight) : weight

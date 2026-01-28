@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import { CheckIcon, PlusIcon, Loader2 } from 'lucide-react'
 import {
   Tags,
@@ -33,10 +33,10 @@ export const CategorySelect: React.FC<Props> = ({
   disabled = false,
 }) => {
   const { data: categoriesResponse, isLoading: loading } = useGetCategories(
-    { pet_type_id: petTypeId as number },
+    { pet_type_id: petTypeId ?? 0 },
     { query: { enabled: !!petTypeId } }
   )
-  const categories = (categoriesResponse || []) as Category[]
+  const categories = (categoriesResponse ?? []) as Category[]
 
   const [searchValue, setSearchValue] = useState('')
   const [creating, setCreating] = useState(false)
@@ -81,8 +81,7 @@ export const CategorySelect: React.FC<Props> = ({
         pet_type_id: petTypeId,
       })
 
-      // Add to categories list and select it
-      setCategories((prev) => [...prev, newCategory])
+      // Select the new category
       if (selectedCategories.length < maxCategories) {
         onChange([...selectedCategories, newCategory])
       }

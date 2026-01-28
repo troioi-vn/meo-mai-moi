@@ -177,7 +177,7 @@ export default function RegisterPage() {
             <RegisterForm
               onSuccess={handleRegistrationSuccess}
               invitationCode={invitationCode}
-              inviterName={invitationValidation?.inviter.name}
+              inviterName={invitationValidation?.inviter?.name}
               initialEmail={initialEmail}
             />
           )}

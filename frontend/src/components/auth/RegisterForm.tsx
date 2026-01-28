@@ -46,7 +46,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
       if (typeof crypto !== 'undefined' && 'getRandomValues' in crypto) {
         const array = new Uint32Array(1)
         crypto.getRandomValues(array)
-        return pool[array[0] % pool.length]
+        return pool[(array[0] ?? 0) % pool.length]
       }
       return pool[Math.floor(Math.random() * pool.length)]
     }
@@ -58,7 +58,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
     for (let i = combined.length - 1; i > 0; i -= 1) {
       const j =
         typeof crypto !== 'undefined' && 'getRandomValues' in crypto
-          ? crypto.getRandomValues(new Uint32Array(1))[0] % (i + 1)
+          ? (crypto.getRandomValues(new Uint32Array(1))[0] ?? 0) % (i + 1)
           : Math.floor(Math.random() * (i + 1))
       ;[combined[i], combined[j]] = [combined[j], combined[i]]
     }
@@ -68,7 +68,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
     setPasswordConfirmation(newPassword)
   }
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.SubmitEvent) => {
     event.preventDefault()
     setError(null)
 

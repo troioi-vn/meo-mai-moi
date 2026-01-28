@@ -19,6 +19,15 @@ import type {
   PostWaitlist201Data as WaitlistEntry,
 } from './generated/model'
 
+export type {
+  PublicSettings,
+  Invitation,
+  InvitationStats,
+  InvitationValidation,
+  WaitlistCheckResult,
+  WaitlistEntry,
+}
+
 /**
  * Get public settings including invite-only status
  */
@@ -30,7 +39,7 @@ export const getPublicSettings = async (): Promise<PublicSettings> => {
  * Join the waitlist
  */
 export const joinWaitlist = async (email: string): Promise<WaitlistEntry> => {
-  return await generatedPostWaitlist({ email })
+  return (await generatedPostWaitlist({ email })) as unknown as WaitlistEntry
 }
 
 /**
@@ -44,7 +53,7 @@ export const checkWaitlistStatus = async (email: string): Promise<WaitlistCheckR
  * Validate an invitation code
  */
 export const validateInvitationCode = async (code: string): Promise<InvitationValidation> => {
-  return await generatedPostInvitationsValidate({ token: code })
+  return (await generatedPostInvitationsValidate({ code })) as unknown as InvitationValidation
 }
 
 /**
@@ -59,7 +68,7 @@ export const getUserInvitations = async (): Promise<Invitation[]> => {
  */
 export const generateInvitation = async (expiresAt?: string): Promise<Invitation> => {
   const payload = expiresAt ? { expires_at: expiresAt } : {}
-  return await generatedPostInvitations(payload)
+  return (await generatedPostInvitations(payload)) as unknown as Invitation
 }
 
 /**

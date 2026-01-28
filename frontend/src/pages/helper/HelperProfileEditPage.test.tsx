@@ -83,9 +83,7 @@ describe('HelperProfileEditPage', () => {
     })
   })
 
-  // TODO: This test needs investigation - form submission may not be working correctly
-  // The form initialization and validation may have timing issues
-  it.skip('updates a field and submits the form', async () => {
+  it('updates a field and submits the form', async () => {
     server.use(
       http.post(`http://localhost:3000/api/helper-profiles/${mockHelperProfile.id}`, async () => {
         return HttpResponse.json({ data: { id: mockHelperProfile.id } })
@@ -95,13 +93,13 @@ describe('HelperProfileEditPage', () => {
 
     // Wait for form to be fully loaded with all initial data (including required fields)
     await waitFor(() => {
-      expect(screen.getByLabelText(/city/i)).toHaveValue(mockHelperProfile.city)
+      expect(screen.getByLabelText(/cities/i)).toHaveValue(mockHelperProfile.city)
       expect(screen.getByLabelText(/experience/i)).toHaveValue(mockHelperProfile.experience)
       expect(screen.getByLabelText(/phone number/i)).toHaveValue(mockHelperProfile.phone_number)
-      expect(screen.getByLabelText(/contact info/i)).toHaveValue(mockHelperProfile.contact_info)
+      expect(screen.getByLabelText(/^contact info$/i)).toHaveValue(mockHelperProfile.contact_info)
     })
 
-    const cityInput = screen.getByLabelText(/city/i)
+    const cityInput = screen.getByLabelText(/cities/i)
     fireEvent.change(cityInput, { target: { value: 'New City' } })
 
     const submitButton = screen.getByRole('button', { name: /update/i })

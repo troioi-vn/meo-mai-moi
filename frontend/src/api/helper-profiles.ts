@@ -22,7 +22,9 @@ export const getHelperProfile = async (id: string): Promise<HelperProfile> => {
 }
 
 export const createHelperProfile = async (data: FormData): Promise<HelperProfile> => {
-  const response = await generatedPostHelperProfiles(data as any)
+  const response = await generatedPostHelperProfiles(
+    data as unknown as Parameters<typeof generatedPostHelperProfiles>[0]
+  )
   return response as unknown as HelperProfile
 }
 
@@ -34,7 +36,12 @@ export const updateHelperProfile = async ({
   data: FormData
 }): Promise<HelperProfile> => {
   // postHelperProfilesId is used for multipart updates since Laravel doesn't handle PUT with multipart well
-  const response = await generatedPostHelperProfilesId(Number(id), data as any)
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  const response = await generatedPostHelperProfilesId(
+    Number(id),
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    data as unknown as Parameters<typeof generatedPostHelperProfilesId>[1]
+  )
   return response as unknown as HelperProfile
 }
 

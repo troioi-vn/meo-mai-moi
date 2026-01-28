@@ -43,7 +43,7 @@ export const VaccinationForm: React.FC<{
     due_at?: string
   }>({})
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
     const newErrors: typeof errors = {}
     if (!vaccineName || vaccineName.trim().length === 0)

@@ -21,7 +21,7 @@ const WaitlistForm: React.FC<WaitlistFormProps> = ({ onSuccess }) => {
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.SubmitEvent) => {
     event.preventDefault()
     setError(null)
     setIsLoading(true)

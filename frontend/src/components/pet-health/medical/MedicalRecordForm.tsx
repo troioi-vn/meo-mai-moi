@@ -41,7 +41,7 @@ export const MedicalRecordForm: React.FC<{
     attachment_url?: string
   }>({})
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
     const newErrors: typeof errors = {}
     if (!description || description.trim().length === 0) {

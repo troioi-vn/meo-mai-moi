@@ -9,33 +9,28 @@ import {
   deleteMsgMessagesId as generatedDeleteMessage,
   getMsgUnreadCount as generatedGetUnreadCount,
 } from './generated/messaging/messaging'
-import type {
-  Chat,
-  ChatMessage,
-  GetMsgChatsIdMessages200,
-  PostMsgChatsBody,
-  PostMsgChatsIdMessagesBody,
-} from './generated/model'
+import type { PostMsgChatsBody, PostMsgChatsIdMessagesBody } from './generated/model'
+import type { Chat, ChatMessage, MessagesResponse } from '@/types/messaging'
 
 /**
  * Get all chats for the current user
  */
 export async function getChats(): Promise<Chat[]> {
-  return await generatedGetChats()
+  return (await generatedGetChats()) as unknown as Chat[]
 }
 
 /**
  * Create a new chat (direct message)
  */
 export async function createChat(payload: PostMsgChatsBody): Promise<Chat> {
-  return await generatedPostChats(payload)
+  return (await generatedPostChats(payload)) as unknown as Chat
 }
 
 /**
  * Get a specific chat
  */
 export async function getChat(chatId: number): Promise<Chat> {
-  return await generatedGetChat(chatId)
+  return (await generatedGetChat(chatId)) as unknown as Chat
 }
 
 /**
@@ -59,8 +54,15 @@ export async function getMessages(
   chatId: number,
   cursor?: string,
   limit = 50
-): Promise<GetMsgChatsIdMessages200> {
-  return await generatedGetMessages(chatId, { cursor, limit })
+): Promise<MessagesResponse> {
+  const res = await generatedGetMessages(chatId, { cursor, limit })
+  return {
+    data: (res.data ?? []) as unknown as ChatMessage[],
+    meta: {
+      has_more: !!res.next_cursor,
+      next_cursor: res.next_cursor ?? null,
+    },
+  }
 }
 
 /**
@@ -70,7 +72,7 @@ export async function sendMessage(
   chatId: number,
   payload: PostMsgChatsIdMessagesBody
 ): Promise<ChatMessage> {
-  return await generatedSendMessage(chatId, payload)
+  return (await generatedSendMessage(chatId, payload)) as unknown as ChatMessage
 }
 
 /**

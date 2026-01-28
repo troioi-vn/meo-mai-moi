@@ -19,8 +19,16 @@ interface PwaInstallBannerProps {
 export function PwaInstallBanner({ onInstall, onDismiss }: PwaInstallBannerProps) {
   const [open, setOpen] = React.useState(true)
 
-  const handleInstall = () => {
-    void onInstall()
+  const handleInstall = async () => {
+    try {
+      await onInstall()
+      setOpen(false)
+    } catch (error) {
+      console.error('Failed to install PWA:', error)
+      // Optionally dismiss the banner on error to allow user to retry later
+      onDismiss()
+      setOpen(false)
+    }
   }
 
   const handleOpenChange = (nextOpen: boolean) => {
@@ -32,10 +40,7 @@ export function PwaInstallBanner({ onInstall, onDismiss }: PwaInstallBannerProps
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange} modal={false}>
-      <DialogContent
-        showOverlay={false}
-        className="top-auto bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] -translate-y-0 p-4 sm:max-w-md"
-      >
+      <DialogContent className="top-auto bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] translate-y-0 p-4 sm:max-w-md">
         <DialogHeader className="gap-1">
           <DialogTitle className="flex items-center gap-2">
             <Download className="h-4 w-4 text-muted-foreground" />
@@ -50,7 +55,7 @@ export function PwaInstallBanner({ onInstall, onDismiss }: PwaInstallBannerProps
               Not now
             </Button>
           </DialogClose>
-          <Button type="button" size="sm" onClick={handleInstall}>
+          <Button type="button" size="sm" onClick={() => void handleInstall()}>
             Install
           </Button>
         </DialogFooter>

@@ -38,7 +38,7 @@ export const useInviteSystem = () => {
 
         // Get public settings
         const settings = await getPublicSettings()
-        const inviteOnlyEnabled = settings.invite_only_enabled
+        const inviteOnlyEnabled = settings.invite_only_enabled ?? false
 
         let mode: RegistrationMode = 'open-registration'
         let invitationValidation: InvitationValidation | null = null
@@ -68,7 +68,8 @@ export const useInviteSystem = () => {
           isLoading: false,
           inviteOnlyEnabled,
           invitationCode,
-          invitationValidation,
+          invitationValidation:
+            invitationValidation as unknown as InviteSystemState['invitationValidation'],
         }))
       } catch (error) {
         console.error('Failed to initialize invite system:', error)

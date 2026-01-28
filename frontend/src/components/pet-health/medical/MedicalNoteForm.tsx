@@ -19,7 +19,7 @@ export const MedicalNoteForm: React.FC<{
   )
   const [errors, setErrors] = useState<{ note?: string; record_date?: string }>({})
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
     const newErrors: typeof errors = {}
     if (!note || note.trim().length === 0) {

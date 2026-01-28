@@ -100,7 +100,7 @@ export function useChat(chatId: number | null) {
 
       setChat(chatData)
       // Messages come in reverse chronological order, reverse them for display
-      setMessages(messagesData.data.reverse())
+      setMessages([...messagesData.data].reverse())
       setHasMore(messagesData.meta.has_more)
       cursorRef.current = messagesData.meta.next_cursor
 
@@ -134,7 +134,7 @@ export function useChat(chatId: number | null) {
     try {
       const messagesData = await getMessages(chatId, cursorRef.current)
       // Prepend older messages (they're in reverse chrono order)
-      setMessages((prev) => [...messagesData.data.reverse(), ...prev])
+      setMessages((prev) => [...[...messagesData.data].reverse(), ...prev])
       setHasMore(messagesData.meta.has_more)
       cursorRef.current = messagesData.meta.next_cursor
     } catch (err) {

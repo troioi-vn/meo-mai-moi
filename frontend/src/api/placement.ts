@@ -82,7 +82,10 @@ export async function submitPlacementResponse(
   placementRequestId: number,
   payload: { helper_profile_id?: number; message?: string }
 ): Promise<PlacementRequestResponse> {
-  const response = await generatedSubmitPlacementResponse(placementRequestId, payload as any)
+  const response = await generatedSubmitPlacementResponse(
+    placementRequestId,
+    payload as Parameters<typeof generatedSubmitPlacementResponse>[1]
+  )
   return response as unknown as PlacementRequestResponse
 }
 

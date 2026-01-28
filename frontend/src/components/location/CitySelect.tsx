@@ -185,7 +185,10 @@ export const CitySelect: React.FC<Props> = (props) => {
     return (
       <div className="space-y-2">
         {label && (
-          <label className={`text-sm font-medium ${error ? 'text-destructive' : ''}`}>
+          <label
+            className={`text-sm font-medium ${error ? 'text-destructive' : ''}`}
+            htmlFor={inputId}
+          >
             {label}
           </label>
         )}
@@ -206,6 +209,7 @@ export const CitySelect: React.FC<Props> = (props) => {
         </label>
       )}
       <input
+        id={inputId}
         className="sr-only"
         readOnly
         value={
@@ -216,7 +220,6 @@ export const CitySelect: React.FC<Props> = (props) => {
       />
       <Tags className="w-full" open={open} onOpenChange={setOpen}>
         <TagsTrigger
-          id={inputId}
           disabled={disabled}
           className={error ? 'border-destructive' : ''}
           placeholder={multiple ? 'Select cities' : 'Select city'}

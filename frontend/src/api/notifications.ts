@@ -5,6 +5,7 @@ import {
   getNotificationsUnified as generatedGetUnifiedNotifications,
   postNotificationsNotificationActionsActionKey as generatedExecuteAction,
 } from './generated/notifications/notifications'
+import type { PostNotificationsNotificationActionsActionKey200Data } from './generated/model'
 
 export async function markAllRead() {
   await generatedMarkAllRead()
@@ -15,7 +16,7 @@ export async function markRead(id: string) {
 }
 
 export interface ExecuteNotificationActionData {
-  notification: any
+  notification: AppNotification
   unread_bell_count: number
 }
 
@@ -28,12 +29,15 @@ export async function executeNotificationAction(
   notificationId: string,
   actionKey: string
 ): Promise<ExecuteNotificationActionResponse> {
-  const res = await generatedExecuteAction(notificationId, actionKey)
+  const res = (await generatedExecuteAction(
+    notificationId,
+    actionKey
+  )) as unknown as PostNotificationsNotificationActionsActionKey200Data
 
   return {
     data: {
-      notification: res.notification,
-      unread_bell_count: res.unread_bell_count,
+      notification: res.notification as AppNotification,
+      unread_bell_count: res.unread_bell_count ?? 0,
     },
     message: res.message,
   }
@@ -55,7 +59,7 @@ export async function getUnifiedNotifications(
 
   const response = await generatedGetUnifiedNotifications({
     limit,
-    include_bell_notifications: includeBellNotifications ? 1 : 0,
+    include_bell_notifications: includeBellNotifications,
   })
 
   return response as unknown as UnifiedNotificationsResponse

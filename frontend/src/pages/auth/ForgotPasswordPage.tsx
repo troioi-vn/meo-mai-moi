@@ -24,7 +24,7 @@ export default function ForgotPasswordPage() {
     }
   }, [searchParams])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError('')

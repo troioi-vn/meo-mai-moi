@@ -69,7 +69,7 @@ export default function ResetPasswordPage() {
     void validateToken()
   }, [token, searchParams])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
 
     if (password !== passwordConfirmation) {

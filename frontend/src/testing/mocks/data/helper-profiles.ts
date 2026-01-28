@@ -22,6 +22,7 @@ export const mockHelperProfile = {
     { id: 2, path: '/test-photo-2.jpg' },
   ],
   placement_responses: [],
+  pet_types: [{ id: 1, name: 'Cat', placement_requests_allowed: true }],
 }
 
 export const helperProfileHandlers = [

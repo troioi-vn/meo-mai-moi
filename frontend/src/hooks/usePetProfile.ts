@@ -1,5 +1,5 @@
 import { useState, useEffect, type Dispatch, type SetStateAction } from 'react'
-import { getPet } from '@/api/pets'
+import { getPetsId as getPet } from '@/api/generated/pets/pets'
 import type { Pet } from '@/types/pet'
 
 interface UsePetProfileResult {

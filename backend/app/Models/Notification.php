@@ -20,6 +20,7 @@ use OpenApi\Attributes as OA;
 #[OA\Schema(
     schema: 'AppNotification',
     title: 'App Notification',
+    required: ['id', 'level', 'title', 'created_at'],
     properties: [
         new OA\Property(property: 'id', type: 'string', example: '1'),
         new OA\Property(property: 'level', type: 'string', example: 'info'),

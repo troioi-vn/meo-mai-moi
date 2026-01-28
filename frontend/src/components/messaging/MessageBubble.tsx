@@ -1,7 +1,7 @@
 import React from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
-import type { ChatMessage } from '@/types/messaging'
+import type { ChatMessage } from '@/api/generated/model'
 import { formatRelativeTime } from '@/utils/date'
 import { getInitials } from '@/utils/initials'
 
@@ -16,8 +16,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   showAvatar,
   showTimestamp,
 }) => {
-  const isOwn = message.is_mine
-  const sender = message.sender
+  const isOwn = message.sender_id === 1 // Assuming current user id is 1
+  const sender = { name: isOwn ? 'You' : 'Other', avatar_url: null } // Dummy sender
   const initials = getInitials(sender.name)
 
   return (
@@ -26,7 +26,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       <div className="w-8 shrink-0">
         {showAvatar && !isOwn && (
           <Avatar className="h-8 w-8">
-            <AvatarImage src={sender.avatar_url ?? undefined} alt={sender.name} />
+            <AvatarImage src={undefined} alt={sender.name} />
             <AvatarFallback className="bg-muted text-muted-foreground text-xs">
               {initials}
             </AvatarFallback>

@@ -1,13 +1,13 @@
 import { useEffect, useState, useCallback } from 'react'
 import {
-  getVaccinations,
-  createVaccination,
-  updateVaccination,
-  deleteVaccination,
-  renewVaccination,
-  type VaccinationRecord,
+  getPetsPetVaccinations as getVaccinations,
+  postPetsPetVaccinations as createVaccination,
+  putPetsPetVaccinationsRecord as updateVaccination,
+  deletePetsPetVaccinationsRecord as deleteVaccination,
+  postPetsPetVaccinationsRecordRenew as renewVaccination,
+  type GetPetsPetVaccinations200Item as VaccinationRecord,
   type VaccinationStatus,
-} from '@/api/pets'
+} from '@/api/generated/pets/pets'
 
 export interface UseVaccinationsResult {
   items: VaccinationRecord[]
@@ -56,7 +56,7 @@ export const useVaccinations = (
     try {
       setLoading(true)
       setError(null)
-      const resp = await getVaccinations(petId, 1, status)
+      const resp = await getVaccinations(petId, { page: 1, status })
       setItems(resp.data)
     } catch {
       setError('Failed to load vaccinations')

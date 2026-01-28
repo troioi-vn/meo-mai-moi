@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createHelperProfile, updateHelperProfile } from '@/api/helper-profiles'
+import {
+  postHelperProfiles as createHelperProfile,
+  putHelperProfilesId as updateHelperProfile,
+} from '@/api/generated/helper-profiles/helper-profiles'
 import { toast } from 'sonner'
 import type React from 'react'
 import type { PlacementRequestType } from '@/types/helper-profile'
@@ -107,7 +110,7 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
   })
 
   const updateMutation = useMutation({
-    mutationFn: updateHelperProfile,
+    mutationFn: ({ id, data }) => updateHelperProfile(id, data),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['helper-profiles'] })
       if (profileId) {

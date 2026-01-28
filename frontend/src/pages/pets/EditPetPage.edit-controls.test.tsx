@@ -5,21 +5,32 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { MockedFunction } from 'vitest'
 import EditPetPage from './EditPetPage'
-import { getPet, getPetTypes, updatePetStatus, deletePet } from '@/api/pets'
+import {
+  getPetsId as getPet,
+  putPetsIdStatus as updatePetStatus,
+  deletePetsId as deletePet,
+} from '@/api/generated/pets/pets'
+import { getPetTypes } from '@/api/generated/pet-types/pet-types'
 import { AuthProvider } from '@/contexts/AuthContext'
 
-vi.mock('@/api/pets', async () => {
-  const actual = await vi.importActual<typeof import('@/api/pets')>('@/api/pets')
+vi.mock('@/api/generated/pets/pets', async () => {
+  const actual = await vi.importActual<typeof import('@/api/generated/pets/pets')>(
+    '@/api/generated/pets/pets'
+  )
   return {
     ...actual,
-    getPet: vi.fn() as unknown as MockedFunction<(id: string) => Promise<any>>,
+    getPetsId: vi.fn() as unknown as MockedFunction<(id: number) => Promise<any>>,
+    putPetsIdStatus: vi.fn() as unknown as MockedFunction<(id: number, data: any) => Promise<any>>,
+    deletePetsId: vi.fn() as unknown as MockedFunction<(id: number) => Promise<void>>,
+  }
+})
+vi.mock('@/api/generated/pet-types/pet-types', async () => {
+  const actual = await vi.importActual<typeof import('@/api/generated/pet-types/pet-types')>(
+    '@/api/generated/pet-types/pet-types'
+  )
+  return {
+    ...actual,
     getPetTypes: vi.fn() as unknown as MockedFunction<() => Promise<any[]>>,
-    updatePetStatus: vi.fn() as unknown as MockedFunction<
-      (id: string, status: string) => Promise<any>
-    >,
-    deletePet: vi.fn() as unknown as MockedFunction<
-      (id: string, password: string) => Promise<void>
-    >,
   }
 })
 
@@ -124,7 +135,7 @@ describe('CreatePetPage edit controls', () => {
     await user.click(confirmBtn)
 
     await waitFor(() => {
-      expect(mockUpdatePetStatus).toHaveBeenCalledWith('1', 'lost')
+      expect(mockUpdatePetStatus).toHaveBeenCalledWith(1, { status: 'lost' })
     })
   })
 
@@ -193,7 +204,7 @@ describe('CreatePetPage edit controls', () => {
     await user.click(confirmBtn)
 
     await waitFor(() => {
-      expect(mockDeletePet).toHaveBeenCalledWith('1', 'secret')
+      expect(mockDeletePet).toHaveBeenCalledWith(1, { password: 'secret' })
     })
   })
 

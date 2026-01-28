@@ -61,10 +61,8 @@ describe('useMessaging hooks', () => {
         }),
         http.get('http://localhost:3000/api/msg/chats/1/messages', () => {
           return HttpResponse.json({
-            data: {
-              data: [mockChatMessage],
-              meta: { has_more: false, next_cursor: null },
-            },
+            data: [mockChatMessage],
+            next_cursor: null,
           })
         }),
         http.post('http://localhost:3000/api/msg/chats/1/read', () => {

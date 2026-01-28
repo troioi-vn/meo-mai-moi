@@ -8,7 +8,10 @@ import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { PublicPlacementRequestSection } from '@/components/placement/public-profile/PublicPlacementRequestSection'
 import { PetPhotoCarouselModal } from '@/components/pets/PetPhotoGallery'
-import { getPetPublic, type PublicPet } from '@/api/pets'
+import {
+  getPetsIdView as getPetPublic,
+  type PublicPetResponse as PublicPet,
+} from '@/api/generated/pets/pets'
 import placeholderImage from '@/assets/images/default-avatar.webp'
 import {
   Breadcrumb,

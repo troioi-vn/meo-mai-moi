@@ -3,14 +3,16 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { toast } from 'sonner'
 import {
-  getPlacementRequest,
-  acceptPlacementResponse,
-  rejectPlacementResponse,
-  cancelPlacementResponse,
-  confirmTransfer,
-  finalizePlacementRequest,
-  deletePlacementRequest,
-} from '@/api/placement'
+  getPlacementRequestsId as getPlacementRequest,
+  postPlacementRequestsIdFinalize as finalizePlacementRequest,
+  deletePlacementRequestsId as deletePlacementRequest,
+} from '@/api/generated/placement-requests/placement-requests'
+import {
+  postPlacementResponsesIdAccept as acceptPlacementResponse,
+  postPlacementResponsesIdCancel as rejectPlacementResponse,
+  postPlacementResponsesIdCancel as cancelPlacementResponse,
+  postPlacementResponsesIdAccept as confirmTransfer,
+} from '@/api/generated/placement-request-responses/placement-request-responses'
 import type { PlacementRequestDetail } from '@/types/placement'
 import type { PlacementRequestType } from '@/types/helper-profile'
 import { Skeleton } from '@/components/ui/skeleton'

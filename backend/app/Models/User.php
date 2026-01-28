@@ -26,6 +26,7 @@ use Spatie\Permission\Traits\HasRoles;
     schema: 'User',
     title: 'User',
     description: 'User model',
+    required: ['id', 'name', 'email', 'is_banned', 'has_password', 'created_at', 'updated_at'],
     properties: [
         new OA\Property(property: 'id', type: 'integer', format: 'int64', description: 'User ID'),
         new OA\Property(property: 'name', type: 'string', description: "User's name"),

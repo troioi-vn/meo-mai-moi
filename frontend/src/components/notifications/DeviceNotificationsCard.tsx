@@ -2,7 +2,10 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { AlertCircle } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { deletePushSubscription, upsertPushSubscription } from '@/api/push-subscriptions'
+import {
+  deletePushSubscriptions as deletePushSubscription,
+  postPushSubscriptions as upsertPushSubscription,
+} from '@/api/generated/notifications/notifications'
 import {
   getServiceWorkerRegistration,
   normaliseSubscriptionJSON,
@@ -208,7 +211,7 @@ export function DeviceNotificationsCard() {
       const subscription = await registration.pushManager.getSubscription()
       if (subscription) {
         try {
-          await deletePushSubscription(subscription.endpoint)
+          await deletePushSubscription({ endpoint: subscription.endpoint })
         } catch (apiError) {
           console.warn('[notifications] Failed to delete subscription from backend:', apiError)
         }

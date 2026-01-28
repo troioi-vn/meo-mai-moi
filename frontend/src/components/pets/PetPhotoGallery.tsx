@@ -19,7 +19,11 @@ import {
 import { toast } from 'sonner'
 import { Star, Trash2, ImageIcon } from 'lucide-react'
 import type { Pet, PetPhoto } from '@/types/pet'
-import { deletePetPhoto, setPrimaryPetPhoto, getPet } from '@/api/pets'
+import {
+  deletePetsPetPhotosPhoto as deletePetPhoto,
+  postPetsPetPhotosPhotoSetPrimary as setPrimaryPetPhoto,
+} from '@/api/generated/pet-photos/pet-photos'
+import { getPetsId as getPet } from '@/api/generated/pets/pets'
 
 // Image component that falls back to original URL if thumbnail fails to load
 function PhotoImage({
@@ -106,11 +110,11 @@ export function PetPhotoCarouselModal({
     setIsDeleting(photo.id)
 
     try {
-      await deletePetPhoto(petId, photo.id)
+      await deletePetPhoto(petId, String(photo.id))
       toast.success('Photo deleted successfully')
 
       // Refetch the pet to get updated photos list
-      const updatedPet = await getPet(String(petId))
+      const updatedPet = await getPet(petId)
       onPetUpdate(updatedPet)
 
       // Close modal if we deleted the last photo or navigate to previous

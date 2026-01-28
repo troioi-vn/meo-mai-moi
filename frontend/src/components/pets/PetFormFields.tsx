@@ -4,7 +4,8 @@ import { YearMonthDatePicker } from '@/components/ui/YearMonthDatePicker'
 import { CountrySelect } from '@/components/ui/CountrySelect'
 import { Label } from '@/components/ui/label'
 import { CitySelect } from '@/components/location/CitySelect'
-import type { PetSex, City } from '@/types/pet'
+import type { City } from '@/types/pet'
+import type { PetSex } from '@/api/generated/model/petSex'
 
 interface Data {
   name: string

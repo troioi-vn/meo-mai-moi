@@ -1,5 +1,6 @@
 import { http, HttpResponse } from 'msw'
-import { type Pet, type PetType, type PetSex } from '@/types/pet'
+import { type Pet, type PetType } from '@/types/pet'
+import type { PetSex } from '@/api/generated/model/petSex'
 
 // Mock pet types
 export const mockCatType: PetType = {

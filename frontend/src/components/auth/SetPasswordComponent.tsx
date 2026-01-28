@@ -86,8 +86,8 @@ export function SetPasswordComponent() {
       </Alert>
 
       {emailSent && (
-        <Alert variant="success">
-          <CheckCircle2 className="h-4 w-4" />
+        <Alert className="border-emerald-500/50 bg-emerald-500/5 text-emerald-700 dark:text-emerald-400">
+          <CheckCircle2 className="h-4 w-4 text-emerald-600" />
           <AlertDescription>
             We have sent you an email with password reset instructions
           </AlertDescription>

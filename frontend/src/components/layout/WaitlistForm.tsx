@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { joinWaitlist } from '@/api/invite-system'
+import { postWaitlist as joinWaitlist } from '@/api/generated/waitlist/waitlist'
 import { AxiosError } from 'axios'
 import { CheckCircle, Mail } from 'lucide-react'
 
@@ -27,7 +27,7 @@ const WaitlistForm: React.FC<WaitlistFormProps> = ({ onSuccess }) => {
     setIsLoading(true)
 
     try {
-      await joinWaitlist(email)
+      await joinWaitlist({ email })
       setIsSuccess(true)
       if (onSuccess) {
         onSuccess()

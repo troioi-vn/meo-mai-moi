@@ -14,8 +14,8 @@ vi.mock('@/api/axios', () => ({
 }))
 
 // Mock the pets API
-vi.mock('@/api/pets', () => ({
-  getPet: vi.fn(),
+vi.mock('@/api/generated/pets/pets', () => ({
+  getPetsId: vi.fn(),
 }))
 
 // Mock sonner toast
@@ -27,7 +27,7 @@ vi.mock('sonner', () => ({
 }))
 
 const mockApi = vi.mocked(api)
-import { getPet } from '@/api/pets'
+import { getPetsId as getPet } from '@/api/generated/pets/pets'
 
 describe('PetPhoto', () => {
   const mockOnPhotoUpdate = vi.fn()
@@ -111,7 +111,7 @@ describe('PetPhoto', () => {
     })
 
     await waitFor(() => {
-      expect(getPet).toHaveBeenCalledWith(String(mockPet.id))
+      expect(getPet).toHaveBeenCalledWith(mockPet.id)
     })
 
     expect(mockOnPhotoUpdate).toHaveBeenCalledWith(updatedPet)

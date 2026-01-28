@@ -4,12 +4,12 @@ import { MemoryRouter } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import type { MockedFunction } from 'vitest'
 import { ActivePlacementRequestsSection } from './ActivePlacementRequestsSection'
-import { getPlacementRequests } from '@/api/pets'
+import { getPetsPlacementRequests } from '@/api/generated/pets/pets'
 import type { Pet, PetType } from '@/types/pet'
 
 // Mock the API function with a strongly-typed mocked function
-vi.mock('@/api/pets', () => ({
-  getPlacementRequests: vi.fn() as unknown as MockedFunction<() => Promise<Pet[]>>,
+vi.mock('@/api/generated/pets/pets', () => ({
+  getPetsPlacementRequests: vi.fn() as unknown as MockedFunction<() => Promise<Pet[]>>,
 }))
 
 // Mock the PetCard component
@@ -85,7 +85,7 @@ const createMockPet = (id: number, name: string, petType: PetType = mockCatType)
 })
 
 describe('ActivePlacementRequestsSection', () => {
-  const mockGetPlacementRequests = getPlacementRequests as unknown as MockedFunction<
+  const mockGetPlacementRequests = getPetsPlacementRequests as unknown as MockedFunction<
     () => Promise<Pet[]>
   >
 

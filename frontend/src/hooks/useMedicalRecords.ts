@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  createMedicalRecord,
-  deleteMedicalRecord,
-  getMedicalRecords,
-  updateMedicalRecord,
+  postPetsPetMedicalRecords as createMedicalRecord,
+  deletePetsPetMedicalRecordsRecord as deleteMedicalRecord,
+  getPetsPetMedicalRecords as getMedicalRecords,
+  putPetsPetMedicalRecordsRecord as updateMedicalRecord,
   type MedicalRecord,
-  type MedicalRecordType,
-} from '@/api/pets'
+  type MedicalRecordRecordType as MedicalRecordType,
+} from '@/api/generated/pets/pets'
 
 export interface UseMedicalRecordsResult {
   items: MedicalRecord[]
@@ -52,7 +52,7 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
       setLoading(true)
       setError(null)
       try {
-        const res = await getMedicalRecords(petId, pg, recordTypeFilter)
+        const res = await getMedicalRecords(petId, { page: pg, record_type: recordTypeFilter })
         setItems(res.data)
         setLinks(res.links)
         setMeta(res.meta)
@@ -113,9 +113,9 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
 
   const remove = useCallback(
     async (id: number) => {
-      const ok = await deleteMedicalRecord(petId, id)
-      if (ok) setItems((prev) => prev.filter((n) => n.id !== id))
-      return ok
+      await deleteMedicalRecord(petId, id)
+      setItems((prev) => prev.filter((n) => n.id !== id))
+      return true
     },
     [petId]
   )

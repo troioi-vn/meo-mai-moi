@@ -5,10 +5,12 @@ import { PetPhotoGallery } from './PetPhotoGallery'
 import type { Pet, PetPhoto } from '@/types/pet'
 
 // Mock the API
-vi.mock('@/api/pets', () => ({
-  deletePetPhoto: vi.fn(),
-  setPrimaryPetPhoto: vi.fn(),
-  getPet: vi.fn(),
+vi.mock('@/api/generated/pet-photos/pet-photos', () => ({
+  deletePetsPetPhotosPhoto: vi.fn(),
+  postPetsPetPhotosPhotoSetPrimary: vi.fn(),
+}))
+vi.mock('@/api/generated/pets/pets', () => ({
+  getPetsId: vi.fn(),
 }))
 
 // Mock sonner
@@ -20,7 +22,11 @@ vi.mock('sonner', () => ({
   },
 }))
 
-import { deletePetPhoto, setPrimaryPetPhoto, getPet } from '@/api/pets'
+import {
+  deletePetsPetPhotosPhoto as deletePetPhoto,
+  postPetsPetPhotosPhotoSetPrimary as setPrimaryPetPhoto,
+} from '@/api/generated/pet-photos/pet-photos'
+import { getPetsId as getPet } from '@/api/generated/pets/pets'
 import { toast } from 'sonner'
 
 const photo1: PetPhoto = {
@@ -175,11 +181,11 @@ describe('PetPhotoGallery', () => {
     await user.click(screen.getByRole('button', { name: /delete/i }))
 
     await waitFor(() => {
-      expect(deletePetPhoto).toHaveBeenCalledWith(mockPet.id, 2)
+      expect(deletePetPhoto).toHaveBeenCalledWith(mockPet.id, '2')
     })
 
     expect(toast.success).toHaveBeenCalledWith('Photo deleted successfully')
-    expect(getPet).toHaveBeenCalledWith('1')
+    expect(getPet).toHaveBeenCalledWith(mockPet.id)
     expect(mockOnPetUpdate).toHaveBeenCalledWith(updatedPet)
   })
 

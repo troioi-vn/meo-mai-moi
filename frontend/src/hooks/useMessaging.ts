@@ -3,14 +3,14 @@ import { useAuth } from '@/hooks/use-auth'
 import { getEcho } from '@/lib/echo'
 import type { Channel } from 'laravel-echo'
 import {
-  getChats,
-  getChat,
-  getMessages,
-  sendMessage,
-  markChatRead,
-  createDirectChat,
-} from '@/api/messaging'
-import type { Chat, ChatMessage } from '@/types/messaging'
+  getMsgChats as getChats,
+  getMsgChatsId as getChat,
+  getMsgChatsIdMessages as getMessages,
+  postMsgChatsIdMessages as sendMessage,
+  postMsgChatsIdRead as markChatRead,
+  postMsgChats as createDirectChat,
+} from '@/api/generated/messaging/messaging'
+import type { Chat, ChatMessage } from '@/api/generated/model'
 
 /**
  * Hook for managing the chat list
@@ -100,12 +100,18 @@ export function useChat(chatId: number | null) {
 
       setChat(chatData)
       // Messages come in reverse chronological order, reverse them for display
-      setMessages([...messagesData.data].reverse())
-      setHasMore(messagesData.meta.has_more)
-      cursorRef.current = messagesData.meta.next_cursor
+      if (Array.isArray(messagesData)) {
+        setMessages([...messagesData].reverse())
+        setHasMore(false)
+        cursorRef.current = null
+      } else {
+        setMessages([...messagesData.data].reverse())
+        setHasMore(!!messagesData.next_cursor)
+        cursorRef.current = messagesData.next_cursor
+      }
 
       // Mark as read
-      await markChatRead(chatId)
+      await markChatRead({ chatId })
     } catch (err) {
       console.error('Failed to load chat:', err)
       setError('Failed to load conversation')
@@ -132,11 +138,17 @@ export function useChat(chatId: number | null) {
 
     setLoadingMore(true)
     try {
-      const messagesData = await getMessages(chatId, cursorRef.current)
+      const messagesData = await getMessages(chatId, { cursor: cursorRef.current || undefined })
       // Prepend older messages (they're in reverse chrono order)
-      setMessages((prev) => [...[...messagesData.data].reverse(), ...prev])
-      setHasMore(messagesData.meta.has_more)
-      cursorRef.current = messagesData.meta.next_cursor
+      if (Array.isArray(messagesData)) {
+        setMessages((prev) => [...[...messagesData].reverse(), ...prev])
+        setHasMore(false)
+        cursorRef.current = null
+      } else {
+        setMessages((prev) => [...[...messagesData.data].reverse(), ...prev])
+        setHasMore(!!messagesData.next_cursor)
+        cursorRef.current = messagesData.next_cursor
+      }
     } catch (err) {
       console.error('Failed to load more messages:', err)
     } finally {
@@ -151,7 +163,7 @@ export function useChat(chatId: number | null) {
 
       setSending(true)
       try {
-        const newMessage = await sendMessage(chatId, { content: content.trim() })
+        const newMessage = await sendMessage({ chatId, content: content.trim() })
         setMessages((prev) => [...prev, newMessage])
       } catch (err) {
         console.error('Failed to send message:', err)
@@ -230,7 +242,12 @@ export function useCreateChat() {
       setError(null)
 
       try {
-        const chat = await createDirectChat(recipientId, contextableType, contextableId)
+        const chat = await createDirectChat({
+          type: 'direct',
+          recipient_id: recipientId,
+          contextable_type: contextableType ?? null,
+          contextable_id: contextableId ?? null,
+        })
         return chat
       } catch (err) {
         console.error('Failed to create chat:', err)

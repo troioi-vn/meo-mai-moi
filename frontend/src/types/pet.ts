@@ -1,3 +1,7 @@
+import type { PetSex } from '@/api/generated/model/petSex'
+import type { PetBirthdayPrecision } from '@/api/generated/model/petBirthdayPrecision'
+import type { City } from '@/api/generated/model/city'
+
 export interface PetType {
   id: number
   name: string
@@ -9,18 +13,6 @@ export interface PetType {
   placement_requests_allowed: boolean
   weight_tracking_allowed?: boolean
   microchips_allowed?: boolean
-  created_at: string
-  updated_at: string
-}
-
-export interface City {
-  id: number
-  name: string
-  slug: string
-  country: string
-  description?: string | null
-  created_by?: number | null
-  approved_at?: string | null
   created_at: string
   updated_at: string
 }
@@ -38,10 +30,6 @@ export interface Category {
   updated_at: string
   pet_type?: PetType
 }
-
-export type BirthdayPrecision = 'day' | 'month' | 'year' | 'unknown'
-
-export type PetSex = 'male' | 'female' | 'not_specified'
 
 export const PetSexLabels: Record<PetSex, string> = {
   male: 'Male',
@@ -81,7 +69,7 @@ export interface Pet {
   birthday_year?: number | null
   birthday_month?: number | null
   birthday_day?: number | null
-  birthday_precision?: BirthdayPrecision
+  birthday_precision?: PetBirthdayPrecision
   country: string // ISO 3166-1 alpha-2 code
   state?: string | null
   city_id?: number | null

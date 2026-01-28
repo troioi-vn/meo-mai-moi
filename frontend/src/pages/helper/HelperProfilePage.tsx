@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getHelperProfiles } from '@/api/helper-profiles'
+import { getHelperProfiles } from '@/api/generated/helper-profiles/helper-profiles'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoadingState } from '@/components/ui/LoadingState'

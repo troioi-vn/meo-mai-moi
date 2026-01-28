@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import type { Chat } from '@/types/messaging'
+import type { Chat } from '@/api/generated/model'
 import { formatRelativeTime } from '@/utils/date'
 import { getInitials } from '@/utils/initials'
 
@@ -78,13 +78,14 @@ interface ChatListItemProps {
 }
 
 const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onClick }) => {
-  const otherParticipant = chat.other_participant
+  // For direct chats, find the other participant (not current user, assuming id 1)
+  const otherParticipant = chat.participants?.find((p) => p.id !== 1)
   const displayName = otherParticipant?.name ?? 'Unknown'
   const avatarUrl = otherParticipant?.avatar_url ?? undefined
   const initials = getInitials(displayName)
 
   const lastMessage = chat.latest_message
-  const hasUnread = chat.unread_count > 0
+  const hasUnread = (chat.unread_count ?? 0) > 0
 
   return (
     <button
@@ -110,7 +111,7 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onClick }
             </span>
             {lastMessage && (
               <span className="text-xs text-muted-foreground shrink-0">
-                {formatRelativeTime(lastMessage.created_at)}
+                {formatRelativeTime(lastMessage.created_at ?? '')}
               </span>
             )}
           </div>
@@ -123,7 +124,6 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onClick }
                   hasUnread ? 'text-foreground font-medium' : 'text-muted-foreground'
                 )}
               >
-                {lastMessage.sender_name && `${lastMessage.sender_name}: `}
                 {lastMessage.content}
               </p>
             ) : (
@@ -132,7 +132,7 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onClick }
 
             {hasUnread && (
               <Badge variant="default" className="h-5 min-w-5 px-1.5 text-xs shrink-0">
-                {chat.unread_count > 99 ? '99+' : chat.unread_count}
+                {(chat.unread_count ?? 0) > 99 ? '99+' : chat.unread_count}
               </Badge>
             )}
           </div>

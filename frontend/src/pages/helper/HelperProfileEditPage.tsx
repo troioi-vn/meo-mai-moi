@@ -3,16 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { FileInput } from '@/components/ui/FileInput'
 import useHelperProfileForm from '@/hooks/useHelperProfileForm'
-import { getPetTypes } from '@/api/pets'
+import { getPetTypes } from '@/api/generated/pet-types/pet-types'
 import type { PetType, City } from '@/types/pet'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  getHelperProfile,
-  deleteHelperProfile,
-  archiveHelperProfile,
-  restoreHelperProfile,
-  deleteHelperProfilePhoto,
-} from '@/api/helper-profiles'
+  getHelperProfilesId as getHelperProfile,
+  deleteHelperProfilesId as deleteHelperProfile,
+  deleteHelperProfilesHelperProfilePhotosPhoto as deleteHelperProfilePhoto,
+} from '@/api/generated/helper-profiles/helper-profiles'
 import { toast } from 'sonner'
 import { HelperProfileFormFields } from '@/components/helper/HelperProfileFormFields'
 import { PetTypesSelector } from '@/components/helper/PetTypesSelector'

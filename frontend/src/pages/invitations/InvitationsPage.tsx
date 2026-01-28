@@ -4,13 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import {
-  getUserInvitations,
-  generateInvitation,
-  revokeInvitation,
-  getInvitationStats,
-  type Invitation,
-  type InvitationStats,
-} from '@/api/invite-system'
+  getInvitations as getUserInvitations,
+  postInvitations as generateInvitation,
+  deleteInvitationsId as revokeInvitation,
+  getInvitationsStats as getInvitationStats,
+  type GetInvitations200Item as Invitation,
+  type GetInvitationsStats200 as InvitationStats,
+} from '@/api/generated/invitations/invitations'
 import {
   Plus,
   Copy,

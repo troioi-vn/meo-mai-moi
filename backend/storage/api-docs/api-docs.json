@@ -6524,6 +6524,12 @@
             },
             "AppNotification": {
                 "title": "App Notification",
+                "required": [
+                    "id",
+                    "level",
+                    "title",
+                    "created_at"
+                ],
                 "properties": {
                     "id": {
                         "type": "string",
@@ -6663,11 +6669,6 @@
                         "example": "Hanoi",
                         "nullable": true
                     },
-                    "city": {
-                        "type": "string",
-                        "example": "Hanoi",
-                        "nullable": true
-                    },
                     "address": {
                         "type": "string",
                         "example": "123 Main St",
@@ -6689,6 +6690,56 @@
                     "pet_type_id": {
                         "type": "integer",
                         "example": 1
+                    },
+                    "photo_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "photos": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PetPhoto"
+                        }
+                    },
+                    "user_id": {
+                        "type": "integer"
+                    },
+                    "pet_type": {
+                        "$ref": "#/components/schemas/PetType"
+                    },
+                    "city": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/City"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "categories": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Category"
+                        }
+                    },
+                    "viewer_permissions": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/ViewerPermissions"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "relationships": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PetRelationship"
+                        }
+                    },
+                    "placement_requests": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PlacementRequest"
+                        }
                     }
                 },
                 "type": "object"
@@ -6925,6 +6976,15 @@
             "User": {
                 "title": "User",
                 "description": "User model",
+                "required": [
+                    "id",
+                    "name",
+                    "email",
+                    "is_banned",
+                    "has_password",
+                    "created_at",
+                    "updated_at"
+                ],
                 "properties": {
                     "id": {
                         "description": "User ID",
@@ -7330,6 +7390,157 @@
                     "total": {
                         "description": "Total number of items",
                         "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "PetPhoto": {
+                "title": "Pet Photo",
+                "required": [
+                    "id",
+                    "url",
+                    "is_primary"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "url": {
+                        "type": "string"
+                    },
+                    "thumb_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "is_primary": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "PetRelationship": {
+                "title": "Pet Relationship",
+                "required": [
+                    "id",
+                    "user_id",
+                    "pet_id",
+                    "relationship_type",
+                    "start_at",
+                    "created_by"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "pet_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "relationship_type": {
+                        "type": "string",
+                        "enum": [
+                            "owner",
+                            "foster",
+                            "editor",
+                            "viewer"
+                        ]
+                    },
+                    "start_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "end_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "created_by": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "user": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/User"
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "PetType": {
+                "title": "Pet Type",
+                "required": [
+                    "id",
+                    "name",
+                    "slug",
+                    "is_active",
+                    "is_system",
+                    "display_order",
+                    "placement_requests_allowed"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Cat"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "cat"
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "is_system": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "display_order": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "placement_requests_allowed": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "weight_tracking_allowed": {
+                        "type": "boolean",
+                        "nullable": true
+                    },
+                    "microchips_allowed": {
+                        "type": "boolean",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
                     }
                 },
                 "type": "object"
@@ -8003,6 +8214,27 @@
                     "updated_at": {
                         "type": "string",
                         "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "ViewerPermissions": {
+                "title": "Viewer Permissions",
+                "properties": {
+                    "can_edit": {
+                        "type": "boolean"
+                    },
+                    "can_view_contact": {
+                        "type": "boolean"
+                    },
+                    "can_delete": {
+                        "type": "boolean"
+                    },
+                    "is_owner": {
+                        "type": "boolean"
+                    },
+                    "is_viewer": {
+                        "type": "boolean"
                     }
                 },
                 "type": "object"

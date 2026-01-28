@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { NotificationPreferences } from './NotificationPreferences'
-import * as notificationPreferencesApi from '@/api/notification-preferences'
+import * as notificationPreferencesApi from '@/api/generated/notification-preferences/notification-preferences'
 import { toast } from 'sonner'
 
 // Mock sonner
@@ -13,13 +13,13 @@ vi.mock('sonner', () => ({
 }))
 
 // Mock the API module
-vi.mock('@/api/notification-preferences')
+vi.mock('@/api/generated/notification-preferences/notification-preferences')
 
 const mockGetNotificationPreferences = vi.mocked(
   notificationPreferencesApi.getNotificationPreferences
 )
 const mockUpdateNotificationPreferences = vi.mocked(
-  notificationPreferencesApi.updateNotificationPreferences
+  notificationPreferencesApi.putNotificationPreferences
 )
 
 const mockPreferences = [
@@ -137,13 +137,15 @@ describe('NotificationPreferences', () => {
     fireEvent.click(firstEmailSwitch)
 
     await waitFor(() => {
-      expect(mockUpdateNotificationPreferences).toHaveBeenCalledWith([
-        {
-          type: 'placement_request_response',
-          email_enabled: false,
-          in_app_enabled: true,
-        },
-      ])
+      expect(mockUpdateNotificationPreferences).toHaveBeenCalledWith({
+        preferences: [
+          {
+            type: 'placement_request_response',
+            email_enabled: false,
+            in_app_enabled: true,
+          },
+        ],
+      })
     })
   })
 
@@ -170,13 +172,15 @@ describe('NotificationPreferences', () => {
     fireEvent.click(firstInAppSwitch)
 
     await waitFor(() => {
-      expect(mockUpdateNotificationPreferences).toHaveBeenCalledWith([
-        {
-          type: 'placement_request_response',
-          email_enabled: true,
-          in_app_enabled: false,
-        },
-      ])
+      expect(mockUpdateNotificationPreferences).toHaveBeenCalledWith({
+        preferences: [
+          {
+            type: 'placement_request_response',
+            email_enabled: true,
+            in_app_enabled: false,
+          },
+        ],
+      })
     })
   })
 
@@ -219,13 +223,15 @@ describe('NotificationPreferences', () => {
 
     // Should call the update API
     await waitFor(() => {
-      expect(mockUpdateNotificationPreferences).toHaveBeenCalledWith([
-        {
-          type: 'placement_request_response',
-          email_enabled: false,
-          in_app_enabled: true,
-        },
-      ])
+      expect(mockUpdateNotificationPreferences).toHaveBeenCalledWith({
+        preferences: [
+          {
+            type: 'placement_request_response',
+            email_enabled: false,
+            in_app_enabled: true,
+          },
+        ],
+      })
     })
   })
 

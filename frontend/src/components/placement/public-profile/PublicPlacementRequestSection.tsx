@@ -26,7 +26,10 @@ import {
   requiresHandover,
   isTemporaryType,
 } from '@/types/placement'
-import { cancelPlacementResponse, confirmTransfer } from '@/api/placement'
+import {
+  postPlacementResponsesIdCancel as cancelPlacementResponse,
+  postPlacementResponsesIdAccept as confirmTransfer,
+} from '@/api/generated/placement-request-responses/placement-request-responses'
 
 type PlacementRequest = NonNullable<PublicPet['placement_requests']>[number]
 

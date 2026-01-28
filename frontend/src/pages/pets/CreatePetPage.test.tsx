@@ -4,13 +4,16 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { MockedFunction } from 'vitest'
 import CreatePetPage from './CreatePetPage'
-import { createPet, getPetTypes } from '@/api/pets'
+import { postPets } from '@/api/generated/pets/pets'
+import { getPetTypes } from '@/api/generated/pet-types/pet-types'
 import type { PetType } from '@/types/pet'
 import { AuthProvider } from '@/contexts/AuthContext'
 
 // Mock the API functions
-vi.mock('@/api/pets', () => ({
-  createPet: vi.fn() as unknown as MockedFunction<(data: any) => Promise<any>>,
+vi.mock('@/api/generated/pets/pets', () => ({
+  postPets: vi.fn() as unknown as MockedFunction<(data: any) => Promise<any>>,
+}))
+vi.mock('@/api/generated/pet-types/pet-types', () => ({
   getPetTypes: vi.fn() as unknown as MockedFunction<() => Promise<PetType[]>>,
 }))
 
@@ -127,8 +130,8 @@ const renderWithProviders = (component: React.ReactElement) => {
 }
 
 describe('CreatePetPage', () => {
-  const mockGetPetTypes = getPetTypes as unknown as MockedFunction<() => Promise<PetType[]>>
-  const mockCreatePet = createPet as unknown as MockedFunction<(data: any) => Promise<any>>
+  const mockGetPetTypes = vi.mocked(getPetTypes)
+  const mockCreatePet = vi.mocked(postPets)
 
   beforeEach(() => {
     vi.clearAllMocks()

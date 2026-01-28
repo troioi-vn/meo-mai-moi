@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  createWeight,
-  deleteWeight,
-  getPetWeights,
-  updateWeight,
+  postPetsPetWeights as createWeight,
+  deletePetsPetWeightsWeight as deleteWeight,
+  getPetsPetWeights as getPetWeights,
+  putPetsPetWeightsWeight as updateWeight,
   type WeightHistory,
-} from '@/api/pets'
+} from '@/api/generated/pets/pets'
 
 export interface UseWeightsResult {
   items: WeightHistory[]
@@ -36,7 +36,7 @@ export const useWeights = (petId: number): UseWeightsResult => {
       setLoading(true)
       setError(null)
       try {
-        const res = await getPetWeights(petId, pg)
+        const res = await getPetWeights(petId, { page: pg })
         setItems(res.data)
         setLinks(res.links)
         setMeta(res.meta)
@@ -83,9 +83,9 @@ export const useWeights = (petId: number): UseWeightsResult => {
 
   const remove = useCallback(
     async (id: number) => {
-      const ok = await deleteWeight(petId, id)
-      if (ok) setItems((prev) => prev.filter((w) => w.id !== id))
-      return ok
+      await deleteWeight(petId, id)
+      setItems((prev) => prev.filter((w) => w.id !== id))
+      return true
     },
     [petId]
   )

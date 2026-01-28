@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { MessageComposer } from './MessageComposer'
 import { MessageBubble } from './MessageBubble'
-import type { Chat, ChatMessage } from '@/types/messaging'
+import type { Chat, ChatMessage } from '@/api/generated/model'
 import { cn } from '@/lib/utils'
 import { getInitials } from '@/utils/initials'
 
@@ -52,7 +52,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     }
   }, [loading, messages.length])
 
-  const otherParticipant = chat?.other_participant
+  const otherParticipant = chat?.participants?.find((p) => p.id !== 1)
   const displayName = otherParticipant?.name ?? 'Loading...'
   const avatarUrl = otherParticipant?.avatar_url ?? undefined
   const initials = getInitials(displayName)
@@ -129,12 +129,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             {/* Messages */}
             {messages.map((message, index) => {
               const prevMessage = messages[index - 1]
-              const showAvatar = prevMessage?.sender.id !== message.sender.id
+              const showAvatar = prevMessage?.sender_id !== message.sender_id
               const showTimestamp =
                 !prevMessage ||
-                new Date(message.created_at).getTime() -
-                  new Date(prevMessage.created_at).getTime() >
-                  5 * 60 * 1000 // 5 minutes
+                (message.created_at && prevMessage.created_at
+                  ? new Date(message.created_at).getTime() -
+                      new Date(prevMessage.created_at).getTime() >
+                    5 * 60 * 1000
+                  : true) // 5 minutes
 
               return (
                 <MessageBubble

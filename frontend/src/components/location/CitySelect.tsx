@@ -12,8 +12,8 @@ import {
   TagsValue,
 } from '@/components/ui/shadcn-io/tags'
 import { Badge } from '@/components/ui/badge'
-import { getCities, createCity } from '@/api/cities'
-import type { City } from '@/types/pet'
+import { getCities, postCities as createCity } from '@/api/generated/cities/cities'
+import type { City } from '@/api/generated/model'
 import { toast } from 'sonner'
 
 interface BaseProps {
@@ -100,7 +100,7 @@ export const CitySelect: React.FC<Props> = (props) => {
 
   const handleSelect = (cityId: string) => {
     const city = cities.find((c) => String(c.id) === cityId)
-    if (!city) return
+    if (city?.id === undefined) return
 
     if (multiple) {
       const multiProps = props as MultiProps
@@ -131,7 +131,8 @@ export const CitySelect: React.FC<Props> = (props) => {
     }
   }
 
-  const handleRemove = (cityId: number) => {
+  const handleRemove = (cityId: number | undefined) => {
+    if (cityId === undefined) return
     if (multiple) {
       const multiProps = props as MultiProps
       const value = multiProps.value
@@ -214,7 +215,7 @@ export const CitySelect: React.FC<Props> = (props) => {
         readOnly
         value={
           multiple
-            ? (props.value as City[]).map((c) => c.name).join(', ')
+            ? (props.value as City[]).map((c) => c.name ?? '').join(', ')
             : ((props.value as City | null)?.name ?? '')
         }
       />

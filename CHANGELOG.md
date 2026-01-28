@@ -60,7 +60,7 @@ All notable changes to this project are documented here, following the [Keep a C
 
 - **Impersonation UI**: Fixed avatar and main menu visibility during impersonation. Redesigned the impersonation banner to be more compact, showing "🕵 [user_name] x" instead of the longer text. Ensured the admin panel link remains visible to impersonating admins even when checking the impersonated user's permissions.
 
-- **Messaging Hook Typing**: Refactored `useMessaging` hooks to use typed `Channel` objects instead of `any`, reducing technical debt and improving code reliability.
+- **Test Suite Fixes**: Resolved all import-related test failures (15 test suites) caused by the Orval API migration by updating imports to use generated APIs and adjusting function signatures. Fixed runtime assertion failures in messaging tests related to unexpected data structures.
 
 ### Changed
 

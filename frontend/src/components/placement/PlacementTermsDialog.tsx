@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { getPlacementTerms } from '@/api/legal'
+import { getLegalPlacementTerms } from '@/api/generated/legal/legal'
 import {
   Dialog,
   DialogContent,
@@ -82,7 +82,7 @@ export const PlacementTermsDialog: React.FC<PlacementTermsDialogProps> = ({
 }) => {
   const { data, isLoading, error } = useQuery({
     queryKey: ['placement-terms'],
-    queryFn: getPlacementTerms,
+    queryFn: getLegalPlacementTerms,
     enabled: open,
     staleTime: 1000 * 60 * 60, // Cache for 1 hour
   })

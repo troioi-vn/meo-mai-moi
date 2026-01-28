@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/shadcn-io/tags'
 import { Badge } from '@/components/ui/badge'
 import type { Category } from '@/types/pet'
-import { createCategory } from '@/api/categories'
+import { postCategories as createCategory } from '@/api/generated/categories/categories'
 import { useGetCategories } from '@/api/generated/categories/categories'
 import { toast } from 'sonner'
 

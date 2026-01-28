@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Clock, X, MessageCircle, CheckCircle2, Loader2, HandshakeIcon } from 'lucide-react'
 import { useCreateChat } from '@/hooks/useMessaging'
-import { cancelPlacementResponse, confirmTransfer } from '@/api/placement'
+import { postPlacementResponsesIdCancel as cancelPlacementResponse } from '@/api/generated/placement-request-responses/placement-request-responses'
+import { postTransferRequestsIdConfirm as confirmTransfer } from '@/api/generated/transfer-requests/transfer-requests'
 import { toast } from 'sonner'
 
 type PlacementRequest = NonNullable<Pet['placement_requests']>[number]

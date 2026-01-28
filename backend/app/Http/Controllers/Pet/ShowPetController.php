@@ -51,6 +51,7 @@ class ShowPetController extends Controller
             'petType',
             'categories',
             'relationships.user',
+            'city',
         ]);
 
         // Resolve user and authorize access

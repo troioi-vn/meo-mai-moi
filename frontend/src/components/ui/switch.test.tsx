@@ -62,7 +62,12 @@ describe('Switch', () => {
     render(<Switch />)
 
     const switchElement = screen.getByRole('switch')
-    expect(switchElement).toHaveClass('peer', 'inline-flex', 'h-5', 'w-9')
+    expect(switchElement).toHaveClass(
+      'peer',
+      'inline-flex',
+      'data-[size=default]:h-[18.4px]',
+      'data-[size=default]:w-[32px]'
+    )
   })
 
   it('supports custom className', () => {

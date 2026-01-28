@@ -37,5 +37,12 @@ class AuthServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerPolicies();
+
+        // Implicitly grant "super_admin" role all permissions
+        // This is safe because Spatie Permission syncs them, but this Gate::before
+        // callback ensures they pass checks even if permissions aren't explicitly assigned.
+        \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {
+            return $user->hasRole('super_admin') ? true : null;
+        });
     }
 }

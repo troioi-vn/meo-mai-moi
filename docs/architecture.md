@@ -8,7 +8,7 @@ This document outlines the architecture of the Meo Mai Moi application, includin
 - **Frontend**: React 19 + TypeScript + Vite 7 + Tailwind CSS v4 + shadcn/ui
 - **Database**: PostgreSQL only (all envs). SQLite is not supported.
 - **Build/Run**: Dockerized with multi-stage builds; frontend assets copied into backend image.
-- **API First**: OpenAPI documented with contract testing.
+- **API First**: OpenAPI documented with contract testing. The frontend uses **Orval** to automatically generate typesafe React Query hooks from the backend specification.
 - **Admin Panel**: Filament 3 with comprehensive pet and user management.
 
 ### Key Technical Decisions
@@ -91,6 +91,14 @@ Domain (Models, Enums)
 - Models are data containers with relationships
 - Policies use `$user->can(...)` for authorization
 - Use Spatie Permission as single source of truth for RBAC
+- **API Responses**: All controllers use `ApiResponseTrait` to return a standardized JSON envelope:
+  ```json
+  {
+    "success": true,
+    "data": { ... },
+    "message": "Operation successful"
+  }
+  ```
 
 ### Frontend Architecture (React + TypeScript)
 

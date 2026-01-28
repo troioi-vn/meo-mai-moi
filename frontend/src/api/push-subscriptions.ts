@@ -1,35 +1,26 @@
-import { api } from '@/api/axios'
+import {
+  getPushSubscriptions as generatedList,
+  postPushSubscriptions as generatedUpsert,
+  deletePushSubscriptions as generatedDelete,
+} from './generated/notifications/notifications'
+import type {
+  PushSubscriptionSummary,
+  PushSubscriptionPayload,
+  PostPushSubscriptions201,
+} from './generated/model'
 
-export interface PushSubscriptionKeys {
-  p256dh: string
-  auth: string
+export type { PushSubscriptionSummary, PushSubscriptionPayload }
+
+export async function listPushSubscriptions(): Promise<PushSubscriptionSummary[]> {
+  return await generatedList()
 }
 
-export interface PushSubscriptionPayload {
-  endpoint: string
-  keys: PushSubscriptionKeys
-  expirationTime?: number | null
-  contentEncoding?: string
+export async function upsertPushSubscription(
+  payload: PushSubscriptionPayload
+): Promise<PostPushSubscriptions201> {
+  return await generatedUpsert(payload)
 }
 
-export interface PushSubscriptionSummary {
-  id: number
-  endpoint: string
-  content_encoding: string | null
-  expires_at: string | null
-  last_seen_at: string | null
-}
-
-export async function listPushSubscriptions() {
-  const res = await api.get<{ data: PushSubscriptionSummary[] }>('/push-subscriptions')
-  return res.data
-}
-
-export async function upsertPushSubscription(payload: PushSubscriptionPayload) {
-  const res = await api.post<{ data: { id: number } }>('/push-subscriptions', payload)
-  return res.data
-}
-
-export async function deletePushSubscription(endpoint: string) {
-  await api.delete('/push-subscriptions', { data: { endpoint } })
+export async function deletePushSubscription(endpoint: string): Promise<void> {
+  await generatedDelete({ endpoint })
 }

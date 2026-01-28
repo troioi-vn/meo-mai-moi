@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\EnsureUserNotBanned;
 use App\Http\Middleware\OptionalAuth;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -29,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'admin' => AdminMiddleware::class,
+            'not.banned' => EnsureUserNotBanned::class,
             'optional.auth' => OptionalAuth::class,
             'validate.invitation' => \App\Http\Middleware\ValidateInvitationRequest::class,
             'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,

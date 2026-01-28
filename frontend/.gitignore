@@ -13,3 +13,6 @@ test-results/
 
 # Ignore debug files
 debug-*.png
+
+# Generated API client
+src/api/generated/

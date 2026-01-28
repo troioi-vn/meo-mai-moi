@@ -91,7 +91,7 @@ function NotificationActionButton({
     return (
       <Button
         size="sm"
-        variant={(action.variant as any) ?? 'destructive'}
+        variant={action.variant ?? 'destructive'}
         disabled
         title={action.disabled_reason ?? undefined}
         onClick={(e) => {
@@ -109,7 +109,7 @@ function NotificationActionButton({
       <AlertDialogTrigger asChild>
         <Button
           size="sm"
-          variant={(action.variant as any) ?? 'destructive'}
+          variant={action.variant ?? 'destructive'}
           disabled={submitting}
           onClick={(e) => {
             e.stopPropagation()
@@ -127,20 +127,22 @@ function NotificationActionButton({
           <AlertDialogCancel disabled={submitting}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             disabled={submitting}
-            onClick={async (e) => {
+            onClick={(e) => {
               e.preventDefault()
               setSubmitting(true)
-              try {
-                const res = await executeNotificationAction(notificationId, action.key)
-                if (res.message) toast.success(res.message)
-                onDone(res.data)
-              } catch (err: unknown) {
-                console.error('Failed to execute notification action:', err)
-                toast.error('Action failed')
-              } finally {
-                setSubmitting(false)
-                setOpen(false)
-              }
+              executeNotificationAction(notificationId, action.key)
+                .then((res) => {
+                  if (res.message) toast.success(res.message)
+                  onDone(res.data)
+                })
+                .catch((err: unknown) => {
+                  console.error('Failed to execute notification action:', err)
+                  toast.error('Action failed')
+                })
+                .finally(() => {
+                  setSubmitting(false)
+                  setOpen(false)
+                })
             }}
           >
             {confirmLabel}

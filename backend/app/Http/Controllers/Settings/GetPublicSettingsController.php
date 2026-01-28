@@ -50,9 +50,8 @@ class GetPublicSettingsController extends Controller
         try {
             $settings = $this->settingsService->getPublicSettings();
 
-            return response()->json([
-                'data' => $settings,
-            ])->header('Cache-Control', 'public, max-age=300'); // Cache for 5 minutes
+            return $this->sendSuccess($settings)
+                ->header('Cache-Control', 'public, max-age=300'); // Cache for 5 minutes
         } catch (\Exception $e) {
             return $this->sendError(
                 'Unable to retrieve settings: '.$e->getMessage(),

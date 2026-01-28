@@ -42,6 +42,6 @@ class DeleteMedicalRecordController extends Controller
         $this->validatePetResource($request, $pet, 'medical', $record);
         $record->delete();
 
-        return response()->json(['data' => true]);
+        return $this->sendSuccess(true);
     }
 }

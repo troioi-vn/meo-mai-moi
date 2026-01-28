@@ -3,6 +3,12 @@ import { api, authApi, csrf, setUnauthorizedHandler } from '@/api/axios'
 import type { User } from '@/types/user'
 import type { RegisterPayload, RegisterResponse, LoginPayload, LoginResponse } from '@/types/auth'
 import { AuthContext } from './auth-context'
+import {
+  getUsersMe as generatedGetUsersMe,
+  putUsersMePassword as generatedPutPassword,
+  deleteUsersMe as generatedDeleteAccount,
+} from '@/api/generated/user-profile/user-profile'
+import { postCheckEmail as generatedCheckEmail } from '@/api/generated/authentication/authentication'
 
 export { AuthContext }
 
@@ -25,14 +31,8 @@ export function AuthProvider({
   const loadUser = useCallback(async () => {
     try {
       // Add cache-busting to ensure fresh user data after cache clear/deployment
-      const { data } = await api.get<{ data: User }>('users/me', {
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          Pragma: 'no-cache',
-          Expires: '0',
-        },
-      })
-      setUser(data.data)
+      const user = await generatedGetUsersMe()
+      setUser(user as unknown as User)
     } catch (error) {
       console.error('Error loading user:', error)
       setUser(null)
@@ -43,26 +43,26 @@ export function AuthProvider({
 
   const register = useCallback(async (payload: RegisterPayload): Promise<RegisterResponse> => {
     await csrf()
-    const { data } = await authApi.post<{ data: RegisterResponse }>('/register', payload)
+    const data = await authApi.post<RegisterResponse>('/register', payload)
 
     // Set user immediately (even if not yet verified) so header can show logout
-    setUser(data.data.user)
+    setUser(data.user)
 
-    return data.data
+    return data
   }, [])
 
   const login = useCallback(
     async (payload: LoginPayload): Promise<LoginResponse> => {
       await csrf()
-      const { data } = await authApi.post<{ data: LoginResponse }>('/login', payload)
+      const data = await authApi.post<LoginResponse>('/login', payload)
 
       // Set user immediately from response
-      setUser(data.data.user)
+      setUser(data.user)
 
       // Fetch full profile (avatar, etc.) after auth cookie is set
       void loadUser()
 
-      return data.data
+      return data
     },
     [loadUser]
   )
@@ -73,13 +73,13 @@ export function AuthProvider({
   }, [])
 
   const checkEmail = useCallback(async (email: string): Promise<boolean> => {
-    const { data } = await api.post<{ data: { exists: boolean } }>('/check-email', { email })
-    return data.data.exists
+    const data = await generatedCheckEmail({ email })
+    return !!data.exists
   }, [])
 
   const changePassword = useCallback(
     async (current_password: string, new_password: string, new_password_confirmation: string) => {
-      await api.put('/users/me/password', {
+      await generatedPutPassword({
         current_password,
         new_password,
         new_password_confirmation,
@@ -89,7 +89,7 @@ export function AuthProvider({
   )
 
   const deleteAccount = useCallback(async (password: string) => {
-    await api.delete('/users/me', { data: { password } })
+    await generatedDeleteAccount({ password })
     setUser(null)
   }, [])
 
@@ -114,8 +114,9 @@ export function AuthProvider({
         '/forgot-password',
         '/password/reset',
         '/email/verify',
+        '/requests',
       ]
-      const isPublicPath = publicPaths.some((path) => pathname.startsWith(path))
+      const isPublicPath = pathname === '/' || publicPaths.some((path) => pathname.startsWith(path))
 
       if (isPublicPath) {
         return

@@ -1,4 +1,6 @@
-let echoInstance: any | null = null
+import Echo from 'laravel-echo'
+
+let echoInstance: Echo | null = null
 let pusherInitialized = false
 
 /**
@@ -8,7 +10,7 @@ let pusherInitialized = false
  * - Environment variables are not configured
  * - The user is not authenticated
  */
-export async function getEcho(): Promise<any | null> {
+export async function getEcho(): Promise<Echo | null> {
   // Check if Reverb is configured
   const appKey = import.meta.env.VITE_REVERB_APP_KEY
   if (!appKey) {
@@ -23,9 +25,9 @@ export async function getEcho(): Promise<any | null> {
       pusherInitialized = true
     }
 
-    const { default: Echo } = await import('laravel-echo')
+    const { default: EchoModule } = await import('laravel-echo')
 
-    echoInstance = new Echo({
+    echoInstance = new EchoModule({
       broadcaster: 'reverb',
       key: appKey,
       wsHost: import.meta.env.VITE_REVERB_HOST || window.location.hostname,

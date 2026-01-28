@@ -76,7 +76,7 @@ class RestSemanticsTest extends TestCase
 
         // PUT should work
         $response = $this->putJson('/api/users/me/password', $passwordData);
-        $response->assertStatus(204);
+        $response->assertStatus(200);
 
         // POST should return 405 Method Not Allowed
         $response = $this->postJson('/api/users/me/password', $passwordData);

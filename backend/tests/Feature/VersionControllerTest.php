@@ -12,6 +12,11 @@ class VersionControllerTest extends TestCase
     {
         $response = $this->getJson('/api/version');
         $response->assertStatus(200)
-            ->assertJson(['version' => config('version.api')]);
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'version' => config('version.api'),
+                ],
+            ]);
     }
 }

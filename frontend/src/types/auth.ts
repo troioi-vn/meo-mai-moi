@@ -1,3 +1,5 @@
+import type { User } from './user'
+
 export interface RegisterPayload {
   name: string
   email: string
@@ -7,13 +9,7 @@ export interface RegisterPayload {
 }
 
 export interface RegisterResponse {
-  user: {
-    id: number
-    name: string
-    email: string
-    has_password?: boolean
-    email_verified_at?: string | null
-  }
+  user: User
   email_verified: boolean
   email_sent: boolean
   requires_verification: boolean
@@ -27,20 +23,6 @@ export interface LoginPayload {
 }
 
 export interface LoginResponse {
-  user: {
-    id: number
-    name: string
-    email: string
-    has_password?: boolean
-    email_verified_at?: string | null
-  }
+  user: User
   two_factor: boolean
-}
-
-export interface User {
-  id: number
-  name: string
-  email: string
-  has_password?: boolean
-  email_verified_at?: string | null
 }

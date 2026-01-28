@@ -17,8 +17,11 @@ class LogoutResponse implements LogoutResponseContract
     public function toResponse($request): JsonResponse
     {
         return response()->json([
-            'message' => 'Logged out successfully',
-            'redirect' => '/login',
+            'success' => true,
+            'data' => [
+                'message' => 'Logged out successfully',
+                'redirect' => '/login',
+            ],
         ]);
     }
 }

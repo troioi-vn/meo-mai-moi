@@ -91,12 +91,12 @@ export default function EmailVerificationPage() {
         }
 
         // Call the verification endpoint
-        const response = await api.get<{ data: { message: string } }>(
+        const response = await api.get<{ message: string }>(
           `/email/verify/${id}/${hash}?expires=${expires}&signature=${signature}`
         )
 
         setStatus('success')
-        setMessage(response.data.data.message)
+        setMessage(response.message)
 
         // Reload user data
         void loadUser()
@@ -142,10 +142,10 @@ export default function EmailVerificationPage() {
     setResendMessage(null)
     setResendError(null)
     try {
-      const { data } = await api.post<{ data: { message: string; email_sent: boolean } }>(
+      const data = await api.post<{ message: string; email_sent: boolean }>(
         '/email/verification-notification'
       )
-      setResendMessage(data.data.message)
+      setResendMessage(data.message)
     } catch (error) {
       console.error('Failed to resend email:', error)
       setResendError('Failed to resend verification email')

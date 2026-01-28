@@ -75,9 +75,9 @@ export default function EmailVerificationPrompt({
     setResendError(null)
 
     try {
-      const { data } = await api.post<{ data: ResendResponse }>('/email/verification-notification')
-      setResendMessage(data.data.message)
-      setLastResendSuccess(data.data.email_sent)
+      const data = await api.post<ResendResponse>('/email/verification-notification')
+      setResendMessage(data.message)
+      setLastResendSuccess(data.email_sent)
     } catch (error) {
       if (error instanceof AxiosError) {
         const maybeMessage = (error.response?.data as unknown as { message?: unknown } | undefined)

@@ -22,6 +22,7 @@ class LoginResponse implements LoginResponseContract
         // For JSON requests (SPA): return user data
         if ($request->expectsJson()) {
             return response()->json([
+                'success' => true,
                 'data' => [
                     'user' => $user,
                     'two_factor' => false,

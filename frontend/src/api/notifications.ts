@@ -1,16 +1,21 @@
-import { api } from '@/api/axios'
 import type { AppNotification } from '@/types/notification'
+import {
+  postNotificationsMarkAllRead as generatedMarkAllRead,
+  patchNotificationsIdRead as generatedMarkRead,
+  getNotificationsUnified as generatedGetUnifiedNotifications,
+  postNotificationsNotificationActionsActionKey as generatedExecuteAction,
+} from './generated/notifications/notifications'
 
-export async function markAllRead(before?: string) {
-  await api.post(`/notifications/mark-all-read`, before ? { before } : undefined)
+export async function markAllRead() {
+  await generatedMarkAllRead()
 }
 
 export async function markRead(id: string) {
-  await api.patch(`/notifications/${id}/read`)
+  await generatedMarkRead(id)
 }
 
 export interface ExecuteNotificationActionData {
-  notification: AppNotification
+  notification: any
   unread_bell_count: number
 }
 
@@ -23,10 +28,15 @@ export async function executeNotificationAction(
   notificationId: string,
   actionKey: string
 ): Promise<ExecuteNotificationActionResponse> {
-  const res = await api.post<ExecuteNotificationActionResponse>(
-    `/notifications/${notificationId}/actions/${actionKey}`
-  )
-  return res.data
+  const res = await generatedExecuteAction(notificationId, actionKey)
+
+  return {
+    data: {
+      notification: res.notification,
+      unread_bell_count: res.unread_bell_count,
+    },
+    message: res.message,
+  }
 }
 
 export interface UnifiedNotificationsResponse {
@@ -43,12 +53,10 @@ export async function getUnifiedNotifications(
 ): Promise<UnifiedNotificationsResponse> {
   const { limit = 20, includeBellNotifications = true } = params
 
-  const res = await api.get<UnifiedNotificationsResponse>(`/notifications/unified`, {
-    params: {
-      limit,
-      include_bell_notifications: includeBellNotifications ? 1 : 0,
-    },
+  const response = await generatedGetUnifiedNotifications({
+    limit,
+    include_bell_notifications: includeBellNotifications ? 1 : 0,
   })
 
-  return res.data
+  return response as unknown as UnifiedNotificationsResponse
 }

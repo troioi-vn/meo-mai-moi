@@ -17,18 +17,7 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 200,
             description: 'A list of available pet types',
-            content: new OA\JsonContent(
-                type: 'array',
-                items: new OA\Items(
-                    type: 'object',
-                    properties: [
-                        new OA\Property(property: 'id', type: 'integer', example: 1),
-                        new OA\Property(property: 'name', type: 'string', example: 'Cat'),
-                        new OA\Property(property: 'slug', type: 'string', example: 'cat'),
-                        new OA\Property(property: 'description', type: 'string', example: 'Feline companions'),
-                    ]
-                )
-            )
+            content: new OA\JsonContent(ref: '#/components/schemas/PetTypeArrayResponse')
         ),
     ]
 )]

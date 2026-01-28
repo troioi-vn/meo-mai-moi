@@ -16,6 +16,7 @@ class SuccessfulPasswordResetLinkRequestResponse implements SuccessfulPasswordRe
     {
         // Preserve existing JSON response format for forgot password success
         return response()->json([
+            'success' => true,
             'data' => [
                 'message' => __('Password reset link sent to your email address.'),
             ],

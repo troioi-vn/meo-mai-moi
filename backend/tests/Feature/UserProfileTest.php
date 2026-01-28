@@ -30,7 +30,7 @@ class UserProfileTest extends TestCase
             'new_password_confirmation' => 'new_password',
         ]);
 
-        $response->assertStatus(204);
+        $response->assertStatus(200);
 
         $this->assertTrue(Hash::check('new_password', $this->user->fresh()->password));
     }
@@ -119,7 +119,7 @@ class UserProfileTest extends TestCase
             'password' => 'password',
         ]);
 
-        $response->assertStatus(204);
+        $response->assertStatus(200);
 
         $this->assertDatabaseMissing('users', ['id' => $this->user->id]);
     }

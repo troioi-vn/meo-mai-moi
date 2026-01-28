@@ -54,45 +54,45 @@ const HelperProfileEditPage: React.FC = () => {
 
   // Prepare initial form data from loaded data
   const initialFormData = useMemo(() => {
-    if (!data?.data) return {}
+    if (!data) return {}
 
-    const citiesSelected = data.data.cities ?? []
+    const citiesSelected = data.cities ?? []
 
     // Fallback for old data if cities is empty but city_id exists
-    if (citiesSelected.length === 0 && data.data.city_id) {
+    if (citiesSelected.length === 0 && data.city_id) {
       const cityValue =
-        typeof data.data.city === 'string'
+        typeof data.city === 'string'
           ? {
-              id: data.data.city_id,
-              name: data.data.city,
-              slug: data.data.city.toLowerCase().replace(/\s+/g, '-'),
-              country: data.data.country ?? '',
+              id: data.city_id,
+              name: data.city,
+              slug: data.city.toLowerCase().replace(/\s+/g, '-'),
+              country: data.country ?? '',
               description: null,
               created_by: null,
               approved_at: null,
               created_at: '',
               updated_at: '',
             }
-          : (data.data.city as unknown as City)
+          : (data.city as unknown as City)
       citiesSelected.push(cityValue)
     }
 
     return {
-      country: data.data.country ?? '',
-      address: data.data.address ?? '',
+      country: data.country ?? '',
+      address: data.address ?? '',
       city: citiesSelected.map((c) => c.name).join(', '),
       city_ids: citiesSelected.map((c) => c.id),
       cities_selected: citiesSelected,
-      state: data.data.state ?? '',
-      phone_number: data.data.phone_number ?? data.data.phone ?? '',
-      contact_info: data.data.contact_info ?? '',
-      experience: data.data.experience ?? '',
-      has_pets: Boolean(data.data.has_pets),
-      has_children: Boolean(data.data.has_children),
-      request_types: data.data.request_types ?? [],
-      status: data.data.status,
+      state: data.state ?? '',
+      phone_number: data.phone_number ?? data.phone ?? '',
+      contact_info: data.contact_info ?? '',
+      experience: data.experience ?? '',
+      has_pets: Boolean(data.has_pets),
+      has_children: Boolean(data.has_children),
+      request_types: data.request_types ?? [],
+      status: data.status,
       photos: [],
-      pet_type_ids: data.data.pet_types?.map((pt) => pt.id) ?? [],
+      pet_type_ids: data.pet_types?.map((pt) => pt.id) ?? [],
     }
   }, [data])
 
@@ -171,7 +171,7 @@ const HelperProfileEditPage: React.FC = () => {
     )
   }
 
-  if (!data?.data) {
+  if (!data) {
     return (
       <ErrorState
         error="Helper profile not found"
@@ -182,9 +182,9 @@ const HelperProfileEditPage: React.FC = () => {
     )
   }
 
-  const helperName = data.data.user?.name ?? 'Helper'
+  const helperName = data.user?.name ?? 'Helper'
 
-  const photos = data.data.photos as { id: number; path: string }[]
+  const photos = data.photos as { id: number; path: string }[]
 
   return (
     <div className="min-h-screen bg-background">
@@ -242,9 +242,9 @@ const HelperProfileEditPage: React.FC = () => {
                   </section>
 
                   <ProfileStatusSection
-                    status={data.data.status}
+                    status={data.status}
                     hasPlacementResponses={Boolean(
-                      data.data.placement_responses && data.data.placement_responses.length > 0
+                      data.placement_responses && data.placement_responses.length > 0
                     )}
                     onArchive={() => {
                       archiveMutation.mutate()

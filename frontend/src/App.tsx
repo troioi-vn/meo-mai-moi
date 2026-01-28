@@ -4,11 +4,11 @@ import { useAuth } from '@/hooks/use-auth'
 import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
 import MainNav from '@/components/layout/MainNav'
+import { BannedReadOnlyBanner } from '@/components/layout/BannedReadOnlyBanner'
 import { usePwaUpdate } from '@/hooks/use-pwa-update'
 import { PageLoadingSpinner } from '@/components/ui/page-loading-spinner'
 
 // Lazy loaded components
-const MainPage = lazy(() => import('./pages/home/MainPage'))
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
 const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'))
 const EmailVerificationPage = lazy(() => import('./pages/auth/EmailVerificationPage'))
@@ -61,7 +61,7 @@ function HomePage() {
     )
   }
 
-  return isAuthenticated ? <MyPetsPage /> : <MainPage />
+  return isAuthenticated ? <MyPetsPage /> : <Navigate to="/requests" replace />
 }
 
 export function AppRoutes() {
@@ -205,6 +205,7 @@ export default function App() {
   return (
     <>
       <MainNav />
+      <BannedReadOnlyBanner />
       <main className="pt-16">
         <Suspense fallback={<PageLoadingSpinner />}>
           <AppRoutes />

@@ -75,10 +75,10 @@ export function ResponsesDrawer({
     if (!currentResponse?.helper_profile_id) return
     setLoadingProfile(true)
     try {
-      const res = await api.get<{ data: HelperProfile }>(
+      const res = await api.get<HelperProfile>(
         `helper-profiles/${String(currentResponse.helper_profile_id)}`
       )
-      setProfileData(res.data.data)
+      setProfileData(res)
       setViewingProfile(true)
     } catch (error) {
       console.error('Failed to load helper profile', error)

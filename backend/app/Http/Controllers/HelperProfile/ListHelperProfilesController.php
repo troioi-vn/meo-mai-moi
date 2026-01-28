@@ -7,6 +7,7 @@ namespace App\Http\Controllers\HelperProfile;
 use App\Enums\HelperProfileStatus;
 use App\Http\Controllers\Controller;
 use App\Models\HelperProfile;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -18,15 +19,14 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 200,
             description: 'A list of helper profiles',
-            content: new OA\JsonContent(
-                type: 'array',
-                items: new OA\Items(ref: '#/components/schemas/HelperProfile')
-            )
+            content: new OA\JsonContent(ref: '#/components/schemas/HelperProfileArrayResponse')
         ),
     ]
 )]
 class ListHelperProfilesController extends Controller
 {
+    use ApiResponseTrait;
+
     public function __invoke(Request $request)
     {
         $user = $request->user();
@@ -53,6 +53,6 @@ class ListHelperProfilesController extends Controller
             ->whereIn('id', $visibleProfileIds)
             ->get();
 
-        return response()->json(['data' => $helperProfiles]);
+        return $this->sendSuccess($helperProfiles);
     }
 }

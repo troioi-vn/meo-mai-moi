@@ -30,6 +30,8 @@ backend/.env
 # Laravel runtime artifacts (generated at runtime)
 backend/vendor
 backend/storage
+!backend/storage/api-docs/
+!backend/storage/api-docs/api-docs.json
 backend/bootstrap/cache
 
 # Docs build output

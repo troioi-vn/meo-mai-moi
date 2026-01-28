@@ -19,12 +19,7 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 200,
             description: 'Verification status',
-            content: new OA\JsonContent(
-                properties: [
-                    new OA\Property(property: 'verified', type: 'boolean', example: true),
-                    new OA\Property(property: 'email', type: 'string', example: 'user@example.com'),
-                ]
-            )
+            content: new OA\JsonContent(ref: '#/components/schemas/VerificationStatusResponse')
         ),
     ]
 )]

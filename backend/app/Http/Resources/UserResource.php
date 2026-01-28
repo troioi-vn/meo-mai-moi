@@ -21,6 +21,9 @@ class UserResource extends JsonResource
             'name' => $this->name,
             'email' => $this->email,
             'avatar_url' => $this->avatar_url,
+            'is_banned' => (bool) $this->is_banned,
+            'banned_at' => $this->banned_at,
+            'ban_reason' => $this->ban_reason,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

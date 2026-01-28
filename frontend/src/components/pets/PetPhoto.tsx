@@ -51,14 +51,14 @@ export function PetPhoto({
       const formData = new FormData()
       formData.append('photo', file)
 
-      const response = await api.post<{ data: Pet }>(`/pets/${String(pet.id)}/photos`, formData, {
+      const response = await api.post<Pet>(`/pets/${String(pet.id)}/photos`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       })
 
       toast.success('Photo uploaded successfully')
-      onPhotoUpdate(response.data.data)
+      onPhotoUpdate(response)
     } catch (error: unknown) {
       let errorMessage = 'Failed to upload photo'
       if (error instanceof Error && 'response' in error) {

@@ -29,7 +29,12 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 200,
             description: 'Placement request details',
-            content: new OA\JsonContent(ref: '#/components/schemas/PlacementRequest')
+            content: new OA\JsonContent(
+                type: 'object',
+                properties: [
+                    new OA\Property(property: 'data', ref: '#/components/schemas/PlacementRequest'),
+                ]
+            )
         ),
         new OA\Response(
             response: 403,

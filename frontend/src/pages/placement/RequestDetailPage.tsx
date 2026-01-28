@@ -85,10 +85,10 @@ export default function RequestDetailPage() {
     const fetchProfiles = async () => {
       try {
         setLoadingProfiles(true)
-        const response = await api.get<{ data: HelperProfile[] }>('helper-profiles', {
+        const response = await api.get<HelperProfile[]>('helper-profiles', {
           params: { _t: Date.now() },
         })
-        const profiles = response.data.data
+        const profiles = response
         // Filter to only include active profiles
         const activeProfiles = profiles.filter((p) => p.status === 'active' || !p.status)
         setHelperProfiles(activeProfiles)

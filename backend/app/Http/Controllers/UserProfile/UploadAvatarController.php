@@ -35,9 +35,18 @@ use OpenApi\Attributes as OA;
             response: 200,
             description: 'Avatar uploaded successfully',
             content: new OA\JsonContent(
+                type: 'object',
                 properties: [
-                    new OA\Property(property: 'message', type: 'string', example: 'Avatar uploaded successfully.'),
-                    new OA\Property(property: 'avatar_url', type: 'string', example: 'http://localhost:8000/storage/users/avatars/user_1_1678886400.png'),
+                    new OA\Property(
+                        property: 'data',
+                        type: 'object',
+                        properties: [
+                            new OA\Property(property: 'message', type: 'string', example: 'Avatar uploaded successfully'),
+                            new OA\Property(property: 'user', ref: '#/components/schemas/User'),
+                            new OA\Property(property: 'avatar_url', type: 'string', example: 'http://localhost:8000/storage/users/avatars/user_1_1678886400.png'),
+                            new OA\Property(property: 'media_count', type: 'integer', example: 1),
+                        ]
+                    ),
                 ]
             )
         ),

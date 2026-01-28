@@ -1,4 +1,7 @@
-import { api } from '@/api/axios'
+import {
+  getNotificationPreferences as generatedGetNotificationPreferences,
+  putNotificationPreferences as generatedPutNotificationPreferences,
+} from './generated/notification-preferences/notification-preferences'
 
 export interface NotificationPreference {
   type: string
@@ -20,16 +23,14 @@ export interface UpdatePreferencesRequest {
   preferences: UpdatePreferenceRequest[]
 }
 
-export async function getNotificationPreferences(): Promise<{ data: NotificationPreference[] }> {
-  const response = await api.get<{ data: NotificationPreference[] }>('/notification-preferences')
-  return response.data
+export async function getNotificationPreferences(): Promise<NotificationPreference[]> {
+  const data = await generatedGetNotificationPreferences()
+  return data as unknown as NotificationPreference[]
 }
 
 export async function updateNotificationPreferences(
   preferences: UpdatePreferenceRequest[]
-): Promise<{ data: null; message: string }> {
-  const response = await api.put<{ data: null; message: string }>('/notification-preferences', {
-    preferences,
-  })
-  return response.data
+): Promise<{ message: string }> {
+  const data = await generatedPutNotificationPreferences({ preferences })
+  return data as unknown as { message: string }
 }

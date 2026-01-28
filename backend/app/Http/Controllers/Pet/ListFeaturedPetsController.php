@@ -18,10 +18,7 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 200,
             description: 'A list of featured pets',
-            content: new OA\JsonContent(
-                type: 'array',
-                items: new OA\Items(ref: '#/components/schemas/Pet')
-            )
+            content: new OA\JsonContent(ref: '#/components/schemas/PetArrayResponse')
         ),
     ]
 )]

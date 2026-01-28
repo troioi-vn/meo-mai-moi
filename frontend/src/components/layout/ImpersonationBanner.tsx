@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/axios'
-import { Button } from '@/components/ui/button'
-import { AlertTriangle, X, Settings } from 'lucide-react'
+import { X } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface ImpersonationStatus {
@@ -22,10 +21,7 @@ export function ImpersonationIndicator() {
 
   const { data: status } = useQuery<ImpersonationStatus>({
     queryKey: ['impersonation-status'],
-    queryFn: async () => {
-      const response = await api.get<ImpersonationStatus>('/impersonation/status')
-      return response.data
-    },
+    queryFn: () => api.get<ImpersonationStatus>('/impersonation/status'),
     refetchInterval: 30000, // Check every 30 seconds
   })
 

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\HelperProfile;
 use App\Enums\PlacementRequestType;
 use App\Http\Controllers\Controller;
 use App\Models\City;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -24,7 +25,7 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 201,
             description: 'Helper profile created successfully',
-            content: new OA\JsonContent(ref: '#/components/schemas/HelperProfile')
+            content: new OA\JsonContent(ref: '#/components/schemas/HelperProfileResponse')
         ),
         new OA\Response(
             response: 422,
@@ -34,6 +35,8 @@ use OpenApi\Attributes as OA;
 )]
 class StoreHelperProfileController extends Controller
 {
+    use ApiResponseTrait;
+
     public function __invoke(Request $request)
     {
         $validatedData = $request->validate([
@@ -60,12 +63,12 @@ class StoreHelperProfileController extends Controller
 
         $cities = City::whereIn('id', $validatedData['city_ids'])->get();
         if ($cities->count() !== count($validatedData['city_ids'])) {
-            return response()->json(['message' => 'One or more cities not found'], 422);
+            return $this->sendError('One or more cities not found', 422);
         }
 
         foreach ($cities as $city) {
             if ($city->country !== $validatedData['country']) {
-                return response()->json(['message' => "City {$city->name} does not belong to the specified country."], 422);
+                return $this->sendError("City {$city->name} does not belong to the specified country.", 422);
             }
         }
 
@@ -89,6 +92,6 @@ class StoreHelperProfileController extends Controller
             }
         }
 
-        return response()->json(['data' => $helperProfile->load('photos', 'cities')], 201);
+        return $this->sendSuccess($helperProfile->load('photos', 'cities'), 201);
     }
 }

@@ -38,7 +38,7 @@ export function NotificationPreferences() {
       const response = await getNotificationPreferences()
       setState((prev) => ({
         ...prev,
-        preferences: response.data,
+        preferences: response,
         loading: false,
       }))
     } catch (error) {

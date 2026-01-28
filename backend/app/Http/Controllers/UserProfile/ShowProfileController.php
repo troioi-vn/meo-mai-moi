@@ -48,6 +48,11 @@ class ShowProfileController extends Controller
         $userData['avatar_url'] = $user->avatar_url;
         $userData['has_password'] = $user->has_password;
 
+        // Ensure ban fields are present for the frontend read-only banner
+        $userData['is_banned'] = (bool) $user->is_banned;
+        $userData['banned_at'] = $user->banned_at;
+        $userData['ban_reason'] = $user->ban_reason;
+
         return $this->sendSuccess($userData);
     }
 }

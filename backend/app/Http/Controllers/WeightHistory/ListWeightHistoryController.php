@@ -58,6 +58,6 @@ class ListWeightHistoryController extends Controller
             ]),
         ]);
 
-        return response()->json(['data' => $payload]);
+        return $this->sendSuccess($payload);
     }
 }

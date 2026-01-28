@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Admin\Users\BanUserController;
+use App\Http\Controllers\Admin\Users\UnbanUserController;
 use App\Http\Controllers\Auth\CheckEmailController;
 use App\Http\Controllers\Category\ListCategoriesController;
 use App\Http\Controllers\Category\StoreCategoryController;
@@ -45,9 +47,9 @@ use App\Http\Controllers\Messaging\MarkChatReadController;
 use App\Http\Controllers\Messaging\ShowChatController;
 use App\Http\Controllers\Messaging\StoreChatController;
 use App\Http\Controllers\Messaging\StoreMessageController;
+use App\Http\Controllers\Notification\ExecuteNotificationActionController;
 use App\Http\Controllers\Notification\GetUnifiedNotificationsController;
 use App\Http\Controllers\Notification\ListNotificationsController;
-use App\Http\Controllers\Notification\ExecuteNotificationActionController;
 use App\Http\Controllers\Notification\MarkAllNotificationsReadController;
 use App\Http\Controllers\Notification\MarkAsReadLegacyController;
 use App\Http\Controllers\Notification\MarkNotificationReadController;
@@ -181,7 +183,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
 });
 
 // Main application routes that require email verification
-Route::middleware(['auth:sanctum', 'verified'])->group(function (): void {
+Route::middleware(['auth:sanctum', 'verified', 'not.banned'])->group(function (): void {
     Route::get('/user', function (Request $request) {
         return response()->json(['data' => $request->user()]);
     });
@@ -217,6 +219,12 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function (): void {
     Route::delete('/users/me', DeleteAccountController::class);
     Route::post('/users/me/avatar', UploadAvatarController::class);
     Route::delete('/users/me/avatar', DeleteAvatarController::class);
+
+    // Admin moderation endpoints (Filament is primary admin UI; these endpoints support programmatic admin tools)
+    Route::middleware('admin')->prefix('admin')->group(function (): void {
+        Route::post('/users/{user}/ban', BanUserController::class);
+        Route::post('/users/{user}/unban', UnbanUserController::class);
+    });
 
     // New pet routes
     Route::get('/my-pets', ListMyPetsController::class);

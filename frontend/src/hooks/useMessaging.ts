@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useAuth } from '@/hooks/use-auth'
 import { getEcho } from '@/lib/echo'
+import type { Channel } from 'laravel-echo'
 import {
   getChats,
   getChat,
@@ -48,7 +49,7 @@ export function useChatList() {
     if (!isAuthenticated || !user) return
 
     let active = true
-    let channel: any = null
+    let channel: Channel | null = null
 
     const setupEcho = async () => {
       const echoInstance = await getEcho()
@@ -167,15 +168,16 @@ export function useChat(chatId: number | null) {
     if (!chatId || !isAuthenticated) return
 
     let active = true
-    let channel: any = null
+    let channel: Channel | null = null
 
     const setupEcho = async () => {
       const echoInstance = await getEcho()
       if (!echoInstance || !active) return
 
       channel = echoInstance.private(`chat.${chatId.toString()}`)
-      channel.listen('.App\\Events\\MessageSent', (event: ChatMessage) => {
+      channel.listen('.App\\Events\\MessageSent', (data: unknown) => {
         if (!active) return
+        const event = data as ChatMessage
         setMessages((prev) => {
           // Avoid duplicates
           if (prev.some((m) => m.id === event.id)) return prev

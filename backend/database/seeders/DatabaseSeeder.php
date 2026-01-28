@@ -79,24 +79,30 @@ class DatabaseSeeder extends Seeder
                 $user1Cats[] = $pet;
                 $this->addWeightHistory($pet, $i === 1 ? 50 : rand(3, 5));
                 $this->addVaccinations($pet, 2);
+
+                $this->createPlacementRequest($user1, $pet);
             }
-            // One cat has a Placement Request
-            $this->createPlacementRequest($user1, $user1Cats[0]);
 
             // User 2: 2 dogs
             for ($i = 1; $i <= 2; $i++) {
                 $pet = $this->createPet($user2, $dogType, "dog-{$i}.png");
                 $this->addWeightHistory($pet, rand(3, 5));
+
+                $this->createPlacementRequest($user2, $pet);
             }
 
             // User 3: 2 cats, 2 dogs, 1 bird
             for ($i = 1; $i <= 2; $i++) {
                 $pet = $this->createPet($user3, $catType, 'cat-'.($i + 2).'.png');
                 $this->addWeightHistory($pet, rand(3, 5));
+
+                $this->createPlacementRequest($user3, $pet);
             }
             for ($i = 1; $i <= 2; $i++) {
                 $pet = $this->createPet($user3, $dogType, 'dog-'.($i + 2).'.png');
                 $this->addWeightHistory($pet, rand(3, 5));
+
+                $this->createPlacementRequest($user3, $pet);
             }
             $this->createPet($user3, $birdType, 'bird.png');
         }
@@ -210,12 +216,17 @@ class DatabaseSeeder extends Seeder
 
     private function createPlacementRequest(User $user, Pet $pet): void
     {
+        $slug = strtolower((string) ($pet->petType->slug ?? ''));
+        if ($slug === 'bird') {
+            return;
+        }
+
         PlacementRequest::create([
             'user_id' => $user->id,
             'pet_id' => $pet->id,
             'request_type' => PlacementRequestType::PERMANENT,
             'status' => \App\Enums\PlacementRequestStatus::OPEN,
-            'notes' => 'Looking for a permanent home for my cat',
+            'notes' => 'Looking for a permanent home',
             'expires_at' => now()->addMonths(3),
             'start_date' => now()->addWeek(),
             'end_date' => null,

@@ -19,7 +19,6 @@ This guide provides a comprehensive overview of how to get started with developm
     > **Tip**: Use `./utils/deploy.sh --skip-build` for faster deployments when you've already built the Docker images and just need to restart containers or run database migrations.
 
 2.  **Access the app**
-
     - **Main App**: http://localhost:8000
     - **Admin Panel**: http://localhost:8000/admin (admin@catarchy.space / password)
     - **API Docs**: http://localhost:8000/api/documentation
@@ -46,12 +45,42 @@ This guide provides a comprehensive overview of how to get started with developm
     ```
 
     **Why HTTPS in dev?**
-
     - Test features requiring secure context (Service Workers, Web Crypto API, etc.)
     - Match production behavior more closely
     - Test HTTPS-specific security headers
 
     **Production note**: Production deployments use `docker-compose.yml` only (no dev override). HTTPS is handled by reverse proxy (nginx/caddy/traefik) with proper certificates.
+
+4.  **Generate API Client**
+
+    If you change the backend API (@OA annotations), you must regenerate the frontend types and hooks:
+
+    ```bash
+    # Run from root to sync both backend and frontend
+    bun run api:generate
+    ```
+
+    Alternatively, run separately:
+
+    ```bash
+    cd backend && php artisan l5-swagger:generate
+    cd ../frontend && bun run api:generate
+    ```
+
+    **CI/Commit Guardrail**
+    To ensure your generated code matches the current backend attributes, run:
+
+    ```bash
+    bun run api:check
+    ```
+
+    (Exits with code 1 if there are uncommitted changes to generated files).
+
+    **Deployment**: The `./utils/deploy.sh` script automatically regenerates both the OpenAPI spec and the frontend client during the pre-build stage to ensure the production image is always consistent.
+
+    **Usage**: Refer to `frontend/src/api/generated/` for the output. Prefer using the generated hooks (`useGetPets`, `usePostPets`, etc.) over manual Axios calls for full type safety.
+
+    See [API Conventions](docs/api-conventions.md) for more details on full-stack typesafety.
 
 **Test Users (Seeded Data)**
 
@@ -63,6 +92,7 @@ This guide provides a comprehensive overview of how to get started with developm
 
 - **User Impersonation**: Click 👤 icon in Users table to impersonate any user
 - **Stop Impersonating**: Use navbar indicator or admin panel to return
+- **User Ban/Unban**: Ban users to put them in read-only mode (view-only, no writes); unban to restore full access
 
 ## Testing
 

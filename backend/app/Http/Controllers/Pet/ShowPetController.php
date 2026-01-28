@@ -29,7 +29,7 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 200,
             description: 'The pet',
-            content: new OA\JsonContent(ref: '#/components/schemas/Pet')
+            content: new OA\JsonContent(ref: '#/components/schemas/PetResponse')
         ),
         new OA\Response(
             response: 404,

@@ -32,7 +32,12 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 200,
             description: 'Transfer request rejected successfully',
-            content: new OA\JsonContent(ref: '#/components/schemas/TransferRequest')
+            content: new OA\JsonContent(
+                type: 'object',
+                properties: [
+                    new OA\Property(property: 'data', ref: '#/components/schemas/TransferRequest'),
+                ]
+            )
         ),
         new OA\Response(response: 404, description: 'Transfer request not found'),
         new OA\Response(response: 401, description: 'Unauthenticated'),

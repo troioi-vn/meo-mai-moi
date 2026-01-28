@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Services\NotificationService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 class StoreMessageController extends Controller
 {
@@ -22,6 +23,44 @@ class StoreMessageController extends Controller
         protected NotificationService $notificationService
     ) {}
 
+    #[OA\Post(
+        path: '/api/msg/chats/{id}/messages',
+        summary: 'Send a message in a chat',
+        tags: ['Messaging'],
+        security: [['sanctum' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'integer')
+            ),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['content'],
+                properties: [
+                    new OA\Property(property: 'content', type: 'string', example: 'Hello!'),
+                    new OA\Property(property: 'type', type: 'string', enum: ['text', 'image'], default: 'text'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: 'Message sent',
+                content: new OA\JsonContent(
+                    type: 'object',
+                    properties: [new OA\Property(property: 'data', ref: '#/components/schemas/ChatMessage')]
+                )
+            ),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Unauthorized'),
+            new OA\Response(response: 404, description: 'Chat not found'),
+            new OA\Response(response: 422, description: 'Validation error'),
+        ]
+    )]
     public function __invoke(Request $request, Chat $chat)
     {
         $user = $request->user();

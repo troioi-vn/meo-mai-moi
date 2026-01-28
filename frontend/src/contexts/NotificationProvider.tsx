@@ -5,6 +5,7 @@ import { getUnifiedNotifications, markAllRead, markRead } from '@/api/notificati
 import type { AppNotification, NotificationLevel } from '@/types/notification'
 import { AuthContext } from '@/contexts/auth-context'
 import { getServiceWorkerRegistration } from '@/lib/web-push'
+import type { Channel } from 'laravel-echo'
 import { getEcho } from '@/lib/echo'
 
 interface NotificationContextValue {
@@ -227,7 +228,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!isAuthenticated || !user || !isVerified) return
 
     let active = true
-    let channel: any = null
+    let channel: Channel | null = null
 
     const setupEcho = async () => {
       const echoInstance = await getEcho()
@@ -239,7 +240,6 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
         // Fetch counts-only to keep updates lightweight
         if (active) void refresh({ includeBellNotifications: false })
       })
-
       channel.listen(
         '.App\\Events\\NotificationCreated',
         (event: { notification?: AppNotification; unread_bell_count?: number }) => {
@@ -265,7 +265,6 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
           void refresh({ includeBellNotifications: false })
         }
       )
-
       channel.listen(
         '.App\\Events\\NotificationRead',
         (event: { notification_id?: string | null; all?: boolean; unread_bell_count?: number }) => {

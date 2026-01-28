@@ -8,11 +8,33 @@ use App\Http\Controllers\Controller;
 use App\Models\ChatMessage;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 class GetUnreadChatsCountController extends Controller
 {
     use ApiResponseTrait;
 
+    #[OA\Get(
+        path: '/api/msg/unread-count',
+        summary: 'Get count of unread chats',
+        tags: ['Messaging'],
+        security: [['sanctum' => []]],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Unread count',
+                content: new OA\JsonContent(
+                    type: 'object',
+                    properties: [
+                        new OA\Property(property: 'data', properties: [
+                            new OA\Property(property: 'unread_message_count', type: 'integer'),
+                        ], type: 'object'),
+                    ]
+                )
+            ),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+        ]
+    )]
     public function __invoke(Request $request)
     {
         $user = $request->user();

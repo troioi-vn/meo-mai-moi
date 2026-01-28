@@ -28,11 +28,6 @@ use App\Http\Controllers\Invitation\StoreInvitationController;
 use App\Http\Controllers\Invitation\ValidateInvitationCodeController;
 use App\Http\Controllers\Legal\GetPlacementTermsController;
 use App\Http\Controllers\MailgunWebhookController;
-use App\Http\Controllers\MedicalNote\DeleteMedicalNoteController;
-use App\Http\Controllers\MedicalNote\ListMedicalNotesController;
-use App\Http\Controllers\MedicalNote\ShowMedicalNoteController;
-use App\Http\Controllers\MedicalNote\StoreMedicalNoteController;
-use App\Http\Controllers\MedicalNote\UpdateMedicalNoteController;
 use App\Http\Controllers\MedicalRecord\DeleteMedicalRecordController;
 use App\Http\Controllers\MedicalRecord\ListMedicalRecordsController;
 use App\Http\Controllers\MedicalRecord\ShowMedicalRecordController;
@@ -279,11 +274,6 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned'])->group(function ()
     Route::put('/pets/{pet}/weights/{weight}', UpdateWeightController::class)->whereNumber('weight');
     Route::delete('/pets/{pet}/weights/{weight}', DeleteWeightController::class)->whereNumber('weight');
 
-    // Medical Notes (write only - read is public)
-    Route::post('/pets/{pet}/medical-notes', StoreMedicalNoteController::class);
-    Route::put('/pets/{pet}/medical-notes/{note}', UpdateMedicalNoteController::class)->whereNumber('note');
-    Route::delete('/pets/{pet}/medical-notes/{note}', DeleteMedicalNoteController::class)->whereNumber('note');
-
     // Medical Records (write only - read is public)
     Route::post('/pets/{pet}/medical-records', StoreMedicalRecordController::class);
     Route::put('/pets/{pet}/medical-records/{record}', UpdateMedicalRecordController::class)->whereNumber('record');
@@ -347,8 +337,6 @@ Route::get('/pet-types', ListPetTypesController::class);
 // Pet health data routes (public read, auth required for write)
 Route::get('/pets/{pet}/weights', ListWeightHistoryController::class)->middleware('optional.auth')->whereNumber('pet');
 Route::get('/pets/{pet}/weights/{weight}', ShowWeightController::class)->middleware('optional.auth')->whereNumber(['pet', 'weight']);
-Route::get('/pets/{pet}/medical-notes', ListMedicalNotesController::class)->middleware('optional.auth')->whereNumber('pet');
-Route::get('/pets/{pet}/medical-notes/{note}', ShowMedicalNoteController::class)->middleware('optional.auth')->whereNumber(['pet', 'note']);
 Route::get('/pets/{pet}/medical-records', ListMedicalRecordsController::class)->middleware('optional.auth')->whereNumber('pet');
 Route::get('/pets/{pet}/medical-records/{record}', ShowMedicalRecordController::class)->middleware('optional.auth')->whereNumber(['pet', 'record']);
 Route::get('/pets/{pet}/vaccinations', ListVaccinationRecordsController::class)->middleware('optional.auth')->whereNumber('pet');

@@ -13,10 +13,6 @@ import {
   postPetsPetWeights as generatedPostPetsPetWeights,
   putPetsPetWeightsWeight as generatedPutPetsPetWeightsWeight,
   deletePetsPetWeightsWeight as generatedDeletePetsPetWeightsWeight,
-  getPetsPetMedicalNotes as generatedGetPetsPetMedicalNotes,
-  postPetsPetMedicalNotes as generatedPostPetsPetMedicalNotes,
-  putPetsPetMedicalNotesNote as generatedPutPetsPetMedicalNotesNote,
-  deletePetsPetMedicalNotesNote as generatedDeletePetsPetMedicalNotesNote,
   getPetsPetVaccinations as generatedGetPetsPetVaccinations,
   postPetsPetVaccinations as generatedPostPetsPetVaccinations,
   deletePetsPetVaccinationsRecord as generatedDeletePetsPetVaccinationsRecord,
@@ -43,15 +39,6 @@ export interface WeightHistory {
   id: number
   pet_id: number
   weight_kg: number
-  record_date: string // ISO date
-  created_at: string
-  updated_at: string
-}
-
-export interface MedicalNote {
-  id: number
-  pet_id: number
-  note: string
   record_date: string // ISO date
   created_at: string
   updated_at: string
@@ -271,37 +258,6 @@ export const updateWeight = async (
 
 export const deleteWeight = async (petId: number, weightId: number): Promise<boolean> => {
   await generatedDeletePetsPetWeightsWeight(petId, weightId)
-  return true
-}
-
-// Medical Notes API
-export const getMedicalNotes = async (
-  petId: number,
-  page = 1
-): Promise<{ data: MedicalNote[]; links: unknown; meta: unknown }> => {
-  const response = await generatedGetPetsPetMedicalNotes(petId, { page })
-  return response as unknown as { data: MedicalNote[]; links: unknown; meta: unknown }
-}
-
-export const createMedicalNote = async (
-  petId: number,
-  payload: { note: string; record_date: string }
-): Promise<MedicalNote> => {
-  const response = await generatedPostPetsPetMedicalNotes(petId, payload)
-  return response as unknown as MedicalNote
-}
-
-export const updateMedicalNote = async (
-  petId: number,
-  noteId: number,
-  payload: Partial<{ note: string; record_date: string }>
-): Promise<MedicalNote> => {
-  const response = await generatedPutPetsPetMedicalNotesNote(petId, noteId, payload)
-  return response as unknown as MedicalNote
-}
-
-export const deleteMedicalNote = async (petId: number, noteId: number): Promise<boolean> => {
-  await generatedDeletePetsPetMedicalNotesNote(petId, noteId)
   return true
 }
 

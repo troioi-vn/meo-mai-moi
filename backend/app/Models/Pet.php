@@ -313,14 +313,6 @@ class Pet extends Model implements HasMedia
     }
 
     /**
-     * Get medical notes for this pet
-     */
-    public function medicalNotes(): HasMany
-    {
-        return $this->hasMany(MedicalNote::class);
-    }
-
-    /**
      * Get vaccinations for this pet
      */
     public function vaccinations(): HasMany

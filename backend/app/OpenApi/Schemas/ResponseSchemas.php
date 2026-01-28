@@ -211,13 +211,6 @@ use OpenApi\Attributes as OA;
     ]
 )]
 #[OA\Schema(
-    schema: 'MedicalNoteArrayResponse',
-    title: 'Medical Note Array Response',
-    properties: [
-        new OA\Property(property: 'data', type: 'array', items: new OA\Items(ref: '#/components/schemas/MedicalNote')),
-    ]
-)]
-#[OA\Schema(
     schema: 'VaccinationRecordArrayResponse',
     title: 'Vaccination Record Array Response',
     properties: [

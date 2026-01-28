@@ -6,6 +6,8 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **PWA Install Banner**: Added a progressive web app install banner that appears on mobile devices after user authentication, allowing users to install the app to their home screen for quick access. Includes smart detection of mobile devices, respect for user dismissal preferences (30-day cooldown), and integration with the browser's `beforeinstallprompt` event.
+
 - **Full-stack Type Safety via Orval**: Integrated Orval to automatically generate TypeScript API clients and React Query hooks from the backend's OpenAPI specification.
   - Automated stripping of `/api` prefix and unwrapping of `{ data: T }` envelope at the type level for optimal DX.
   - Added `api:generate` and `api:check` scripts to [frontend/package.json](frontend/package.json).

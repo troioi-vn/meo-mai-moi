@@ -5,7 +5,9 @@ import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
 import MainNav from '@/components/layout/MainNav'
 import { BannedReadOnlyBanner } from '@/components/layout/BannedReadOnlyBanner'
+import { PwaInstallBanner } from '@/components/layout/PwaInstallBanner'
 import { usePwaUpdate } from '@/hooks/use-pwa-update'
+import { usePwaInstall } from '@/hooks/use-pwa-install'
 import { PageLoadingSpinner } from '@/components/ui/page-loading-spinner'
 
 // Lazy loaded components
@@ -185,9 +187,13 @@ export function AppRoutes() {
 
 export default function App() {
   const location = useLocation()
+  const { isAuthenticated } = useAuth()
 
   // PWA update notification handler
   usePwaUpdate()
+
+  // PWA install prompt handler (shows after login on mobile)
+  const { showBanner, triggerInstall, dismissBanner } = usePwaInstall(isAuthenticated)
 
   // Show a toast if redirected with verified=1 (run after mount so Toaster is present)
   useEffect(() => {
@@ -211,6 +217,7 @@ export default function App() {
           <AppRoutes />
         </Suspense>
       </main>
+      {showBanner && <PwaInstallBanner onInstall={triggerInstall} onDismiss={dismissBanner} />}
       <Toaster />
     </>
   )

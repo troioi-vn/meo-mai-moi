@@ -70,3 +70,5 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Code Consistency**: Standardized quote usage and removed unused imports to maintain consistent code style throughout the frontend codebase.
 - **Authentication Flow**: Updated public path handling to include requests page in unauthorized redirect logic.
 - **Authorization and Permissions**: Refactored permissions from "cat" to "pet" to generalize the application. Expanded admin role permissions to include pet types, helper profiles, placement/transfer requests, and reviews. Added create permissions for placement and transfer requests. Implemented Gate::before callback to implicitly grant all permissions to super_admin role.
+
+- **Pet Age Formatting**: Enhanced pet age display to show more precise age information including years, months, and days for pets with exact birth dates, instead of just showing years. Added helper function for accurate age component calculations.

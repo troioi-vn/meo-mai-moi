@@ -165,6 +165,30 @@ export const calculateAge = (birthday: string): number => {
   return age < 0 ? 0 : age
 }
 
+// Helper to calculate years, months, and days between two dates
+const calculateAgeComponents = (
+  birthday: Date,
+  today: Date
+): { years: number; months: number; days: number } => {
+  let years = today.getFullYear() - birthday.getFullYear()
+  let months = today.getMonth() - birthday.getMonth()
+  let days = today.getDate() - birthday.getDate()
+
+  if (days < 0) {
+    months--
+    // Get days in previous month
+    const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0)
+    days += prevMonth.getDate()
+  }
+
+  if (months < 0) {
+    years--
+    months += 12
+  }
+
+  return { years: Math.max(0, years), months: Math.max(0, months), days: Math.max(0, days) }
+}
+
 // Returns a human friendly age/approximation string based on precision fields
 export const formatPetAge = (
   pet: Pick<
@@ -177,8 +201,28 @@ export const formatPetAge = (
   switch (precision) {
     case 'day':
       if (pet.birthday) {
-        const years = calculateAge(pet.birthday)
-        return years === 1 ? '1 year old' : `${String(years)} years old`
+        const birthDate = new Date(pet.birthday)
+        if (Number.isNaN(birthDate.getTime())) return 'Age unknown'
+        const { years, months, days } = calculateAgeComponents(birthDate, today)
+
+        // More than 1 year old
+        if (years > 0) {
+          const yearStr = years === 1 ? '1 year' : `${String(years)} years`
+          // Show months only if there's at least 1 month
+          if (months > 0) {
+            const monthStr = months === 1 ? '1 month' : `${String(months)} months`
+            return `${yearStr} ${monthStr} old`
+          }
+          return `${yearStr} old`
+        }
+
+        // Less than 1 year but at least 1 month
+        if (months > 0) {
+          return months === 1 ? '1 month old' : `${String(months)} months old`
+        }
+
+        // Less than 1 month
+        return days === 1 ? '1 day old' : `${String(days)} days old`
       }
       return 'Age unknown'
     case 'month': {

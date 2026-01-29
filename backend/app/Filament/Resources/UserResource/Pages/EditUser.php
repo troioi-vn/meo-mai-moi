@@ -99,7 +99,7 @@ class EditUser extends EditRecord
             ->requiresConfirmation()
             ->visible(fn (\App\Models\User $record) => $record->getFirstMedia('avatar') !== null)
             ->action(function (\App\Models\User $record): void {
-                $this->record->clearMediaCollection('avatar');
+                $record->clearMediaCollection('avatar');
 
                 \Filament\Notifications\Notification::make()
                     ->title('Avatar deleted successfully')

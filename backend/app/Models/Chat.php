@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -75,8 +76,10 @@ class Chat extends Model
 
     /**
      * Get the latest message in this chat.
+     *
+     * @return HasOne<ChatMessage, $this>
      */
-    public function latestMessage()
+    public function latestMessage(): HasOne
     {
         return $this->hasOne(ChatMessage::class)->latestOfMany();
     }

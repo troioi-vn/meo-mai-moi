@@ -14,6 +14,7 @@ export default function RegisterPage() {
   const navigate = useNavigate()
   const { loadUser, user } = useAuth()
   const [searchParams] = useSearchParams()
+   
   const { mode, isLoading, invitationCode, invitationValidation, error, clearError } =
     useInviteSystem()
   const [registrationResponse, setRegistrationResponse] = useState<RegisterResponse | null>(null)
@@ -177,6 +178,7 @@ export default function RegisterPage() {
             <RegisterForm
               onSuccess={handleRegistrationSuccess}
               invitationCode={invitationCode}
+               
               inviterName={invitationValidation?.inviter?.name}
               initialEmail={initialEmail}
             />

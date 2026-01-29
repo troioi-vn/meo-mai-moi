@@ -5,7 +5,7 @@ import PetPublicProfilePage from './PetPublicProfilePage'
 import { AllTheProviders } from '@/testing/providers'
 import { server } from '@/testing/mocks/server'
 import { http, HttpResponse } from 'msw'
-import type { PublicPet } from '@/api/pets'
+import type { PublicPetResponse as PublicPet } from '@/api/generated/model'
 
 // Helper to render with proper route params
 const renderPetPublicProfilePage = (

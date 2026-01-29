@@ -3,7 +3,6 @@ import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import HelperProfilePage from './HelperProfilePage'
 import { mockHelperProfile } from '@/testing/mocks/data/helper-profiles'
-import { server } from '@/testing/mocks/server'
 
 const queryClient = new QueryClient({
   defaultOptions: {

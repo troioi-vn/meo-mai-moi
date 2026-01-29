@@ -2750,6 +2750,15 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
+                                                "required": [
+                                                    "type",
+                                                    "label",
+                                                    "description",
+                                                    "group",
+                                                    "group_label",
+                                                    "email_enabled",
+                                                    "in_app_enabled"
+                                                ],
                                                 "properties": {
                                                     "type": {
                                                         "type": "string"
@@ -2757,7 +2766,13 @@
                                                     "label": {
                                                         "type": "string"
                                                     },
+                                                    "description": {
+                                                        "type": "string"
+                                                    },
                                                     "group": {
+                                                        "type": "string"
+                                                    },
+                                                    "group_label": {
                                                         "type": "string"
                                                     },
                                                     "email_enabled": {

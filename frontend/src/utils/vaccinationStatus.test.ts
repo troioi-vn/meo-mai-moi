@@ -7,7 +7,7 @@ import {
   getVaccinationIntervalDays,
   calculateNextDueDate,
 } from './vaccinationStatus'
-import type { VaccinationRecord } from '@/api/pets'
+import type { VaccinationRecord } from '@/api/generated/model'
 
 const createVaccination = (overrides: Partial<VaccinationRecord> = {}): VaccinationRecord => ({
   id: 1,

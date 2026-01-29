@@ -8,9 +8,11 @@ import {
   postInvitations as generateInvitation,
   deleteInvitationsId as revokeInvitation,
   getInvitationsStats as getInvitationStats,
-  type GetInvitations200Item as Invitation,
-  type GetInvitationsStats200 as InvitationStats,
 } from '@/api/generated/invitations/invitations'
+import type {
+  GetInvitations200Item as Invitation,
+  GetInvitationsStats200 as InvitationStats,
+} from '@/api/generated/model'
 import {
   Plus,
   Copy,
@@ -335,7 +337,7 @@ export default function InvitationsPage() {
                         {invitation.recipient && (
                           <div className="flex items-center gap-1">
                             <Users className="h-3 w-3" />
-                            Accepted by {(invitation.recipient as Record<string, string>).name}
+                            Accepted by {(invitation.recipient as { name?: string }).name ?? 'Unknown'}
                           </div>
                         )}
 

@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { getSettingsPublic as getPublicSettings } from '@/api/generated/settings/settings'
-import {
-  postInvitationsValidate as validateInvitationCode,
-  type PostInvitationsValidate200 as InvitationValidation,
-} from '@/api/generated/invitations/invitations'
+import { postInvitationsValidate as validateInvitationCode } from '@/api/generated/invitations/invitations'
+import type { PostInvitationsValidate200 as InvitationValidation } from '@/api/generated/model'
 
 export type RegistrationMode = 'invite-only-no-code' | 'invite-only-with-code' | 'open-registration'
 
@@ -68,8 +66,7 @@ export const useInviteSystem = () => {
           isLoading: false,
           inviteOnlyEnabled,
           invitationCode,
-          invitationValidation:
-            invitationValidation as unknown as InviteSystemState['invitationValidation'],
+          invitationValidation,
         }))
       } catch (error) {
         console.error('Failed to initialize invite system:', error)

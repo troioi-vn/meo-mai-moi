@@ -29,10 +29,13 @@ use OpenApi\Attributes as OA;
                             properties: [
                                 new OA\Property(property: 'type', type: 'string'),
                                 new OA\Property(property: 'label', type: 'string'),
+                                new OA\Property(property: 'description', type: 'string'),
                                 new OA\Property(property: 'group', type: 'string'),
+                                new OA\Property(property: 'group_label', type: 'string'),
                                 new OA\Property(property: 'email_enabled', type: 'boolean'),
                                 new OA\Property(property: 'in_app_enabled', type: 'boolean'),
-                            ]
+                            ],
+                            required: ['type', 'label', 'description', 'group', 'group_label', 'email_enabled', 'in_app_enabled']
                         )
                     ),
                 ]

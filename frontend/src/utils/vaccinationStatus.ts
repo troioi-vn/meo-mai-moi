@@ -1,4 +1,4 @@
-import type { VaccinationRecord } from '@/api/pets'
+import type { VaccinationRecord } from '@/api/generated/model'
 
 export type VaccinationStatusType = 'up_to_date' | 'overdue' | 'due_soon' | 'unknown'
 // Type alias for compatibility with VaccinationStatusBadge component
@@ -89,9 +89,9 @@ export function getUpcomingVaccinations(vaccinations: VaccinationRecord[]): Vacc
       return dueDate >= ninetyDaysAgo
     })
     .sort((a, b) => {
-      const dateA = new Date(a.due_at)
-      const dateB = new Date(b.due_at)
-      return dateA.getTime() - dateB.getTime()
+      const dateA = new Date(a.due_at ?? 0).getTime()
+      const dateB = new Date(b.due_at ?? 0).getTime()
+      return dateA - dateB
     })
 }
 
@@ -101,8 +101,8 @@ export function getUpcomingVaccinations(vaccinations: VaccinationRecord[]): Vacc
  */
 export function getVaccinationIntervalDays(v: VaccinationRecord): number | null {
   if (!v.administered_at || !v.due_at) return null
-  const administered = new Date(v.administered_at)
-  const due = new Date(v.due_at)
+  const administered = new Date(v.administered_at ?? 0)
+  const due = new Date(v.due_at ?? 0)
   const diffMs = due.getTime() - administered.getTime()
   return Math.round(diffMs / (1000 * 60 * 60 * 24))
 }

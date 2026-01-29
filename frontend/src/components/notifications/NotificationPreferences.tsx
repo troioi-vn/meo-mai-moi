@@ -5,9 +5,11 @@ import { AlertCircle } from 'lucide-react'
 import {
   getNotificationPreferences,
   putNotificationPreferences,
-  type GetNotificationPreferences200Item as NotificationPreference,
-  type PutNotificationPreferencesBodyPreferencesItem as UpdatePreferenceRequest,
 } from '@/api/generated/notification-preferences/notification-preferences'
+import type {
+  GetNotificationPreferences200Item as NotificationPreference,
+  PutNotificationPreferencesBodyPreferencesItem as UpdatePreferenceRequest,
+} from '@/api/generated/model'
 import { DeviceNotificationsCard } from './DeviceNotificationsCard'
 import { NotificationPreferencesSkeleton } from './NotificationPreferencesSkeleton'
 import { NotificationPreferencesGroups } from './NotificationPreferencesGroups'

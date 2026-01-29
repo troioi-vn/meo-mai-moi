@@ -4,8 +4,8 @@ import {
   deletePetsPetWeightsWeight as deleteWeight,
   getPetsPetWeights as getPetWeights,
   putPetsPetWeightsWeight as updateWeight,
-  type WeightHistory,
 } from '@/api/generated/pets/pets'
+import type { WeightHistory } from '@/api/generated/model'
 
 export interface UseWeightsResult {
   items: WeightHistory[]

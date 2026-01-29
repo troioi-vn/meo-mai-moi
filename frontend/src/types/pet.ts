@@ -2,6 +2,8 @@ import type { PetSex } from '@/api/generated/model/petSex'
 import type { PetBirthdayPrecision } from '@/api/generated/model/petBirthdayPrecision'
 import type { City } from '@/api/generated/model/city'
 
+export type { City }
+
 export interface PetType {
   id: number
   name: string

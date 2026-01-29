@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react'
-import type { MedicalRecord, MedicalRecordType } from '@/api/pets'
+import type { MedicalRecord, MedicalRecordRecordType } from '@/api/generated/model'
+
+type MedicalRecordType = MedicalRecordRecordType
 import { useMedicalRecords } from '@/hooks/useMedicalRecords'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -189,9 +191,9 @@ export const MedicalRecordsSection: React.FC<{
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap mb-1">
                             <span
-                              className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${RECORD_TYPE_COLORS[r.record_type]}`}
+                              className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${RECORD_TYPE_COLORS[r.record_type ?? 'other']}`}
                             >
-                              {RECORD_TYPE_LABELS[r.record_type]}
+                              {RECORD_TYPE_LABELS[r.record_type ?? 'other']}
                             </span>
                             <span className="text-xs text-muted-foreground">
                               {new Date(r.record_date).toLocaleDateString()}

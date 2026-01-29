@@ -8,10 +8,8 @@ import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { PublicPlacementRequestSection } from '@/components/placement/public-profile/PublicPlacementRequestSection'
 import { PetPhotoCarouselModal } from '@/components/pets/PetPhotoGallery'
-import {
-  getPetsIdView as getPetPublic,
-  type PublicPetResponse as PublicPet,
-} from '@/api/generated/pets/pets'
+import { getPetsIdView as getPetPublic } from '@/api/generated/pets/pets'
+import type { PublicPetResponse as PublicPet } from '@/api/generated/model'
 import placeholderImage from '@/assets/images/default-avatar.webp'
 import {
   Breadcrumb,
@@ -82,7 +80,8 @@ const derivePublicPetImageUrl = (pet: PublicPet): string => {
 
 // Helper function to format location
 const formatLocation = (pet: PublicPet): string => {
-  const cityName = typeof pet.city === 'string' ? pet.city : pet.city?.name
+  // In PublicPetResponse, city is a string (not a City object)
+  const cityName = pet.city ?? undefined
   const parts = [cityName, pet.state, pet.country].filter(Boolean)
   return parts.join(', ') || 'Location not specified'
 }

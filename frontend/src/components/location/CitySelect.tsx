@@ -215,7 +215,7 @@ export const CitySelect: React.FC<Props> = (props) => {
         readOnly
         value={
           multiple
-            ? (props.value as City[]).map((c) => c.name ?? '').join(', ')
+            ? (props.value as City[]).map((c) => c.name).join(', ')
             : ((props.value as City | null)?.name ?? '')
         }
       />

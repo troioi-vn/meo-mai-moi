@@ -101,13 +101,14 @@ export function useChat(chatId: number | null) {
       setChat(chatData)
       // Messages come in reverse chronological order, reverse them for display
       if (Array.isArray(messagesData)) {
-        setMessages([...messagesData].reverse())
+        setMessages([...(messagesData as ChatMessage[])].reverse())
         setHasMore(false)
         cursorRef.current = null
       } else {
-        setMessages([...messagesData.data].reverse())
-        setHasMore(!!messagesData.next_cursor)
-        cursorRef.current = messagesData.next_cursor
+        const data = messagesData as { data?: ChatMessage[]; next_cursor?: string | null }
+        setMessages([...(data.data ?? [])].reverse())
+        setHasMore(!!data.next_cursor)
+        cursorRef.current = data.next_cursor ?? null
       }
 
       // Mark as read
@@ -141,13 +142,14 @@ export function useChat(chatId: number | null) {
       const messagesData = await getMessages(chatId, { cursor: cursorRef.current || undefined })
       // Prepend older messages (they're in reverse chrono order)
       if (Array.isArray(messagesData)) {
-        setMessages((prev) => [...[...messagesData].reverse(), ...prev])
+        setMessages((prev) => [...[...(messagesData as ChatMessage[])].reverse(), ...prev])
         setHasMore(false)
         cursorRef.current = null
       } else {
-        setMessages((prev) => [...[...messagesData.data].reverse(), ...prev])
-        setHasMore(!!messagesData.next_cursor)
-        cursorRef.current = messagesData.next_cursor
+        const data = messagesData as { data?: ChatMessage[]; next_cursor?: string | null }
+        setMessages((prev) => [...[...(data.data ?? [])].reverse(), ...prev])
+        setHasMore(!!data.next_cursor)
+        cursorRef.current = data.next_cursor ?? null
       }
     } catch (err) {
       console.error('Failed to load more messages:', err)

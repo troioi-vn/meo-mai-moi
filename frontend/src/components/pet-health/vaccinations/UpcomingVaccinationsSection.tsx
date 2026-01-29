@@ -29,7 +29,7 @@ import {
   getVaccinationIntervalDays,
   calculateNextDueDate,
 } from '@/utils/vaccinationStatus'
-import type { VaccinationRecord } from '@/api/pets'
+import type { VaccinationRecord } from '@/api/generated/model'
 import { format, parseISO } from 'date-fns'
 import { toast } from 'sonner'
 

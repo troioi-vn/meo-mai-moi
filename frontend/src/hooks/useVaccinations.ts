@@ -5,9 +5,9 @@ import {
   putPetsPetVaccinationsRecord as updateVaccination,
   deletePetsPetVaccinationsRecord as deleteVaccination,
   postPetsPetVaccinationsRecordRenew as renewVaccination,
-  type GetPetsPetVaccinations200Item as VaccinationRecord,
-  type VaccinationStatus,
 } from '@/api/generated/pets/pets'
+import type { VaccinationRecord } from '@/api/generated/model'
+import type { GetPetsPetVaccinationsStatus as VaccinationStatus } from '@/api/generated/model'
 
 export interface UseVaccinationsResult {
   items: VaccinationRecord[]

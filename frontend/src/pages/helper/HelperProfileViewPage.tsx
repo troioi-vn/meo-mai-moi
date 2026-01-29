@@ -49,7 +49,7 @@ export default function HelperProfileViewPage() {
     )
   }
 
-  const profile = data
+  const profile = data as unknown as HelperProfile
   const photos = (profile.photos as Photo[] | undefined) ?? []
   const petTypes: NonNullable<HelperProfile['pet_types']> = profile.pet_types ?? []
 

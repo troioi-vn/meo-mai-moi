@@ -110,7 +110,7 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => updateHelperProfile(id, data),
+    mutationFn: ({ id, data }: { id: number; data: FormData }) => updateHelperProfile(id, data),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['helper-profiles'] })
       if (profileId) {

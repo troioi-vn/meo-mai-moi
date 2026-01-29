@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { YearMonthDatePicker } from '@/components/ui/YearMonthDatePicker'
-import type { MedicalRecordType } from '@/api/pets'
+import type { MedicalRecordRecordType } from '@/api/generated/model'
+
+type MedicalRecordType = MedicalRecordRecordType
 
 export interface MedicalRecordFormValues {
   record_type: MedicalRecordType

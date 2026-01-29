@@ -4,8 +4,8 @@ import {
   deletePetsPetMicrochipsMicrochip as deleteMicrochip,
   getPetsPetMicrochips as getMicrochips,
   putPetsPetMicrochipsMicrochip as updateMicrochip,
-  type PetMicrochip,
 } from '@/api/generated/pets/pets'
+import type { PetMicrochip } from '@/api/generated/model'
 
 export interface UseMicrochipsResult {
   items: PetMicrochip[]

@@ -35,7 +35,11 @@ import {
   isTemporaryType,
 } from '@/types/placement'
 import { ResponsesDrawer } from './ResponsesDrawer'
-import { acceptPlacementResponse, rejectPlacementResponse, rejectTransfer } from '@/api/placement'
+import {
+  postPlacementResponsesIdAccept as acceptPlacementResponse,
+  postPlacementResponsesIdReject as rejectPlacementResponse,
+} from '@/api/generated/placement-request-responses/placement-request-responses'
+import { deleteTransferRequestsId as rejectTransfer } from '@/api/generated/transfer-requests/transfer-requests'
 import { useCreateChat } from '@/hooks/useMessaging'
 
 type PlacementRequest = NonNullable<Pet['placement_requests']>[number]

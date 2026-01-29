@@ -4,9 +4,8 @@ import {
   deletePetsPetMedicalRecordsRecord as deleteMedicalRecord,
   getPetsPetMedicalRecords as getMedicalRecords,
   putPetsPetMedicalRecordsRecord as updateMedicalRecord,
-  type MedicalRecord,
-  type MedicalRecordRecordType as MedicalRecordType,
 } from '@/api/generated/pets/pets'
+import type { MedicalRecord, MedicalRecordRecordType as MedicalRecordType } from '@/api/generated/model'
 
 export interface UseMedicalRecordsResult {
   items: MedicalRecord[]

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getLegalPlacementTerms } from '@/api/generated/legal/legal'
+import type { GetLegalPlacementTerms200 } from '@/api/generated/model'
 import {
   Dialog,
   DialogContent,
@@ -80,7 +81,7 @@ export const PlacementTermsDialog: React.FC<PlacementTermsDialogProps> = ({
   open,
   onOpenChange,
 }) => {
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error } = useQuery<GetLegalPlacementTerms200>({
     queryKey: ['placement-terms'],
     queryFn: getLegalPlacementTerms,
     enabled: open,
@@ -98,17 +99,28 @@ export const PlacementTermsDialog: React.FC<PlacementTermsDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-100 pr-4">
-          {isLoading && (
-            <div className="flex items-center justify-center h-32">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          )}
-          {error && (
-            <div className="text-sm text-destructive">
-              Failed to load terms. Please try again later.
-            </div>
-          )}
-          {data && <div className="prose prose-sm max-w-none">{renderMarkdown(data.content)}</div>}
+          {(() => {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- enabled: open makes TS think isLoading is always false
+            if (isLoading) {
+              return (
+                <div className="flex items-center justify-center h-32">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              )
+            }
+            if (error) {
+              return (
+                <div className="text-sm text-destructive">
+                  Failed to load terms. Please try again later.
+                </div>
+              )
+            }
+            const content = (data as GetLegalPlacementTerms200 | undefined)?.content
+            if (content) {
+              return <div className="prose prose-sm max-w-none">{renderMarkdown(content)}</div>
+            }
+            return null
+          })()}
         </ScrollArea>
       </DialogContent>
     </Dialog>

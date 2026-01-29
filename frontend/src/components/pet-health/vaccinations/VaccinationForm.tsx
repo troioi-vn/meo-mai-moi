@@ -9,6 +9,8 @@ export interface VaccinationFormValues {
   notes?: string | null
 }
 
+// Photo is handled separately after record creation
+
 // Normalize date string to YYYY-MM-DD format for HTML date input
 const normalizeDate = (dateStr: string | undefined | null, defaultDate?: string): string => {
   if (!dateStr) return defaultDate ?? ''
@@ -125,6 +127,9 @@ export const VaccinationForm: React.FC<{
           />
         </div>
       </div>
+      <p className="text-xs text-muted-foreground">
+        A photo can be added after saving the vaccination record.
+      </p>
       {serverError && <p className="text-sm text-destructive">{serverError}</p>}
       <div className="flex gap-2">
         <Button type="submit" disabled={Boolean(submitting)}>

@@ -30,7 +30,6 @@ use OpenApi\Attributes as OA;
                 new OA\Property(property: 'description', type: 'string', example: 'Annual checkup - all clear'),
                 new OA\Property(property: 'record_date', type: 'string', format: 'date', example: '2024-06-01'),
                 new OA\Property(property: 'vet_name', type: 'string', example: 'Dr. Smith'),
-                new OA\Property(property: 'attachment_url', type: 'string', example: 'https://example.com/attachment.pdf'),
             ]
         )
     ),
@@ -57,7 +56,6 @@ class StoreMedicalRecordController extends Controller
             'description' => $this->textValidationRules(true, 2000),
             'record_date' => $this->dateValidationRules(true, false),
             'vet_name' => $this->textValidationRules(false, 255),
-            'attachment_url' => ['nullable', 'string', 'url', 'max:2048'],
         ]);
 
         $created = $pet->medicalRecords()->create($validated);

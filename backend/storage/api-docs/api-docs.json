@@ -1480,9 +1480,6 @@
                                     },
                                     "vet_name": {
                                         "type": "string"
-                                    },
-                                    "attachment_url": {
-                                        "type": "string"
                                     }
                                 },
                                 "type": "object"
@@ -1717,10 +1714,6 @@
                                     "vet_name": {
                                         "type": "string",
                                         "example": "Dr. Smith"
-                                    },
-                                    "attachment_url": {
-                                        "type": "string",
-                                        "example": "https://example.com/attachment.pdf"
                                     }
                                 },
                                 "type": "object"
@@ -1749,6 +1742,138 @@
                     },
                     "403": {
                         "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pets/{pet}/medical-records/{record}/photos/{photo}": {
+            "delete": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Delete a photo from a medical record",
+                "operationId": "fe5bb7b6a145059f0a2423727831d7f7",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "record",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "photo",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Photo deleted successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pets/{pet}/medical-records/{record}/photos": {
+            "post": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Upload a photo for a medical record",
+                "operationId": "ee809524c9ad58f4c3468d218a1486a2",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "record",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "photo": {
+                                        "description": "The photo file (max 10MB, jpeg, png, jpg, gif)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Photo uploaded successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/MedicalRecord"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
                     },
                     "422": {
                         "description": "Validation error"
@@ -5861,6 +5986,128 @@
                 ]
             }
         },
+        "/api/pets/{pet}/vaccinations/{record}/photo": {
+            "post": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Upload a photo for a vaccination record",
+                "operationId": "3a12550cba8b55d8ff04c88732a05bf6",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "record",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "photo": {
+                                        "description": "The photo file (max 10MB, jpeg, png, jpg, gif)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Photo uploaded successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/VaccinationRecord"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Delete the photo from a vaccination record",
+                "operationId": "6289d3917423531f596534a72d3b615b",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "record",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Photo deleted successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/version": {
             "get": {
                 "tags": [
@@ -6802,9 +7049,22 @@
                         "type": "string",
                         "nullable": true
                     },
-                    "attachment_url": {
-                        "type": "string",
-                        "nullable": true
+                    "photos": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "id": {
+                                    "type": "integer"
+                                },
+                                "url": {
+                                    "type": "string"
+                                },
+                                "thumb_url": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
                     },
                     "created_at": {
                         "type": "string",
@@ -8182,6 +8442,11 @@
                         "description": "When set, indicates the record is completed/renewed and no longer active",
                         "type": "string",
                         "format": "date-time",
+                        "nullable": true
+                    },
+                    "photo_url": {
+                        "description": "URL to the vaccination photo",
+                        "type": "string",
                         "nullable": true
                     },
                     "created_at": {

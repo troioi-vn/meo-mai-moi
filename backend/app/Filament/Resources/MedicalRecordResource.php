@@ -81,12 +81,9 @@ class MedicalRecordResource extends Resource
                             ->label('Veterinarian Name')
                             ->maxLength(255),
 
-                        Forms\Components\FileUpload::make('attachment_url')
-                            ->label('Attachment')
-                            ->directory('medical-records')
-                            ->visibility('private')
-                            ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png'])
-                            ->maxSize(5120),
+                        Forms\Components\Placeholder::make('photos_info')
+                            ->label('Photos')
+                            ->content('Photos can be managed via the frontend application.'),
                     ])
                     ->columns(2),
             ]);

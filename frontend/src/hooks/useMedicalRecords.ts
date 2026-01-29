@@ -5,6 +5,7 @@ import {
   getPetsPetMedicalRecords as getMedicalRecords,
   putPetsPetMedicalRecordsRecord as updateMedicalRecord,
 } from '@/api/generated/pets/pets'
+import { api } from '@/api/axios'
 import type { MedicalRecord, MedicalRecordRecordType as MedicalRecordType } from '@/api/generated/model'
 
 export interface UseMedicalRecordsResult {
@@ -22,7 +23,6 @@ export interface UseMedicalRecordsResult {
     description: string
     record_date: string
     vet_name?: string | null
-    attachment_url?: string | null
   }) => Promise<MedicalRecord>
   update: (
     id: number,
@@ -31,10 +31,11 @@ export interface UseMedicalRecordsResult {
       description: string
       record_date: string
       vet_name?: string | null
-      attachment_url?: string | null
     }>
   ) => Promise<MedicalRecord>
   remove: (id: number) => Promise<boolean>
+  uploadPhoto: (recordId: number, file: File) => Promise<MedicalRecord>
+  deletePhoto: (recordId: number, photoId: number) => Promise<void>
 }
 
 export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
@@ -82,7 +83,6 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
       description: string
       record_date: string
       vet_name?: string | null
-      attachment_url?: string | null
     }) => {
       const item = await createMedicalRecord(petId, payload)
       setItems((prev) => [item, ...prev])
@@ -100,7 +100,6 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
         description: string
         record_date: string
         vet_name?: string | null
-        attachment_url?: string | null
       }>
     ) => {
       const item = await updateMedicalRecord(petId, id, payload)
@@ -119,6 +118,38 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
     [petId]
   )
 
+  const uploadPhoto = useCallback(
+    async (recordId: number, file: File) => {
+      const formData = new FormData()
+      formData.append('photo', file)
+
+      const updatedRecord = await api.post<MedicalRecord>(
+        `/pets/${String(petId)}/medical-records/${String(recordId)}/photos`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      )
+
+      setItems((prev) => prev.map((n) => (n.id === recordId ? updatedRecord : n)))
+      return updatedRecord
+    },
+    [petId]
+  )
+
+  const deletePhoto = useCallback(
+    async (recordId: number, photoId: number) => {
+      await api.delete(
+        `/pets/${String(petId)}/medical-records/${String(recordId)}/photos/${String(photoId)}`
+      )
+      // Refresh to get updated record
+      void refresh()
+    },
+    [petId, refresh]
+  )
+
   return useMemo(
     () => ({
       items,
@@ -133,6 +164,8 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
       create,
       update: updateOne,
       remove,
+      uploadPhoto,
+      deletePhoto,
     }),
     [
       items,
@@ -147,6 +180,8 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
       create,
       updateOne,
       remove,
+      uploadPhoto,
+      deletePhoto,
     ]
   )
 }

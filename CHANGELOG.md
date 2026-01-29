@@ -20,6 +20,14 @@ All notable changes to this project are documented here, following the [Keep a C
 
 - **API Standardization Framework**: Implemented a unified JSON response envelope `{ success, data, message, error }` across all backend controllers. This includes a robust `ApiResponseTrait` for consistent output and centralized OpenAPI schema definitions in `ResponseSchemas.php`.
 
+- **Photo Upload System for Health Records**: Replaced the basic attachment URL system with a comprehensive photo upload feature for medical and vaccination records using Spatie Media Library.
+  - Medical records now support multiple photo uploads with automatic thumbnail and medium size generation.
+  - Vaccination records support single photo uploads with thumbnail generation.
+  - Added confirmation dialogs before deleting photos to prevent accidental removal.
+  - Implemented photo carousel modal for viewing multiple medical record photos.
+  - Updated API endpoints to handle multipart/form-data uploads and photo deletion.
+  - Removed `attachment_url` field from medical records and added database migration to drop the column.
+
 ### Changed
 
 - **Frontend API Consumption**: Updated the Axios interceptor to automatically "unwrap" the backend's data envelope. Components now receive the direct payload (e.g., as `const user = await api.get('/user')`) instead of having to manually navigate `.data.data`.

@@ -33,6 +33,8 @@ use App\Http\Controllers\MedicalRecord\ListMedicalRecordsController;
 use App\Http\Controllers\MedicalRecord\ShowMedicalRecordController;
 use App\Http\Controllers\MedicalRecord\StoreMedicalRecordController;
 use App\Http\Controllers\MedicalRecord\UpdateMedicalRecordController;
+use App\Http\Controllers\MedicalRecordPhoto\DeleteMedicalRecordPhotoController;
+use App\Http\Controllers\MedicalRecordPhoto\StoreMedicalRecordPhotoController;
 use App\Http\Controllers\Messaging\DeleteChatController;
 use App\Http\Controllers\Messaging\DeleteMessageController;
 use App\Http\Controllers\Messaging\GetUnreadChatsCountController;
@@ -104,6 +106,8 @@ use App\Http\Controllers\VaccinationRecord\RenewVaccinationRecordController;
 use App\Http\Controllers\VaccinationRecord\ShowVaccinationRecordController;
 use App\Http\Controllers\VaccinationRecord\StoreVaccinationRecordController;
 use App\Http\Controllers\VaccinationRecord\UpdateVaccinationRecordController;
+use App\Http\Controllers\VaccinationRecordPhoto\DeleteVaccinationRecordPhotoController;
+use App\Http\Controllers\VaccinationRecordPhoto\StoreVaccinationRecordPhotoController;
 use App\Http\Controllers\VersionController;
 use App\Http\Controllers\Waitlist\CheckWaitlistController;
 use App\Http\Controllers\Waitlist\JoinWaitlistController;
@@ -278,12 +282,16 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned'])->group(function ()
     Route::post('/pets/{pet}/medical-records', StoreMedicalRecordController::class);
     Route::put('/pets/{pet}/medical-records/{record}', UpdateMedicalRecordController::class)->whereNumber('record');
     Route::delete('/pets/{pet}/medical-records/{record}', DeleteMedicalRecordController::class)->whereNumber('record');
+    Route::post('/pets/{pet}/medical-records/{record}/photos', StoreMedicalRecordPhotoController::class)->whereNumber('record');
+    Route::delete('/pets/{pet}/medical-records/{record}/photos/{photo}', DeleteMedicalRecordPhotoController::class)->whereNumber(['record', 'photo']);
 
     // Vaccinations (write only - read is public)
     Route::post('/pets/{pet}/vaccinations', StoreVaccinationRecordController::class);
     Route::put('/pets/{pet}/vaccinations/{record}', UpdateVaccinationRecordController::class)->whereNumber('record');
     Route::delete('/pets/{pet}/vaccinations/{record}', DeleteVaccinationRecordController::class)->whereNumber('record');
     Route::post('/pets/{pet}/vaccinations/{record}/renew', RenewVaccinationRecordController::class)->whereNumber('record');
+    Route::post('/pets/{pet}/vaccinations/{record}/photo', StoreVaccinationRecordPhotoController::class)->whereNumber('record');
+    Route::delete('/pets/{pet}/vaccinations/{record}/photo', DeleteVaccinationRecordPhotoController::class)->whereNumber('record');
 
     // Microchips (write only - read is public)
     Route::post('/pets/{pet}/microchips', StorePetMicrochipController::class);

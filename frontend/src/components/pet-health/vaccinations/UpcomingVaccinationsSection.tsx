@@ -1,5 +1,9 @@
-import { useState } from 'react'
-import { Syringe, Pencil, Trash2, RefreshCw, History } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { Syringe, Pencil, Trash2, RefreshCw, History, ImagePlus } from 'lucide-react'
+import {
+  HealthRecordPhotoModal,
+  type HealthRecordPhoto,
+} from '@/components/pet-health/HealthRecordPhotoModal'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
@@ -49,7 +53,8 @@ export function UpcomingVaccinationsSection({
   onVaccinationChange,
   mode = 'view',
 }: UpcomingVaccinationsSectionProps) {
-  const { items, loading, create, update, remove, renew, setStatus } = useVaccinations(petId)
+  const { items, loading, create, update, remove, renew, setStatus, uploadPhoto, deletePhoto } =
+    useVaccinations(petId)
   const [adding, setAdding] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [renewingRecord, setRenewingRecord] = useState<VaccinationRecord | null>(null)
@@ -57,6 +62,12 @@ export function UpcomingVaccinationsSection({
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
+  const [uploadingPhotoForId, setUploadingPhotoForId] = useState<number | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [selectedRecordId, setSelectedRecordId] = useState<number | null>(null)
+  // Photo modal state
+  const [photoModalOpen, setPhotoModalOpen] = useState(false)
+  const [photoModalRecord, setPhotoModalRecord] = useState<VaccinationRecord | null>(null)
 
   const upcomingVaccinations = getUpcomingVaccinations(items)
 
@@ -122,6 +133,56 @@ export function UpcomingVaccinationsSection({
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const handleUploadClick = (recordId: number) => {
+    setSelectedRecordId(recordId)
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file || !selectedRecordId) return
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file')
+      return
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File size must be less than 10MB')
+      return
+    }
+
+    setUploadingPhotoForId(selectedRecordId)
+    try {
+      await uploadPhoto(selectedRecordId, file)
+      toast.success('Photo uploaded')
+      onVaccinationChange?.()
+    } catch {
+      toast.error('Failed to upload photo')
+    } finally {
+      setUploadingPhotoForId(null)
+      setSelectedRecordId(null)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
+  const handleDeletePhoto = async (recordId: number) => {
+    try {
+      await deletePhoto(recordId)
+      toast.success('Photo deleted')
+      onVaccinationChange?.()
+    } catch {
+      toast.error('Failed to delete photo')
+    }
+  }
+
+  const openPhotoModal = (record: VaccinationRecord) => {
+    setPhotoModalRecord(record)
+    setPhotoModalOpen(true)
   }
 
   // Calculate initial values for renew form
@@ -238,40 +299,41 @@ export function UpcomingVaccinationsSection({
                             serverError={serverError}
                           />
                         ) : (
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <Syringe
-                                className={`h-5 w-5 ${
-                                  isCompleted
-                                    ? 'text-muted-foreground'
-                                    : isPast
-                                      ? 'text-destructive'
-                                      : 'text-blue-500'
-                                }`}
-                              />
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium">{v.vaccine_name}</span>
-                                {dueDate && (
-                                  <span
-                                    className={`text-sm ${
-                                      isCompleted
-                                        ? 'text-muted-foreground line-through'
-                                        : isPast
-                                          ? 'text-destructive'
-                                          : 'text-muted-foreground'
-                                    }`}
-                                  >
-                                    {format(dueDate, 'yyyy-MM-dd')}
-                                  </span>
-                                )}
-                                {isCompleted && (
-                                  <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
-                                    Renewed
-                                  </span>
-                                )}
+                          <div className="flex flex-col gap-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <Syringe
+                                  className={`h-5 w-5 ${
+                                    isCompleted
+                                      ? 'text-muted-foreground'
+                                      : isPast
+                                        ? 'text-destructive'
+                                        : 'text-blue-500'
+                                  }`}
+                                />
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">{v.vaccine_name}</span>
+                                  {dueDate && (
+                                    <span
+                                      className={`text-sm ${
+                                        isCompleted
+                                          ? 'text-muted-foreground line-through'
+                                          : isPast
+                                            ? 'text-destructive'
+                                            : 'text-muted-foreground'
+                                      }`}
+                                    >
+                                      {format(dueDate, 'yyyy-MM-dd')}
+                                    </span>
+                                  )}
+                                  {isCompleted && (
+                                    <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
+                                      Renewed
+                                    </span>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                            <div className="flex items-center gap-1">
+                              <div className="flex items-center gap-1">
                               {/* View mode: show Renew button only */}
                               {mode === 'view' && canEdit && !isCompleted && dueDate && (
                                 <Button
@@ -377,6 +439,41 @@ export function UpcomingVaccinationsSection({
                               )}
                             </div>
                           </div>
+                          {/* Photo section */}
+                          {(Boolean(v.photo_url) || (mode === 'edit' && canEdit && !isCompleted)) && (
+                            <div className="flex items-center gap-2 mt-1 ml-8">
+                              {v.photo_url && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    openPhotoModal(v)
+                                  }}
+                                  className="w-12 h-12 overflow-hidden rounded border cursor-pointer hover:opacity-90 transition-opacity"
+                                >
+                                  <img
+                                    src={v.photo_url}
+                                    alt="Vaccination record"
+                                    className="w-full h-full object-cover"
+                                  />
+                                </button>
+                              )}
+                              {mode === 'edit' && canEdit && !isCompleted && !v.photo_url && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 text-xs"
+                                  onClick={() => {
+                                    handleUploadClick(v.id)
+                                  }}
+                                  disabled={uploadingPhotoForId === v.id}
+                                >
+                                  <ImagePlus className="h-3 w-3 mr-1" />
+                                  {uploadingPhotoForId === v.id ? 'Uploading...' : 'Add Photo'}
+                                </Button>
+                              )}
+                            </div>
+                          )}
+                        </div>
                         )}
                       </li>
                     )
@@ -431,6 +528,39 @@ export function UpcomingVaccinationsSection({
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Hidden file input for photo uploads */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={(event) => {
+          void handleFileChange(event)
+        }}
+        className="hidden"
+      />
+
+      {/* Photo modal */}
+      {photoModalRecord?.photo_url && (
+        <HealthRecordPhotoModal
+          photos={
+            [
+              {
+                id: photoModalRecord.id,
+                url: photoModalRecord.photo_url,
+                thumb_url: photoModalRecord.photo_url,
+              },
+            ] as HealthRecordPhoto[]
+          }
+          open={photoModalOpen}
+          onOpenChange={setPhotoModalOpen}
+          initialIndex={0}
+          canDelete={mode === 'edit' && canEdit && !photoModalRecord.completed_at}
+          onDelete={async () => {
+            await handleDeletePhoto(photoModalRecord.id)
+          }}
+        />
+      )}
     </>
   )
 }

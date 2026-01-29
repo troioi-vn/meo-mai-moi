@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\MedicalRecord;
+namespace App\Http\Controllers\MedicalRecordPhoto;
 
 use App\Http\Controllers\Controller;
 use App\Models\MedicalRecord;
@@ -14,9 +14,9 @@ use App\Traits\HandlesValidation;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
-#[OA\Put(
-    path: '/api/pets/{pet}/medical-records/{record}',
-    summary: 'Update a medical record',
+#[OA\Post(
+    path: '/api/pets/{pet}/medical-records/{record}/photos',
+    summary: 'Upload a photo for a medical record',
     tags: ['Pets'],
     security: [['sanctum' => []]],
     parameters: [
@@ -25,24 +25,37 @@ use OpenApi\Attributes as OA;
     ],
     requestBody: new OA\RequestBody(
         required: true,
-        content: new OA\JsonContent(
-            properties: [
-                new OA\Property(property: 'record_type', type: 'string', enum: ['vaccination', 'vet_visit', 'medication', 'treatment', 'other']),
-                new OA\Property(property: 'description', type: 'string'),
-                new OA\Property(property: 'record_date', type: 'string', format: 'date'),
-                new OA\Property(property: 'vet_name', type: 'string'),
-            ]
+        content: new OA\MediaType(
+            mediaType: 'multipart/form-data',
+            schema: new OA\Schema(
+                properties: [
+                    new OA\Property(
+                        property: 'photo',
+                        type: 'string',
+                        format: 'binary',
+                        description: 'The photo file (max 10MB, jpeg, png, jpg, gif)'
+                    ),
+                ]
+            )
         )
     ),
     responses: [
-        new OA\Response(response: 200, description: 'OK', content: new OA\JsonContent(properties: [new OA\Property(property: 'data', ref: '#/components/schemas/MedicalRecord')])),
+        new OA\Response(
+            response: 200,
+            description: 'Photo uploaded successfully',
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'data', ref: '#/components/schemas/MedicalRecord'),
+                ]
+            )
+        ),
         new OA\Response(response: 401, description: 'Unauthenticated'),
         new OA\Response(response: 403, description: 'Forbidden'),
         new OA\Response(response: 404, description: 'Not found'),
         new OA\Response(response: 422, description: 'Validation error'),
     ]
 )]
-class UpdateMedicalRecordController extends Controller
+class StoreMedicalRecordPhotoController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
@@ -53,14 +66,14 @@ class UpdateMedicalRecordController extends Controller
     {
         $this->validatePetResource($request, $pet, 'medical', $record);
 
-        $validated = $this->validateWithErrorHandling($request, [
-            'record_type' => ['sometimes', 'string', 'in:vaccination,vet_visit,medication,treatment,other'],
-            'description' => $this->textValidationRules(false, 2000),
-            'record_date' => $this->dateValidationRules(false, false),
-            'vet_name' => $this->textValidationRules(false, 255),
+        $this->validateWithErrorHandling($request, [
+            'photo' => $this->imageValidationRules(),
         ]);
 
-        $record->update($validated);
+        $record->addMediaFromRequest('photo')
+            ->toMediaCollection('photos');
+
+        $record->refresh();
 
         return $this->sendSuccess($record);
     }

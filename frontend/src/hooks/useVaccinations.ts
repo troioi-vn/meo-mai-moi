@@ -6,6 +6,7 @@ import {
   deletePetsPetVaccinationsRecord as deleteVaccination,
   postPetsPetVaccinationsRecordRenew as renewVaccination,
 } from '@/api/generated/pets/pets'
+import { api } from '@/api/axios'
 import type { VaccinationRecord } from '@/api/generated/model'
 import type { GetPetsPetVaccinationsStatus as VaccinationStatus } from '@/api/generated/model'
 
@@ -41,6 +42,8 @@ export interface UseVaccinationsResult {
     }
   ) => Promise<VaccinationRecord>
   reload: () => Promise<void>
+  uploadPhoto: (recordId: number, file: File) => Promise<VaccinationRecord>
+  deletePhoto: (recordId: number) => Promise<void>
 }
 
 export const useVaccinations = (
@@ -115,5 +118,42 @@ export const useVaccinations = (
     return newRecord
   }
 
-  return { items, loading, error, status, setStatus, create, update, remove, renew, reload: load }
+  const uploadPhoto = async (recordId: number, file: File): Promise<VaccinationRecord> => {
+    const formData = new FormData()
+    formData.append('photo', file)
+
+    const updatedRecord = await api.post<VaccinationRecord>(
+      `/pets/${String(petId)}/vaccinations/${String(recordId)}/photo`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    )
+
+    setItems((prev) => prev.map((w) => (w.id === recordId ? updatedRecord : w)))
+    return updatedRecord
+  }
+
+  const deletePhoto = async (recordId: number): Promise<void> => {
+    await api.delete(`/pets/${String(petId)}/vaccinations/${String(recordId)}/photo`)
+    // Reload to get updated record
+    await load()
+  }
+
+  return {
+    items,
+    loading,
+    error,
+    status,
+    setStatus,
+    create,
+    update,
+    remove,
+    renew,
+    reload: load,
+    uploadPhoto,
+    deletePhoto,
+  }
 }

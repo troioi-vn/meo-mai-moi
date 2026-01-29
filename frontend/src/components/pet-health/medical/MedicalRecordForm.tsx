@@ -10,7 +10,6 @@ export interface MedicalRecordFormValues {
   description: string
   record_date: string
   vet_name: string
-  attachment_url: string
 }
 
 const RECORD_TYPE_OPTIONS: { value: MedicalRecordType; label: string }[] = [
@@ -36,12 +35,10 @@ export const MedicalRecordForm: React.FC<{
     () => initial?.record_date ?? new Date().toISOString().split('T')[0] ?? ''
   )
   const [vetName, setVetName] = useState<string>(initial?.vet_name ?? '')
-  const [attachmentUrl, setAttachmentUrl] = useState<string>(initial?.attachment_url ?? '')
   const [errors, setErrors] = useState<{
     record_type?: string
     description?: string
     record_date?: string
-    attachment_url?: string
   }>({})
 
   const handleSubmit = async (e: React.SubmitEvent) => {
@@ -53,9 +50,6 @@ export const MedicalRecordForm: React.FC<{
     if (!date) {
       newErrors.record_date = 'Date is required'
     }
-    if (attachmentUrl && !/^https?:\/\/.+/.test(attachmentUrl)) {
-      newErrors.attachment_url = 'Must be a valid URL'
-    }
     setErrors(newErrors)
     if (Object.keys(newErrors).length > 0) return
     await onSubmit({
@@ -63,7 +57,6 @@ export const MedicalRecordForm: React.FC<{
       description: description.trim(),
       record_date: date,
       vet_name: vetName.trim() || '',
-      attachment_url: attachmentUrl.trim() || '',
     })
   }
 
@@ -138,24 +131,10 @@ export const MedicalRecordForm: React.FC<{
             placeholder="e.g., Dr. Smith"
           />
         </div>
-        <div>
-          <label className="block text-sm font-medium">
-            Attachment URL <span className="text-muted-foreground">(optional)</span>
-          </label>
-          <input
-            type="url"
-            value={attachmentUrl}
-            onChange={(e) => {
-              setAttachmentUrl(e.target.value)
-            }}
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-            placeholder="https://..."
-          />
-          {errors.attachment_url && (
-            <p className="text-xs text-destructive mt-1">{errors.attachment_url}</p>
-          )}
-        </div>
       </div>
+      <p className="text-xs text-muted-foreground">
+        Photos can be added after saving the record.
+      </p>
       {serverError && <p className="text-sm text-destructive">{serverError}</p>}
       <div className="flex gap-2">
         <Button type="submit" disabled={Boolean(submitting)}>

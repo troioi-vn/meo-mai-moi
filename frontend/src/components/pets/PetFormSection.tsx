@@ -22,7 +22,7 @@ interface PetFormSectionProps {
   loadingPetTypes: boolean
   showOptionalFields: boolean
   isSubmitting: boolean
-  onSubmit: (e: React.FormEvent) => void
+  onSubmit: (e: React.SubmitEvent) => void
   onCancel: () => void
   updateField: UpdateField
   updateCategories: UpdateCategories

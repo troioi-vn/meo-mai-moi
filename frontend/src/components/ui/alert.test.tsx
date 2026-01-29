@@ -11,7 +11,7 @@ describe('Alert', () => {
       const alertElement = screen.getByRole('alert')
       expect(alertElement).toBeInTheDocument()
       expect(alertElement).toHaveTextContent('Default Alert')
-      expect(alertElement).toHaveClass('bg-background') // Default variant class
+      expect(alertElement).toHaveClass('bg-card') // Default variant class
     })
   })
 
@@ -21,7 +21,7 @@ describe('Alert', () => {
       const alertElement = screen.getByRole('alert')
       expect(alertElement).toBeInTheDocument()
       expect(alertElement).toHaveTextContent('Destructive Alert')
-      expect(alertElement).toHaveClass('border-destructive/50') // Destructive variant class
+      expect(alertElement).toHaveClass('text-destructive') // Destructive variant class
     })
   })
 

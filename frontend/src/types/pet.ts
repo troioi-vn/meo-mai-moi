@@ -1,3 +1,9 @@
+import type { PetSex } from '@/api/generated/model/petSex'
+import type { PetBirthdayPrecision } from '@/api/generated/model/petBirthdayPrecision'
+import type { City } from '@/api/generated/model/city'
+
+export type { City }
+
 export interface PetType {
   id: number
   name: string
@@ -9,18 +15,6 @@ export interface PetType {
   placement_requests_allowed: boolean
   weight_tracking_allowed?: boolean
   microchips_allowed?: boolean
-  created_at: string
-  updated_at: string
-}
-
-export interface City {
-  id: number
-  name: string
-  slug: string
-  country: string
-  description?: string | null
-  created_by?: number | null
-  approved_at?: string | null
   created_at: string
   updated_at: string
 }
@@ -38,10 +32,6 @@ export interface Category {
   updated_at: string
   pet_type?: PetType
 }
-
-export type BirthdayPrecision = 'day' | 'month' | 'year' | 'unknown'
-
-export type PetSex = 'male' | 'female' | 'not_specified'
 
 export const PetSexLabels: Record<PetSex, string> = {
   male: 'Male',
@@ -81,7 +71,7 @@ export interface Pet {
   birthday_year?: number | null
   birthday_month?: number | null
   birthday_day?: number | null
-  birthday_precision?: BirthdayPrecision
+  birthday_precision?: PetBirthdayPrecision
   country: string // ISO 3166-1 alpha-2 code
   state?: string | null
   city_id?: number | null
@@ -175,6 +165,30 @@ export const calculateAge = (birthday: string): number => {
   return age < 0 ? 0 : age
 }
 
+// Helper to calculate years, months, and days between two dates
+const calculateAgeComponents = (
+  birthday: Date,
+  today: Date
+): { years: number; months: number; days: number } => {
+  let years = today.getFullYear() - birthday.getFullYear()
+  let months = today.getMonth() - birthday.getMonth()
+  let days = today.getDate() - birthday.getDate()
+
+  if (days < 0) {
+    months--
+    // Get days in previous month
+    const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0)
+    days += prevMonth.getDate()
+  }
+
+  if (months < 0) {
+    years--
+    months += 12
+  }
+
+  return { years: Math.max(0, years), months: Math.max(0, months), days: Math.max(0, days) }
+}
+
 // Returns a human friendly age/approximation string based on precision fields
 export const formatPetAge = (
   pet: Pick<
@@ -187,8 +201,28 @@ export const formatPetAge = (
   switch (precision) {
     case 'day':
       if (pet.birthday) {
-        const years = calculateAge(pet.birthday)
-        return years === 1 ? '1 year old' : `${String(years)} years old`
+        const birthDate = new Date(pet.birthday)
+        if (Number.isNaN(birthDate.getTime())) return 'Age unknown'
+        const { years, months, days } = calculateAgeComponents(birthDate, today)
+
+        // More than 1 year old
+        if (years > 0) {
+          const yearStr = years === 1 ? '1 year' : `${String(years)} years`
+          // Show months only if there's at least 1 month
+          if (months > 0) {
+            const monthStr = months === 1 ? '1 month' : `${String(months)} months`
+            return `${yearStr} ${monthStr} old`
+          }
+          return `${yearStr} old`
+        }
+
+        // Less than 1 year but at least 1 month
+        if (months > 0) {
+          return months === 1 ? '1 month old' : `${String(months)} months old`
+        }
+
+        // Less than 1 month
+        return days === 1 ? '1 day old' : `${String(days)} days old`
       }
       return 'Age unknown'
     case 'month': {

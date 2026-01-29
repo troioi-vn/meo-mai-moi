@@ -6,16 +6,27 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
-- **Full-stack Type Safety via Orval**: Integrated Orval to automatically generate TypeScript API clients and React Query hooks from the backend's OpenAPI specification.
+- **PWA Install Banner**: Added a progressive web app install banner that appears on mobile devices after user authentication, allowing users to install the app to their home screen for quick access. Includes smart detection of mobile devices, respect for user dismissal preferences (30-day cooldown), and integration with the browser's `beforeinstallprompt` event.
+
+- **Full-stack Type Safety via Orval** (Completed): Integrated Orval to automatically generate TypeScript API clients and React Query hooks from the backend's OpenAPI specification.
   - Automated stripping of `/api` prefix and unwrapping of `{ data: T }` envelope at the type level for optimal DX.
-  - Added `api:generate` and `api:check` scripts to [frontend/package.json](frontend/package.json).
+  - Added `api:generate`, `api:check`, and `api:watch` scripts to [frontend/package.json](frontend/package.json).
   - Integrated with custom Axios mutator to maintain centralized 401 handling and standardized envelope extraction.
   - Completed OpenAPI spec coverage for **Cities**, **Messaging/Chats**, **Push Subscriptions**, and **Notification Actions** by adding PHP attributes to backend controllers.
-  - Migrated core API modules (`pets.ts`, `placement.ts`, `notifications.ts`, `cities.ts`, `messaging.ts`, `push-subscriptions.ts`) to use generated typesafe hooks.
+  - Migrated all eligible API modules to use generated typesafe hooks including impersonation, user avatars, pet photos, helper profiles, and placement request responses.
   - Resolved request body mapping issues (Orval `body` vs Axios `data`) by switching to `httpClient: 'axios'`.
   - Fixed an inconsistency in the Orval mutator where response data was being incorrectly re-wrapped, ensuring runtime behavior matches generated TypeScript definitions.
+  - Added pre-build API generation check in `utils/deploy.sh` to catch OpenAPI spec drift early during deployment.
 
 - **API Standardization Framework**: Implemented a unified JSON response envelope `{ success, data, message, error }` across all backend controllers. This includes a robust `ApiResponseTrait` for consistent output and centralized OpenAPI schema definitions in `ResponseSchemas.php`.
+
+- **Photo Upload System for Health Records**: Replaced the basic attachment URL system with a comprehensive photo upload feature for medical and vaccination records using Spatie Media Library.
+  - Medical records now support multiple photo uploads with automatic thumbnail and medium size generation.
+  - Vaccination records support single photo uploads with thumbnail generation.
+  - Added confirmation dialogs before deleting photos to prevent accidental removal.
+  - Implemented photo carousel modal for viewing multiple medical record photos.
+  - Updated API endpoints to handle multipart/form-data uploads and photo deletion.
+  - Removed `attachment_url` field from medical records and added database migration to drop the column.
 
 ### Changed
 
@@ -58,7 +69,7 @@ All notable changes to this project are documented here, following the [Keep a C
 
 - **Impersonation UI**: Fixed avatar and main menu visibility during impersonation. Redesigned the impersonation banner to be more compact, showing "🕵 [user_name] x" instead of the longer text. Ensured the admin panel link remains visible to impersonating admins even when checking the impersonated user's permissions.
 
-- **Messaging Hook Typing**: Refactored `useMessaging` hooks to use typed `Channel` objects instead of `any`, reducing technical debt and improving code reliability.
+- **Test Suite Fixes**: Resolved all import-related test failures (15 test suites) caused by the Orval API migration by updating imports to use generated APIs and adjusting function signatures. Fixed runtime assertion failures in messaging tests related to unexpected data structures.
 
 ### Changed
 
@@ -67,3 +78,5 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Code Consistency**: Standardized quote usage and removed unused imports to maintain consistent code style throughout the frontend codebase.
 - **Authentication Flow**: Updated public path handling to include requests page in unauthorized redirect logic.
 - **Authorization and Permissions**: Refactored permissions from "cat" to "pet" to generalize the application. Expanded admin role permissions to include pet types, helper profiles, placement/transfer requests, and reviews. Added create permissions for placement and transfer requests. Implemented Gate::before callback to implicitly grant all permissions to super_admin role.
+
+- **Pet Age Formatting**: Enhanced pet age display to show more precise age information including years, months, and days for pets with exact birth dates, instead of just showing years. Added helper function for accurate age component calculations.

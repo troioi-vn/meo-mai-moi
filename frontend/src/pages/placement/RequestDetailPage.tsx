@@ -3,14 +3,18 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { toast } from 'sonner'
 import {
-  getPlacementRequest,
-  acceptPlacementResponse,
-  rejectPlacementResponse,
-  cancelPlacementResponse,
-  confirmTransfer,
-  finalizePlacementRequest,
-  deletePlacementRequest,
-} from '@/api/placement'
+  getPlacementRequestsId as getPlacementRequest,
+  postPlacementRequestsIdFinalize as finalizePlacementRequest,
+  deletePlacementRequestsId as deletePlacementRequest,
+} from '@/api/generated/placement-requests/placement-requests'
+import {
+  postPlacementResponsesIdAccept as acceptPlacementResponse,
+  postPlacementResponsesIdCancel as rejectPlacementResponse,
+  postPlacementResponsesIdCancel as cancelPlacementResponse,
+  postPlacementResponsesIdAccept as confirmTransfer,
+  postPlacementRequestsIdResponses,
+} from '@/api/generated/placement-request-responses/placement-request-responses'
+import { getHelperProfiles } from '@/api/generated/helper-profiles/helper-profiles'
 import type { PlacementRequestDetail } from '@/types/placement'
 import type { PlacementRequestType } from '@/types/helper-profile'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -18,7 +22,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ArrowLeft } from 'lucide-react'
 import { useCreateChat } from '@/hooks/useMessaging'
-import { api } from '@/api/axios'
 import type { HelperProfile } from '@/types/helper-profile'
 import { RequestDetailHeader } from './request-detail/RequestDetailHeader'
 import { MyResponseSection } from './request-detail/MyResponseSection'
@@ -85,10 +88,8 @@ export default function RequestDetailPage() {
     const fetchProfiles = async () => {
       try {
         setLoadingProfiles(true)
-        const response = await api.get<HelperProfile[]>('helper-profiles', {
-          params: { _t: Date.now() },
-        })
-        const profiles = response
+        const response = await getHelperProfiles()
+        const profiles = response as HelperProfile[]
         // Filter to only include active profiles
         const activeProfiles = profiles.filter((p) => p.status === 'active' || !p.status)
         setHelperProfiles(activeProfiles)
@@ -220,7 +221,7 @@ export default function RequestDetailPage() {
     if (!request || !selectedProfileId) return
     setSubmittingResponse(true)
     try {
-      await api.post(`placement-requests/${String(request.id)}/responses`, {
+      await postPlacementRequestsIdResponses(request.id, {
         helper_profile_id: Number(selectedProfileId),
         message: responseMessage || undefined,
       })

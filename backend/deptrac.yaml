@@ -22,6 +22,8 @@ deptrac:
       - App\Policies\PetPolicy
       - App\Policies\PlacementRequestPolicy
       - App\Policies\TransferRequestPolicy
+      - App\Policies\ChatPolicy
+      - App\Policies\ChatMessagePolicy
     App\Services\InvitationService:
       - App\Notifications\InvitationToEmail
     App\Services\WaitlistService:

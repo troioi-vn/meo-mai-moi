@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import {
-  getPublicSettings,
-  validateInvitationCode,
-  type InvitationValidation,
-} from '@/api/invite-system'
+import { getSettingsPublic as getPublicSettings } from '@/api/generated/settings/settings'
+import { postInvitationsValidate as validateInvitationCode } from '@/api/generated/invitations/invitations'
+import type { PostInvitationsValidate200 as InvitationValidation } from '@/api/generated/model'
 
 export type RegistrationMode = 'invite-only-no-code' | 'invite-only-with-code' | 'open-registration'
 
@@ -38,7 +36,7 @@ export const useInviteSystem = () => {
 
         // Get public settings
         const settings = await getPublicSettings()
-        const inviteOnlyEnabled = settings.invite_only_enabled
+        const inviteOnlyEnabled = settings.invite_only_enabled ?? false
 
         let mode: RegistrationMode = 'open-registration'
         let invitationValidation: InvitationValidation | null = null
@@ -47,7 +45,7 @@ export const useInviteSystem = () => {
           if (invitationCode) {
             // Validate the invitation code
             try {
-              invitationValidation = await validateInvitationCode(invitationCode)
+              invitationValidation = await validateInvitationCode({ code: invitationCode })
               mode = 'invite-only-with-code'
             } catch (error) {
               console.error('Invalid invitation code:', error)

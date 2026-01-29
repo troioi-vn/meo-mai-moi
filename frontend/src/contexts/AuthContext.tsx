@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { api, authApi, csrf, setUnauthorizedHandler } from '@/api/axios'
+import { authApi, csrf, setUnauthorizedHandler } from '@/api/axios'
 import type { User } from '@/types/user'
 import type { RegisterPayload, RegisterResponse, LoginPayload, LoginResponse } from '@/types/auth'
 import { AuthContext } from './auth-context'

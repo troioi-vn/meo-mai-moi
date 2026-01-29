@@ -270,4 +270,29 @@ class PetControllerTest extends TestCase
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['pet_type_id']);
     }
+
+    public function test_show_pet_includes_city_object()
+    {
+        Sanctum::actingAs($this->user);
+
+        $pet = Pet::factory()->create([
+            'created_by' => $this->user->id,
+            'pet_type_id' => $this->catType->id,
+            'city_id' => $this->vnCity->id,
+            'city' => $this->vnCity->name,
+            'country' => $this->vnCity->country,
+        ]);
+
+        $response = $this->getJson("/api/pets/{$pet->id}");
+
+        $response->assertStatus(200);
+
+        // We expect 'city' to be an object (array in JSON), not a string
+        $data = $response->json('data');
+
+        $this->assertIsArray($data['city'], 'City field should be an object/array');
+        $this->assertEquals($this->vnCity->id, $data['city']['id']);
+        $this->assertEquals($this->vnCity->name, $data['city']['name']);
+        $this->assertEquals($this->vnCity->country, $data['city']['country']);
+    }
 }

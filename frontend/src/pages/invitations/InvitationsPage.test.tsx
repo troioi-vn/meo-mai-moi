@@ -6,7 +6,7 @@ import { server } from '@/testing/mocks/server'
 import { HttpResponse, http } from 'msw'
 import { toast } from 'sonner'
 import type { User } from '@/types/user'
-import * as inviteSystemApi from '@/api/invite-system'
+import * as inviteSystemApi from '@/api/generated/invitations/invitations'
 
 vi.mock('sonner', async () => {
   const actual = await vi.importActual('sonner')
@@ -298,8 +298,8 @@ describe('InvitationsPage', () => {
 
   it('refreshes invitations data periodically', async () => {
     const intervalSpy = vi.spyOn(window, 'setInterval')
-    const getUserInvitationsMock = vi.spyOn(inviteSystemApi, 'getUserInvitations')
-    const getInvitationStatsMock = vi.spyOn(inviteSystemApi, 'getInvitationStats')
+    const getUserInvitationsMock = vi.spyOn(inviteSystemApi, 'getInvitations')
+    const getInvitationStatsMock = vi.spyOn(inviteSystemApi, 'getInvitationsStats')
 
     const refreshedInvitations = [
       ...mockInvitations,

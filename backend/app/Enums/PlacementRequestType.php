@@ -14,7 +14,7 @@ enum PlacementRequestType: string implements HasColor, HasLabel
     case PERMANENT = 'permanent';
     case PET_SITTING = 'pet_sitting';
 
-    public function getLabel(): ?string
+    public function getLabel(): string
     {
         return match ($this) {
             self::FOSTER_PAID => 'Foster (Paid)',
@@ -24,7 +24,7 @@ enum PlacementRequestType: string implements HasColor, HasLabel
         };
     }
 
-    public function getColor(): string|array|null
+    public function getColor(): string
     {
         return match ($this) {
             self::FOSTER_PAID => 'warning',

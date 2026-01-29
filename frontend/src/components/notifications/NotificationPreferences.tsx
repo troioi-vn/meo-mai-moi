@@ -4,10 +4,12 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import {
   getNotificationPreferences,
-  updateNotificationPreferences,
-  type NotificationPreference,
-  type UpdatePreferenceRequest,
-} from '@/api/notification-preferences'
+  putNotificationPreferences,
+} from '@/api/generated/notification-preferences/notification-preferences'
+import type {
+  GetNotificationPreferences200Item as NotificationPreference,
+  PutNotificationPreferencesBodyPreferencesItem as UpdatePreferenceRequest,
+} from '@/api/generated/model'
 import { DeviceNotificationsCard } from './DeviceNotificationsCard'
 import { NotificationPreferencesSkeleton } from './NotificationPreferencesSkeleton'
 import { NotificationPreferencesGroups } from './NotificationPreferencesGroups'
@@ -93,7 +95,7 @@ export function NotificationPreferences() {
         in_app_enabled: field === 'in_app_enabled' ? value : currentPreference.in_app_enabled,
       }
 
-      await updateNotificationPreferences([updateRequest])
+      await putNotificationPreferences({ preferences: [updateRequest] })
 
       setState((prev) => ({
         ...prev,

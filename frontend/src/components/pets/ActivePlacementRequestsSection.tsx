@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { PetCard } from '@/components/pets/PetCard'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { getPlacementRequests } from '@/api/pets'
+import { getPetsPlacementRequests } from '@/api/generated/pets/pets'
 import type { Pet } from '@/types/pet'
 
 interface ActivePlacementRequestsSectionProps {
@@ -24,7 +24,7 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
       try {
         setLoading(true)
         setError(null)
-        const response = await getPlacementRequests()
+        const response = await getPetsPlacementRequests()
 
         // Client-side limiting to first 4 pets
         const limitedPets = response.slice(0, 4)
@@ -51,7 +51,7 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
     try {
       setLoading(true)
       setError(null)
-      const response = await getPlacementRequests()
+      const response = await getPetsPlacementRequests()
 
       // Client-side limiting to first 4 pets
       const limitedPets = response.slice(0, 4)

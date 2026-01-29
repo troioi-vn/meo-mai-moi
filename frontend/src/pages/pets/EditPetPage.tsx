@@ -4,7 +4,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
 
 import { useCreatePetForm } from '@/hooks/useCreatePetForm'
-import { deletePet, getPet, updatePetStatus } from '@/api/pets'
+import {
+  deletePetsId as deletePet,
+  getPetsId as getPet,
+  putPetsIdStatus as updatePetStatus,
+} from '@/api/generated/pets/pets'
 import type { Pet } from '@/types/pet'
 import { petSupportsCapability } from '@/types/pet'
 import { PetPhoto } from '@/components/pets/PetPhoto'
@@ -61,7 +65,7 @@ const EditPetPage: React.FC = () => {
     if (!petId) return
     const loadPet = async () => {
       try {
-        const pet = await getPet(petId)
+        const pet = await getPet(Number(petId))
         setLoadedPet(pet)
         const st = pet.status
         setCurrentStatus(st)
@@ -83,7 +87,7 @@ const EditPetPage: React.FC = () => {
     }
     try {
       setIsUpdatingStatus(true)
-      const updated = await updatePetStatus(petId, newStatus)
+      const updated = await updatePetStatus(Number(petId), { status: newStatus })
       setCurrentStatus(updated.status)
       toast.success('Status updated')
       void navigate(`/pets/${petId}`, { replace: true })
@@ -102,7 +106,7 @@ const EditPetPage: React.FC = () => {
     }
     try {
       setIsDeleting(true)
-      await deletePet(petId, password)
+      await deletePet(Number(petId), { password })
       toast.success('Pet removed')
       void navigate('/', { replace: true })
     } catch {

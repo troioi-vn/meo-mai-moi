@@ -13,7 +13,7 @@ enum ChatType: string implements HasColor, HasLabel
     case PRIVATE_GROUP = 'private_group';
     case PUBLIC_GROUP = 'public_group';
 
-    public function getLabel(): ?string
+    public function getLabel(): string
     {
         return match ($this) {
             self::DIRECT => 'Direct Message',
@@ -22,7 +22,7 @@ enum ChatType: string implements HasColor, HasLabel
         };
     }
 
-    public function getColor(): string|array|null
+    public function getColor(): string
     {
         return match ($this) {
             self::DIRECT => 'primary',

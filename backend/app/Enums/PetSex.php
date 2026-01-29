@@ -13,7 +13,7 @@ enum PetSex: string implements HasColor, HasLabel
     case FEMALE = 'female';
     case NOT_SPECIFIED = 'not_specified';
 
-    public function getLabel(): ?string
+    public function getLabel(): string
     {
         return match ($this) {
             self::MALE => 'Male',
@@ -22,7 +22,7 @@ enum PetSex: string implements HasColor, HasLabel
         };
     }
 
-    public function getColor(): string|array|null
+    public function getColor(): string
     {
         return match ($this) {
             self::MALE => 'info',

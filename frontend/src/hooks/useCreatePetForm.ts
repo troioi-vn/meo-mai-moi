@@ -1,7 +1,14 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createPet, getPetTypes, getPet, updatePet } from '@/api/pets'
-import type { PetType, Category, PetSex, City } from '@/types/pet'
+import {
+  postPets as createPet,
+  getPetsId as getPet,
+  putPetsId as updatePet,
+} from '@/api/generated/pets/pets'
+import { getPetTypes } from '@/api/generated/pet-types/pet-types'
+import type { PetType, Category, City } from '@/types/pet'
+import type { PetSex } from '@/api/generated/model/petSex'
 import { toast } from 'sonner'
 
 interface FormErrors {
@@ -131,16 +138,18 @@ export const useCreatePetForm = (petId?: string) => {
           setFormData({
             name: pet.name,
             sex: pet.sex ?? 'not_specified',
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
             birthday: pet.birthday ? formatDate(pet.birthday) : '',
             birthday_year: pet.birthday_year ? String(pet.birthday_year) : '',
             birthday_month: pet.birthday_month ? String(pet.birthday_month) : '',
             birthday_day: pet.birthday_day ? String(pet.birthday_day) : '',
-            birthday_precision: pet.birthday_precision ?? (pet.birthday ? 'day' : 'unknown'),
+
+            birthday_precision: pet.birthday_precision ?? 'unknown',
             country: pet.country,
             state: pet.state ?? '',
-            city: typeof pet.city === 'object' && pet.city ? pet.city.name : (pet.city ?? ''),
+            city: typeof pet.city === 'object' && pet.city ? pet.city.name : ((pet.city as string | undefined | null) ?? ''),
             city_id: pet.city_id ?? (typeof pet.city === 'object' && pet.city ? pet.city.id : null),
-            city_selected: typeof pet.city === 'object' && pet.city ? pet.city : null,
+            city_selected: typeof pet.city === 'object' ? pet.city : null,
             address: pet.address ?? '',
             description: pet.description,
             pet_type_id: pet.pet_type.id,
@@ -245,7 +254,7 @@ export const useCreatePetForm = (petId?: string) => {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
     setError(null)
 

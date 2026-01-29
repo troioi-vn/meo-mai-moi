@@ -26,7 +26,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
     }
   }, [content])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
     if (!content.trim() || disabled) return
 

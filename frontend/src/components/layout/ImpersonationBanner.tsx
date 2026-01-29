@@ -1,43 +1,32 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '@/api/axios'
+import { useQueryClient } from '@tanstack/react-query'
 import { X } from 'lucide-react'
 import { toast } from 'sonner'
-
-interface ImpersonationStatus {
-  is_impersonating: boolean
-  impersonator?: {
-    id: number
-    name: string
-    can_access_admin: boolean
-  }
-  impersonated_user?: {
-    id: number
-    name: string
-  }
-}
+import {
+  useGetImpersonationStatus,
+  usePostImpersonationLeave,
+} from '@/api/generated/impersonation/impersonation'
 
 export function ImpersonationIndicator() {
   const queryClient = useQueryClient()
 
-  const { data: status } = useQuery<ImpersonationStatus>({
-    queryKey: ['impersonation-status'],
-    queryFn: () => api.get<ImpersonationStatus>('/impersonation/status'),
-    refetchInterval: 30000, // Check every 30 seconds
+  const { data: status } = useGetImpersonationStatus({
+    query: {
+      refetchInterval: 30000, // Check every 30 seconds
+    },
   })
 
-  const leaveMutation = useMutation({
-    mutationFn: async () => {
-      await api.post('/impersonation/leave')
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['impersonation-status'] })
-      void queryClient.invalidateQueries({ queryKey: ['users', 'me'] })
-      toast.success('Impersonation ended')
-      // Redirect to admin users list after ending impersonation
-      window.location.href = '/admin/users'
-    },
-    onError: () => {
-      toast.error('Failed to end impersonation')
+  const leaveMutation = usePostImpersonationLeave({
+    mutation: {
+      onSuccess: () => {
+        void queryClient.invalidateQueries({ queryKey: ['impersonation-status'] })
+        void queryClient.invalidateQueries({ queryKey: ['users', 'me'] })
+        toast.success('Impersonation ended')
+        // Redirect to admin users list after ending impersonation
+        window.location.href = '/admin/users'
+      },
+      onError: () => {
+        toast.error('Failed to end impersonation')
+      },
     },
   })
 

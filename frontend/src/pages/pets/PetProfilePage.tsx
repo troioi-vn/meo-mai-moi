@@ -12,10 +12,11 @@ import { UpcomingVaccinationsSection } from '@/components/pet-health/vaccination
 import { VaccinationStatusBadge } from '@/components/pet-health/vaccinations/VaccinationStatusBadge'
 import { MedicalRecordsSection } from '@/components/pet-health/medical/MedicalRecordsSection'
 import { PetRelationshipsSection } from '@/components/pets/PetRelationshipsSection'
+import { PetPhoto } from '@/components/pets/PetPhoto'
+import { PetPhotoCarouselModal } from '@/components/pets/PetPhotoGallery'
 import { useVaccinations } from '@/hooks/useVaccinations'
 import { calculateVaccinationStatus } from '@/utils/vaccinationStatus'
 import { petSupportsCapability, formatPetAge } from '@/types/pet'
-import { deriveImageUrl } from '@/utils/petImages'
 import type { Pet } from '@/types/pet'
 import { formatRequestType, formatStatus } from '@/types/placement'
 import {
@@ -38,9 +39,11 @@ const isPubliclyViewable = (petData: Pet | null): boolean => {
 const PetProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { pet, loading, error } = usePetProfile(id)
+  const { pet, setPet, loading, error } = usePetProfile(id)
   // Track vaccination updates to refresh the badge
   const [vaccinationVersion, setVaccinationVersion] = useState(0)
+  const [galleryOpen, setGalleryOpen] = useState(false)
+
   const handleVaccinationChange = () => {
     setVaccinationVersion((v) => v + 1)
   }
@@ -135,9 +138,9 @@ const PetProfilePage: React.FC = () => {
       </div>
     )
   }
-  const imageUrl = deriveImageUrl(pet)
   const ageDisplay = formatPetAge(pet)
   const isDeceased = pet.status === 'deceased'
+  const hasAvatar = Boolean(pet.photo_url)
 
   // Check capabilities for this pet type
   const supportsWeight = petSupportsCapability(pet.pet_type, 'weight')
@@ -210,15 +213,21 @@ const PetProfilePage: React.FC = () => {
       <main className="px-4 pb-8">
         <div className="max-w-lg mx-auto space-y-6">
           {/* Pet Profile Header */}
-          <section className="flex items-center gap-4">
-            <div className="shrink-0">
-              <img
-                src={imageUrl}
-                alt={pet.name}
-                className={`w-24 h-24 rounded-full object-cover border-4 border-border ${isDeceased ? 'grayscale' : ''}`}
-              />
-            </div>
-            <div className="flex flex-col gap-1">
+          <section className="flex flex-col items-center gap-4">
+            <PetPhoto
+              pet={pet}
+              onPhotoUpdate={(updatedPet: Pet) => {
+                setPet(updatedPet)
+              }}
+              showUploadControls={canEdit && !hasAvatar}
+              className={`w-24 h-24 rounded-full object-cover border-4 border-border ${isDeceased ? 'grayscale' : ''}`}
+              onClick={() => {
+                if (pet.photos && pet.photos.length > 0) {
+                  setGalleryOpen(true)
+                }
+              }}
+            />
+            <div className="flex flex-col items-center gap-1">
               <h1 className="text-2xl font-bold text-foreground">{pet.name}</h1>
               <p className="text-muted-foreground">{ageDisplay}</p>
               {supportsVaccinations && (
@@ -321,6 +330,20 @@ const PetProfilePage: React.FC = () => {
           )}
         </div>
       </main>
+
+      {pet.photos && pet.photos.length > 0 && (
+        <PetPhotoCarouselModal
+          photos={pet.photos}
+          open={galleryOpen}
+          onOpenChange={setGalleryOpen}
+          initialIndex={0}
+          petId={pet.id}
+          onPetUpdate={(p) => {
+            setPet(p)
+          }}
+          showActions={canEdit}
+        />
+      )}
     </div>
   )
 }

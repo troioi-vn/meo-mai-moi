@@ -1,5 +1,7 @@
-import React, { useMemo, useState } from 'react'
-import type { MedicalRecord, MedicalRecordType } from '@/api/pets'
+import React, { useMemo, useRef, useState } from 'react'
+import type { MedicalRecord, MedicalRecordRecordType } from '@/api/generated/model'
+
+type MedicalRecordType = MedicalRecordRecordType
 import { useMedicalRecords } from '@/hooks/useMedicalRecords'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -15,8 +17,9 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { MedicalRecordForm } from './MedicalRecordForm'
+import { HealthRecordPhotoModal, type HealthRecordPhoto } from '../HealthRecordPhotoModal'
 import { toast } from 'sonner'
-import { ExternalLink, Pencil, Trash2 } from 'lucide-react'
+import { ImagePlus, Pencil, Trash2 } from 'lucide-react'
 
 const RECORD_TYPE_LABELS: Record<MedicalRecordType, string> = {
   vaccination: 'Vaccination',
@@ -40,12 +43,20 @@ export const MedicalRecordsSection: React.FC<{
   /** 'view' shows records without edit/delete buttons, 'edit' shows with icon buttons */
   mode?: 'view' | 'edit'
 }> = ({ petId, canEdit, mode = 'view' }) => {
-  const { items, loading, error, create, update, remove } = useMedicalRecords(petId)
+  const { items, loading, error, create, update, remove, uploadPhoto, deletePhoto } =
+    useMedicalRecords(petId)
   const [adding, setAdding] = useState(false)
   const [editing, setEditing] = useState<MedicalRecord | null>(null)
   const [serverError, setServerError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [uploadingPhotoForId, setUploadingPhotoForId] = useState<number | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [selectedRecordId, setSelectedRecordId] = useState<number | null>(null)
+  // Photo modal state
+  const [photoModalOpen, setPhotoModalOpen] = useState(false)
+  const [photoModalRecord, setPhotoModalRecord] = useState<MedicalRecord | null>(null)
+  const [photoModalIndex, setPhotoModalIndex] = useState(0)
 
   const sorted = useMemo(() => {
     return [...items].sort((a, b) => b.record_date.localeCompare(a.record_date))
@@ -56,7 +67,6 @@ export const MedicalRecordsSection: React.FC<{
     description: string
     record_date: string
     vet_name: string
-    attachment_url: string
   }) => {
     setSubmitting(true)
     setServerError(null)
@@ -64,7 +74,6 @@ export const MedicalRecordsSection: React.FC<{
       await create({
         ...values,
         vet_name: values.vet_name || null,
-        attachment_url: values.attachment_url || null,
       })
       setAdding(false)
       toast.success('Medical record added')
@@ -87,7 +96,6 @@ export const MedicalRecordsSection: React.FC<{
     description: string
     record_date: string
     vet_name: string
-    attachment_url: string
   }) => {
     if (!editing) return
     setSubmitting(true)
@@ -96,7 +104,6 @@ export const MedicalRecordsSection: React.FC<{
       await update(editing.id, {
         ...values,
         vet_name: values.vet_name || null,
-        attachment_url: values.attachment_url || null,
       })
       setEditing(null)
       toast.success('Medical record updated')
@@ -112,6 +119,55 @@ export const MedicalRecordsSection: React.FC<{
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const handleUploadClick = (recordId: number) => {
+    setSelectedRecordId(recordId)
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file || !selectedRecordId) return
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file')
+      return
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File size must be less than 10MB')
+      return
+    }
+
+    setUploadingPhotoForId(selectedRecordId)
+    try {
+      await uploadPhoto(selectedRecordId, file)
+      toast.success('Photo uploaded')
+    } catch {
+      toast.error('Failed to upload photo')
+    } finally {
+      setUploadingPhotoForId(null)
+      setSelectedRecordId(null)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
+  const handleDeletePhoto = async (recordId: number, photoId: number) => {
+    try {
+      await deletePhoto(recordId, photoId)
+      toast.success('Photo deleted')
+    } catch {
+      toast.error('Failed to delete photo')
+    }
+  }
+
+  const openPhotoModal = (record: MedicalRecord, photoIndex: number) => {
+    setPhotoModalRecord(record)
+    setPhotoModalIndex(photoIndex)
+    setPhotoModalOpen(true)
   }
 
   const handleDelete = async (id: number) => {
@@ -174,7 +230,6 @@ export const MedicalRecordsSection: React.FC<{
                           description: r.description,
                           record_date: r.record_date,
                           vet_name: r.vet_name ?? '',
-                          attachment_url: r.attachment_url ?? '',
                         }}
                         onSubmit={handleUpdate}
                         onCancel={() => {
@@ -189,9 +244,9 @@ export const MedicalRecordsSection: React.FC<{
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap mb-1">
                             <span
-                              className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${RECORD_TYPE_COLORS[r.record_type]}`}
+                              className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${RECORD_TYPE_COLORS[r.record_type ?? 'other']}`}
                             >
-                              {RECORD_TYPE_LABELS[r.record_type]}
+                              {RECORD_TYPE_LABELS[r.record_type ?? 'other']}
                             </span>
                             <span className="text-xs text-muted-foreground">
                               {new Date(r.record_date).toLocaleDateString()}
@@ -201,16 +256,41 @@ export const MedicalRecordsSection: React.FC<{
                           {r.vet_name && (
                             <p className="text-sm text-muted-foreground mt-1">Vet: {r.vet_name}</p>
                           )}
-                          {r.attachment_url && (
-                            <a
-                              href={r.attachment_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-1"
+                          {/* Photos section */}
+                          {r.photos && r.photos.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {r.photos.map((photo, index) => (
+                                <button
+                                  key={photo.id}
+                                  type="button"
+                                  onClick={() => {
+                                    openPhotoModal(r, index)
+                                  }}
+                                  className="w-16 h-16 overflow-hidden rounded border cursor-pointer hover:opacity-90 transition-opacity"
+                                >
+                                  <img
+                                    src={photo.thumb_url}
+                                    alt="Medical record attachment"
+                                    className="w-full h-full object-cover"
+                                  />
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          {/* Add photo button */}
+                          {mode === 'edit' && canEdit && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="mt-2 h-7 text-xs"
+                              onClick={() => {
+                                handleUploadClick(r.id)
+                              }}
+                              disabled={uploadingPhotoForId === r.id}
                             >
-                              <ExternalLink className="h-3 w-3" />
-                              View attachment
-                            </a>
+                              <ImagePlus className="h-3 w-3 mr-1" />
+                              {uploadingPhotoForId === r.id ? 'Uploading...' : 'Add Photo'}
+                            </Button>
                           )}
                         </div>
                         {/* Edit mode: show icon buttons */}
@@ -281,6 +361,30 @@ export const MedicalRecordsSection: React.FC<{
           </>
         )}
       </CardContent>
+      {/* Hidden file input for photo uploads */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={(event) => {
+          void handleFileChange(event)
+        }}
+        className="hidden"
+      />
+
+      {/* Photo carousel modal */}
+      {photoModalRecord && (
+        <HealthRecordPhotoModal
+          photos={(photoModalRecord.photos ?? []) as HealthRecordPhoto[]}
+          open={photoModalOpen}
+          onOpenChange={setPhotoModalOpen}
+          initialIndex={photoModalIndex}
+          canDelete={mode === 'edit' && canEdit}
+          onDelete={async (photoId) => {
+            await handleDeletePhoto(photoModalRecord.id, photoId)
+          }}
+        />
+      )}
     </Card>
   )
 }

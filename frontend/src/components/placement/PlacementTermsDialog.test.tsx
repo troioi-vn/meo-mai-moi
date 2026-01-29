@@ -3,10 +3,10 @@ import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { PlacementTermsDialog, PlacementTermsLink } from './PlacementTermsDialog'
-import * as legalApi from '@/api/legal'
+import * as legalApi from '@/api/generated/legal/legal'
 
 // Mock the API
-vi.mock('@/api/legal')
+vi.mock('@/api/generated/legal/legal')
 
 const createQueryClient = () =>
   new QueryClient({
@@ -28,7 +28,7 @@ describe('PlacementTermsDialog', () => {
   })
 
   it('renders loading state when open', async () => {
-    vi.mocked(legalApi.getPlacementTerms).mockImplementation(
+    vi.mocked(legalApi.getLegalPlacementTerms).mockImplementation(
       () => new Promise(() => {}) // Never resolves - stays in loading state
     )
 
@@ -42,7 +42,7 @@ describe('PlacementTermsDialog', () => {
   })
 
   it('renders terms content when loaded', async () => {
-    vi.mocked(legalApi.getPlacementTerms).mockResolvedValue({
+    vi.mocked(legalApi.getLegalPlacementTerms).mockResolvedValue({
       content: '# Placement Terms\n\n1. **First rule.**\n   Be nice to pets.',
       version: '2025-12-02',
     })
@@ -58,7 +58,7 @@ describe('PlacementTermsDialog', () => {
   })
 
   it('renders error state when API fails', async () => {
-    vi.mocked(legalApi.getPlacementTerms).mockRejectedValue(new Error('Network error'))
+    vi.mocked(legalApi.getLegalPlacementTerms).mockRejectedValue(new Error('Network error'))
 
     renderWithQueryClient(<PlacementTermsDialog open={true} onOpenChange={() => {}} />)
 
@@ -68,14 +68,14 @@ describe('PlacementTermsDialog', () => {
   })
 
   it('does not fetch when closed', () => {
-    vi.mocked(legalApi.getPlacementTerms).mockResolvedValue({
+    vi.mocked(legalApi.getLegalPlacementTerms).mockResolvedValue({
       content: '# Test',
       version: '2025-12-02',
     })
 
     renderWithQueryClient(<PlacementTermsDialog open={false} onOpenChange={() => {}} />)
 
-    expect(legalApi.getPlacementTerms).not.toHaveBeenCalled()
+    expect(legalApi.getLegalPlacementTerms).not.toHaveBeenCalled()
   })
 })
 
@@ -92,7 +92,7 @@ describe('PlacementTermsLink', () => {
 
   it('opens the dialog when clicked', async () => {
     const user = userEvent.setup()
-    vi.mocked(legalApi.getPlacementTerms).mockResolvedValue({
+    vi.mocked(legalApi.getLegalPlacementTerms).mockResolvedValue({
       content: '# Placement Terms\n\nTest content.',
       version: '2025-12-02',
     })

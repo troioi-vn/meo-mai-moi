@@ -1374,341 +1374,6 @@
                 }
             }
         },
-        "/api/pets/{pet}/medical-notes/{note}": {
-            "get": {
-                "tags": [
-                    "Pets"
-                ],
-                "summary": "Get a single medical note",
-                "operationId": "46fba447ad150fb0c57c6bd116aaf079",
-                "parameters": [
-                    {
-                        "name": "pet",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "note",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/MedicalNote"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Not found"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "put": {
-                "tags": [
-                    "Pets"
-                ],
-                "summary": "Update a medical note",
-                "operationId": "16e095bc8363ec81a620bef1d0b994cd",
-                "parameters": [
-                    {
-                        "name": "pet",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "note",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "note": {
-                                        "type": "string"
-                                    },
-                                    "record_date": {
-                                        "type": "string",
-                                        "format": "date"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/MedicalNote"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Not found"
-                    },
-                    "422": {
-                        "description": "Validation error"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Pets"
-                ],
-                "summary": "Delete a medical note",
-                "operationId": "04ef299e7ffecfae85a31bf9520b6a39",
-                "parameters": [
-                    {
-                        "name": "pet",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "note",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Deleted",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "type": "boolean",
-                                            "example": true
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Not found"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/pets/{pet}/medical-notes": {
-            "get": {
-                "tags": [
-                    "Pets"
-                ],
-                "summary": "List medical notes for a pet",
-                "operationId": "649cc97b72fa3eeb37673cd29ad3edc1",
-                "parameters": [
-                    {
-                        "name": "pet",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "List of medical notes",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "properties": {
-                                                "data": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "$ref": "#/components/schemas/MedicalNote"
-                                                    }
-                                                },
-                                                "links": {
-                                                    "type": "object"
-                                                },
-                                                "meta": {
-                                                    "type": "object"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "Pets"
-                ],
-                "summary": "Create a medical note",
-                "operationId": "9814042df935010ae02bdabf10d2a355",
-                "parameters": [
-                    {
-                        "name": "pet",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "note",
-                                    "record_date"
-                                ],
-                                "properties": {
-                                    "note": {
-                                        "type": "string",
-                                        "example": "Rabies vaccination"
-                                    },
-                                    "record_date": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2024-06-01"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/MedicalNote"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "422": {
-                        "description": "Validation error"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
         "/api/pets/{pet}/medical-records/{record}": {
             "get": {
                 "tags": [
@@ -1814,9 +1479,6 @@
                                         "format": "date"
                                     },
                                     "vet_name": {
-                                        "type": "string"
-                                    },
-                                    "attachment_url": {
                                         "type": "string"
                                     }
                                 },
@@ -2052,10 +1714,6 @@
                                     "vet_name": {
                                         "type": "string",
                                         "example": "Dr. Smith"
-                                    },
-                                    "attachment_url": {
-                                        "type": "string",
-                                        "example": "https://example.com/attachment.pdf"
                                     }
                                 },
                                 "type": "object"
@@ -2084,6 +1742,138 @@
                     },
                     "403": {
                         "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pets/{pet}/medical-records/{record}/photos/{photo}": {
+            "delete": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Delete a photo from a medical record",
+                "operationId": "fe5bb7b6a145059f0a2423727831d7f7",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "record",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "photo",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Photo deleted successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pets/{pet}/medical-records/{record}/photos": {
+            "post": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Upload a photo for a medical record",
+                "operationId": "ee809524c9ad58f4c3468d218a1486a2",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "record",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "photo": {
+                                        "description": "The photo file (max 10MB, jpeg, png, jpg, gif)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Photo uploaded successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/MedicalRecord"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
                     },
                     "422": {
                         "description": "Validation error"
@@ -3085,6 +2875,15 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
+                                                "required": [
+                                                    "type",
+                                                    "label",
+                                                    "description",
+                                                    "group",
+                                                    "group_label",
+                                                    "email_enabled",
+                                                    "in_app_enabled"
+                                                ],
                                                 "properties": {
                                                     "type": {
                                                         "type": "string"
@@ -3092,7 +2891,13 @@
                                                     "label": {
                                                         "type": "string"
                                                     },
+                                                    "description": {
+                                                        "type": "string"
+                                                    },
                                                     "group": {
+                                                        "type": "string"
+                                                    },
+                                                    "group_label": {
                                                         "type": "string"
                                                     },
                                                     "email_enabled": {
@@ -6181,6 +5986,128 @@
                 ]
             }
         },
+        "/api/pets/{pet}/vaccinations/{record}/photo": {
+            "post": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Upload a photo for a vaccination record",
+                "operationId": "3a12550cba8b55d8ff04c88732a05bf6",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "record",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "photo": {
+                                        "description": "The photo file (max 10MB, jpeg, png, jpg, gif)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Photo uploaded successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/VaccinationRecord"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Delete the photo from a vaccination record",
+                "operationId": "6289d3917423531f596534a72d3b615b",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "record",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Photo deleted successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/version": {
             "get": {
                 "tags": [
@@ -6707,158 +6634,14 @@
     },
     "components": {
         "schemas": {
-            "Category": {
-                "title": "Category",
-                "required": [
-                    "id",
-                    "name",
-                    "slug",
-                    "pet_type_id"
-                ],
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "name": {
-                        "type": "string",
-                        "example": "Siamese"
-                    },
-                    "slug": {
-                        "type": "string",
-                        "example": "siamese"
-                    },
-                    "pet_type_id": {
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "description": {
-                        "type": "string",
-                        "example": "Elegant cats with blue eyes",
-                        "nullable": true
-                    },
-                    "created_by": {
-                        "type": "integer",
-                        "example": 5,
-                        "nullable": true
-                    },
-                    "approved_at": {
-                        "type": "string",
-                        "format": "datetime",
-                        "nullable": true
-                    },
-                    "usage_count": {
-                        "type": "integer",
-                        "example": 10
-                    },
-                    "created_at": {
-                        "type": "string",
-                        "format": "datetime"
-                    },
-                    "updated_at": {
-                        "type": "string",
-                        "format": "datetime"
-                    }
-                },
-                "type": "object"
-            },
-            "HelperProfile": {
-                "title": "HelperProfile",
-                "description": "Helper Profile model",
-                "properties": {
-                    "id": {
-                        "description": "Helper Profile ID",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "user_id": {
-                        "description": "ID of the associated user",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "status": {
-                        "description": "Status of the helper profile",
-                        "type": "string",
-                        "enum": [
-                            "active",
-                            "archived",
-                            "deleted"
-                        ]
-                    },
-                    "request_types": {
-                        "description": "Types of placement requests this helper can respond to",
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "enum": [
-                                "foster_paid",
-                                "foster_free",
-                                "permanent"
-                            ]
-                        }
-                    },
-                    "country": {
-                        "description": "ISO 3166-1 alpha-2 country code",
-                        "type": "string"
-                    },
-                    "state": {
-                        "description": "State/Province",
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "city": {
-                        "description": "City",
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "address": {
-                        "description": "Street address",
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "zip_code": {
-                        "description": "ZIP/Postal code",
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "contact_info": {
-                        "description": "Additional contact information visible to pet owners when responding to placement requests",
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "created_at": {
-                        "description": "Timestamp of helper profile creation",
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "updated_at": {
-                        "description": "Timestamp of last helper profile update",
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "archived_at": {
-                        "description": "Timestamp when the profile was archived",
-                        "type": "string",
-                        "format": "date-time",
-                        "nullable": true
-                    },
-                    "restored_at": {
-                        "description": "Timestamp when the profile was restored",
-                        "type": "string",
-                        "format": "date-time",
-                        "nullable": true
-                    },
-                    "deleted_at": {
-                        "description": "Timestamp when the profile was deleted",
-                        "type": "string",
-                        "format": "date-time",
-                        "nullable": true
-                    }
-                },
-                "type": "object"
-            },
             "AppNotification": {
                 "title": "App Notification",
+                "required": [
+                    "id",
+                    "level",
+                    "title",
+                    "created_at"
+                ],
                 "properties": {
                     "id": {
                         "type": "string",
@@ -6921,15 +6704,13 @@
                 },
                 "type": "object"
             },
-            "Pet": {
-                "title": "Pet",
+            "Category": {
+                "title": "Category",
+                "description": "Pet category/breed",
                 "required": [
                     "id",
                     "name",
-                    "country",
-                    "description",
-                    "status",
-                    "created_by",
+                    "slug",
                     "pet_type_id"
                 ],
                 "properties": {
@@ -6939,410 +6720,38 @@
                     },
                     "name": {
                         "type": "string",
-                        "example": "Whiskers"
+                        "example": "Siamese"
                     },
-                    "sex": {
-                        "description": "Sex of the pet",
+                    "slug": {
                         "type": "string",
-                        "enum": [
-                            "male",
-                            "female",
-                            "not_specified"
-                        ],
-                        "example": "male"
-                    },
-                    "birthday": {
-                        "description": "Exact birthday (present only when birthday_precision=day). Deprecated: prefer component fields.",
-                        "type": "string",
-                        "format": "date",
-                        "example": "2020-01-01",
-                        "nullable": true,
-                        "deprecated": true
-                    },
-                    "birthday_year": {
-                        "description": "Birth year when known (year/month/day precision).",
-                        "type": "integer",
-                        "example": 2020,
-                        "nullable": true
-                    },
-                    "birthday_month": {
-                        "description": "Birth month when known (month/day precision).",
-                        "type": "integer",
-                        "example": 5,
-                        "nullable": true
-                    },
-                    "birthday_day": {
-                        "description": "Birth day when known (day precision).",
-                        "type": "integer",
-                        "example": 12,
-                        "nullable": true
-                    },
-                    "birthday_precision": {
-                        "description": "Precision level for birthday components.",
-                        "type": "string",
-                        "enum": [
-                            "day",
-                            "month",
-                            "year",
-                            "unknown"
-                        ],
-                        "example": "month"
-                    },
-                    "country": {
-                        "description": "ISO 3166-1 alpha-2 country code",
-                        "type": "string",
-                        "example": "VN"
-                    },
-                    "state": {
-                        "type": "string",
-                        "example": "Hanoi",
-                        "nullable": true
-                    },
-                    "city": {
-                        "type": "string",
-                        "example": "Hanoi",
-                        "nullable": true
-                    },
-                    "address": {
-                        "type": "string",
-                        "example": "123 Main St",
-                        "nullable": true
-                    },
-                    "description": {
-                        "type": "string",
-                        "example": "A friendly pet."
-                    },
-                    "status": {
-                        "type": "string",
-                        "example": "active"
-                    },
-                    "created_by": {
-                        "description": "ID of user who created this pet",
-                        "type": "integer",
-                        "example": 5
+                        "example": "siamese"
                     },
                     "pet_type_id": {
                         "type": "integer",
                         "example": 1
-                    }
-                },
-                "type": "object"
-            },
-            "PetMicrochip": {
-                "title": "PetMicrochip",
-                "description": "Pet Microchip model",
-                "properties": {
-                    "id": {
-                        "description": "Microchip ID",
-                        "type": "integer",
-                        "format": "int64"
                     },
-                    "pet_id": {
-                        "description": "ID of the associated pet",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "chip_number": {
-                        "description": "Unique microchip number",
-                        "type": "string"
-                    },
-                    "issuer": {
-                        "description": "Microchip issuer/manufacturer",
+                    "description": {
                         "type": "string",
                         "nullable": true
                     },
-                    "implanted_at": {
-                        "description": "Date the microchip was implanted",
-                        "type": "string",
-                        "format": "date",
+                    "created_by": {
+                        "type": "integer",
                         "nullable": true
                     },
-                    "created_at": {
-                        "description": "Timestamp of microchip record creation",
+                    "approved_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "nullable": true
                     },
-                    "updated_at": {
-                        "description": "Timestamp of last microchip record update",
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                },
-                "type": "object"
-            },
-            "PlacementRequest": {
-                "title": "PlacementRequest",
-                "required": [
-                    "id",
-                    "pet_id",
-                    "user_id",
-                    "request_type",
-                    "status"
-                ],
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "pet_id": {
-                        "type": "integer",
-                        "example": 2
-                    },
-                    "user_id": {
+                    "usage_count": {
                         "type": "integer",
                         "example": 5
                     },
-                    "request_type": {
-                        "type": "string",
-                        "example": "adoption"
-                    },
-                    "status": {
-                        "type": "string",
-                        "example": "pending"
-                    },
-                    "notes": {
-                        "type": "string",
-                        "example": "Looking for a loving home."
-                    },
-                    "expires_at": {
-                        "type": "string",
-                        "format": "date",
-                        "example": "2025-08-01"
-                    },
-                    "start_date": {
-                        "type": "string",
-                        "format": "date",
-                        "example": "2025-08-05"
-                    },
-                    "end_date": {
-                        "type": "string",
-                        "format": "date",
-                        "example": "2025-08-20"
-                    }
-                },
-                "type": "object"
-            },
-            "PlacementRequestResponse": {
-                "title": "PlacementRequestResponse",
-                "description": "Tracks a helper's response to a placement request",
-                "properties": {
-                    "id": {
-                        "description": "Response ID",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "placement_request_id": {
-                        "description": "ID of the placement request",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "helper_profile_id": {
-                        "description": "ID of the helper profile",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "status": {
-                        "description": "Current status of the response",
-                        "type": "string",
-                        "enum": [
-                            "responded",
-                            "accepted",
-                            "rejected",
-                            "cancelled"
-                        ]
-                    },
-                    "message": {
-                        "description": "Optional message from the helper",
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "responded_at": {
-                        "description": "When the helper responded",
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "accepted_at": {
-                        "description": "When the owner accepted",
-                        "type": "string",
-                        "format": "date-time",
-                        "nullable": true
-                    },
-                    "rejected_at": {
-                        "description": "When the owner rejected",
-                        "type": "string",
-                        "format": "date-time",
-                        "nullable": true
-                    },
-                    "cancelled_at": {
-                        "description": "When the helper cancelled",
-                        "type": "string",
-                        "format": "date-time",
-                        "nullable": true
-                    },
                     "created_at": {
-                        "description": "Creation timestamp",
                         "type": "string",
                         "format": "date-time"
                     },
                     "updated_at": {
-                        "description": "Last update timestamp",
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                },
-                "type": "object"
-            },
-            "TransferRequest": {
-                "title": "TransferRequest",
-                "description": "Transfer Request model - represents physical transfer of pet(s) between users",
-                "properties": {
-                    "id": {
-                        "description": "Transfer Request ID",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "placement_request_id": {
-                        "description": "ID of the parent placement request",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "placement_request_response_id": {
-                        "description": "ID of the accepted response",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "from_user_id": {
-                        "description": "ID of the user transferring the pet (sender)",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "to_user_id": {
-                        "description": "ID of the user receiving the pet (recipient)",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "status": {
-                        "description": "Current status of the transfer request",
-                        "type": "string",
-                        "enum": [
-                            "pending",
-                            "confirmed",
-                            "rejected",
-                            "expired",
-                            "canceled"
-                        ]
-                    },
-                    "confirmed_at": {
-                        "description": "Timestamp when the transfer was confirmed",
-                        "type": "string",
-                        "format": "date-time",
-                        "nullable": true
-                    },
-                    "rejected_at": {
-                        "description": "Timestamp when the request was rejected",
-                        "type": "string",
-                        "format": "date-time",
-                        "nullable": true
-                    },
-                    "created_at": {
-                        "description": "Timestamp of transfer request creation",
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "updated_at": {
-                        "description": "Timestamp of last transfer request update",
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                },
-                "type": "object"
-            },
-            "User": {
-                "title": "User",
-                "description": "User model",
-                "properties": {
-                    "id": {
-                        "description": "User ID",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "name": {
-                        "description": "User's name",
-                        "type": "string"
-                    },
-                    "email": {
-                        "description": "User's email address",
-                        "type": "string",
-                        "format": "email"
-                    },
-                    "avatar_url": {
-                        "description": "URL to the user's avatar image",
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "is_banned": {
-                        "description": "Whether the user is banned (read-only access)",
-                        "type": "boolean"
-                    },
-                    "banned_at": {
-                        "description": "Timestamp when the user was banned",
-                        "type": "string",
-                        "format": "date-time",
-                        "nullable": true
-                    },
-                    "ban_reason": {
-                        "description": "Reason for the ban",
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "has_password": {
-                        "description": "Whether the user has a local password set",
-                        "type": "boolean"
-                    },
-                    "created_at": {
-                        "description": "Timestamp of user creation",
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "updated_at": {
-                        "description": "Timestamp of last user update",
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                },
-                "type": "object"
-            },
-            "WeightHistory": {
-                "title": "WeightHistory",
-                "description": "Weight History model",
-                "properties": {
-                    "id": {
-                        "description": "Weight History ID",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "pet_id": {
-                        "description": "ID of the associated pet",
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "weight_kg": {
-                        "description": "Recorded weight in kilograms",
-                        "type": "number",
-                        "format": "float"
-                    },
-                    "record_date": {
-                        "description": "Date the weight was recorded",
-                        "type": "string",
-                        "format": "date"
-                    },
-                    "created_at": {
-                        "description": "Timestamp of weight record creation",
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "updated_at": {
-                        "description": "Timestamp of last weight record update",
                         "type": "string",
                         "format": "date-time"
                     }
@@ -7512,32 +6921,97 @@
                 },
                 "type": "object"
             },
-            "MedicalNote": {
-                "title": "MedicalNote",
-                "description": "Medical note model",
+            "HelperProfile": {
+                "title": "HelperProfile",
+                "description": "Helper Profile model",
                 "properties": {
                     "id": {
+                        "description": "Helper Profile ID",
                         "type": "integer",
                         "format": "int64"
                     },
-                    "pet_id": {
+                    "user_id": {
+                        "description": "ID of the associated user",
                         "type": "integer",
                         "format": "int64"
                     },
-                    "note": {
+                    "status": {
+                        "description": "Status of the helper profile",
+                        "type": "string",
+                        "enum": [
+                            "active",
+                            "archived",
+                            "deleted"
+                        ]
+                    },
+                    "request_types": {
+                        "description": "Types of placement requests this helper can respond to",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "foster_paid",
+                                "foster_free",
+                                "permanent"
+                            ]
+                        }
+                    },
+                    "country": {
+                        "description": "ISO 3166-1 alpha-2 country code",
                         "type": "string"
                     },
-                    "record_date": {
+                    "state": {
+                        "description": "State/Province",
                         "type": "string",
-                        "format": "date"
+                        "nullable": true
+                    },
+                    "city": {
+                        "description": "City",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "address": {
+                        "description": "Street address",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "zip_code": {
+                        "description": "ZIP/Postal code",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "contact_info": {
+                        "description": "Additional contact information visible to pet owners when responding to placement requests",
+                        "type": "string",
+                        "nullable": true
                     },
                     "created_at": {
+                        "description": "Timestamp of helper profile creation",
                         "type": "string",
                         "format": "date-time"
                     },
                     "updated_at": {
+                        "description": "Timestamp of last helper profile update",
                         "type": "string",
                         "format": "date-time"
+                    },
+                    "archived_at": {
+                        "description": "Timestamp when the profile was archived",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "restored_at": {
+                        "description": "Timestamp when the profile was restored",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "deleted_at": {
+                        "description": "Timestamp when the profile was deleted",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
                     }
                 },
                 "type": "object"
@@ -7575,9 +7049,22 @@
                         "type": "string",
                         "nullable": true
                     },
-                    "attachment_url": {
-                        "type": "string",
-                        "nullable": true
+                    "photos": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "id": {
+                                    "type": "integer"
+                                },
+                                "url": {
+                                    "type": "string"
+                                },
+                                "thumb_url": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
                     },
                     "created_at": {
                         "type": "string",
@@ -7695,6 +7182,473 @@
                     "total": {
                         "description": "Total number of items",
                         "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "PetMicrochip": {
+                "title": "PetMicrochip",
+                "description": "Pet Microchip model",
+                "properties": {
+                    "id": {
+                        "description": "Microchip ID",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "pet_id": {
+                        "description": "ID of the associated pet",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "chip_number": {
+                        "description": "Unique microchip number",
+                        "type": "string"
+                    },
+                    "issuer": {
+                        "description": "Microchip issuer/manufacturer",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "implanted_at": {
+                        "description": "Date the microchip was implanted",
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "Timestamp of microchip record creation",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "description": "Timestamp of last microchip record update",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "PetPhoto": {
+                "title": "Pet Photo",
+                "required": [
+                    "id",
+                    "url",
+                    "is_primary"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "url": {
+                        "type": "string"
+                    },
+                    "thumb_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "is_primary": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "PetRelationship": {
+                "title": "Pet Relationship",
+                "required": [
+                    "id",
+                    "user_id",
+                    "pet_id",
+                    "relationship_type",
+                    "start_at",
+                    "created_by"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "pet_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "relationship_type": {
+                        "type": "string",
+                        "enum": [
+                            "owner",
+                            "foster",
+                            "editor",
+                            "viewer"
+                        ]
+                    },
+                    "start_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "end_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "created_by": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "user": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/User"
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "Pet": {
+                "title": "Pet",
+                "required": [
+                    "id",
+                    "name",
+                    "country",
+                    "description",
+                    "status",
+                    "created_by",
+                    "pet_type_id"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Whiskers"
+                    },
+                    "sex": {
+                        "description": "Sex of the pet",
+                        "type": "string",
+                        "enum": [
+                            "male",
+                            "female",
+                            "not_specified"
+                        ],
+                        "example": "male"
+                    },
+                    "birthday": {
+                        "description": "Exact birthday (present only when birthday_precision=day). Deprecated: prefer component fields.",
+                        "type": "string",
+                        "format": "date",
+                        "example": "2020-01-01",
+                        "nullable": true,
+                        "deprecated": true
+                    },
+                    "birthday_year": {
+                        "description": "Birth year when known (year/month/day precision).",
+                        "type": "integer",
+                        "example": 2020,
+                        "nullable": true
+                    },
+                    "birthday_month": {
+                        "description": "Birth month when known (month/day precision).",
+                        "type": "integer",
+                        "example": 5,
+                        "nullable": true
+                    },
+                    "birthday_day": {
+                        "description": "Birth day when known (day precision).",
+                        "type": "integer",
+                        "example": 12,
+                        "nullable": true
+                    },
+                    "birthday_precision": {
+                        "description": "Precision level for birthday components.",
+                        "type": "string",
+                        "enum": [
+                            "day",
+                            "month",
+                            "year",
+                            "unknown"
+                        ],
+                        "example": "month"
+                    },
+                    "country": {
+                        "description": "ISO 3166-1 alpha-2 country code",
+                        "type": "string",
+                        "example": "VN"
+                    },
+                    "state": {
+                        "type": "string",
+                        "example": "Hanoi",
+                        "nullable": true
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "123 Main St",
+                        "nullable": true
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "A friendly pet."
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "active"
+                    },
+                    "created_by": {
+                        "description": "ID of user who created this pet",
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "pet_type_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "photo_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "photos": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PetPhoto"
+                        }
+                    },
+                    "user_id": {
+                        "type": "integer"
+                    },
+                    "pet_type": {
+                        "$ref": "#/components/schemas/PetType"
+                    },
+                    "city": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/City"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "categories": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Category"
+                        }
+                    },
+                    "viewer_permissions": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/ViewerPermissions"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "relationships": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PetRelationship"
+                        }
+                    },
+                    "placement_requests": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PlacementRequest"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "PetType": {
+                "title": "Pet Type",
+                "required": [
+                    "id",
+                    "name",
+                    "slug",
+                    "is_active",
+                    "is_system",
+                    "display_order",
+                    "placement_requests_allowed"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Cat"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "cat"
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "is_system": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "display_order": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "placement_requests_allowed": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "weight_tracking_allowed": {
+                        "type": "boolean",
+                        "nullable": true
+                    },
+                    "microchips_allowed": {
+                        "type": "boolean",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "PlacementRequestResponse": {
+                "title": "PlacementRequestResponse",
+                "description": "Tracks a helper's response to a placement request",
+                "properties": {
+                    "id": {
+                        "description": "Response ID",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "placement_request_id": {
+                        "description": "ID of the placement request",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "helper_profile_id": {
+                        "description": "ID of the helper profile",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "status": {
+                        "description": "Current status of the response",
+                        "type": "string",
+                        "enum": [
+                            "responded",
+                            "accepted",
+                            "rejected",
+                            "cancelled"
+                        ]
+                    },
+                    "message": {
+                        "description": "Optional message from the helper",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "responded_at": {
+                        "description": "When the helper responded",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "accepted_at": {
+                        "description": "When the owner accepted",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "rejected_at": {
+                        "description": "When the owner rejected",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "cancelled_at": {
+                        "description": "When the helper cancelled",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "Creation timestamp",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "description": "Last update timestamp",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "PlacementRequest": {
+                "title": "PlacementRequest",
+                "required": [
+                    "id",
+                    "pet_id",
+                    "user_id",
+                    "request_type",
+                    "status"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "pet_id": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "request_type": {
+                        "type": "string",
+                        "example": "adoption"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "pending"
+                    },
+                    "notes": {
+                        "type": "string",
+                        "example": "Looking for a loving home."
+                    },
+                    "expires_at": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-08-01"
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-08-05"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-08-20"
                     }
                 },
                 "type": "object"
@@ -8125,18 +8079,6 @@
                 },
                 "type": "object"
             },
-            "MedicalNoteArrayResponse": {
-                "title": "Medical Note Array Response",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/MedicalNote"
-                        }
-                    }
-                },
-                "type": "object"
-            },
             "VaccinationRecordArrayResponse": {
                 "title": "Vaccination Record Array Response",
                 "properties": {
@@ -8337,6 +8279,135 @@
                 },
                 "type": "object"
             },
+            "TransferRequest": {
+                "title": "TransferRequest",
+                "description": "Transfer Request model - represents physical transfer of pet(s) between users",
+                "properties": {
+                    "id": {
+                        "description": "Transfer Request ID",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "placement_request_id": {
+                        "description": "ID of the parent placement request",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "placement_request_response_id": {
+                        "description": "ID of the accepted response",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "from_user_id": {
+                        "description": "ID of the user transferring the pet (sender)",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "to_user_id": {
+                        "description": "ID of the user receiving the pet (recipient)",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "status": {
+                        "description": "Current status of the transfer request",
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "confirmed",
+                            "rejected",
+                            "expired",
+                            "canceled"
+                        ]
+                    },
+                    "confirmed_at": {
+                        "description": "Timestamp when the transfer was confirmed",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "rejected_at": {
+                        "description": "Timestamp when the request was rejected",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "Timestamp of transfer request creation",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "description": "Timestamp of last transfer request update",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "User": {
+                "title": "User",
+                "description": "User model",
+                "required": [
+                    "id",
+                    "name",
+                    "email",
+                    "is_banned",
+                    "has_password",
+                    "created_at",
+                    "updated_at"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "User ID",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "description": "User's name",
+                        "type": "string"
+                    },
+                    "email": {
+                        "description": "User's email address",
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "avatar_url": {
+                        "description": "URL to the user's avatar image",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "is_banned": {
+                        "description": "Whether the user is banned (read-only access)",
+                        "type": "boolean"
+                    },
+                    "banned_at": {
+                        "description": "Timestamp when the user was banned",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "ban_reason": {
+                        "description": "Reason for the ban",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "has_password": {
+                        "description": "Whether the user has a local password set",
+                        "type": "boolean"
+                    },
+                    "created_at": {
+                        "description": "Timestamp of user creation",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "description": "Timestamp of last user update",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
             "VaccinationRecord": {
                 "title": "VaccinationRecord",
                 "description": "Vaccination record model",
@@ -8373,11 +8444,74 @@
                         "format": "date-time",
                         "nullable": true
                     },
+                    "photo_url": {
+                        "description": "URL to the vaccination photo",
+                        "type": "string",
+                        "nullable": true
+                    },
                     "created_at": {
                         "type": "string",
                         "format": "date-time"
                     },
                     "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "ViewerPermissions": {
+                "title": "Viewer Permissions",
+                "properties": {
+                    "can_edit": {
+                        "type": "boolean"
+                    },
+                    "can_view_contact": {
+                        "type": "boolean"
+                    },
+                    "can_delete": {
+                        "type": "boolean"
+                    },
+                    "is_owner": {
+                        "type": "boolean"
+                    },
+                    "is_viewer": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "WeightHistory": {
+                "title": "WeightHistory",
+                "description": "Weight History model",
+                "properties": {
+                    "id": {
+                        "description": "Weight History ID",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "pet_id": {
+                        "description": "ID of the associated pet",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "weight_kg": {
+                        "description": "Recorded weight in kilograms",
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "record_date": {
+                        "description": "Date the weight was recorded",
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "created_at": {
+                        "description": "Timestamp of weight record creation",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "description": "Timestamp of last weight record update",
                         "type": "string",
                         "format": "date-time"
                     }

@@ -14,7 +14,7 @@ enum PlacementResponseStatus: string implements HasColor, HasLabel
     case REJECTED = 'rejected';
     case CANCELLED = 'cancelled';
 
-    public function getLabel(): ?string
+    public function getLabel(): string
     {
         return match ($this) {
             self::RESPONDED => 'Responded',
@@ -24,7 +24,7 @@ enum PlacementResponseStatus: string implements HasColor, HasLabel
         };
     }
 
-    public function getColor(): string|array|null
+    public function getColor(): string
     {
         return match ($this) {
             self::RESPONDED => 'info',

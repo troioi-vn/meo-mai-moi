@@ -4,12 +4,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { MockedFunction } from 'vitest'
 import MyPetsPage from './MyPetsPage'
-import { getMyPetsSections } from '@/api/pets'
+import { getMyPetsSections } from '@/api/generated/pets/pets'
 import type { Pet, PetType } from '@/types/pet'
 import { AuthProvider } from '@/contexts/AuthContext'
 
 // Mock the API function
-vi.mock('@/api/pets', () => ({
+vi.mock('@/api/generated/pets/pets', () => ({
   getMyPetsSections: vi.fn() as unknown as MockedFunction<
     () => Promise<{
       owned: Pet[]

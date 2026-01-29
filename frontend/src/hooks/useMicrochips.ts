@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  createMicrochip,
-  deleteMicrochip,
-  getMicrochips,
-  updateMicrochip,
-  type PetMicrochip,
-} from '@/api/pets'
+  postPetsPetMicrochips as createMicrochip,
+  deletePetsPetMicrochipsMicrochip as deleteMicrochip,
+  getPetsPetMicrochips as getMicrochips,
+  putPetsPetMicrochipsMicrochip as updateMicrochip,
+} from '@/api/generated/pets/pets'
+import type { PetMicrochip } from '@/api/generated/model'
 
 export interface UseMicrochipsResult {
   items: PetMicrochip[]
@@ -40,7 +40,7 @@ export const useMicrochips = (petId: number): UseMicrochipsResult => {
       setLoading(true)
       setError(null)
       try {
-        const res = await getMicrochips(petId, pg)
+        const res = await getMicrochips(petId, { page: pg })
         setItems(res.data)
         setLinks(res.links)
         setMeta(res.meta)
@@ -97,9 +97,9 @@ export const useMicrochips = (petId: number): UseMicrochipsResult => {
 
   const remove = useCallback(
     async (id: number) => {
-      const ok = await deleteMicrochip(petId, id)
-      if (ok) setItems((prev) => prev.filter((n) => n.id !== id))
-      return ok
+      await deleteMicrochip(petId, id)
+      setItems((prev) => prev.filter((n) => n.id !== id))
+      return true
     },
     [petId]
   )

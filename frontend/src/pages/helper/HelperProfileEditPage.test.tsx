@@ -50,7 +50,8 @@ describe('HelperProfileEditPage', () => {
       expect(screen.getByTestId('country-select')).toBeInTheDocument()
       expect(screen.getByLabelText(/address/i)).toHaveValue(mockHelperProfile.address)
       // Cities are now displayed as badges or in the multi-select
-      expect(screen.getByText(/cities/i)).toBeInTheDocument()
+      expect(screen.getByLabelText(/cities/i)).toBeInTheDocument()
+      expect(screen.getByText('Testville')).toBeInTheDocument()
       expect(screen.getByLabelText(/phone number/i)).toHaveValue(mockHelperProfile.phone_number)
       expect(screen.getByLabelText(/experience/i)).toHaveValue(mockHelperProfile.experience)
       expect(screen.getByLabelText(/has pets/i)).toBeChecked()
@@ -83,11 +84,9 @@ describe('HelperProfileEditPage', () => {
     })
   })
 
-  // TODO: This test needs investigation - form submission may not be working correctly
-  // The form initialization and validation may have timing issues
-  it.skip('updates a field and submits the form', async () => {
+  it('updates a field and submits the form', async () => {
     server.use(
-      http.post(`http://localhost:3000/api/helper-profiles/${mockHelperProfile.id}`, async () => {
+      http.put(`http://localhost:3000/api/helper-profiles/${mockHelperProfile.id}`, async () => {
         return HttpResponse.json({ data: { id: mockHelperProfile.id } })
       })
     )
@@ -95,14 +94,14 @@ describe('HelperProfileEditPage', () => {
 
     // Wait for form to be fully loaded with all initial data (including required fields)
     await waitFor(() => {
-      expect(screen.getByLabelText(/city/i)).toHaveValue(mockHelperProfile.city)
+      expect(screen.getByText('Testville')).toBeInTheDocument()
       expect(screen.getByLabelText(/experience/i)).toHaveValue(mockHelperProfile.experience)
       expect(screen.getByLabelText(/phone number/i)).toHaveValue(mockHelperProfile.phone_number)
-      expect(screen.getByLabelText(/contact info/i)).toHaveValue(mockHelperProfile.contact_info)
+      expect(screen.getByLabelText(/^contact info$/i)).toHaveValue(mockHelperProfile.contact_info)
     })
 
-    const cityInput = screen.getByLabelText(/city/i)
-    fireEvent.change(cityInput, { target: { value: 'New City' } })
+    const experienceInput = screen.getByLabelText(/experience/i)
+    fireEvent.change(experienceInput, { target: { value: 'New experience' } })
 
     const submitButton = screen.getByRole('button', { name: /update/i })
     fireEvent.click(submitButton)

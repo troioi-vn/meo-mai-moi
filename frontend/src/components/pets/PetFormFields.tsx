@@ -1,10 +1,11 @@
 import React from 'react'
 import { FormField } from '@/components/ui/FormField'
-import { BirthdayDatePicker } from '@/components/ui/BirthdayDatePicker'
+import { YearMonthDatePicker } from '@/components/ui/YearMonthDatePicker'
 import { CountrySelect } from '@/components/ui/CountrySelect'
 import { Label } from '@/components/ui/label'
 import { CitySelect } from '@/components/location/CitySelect'
-import type { PetSex, City } from '@/types/pet'
+import type { City } from '@/types/pet'
+import type { PetSex } from '@/api/generated/model/petSex'
 
 interface Data {
   name: string
@@ -94,7 +95,7 @@ export const PetFormFields: React.FC<Props> = ({
           <Label htmlFor="birthday" className={errors.birthday ? 'text-destructive' : ''}>
             Birthday
           </Label>
-          <BirthdayDatePicker
+          <YearMonthDatePicker
             id="birthday"
             value={formData.birthday}
             onChange={updateField('birthday')}

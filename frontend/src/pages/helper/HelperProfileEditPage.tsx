@@ -3,16 +3,17 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { FileInput } from '@/components/ui/FileInput'
 import useHelperProfileForm from '@/hooks/useHelperProfileForm'
-import { getPetTypes } from '@/api/pets'
+import { getPetTypes } from '@/api/generated/pet-types/pet-types'
 import type { PetType, City } from '@/types/pet'
+import type { HelperProfile } from '@/types/helper-profile'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  getHelperProfile,
-  deleteHelperProfile,
-  archiveHelperProfile,
-  restoreHelperProfile,
-  deleteHelperProfilePhoto,
-} from '@/api/helper-profiles'
+  getHelperProfilesId as getHelperProfile,
+  deleteHelperProfilesId as deleteHelperProfile,
+  deleteHelperProfilesHelperProfilePhotosPhoto as deleteHelperProfilePhoto,
+  postHelperProfilesIdArchive as archiveHelperProfile,
+  postHelperProfilesIdRestore as restoreHelperProfile,
+} from '@/api/generated/helper-profiles/helper-profiles'
 import { toast } from 'sonner'
 import { HelperProfileFormFields } from '@/components/helper/HelperProfileFormFields'
 import { PetTypesSelector } from '@/components/helper/PetTypesSelector'
@@ -56,43 +57,45 @@ const HelperProfileEditPage: React.FC = () => {
   const initialFormData = useMemo(() => {
     if (!data) return {}
 
-    const citiesSelected = data.cities ?? []
+    // Cast to local HelperProfile type which has all needed fields
+    const profile = data as unknown as HelperProfile
+    const citiesSelected = profile.cities ?? []
 
     // Fallback for old data if cities is empty but city_id exists
-    if (citiesSelected.length === 0 && data.city_id) {
+    if (citiesSelected.length === 0 && profile.city_id) {
       const cityValue =
-        typeof data.city === 'string'
+        typeof profile.city === 'string'
           ? {
-              id: data.city_id,
-              name: data.city,
-              slug: data.city.toLowerCase().replace(/\s+/g, '-'),
-              country: data.country ?? '',
+              id: profile.city_id,
+              name: profile.city,
+              slug: profile.city.toLowerCase().replace(/\s+/g, '-'),
+              country: profile.country ?? '',
               description: null,
               created_by: null,
               approved_at: null,
               created_at: '',
               updated_at: '',
             }
-          : (data.city as unknown as City)
+          : (profile.city as unknown as City)
       citiesSelected.push(cityValue)
     }
 
     return {
-      country: data.country ?? '',
-      address: data.address ?? '',
+      country: profile.country ?? '',
+      address: profile.address ?? '',
       city: citiesSelected.map((c) => c.name).join(', '),
       city_ids: citiesSelected.map((c) => c.id),
       cities_selected: citiesSelected,
-      state: data.state ?? '',
-      phone_number: data.phone_number ?? data.phone ?? '',
-      contact_info: data.contact_info ?? '',
-      experience: data.experience ?? '',
-      has_pets: Boolean(data.has_pets),
-      has_children: Boolean(data.has_children),
-      request_types: data.request_types ?? [],
-      status: data.status,
+      state: profile.state ?? '',
+      phone_number: profile.phone_number ?? profile.phone ?? '',
+      contact_info: profile.contact_info ?? '',
+      experience: profile.experience ?? '',
+      has_pets: Boolean(profile.has_pets),
+      has_children: Boolean(profile.has_children),
+      request_types: profile.request_types ?? [],
+      status: profile.status,
       photos: [],
-      pet_type_ids: data.pet_types?.map((pt) => pt.id) ?? [],
+      pet_type_ids: profile.pet_types?.map((pt) => pt.id) ?? [],
     }
   }, [data])
 
@@ -182,9 +185,12 @@ const HelperProfileEditPage: React.FC = () => {
     )
   }
 
-  const helperName = data.user?.name ?? 'Helper'
+  // Cast to local HelperProfile type which has all needed fields
+  const profile = data as unknown as HelperProfile
 
-  const photos = data.photos as { id: number; path: string }[]
+  const helperName = profile.user?.name ?? 'Helper'
+
+  const photos = profile.photos as { id: number; path: string }[]
 
   return (
     <div className="min-h-screen bg-background">
@@ -242,9 +248,9 @@ const HelperProfileEditPage: React.FC = () => {
                   </section>
 
                   <ProfileStatusSection
-                    status={data.status}
+                    status={profile.status}
                     hasPlacementResponses={Boolean(
-                      data.placement_responses && data.placement_responses.length > 0
+                      profile.placement_responses && profile.placement_responses.length > 0
                     )}
                     onArchive={() => {
                       archiveMutation.mutate()

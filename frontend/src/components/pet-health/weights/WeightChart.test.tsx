@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 import { WeightChart } from './WeightChart'
-import type { WeightHistory } from '@/api/pets'
+import type { WeightHistory } from '@/api/generated/model'
 
 // Mock ResizeObserver for recharts
 class ResizeObserverMock {

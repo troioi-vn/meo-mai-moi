@@ -17,6 +17,7 @@ export default tseslint.config(
       'playwright-report',
       'test-results',
       'src/components/ui',
+      'src/api/generated',
       '.dependency-cruiser.cjs',
       'eslint.config.js',
       '*.config.js',

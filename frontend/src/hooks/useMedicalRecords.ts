@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  createMedicalRecord,
-  deleteMedicalRecord,
-  getMedicalRecords,
-  updateMedicalRecord,
-  type MedicalRecord,
-  type MedicalRecordType,
-} from '@/api/pets'
+  postPetsPetMedicalRecords as createMedicalRecord,
+  deletePetsPetMedicalRecordsRecord as deleteMedicalRecord,
+  getPetsPetMedicalRecords as getMedicalRecords,
+  putPetsPetMedicalRecordsRecord as updateMedicalRecord,
+} from '@/api/generated/pets/pets'
+import { api } from '@/api/axios'
+import type { MedicalRecord, MedicalRecordRecordType as MedicalRecordType } from '@/api/generated/model'
 
 export interface UseMedicalRecordsResult {
   items: MedicalRecord[]
@@ -23,7 +23,6 @@ export interface UseMedicalRecordsResult {
     description: string
     record_date: string
     vet_name?: string | null
-    attachment_url?: string | null
   }) => Promise<MedicalRecord>
   update: (
     id: number,
@@ -32,10 +31,11 @@ export interface UseMedicalRecordsResult {
       description: string
       record_date: string
       vet_name?: string | null
-      attachment_url?: string | null
     }>
   ) => Promise<MedicalRecord>
   remove: (id: number) => Promise<boolean>
+  uploadPhoto: (recordId: number, file: File) => Promise<MedicalRecord>
+  deletePhoto: (recordId: number, photoId: number) => Promise<void>
 }
 
 export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
@@ -52,7 +52,7 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
       setLoading(true)
       setError(null)
       try {
-        const res = await getMedicalRecords(petId, pg, recordTypeFilter)
+        const res = await getMedicalRecords(petId, { page: pg, record_type: recordTypeFilter })
         setItems(res.data)
         setLinks(res.links)
         setMeta(res.meta)
@@ -83,7 +83,6 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
       description: string
       record_date: string
       vet_name?: string | null
-      attachment_url?: string | null
     }) => {
       const item = await createMedicalRecord(petId, payload)
       setItems((prev) => [item, ...prev])
@@ -101,7 +100,6 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
         description: string
         record_date: string
         vet_name?: string | null
-        attachment_url?: string | null
       }>
     ) => {
       const item = await updateMedicalRecord(petId, id, payload)
@@ -113,11 +111,43 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
 
   const remove = useCallback(
     async (id: number) => {
-      const ok = await deleteMedicalRecord(petId, id)
-      if (ok) setItems((prev) => prev.filter((n) => n.id !== id))
-      return ok
+      await deleteMedicalRecord(petId, id)
+      setItems((prev) => prev.filter((n) => n.id !== id))
+      return true
     },
     [petId]
+  )
+
+  const uploadPhoto = useCallback(
+    async (recordId: number, file: File) => {
+      const formData = new FormData()
+      formData.append('photo', file)
+
+      const updatedRecord = await api.post<MedicalRecord>(
+        `/pets/${String(petId)}/medical-records/${String(recordId)}/photos`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      )
+
+      setItems((prev) => prev.map((n) => (n.id === recordId ? updatedRecord : n)))
+      return updatedRecord
+    },
+    [petId]
+  )
+
+  const deletePhoto = useCallback(
+    async (recordId: number, photoId: number) => {
+      await api.delete(
+        `/pets/${String(petId)}/medical-records/${String(recordId)}/photos/${String(photoId)}`
+      )
+      // Refresh to get updated record
+      void refresh()
+    },
+    [petId, refresh]
   )
 
   return useMemo(
@@ -134,6 +164,8 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
       create,
       update: updateOne,
       remove,
+      uploadPhoto,
+      deletePhoto,
     }),
     [
       items,
@@ -148,6 +180,8 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
       create,
       updateOne,
       remove,
+      uploadPhoto,
+      deletePhoto,
     ]
   )
 }

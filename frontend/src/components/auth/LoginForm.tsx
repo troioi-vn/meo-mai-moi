@@ -52,7 +52,7 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
   const googleQueryString = googleQueryParams.toString()
   const googleLoginHref = `/auth/google/redirect${googleQueryString ? `?${googleQueryString}` : ''}`
 
-  const handleEmailSubmit = async (event: React.FormEvent) => {
+  const handleEmailSubmit = async (event: React.SyntheticEvent) => {
     event.preventDefault()
     setError(null)
     setIsLoading(true)
@@ -74,7 +74,7 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
     }
   }
 
-  const handlePasswordSubmit = async (event: React.FormEvent) => {
+  const handlePasswordSubmit = async (event: React.SyntheticEvent) => {
     event.preventDefault()
     setError(null)
     setIsLoading(true)

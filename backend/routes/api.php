@@ -28,16 +28,13 @@ use App\Http\Controllers\Invitation\StoreInvitationController;
 use App\Http\Controllers\Invitation\ValidateInvitationCodeController;
 use App\Http\Controllers\Legal\GetPlacementTermsController;
 use App\Http\Controllers\MailgunWebhookController;
-use App\Http\Controllers\MedicalNote\DeleteMedicalNoteController;
-use App\Http\Controllers\MedicalNote\ListMedicalNotesController;
-use App\Http\Controllers\MedicalNote\ShowMedicalNoteController;
-use App\Http\Controllers\MedicalNote\StoreMedicalNoteController;
-use App\Http\Controllers\MedicalNote\UpdateMedicalNoteController;
 use App\Http\Controllers\MedicalRecord\DeleteMedicalRecordController;
 use App\Http\Controllers\MedicalRecord\ListMedicalRecordsController;
 use App\Http\Controllers\MedicalRecord\ShowMedicalRecordController;
 use App\Http\Controllers\MedicalRecord\StoreMedicalRecordController;
 use App\Http\Controllers\MedicalRecord\UpdateMedicalRecordController;
+use App\Http\Controllers\MedicalRecordPhoto\DeleteMedicalRecordPhotoController;
+use App\Http\Controllers\MedicalRecordPhoto\StoreMedicalRecordPhotoController;
 use App\Http\Controllers\Messaging\DeleteChatController;
 use App\Http\Controllers\Messaging\DeleteMessageController;
 use App\Http\Controllers\Messaging\GetUnreadChatsCountController;
@@ -109,6 +106,8 @@ use App\Http\Controllers\VaccinationRecord\RenewVaccinationRecordController;
 use App\Http\Controllers\VaccinationRecord\ShowVaccinationRecordController;
 use App\Http\Controllers\VaccinationRecord\StoreVaccinationRecordController;
 use App\Http\Controllers\VaccinationRecord\UpdateVaccinationRecordController;
+use App\Http\Controllers\VaccinationRecordPhoto\DeleteVaccinationRecordPhotoController;
+use App\Http\Controllers\VaccinationRecordPhoto\StoreVaccinationRecordPhotoController;
 use App\Http\Controllers\VersionController;
 use App\Http\Controllers\Waitlist\CheckWaitlistController;
 use App\Http\Controllers\Waitlist\JoinWaitlistController;
@@ -279,21 +278,20 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned'])->group(function ()
     Route::put('/pets/{pet}/weights/{weight}', UpdateWeightController::class)->whereNumber('weight');
     Route::delete('/pets/{pet}/weights/{weight}', DeleteWeightController::class)->whereNumber('weight');
 
-    // Medical Notes (write only - read is public)
-    Route::post('/pets/{pet}/medical-notes', StoreMedicalNoteController::class);
-    Route::put('/pets/{pet}/medical-notes/{note}', UpdateMedicalNoteController::class)->whereNumber('note');
-    Route::delete('/pets/{pet}/medical-notes/{note}', DeleteMedicalNoteController::class)->whereNumber('note');
-
     // Medical Records (write only - read is public)
     Route::post('/pets/{pet}/medical-records', StoreMedicalRecordController::class);
     Route::put('/pets/{pet}/medical-records/{record}', UpdateMedicalRecordController::class)->whereNumber('record');
     Route::delete('/pets/{pet}/medical-records/{record}', DeleteMedicalRecordController::class)->whereNumber('record');
+    Route::post('/pets/{pet}/medical-records/{record}/photos', StoreMedicalRecordPhotoController::class)->whereNumber('record');
+    Route::delete('/pets/{pet}/medical-records/{record}/photos/{photo}', DeleteMedicalRecordPhotoController::class)->whereNumber(['record', 'photo']);
 
     // Vaccinations (write only - read is public)
     Route::post('/pets/{pet}/vaccinations', StoreVaccinationRecordController::class);
     Route::put('/pets/{pet}/vaccinations/{record}', UpdateVaccinationRecordController::class)->whereNumber('record');
     Route::delete('/pets/{pet}/vaccinations/{record}', DeleteVaccinationRecordController::class)->whereNumber('record');
     Route::post('/pets/{pet}/vaccinations/{record}/renew', RenewVaccinationRecordController::class)->whereNumber('record');
+    Route::post('/pets/{pet}/vaccinations/{record}/photo', StoreVaccinationRecordPhotoController::class)->whereNumber('record');
+    Route::delete('/pets/{pet}/vaccinations/{record}/photo', DeleteVaccinationRecordPhotoController::class)->whereNumber('record');
 
     // Microchips (write only - read is public)
     Route::post('/pets/{pet}/microchips', StorePetMicrochipController::class);
@@ -347,8 +345,6 @@ Route::get('/pet-types', ListPetTypesController::class);
 // Pet health data routes (public read, auth required for write)
 Route::get('/pets/{pet}/weights', ListWeightHistoryController::class)->middleware('optional.auth')->whereNumber('pet');
 Route::get('/pets/{pet}/weights/{weight}', ShowWeightController::class)->middleware('optional.auth')->whereNumber(['pet', 'weight']);
-Route::get('/pets/{pet}/medical-notes', ListMedicalNotesController::class)->middleware('optional.auth')->whereNumber('pet');
-Route::get('/pets/{pet}/medical-notes/{note}', ShowMedicalNoteController::class)->middleware('optional.auth')->whereNumber(['pet', 'note']);
 Route::get('/pets/{pet}/medical-records', ListMedicalRecordsController::class)->middleware('optional.auth')->whereNumber('pet');
 Route::get('/pets/{pet}/medical-records/{record}', ShowMedicalRecordController::class)->middleware('optional.auth')->whereNumber(['pet', 'record']);
 Route::get('/pets/{pet}/vaccinations', ListVaccinationRecordsController::class)->middleware('optional.auth')->whereNumber('pet');

@@ -1,7 +1,11 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useCallback, use, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { getUnifiedNotifications, markAllRead, markRead } from '@/api/notifications'
+import {
+  getNotificationsUnified,
+  postNotificationsMarkAllRead,
+  patchNotificationsIdRead,
+} from '@/api/generated/notifications/notifications'
 import type { AppNotification, NotificationLevel } from '@/types/notification'
 import { AuthContext } from '@/contexts/auth-context'
 import { getServiceWorkerRegistration } from '@/lib/web-push'
@@ -185,7 +189,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         const includeBellNotifications = opts?.includeBellNotifications ?? false
 
-        const data = await getUnifiedNotifications({
+        const data = await getNotificationsUnified({
           limit: DEFAULT_BELL_LIMIT,
           includeBellNotifications,
         })
@@ -332,7 +336,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
       prev.map((n) => (n.read_at ? n : { ...n, read_at: new Date().toISOString() }))
     )
     try {
-      await markAllRead()
+      await postNotificationsMarkAllRead()
     } catch {
       await refresh({ includeBellNotifications: true })
     }
@@ -351,7 +355,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
         )
       })
       try {
-        await markRead(id)
+        await patchNotificationsIdRead(id)
       } catch {
         await refresh({ includeBellNotifications: true })
       }

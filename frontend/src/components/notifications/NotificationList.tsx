@@ -15,7 +15,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { useNotifications } from '@/contexts/NotificationProvider'
-import { executeNotificationAction, type ExecuteNotificationActionData } from '@/api/notifications'
+import { postNotificationsNotificationActionsActionKey as executeNotificationAction } from '@/api/generated/notifications/notifications'
+import type { PostNotificationsNotificationActionsActionKey200 as ExecuteNotificationActionData } from '@/api/generated/model'
 import type { NotificationAction } from '@/types/notification'
 
 function LevelIcon({ level }: { level: 'info' | 'success' | 'warning' | 'error' }) {
@@ -133,7 +134,7 @@ function NotificationActionButton({
               executeNotificationAction(notificationId, action.key)
                 .then((res) => {
                   if (res.message) toast.success(res.message)
-                  onDone(res.data)
+                  onDone(res)
                 })
                 .catch((err: unknown) => {
                   console.error('Failed to execute notification action:', err)

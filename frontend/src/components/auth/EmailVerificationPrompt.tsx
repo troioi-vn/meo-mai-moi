@@ -182,9 +182,15 @@ export default function EmailVerificationPrompt({
 
         {/* Resend message */}
         {resendMessage && (
-          <Alert variant={lastResendSuccess ? 'success' : 'warning'}>
+          <Alert
+            className={
+              lastResendSuccess
+                ? 'border-emerald-500/50 bg-emerald-500/5 text-emerald-700 dark:text-emerald-400'
+                : 'border-amber-500/50 bg-amber-500/5 text-amber-700 dark:text-amber-400'
+            }
+          >
             <CheckCircle
-              className={`h-4 w-4 ${lastResendSuccess ? 'text-green-600' : 'text-yellow-600'}`}
+              className={`h-4 w-4 ${lastResendSuccess ? 'text-emerald-600' : 'text-amber-600'}`}
             />
             <AlertDescription>{resendMessage}</AlertDescription>
           </Alert>

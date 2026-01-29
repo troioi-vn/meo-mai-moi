@@ -7,7 +7,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { PublicPlacementRequestSection } from '@/components/placement/public-profile/PublicPlacementRequestSection'
-import { getPetPublic, type PublicPet } from '@/api/pets'
+import { PetPhotoCarouselModal } from '@/components/pets/PetPhotoGallery'
+import { getPetsIdView as getPetPublic } from '@/api/generated/pets/pets'
+import type { PublicPetResponse as PublicPet } from '@/api/generated/model'
 import placeholderImage from '@/assets/images/default-avatar.webp'
 import {
   Breadcrumb,
@@ -78,7 +80,8 @@ const derivePublicPetImageUrl = (pet: PublicPet): string => {
 
 // Helper function to format location
 const formatLocation = (pet: PublicPet): string => {
-  const cityName = typeof pet.city === 'string' ? pet.city : pet.city?.name
+  // In PublicPetResponse, city is a string (not a City object)
+  const cityName = pet.city ?? undefined
   const parts = [cityName, pet.state, pet.country].filter(Boolean)
   return parts.join(', ') || 'Location not specified'
 }
@@ -97,6 +100,7 @@ const PetPublicProfilePage: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [version, setVersion] = useState(0)
+  const [galleryOpen, setGalleryOpen] = useState(false)
 
   useEffect(() => {
     void (async () => {
@@ -198,7 +202,7 @@ const PetPublicProfilePage: React.FC = () => {
         <div className="max-w-lg mx-auto space-y-6">
           {/* Owner viewing public profile banner */}
           {isOwner && (
-            <Alert variant="info">
+            <Alert variant="default">
               <Eye className="h-4 w-4" />
               <AlertDescription>You are viewing the public profile of your pet.</AlertDescription>
             </Alert>
@@ -206,9 +210,12 @@ const PetPublicProfilePage: React.FC = () => {
 
           {/* Lost pet banner */}
           {isLost && (
-            <Alert variant="warning">
+            <Alert
+              variant="default"
+              className="border-yellow-500/50 bg-yellow-500/10 text-yellow-700"
+            >
               <Info className="h-4 w-4" />
-              <AlertDescription>
+              <AlertDescription className="text-yellow-700">
                 This pet has been reported as lost. If you have any information, please contact the
                 owner.
               </AlertDescription>
@@ -218,11 +225,21 @@ const PetPublicProfilePage: React.FC = () => {
           {/* Pet Profile Header */}
           <section className="flex items-center gap-4">
             <div className="shrink-0">
-              <img
-                src={imageUrl}
-                alt={pet.name}
-                className={`w-24 h-24 rounded-full object-cover border-4 border-border ${isDeceased ? 'grayscale' : ''}`}
-              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (pet.photos && pet.photos.length > 0) {
+                    setGalleryOpen(true)
+                  }
+                }}
+                className={`w-24 h-24 rounded-full overflow-hidden border-4 border-border transition-opacity ${pet.photos && pet.photos.length > 0 ? 'cursor-pointer hover:opacity-90' : ''}`}
+              >
+                <img
+                  src={imageUrl}
+                  alt={pet.name}
+                  className={`w-full h-full object-cover ${isDeceased ? 'grayscale' : ''}`}
+                />
+              </button>
             </div>
             <div className="flex flex-col gap-1">
               <h1 className="text-2xl font-bold text-foreground">{pet.name}</h1>
@@ -284,6 +301,18 @@ const PetPublicProfilePage: React.FC = () => {
           )}
         </div>
       </main>
+
+      {pet.photos && pet.photos.length > 0 && (
+        <PetPhotoCarouselModal
+          photos={pet.photos}
+          open={galleryOpen}
+          onOpenChange={setGalleryOpen}
+          onPetUpdate={(p) => {
+            setPet(p as PublicPet)
+          }}
+          initialIndex={0}
+        />
+      )}
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { getHelperProfiles } from '@/api/helper-profiles'
+import { getHelperProfiles } from '@/api/generated/helper-profiles/helper-profiles'
+import type { HelperProfileArrayResponse } from '@/api/generated/model'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoadingState } from '@/components/ui/LoadingState'
@@ -7,14 +8,16 @@ import { ErrorState } from '@/components/ui/ErrorState'
 import { HelperProfilesHeader } from '@/components/helper/profile-list/HelperProfilesHeader'
 import { HelperProfilesEmptyStateCard } from '@/components/helper/profile-list/HelperProfilesEmptyStateCard'
 import { HelperProfileListItem } from '@/components/helper/profile-list/HelperProfileListItem'
+import type { HelperProfile } from '@/types/helper-profile'
 
 export default function HelperProfilePage() {
   const navigate = useNavigate()
-  const { data, isLoading, isError, refetch } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery<HelperProfileArrayResponse>({
     queryKey: ['helper-profiles'],
     queryFn: getHelperProfiles,
   })
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- TS incorrectly infers isLoading is always false
   if (isLoading) {
     return <LoadingState message="Loading helper profiles..." />
   }
@@ -30,7 +33,8 @@ export default function HelperProfilePage() {
     )
   }
 
-  const profiles = data ?? []
+  // Cast to local HelperProfile type which has all needed fields
+  const profiles = (data ?? []) as unknown as HelperProfile[]
   const activeProfiles = profiles.filter((p) => p.status === 'active' || !p.status)
   const archivedProfiles = profiles.filter((p) => p.status === 'archived')
 

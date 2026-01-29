@@ -4,13 +4,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import {
-  getUserInvitations,
-  generateInvitation,
-  revokeInvitation,
-  getInvitationStats,
-  type Invitation,
-  type InvitationStats,
-} from '@/api/invite-system'
+  getInvitations as getUserInvitations,
+  postInvitations as generateInvitation,
+  deleteInvitationsId as revokeInvitation,
+  getInvitationsStats as getInvitationStats,
+} from '@/api/generated/invitations/invitations'
+import type {
+  GetInvitations200Item as Invitation,
+  GetInvitationsStats200 as InvitationStats,
+} from '@/api/generated/model'
 import {
   Plus,
   Copy,
@@ -92,7 +94,13 @@ export default function InvitationsPage() {
       const newInvitation = await generateInvitation()
       setInvitations((prev) => [newInvitation, ...prev])
       setStats((prev) =>
-        prev ? { ...prev, total: prev.total + 1, pending: prev.pending + 1 } : null
+        prev
+          ? {
+              ...prev,
+              total: (prev.total ?? 0) + 1,
+              pending: (prev.pending ?? 0) + 1,
+            }
+          : null
       )
       toast.success('Invitation generated successfully!')
     } catch (err: unknown) {
@@ -105,7 +113,7 @@ export default function InvitationsPage() {
 
   const handleCopyInvitation = async (invitation: Invitation) => {
     try {
-      await navigator.clipboard.writeText(invitation.invitation_url)
+      await navigator.clipboard.writeText(invitation.invitation_url ?? '')
       toast.success('Invitation link copied to clipboard!')
     } catch (err: unknown) {
       console.error('Failed to copy:', err)
@@ -115,6 +123,7 @@ export default function InvitationsPage() {
 
   const handleRevokeInvitation = async (invitation: Invitation) => {
     try {
+      if (!invitation.id) return
       await revokeInvitation(invitation.id)
       setInvitations((prev) =>
         prev.map((inv) => (inv.id === invitation.id ? { ...inv, status: 'revoked' as const } : inv))
@@ -123,8 +132,8 @@ export default function InvitationsPage() {
         prev
           ? {
               ...prev,
-              pending: prev.pending - 1,
-              revoked: prev.revoked + 1,
+              pending: (prev.pending ?? 0) - 1,
+              revoked: (prev.revoked ?? 0) + 1,
             }
           : null
       )
@@ -135,20 +144,23 @@ export default function InvitationsPage() {
     }
   }
 
-  const getStatusBadge = (status: Invitation['status']) => {
+  const getStatusBadge = (status: string | undefined) => {
+    const currentStatus =
+      status === 'accepted' || status === 'expired' || status === 'revoked' ? status : 'pending'
     const variants = {
-      pending: { variant: 'secondary' as const, icon: Clock, color: 'text-yellow-600' },
-      accepted: { variant: 'default' as const, icon: CheckCircle, color: 'text-green-600' },
-      expired: { variant: 'destructive' as const, icon: XCircle, color: 'text-red-600' },
-      revoked: { variant: 'outline' as const, icon: XCircle, color: 'text-muted-foreground' },
+      pending: { variant: 'outline' as const, icon: Clock, color: 'text-yellow-600' },
+      accepted: { variant: 'default' as const, icon: CheckCircle, color: 'text-white' },
+      expired: { variant: 'secondary' as const, icon: XCircle, color: 'text-red-600' },
+      revoked: { variant: 'secondary' as const, icon: XCircle, color: 'text-muted-foreground' },
     }
 
-    const { variant, icon: Icon, color } = variants[status]
+    const variantInfo = variants[currentStatus]
+    const { variant, icon: Icon, color } = variantInfo
 
     return (
       <Badge variant={variant} className="flex items-center gap-1">
         <Icon className={`h-3 w-3 ${color}`} />
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+        {currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1)}
       </Badge>
     )
   }
@@ -215,7 +227,7 @@ export default function InvitationsPage() {
             </CardHeader>
             <CardContent className="pt-1">
               <div className="text-left text-xl font-semibold leading-none tabular-nums">
-                {stats.total}
+                {stats.total ?? 0}
               </div>
             </CardContent>
           </Card>
@@ -227,7 +239,7 @@ export default function InvitationsPage() {
             </CardHeader>
             <CardContent className="pt-1">
               <div className="text-left text-xl font-semibold leading-none tabular-nums">
-                {stats.pending}
+                {stats.pending ?? 0}
               </div>
             </CardContent>
           </Card>
@@ -239,7 +251,7 @@ export default function InvitationsPage() {
             </CardHeader>
             <CardContent className="pt-1">
               <div className="text-left text-xl font-semibold leading-none tabular-nums">
-                {stats.accepted}
+                {stats.accepted ?? 0}
               </div>
             </CardContent>
           </Card>
@@ -251,7 +263,7 @@ export default function InvitationsPage() {
             </CardHeader>
             <CardContent className="pt-1">
               <div className="text-left text-xl font-semibold leading-none tabular-nums">
-                {stats.expired}
+                {stats.expired ?? 0}
               </div>
             </CardContent>
           </Card>
@@ -264,7 +276,7 @@ export default function InvitationsPage() {
               </CardHeader>
               <CardContent className="pt-1">
                 <div className="text-left text-xl font-semibold leading-none tabular-nums">
-                  {stats.revoked}
+                  {stats.revoked ?? 0}
                 </div>
               </CardContent>
             </Card>
@@ -309,20 +321,23 @@ export default function InvitationsPage() {
                       <div className="flex items-center gap-3">
                         {getStatusBadge(invitation.status)}
                         <span className="text-sm text-muted-foreground font-mono">
-                          {invitation.code.slice(0, 8)}...
+                          {invitation.code?.slice(0, 8)}...
                         </span>
                       </div>
 
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          Created {format(new Date(invitation.created_at), 'MMM d, yyyy')}
+                          Created{' '}
+                          {invitation.created_at
+                            ? format(new Date(invitation.created_at), 'MMM d, yyyy')
+                            : 'N/A'}
                         </div>
 
                         {invitation.recipient && (
                           <div className="flex items-center gap-1">
                             <Users className="h-3 w-3" />
-                            Accepted by {invitation.recipient.name}
+                            Accepted by {(invitation.recipient as { name?: string }).name ?? 'Unknown'}
                           </div>
                         )}
 
@@ -349,15 +364,15 @@ export default function InvitationsPage() {
                       {invitation.status === 'pending' && (
                         <>
                           <InvitationShare
-                            invitationUrl={invitation.invitation_url}
-                            invitationCode={invitation.code}
+                            invitationUrl={invitation.invitation_url ?? ''}
+                            invitationCode={invitation.code ?? ''}
                           />
                           <Suspense
                             fallback={<div className="h-10 w-10 animate-pulse bg-muted rounded" />}
                           >
                             <InvitationQRCode
-                              invitationUrl={invitation.invitation_url}
-                              invitationCode={invitation.code}
+                              invitationUrl={invitation.invitation_url ?? ''}
+                              invitationCode={invitation.code ?? ''}
                             />
                           </Suspense>
                         </>

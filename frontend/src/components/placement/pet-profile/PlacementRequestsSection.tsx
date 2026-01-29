@@ -24,7 +24,6 @@ import {
   X,
   ExternalLink,
 } from 'lucide-react'
-import { api } from '@/api/axios'
 import { toast } from 'sonner'
 import type { Pet } from '@/types/pet'
 import type { PlacementRequestResponse } from '@/types/placement'
@@ -35,7 +34,12 @@ import {
   isTemporaryType,
 } from '@/types/placement'
 import { ResponsesDrawer } from './ResponsesDrawer'
-import { acceptPlacementResponse, rejectPlacementResponse, rejectTransfer } from '@/api/placement'
+import {
+  postPlacementResponsesIdAccept as acceptPlacementResponse,
+  postPlacementResponsesIdReject as rejectPlacementResponse,
+} from '@/api/generated/placement-request-responses/placement-request-responses'
+import { deleteTransferRequestsId as rejectTransfer } from '@/api/generated/transfer-requests/transfer-requests'
+import { postPlacementRequestsIdFinalize as finalizePlacementRequest } from '@/api/generated/placement-requests/placement-requests'
 import { useCreateChat } from '@/hooks/useMessaging'
 
 type PlacementRequest = NonNullable<Pet['placement_requests']>[number]
@@ -170,7 +174,7 @@ export const PlacementRequestsSection: React.FC<Props> = ({
     async (requestId: number) => {
       setFinalizingId(requestId)
       try {
-        await api.post(`placement-requests/${String(requestId)}/finalize`)
+        await finalizePlacementRequest(requestId)
         toast.success('Pet has been marked as returned!')
         onRefresh?.()
       } catch (error) {

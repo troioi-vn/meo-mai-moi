@@ -19,6 +19,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'notes', type: 'string'),
         new OA\Property(property: 'reminder_sent_at', type: 'string', format: 'date-time'),
         new OA\Property(property: 'completed_at', type: 'string', format: 'date-time', nullable: true, description: 'When set, indicates the record is completed/renewed and no longer active'),
+        new OA\Property(property: 'photo_url', type: 'string', nullable: true, description: 'URL to the vaccination photo'),
         new OA\Property(property: 'created_at', type: 'string', format: 'date-time'),
         new OA\Property(property: 'updated_at', type: 'string', format: 'date-time'),
     ]

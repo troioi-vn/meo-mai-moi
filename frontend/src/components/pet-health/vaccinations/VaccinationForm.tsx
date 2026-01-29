@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { DatePicker } from '@/components/ui/date-picker'
+import { YearMonthDatePicker } from '@/components/ui/YearMonthDatePicker'
 
 export interface VaccinationFormValues {
   vaccine_name: string
@@ -8,6 +8,8 @@ export interface VaccinationFormValues {
   due_at?: string | null
   notes?: string | null
 }
+
+// Photo is handled separately after record creation
 
 // Normalize date string to YYYY-MM-DD format for HTML date input
 const normalizeDate = (dateStr: string | undefined | null, defaultDate?: string): string => {
@@ -43,7 +45,7 @@ export const VaccinationForm: React.FC<{
     due_at?: string
   }>({})
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
     const newErrors: typeof errors = {}
     if (!vaccineName || vaccineName.trim().length === 0)
@@ -89,18 +91,9 @@ export const VaccinationForm: React.FC<{
         <div>
           <label className="block text-sm font-medium">Administered on</label>
           <div className="mt-1">
-            <DatePicker
-              date={administeredAt ? new Date(administeredAt + 'T00:00:00') : undefined}
-              setDate={(d) => {
-                if (d) {
-                  const yyyy = String(d.getFullYear())
-                  const mm = String(d.getMonth() + 1).padStart(2, '0')
-                  const dd = String(d.getDate()).padStart(2, '0')
-                  setAdministeredAt(`${yyyy}-${mm}-${dd}`)
-                } else {
-                  setAdministeredAt('')
-                }
-              }}
+            <YearMonthDatePicker
+              value={administeredAt}
+              onChange={setAdministeredAt}
               placeholder="Select date"
               className="w-full"
             />
@@ -112,20 +105,12 @@ export const VaccinationForm: React.FC<{
         <div>
           <label className="block text-sm font-medium">Due at (optional)</label>
           <div className="mt-1">
-            <DatePicker
-              date={dueAt ? new Date(dueAt + 'T00:00:00') : undefined}
-              setDate={(d) => {
-                if (d) {
-                  const yyyy = String(d.getFullYear())
-                  const mm = String(d.getMonth() + 1).padStart(2, '0')
-                  const dd = String(d.getDate()).padStart(2, '0')
-                  setDueAt(`${yyyy}-${mm}-${dd}`)
-                } else {
-                  setDueAt('')
-                }
-              }}
+            <YearMonthDatePicker
+              value={dueAt}
+              onChange={setDueAt}
               placeholder="Select date"
               className="w-full"
+              allowFuture
             />
           </div>
           {errors.due_at && <p className="text-xs text-destructive mt-1">{errors.due_at}</p>}
@@ -142,6 +127,9 @@ export const VaccinationForm: React.FC<{
           />
         </div>
       </div>
+      <p className="text-xs text-muted-foreground">
+        A photo can be added after saving the vaccination record.
+      </p>
       {serverError && <p className="text-sm text-destructive">{serverError}</p>}
       <div className="flex gap-2">
         <Button type="submit" disabled={Boolean(submitting)}>

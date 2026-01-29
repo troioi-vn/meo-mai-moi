@@ -1,7 +1,8 @@
 import React, { useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { api } from '@/api/axios'
-import { getPet } from '@/api/pets'
+import { getPetsId as getPet } from '@/api/generated/pets/pets'
+import { postPetsPetPhotos } from '@/api/generated/pet-photos/pet-photos'
 import { toast } from 'sonner'
 import { Upload, Trash2 } from 'lucide-react'
 import type { AxiosError } from 'axios'
@@ -13,6 +14,7 @@ interface PetPhotoProps {
   onPhotoUpdate: (updatedPet: Pet) => void
   showUploadControls?: boolean
   className?: string
+  onClick?: () => void
 }
 
 export function PetPhoto({
@@ -20,6 +22,7 @@ export function PetPhoto({
   onPhotoUpdate,
   showUploadControls = false,
   className = 'w-full h-64 object-cover',
+  onClick,
 }: PetPhotoProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
@@ -48,17 +51,10 @@ export function PetPhoto({
     setIsUploading(true)
 
     try {
-      const formData = new FormData()
-      formData.append('photo', file)
-
-      const response = await api.post<Pet>(`/pets/${String(pet.id)}/photos`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      })
+      const response = await postPetsPetPhotos(pet.id, { photo: file })
 
       toast.success('Photo uploaded successfully')
-      onPhotoUpdate(response)
+      onPhotoUpdate(response as Pet)
     } catch (error: unknown) {
       let errorMessage = 'Failed to upload photo'
       if (error instanceof Error && 'response' in error) {
@@ -87,7 +83,7 @@ export function PetPhoto({
       toast.success('Photo deleted successfully')
 
       // Refetch the pet to get updated photos list
-      const updatedPet = await getPet(String(pet.id))
+      const updatedPet = await getPet(pet.id)
       onPhotoUpdate(updatedPet)
     } catch (error: unknown) {
       let errorMessage = 'Failed to delete photo'
@@ -107,7 +103,12 @@ export function PetPhoto({
 
   return (
     <div className="flex flex-col items-center space-y-4">
-      <img src={imageUrl} alt={pet.name} className={className} />
+      <img
+        src={imageUrl}
+        alt={pet.name}
+        className={`${className} ${onClick ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
+        onClick={onClick}
+      />
 
       {showUploadControls && (
         <div className="flex space-x-2">

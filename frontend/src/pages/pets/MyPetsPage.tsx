@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { PetCard } from '@/components/pets/PetCard'
 import { PlusCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { getMyPetsSections } from '@/api/pets'
+import { getMyPetsSections } from '@/api/generated/pets/pets'
 import type { Pet } from '@/types/pet'
 import { useAuth } from '@/hooks/use-auth'
 

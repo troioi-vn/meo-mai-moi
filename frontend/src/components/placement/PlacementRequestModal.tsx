@@ -79,7 +79,7 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
     return !isBefore(startOfDay(endDate), startOfDay(startDate))
   }, [endDate, startDate, requestType])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault()
     // Basic client-side validation to align with backend (start_date required)
     if (!requestType || !startDate) {

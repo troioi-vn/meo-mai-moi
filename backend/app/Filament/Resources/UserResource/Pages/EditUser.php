@@ -97,9 +97,9 @@ class EditUser extends EditRecord
             ->icon('heroicon-o-trash')
             ->color('danger')
             ->requiresConfirmation()
-            ->visible(fn () => $this->record->getFirstMedia('avatar') !== null)
-            ->action(function (): void {
-                $this->record->clearMediaCollection('avatar');
+            ->visible(fn (\App\Models\User $record) => $record->getFirstMedia('avatar') !== null)
+            ->action(function (\App\Models\User $record): void {
+                $record->clearMediaCollection('avatar');
 
                 \Filament\Notifications\Notification::make()
                     ->title('Avatar deleted successfully')

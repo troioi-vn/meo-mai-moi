@@ -10,7 +10,7 @@ export function BannedReadOnlyBanner() {
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 pointer-events-none">
       <div className="container px-3 sm:px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
-        <Alert variant="warning" className="pointer-events-auto">
+        <Alert className="pointer-events-auto border-amber-500/50 bg-amber-500/5 text-amber-700 dark:text-amber-400">
           <Ban className="h-4 w-4" />
           <AlertTitle>Read-only mode</AlertTitle>
           <AlertDescription>

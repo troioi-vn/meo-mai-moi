@@ -30,6 +30,7 @@ final class CityUnapproveNotificationActionHandler implements NotificationAction
             return null;
         }
 
+        /** @var City|null $city */
         $city = self::$cityCache[(int) $cityId] ??= City::find($cityId);
         if (! $city) {
             return [
@@ -75,6 +76,7 @@ final class CityUnapproveNotificationActionHandler implements NotificationAction
 
         unset(self::$cityCache[(int) $cityId]);
 
+        /** @var City $city */
         $city = City::query()->findOrFail($cityId);
 
         if ($city->approved_at !== null) {

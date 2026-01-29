@@ -6,7 +6,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
-import type { WeightHistory } from '@/api/pets'
+import type { WeightHistory } from '@/api/generated/model'
 import { format, parseISO } from 'date-fns'
 
 interface WeightChartProps {

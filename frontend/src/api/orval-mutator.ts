@@ -12,7 +12,7 @@ import { api } from './axios'
  * Orval calls this with a single AxiosRequestConfig object.
  */
 export const customInstance = <T>(config: AxiosRequestConfig): Promise<T> => {
-  return api(config) as Promise<T>
+  return api(config)
 }
 
 export type ErrorType<Error> = Error

@@ -4,13 +4,16 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { MockedFunction } from 'vitest'
 import CreatePetPage from './CreatePetPage'
-import { createPet, getPetTypes } from '@/api/pets'
+import { postPets } from '@/api/generated/pets/pets'
+import { getPetTypes } from '@/api/generated/pet-types/pet-types'
 import type { PetType } from '@/types/pet'
 import { AuthProvider } from '@/contexts/AuthContext'
 
 // Mock the API functions
-vi.mock('@/api/pets', () => ({
-  createPet: vi.fn() as unknown as MockedFunction<(data: any) => Promise<any>>,
+vi.mock('@/api/generated/pets/pets', () => ({
+  postPets: vi.fn() as unknown as MockedFunction<(data: any) => Promise<any>>,
+}))
+vi.mock('@/api/generated/pet-types/pet-types', () => ({
   getPetTypes: vi.fn() as unknown as MockedFunction<() => Promise<PetType[]>>,
 }))
 
@@ -28,6 +31,29 @@ vi.mock('@/components/location/CitySelect', () => ({
       </button>
       {error && <span>{error}</span>}
     </div>
+  ),
+}))
+
+// Mock YearMonthDatePicker to simplify testing
+vi.mock('@/components/ui/YearMonthDatePicker', () => ({
+  YearMonthDatePicker: ({ value, onChange, id }: any) => (
+    <input
+      id={id}
+      type="date"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      aria-label="Birthday"
+    />
+  ),
+}))
+
+// Mock CountrySelect to simplify testing
+vi.mock('@/components/ui/CountrySelect', () => ({
+  CountrySelect: ({ value, onValueChange }: any) => (
+    <select aria-label="Country" value={value} onChange={(e) => onValueChange?.(e.target.value)}>
+      <option value="VN">Vietnam</option>
+      <option value="US">United States</option>
+    </select>
   ),
 }))
 
@@ -104,8 +130,8 @@ const renderWithProviders = (component: React.ReactElement) => {
 }
 
 describe('CreatePetPage', () => {
-  const mockGetPetTypes = getPetTypes as unknown as MockedFunction<() => Promise<PetType[]>>
-  const mockCreatePet = createPet as unknown as MockedFunction<(data: any) => Promise<any>>
+  const mockGetPetTypes = vi.mocked(getPetTypes)
+  const mockCreatePet = vi.mocked(postPets)
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -202,9 +228,7 @@ describe('CreatePetPage', () => {
     })
   })
 
-  // TODO: This test needs investigation - the form submission mock isn't being called
-  // May be related to CountrySelect component rendering in test environment
-  it.skip('submits form with valid data - full date precision', async () => {
+  it('submits form with valid data - full date precision', async () => {
     const mockPetData = {
       id: 1,
       name: 'Fluffy',

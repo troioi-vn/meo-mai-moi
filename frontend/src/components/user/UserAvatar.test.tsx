@@ -6,12 +6,13 @@ import { mockUser } from '@/testing/mocks/data/user'
 
 // Mock dependencies
 vi.mock('@/hooks/use-auth')
-vi.mock('@/api/axios', () => ({
-  api: {
-    post: vi.fn(),
-    delete: vi.fn(),
-  },
+
+// Mock generated API functions
+vi.mock('@/api/generated/user-profile/user-profile', () => ({
+  postUsersMeAvatar: vi.fn(),
+  deleteUsersMeAvatar: vi.fn(),
 }))
+
 vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),

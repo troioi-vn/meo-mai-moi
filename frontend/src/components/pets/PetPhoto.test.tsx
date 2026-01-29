@@ -3,19 +3,22 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import userEvent from '@testing-library/user-event'
 import { PetPhoto } from './PetPhoto'
 import { mockPet } from '@/testing/mocks/data/pets'
-import { api } from '@/api/axios'
 
-// Mock the API
+// Mock the API (still needed for delete which uses api.delete directly)
 vi.mock('@/api/axios', () => ({
   api: {
-    post: vi.fn(),
     delete: vi.fn(),
   },
 }))
 
 // Mock the pets API
-vi.mock('@/api/pets', () => ({
-  getPet: vi.fn(),
+vi.mock('@/api/generated/pets/pets', () => ({
+  getPetsId: vi.fn(),
+}))
+
+// Mock the pet-photos API
+vi.mock('@/api/generated/pet-photos/pet-photos', () => ({
+  postPetsPetPhotos: vi.fn(),
 }))
 
 // Mock sonner toast
@@ -26,8 +29,9 @@ vi.mock('sonner', () => ({
   },
 }))
 
-const mockApi = vi.mocked(api)
-import { getPet } from '@/api/pets'
+import { api } from '@/api/axios'
+import { getPetsId as getPet } from '@/api/generated/pets/pets'
+import { postPetsPetPhotos } from '@/api/generated/pet-photos/pet-photos'
 
 describe('PetPhoto', () => {
   const mockOnPhotoUpdate = vi.fn()
@@ -71,7 +75,7 @@ describe('PetPhoto', () => {
   it('uploads photo successfully', async () => {
     const user = userEvent.setup()
     const mockResponse = { ...mockPet, photo_url: 'http://example.com/new-photo.jpg' }
-    mockApi.post.mockResolvedValue(mockResponse)
+    vi.mocked(postPetsPetPhotos).mockResolvedValue(mockResponse)
 
     render(<PetPhoto pet={mockPet} onPhotoUpdate={mockOnPhotoUpdate} showUploadControls={true} />)
 
@@ -85,11 +89,7 @@ describe('PetPhoto', () => {
     await user.upload(hiddenInput, file)
 
     await waitFor(() => {
-      expect(mockApi.post).toHaveBeenCalledWith(
-        `/pets/${mockPet.id}/photos`,
-        expect.any(FormData),
-        { headers: { 'Content-Type': 'multipart/form-data' } }
-      )
+      expect(postPetsPetPhotos).toHaveBeenCalledWith(mockPet.id, { photo: file })
     })
 
     expect(mockOnPhotoUpdate).toHaveBeenCalledWith(mockResponse)
@@ -98,7 +98,7 @@ describe('PetPhoto', () => {
   it('deletes photo successfully', async () => {
     const user = userEvent.setup()
     const updatedPet = { ...mockPet, photo_url: undefined, photos: [] }
-    mockApi.delete.mockResolvedValue({})
+    vi.mocked(api).delete.mockResolvedValue({})
     vi.mocked(getPet).mockResolvedValue(updatedPet)
 
     render(<PetPhoto pet={mockPet} onPhotoUpdate={mockOnPhotoUpdate} showUploadControls={true} />)
@@ -107,11 +107,11 @@ describe('PetPhoto', () => {
     await user.click(removeButton)
 
     await waitFor(() => {
-      expect(mockApi.delete).toHaveBeenCalledWith(`/pets/${mockPet.id}/photos/current`)
+      expect(vi.mocked(api).delete).toHaveBeenCalledWith(`/pets/${mockPet.id}/photos/current`)
     })
 
     await waitFor(() => {
-      expect(getPet).toHaveBeenCalledWith(String(mockPet.id))
+      expect(getPet).toHaveBeenCalledWith(mockPet.id)
     })
 
     expect(mockOnPhotoUpdate).toHaveBeenCalledWith(updatedPet)
@@ -119,7 +119,7 @@ describe('PetPhoto', () => {
 
   it('handles upload error', async () => {
     const user = userEvent.setup()
-    mockApi.post.mockRejectedValue(new Error('Upload failed'))
+    vi.mocked(postPetsPetPhotos).mockRejectedValue(new Error('Upload failed'))
 
     render(<PetPhoto pet={mockPet} onPhotoUpdate={mockOnPhotoUpdate} showUploadControls={true} />)
 
@@ -132,7 +132,7 @@ describe('PetPhoto', () => {
     await user.upload(hiddenInput, file)
 
     await waitFor(() => {
-      expect(mockApi.post).toHaveBeenCalled()
+      expect(postPetsPetPhotos).toHaveBeenCalled()
     })
 
     // onPhotoUpdate should not be called on error
@@ -153,7 +153,7 @@ describe('PetPhoto', () => {
     await user.upload(hiddenInput, file)
 
     // API should not be called for invalid file type
-    expect(mockApi.post).not.toHaveBeenCalled()
+    expect(postPetsPetPhotos).not.toHaveBeenCalled()
     expect(mockOnPhotoUpdate).not.toHaveBeenCalled()
   })
 
@@ -172,7 +172,7 @@ describe('PetPhoto', () => {
     await user.upload(hiddenInput, largeFile)
 
     // API should not be called for oversized file
-    expect(mockApi.post).not.toHaveBeenCalled()
+    expect(postPetsPetPhotos).not.toHaveBeenCalled()
     expect(mockOnPhotoUpdate).not.toHaveBeenCalled()
   })
 })

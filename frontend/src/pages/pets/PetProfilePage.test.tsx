@@ -30,6 +30,7 @@ let mockPetData = {
 vi.mock('@/hooks/usePetProfile', () => ({
   usePetProfile: () => ({
     pet: mockPetData,
+    setPet: vi.fn(),
     loading: false,
     error: null,
     refresh: refreshMock,

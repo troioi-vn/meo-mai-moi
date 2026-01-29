@@ -17,18 +17,24 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
-import type { PublicPet } from '@/api/pets'
+import type { PublicPetResponse } from '@/api/generated/model'
 import { useCreateChat } from '@/hooks/useMessaging'
-import type { PlacementRequestResponse, TransferRequest } from '@/types/placement'
+import type { PlacementRequestResponse, TransferRequest, PlacementRequest } from '@/types/placement'
+
+type PublicPet = PublicPetResponse
 import {
   formatRequestType,
   formatStatus,
   requiresHandover,
   isTemporaryType,
 } from '@/types/placement'
-import { cancelPlacementResponse, confirmTransfer } from '@/api/placement'
+import {
+  postPlacementResponsesIdCancel as cancelPlacementResponse,
+  postPlacementResponsesIdAccept as confirmTransfer,
+} from '@/api/generated/placement-request-responses/placement-request-responses'
 
-type PlacementRequest = NonNullable<PublicPet['placement_requests']>[number]
+// Use the PlacementRequest type from local types which has all the needed fields
+// The generated type is too loose ({ [key: string]: unknown })
 
 interface Props {
   pet: PublicPet
@@ -67,7 +73,7 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
   const [confirmingTransferId, setConfirmingTransferId] = useState<number | null>(null)
   const [cancellingResponseId, setCancellingResponseId] = useState<number | null>(null)
 
-  const placementRequests = pet.placement_requests ?? []
+  const placementRequests = (pet.placement_requests ?? []) as PlacementRequest[]
   // Show open, pending_transfer, and active placement requests
   const visiblePlacementRequests = placementRequests.filter(
     (pr) => pr.status === 'open' || pr.status === 'pending_transfer' || pr.status === 'active'

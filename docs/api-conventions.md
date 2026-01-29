@@ -91,3 +91,20 @@ We use two mechanisms to simplify data access:
 2.  **Orval Transformer**: Defined in `frontend/orval.config.ts`, it unwraps the `{ data: T }` type in the generated hooks, so callers receive the payload directly.
 
 Both work together to ensure that `const { data } = useGetPets()` gives you the actual list of pets, not the `{ data: pets }` structure.
+
+### CI/Deployment Integration
+
+The API client is regenerated automatically during deployment:
+
+1. **Docker Build**: The Dockerfile runs `bun run api:generate` before building the frontend assets.
+2. **Deploy Script**: `utils/deploy.sh` includes a pre-build check that runs `bun run api:generate` to catch OpenAPI spec drift early.
+3. **Local Check**: Run `bun run api:check` to verify generated code matches the committed OpenAPI spec.
+
+### Exceptions (Manual API Calls)
+
+Some endpoints remain outside the generated client by design:
+
+- **Fortify Auth Routes** (`/login`, `/register`, `/logout`, `/forgot-password`, `/reset-password`): These Laravel Fortify routes are not documented in OpenAPI and use a separate `authApi` Axios instance.
+- **CSRF Token** (`/sanctum/csrf-cookie`): Handled directly via the `csrf()` helper function.
+
+These exceptions are intentional and ensure the generated client focuses on the `/api/*` routes documented in the OpenAPI spec.

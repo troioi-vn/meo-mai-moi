@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\PetPhoto;
 
+use App\Enums\PetRelationshipType;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -68,7 +70,7 @@ class SetPrimaryPetPhotoController extends Controller
         protected PetCapabilityService $capabilityService
     ) {}
 
-    public function __invoke(Pet $pet, int $photo)
+    public function __invoke(Request $request, Pet $pet, int $photo)
     {
         $this->authorize('update', $pet);
 
@@ -94,11 +96,22 @@ class SetPrimaryPetPhotoController extends Controller
         $pet->load('petType');
         $pet->refresh();
 
-        // Ensure photo_url and photos are included in response
-        $petData = $pet->toArray();
-        $petData['photo_url'] = $pet->photo_url;
-        $petData['photos'] = $pet->photos;
+        // Build viewer permission flags for response
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+        $isAdmin = $user->hasRole(['admin', 'super_admin']);
+        $isOwner = $pet->isOwnedBy($user);
+        $canEdit = $isOwner || $isAdmin || $pet->canBeEditedBy($user);
+        $isViewer = $pet->hasRelationshipWith($user, PetRelationshipType::VIEWER);
 
-        return $this->sendSuccess($petData);
+        $viewerPermissions = [
+            'can_edit' => $canEdit,
+            'can_view_contact' => $isAdmin || ! $isOwner,
+            'is_owner' => $isOwner,
+            'is_viewer' => $isViewer,
+        ];
+        $pet->setAttribute('viewer_permissions', $viewerPermissions);
+
+        return $this->sendSuccess($pet);
     }
 }

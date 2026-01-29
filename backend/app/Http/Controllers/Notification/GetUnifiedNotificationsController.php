@@ -71,7 +71,8 @@ class GetUnifiedNotificationsController extends Controller
         if ($includeBellNotifications) {
             $items = (clone $baseBellQuery)->limit($limit)->get();
 
-            $bellNotifications = $items->map(function ($n) use ($actionRegistry) {
+            /** @phpstan-ignore-next-line */
+            $bellNotifications = $items->map(function (Notification $n) use ($actionRegistry) {
                 return [
                     'id' => (string) $n->id,
                     'level' => $n->getBellLevel(),

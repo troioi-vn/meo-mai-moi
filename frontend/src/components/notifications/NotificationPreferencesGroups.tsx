@@ -1,7 +1,7 @@
 import type { ElementType } from 'react'
 import { Bell, Heart, Mail, MessageSquare, Shield } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
-import type { NotificationPreference } from '@/api/notification-preferences'
+import type { GetNotificationPreferences200Item as NotificationPreference } from '@/api/generated/model'
 
 const groupIcons: Record<string, ElementType> = {
   placement_owner: Heart,

@@ -31,7 +31,6 @@ use OpenApi\Attributes as OA;
                 new OA\Property(property: 'description', type: 'string'),
                 new OA\Property(property: 'record_date', type: 'string', format: 'date'),
                 new OA\Property(property: 'vet_name', type: 'string'),
-                new OA\Property(property: 'attachment_url', type: 'string'),
             ]
         )
     ),
@@ -59,7 +58,6 @@ class UpdateMedicalRecordController extends Controller
             'description' => $this->textValidationRules(false, 2000),
             'record_date' => $this->dateValidationRules(false, false),
             'vet_name' => $this->textValidationRules(false, 255),
-            'attachment_url' => ['nullable', 'string', 'url', 'max:2048'],
         ]);
 
         $record->update($validated);

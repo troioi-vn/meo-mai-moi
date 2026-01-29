@@ -5,15 +5,18 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import EditPetPage from './EditPetPage'
 import { AuthProvider } from '@/contexts/AuthContext'
-import * as petsApi from '@/api/pets'
+import { getPetsId as getPet, putPetsIdStatus as updatePetStatus } from '@/api/generated/pets/pets'
+import { getPetTypes } from '@/api/generated/pet-types/pet-types'
 import type { Pet } from '@/types/pet'
 
-vi.mock('@/api/pets', () => ({
-  getPet: vi.fn(),
+vi.mock('@/api/generated/pets/pets', () => ({
+  getPetsId: vi.fn(),
+  putPetsId: vi.fn(),
+  putPetsIdStatus: vi.fn(),
+  deletePetsId: vi.fn(),
+}))
+vi.mock('@/api/generated/pet-types/pet-types', () => ({
   getPetTypes: vi.fn(),
-  updatePetStatus: vi.fn(),
-  deletePet: vi.fn(),
-  updatePet: vi.fn(),
 }))
 
 const mockPet: Partial<Pet> = {
@@ -64,8 +67,8 @@ function renderEditPage() {
 describe('CreatePetPage edit mode enhancements', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(petsApi.getPet).mockResolvedValue(mockPet as Pet)
-    vi.mocked(petsApi.getPetTypes).mockResolvedValue([
+    vi.mocked(getPet).mockResolvedValue(mockPet as Pet)
+    vi.mocked(getPetTypes).mockResolvedValue([
       {
         id: 1,
         name: 'Cat',
@@ -79,9 +82,9 @@ describe('CreatePetPage edit mode enhancements', () => {
         updated_at: '',
       },
     ])
-    vi.mocked(petsApi.updatePetStatus).mockImplementation(async (_id, status) => ({
+    vi.mocked(updatePetStatus).mockImplementation(async (_id, data) => ({
       ...(mockPet as Pet),
-      status: status as 'active' | 'lost' | 'deceased' | 'deleted',
+      status: data.status as 'active' | 'lost' | 'deceased' | 'deleted',
     }))
   })
 

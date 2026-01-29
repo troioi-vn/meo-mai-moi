@@ -19,7 +19,11 @@ import {
 import { toast } from 'sonner'
 import { Star, Trash2, ImageIcon } from 'lucide-react'
 import type { Pet, PetPhoto } from '@/types/pet'
-import { deletePetPhoto, setPrimaryPetPhoto, getPet } from '@/api/pets'
+import {
+  deletePetsPetPhotosPhoto as deletePetPhoto,
+  postPetsPetPhotosPhotoSetPrimary as setPrimaryPetPhoto,
+} from '@/api/generated/pet-photos/pet-photos'
+import { getPetsId as getPet } from '@/api/generated/pets/pets'
 
 // Image component that falls back to original URL if thumbnail fails to load
 function PhotoImage({
@@ -48,14 +52,200 @@ function PhotoImage({
   return <img src={src} alt="Pet photo" className={className} onError={handleError} />
 }
 
+interface PetPhotoCarouselModalProps {
+  photos: PetPhoto[]
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  initialIndex?: number
+  petId?: number
+  onPetUpdate?: (updatedPet: Pet) => void
+  showActions?: boolean
+}
+
+export function PetPhotoCarouselModal({
+  photos,
+  open,
+  onOpenChange,
+  initialIndex = 0,
+  petId,
+  onPetUpdate,
+  showActions = false,
+}: PetPhotoCarouselModalProps) {
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(initialIndex)
+  const [isSettingPrimary, setIsSettingPrimary] = useState<number | null>(null)
+  const [isDeleting, setIsDeleting] = useState<number | null>(null)
+
+  // Update selected index when initialIndex changes or modal opens
+  useEffect(() => {
+    if (open) {
+      setSelectedPhotoIndex(initialIndex)
+    }
+  }, [open, initialIndex])
+
+  const handleSetPrimary = async (photo: PetPhoto) => {
+    if (!petId || !onPetUpdate) return
+
+    if (photo.is_primary) {
+      toast.info('This photo is already the avatar')
+      return
+    }
+
+    setIsSettingPrimary(photo.id)
+
+    try {
+      const updatedPet = await setPrimaryPetPhoto(petId, photo.id)
+      toast.success('Avatar updated successfully')
+      onOpenChange(false) // Close modal after setting avatar
+      onPetUpdate(updatedPet)
+    } catch {
+      toast.error('Failed to set avatar')
+    } finally {
+      setIsSettingPrimary(null)
+    }
+  }
+
+  const handleDelete = async (photo: PetPhoto) => {
+    if (!petId || !onPetUpdate) return
+
+    setIsDeleting(photo.id)
+
+    try {
+      await deletePetPhoto(petId, String(photo.id))
+      toast.success('Photo deleted successfully')
+
+      // Refetch the pet to get updated photos list
+      const updatedPet = await getPet(petId)
+      onPetUpdate(updatedPet)
+
+      // Close modal if we deleted the last photo or navigate to previous
+      const remainingPhotos = (updatedPet.photos ?? []).length
+      if (remainingPhotos === 0) {
+        onOpenChange(false)
+      } else if (selectedPhotoIndex >= remainingPhotos) {
+        setSelectedPhotoIndex(remainingPhotos - 1)
+      }
+    } catch {
+      toast.error('Failed to delete photo')
+    } finally {
+      setIsDeleting(null)
+    }
+  }
+
+  // Sync carousel with selected index when modal opens
+  const handleCarouselApi = (api: CarouselApi) => {
+    if (api) {
+      api.scrollTo(selectedPhotoIndex, true)
+      api.on('select', () => {
+        setSelectedPhotoIndex(api.selectedScrollSnap())
+      })
+    }
+  }
+
+  if (photos.length === 0) return null
+
+  const currentPhoto = photos[selectedPhotoIndex]
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-3xl p-0 overflow-hidden bg-black border-none">
+        <DialogHeader className="sr-only">
+          <DialogTitle>
+            Photo {selectedPhotoIndex + 1} of {photos.length}
+          </DialogTitle>
+          <DialogDescription>View and manage pet photos</DialogDescription>
+        </DialogHeader>
+
+        <div className="relative group">
+          {photos.length === 1 && photos[0] ? (
+            // Single photo - no carousel needed
+            <div className="flex items-center justify-center min-h-[50vh] bg-black">
+              <PhotoImage
+                photo={photos[0]}
+                className="w-full h-auto max-h-[85vh] object-contain"
+                useThumbnail={false}
+              />
+            </div>
+          ) : (
+            // Multiple photos - carousel
+            <Carousel
+              opts={{
+                align: 'center',
+                loop: true,
+                startIndex: initialIndex,
+              }}
+              setApi={handleCarouselApi}
+              className="w-full"
+            >
+              <CarouselContent>
+                {photos.map((photo) => (
+                  <CarouselItem key={photo.id}>
+                    <div className="flex items-center justify-center min-h-[50vh] bg-black">
+                      <PhotoImage
+                        photo={photo}
+                        className="w-full h-auto max-h-[85vh] object-contain"
+                        useThumbnail={false}
+                      />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <CarouselNext className="right-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </Carousel>
+          )}
+
+          {/* Photo counter */}
+          {photos.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-3 py-1 rounded-full text-xs font-medium">
+              {selectedPhotoIndex + 1} / {photos.length}
+            </div>
+          )}
+        </div>
+
+        {/* Action buttons */}
+        {showActions && currentPhoto && (
+          <div className="p-4 flex justify-center gap-3 bg-background border-t">
+            <Button
+              variant={currentPhoto.is_primary ? 'secondary' : 'outline'}
+              size="sm"
+              onClick={() => {
+                void handleSetPrimary(currentPhoto)
+              }}
+              disabled={isSettingPrimary === currentPhoto.id || currentPhoto.is_primary}
+            >
+              <Star
+                className={`h-4 w-4 mr-2 ${currentPhoto.is_primary ? 'fill-yellow-500 text-yellow-500' : ''}`}
+              />
+              {isSettingPrimary === currentPhoto.id
+                ? 'Setting...'
+                : currentPhoto.is_primary
+                  ? 'Current Avatar'
+                  : 'Set as Avatar'}
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => {
+                void handleDelete(currentPhoto)
+              }}
+              disabled={isDeleting === currentPhoto.id}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              {isDeleting === currentPhoto.id ? 'Deleting...' : 'Delete'}
+            </Button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 interface PetPhotoGalleryProps {
   pet: Pet
   onPetUpdate: (updatedPet: Pet) => void
 }
 
 export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
-  const [isSettingPrimary, setIsSettingPrimary] = useState<number | null>(null)
-  const [isDeleting, setIsDeleting] = useState<number | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0)
   const [thumbnailCarouselApi, setThumbnailCarouselApi] = useState<CarouselApi>()
@@ -72,72 +262,15 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
     previousPhotosCountRef.current = photos.length
   }, [photos.length, thumbnailCarouselApi])
 
-  const handleSetPrimary = async (photo: PetPhoto) => {
-    if (photo.is_primary) {
-      toast.info('This photo is already the avatar')
-      return
-    }
-
-    setIsSettingPrimary(photo.id)
-
-    try {
-      const updatedPet = await setPrimaryPetPhoto(pet.id, photo.id)
-      toast.success('Avatar updated successfully')
-      setModalOpen(false) // Close modal after setting avatar
-      onPetUpdate(updatedPet)
-    } catch {
-      toast.error('Failed to set avatar')
-    } finally {
-      setIsSettingPrimary(null)
-    }
-  }
-
-  const handleDelete = async (photo: PetPhoto) => {
-    setIsDeleting(photo.id)
-
-    try {
-      await deletePetPhoto(pet.id, photo.id)
-      toast.success('Photo deleted successfully')
-
-      // Refetch the pet to get updated photos list
-      const updatedPet = await getPet(String(pet.id))
-      onPetUpdate(updatedPet)
-
-      // Close modal if we deleted the last photo or navigate to previous
-      const remainingPhotos = (updatedPet.photos ?? []).length
-      if (remainingPhotos === 0) {
-        setModalOpen(false)
-      } else if (selectedPhotoIndex >= remainingPhotos) {
-        setSelectedPhotoIndex(remainingPhotos - 1)
-      }
-    } catch {
-      toast.error('Failed to delete photo')
-    } finally {
-      setIsDeleting(null)
-    }
-  }
-
   const openModal = (index: number) => {
     setSelectedPhotoIndex(index)
     setModalOpen(true)
-  }
-
-  // Sync carousel with selected index when modal opens
-  const handleCarouselApi = (api: CarouselApi) => {
-    if (api) {
-      api.scrollTo(selectedPhotoIndex, true)
-      api.on('select', () => {
-        setSelectedPhotoIndex(api.selectedScrollSnap())
-      })
-    }
   }
 
   // Don't render if no photos
   if (photos.length === 0) {
     return null
   }
-
-  const currentPhoto = photos[selectedPhotoIndex]
 
   return (
     <>
@@ -149,7 +282,7 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {photos.length === 1 ? (
+          {photos.length === 1 && photos[0] ? (
             // Single photo - simple centered view
             <div className="flex justify-center">
               <button
@@ -165,7 +298,7 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
                   useThumbnail={true}
                 />
                 {photos[0].is_primary && (
-                  <div className="absolute top-2 right-2 bg-yellow-500 text-white rounded-full p-1">
+                  <div className="absolute top-2 right-2 bg-yellow-500 text-white rounded-full p-1 border border-white/20">
                     <Star className="h-3 w-3 fill-current" />
                   </div>
                 )}
@@ -198,7 +331,7 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
                           useThumbnail={true}
                         />
                         {photo.is_primary && (
-                          <div className="absolute top-2 right-2 bg-yellow-500 text-white rounded-full p-1">
+                          <div className="absolute top-2 right-2 bg-yellow-500 text-white rounded-full p-1 border border-white/20">
                             <Star className="h-3 w-3 fill-current" />
                           </div>
                         )}
@@ -218,96 +351,15 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
         </CardContent>
       </Card>
 
-      {/* Full-size photo modal */}
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-3xl p-0 overflow-hidden">
-          <DialogHeader className="sr-only">
-            <DialogTitle>
-              Photo {selectedPhotoIndex + 1} of {photos.length}
-            </DialogTitle>
-            <DialogDescription>View and manage pet photos</DialogDescription>
-          </DialogHeader>
-
-          <div className="relative">
-            {photos.length === 1 ? (
-              // Single photo - no carousel needed
-              <div className="relative">
-                <PhotoImage
-                  photo={photos[0]}
-                  className="w-full h-auto max-h-[70vh] object-contain bg-black"
-                  useThumbnail={false}
-                />
-              </div>
-            ) : (
-              // Multiple photos - carousel
-              <Carousel
-                opts={{
-                  align: 'center',
-                  loop: true,
-                  startIndex: selectedPhotoIndex,
-                }}
-                setApi={handleCarouselApi}
-                className="w-full"
-              >
-                <CarouselContent>
-                  {photos.map((photo) => (
-                    <CarouselItem key={photo.id}>
-                      <div className="flex items-center justify-center bg-black">
-                        <PhotoImage
-                          photo={photo}
-                          className="w-full h-auto max-h-[70vh] object-contain"
-                          useThumbnail={false}
-                        />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious className="left-2" />
-                <CarouselNext className="right-2" />
-              </Carousel>
-            )}
-
-            {/* Photo counter */}
-            {photos.length > 1 && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
-                {selectedPhotoIndex + 1} / {photos.length}
-              </div>
-            )}
-          </div>
-
-          {/* Action buttons */}
-          {currentPhoto && (
-            <div className="p-4 flex justify-center gap-3 border-t">
-              <Button
-                variant={currentPhoto.is_primary ? 'secondary' : 'outline'}
-                onClick={() => {
-                  void handleSetPrimary(currentPhoto)
-                }}
-                disabled={isSettingPrimary === currentPhoto.id || currentPhoto.is_primary}
-              >
-                <Star
-                  className={`h-4 w-4 mr-2 ${currentPhoto.is_primary ? 'fill-yellow-500 text-yellow-500' : ''}`}
-                />
-                {isSettingPrimary === currentPhoto.id
-                  ? 'Setting...'
-                  : currentPhoto.is_primary
-                    ? 'Current Avatar'
-                    : 'Set as Avatar'}
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  void handleDelete(currentPhoto)
-                }}
-                disabled={isDeleting === currentPhoto.id}
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                {isDeleting === currentPhoto.id ? 'Deleting...' : 'Delete'}
-              </Button>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <PetPhotoCarouselModal
+        photos={photos}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        initialIndex={selectedPhotoIndex}
+        petId={pet.id}
+        onPetUpdate={onPetUpdate}
+        showActions={true}
+      />
     </>
   )
 }

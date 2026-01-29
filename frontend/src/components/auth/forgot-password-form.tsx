@@ -22,7 +22,7 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
   const [isSubmitted, setIsSubmitted] = useState(false)
   const navigate = useNavigate()
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.SubmitEvent) => {
     event.preventDefault()
     setIsLoading(true)
 

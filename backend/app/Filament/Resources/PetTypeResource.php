@@ -40,7 +40,7 @@ class PetTypeResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Basic Information')
+                \Filament\Forms\Components\Section::make('Basic Information')
                     ->schema([
                         TextInput::make('name')
                             ->required()
@@ -66,7 +66,7 @@ class PetTypeResource extends Resource
                             ->columnSpanFull(),
                     ])->columns(2),
 
-                Forms\Components\Section::make('Capabilities & Status')
+                \Filament\Forms\Components\Section::make('Capabilities & Status')
                     ->schema([
                         Toggle::make('placement_requests_allowed')
                             ->label('Placement requests allowed')

@@ -641,6 +641,49 @@ else
     sync_repository_with_remote "$APP_ENV_CURRENT"
 fi
 
+# --- Frontend API Client Generation Check ---
+# Verify the typesafe API client can be generated from the committed OpenAPI spec.
+# This catches spec/client drift early, before the Docker build.
+check_frontend_api_generation() {
+    local frontend_dir="$PROJECT_ROOT/frontend"
+
+    if [ ! -d "$frontend_dir" ]; then
+        note "⚠️  Frontend directory not found, skipping API generation check"
+        log_warn "Frontend directory not found" "path=$frontend_dir"
+        return 0
+    fi
+
+    # Check if bun is available
+    if ! command -v bun &> /dev/null; then
+        note "⚠️  Bun not installed on host, skipping API generation check (will run in Docker build)"
+        log_warn "Bun not available on host, API generation check skipped"
+        return 0
+    fi
+
+    note "ℹ️  Checking frontend API client generation..."
+    log_info "Running frontend API client generation check"
+
+    # Run api:generate and capture output
+    if (cd "$frontend_dir" && bun run api:generate) > /tmp/api-generate-output.txt 2>&1; then
+        note "✓ Frontend API client generated successfully"
+        log_success "Frontend API client generation passed"
+    else
+        echo "✗ Frontend API client generation failed" >&2
+        echo "Output:" >&2
+        cat /tmp/api-generate-output.txt >&2
+        log_error "Frontend API client generation failed" "output=$(cat /tmp/api-generate-output.txt)"
+        return 1
+    fi
+
+    rm -f /tmp/api-generate-output.txt
+    return 0
+}
+
+if ! check_frontend_api_generation; then
+    echo "✗ Pre-deployment check failed: API client generation" >&2
+    exit 1
+fi
+
 deploy_db_initialize
 
 if [ "$QUIET" = "true" ]; then

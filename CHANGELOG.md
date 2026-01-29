@@ -8,14 +8,15 @@ All notable changes to this project are documented here, following the [Keep a C
 
 - **PWA Install Banner**: Added a progressive web app install banner that appears on mobile devices after user authentication, allowing users to install the app to their home screen for quick access. Includes smart detection of mobile devices, respect for user dismissal preferences (30-day cooldown), and integration with the browser's `beforeinstallprompt` event.
 
-- **Full-stack Type Safety via Orval**: Integrated Orval to automatically generate TypeScript API clients and React Query hooks from the backend's OpenAPI specification.
+- **Full-stack Type Safety via Orval** (Completed): Integrated Orval to automatically generate TypeScript API clients and React Query hooks from the backend's OpenAPI specification.
   - Automated stripping of `/api` prefix and unwrapping of `{ data: T }` envelope at the type level for optimal DX.
-  - Added `api:generate` and `api:check` scripts to [frontend/package.json](frontend/package.json).
+  - Added `api:generate`, `api:check`, and `api:watch` scripts to [frontend/package.json](frontend/package.json).
   - Integrated with custom Axios mutator to maintain centralized 401 handling and standardized envelope extraction.
   - Completed OpenAPI spec coverage for **Cities**, **Messaging/Chats**, **Push Subscriptions**, and **Notification Actions** by adding PHP attributes to backend controllers.
-  - Migrated core API modules (`pets.ts`, `placement.ts`, `notifications.ts`, `cities.ts`, `messaging.ts`, `push-subscriptions.ts`) to use generated typesafe hooks.
+  - Migrated all eligible API modules to use generated typesafe hooks including impersonation, user avatars, pet photos, helper profiles, and placement request responses.
   - Resolved request body mapping issues (Orval `body` vs Axios `data`) by switching to `httpClient: 'axios'`.
   - Fixed an inconsistency in the Orval mutator where response data was being incorrectly re-wrapped, ensuring runtime behavior matches generated TypeScript definitions.
+  - Added pre-build API generation check in `utils/deploy.sh` to catch OpenAPI spec drift early during deployment.
 
 - **API Standardization Framework**: Implemented a unified JSON response envelope `{ success, data, message, error }` across all backend controllers. This includes a robust `ApiResponseTrait` for consistent output and centralized OpenAPI schema definitions in `ResponseSchemas.php`.
 

@@ -2,12 +2,15 @@ import React, { useRef, useState, useEffect } from 'react'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
-import { api } from '@/api/axios'
 import { toast } from 'sonner'
 import { User as UserIcon, Upload, Trash2 } from 'lucide-react'
 import type { AxiosError } from 'axios'
 import defaultAvatar from '@/assets/images/default-avatar.webp'
 import { getInitials } from '@/utils/initials'
+import {
+  postUsersMeAvatar,
+  deleteUsersMeAvatar,
+} from '@/api/generated/user-profile/user-profile'
 
 interface UserAvatarProps {
   size?: 'sm' | 'md' | 'lg' | 'xl'
@@ -67,14 +70,7 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
     setIsUploading(true)
 
     try {
-      const formData = new FormData()
-      formData.append('avatar', file)
-
-      await api.post('/users/me/avatar', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      })
+      await postUsersMeAvatar({ avatar: file })
 
       toast.success('Avatar uploaded successfully')
       await loadUser()
@@ -96,30 +92,27 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
     }
   }
 
-  const handleDeleteAvatar = () => {
+  const handleDeleteAvatar = async () => {
     if (!user?.avatar_url) return
 
     setIsDeleting(true)
 
-    api
-      .delete('/users/me/avatar')
-      .then(async () => {
-        toast.success('Avatar deleted successfully')
-        await loadUser()
-      })
-      .catch((error: unknown) => {
-        let errorMessage = 'Failed to delete avatar'
-        if (error instanceof Error && 'response' in error) {
-          const axiosError = error as AxiosError<{ message?: string }>
-          errorMessage = axiosError.response?.data.message ?? axiosError.message
-        } else if (error instanceof Error) {
-          errorMessage = error.message
-        }
-        toast.error(errorMessage)
-      })
-      .finally(() => {
-        setIsDeleting(false)
-      })
+    try {
+      await deleteUsersMeAvatar()
+      toast.success('Avatar deleted successfully')
+      await loadUser()
+    } catch (error: unknown) {
+      let errorMessage = 'Failed to delete avatar'
+      if (error instanceof Error && 'response' in error) {
+        const axiosError = error as AxiosError<{ message?: string }>
+        errorMessage = axiosError.response?.data.message ?? axiosError.message
+      } else if (error instanceof Error) {
+        errorMessage = error.message
+      }
+      toast.error(errorMessage)
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   if (!user) return null
@@ -141,7 +134,14 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
           </Button>
 
           {user.avatar_url && (
-            <Button onClick={handleDeleteAvatar} disabled={isDeleting} size="sm" variant="outline">
+            <Button
+              onClick={() => {
+                void handleDeleteAvatar()
+              }}
+              disabled={isDeleting}
+              size="sm"
+              variant="outline"
+            >
               <Trash2 className="h-4 w-4 mr-2" />
               {isDeleting ? 'Deleting...' : 'Remove'}
             </Button>

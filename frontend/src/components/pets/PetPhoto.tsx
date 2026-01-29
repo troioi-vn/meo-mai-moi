@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { api } from '@/api/axios'
 import { getPetsId as getPet } from '@/api/generated/pets/pets'
+import { postPetsPetPhotos } from '@/api/generated/pet-photos/pet-photos'
 import { toast } from 'sonner'
 import { Upload, Trash2 } from 'lucide-react'
 import type { AxiosError } from 'axios'
@@ -50,17 +51,10 @@ export function PetPhoto({
     setIsUploading(true)
 
     try {
-      const formData = new FormData()
-      formData.append('photo', file)
-
-      const response = await api.post<Pet>(`/pets/${String(pet.id)}/photos`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      })
+      const response = await postPetsPetPhotos(pet.id, { photo: file })
 
       toast.success('Photo uploaded successfully')
-      onPhotoUpdate(response)
+      onPhotoUpdate(response as Pet)
     } catch (error: unknown) {
       let errorMessage = 'Failed to upload photo'
       if (error instanceof Error && 'response' in error) {

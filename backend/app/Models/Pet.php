@@ -419,4 +419,3 @@ class Pet extends Model implements HasMedia
         });
     }
 }
-

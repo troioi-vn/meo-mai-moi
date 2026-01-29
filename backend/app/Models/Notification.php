@@ -8,6 +8,7 @@ use App\Enums\NotificationType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 /**
  * @method static \Illuminate\Database\Eloquent\Builder|static pending()
  * @method static \Illuminate\Database\Eloquent\Builder|static delivered()
@@ -15,7 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder|static read()
  * @method static \Illuminate\Database\Eloquent\Builder|static unread()
  */
-
 class Notification extends Model
 {
     use HasFactory;

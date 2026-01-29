@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\PetPhoto;
 
+use App\Enums\PetRelationshipType;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Services\PetCapabilityService;
@@ -128,6 +129,22 @@ class StorePetPhotoController extends Controller
         $pet->refresh();
         // Clear media collection cache to get fresh photos
         $pet->unsetRelation('media');
+
+        // Build viewer permission flags for response
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+        $isAdmin = $user->hasRole(['admin', 'super_admin']);
+        $isOwner = $pet->isOwnedBy($user);
+        $canEdit = $isOwner || $isAdmin || $pet->canBeEditedBy($user);
+        $isViewer = $pet->hasRelationshipWith($user, PetRelationshipType::VIEWER);
+
+        $viewerPermissions = [
+            'can_edit' => $canEdit,
+            'can_view_contact' => $isAdmin || ! $isOwner,
+            'is_owner' => $isOwner,
+            'is_viewer' => $isViewer,
+        ];
+        $pet->setAttribute('viewer_permissions', $viewerPermissions);
 
         return $this->sendSuccess($pet);
     }

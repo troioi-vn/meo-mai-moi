@@ -1,6 +1,18 @@
 # Development Guide
 
-This guide provides a comprehensive overview of how to get started with development, run tests, and follow our coding standards.
+This guide covers local setup, testing, and coding standards.
+
+## Contributing
+
+Contributions welcome — features, fixes, tests, and docs.
+
+1. **Setup**: Follow [Quick Start](#quick-start) below
+2. **Branch**: Create a feature branch from `dev`
+3. **Code**: Make small, focused commits
+4. **Test**: Run backend and frontend tests (see [Testing](#testing))
+5. **PR**: Open a pull request to `dev`
+
+For detailed git workflow, branching strategy, and conflict resolution, see [Git Workflow](./git-workflow.md).
 
 ## Quick Start
 

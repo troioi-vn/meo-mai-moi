@@ -35,6 +35,7 @@ Meo Mai Moi is a comprehensive cat care management platform that helps cat owner
 
 ## Developer Docs
 
+- Features overview: [Features](./features.md)
 - Local setup, testing, tips: [Development Guide](./development.md)
 - Architecture and coding standards: [Architecture](./architecture.md)
 - API response standards and consumption: [API Conventions](./api-conventions.md)

@@ -1,75 +1,42 @@
-# Meo Mai Moi — Cat Care Management Platform
+# Meo Mai Moi
 
-Helping cat (and other pets) owners manage with health tracking, vaccination reminders, weight monitoring, and care scheduling. Built with Laravel, React, and PostgreSQL.
+**Mèo** - cat. **Mãi** - forever, again and again. **Mới** - new, renewed.
 
-## What is Meo Mai Moi?
+_Cats, always renewed._ A name that hints at rescue, rehoming, and new chapters in the same life.
 
-Meo Mai Moi is a comprehensive pet care platform designed to help cat owners (and other pet owners) stay on top of their companions' health and wellbeing. Many pet owners struggle to remember vaccination schedules, track weight changes, or maintain organized health records - especially when managing multiple pets.
+---
 
-**The Problem**: Pet owners often rely on scattered notes, calendar reminders, or memory to track their pets' health needs. This leads to missed vaccinations, unnoticed weight trends, and disorganized medical records that are crucial during vet visits.
+## What This Is
 
-**Our Solution**: A centralized platform that makes pet care management effortless with automated reminders, visual health tracking, and comprehensive record keeping.
+A pet care platform with health tracking, vaccination reminders, weight monitoring, and rehoming features. Built solo over 7 months with AI assistance.
 
-**Who It's For**:
+The origin was simple: I have 9 cats rescued from Vietnamese streets, and I wanted to track their health without spreadsheets, scattered notes, or "I swear I'll remember."
 
-- **Dedicated Cat Owners**: Our primary focus - people who want the best care for their feline companions
-- **Multi-Pet Households**: Families managing several cats or mixed pets with individual care needs
-- **Health-Conscious Pet Parents**: Owners who want to track trends and catch health issues early
-- **Busy Pet Owners**: People who need automated reminders and organized records
+That sentence - "I'll build a small app for myself" - turned out to be a spell that summons months of work.
 
-**Pet Rehoming & Adoption**: Complete placement request system supporting permanent adoption, foster care (paid/free), and pet sitting with automated relationship management and handover tracking.
+## Who Made This
 
-Dockerized • Laravel 12 • React 19 • Vite 7 • PostgreSQL 14 • Filament 3 • E2E Email Testing
+I'm a former cat café owner, former Maine Coon breeder, and I've been building things on computers since Windows 95. Now I live in Vietnam, and my cats come from the streets here.
 
-## Quick Start (Docker)
+This project exists because care is not a one-time act. It's ongoing. Software can reflect that.
 
-1. Clone and setup
+## How It Was Built
 
-```bash
-git clone https://github.com/troioi-vn/meo-mai-moi.git
-cd meo-mai-moi
-# Build containers, run migrations, seed sample data, publish assets
-./utils/deploy.sh --seed
-```
+Less than 1% of the code was written by hand. The rest was built with AI - in a healthy sense. I used various models, learned their personalities, and discovered that AI-assisted development is like crane-assisted construction: powerful, but if you don't understand structure, you build a beautiful collapse.
 
-Access:
+The real work was debugging, simplifying, testing, and shipping. Around 1,500 unit tests. E2E tests with real email verification. Deployment scripts, backups, rollbacks. The architecture stayed boring on purpose.
 
-- App: http://localhost:8000 (or https://localhost when ENABLE_HTTPS=true)
-- Admin: http://localhost:8000/admin (or https://localhost/admin with HTTPS) (admin@catarchy.space / password)
-- Docs: http://localhost:8000/docs (or https://localhost/docs with HTTPS)
+**Stack**: Laravel 12 (API) • React 19 (SPA) • PostgreSQL • Filament (Admin) • Docker • Bun
 
-**Optional: Enable HTTPS for local dev (via compose https-proxy profile)**
+## Features
 
-```bash
-# 1) Ensure backend/.env exists (deploy script can create it)
-# 2) Set in backend/.env
-#    APP_ENV=development
-#    ENABLE_HTTPS=true
+**Health Management**: Pet profiles, medical records, vaccination schedules with reminders, weight tracking with charts, vet contact management.
 
-# 3) Generate self-signed certificates (one-time)
-# Note: script will NOT overwrite existing certs; use --force to regenerate
-./utils/generate-dev-certs.sh
+**Rehoming**: Placement requests (adoption, foster, pet sitting), helper responses, handover confirmation, relationship tracking, in-app chat between owners and helpers.
 
-# 4) Deploy (single entry point)
-./utils/deploy.sh
+**Infrastructure**: Real-time notifications, email delivery tracking, admin panel with RBAC, OpenAPI documentation.
 
-# Access via HTTPS (browser will warn about self-signed cert - expected)
-# https://localhost
-# https://localhost/docs
-```
-
-## Documentation
-
-- Development guide: docs/development.md
-- Deployment: docs/deploy.md
-- Project docs site: docs/index.md
-- Agent/architecture: GEMINI.md
-
-## How to Participate
-
-We welcome contributions of all sizes — features, fixes, tests, and docs.
-
-1. Get set up (Docker Quick Start)
+## Running It
 
 ```bash
 git clone https://github.com/troioi-vn/meo-mai-moi.git
@@ -77,70 +44,19 @@ cd meo-mai-moi
 ./utils/deploy.sh --seed
 ```
 
-2. Read the Development Guide
+Then: [localhost:8000](http://localhost:8000) (app) • [localhost:8000/admin](http://localhost:8000/admin) (admin) • [localhost:8000/api/documentation](http://localhost:8000/api/documentation) (API docs)
 
-- Start here for local setup, daily workflow, testing, and Git practices to avoid merge conflicts: `docs/development.md`
-- For comprehensive e2e testing with email verification: `docs/e2e-testing-guide.md`
+## Contributing
 
-3. Create a branch and code
+Contributions welcome. See [docs/development.md](docs/development.md) for setup and workflow. Architecture notes in [CLAUDE.md](CLAUDE.md).
 
-```bash
-git checkout -b feature/your-change
-# make small, focused commits
-git add -p && git commit -m "feat: do one thing"
-```
+## What's Next
 
-4. Run tests and format
+- Internationalization
+- Lost pet recovery features
+- AI parsing of vaccination certificates
+- Integration with smart pet devices
 
-```bash
-# Backend
-cd backend && php artisan test --parallel
-cd backend && ./vendor/bin/pint
+---
 
-# Frontend
-cd frontend && bun test
-cd frontend && bun run lint && bun run typecheck
-
-# E2E Tests (with email verification)
-cd frontend && bun run test:e2e
-cd frontend && bun run test:e2e:keep  # Keep services running for debugging
-```
-
-5. Open a Pull Request
-
-- Push your branch and open a PR to `dev`. Keep PRs small when possible.
-- Include screenshots for UI changes and mention tests added/updated.
-- For email-related features, use e2e tests to verify the complete flow with MailHog.
-
-For architecture context, see `GEMINI.md` (AI Agent Guide).
-
-## Core Features (MVP Focus)
-
-**Cat Care Management**:
-
-- **Cat Profiles**: Comprehensive profiles with photos, sex information, and personality traits
-- **Health Tracking**: Medical records, vaccination schedules, and appointment reminders
-- **Weight Monitoring**: Regular weight tracking with visual charts and health insights
-- **Care Scheduling**: Feeding schedules, medication reminders, and routine care tasks
-- **Veterinary Integration**: Vet contact management and appointment history
-- **Multi-Cat Support**: Manage multiple cats with individual profiles and care plans
-
-**Admin Panel Features**:
-
-- Cat profile management with health record oversight
-- Weight tracking analytics and health trend monitoring
-- Vaccination reminder system with email notifications
-- User account management and verification
-- Care schedule templates and customization
-- Health alert configuration and monitoring
-- RBAC: Spatie Permission + Filament Shield
-- Placement request oversight and relationship management
-
-**Pet Rehoming & Adoption**:
-
-- **Placement Requests**: Owners can create requests for permanent adoption, foster care (paid/free), or pet sitting
-- **Helper Responses**: Community helpers can respond to placement requests with messages and profile information
-- **Handover Management**: Automated physical handover confirmation for foster/permanent placements with relationship tracking
-- **Relationship System**: Automatic creation and management of ownership, foster, and sitter relationships
-- **Public Profiles**: Lost pets and pets with active placement requests are publicly viewable for wider adoption reach
-- **Chat Integration**: Built-in messaging between owners and helpers throughout the placement process
+Built in Vietnam. For the cats who found new chapters, and the people who gave them one.

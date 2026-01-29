@@ -65,3 +65,4 @@ gha-creds-*.json
 .kiro/
 backend/.deptrac.cache
 backend/.php-cs-fixer.cache
+backend/.deptrac.cache

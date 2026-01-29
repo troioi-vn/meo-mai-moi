@@ -25,15 +25,15 @@ composer deptrac                  # Architecture validation
 php artisan l5-swagger:generate   # Regenerate OpenAPI spec
 ```
 
-### Frontend (fropetm frontend/)
+### Frontend (from frontend/)
 
 ```bash
-bun dev                           # Dev server (proxies to :8000)
-bun test                          # Unit tests (Vitest)
+bun run test:minimal              # Fast test run (minimal output)
+bun run test                      # Verbose test run
 bun run typecheck                 # TypeScript check
 bun run lint                      # ESLint
 bun run api:generate              # Regenerate API client from OpenAPI
-bun run e2e                       # E2E tests (Playwright + MailHog)
+bun run e2e                       # E2E tests. docs/e2e.md for details
 ```
 
 ### Root Workspace

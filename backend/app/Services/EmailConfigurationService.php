@@ -123,7 +123,7 @@ class EmailConfigurationService
         $activeConfig = $this->getActiveConfiguration();
 
         if (! $activeConfig || ! $activeConfig->isValid()) {
-            Log::warning('No valid active email configuration found. Email sending may not work.');
+            Log::debug('No valid active email configuration found. Email sending may not work.');
 
             return;
         }

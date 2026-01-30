@@ -112,7 +112,7 @@ export function useChat(chatId: number | null) {
       }
 
       // Mark as read
-      await markChatRead({ chatId })
+      await markChatRead(chatId)
     } catch (err) {
       console.error('Failed to load chat:', err)
       setError('Failed to load conversation')
@@ -165,7 +165,7 @@ export function useChat(chatId: number | null) {
 
       setSending(true)
       try {
-        const newMessage = await sendMessage({ chatId, content: content.trim() })
+        const newMessage = await sendMessage(chatId, { content: content.trim() })
         setMessages((prev) => [...prev, newMessage])
       } catch (err) {
         console.error('Failed to send message:', err)

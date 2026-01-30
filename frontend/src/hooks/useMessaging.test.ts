@@ -79,6 +79,87 @@ describe('useMessaging hooks', () => {
         expect(result.current.messages[0].id).toBe(mockChatMessage.id)
       })
     })
+
+    it('calls markChatRead with numeric chat ID, not an object', async () => {
+      let markReadCalledWithCorrectId = false
+
+      server.use(
+        http.get('http://localhost:3000/api/msg/chats/1', () => {
+          return HttpResponse.json({ data: mockChat })
+        }),
+        http.get('http://localhost:3000/api/msg/chats/1/messages', () => {
+          return HttpResponse.json({ data: [mockChatMessage], next_cursor: null })
+        }),
+        http.post('http://localhost:3000/api/msg/chats/1/read', () => {
+          // This handler only matches if the URL has numeric ID "1"
+          // If an object was passed, URL would be /msg/chats/[object Object]/read
+          markReadCalledWithCorrectId = true
+          return HttpResponse.json({ success: true })
+        })
+      )
+
+      const { result } = renderHook(() => useChat(1))
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      await waitFor(() => {
+        expect(markReadCalledWithCorrectId).toBe(true)
+      })
+    })
+
+    it('sends message with correct arguments (id, body) not single object', async () => {
+      let sendMessageCalledCorrectly = false
+      let receivedContent = ''
+
+      server.use(
+        http.get('http://localhost:3000/api/msg/chats/1', () => {
+          return HttpResponse.json({ data: mockChat })
+        }),
+        http.get('http://localhost:3000/api/msg/chats/1/messages', () => {
+          return HttpResponse.json({ data: [], next_cursor: null })
+        }),
+        http.post('http://localhost:3000/api/msg/chats/1/read', () => {
+          return HttpResponse.json({ success: true })
+        }),
+        http.post('http://localhost:3000/api/msg/chats/1/messages', async ({ request }) => {
+          // This handler only matches if the URL has numeric ID "1"
+          // If an object was passed as first arg, URL would be /msg/chats/[object Object]/messages
+          sendMessageCalledCorrectly = true
+          const body = (await request.json()) as { content: string }
+          receivedContent = body.content
+          return HttpResponse.json({
+            data: {
+              id: 101,
+              chat_id: 1,
+              sender_id: 1,
+              type: 'text',
+              content: body.content,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              read_at: null,
+            },
+          })
+        })
+      )
+
+      const { result } = renderHook(() => useChat(1))
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      // Send a message
+      await result.current.send('Hello, world!')
+
+      await waitFor(() => {
+        expect(sendMessageCalledCorrectly).toBe(true)
+        expect(receivedContent).toBe('Hello, world!')
+        expect(result.current.messages).toHaveLength(1)
+        expect(result.current.messages[0].content).toBe('Hello, world!')
+      })
+    })
   })
 
   // Nav badge unread count is covered by unified notifications context tests.

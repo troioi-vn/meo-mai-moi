@@ -25,7 +25,7 @@ describe('useMedicalRecords', () => {
         },
         {
           id: 2,
-          record_type: 'checkup',
+          record_type: 'vet_visit',
           description: 'Annual checkup',
           record_date: '2023-02-01',
           vet_name: null,
@@ -87,7 +87,7 @@ describe('useMedicalRecords', () => {
         },
         {
           id: 2,
-          record_type: 'checkup',
+          record_type: 'vet_visit',
           description: 'Checkup',
           record_date: '2023-02-01',
           vet_name: null,
@@ -130,7 +130,9 @@ describe('useMedicalRecords', () => {
 
       const { result } = renderHook(() => useMedicalRecords(petId))
 
-      await waitFor(() => { expect(result.current.loading).toBe(false); })
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
 
       act(() => {
         result.current.setRecordTypeFilter('vaccination')
@@ -138,7 +140,7 @@ describe('useMedicalRecords', () => {
 
       await waitFor(() => {
         expect(result.current.items).toHaveLength(1)
-        expect(result.current.items[0].record_type).toBe('vaccination')
+        expect(result.current.items[0]?.record_type).toBe('vaccination')
       })
     })
   })
@@ -148,7 +150,7 @@ describe('useMedicalRecords', () => {
       const existingItems: MedicalRecord[] = [
         {
           id: 1,
-          record_type: 'checkup',
+          record_type: 'vet_visit',
           description: 'Existing',
           record_date: '2023-01-01',
           vet_name: null,
@@ -193,7 +195,9 @@ describe('useMedicalRecords', () => {
 
       const { result } = renderHook(() => useMedicalRecords(petId))
 
-      await waitFor(() => { expect(result.current.loading).toBe(false); })
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
 
       await act(async () => {
         await result.current.create({
@@ -215,7 +219,7 @@ describe('useMedicalRecords', () => {
     it('updates medical record in place', async () => {
       const originalItem: MedicalRecord = {
         id: 1,
-        record_type: 'checkup',
+        record_type: 'vet_visit',
         description: 'Original',
         record_date: '2023-01-01',
         vet_name: 'Dr. Old',
@@ -223,7 +227,7 @@ describe('useMedicalRecords', () => {
       }
       const updatedItem: MedicalRecord = {
         id: 1,
-        record_type: 'checkup',
+        record_type: 'vet_visit',
         description: 'Updated',
         record_date: '2023-01-01',
         vet_name: 'Dr. New',
@@ -247,7 +251,9 @@ describe('useMedicalRecords', () => {
 
       const { result } = renderHook(() => useMedicalRecords(petId))
 
-      await waitFor(() => { expect(result.current.loading).toBe(false); })
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
 
       await act(async () => {
         await result.current.update(1, { description: 'Updated', vet_name: 'Dr. New' })
@@ -263,7 +269,7 @@ describe('useMedicalRecords', () => {
       const items: MedicalRecord[] = [
         {
           id: 1,
-          record_type: 'checkup',
+          record_type: 'vet_visit',
           description: 'Record 1',
           record_date: '2023-01-01',
           vet_name: null,
@@ -296,14 +302,16 @@ describe('useMedicalRecords', () => {
 
       const { result } = renderHook(() => useMedicalRecords(petId))
 
-      await waitFor(() => { expect(result.current.loading).toBe(false); })
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
 
       await act(async () => {
         await result.current.remove(1)
       })
 
       expect(result.current.items).toHaveLength(1)
-      expect(result.current.items[0].id).toBe(2)
+      expect(result.current.items[0]?.id).toBe(2)
     })
   })
 
@@ -311,7 +319,7 @@ describe('useMedicalRecords', () => {
     it('uploads photo and updates the record', async () => {
       const originalRecord: MedicalRecord = {
         id: 1,
-        record_type: 'checkup',
+        record_type: 'vet_visit',
         description: 'Checkup',
         record_date: '2023-01-01',
         vet_name: null,
@@ -319,7 +327,7 @@ describe('useMedicalRecords', () => {
       }
       const updatedRecord: MedicalRecord = {
         ...originalRecord,
-        photos: [{ id: 1, url: 'photo.jpg', uploaded_at: '2024-01-01' }],
+        photos: [{ id: 1, url: 'photo.jpg', thumb_url: 'photo-thumb.jpg' }],
       }
 
       server.use(
@@ -339,7 +347,9 @@ describe('useMedicalRecords', () => {
 
       const { result } = renderHook(() => useMedicalRecords(petId))
 
-      await waitFor(() => { expect(result.current.loading).toBe(false); })
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
 
       const mockFile = new File(['photo content'], 'photo.jpg', { type: 'image/jpeg' })
 
@@ -355,11 +365,11 @@ describe('useMedicalRecords', () => {
     it('deletes photo and refreshes the record', async () => {
       const recordWithPhoto: MedicalRecord = {
         id: 1,
-        record_type: 'checkup',
+        record_type: 'vet_visit',
         description: 'Checkup',
         record_date: '2023-01-01',
         vet_name: null,
-        photos: [{ id: 1, url: 'photo.jpg', uploaded_at: '2024-01-01' }],
+        photos: [{ id: 1, url: 'photo.jpg', thumb_url: 'photo-thumb.jpg' }],
       }
       const recordWithoutPhoto: MedicalRecord = {
         ...recordWithPhoto,
@@ -386,7 +396,9 @@ describe('useMedicalRecords', () => {
 
       const { result } = renderHook(() => useMedicalRecords(petId))
 
-      await waitFor(() => { expect(result.current.loading).toBe(false); })
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
 
       await act(async () => {
         await result.current.deletePhoto(1, 1)
@@ -394,7 +406,7 @@ describe('useMedicalRecords', () => {
 
       // After delete, refresh should be called, updating the record
       await waitFor(() => {
-        expect(result.current.items[0].photos).toEqual([])
+        expect(result.current.items[0]?.photos).toEqual([])
       })
     })
   })

@@ -6,10 +6,7 @@ import {
   putPetsPetMedicalRecordsRecord as updateMedicalRecord,
 } from '@/api/generated/pets/pets'
 import { api } from '@/api/axios'
-import type {
-  MedicalRecord,
-  MedicalRecordRecordType as MedicalRecordType,
-} from '@/api/generated/model'
+import type { MedicalRecord } from '@/api/generated/model'
 
 export interface UseMedicalRecordsResult {
   items: MedicalRecord[]
@@ -18,11 +15,11 @@ export interface UseMedicalRecordsResult {
   links: unknown
   loading: boolean
   error: string | null
-  recordTypeFilter: MedicalRecordType | undefined
-  setRecordTypeFilter: (type: MedicalRecordType | undefined) => void
+  recordTypeFilter: string | undefined
+  setRecordTypeFilter: (type: string | undefined) => void
   refresh: (page?: number) => Promise<void>
   create: (payload: {
-    record_type: MedicalRecordType
+    record_type: string
     description: string
     record_date: string
     vet_name?: string | null
@@ -30,7 +27,7 @@ export interface UseMedicalRecordsResult {
   update: (
     id: number,
     payload: Partial<{
-      record_type: MedicalRecordType
+      record_type: string
       description: string
       record_date: string
       vet_name?: string | null
@@ -48,7 +45,7 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
   const [links, setLinks] = useState<unknown>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [recordTypeFilter, setRecordTypeFilter] = useState<MedicalRecordType | undefined>(undefined)
+  const [recordTypeFilter, setRecordTypeFilter] = useState<string | undefined>(undefined)
 
   const load = useCallback(
     async (pg: number) => {
@@ -82,7 +79,7 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
 
   const create = useCallback(
     async (payload: {
-      record_type: MedicalRecordType
+      record_type: string
       description: string
       record_date: string
       vet_name?: string | null
@@ -103,14 +100,14 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
     async (
       id: number,
       payload: Partial<{
-        record_type: MedicalRecordType
+        record_type: string
         description: string
         record_date: string
         vet_name?: string | null
       }>
     ) => {
       const apiPayload: Partial<{
-        record_type: MedicalRecordType
+        record_type: string
         description: string
         record_date: string
         vet_name?: string

@@ -1462,14 +1462,7 @@
                             "schema": {
                                 "properties": {
                                     "record_type": {
-                                        "type": "string",
-                                        "enum": [
-                                            "vaccination",
-                                            "vet_visit",
-                                            "medication",
-                                            "treatment",
-                                            "other"
-                                        ]
+                                        "type": "string"
                                     },
                                     "description": {
                                         "type": "string"
@@ -1610,14 +1603,7 @@
                         "description": "Filter by record type",
                         "required": false,
                         "schema": {
-                            "type": "string",
-                            "enum": [
-                                "vaccination",
-                                "vet_visit",
-                                "medication",
-                                "treatment",
-                                "other"
-                            ]
+                            "type": "string"
                         }
                     }
                 ],
@@ -1693,14 +1679,7 @@
                                 "properties": {
                                     "record_type": {
                                         "type": "string",
-                                        "enum": [
-                                            "vaccination",
-                                            "vet_visit",
-                                            "medication",
-                                            "treatment",
-                                            "other"
-                                        ],
-                                        "example": "vet_visit"
+                                        "example": "Vet Visit"
                                     },
                                     "description": {
                                         "type": "string",
@@ -7029,14 +7008,7 @@
                         "format": "int64"
                     },
                     "record_type": {
-                        "type": "string",
-                        "enum": [
-                            "vaccination",
-                            "vet_visit",
-                            "medication",
-                            "treatment",
-                            "other"
-                        ]
+                        "type": "string"
                     },
                     "description": {
                         "type": "string"

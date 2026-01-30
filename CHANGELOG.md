@@ -59,6 +59,8 @@ All notable changes to this project are documented here, following the [Keep a C
 
 - **Invitations page (UI)**: Made the invitations stats cards more compact and improved responsive layout; numeric counters are now left-aligned and use tabular numerals for better readability. The "Revoked" stats card is hidden when its value is zero to avoid showing empty/placeholder stats.
 
+- **Medical Record Types**: Changed `record_type` field from predefined enum to free-form text input, allowing users to enter custom medical record types while maintaining predefined suggestions in the frontend. Removed database check constraint and updated API validation to accept any string up to 100 characters.
+
 ### Fixed
 
 - **Emoji Initials in Chat and Avatars**: Fixed broken initials display when user names contain multi-character emojis (e.g., flags, family emojis) in chat list, chat windows, message bubbles, and user avatars. Implemented grapheme-aware initials generation using `Intl.Segmenter` with a fallback to `grapheme-splitter` library. Added comprehensive unit tests for emoji handling.

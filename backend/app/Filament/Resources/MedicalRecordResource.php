@@ -16,7 +16,6 @@ use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class MedicalRecordResource extends Resource
@@ -50,17 +49,11 @@ class MedicalRecordResource extends Resource
                             ->preload()
                             ->required(),
 
-                        Forms\Components\Select::make('record_type')
+                        Forms\Components\TextInput::make('record_type')
                             ->label('Record Type')
-                            ->options([
-                                'vaccination' => 'Vaccination',
-                                'medical_note' => 'Medical Note',
-                                'surgery' => 'Surgery',
-                                'prescription' => 'Prescription',
-                                'diagnosis' => 'Diagnosis',
-                                'other' => 'Other',
-                            ])
-                            ->required(),
+                            ->required()
+                            ->maxLength(100)
+                            ->placeholder('e.g., Vet Visit, Vaccination, Surgery'),
 
                         Forms\Components\DatePicker::make('record_date')
                             ->label('Record Date')
@@ -101,14 +94,7 @@ class MedicalRecordResource extends Resource
                 TextColumn::make('record_type')
                     ->label('Type')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'vaccination' => 'success',
-                        'medical_note' => 'info',
-                        'surgery' => 'warning',
-                        'prescription' => 'primary',
-                        'diagnosis' => 'danger',
-                        default => 'gray',
-                    }),
+                    ->color('gray'),
 
                 TextColumn::make('record_date')
                     ->label('Date')
@@ -133,22 +119,24 @@ class MedicalRecordResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('pet_id')
+                Tables\Filters\SelectFilter::make('pet_id')
                     ->label('Pet')
                     ->relationship('pet', 'name')
                     ->searchable()
                     ->preload(),
 
-                SelectFilter::make('record_type')
-                    ->label('Type')
-                    ->options([
-                        'vaccination' => 'Vaccination',
-                        'medical_note' => 'Medical Note',
-                        'surgery' => 'Surgery',
-                        'prescription' => 'Prescription',
-                        'diagnosis' => 'Diagnosis',
-                        'other' => 'Other',
-                    ]),
+                Tables\Filters\Filter::make('record_type')
+                    ->form([
+                        Forms\Components\TextInput::make('record_type')
+                            ->label('Type')
+                            ->placeholder('Filter by type'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query->when(
+                            $data['record_type'] ?? null,
+                            fn ($q, $value) => $q->where('record_type', 'ilike', "%{$value}%")
+                        );
+                    }),
             ])
             ->actions([
                 ViewAction::make(),

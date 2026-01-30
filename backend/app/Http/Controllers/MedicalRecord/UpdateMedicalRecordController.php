@@ -27,7 +27,7 @@ use OpenApi\Attributes as OA;
         required: true,
         content: new OA\JsonContent(
             properties: [
-                new OA\Property(property: 'record_type', type: 'string', enum: ['vaccination', 'vet_visit', 'medication', 'treatment', 'other']),
+                new OA\Property(property: 'record_type', type: 'string'),
                 new OA\Property(property: 'description', type: 'string'),
                 new OA\Property(property: 'record_date', type: 'string', format: 'date'),
                 new OA\Property(property: 'vet_name', type: 'string'),
@@ -54,7 +54,7 @@ class UpdateMedicalRecordController extends Controller
         $this->validatePetResource($request, $pet, 'medical', $record);
 
         $validated = $this->validateWithErrorHandling($request, [
-            'record_type' => ['sometimes', 'string', 'in:vaccination,vet_visit,medication,treatment,other'],
+            'record_type' => ['sometimes', 'string', 'max:100'],
             'description' => $this->textValidationRules(false, 2000),
             'record_date' => $this->dateValidationRules(false, false),
             'vet_name' => $this->textValidationRules(false, 255),

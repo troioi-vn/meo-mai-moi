@@ -1,7 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react'
-import type { MedicalRecord, MedicalRecordRecordType } from '@/api/generated/model'
-
-type MedicalRecordType = MedicalRecordRecordType
+import type { MedicalRecord } from '@/api/generated/model'
 import { useMedicalRecords } from '@/hooks/useMedicalRecords'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -21,20 +19,24 @@ import { HealthRecordPhotoModal, type HealthRecordPhoto } from '../HealthRecordP
 import { toast } from 'sonner'
 import { ImagePlus, Pencil, Trash2 } from 'lucide-react'
 
-const RECORD_TYPE_LABELS: Record<MedicalRecordType, string> = {
-  vaccination: 'Vaccination',
-  vet_visit: 'Vet Visit',
-  medication: 'Medication',
-  treatment: 'Treatment',
-  other: 'Other',
+const RECORD_TYPE_COLORS: Record<string, string> = {
+  Deworming: 'bg-lime-100 text-lime-800 dark:bg-lime-900 dark:text-lime-200',
+  Checkup: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+  'Neuter/Spay': 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200',
+  Symptom: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+  Surgery: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+  'Vet Visit': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
+  'Test Result': 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200',
+  'X-Ray': 'bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-200',
+  Medication: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+  Treatment: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
 }
 
-const RECORD_TYPE_COLORS: Record<MedicalRecordType, string> = {
-  vaccination: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-  vet_visit: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  medication: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-  treatment: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-  other: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
+const DEFAULT_COLOR = 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+
+const getRecordTypeColor = (type: string | null | undefined): string => {
+  if (!type) return DEFAULT_COLOR
+  return RECORD_TYPE_COLORS[type] ?? DEFAULT_COLOR
 }
 
 export const MedicalRecordsSection: React.FC<{
@@ -63,7 +65,7 @@ export const MedicalRecordsSection: React.FC<{
   }, [items])
 
   const handleCreate = async (values: {
-    record_type: MedicalRecordType
+    record_type: string
     description: string
     record_date: string
     vet_name: string
@@ -92,7 +94,7 @@ export const MedicalRecordsSection: React.FC<{
   }
 
   const handleUpdate = async (values: {
-    record_type: MedicalRecordType
+    record_type: string
     description: string
     record_date: string
     vet_name: string
@@ -244,9 +246,9 @@ export const MedicalRecordsSection: React.FC<{
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap mb-1">
                             <span
-                              className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${RECORD_TYPE_COLORS[r.record_type ?? 'other']}`}
+                              className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getRecordTypeColor(r.record_type)}`}
                             >
-                              {RECORD_TYPE_LABELS[r.record_type ?? 'other']}
+                              {r.record_type ?? 'Other'}
                             </span>
                             <span className="text-xs text-muted-foreground">
                               {new Date(r.record_date).toLocaleDateString()}

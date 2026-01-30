@@ -1,24 +1,30 @@
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { YearMonthDatePicker } from '@/components/ui/YearMonthDatePicker'
-import type { MedicalRecordRecordType } from '@/api/generated/model'
-
-type MedicalRecordType = MedicalRecordRecordType
 
 export interface MedicalRecordFormValues {
-  record_type: MedicalRecordType
+  record_type: string
   description: string
   record_date: string
   vet_name: string
 }
 
-const RECORD_TYPE_OPTIONS: { value: MedicalRecordType; label: string }[] = [
-  { value: 'vet_visit', label: 'Vet Visit' },
-  { value: 'medication', label: 'Medication' },
-  { value: 'treatment', label: 'Treatment' },
-  { value: 'vaccination', label: 'Vaccination' },
-  { value: 'other', label: 'Other' },
-]
+const RECORD_TYPE_OPTIONS = [
+  { value: 'Deworming', label: 'Deworming' },
+  { value: 'Checkup', label: 'Checkup' },
+  { value: 'Neuter/Spay', label: 'Neuter/Spay' },
+  { value: 'Symptom', label: 'Symptom' },
+  { value: 'Surgery', label: 'Surgery' },
+  { value: 'Vet Visit', label: 'Vet Visit' },
+  { value: 'Test Result', label: 'Test Result' },
+  { value: 'X-Ray', label: 'X-Ray' },
+  { value: 'Medication', label: 'Medication' },
+  { value: 'Treatment', label: 'Treatment' },
+  { value: '__other__', label: 'Other' },
+] as const
+
+const isKnownType = (value: string) =>
+  RECORD_TYPE_OPTIONS.some((opt) => opt.value === value && opt.value !== '__other__')
 
 export const MedicalRecordForm: React.FC<{
   initial?: Partial<MedicalRecordFormValues>
@@ -27,9 +33,11 @@ export const MedicalRecordForm: React.FC<{
   submitting?: boolean
   serverError?: string | null
 }> = ({ initial, onSubmit, onCancel, submitting, serverError }) => {
-  const [recordType, setRecordType] = useState<MedicalRecordType>(
-    initial?.record_type ?? 'vet_visit'
+  const initialIsKnown = initial?.record_type ? isKnownType(initial.record_type) : true
+  const [selectedOption, setSelectedOption] = useState<string>(
+    initialIsKnown ? (initial?.record_type ?? 'Vet Visit') : '__other__'
   )
+  const [customType, setCustomType] = useState<string>(initialIsKnown ? '' : (initial?.record_type ?? ''))
   const [description, setDescription] = useState<string>(initial?.description ?? '')
   const [date, setDate] = useState<string>(
     () => initial?.record_date ?? new Date().toISOString().split('T')[0] ?? ''
@@ -44,6 +52,10 @@ export const MedicalRecordForm: React.FC<{
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
     const newErrors: typeof errors = {}
+    const finalRecordType = selectedOption === '__other__' ? customType.trim() : selectedOption
+    if (!finalRecordType || finalRecordType.length === 0) {
+      newErrors.record_type = 'Record type is required'
+    }
     if (!description || description.trim().length === 0) {
       newErrors.description = 'Description is required'
     }
@@ -53,7 +65,7 @@ export const MedicalRecordForm: React.FC<{
     setErrors(newErrors)
     if (Object.keys(newErrors).length > 0) return
     await onSubmit({
-      record_type: recordType,
+      record_type: finalRecordType,
       description: description.trim(),
       record_date: date,
       vet_name: vetName.trim() || '',
@@ -72,9 +84,12 @@ export const MedicalRecordForm: React.FC<{
         <div>
           <label className="block text-sm font-medium">Record Type</label>
           <select
-            value={recordType}
+            value={selectedOption}
             onChange={(e) => {
-              setRecordType(e.target.value as MedicalRecordType)
+              setSelectedOption(e.target.value)
+              if (e.target.value !== '__other__') {
+                setCustomType('')
+              }
             }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
           >
@@ -84,6 +99,18 @@ export const MedicalRecordForm: React.FC<{
               </option>
             ))}
           </select>
+          {selectedOption === '__other__' && (
+            <input
+              type="text"
+              value={customType}
+              onChange={(e) => {
+                setCustomType(e.target.value)
+              }}
+              className="mt-2 w-full rounded-md border px-3 py-2 text-sm"
+              placeholder="Enter record type"
+              maxLength={100}
+            />
+          )}
           {errors.record_type && (
             <p className="text-xs text-destructive mt-1">{errors.record_type}</p>
           )}

@@ -83,4 +83,17 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Authentication Flow**: Updated public path handling to include requests page in unauthorized redirect logic.
 - **Authorization and Permissions**: Refactored permissions from "cat" to "pet" to generalize the application. Expanded admin role permissions to include pet types, helper profiles, placement/transfer requests, and reviews. Added create permissions for placement and transfer requests. Implemented Gate::before callback to implicitly grant all permissions to super_admin role.
 
-- **Pet Age Formatting**: Enhanced pet age display to show more precise age information including years, months, and days for pets with exact birth dates, instead of just showing years. Added helper function for accurate age component calculations.
+### Added
+
+- **Vaccination Form Enhancements**: Added autocomplete datalist with common vaccination types (Rabies, FVRCP, FeLV, etc.) to improve user experience when entering vaccine names in the vaccination form.
+
+### Changed
+
+- **Helper Profile Form Hook**: Refactored `useHelperProfileForm` to use render-time synchronization instead of `useEffect` for better performance and cleaner code structure.
+
+### Fixed
+
+- **Placeholder Text Consistency**: Standardized placeholder text in vaccination forms by removing unnecessary commas (e.g., "e.g., Rabies" → "e.g. Rabies").
+- **Dialog Focus Management**: Added `outline-none` class to dialog components for better focus accessibility.
+- **Popover Directive**: Removed unnecessary `"use client"` directive from popover component.
+- **Messaging Hook Type Safety**: Fixed type casting in `useMessaging` hook for better TypeScript compliance when creating direct chats.

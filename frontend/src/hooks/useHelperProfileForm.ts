@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
@@ -131,29 +131,29 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [lastSyncedId, setLastSyncedId] = useState<number | undefined>(profileId)
 
-  // Reset form data when initialData changes
-  useEffect(() => {
-    if (profileId && initialData) {
-      setFormData({
-        country: '',
-        address: '',
-        city: '',
-        city_ids: [],
-        cities_selected: [],
-        state: '',
-        phone_number: '',
-        contact_info: '',
-        experience: '',
-        has_pets: false,
-        has_children: false,
-        request_types: initialData?.request_types ?? DEFAULT_REQUEST_TYPES,
-        photos: [],
-        pet_type_ids: [],
-        ...initialData,
-      })
-    }
-  }, [profileId, initialData])
+  // Sync form data when profileId/initialData changes (during render, not in effect)
+  if (profileId && initialData && profileId !== lastSyncedId) {
+    setLastSyncedId(profileId)
+    setFormData({
+      country: '',
+      address: '',
+      city: '',
+      city_ids: [],
+      cities_selected: [],
+      state: '',
+      phone_number: '',
+      contact_info: '',
+      experience: '',
+      has_pets: false,
+      has_children: false,
+      request_types: initialData.request_types ?? DEFAULT_REQUEST_TYPES,
+      photos: [],
+      pet_type_ids: [],
+      ...initialData,
+    })
+  }
 
   // Wrapper functions to handle FormData for API calls
   const createHelperProfileWithFormData = (data: FormData) => {

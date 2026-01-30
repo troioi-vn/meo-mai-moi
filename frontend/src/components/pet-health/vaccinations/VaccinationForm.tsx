@@ -2,6 +2,18 @@ import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { YearMonthDatePicker } from '@/components/ui/YearMonthDatePicker'
 
+const VACCINATION_TYPES = [
+  'Rabies',
+  'FVRCP',
+  'FeLV (Feline Leukemia Virus)',
+  'Chlamydia felis',
+  'Bordetella',
+  'DHPP (DAPP)',
+  'Leptospirosis',
+  'Canine Influenza',
+  'Lyme disease vaccine',
+]
+
 export interface VaccinationFormValues {
   vaccine_name: string
   administered_at: string
@@ -77,13 +89,19 @@ export const VaccinationForm: React.FC<{
           <label className="block text-sm font-medium">Vaccine</label>
           <input
             type="text"
+            list="vaccination-types"
             value={vaccineName}
             onChange={(e) => {
               setVaccineName(e.target.value)
             }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-            placeholder="e.g., Rabies"
+            placeholder="e.g. Rabies"
           />
+          <datalist id="vaccination-types">
+            {VACCINATION_TYPES.map((vaccine) => (
+              <option key={vaccine} value={vaccine} />
+            ))}
+          </datalist>
           {errors.vaccine_name && (
             <p className="text-xs text-destructive mt-1">{errors.vaccine_name}</p>
           )}

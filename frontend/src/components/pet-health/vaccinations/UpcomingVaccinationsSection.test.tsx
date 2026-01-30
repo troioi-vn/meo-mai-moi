@@ -172,7 +172,7 @@ describe('UpcomingVaccinationsSection', () => {
       expect(screen.getByText('Vaccine')).toBeInTheDocument()
     })
 
-    const vaccineInput = screen.getByPlaceholderText('e.g., Rabies')
+    const vaccineInput = screen.getByPlaceholderText('e.g. Rabies')
     await user.clear(vaccineInput)
     await user.type(vaccineInput, 'New Vaccine')
 

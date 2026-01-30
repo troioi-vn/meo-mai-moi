@@ -244,13 +244,13 @@ export function useCreateChat() {
       setError(null)
 
       try {
-        const chat = await createDirectChat({
+        const chat = (await createDirectChat({
           type: 'direct',
           recipient_id: recipientId,
           contextable_type: contextableType,
-          contextable_id: contextableId ?? null, // eslint-disable-line @typescript-eslint/no-unnecessary-condition
-        })
-        return chat ?? null
+          contextable_id: contextableId,
+        })) as Chat
+        return chat
       } catch (err) {
         console.error('Failed to create chat:', err)
         setError('Failed to start conversation')

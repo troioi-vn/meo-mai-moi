@@ -47,18 +47,34 @@ window.HTMLElement.prototype.scrollIntoView = (() => {
   /* no-op */
 }) as typeof window.HTMLElement.prototype.scrollIntoView
 
+// Polyfill for ProgressEvent
+class TestProgressEvent extends Event {
+  public lengthComputable?: boolean
+  public loaded?: number
+  public total?: number
+  constructor(type: string, init?: ProgressEventInit) {
+    super(type)
+    this.lengthComputable = init?.lengthComputable ?? false
+    this.loaded = init?.loaded ?? 0
+    this.total = init?.total ?? 0
+  }
+}
+;(globalThis as unknown as { ProgressEvent?: typeof Event }).ProgressEvent =
+  TestProgressEvent as unknown as typeof Event
+
 vi.mock('sonner', () => {
   const Toaster = () => null
+  const toast = Object.assign(vi.fn(), {
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    warning: vi.fn(),
+  })
   return {
     __esModule: true,
     default: Toaster,
     Toaster,
-    toast: {
-      success: vi.fn(),
-      error: vi.fn(),
-      info: vi.fn(),
-      warning: vi.fn(),
-    },
+    toast,
   }
 })
 

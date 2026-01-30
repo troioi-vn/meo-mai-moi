@@ -3,6 +3,15 @@ import userEvent from '@testing-library/user-event'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+// Mock sonner early so components/hooks import the mocked toast
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+}))
+
 import type { MockedFunction } from 'vitest'
 import EditPetPage from './EditPetPage'
 import {
@@ -33,14 +42,6 @@ vi.mock('@/api/generated/pet-types/pet-types', async () => {
     getPetTypes: vi.fn() as unknown as MockedFunction<() => Promise<any[]>>,
   }
 })
-
-// Mock sonner toast to avoid side effects
-vi.mock('sonner', () => ({
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-  },
-}))
 
 // Helper to render in edit mode with URL param
 const renderEditPage = (petId = '1', initialUser = { id: 1, name: 'User', email: 'u@e.com' }) => {

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
@@ -11,14 +11,14 @@ import type React from 'react'
 import type { PlacementRequestType } from '@/types/helper-profile'
 import type { City } from '@/types/pet'
 
-const DEFAULT_REQUEST_TYPES: PlacementRequestType[] = [
+export const DEFAULT_REQUEST_TYPES: PlacementRequestType[] = [
   'foster_paid',
   'foster_free',
   'permanent',
   'pet_sitting',
 ]
 
-interface HelperProfileForm {
+export interface HelperProfileForm {
   country: string
   address: string
   city: string
@@ -34,6 +34,75 @@ interface HelperProfileForm {
   status?: string
   photos: FileList | File[]
   pet_type_ids: number[]
+}
+
+export const validateHelperProfileForm = (formData: HelperProfileForm): Record<string, string> => {
+  const newErrors: Record<string, string> = {}
+  if (!formData.country) newErrors.country = 'Country is required'
+  if (formData.city_ids.length === 0) newErrors.city = 'At least one city is required'
+  // address, state are now optional
+  if (!formData.phone_number) newErrors.phone_number = 'Phone number is required'
+  if (!formData.experience) newErrors.experience = 'Experience is required'
+  if (formData.request_types.length === 0) {
+    newErrors.request_types = 'At least one request type is required'
+  }
+  if (formData.pet_type_ids.length === 0) {
+    newErrors.pet_type_ids = 'Select at least one pet type'
+  }
+  return newErrors
+}
+
+export const buildHelperProfileFormData = (formData: HelperProfileForm): FormData => {
+  const dataToSend = new FormData()
+  const fieldsToSubmit = [
+    'country',
+    'address',
+    'state',
+    'phone_number',
+    'contact_info',
+    'experience',
+    'has_pets',
+    'has_children',
+    'status',
+  ]
+
+  for (const key of fieldsToSubmit) {
+    const value = formData[key as keyof HelperProfileForm] as unknown
+    if (typeof value === 'boolean') {
+      dataToSend.append(key, value ? '1' : '0')
+    } else if (typeof value === 'string' || typeof value === 'number') {
+      dataToSend.append(key, String(value))
+    }
+  }
+
+  // Append city_ids array
+  for (const id of formData.city_ids) {
+    dataToSend.append('city_ids[]', String(id))
+  }
+
+  // Append request_types array
+  for (const type of formData.request_types) {
+    dataToSend.append('request_types[]', type)
+  }
+
+  // Append photos if present
+  const photos = formData.photos
+  if (photos instanceof FileList) {
+    for (const f of Array.from(photos)) {
+      dataToSend.append('photos[]', f)
+    }
+  } else if (Array.isArray(photos)) {
+    for (const f of photos) {
+      dataToSend.append('photos[]', f)
+    }
+  }
+
+  // Append pet type ids
+  for (const id of formData.pet_type_ids) {
+    dataToSend.append('pet_type_ids[]', String(id))
+  }
+
+  return dataToSend
 }
 
 interface ApiError {
@@ -62,29 +131,29 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [prevInitialData, setPrevInitialData] = useState(initialData)
 
   // Reset form data when initialData changes
-  if (profileId && initialData !== prevInitialData) {
-    setPrevInitialData(initialData)
-    setFormData({
-      country: '',
-      address: '',
-      city: '',
-      city_ids: [],
-      cities_selected: [],
-      state: '',
-      phone_number: '',
-      contact_info: '',
-      experience: '',
-      has_pets: false,
-      has_children: false,
-      request_types: initialData?.request_types ?? DEFAULT_REQUEST_TYPES,
-      photos: [],
-      pet_type_ids: [],
-      ...initialData,
-    })
-  }
+  useEffect(() => {
+    if (profileId && initialData) {
+      setFormData({
+        country: '',
+        address: '',
+        city: '',
+        city_ids: [],
+        cities_selected: [],
+        state: '',
+        phone_number: '',
+        contact_info: '',
+        experience: '',
+        has_pets: false,
+        has_children: false,
+        request_types: initialData?.request_types ?? DEFAULT_REQUEST_TYPES,
+        photos: [],
+        pet_type_ids: [],
+        ...initialData,
+      })
+    }
+  }, [profileId, initialData])
 
   // Wrapper functions to handle FormData for API calls
   const createHelperProfileWithFormData = (data: FormData) => {
@@ -178,76 +247,15 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
     }
   }
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {}
-    if (!formData.country) newErrors.country = 'Country is required'
-    if (formData.city_ids.length === 0) newErrors.city = 'At least one city is required'
-    // address, state are now optional
-    if (!formData.phone_number) newErrors.phone_number = 'Phone number is required'
-    if (!formData.experience) newErrors.experience = 'Experience is required'
-    if (formData.request_types.length === 0) {
-      newErrors.request_types = 'At least one request type is required'
-    }
-    if (formData.pet_type_ids.length === 0) {
-      newErrors.pet_type_ids = 'Select at least one pet type'
-    }
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (!validateForm()) return
+    const newErrors = validateHelperProfileForm(formData)
+    setErrors(newErrors)
+
+    if (Object.keys(newErrors).length > 0) return
     setIsSubmitting(true)
 
-    const dataToSend = new FormData()
-    const fieldsToSubmit = [
-      'country',
-      'address',
-      'state',
-      'phone_number',
-      'contact_info',
-      'experience',
-      'has_pets',
-      'has_children',
-      'status',
-    ]
-
-    for (const key of fieldsToSubmit) {
-      const value = formData[key as keyof HelperProfileForm] as unknown
-      if (typeof value === 'boolean') {
-        dataToSend.append(key, value ? '1' : '0')
-      } else if (typeof value === 'string' || typeof value === 'number') {
-        dataToSend.append(key, String(value))
-      }
-    }
-
-    // Append city_ids array
-    for (const id of formData.city_ids) {
-      dataToSend.append('city_ids[]', String(id))
-    }
-
-    // Append request_types array
-    for (const type of formData.request_types) {
-      dataToSend.append('request_types[]', type)
-    }
-
-    // Append photos if present
-    const photos = formData.photos
-    if (photos instanceof FileList) {
-      for (const f of Array.from(photos)) {
-        dataToSend.append('photos[]', f)
-      }
-    } else if (Array.isArray(photos)) {
-      for (const f of photos) {
-        dataToSend.append('photos[]', f)
-      }
-    }
-
-    // Append pet type ids
-    for (const id of formData.pet_type_ids) {
-      dataToSend.append('pet_type_ids[]', String(id))
-    }
+    const dataToSend = buildHelperProfileFormData(formData)
 
     if (profileId) {
       updateMutation.mutate({ id: profileId, data: dataToSend })

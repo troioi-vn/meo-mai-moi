@@ -247,8 +247,8 @@ export function useCreateChat() {
         const chat = await createDirectChat({
           type: 'direct',
           recipient_id: recipientId,
-          contextable_type: contextableType ?? null,
-          contextable_id: contextableId ?? null,
+          contextable_type: contextableType,
+          contextable_id: contextableId ?? null, // eslint-disable-line @typescript-eslint/no-unnecessary-condition
         })
         return chat ?? null
       } catch (err) {

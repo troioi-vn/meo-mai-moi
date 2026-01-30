@@ -1,13 +1,7 @@
 import { screen, waitFor, act, within } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderWithRouter, userEvent } from '@/testing'
-import InvitationsPage from './InvitationsPage'
-import { server } from '@/testing/mocks/server'
-import { HttpResponse, http } from 'msw'
-import { toast } from 'sonner'
-import type { User } from '@/types/user'
-import * as inviteSystemApi from '@/api/generated/invitations/invitations'
 
+// Mock sonner early so components/hooks import the mocked toast
 vi.mock('sonner', async () => {
   const actual = await vi.importActual('sonner')
   return {
@@ -18,6 +12,14 @@ vi.mock('sonner', async () => {
     },
   }
 })
+
+import { renderWithRouter, userEvent } from '@/testing'
+import InvitationsPage from './InvitationsPage'
+import { server } from '@/testing/mocks/server'
+import { HttpResponse, http } from 'msw'
+import { toast } from 'sonner'
+import type { User } from '@/types/user'
+import * as inviteSystemApi from '@/api/generated/invitations/invitations'
 
 const mockInvitations = [
   {

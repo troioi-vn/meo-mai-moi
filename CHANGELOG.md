@@ -28,6 +28,8 @@ All notable changes to this project are documented here, following the [Keep a C
   - Updated API endpoints to handle multipart/form-data uploads and photo deletion.
   - Removed `attachment_url` field from medical records and added database migration to drop the column.
 
+- **Frontend Hook Tests**: Added comprehensive unit tests for React hooks to improve code reliability and catch regressions early. Implemented tests for CRUD operations in `useMedicalRecords`, `useVaccinations`, `useMicrochips`, and `useWeights`; business logic in `usePlacementInfo` and `usePetProfile`; side effects in `useCreatePlacementRequest` and `use-pwa-update`; and form validation/payload building in `useCreatePetForm` and `useHelperProfileForm`. Refactored form hooks to extract pure helper functions for better testability. Fixed Sonner toast mock to support both callable and method forms.
+
 ### Changed
 
 - **Frontend API Consumption**: Updated the Axios interceptor to automatically "unwrap" the backend's data envelope. Components now receive the direct payload (e.g., as `const user = await api.get('/user')`) instead of having to manually navigate `.data.data`.

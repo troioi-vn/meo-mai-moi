@@ -2,6 +2,15 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+// Mock sonner early so the component and its hooks import the mocked toast
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+}))
+
 import type { MockedFunction } from 'vitest'
 import CreatePetPage from './CreatePetPage'
 import { postPets } from '@/api/generated/pets/pets'
@@ -66,14 +75,6 @@ vi.mock('react-router-dom', async () => {
     useNavigate: () => mockNavigate,
   }
 })
-
-// Mock sonner toast
-vi.mock('sonner', () => ({
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-  },
-}))
 
 const mockPetTypes: PetType[] = [
   {

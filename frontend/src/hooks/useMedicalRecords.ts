@@ -6,7 +6,10 @@ import {
   putPetsPetMedicalRecordsRecord as updateMedicalRecord,
 } from '@/api/generated/pets/pets'
 import { api } from '@/api/axios'
-import type { MedicalRecord, MedicalRecordRecordType as MedicalRecordType } from '@/api/generated/model'
+import type {
+  MedicalRecord,
+  MedicalRecordRecordType as MedicalRecordType,
+} from '@/api/generated/model'
 
 export interface UseMedicalRecordsResult {
   items: MedicalRecord[]
@@ -53,7 +56,7 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
       setError(null)
       try {
         const res = await getMedicalRecords(petId, { page: pg, record_type: recordTypeFilter })
-        setItems(res.data)
+        setItems(res.data ?? [])
         setLinks(res.links)
         setMeta(res.meta)
         setPage(pg)
@@ -84,7 +87,11 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
       record_date: string
       vet_name?: string | null
     }) => {
-      const item = await createMedicalRecord(petId, payload)
+      const apiPayload = {
+        ...payload,
+        vet_name: payload.vet_name ?? undefined,
+      }
+      const item = await createMedicalRecord(petId, apiPayload)
       setItems((prev) => [item, ...prev])
       void refresh(1)
       return item
@@ -102,7 +109,16 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
         vet_name?: string | null
       }>
     ) => {
-      const item = await updateMedicalRecord(petId, id, payload)
+      const apiPayload: Partial<{
+        record_type: MedicalRecordType
+        description: string
+        record_date: string
+        vet_name?: string
+      }> = {
+        ...payload,
+        vet_name: payload.vet_name ?? undefined,
+      }
+      const item = await updateMedicalRecord(petId, id, apiPayload)
       setItems((prev) => prev.map((n) => (n.id === id ? item : n)))
       return item
     },

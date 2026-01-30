@@ -132,9 +132,7 @@ export const MedicalRecordForm: React.FC<{
           />
         </div>
       </div>
-      <p className="text-xs text-muted-foreground">
-        Photos can be added after saving the record.
-      </p>
+      <p className="text-xs text-muted-foreground">Photos can be added after saving the record.</p>
       {serverError && <p className="text-sm text-destructive">{serverError}</p>}
       <div className="flex gap-2">
         <Button type="submit" disabled={Boolean(submitting)}>

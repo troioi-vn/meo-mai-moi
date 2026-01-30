@@ -33,7 +33,7 @@ describe('useMessaging hooks', () => {
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
         expect(result.current.chats).toHaveLength(1)
-        expect(result.current.chats[0].id).toBe(mockChat.id)
+        expect(result.current.chats[0]?.id).toBe(mockChat.id)
       })
     })
 
@@ -76,7 +76,7 @@ describe('useMessaging hooks', () => {
         expect(result.current.loading).toBe(false)
         expect(result.current.chat?.id).toBe(mockChat.id)
         expect(result.current.messages).toHaveLength(1)
-        expect(result.current.messages[0].id).toBe(mockChatMessage.id)
+        expect(result.current.messages[0]?.id).toBe(mockChatMessage.id)
       })
     })
 
@@ -157,7 +157,7 @@ describe('useMessaging hooks', () => {
         expect(sendMessageCalledCorrectly).toBe(true)
         expect(receivedContent).toBe('Hello, world!')
         expect(result.current.messages).toHaveLength(1)
-        expect(result.current.messages[0].content).toBe('Hello, world!')
+        expect(result.current.messages[0]?.content).toBe('Hello, world!')
       })
     })
   })

@@ -250,7 +250,7 @@ export function useCreateChat() {
           contextable_type: contextableType ?? null,
           contextable_id: contextableId ?? null,
         })
-        return chat
+        return chat ?? null
       } catch (err) {
         console.error('Failed to create chat:', err)
         setError('Failed to start conversation')

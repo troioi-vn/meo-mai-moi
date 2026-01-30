@@ -7,10 +7,7 @@ import { User as UserIcon, Upload, Trash2 } from 'lucide-react'
 import type { AxiosError } from 'axios'
 import defaultAvatar from '@/assets/images/default-avatar.webp'
 import { getInitials } from '@/utils/initials'
-import {
-  postUsersMeAvatar,
-  deleteUsersMeAvatar,
-} from '@/api/generated/user-profile/user-profile'
+import { postUsersMeAvatar, deleteUsersMeAvatar } from '@/api/generated/user-profile/user-profile'
 
 interface UserAvatarProps {
   size?: 'sm' | 'md' | 'lg' | 'xl'
@@ -35,13 +32,14 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
   useEffect(() => {
     if (user?.avatar_url && user.avatar_url.trim() !== '') {
       const img = new Image()
+      const avatarUrl = user.avatar_url
       img.onload = () => {
-        setAvatarSrc(user.avatar_url)
+        setAvatarSrc(avatarUrl)
       }
       img.onerror = () => {
         setAvatarSrc(defaultAvatar)
       }
-      img.src = user.avatar_url
+      img.src = avatarUrl
     } else {
       setAvatarSrc(defaultAvatar)
     }

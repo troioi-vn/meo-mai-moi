@@ -337,7 +337,8 @@ export default function InvitationsPage() {
                         {invitation.recipient && (
                           <div className="flex items-center gap-1">
                             <Users className="h-3 w-3" />
-                            Accepted by {(invitation.recipient as { name?: string }).name ?? 'Unknown'}
+                            Accepted by{' '}
+                            {(invitation.recipient as { name?: string }).name ?? 'Unknown'}
                           </div>
                         )}
 

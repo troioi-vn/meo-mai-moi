@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -103,7 +102,20 @@ export const useCreatePetForm = (petId?: string) => {
   useEffect(() => {
     const loadPetTypes = async () => {
       try {
-        const types = await getPetTypes()
+        const response = await getPetTypes()
+        // Map API response to PetType with required properties
+        const types: PetType[] = response.map((item) => ({
+          id: item.id ?? 0,
+          name: item.name ?? '',
+          slug: item.slug ?? '',
+          description: item.description,
+          is_active: true,
+          is_system: false,
+          display_order: 0,
+          placement_requests_allowed: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }))
         setPetTypes(types)
         // Default to cat if available
         const catType = types.find((t) => t.slug === 'cat')
@@ -126,7 +138,7 @@ export const useCreatePetForm = (petId?: string) => {
       const loadPetData = async () => {
         try {
           setIsLoadingPet(true)
-          const pet = await getPet(petId)
+          const pet = await getPet(parseInt(petId, 10))
           // Convert ISO date to YYYY-MM-DD format for HTML date input
           const formatDate = (dateStr: string | undefined | null): string => {
             if (!dateStr) return ''
@@ -147,13 +159,21 @@ export const useCreatePetForm = (petId?: string) => {
             birthday_precision: pet.birthday_precision ?? 'unknown',
             country: pet.country,
             state: pet.state ?? '',
-            city: typeof pet.city === 'object' && pet.city ? pet.city.name : ((pet.city as string | undefined | null) ?? ''),
-            city_id: pet.city_id ?? (typeof pet.city === 'object' && pet.city ? pet.city.id : null),
+            city:
+              typeof pet.city === 'object' && pet.city
+                ? pet.city.name
+                : ((pet.city as string | undefined | null) ?? ''),
+            city_id: typeof pet.city === 'object' && pet.city ? pet.city.id : null,
             city_selected: typeof pet.city === 'object' ? pet.city : null,
             address: pet.address ?? '',
             description: pet.description,
-            pet_type_id: pet.pet_type.id,
-            categories: pet.categories ?? [],
+            pet_type_id: pet.pet_type?.id ?? null,
+            categories: (pet.categories ?? []).map((cat) => ({
+              ...cat,
+              usage_count: cat.usage_count ?? 0,
+              created_at: cat.created_at ?? new Date().toISOString(),
+              updated_at: cat.updated_at ?? new Date().toISOString(),
+            })) as import('@/types/pet').Category[],
           })
         } catch (err: unknown) {
           console.error('Failed to load pet data:', err)
@@ -270,14 +290,29 @@ export const useCreatePetForm = (petId?: string) => {
     setIsSubmitting(true)
     try {
       // Build payload with precision rules
-      const payload: import('@/api/pets').CreatePetPayload = {
+      interface CreatePetPayload {
+        name: string
+        sex: import('@/api/generated/model').PetSex
+        country: string
+        state?: string | null
+        city_id?: number | null
+        address?: string | null
+        description: string
+        pet_type_id: number | null
+        birthday_precision: string
+        category_ids?: number[]
+        birthday?: string
+        birthday_year?: number | null
+        birthday_month?: number | null
+        birthday_day?: number | null
+      }
+      const payload: CreatePetPayload = {
         name: formData.name,
         sex: formData.sex,
         country: formData.country,
-        state: formData.state || undefined,
-        city_id: formData.city_id ?? undefined,
-        city: formData.city || undefined,
-        address: formData.address || undefined,
+        state: formData.state || null,
+        city_id: formData.city_id ?? null,
+        address: formData.address || null,
         description: formData.description,
         pet_type_id: formData.pet_type_id,
         birthday_precision: formData.birthday_precision,
@@ -299,9 +334,12 @@ export const useCreatePetForm = (petId?: string) => {
       }
 
       if (isEditMode && petId) {
-        await updatePet(petId, payload)
+        await updatePet(
+          parseInt(petId, 10),
+          payload as unknown as import('@/api/generated/model').Pet
+        )
       } else {
-        await createPet(payload)
+        await createPet(payload as unknown as import('@/api/generated/model').Pet)
       }
 
       const successMessage = isEditMode ? 'Pet updated successfully' : SUCCESS_MESSAGES.PET_CREATED

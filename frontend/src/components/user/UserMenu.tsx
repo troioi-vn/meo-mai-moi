@@ -20,7 +20,8 @@ import { Switch } from '@/components/ui/switch'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { useTheme } from '@/hooks/use-theme'
-import { Moon } from 'lucide-react'
+import { usePwaInstall } from '@/hooks/use-pwa-install'
+import { Download, Moon } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import defaultAvatar from '@/assets/images/default-avatar.webp'
 import { useEffect, useState } from 'react'
@@ -29,6 +30,7 @@ import { getInitials } from '@/utils/initials'
 export function UserMenu() {
   const { user, logout, isLoading } = useAuth()
   const { theme, setTheme } = useTheme()
+  const { canInstall, triggerInstall } = usePwaInstall(Boolean(user))
   const navigate = useNavigate()
   const isVerified = Boolean(user?.email_verified_at)
   const [avatarSrc, setAvatarSrc] = useState<string>(user?.avatar_url ?? defaultAvatar)
@@ -87,6 +89,18 @@ export function UserMenu() {
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer" asChild>
               <Link to="/settings/account">Settings</Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
+        {canInstall && (
+          <>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => void triggerInstall()}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Install App
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>

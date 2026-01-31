@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   postHelperProfiles as createHelperProfile,
   putHelperProfilesId as updateHelperProfile,
 } from '@/api/generated/helper-profiles/helper-profiles'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 import type React from 'react'
 import type { PlacementRequestType } from '@/types/helper-profile'
 import type { City } from '@/types/pet'
@@ -112,6 +113,7 @@ interface ApiError {
 const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperProfileForm>) => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { t } = useTranslation()
   const [formData, setFormData] = useState<HelperProfileForm>({
     country: '',
     address: '',
@@ -171,7 +173,7 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
     onSuccess: (data) => {
       void queryClient.invalidateQueries({ queryKey: ['helper-profiles'] })
       toast.success(
-        profileId ? 'Helper profile updated successfully!' : 'Helper profile created successfully!'
+        profileId ? t('settings:helperProfiles.updated') : t('settings:helperProfiles.created')
       )
       void navigate(
         `/helper/${String((data as { data?: { id?: string | number } }).data?.id ?? '')}`
@@ -181,8 +183,8 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
       setErrors(error.response?.data?.errors ?? {})
       toast.error(
         profileId
-          ? 'Failed to update helper profile. Please try again.'
-          : 'Failed to create helper profile. Please try again.'
+          ? t('settings:helperProfiles.updateError')
+          : t('settings:helperProfiles.createError')
       )
     },
     onSettled: () => {
@@ -198,14 +200,14 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
       if (profileId) {
         void queryClient.invalidateQueries({ queryKey: ['helper-profile', profileId] })
       }
-      toast.success('Helper profile updated successfully!')
+      toast.success(t('settings:helperProfiles.updated'))
       if (profileId) {
         void navigate(`/helper/${String(profileId)}`)
       }
     },
     onError: (error: ApiError) => {
       setErrors(error.response?.data?.errors ?? {})
-      toast.error('Failed to update helper profile. Please try again.')
+      toast.error(t('settings:helperProfiles.updateError'))
     },
     onSettled: () => {
       setIsSubmitting(false)

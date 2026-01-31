@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   postPets as createPet,
   getPetsId as getPet,
@@ -8,7 +9,7 @@ import {
 import { getPetTypes } from '@/api/generated/pet-types/pet-types'
 import type { PetType, Category, City } from '@/types/pet'
 import type { PetSex } from '@/api/generated/model/petSex'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 
 export interface FormErrors {
   name?: string
@@ -44,36 +45,18 @@ export interface CreatePetFormData {
   categories: Category[]
 }
 
-export const VALIDATION_MESSAGES = {
-  REQUIRED_NAME: 'Name is required',
-  REQUIRED_BIRTHDAY_COMPONENTS: 'Complete date required for day precision',
-  REQUIRED_YEAR: 'Year required',
-  REQUIRED_MONTH: 'Month required',
-  REQUIRED_PET_TYPE: 'Pet type is required',
-  REQUIRED_COUNTRY: 'Country is required',
-  INVALID_YEAR: 'Year must be between 1900 and current year',
-  INVALID_MONTH: 'Month must be between 1 and 12',
-  INVALID_DAY: 'Day must be between 1 and 31',
-} as const
-
-export const SUCCESS_MESSAGES = {
-  PET_CREATED: 'Pet created successfully!',
-} as const
-
-export const ERROR_MESSAGES = {
-  CREATE_FAILED: 'Failed to create pet.',
-  LOAD_PET_TYPES_FAILED: 'Failed to load pet types.',
-} as const
-
 export const ROUTES = {
   MY_PETS: '/',
 } as const
 
-export const validatePetForm = (formData: CreatePetFormData): FormErrors => {
+export const validatePetForm = (
+  formData: CreatePetFormData,
+  t: (key: string) => string
+): FormErrors => {
   const newErrors: FormErrors = {}
 
   if (!formData.name.trim()) {
-    newErrors.name = VALIDATION_MESSAGES.REQUIRED_NAME
+    newErrors.name = t('pets:validation.nameRequired')
   }
 
   const currentYear = new Date().getFullYear()
@@ -96,43 +79,43 @@ export const validatePetForm = (formData: CreatePetFormData): FormErrors => {
       !formData.birthday.trim() &&
       (!formData.birthday_year || !formData.birthday_month || !formData.birthday_day)
     ) {
-      newErrors.birthday = VALIDATION_MESSAGES.REQUIRED_BIRTHDAY_COMPONENTS
+      newErrors.birthday = t('pets:validation.birthdayComponentsRequired')
     } else if (!formData.birthday.trim()) {
       if (!validateYear(formData.birthday_year)) {
-        newErrors.birthday_year = VALIDATION_MESSAGES.INVALID_YEAR
+        newErrors.birthday_year = t('pets:validation.invalidYear')
       }
       if (!validateMonth(formData.birthday_month)) {
-        newErrors.birthday_month = VALIDATION_MESSAGES.INVALID_MONTH
+        newErrors.birthday_month = t('pets:validation.invalidMonth')
       }
       if (!validateDay(formData.birthday_day)) {
-        newErrors.birthday_day = VALIDATION_MESSAGES.INVALID_DAY
+        newErrors.birthday_day = t('pets:validation.invalidDay')
       }
     }
   } else if (formData.birthday_precision === 'month') {
     if (!formData.birthday_year) {
-      newErrors.birthday_year = VALIDATION_MESSAGES.REQUIRED_YEAR
+      newErrors.birthday_year = t('pets:validation.yearRequired')
     } else if (!validateYear(formData.birthday_year)) {
-      newErrors.birthday_year = VALIDATION_MESSAGES.INVALID_YEAR
+      newErrors.birthday_year = t('pets:validation.invalidYear')
     }
 
     if (!formData.birthday_month) {
-      newErrors.birthday_month = VALIDATION_MESSAGES.REQUIRED_MONTH
+      newErrors.birthday_month = t('pets:validation.monthRequired')
     } else if (!validateMonth(formData.birthday_month)) {
-      newErrors.birthday_month = VALIDATION_MESSAGES.INVALID_MONTH
+      newErrors.birthday_month = t('pets:validation.invalidMonth')
     }
   } else if (formData.birthday_precision === 'year') {
     if (!formData.birthday_year) {
-      newErrors.birthday_year = VALIDATION_MESSAGES.REQUIRED_YEAR
+      newErrors.birthday_year = t('pets:validation.yearRequired')
     } else if (!validateYear(formData.birthday_year)) {
-      newErrors.birthday_year = VALIDATION_MESSAGES.INVALID_YEAR
+      newErrors.birthday_year = t('pets:validation.invalidYear')
     }
   }
   // Country is required, other location fields are optional
   if (!formData.country.trim()) {
-    newErrors.country = VALIDATION_MESSAGES.REQUIRED_COUNTRY
+    newErrors.country = t('pets:validation.countryRequired')
   }
   if (!formData.pet_type_id) {
-    newErrors.pet_type_id = VALIDATION_MESSAGES.REQUIRED_PET_TYPE
+    newErrors.pet_type_id = t('pets:validation.petTypeRequired')
   }
 
   return newErrors
@@ -188,6 +171,7 @@ export const buildPetPayload = (formData: CreatePetFormData): CreatePetPayload =
 }
 
 export const useCreatePetForm = (petId?: string) => {
+  const { t } = useTranslation(['pets', 'common'])
   const navigate = useNavigate()
   const isEditMode = Boolean(petId)
   const [isLoadingPet, setIsLoadingPet] = useState(isEditMode)
@@ -242,7 +226,7 @@ export const useCreatePetForm = (petId?: string) => {
         }
       } catch (err: unknown) {
         console.error('Failed to load pet types:', err)
-        toast.error(ERROR_MESSAGES.LOAD_PET_TYPES_FAILED)
+        toast.error(t('pets:messages.loadPetTypesError'))
       } finally {
         setLoadingPetTypes(false)
       }
@@ -295,7 +279,7 @@ export const useCreatePetForm = (petId?: string) => {
           })
         } catch (err: unknown) {
           console.error('Failed to load pet data:', err)
-          toast.error('Failed to load pet data')
+          toast.error(t('pets:messages.loadError'))
         } finally {
           setIsLoadingPet(false)
         }
@@ -326,7 +310,7 @@ export const useCreatePetForm = (petId?: string) => {
     e.preventDefault()
     setError(null)
 
-    const newErrors = validatePetForm(formData)
+    const newErrors = validatePetForm(formData, t)
     setErrors(newErrors)
 
     if (Object.keys(newErrors).length > 0) {
@@ -334,7 +318,7 @@ export const useCreatePetForm = (petId?: string) => {
     }
 
     if (!formData.pet_type_id) {
-      setError('Pet type is required')
+      setError(t('pets:validation.typeRequired'))
       return
     }
 
@@ -351,8 +335,8 @@ export const useCreatePetForm = (petId?: string) => {
         await createPet(payload as unknown as import('@/api/generated/model').Pet)
       }
 
-      const successMessage = isEditMode ? 'Pet updated successfully' : SUCCESS_MESSAGES.PET_CREATED
-      toast.success(successMessage)
+      const successKey = isEditMode ? 'pets:messages.updateSuccess' : 'pets:messages.createSuccess'
+      toast.success(t(successKey, { name: formData.name }))
 
       if (isEditMode && petId) {
         // Use replace: true to prevent back button returning to edit page
@@ -361,7 +345,8 @@ export const useCreatePetForm = (petId?: string) => {
         void navigate(ROUTES.MY_PETS)
       }
     } catch (err: unknown) {
-      const errorMessage = isEditMode ? 'Failed to update pet' : ERROR_MESSAGES.CREATE_FAILED
+      const errorKey = isEditMode ? 'pets:messages.updateError' : 'pets:messages.createError'
+      const errorMessage = t(errorKey)
       setError(errorMessage)
       console.error(err)
 
@@ -380,12 +365,12 @@ export const useCreatePetForm = (petId?: string) => {
             }
           })
           setErrors(newFormErrors)
-          toast.error('Please check the form for errors.')
+          toast.error(t('common:check_form'))
           return
         }
       }
 
-      toast.error(errorMessage)
+      toast.error(errorKey)
     } finally {
       setIsSubmitting(false)
     }

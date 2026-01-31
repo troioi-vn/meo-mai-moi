@@ -1,8 +1,15 @@
 import './msw-polyfills'
-import { afterEach, beforeAll, afterAll, vi } from 'vitest'
+import { afterEach, beforeAll, afterAll, vi, beforeEach } from 'vitest'
 import { cleanup, configure } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 import { server } from './mocks/server'
+import i18n from '../i18n' // Initialize i18n for tests
+
+// Reset i18n to a clean state before each test
+beforeEach(() => {
+  // Ensure i18n is ready and reset to English
+  i18n.changeLanguage('en')
+})
 
 // Mock virtual:pwa-register
 vi.mock('virtual:pwa-register', () => ({

@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { usePostPlacementRequests } from '@/api/generated/placement-requests/placement-requests'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 import { AxiosError } from 'axios'
 
 export interface PlacementRequestPayload {

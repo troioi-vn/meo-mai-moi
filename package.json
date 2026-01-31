@@ -3,8 +3,8 @@
   "private": true,
   "scripts": {
     "test:backend": "cd backend && php artisan test --parallel",
-    "test": "cd frontend && bun test",
-    "test:frontend": "cd frontend && bun test",
+    "test": "cd frontend && bun run test",
+    "test:frontend": "cd frontend && bun run test",
     "typecheck:frontend": "cd frontend && bun x tsc -p tsconfig.typecheck.json --noEmit",
     "api:generate": "cd backend && php artisan l5-swagger:generate && cd ../frontend && bun run api:generate",
     "api:check": "cd backend && php artisan l5-swagger:generate && cd ../frontend && bun run api:check",

@@ -43,6 +43,7 @@ Meo Mai Moi is a comprehensive cat care management platform that helps cat owner
 - Deployment steps: [Production Deployment](./deploy.md)
 - HTTPS configuration: [HTTPS Setup (Dev & Production)](./https-setup.md)
 - Troubleshooting: [Troubleshooting Guide](./troubleshooting.md)
+- i18n implementation: [i18n Guide](./i18n.md)
 
 ## Features
 

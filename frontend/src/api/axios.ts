@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios'
 import type { AxiosResponse } from 'axios'
+import i18n from '@/i18n'
 
 /**
  * Axios's built-in type for response interceptors.
@@ -45,6 +46,8 @@ export const setUnauthorizedHandler = (handler: UnauthorizedHandler) => {
 
 api.interceptors.request.use(
   (config) => {
+    // Add Accept-Language header for i18n
+    config.headers['Accept-Language'] = i18n.language || 'en'
     return config
   },
   (error: AxiosError) => {
@@ -75,6 +78,8 @@ api.interceptors.response.use(
 
 authApi.interceptors.request.use(
   (config) => {
+    // Add Accept-Language header for i18n
+    config.headers['Accept-Language'] = i18n.language || 'en'
     return config
   },
   (error: AxiosError) => {

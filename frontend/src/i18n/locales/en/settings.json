@@ -1,0 +1,119 @@
+{
+  "title": "Settings",
+  "tabs": {
+    "account": "Account",
+    "profile": "Profile",
+    "security": "Security",
+    "notifications": "Notifications",
+    "preferences": "Preferences",
+    "contactUs": "Contact us"
+  },
+  "profile": {
+    "title": "Profile Settings",
+    "name": "Name",
+    "email": "Email",
+    "avatar": "Avatar",
+    "avatarUpload": "Upload new avatar",
+    "avatarRemove": "Remove avatar",
+    "avatarUploaded": "Avatar uploaded successfully",
+    "avatarDeleted": "Avatar deleted successfully",
+    "avatarUploadError": "Failed to upload avatar",
+    "avatarDeleteError": "Failed to delete avatar",
+    "avatarInvalidFile": "Please select an image file",
+    "avatarFileTooLarge": "File size must be less than 10MB",
+    "uploading": "Uploading...",
+    "deleting": "Deleting...",
+    "bio": "Bio",
+    "saveChanges": "Save Changes",
+    "saved": "Profile updated",
+    "error": "Failed to update profile",
+    "loading": "Loading your account details…",
+    "errorLoading": "We couldn't load your account details right now.",
+    "errorLoadingDescription": "Please refresh the page or log back in to manage your account settings."
+  },
+  "security": {
+    "title": "Security Settings",
+    "changePassword": {
+      "title": "Change Password",
+      "description": "Update your account password. Choose a strong password you don't use elsewhere.",
+      "backToSettings": "Back to Settings"
+    },
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "updatePassword": "Update Password",
+    "passwordUpdated": "Password updated successfully",
+    "passwordError": "Failed to update password",
+    "passwordTitle": "Password",
+    "passwordDescription": "Update your password to keep your account secure.",
+    "setPasswordDescription": "Set a password to sign in directly without third-party authentication.",
+    "twoFactor": {
+      "title": "Two-Factor Authentication",
+      "description": "Add an extra layer of security to your account",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "enable": "Enable 2FA",
+      "disable": "Disable 2FA",
+      "setup": "Set up two-factor authentication",
+      "recoveryCodes": "Recovery Codes",
+      "regenerateCodes": "Regenerate Codes"
+    },
+    "sessions": {
+      "title": "Active Sessions",
+      "current": "Current session",
+      "logoutOthers": "Logout other sessions",
+      "description": "Sign out of this session. You can always log back in later.",
+      "logout": "Log out"
+    },
+    "deleteAccount": {
+      "title": "Delete Account",
+      "description": "Permanently delete your account and all associated data",
+      "button": "Delete Account",
+      "confirm": "Are you sure? This action cannot be undone.",
+      "password": "Enter your password to confirm"
+    }
+  },
+  "notifications": {
+    "title": "Notification Preferences",
+    "description": "Choose how we contact you and manage device alerts.",
+    "pageTitle": "Notification Settings",
+    "pageDescription": "Manage how you receive notifications about important events and updates.",
+    "backToSettings": "Back to Settings",
+    "controlDescription": "Control how you receive notifications for different events.",
+    "email": {
+      "title": "Email Notifications",
+      "messages": "New messages",
+      "petUpdates": "Pet updates",
+      "placementRequests": "Placement requests",
+      "marketing": "News and updates"
+    },
+    "push": {
+      "title": "Push Notifications",
+      "enable": "Enable push notifications",
+      "messages": "New messages",
+      "petUpdates": "Pet updates"
+    },
+    "saved": "Notification preferences saved",
+    "error": "Failed to save preferences"
+  },
+  "contactUs": {
+    "title": "Contact Support",
+    "description": "Need help? Start a conversation with our support team.",
+    "starting": "Starting...",
+    "chatWithSupport": "Chat with Support"
+  },
+  "helperProfiles": {
+    "created": "Helper profile created successfully",
+    "updated": "Helper profile updated successfully",
+    "deleted": "Helper profile deleted successfully",
+    "archived": "Helper profile archived successfully",
+    "restored": "Helper profile restored successfully",
+    "photoDeleted": "Photo deleted successfully",
+    "createError": "Failed to create helper profile. Please try again.",
+    "updateError": "Failed to update helper profile. Please try again.",
+    "deleteError": "Failed to delete helper profile",
+    "archiveError": "Failed to archive helper profile",
+    "restoreError": "Failed to restore helper profile",
+    "photoDeleteError": "Failed to delete photo"
+  }
+}

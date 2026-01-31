@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Globe } from 'lucide-react'
+import { Languages, ChevronDown } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,17 +39,24 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-9 w-9">
-          <Globe className="h-4 w-4" />
+        <Button
+          variant="outline"
+          className="flex w-full items-center justify-between gap-2 px-3 sm:w-[200px]"
+        >
+          <div className="flex items-center gap-2">
+            <Languages className="h-4 w-4 text-muted-foreground" />
+            <span className="font-medium">{localeNames[currentLocale]}</span>
+          </div>
+          <ChevronDown className="h-4 w-4 opacity-50" />
           <span className="sr-only">Change language</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="start" className="w-[200px]">
         {supportedLocales.map((locale) => (
           <DropdownMenuItem
             key={locale}
             onClick={() => changeLanguage(locale)}
-            className={currentLocale === locale ? 'bg-accent' : ''}
+            className={currentLocale === locale ? 'bg-accent font-medium' : ''}
           >
             {localeNames[locale]}
           </DropdownMenuItem>

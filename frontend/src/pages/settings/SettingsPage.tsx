@@ -13,7 +13,16 @@ import { SetPasswordComponent } from '@/components/auth/SetPasswordComponent'
 import { DeleteAccountDialog } from '@/components/auth/DeleteAccountDialog'
 import { useCreateChat } from '@/hooks/useMessaging'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
-import { MessageCircle } from 'lucide-react'
+import {
+  MessageCircle,
+  User,
+  Lock,
+  Languages,
+  LogOut,
+  AlertTriangle,
+  Bell,
+  Info,
+} from 'lucide-react'
 
 const TAB_VALUES = ['account', 'notifications', 'contact-us'] as const
 type TabValue = (typeof TAB_VALUES)[number]
@@ -57,7 +66,10 @@ function AccountTabContent() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>{t('profile.title')}</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            {t('profile.title')}
+          </CardTitle>
           <CardDescription>{t('profile.loading')}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6 md:flex-row md:items-center">
@@ -75,7 +87,10 @@ function AccountTabContent() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>{t('profile.title')}</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            {t('profile.title')}
+          </CardTitle>
           <CardDescription>{t('profile.errorLoading')}</CardDescription>
         </CardHeader>
         <CardContent>
@@ -89,16 +104,22 @@ function AccountTabContent() {
     <div className="space-y-6">
       {/* Profile Card */}
       <Card>
-        <CardContent className="pt-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            {t('profile.title')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
           <div className="flex flex-col gap-6 md:flex-row md:items-center">
             <UserAvatar size="xl" showUploadControls={true} />
             <div className="flex-1 space-y-4">
               <div>
-                <p className="text-sm text-muted-foreground">{t('profile.name')}</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('profile.name')}</p>
                 <p className="text-lg font-semibold text-card-foreground">{user.name}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">{t('profile.email')}</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('profile.email')}</p>
                 <p className="text-lg font-semibold text-card-foreground">{user.email}</p>
               </div>
             </div>
@@ -109,7 +130,10 @@ function AccountTabContent() {
       {/* Password Section */}
       <Card>
         <CardHeader>
-          <CardTitle>{t('security.passwordTitle')}</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Lock className="h-5 w-5" />
+            {t('security.passwordTitle')}
+          </CardTitle>
           <CardDescription>
             {user.has_password
               ? t('security.passwordDescription')
@@ -124,12 +148,17 @@ function AccountTabContent() {
       {/* Language Preference Section */}
       <Card>
         <CardHeader>
-          <CardTitle>{t('preferences.language.title')}</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Languages className="h-5 w-5" />
+            {t('preferences.language.title')}
+          </CardTitle>
           <CardDescription>{t('preferences.language.description')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">{t('preferences.language.current')}</p>
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+            <p className="text-sm font-medium text-muted-foreground">
+              {t('preferences.language.current')}
+            </p>
             <LanguageSwitcher />
           </div>
         </CardContent>
@@ -138,20 +167,27 @@ function AccountTabContent() {
       {/* Session Section */}
       <Card>
         <CardHeader>
-          <CardTitle>{t('security.sessions.title')}</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <LogOut className="h-5 w-5" />
+            {t('security.sessions.title')}
+          </CardTitle>
           <CardDescription>{t('security.sessions.description')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button variant="outline" onClick={handleLogout}>
+          <Button variant="outline" onClick={handleLogout} className="flex items-center gap-2">
+            <LogOut className="h-4 w-4" />
             {t('security.sessions.logout')}
           </Button>
         </CardContent>
       </Card>
 
       {/* Danger Zone */}
-      <Card className="border-destructive/50">
+      <Card className="border-destructive/50 bg-destructive/5">
         <CardHeader>
-          <CardTitle className="text-destructive">{t('security.deleteAccount.title')}</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-destructive">
+            <AlertTriangle className="h-5 w-5" />
+            {t('security.deleteAccount.title')}
+          </CardTitle>
           <CardDescription>{t('security.deleteAccount.description')}</CardDescription>
         </CardHeader>
         <CardContent>
@@ -199,7 +235,10 @@ export default function SettingsPage() {
         <TabsContent value="notifications">
           <Card>
             <CardHeader>
-              <CardTitle>{t('notifications.title')}</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                {t('notifications.title')}
+              </CardTitle>
               <CardDescription>{t('notifications.description')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -211,7 +250,10 @@ export default function SettingsPage() {
         <TabsContent value="contact-us">
           <Card>
             <CardHeader>
-              <CardTitle>{t('contactUs.title')}</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Info className="h-5 w-5" />
+                {t('contactUs.title')}
+              </CardTitle>
               <CardDescription>{t('contactUs.description')}</CardDescription>
             </CardHeader>
             <CardContent>
@@ -225,8 +267,9 @@ export default function SettingsPage() {
                   })()
                 }}
                 disabled={creating}
+                className="flex items-center gap-2"
               >
-                <MessageCircle className="mr-2 h-4 w-4" />
+                <MessageCircle className="h-4 w-4" />
                 {creating ? t('contactUs.starting') : t('contactUs.chatWithSupport')}
               </Button>
             </CardContent>

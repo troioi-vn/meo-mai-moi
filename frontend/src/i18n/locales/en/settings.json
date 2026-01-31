@@ -102,6 +102,13 @@
     "starting": "Starting...",
     "chatWithSupport": "Chat with Support"
   },
+  "preferences": {
+    "language": {
+      "title": "Language",
+      "description": "Choose your preferred language for the interface.",
+      "current": "Current language:"
+    }
+  },
   "helperProfiles": {
     "created": "Helper profile created successfully",
     "updated": "Helper profile updated successfully",

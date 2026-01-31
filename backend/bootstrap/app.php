@@ -3,6 +3,7 @@
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\EnsureUserNotBanned;
 use App\Http\Middleware\OptionalAuth;
+use App\Http\Middleware\SetLocaleMiddleware;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -44,6 +45,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: ['127.0.0.1', '::1', '172.16.0.0/12', '192.168.0.0/16', '10.0.0.0/8']);
 
         $middleware->statefulApi();
+
+        // Set locale from Accept-Language header or user preference
+        $middleware->api(append: [SetLocaleMiddleware::class]);
 
         // Append noindex headers for non-production / dev subdomains to reduce risk of Safe Browsing flags
         $middleware->web(append: [\App\Http\Middleware\NoIndexDev::class]);

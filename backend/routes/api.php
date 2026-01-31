@@ -108,6 +108,7 @@ use App\Http\Controllers\VaccinationRecord\StoreVaccinationRecordController;
 use App\Http\Controllers\VaccinationRecord\UpdateVaccinationRecordController;
 use App\Http\Controllers\VaccinationRecordPhoto\DeleteVaccinationRecordPhotoController;
 use App\Http\Controllers\VaccinationRecordPhoto\StoreVaccinationRecordPhotoController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\VersionController;
 use App\Http\Controllers\Waitlist\CheckWaitlistController;
 use App\Http\Controllers\Waitlist\JoinWaitlistController;
@@ -120,6 +121,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/version', [VersionController::class, 'show']);
+
+// Locale routes
+Route::get('/locale', [LocaleController::class, 'show']);
+Route::put('/user/locale', [LocaleController::class, 'update'])->middleware('auth:sanctum');
 
 // Mailgun Webhook (public, signature-verified)
 Route::post('/webhooks/mailgun', [MailgunWebhookController::class, 'handle']);

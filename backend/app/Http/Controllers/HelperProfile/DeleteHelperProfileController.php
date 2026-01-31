@@ -51,7 +51,7 @@ class DeleteHelperProfileController extends Controller
         $this->authorize('delete', $helperProfile);
 
         if ($helperProfile->hasPlacementRequests()) {
-            return $this->sendError('Cannot delete profile with associated placement requests.', 400);
+            return $this->sendError(__('messages.helper.cannot_delete_with_requests'), 400);
         }
 
         // Delete stored photo files first to avoid orphans

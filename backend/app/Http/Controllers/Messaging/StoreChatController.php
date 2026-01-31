@@ -70,12 +70,12 @@ class StoreChatController extends Controller
 
             // Can't message yourself
             if ($recipientId === (int) $user->id) {
-                return $this->sendError('Cannot create a chat with yourself.', 422);
+                return $this->sendError(__('messages.chat.cannot_message_self'), 422);
             }
 
             $recipient = User::find($recipientId);
             if (! $recipient) {
-                return $this->sendError('Recipient not found.', 404);
+                return $this->sendError(__('messages.not_found'), 404);
             }
 
             // Parse context

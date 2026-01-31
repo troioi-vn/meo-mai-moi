@@ -80,6 +80,6 @@ class StorePetMicrochipController extends Controller
 
         $microchip = $pet->microchips()->create($validated);
 
-        return $this->sendSuccessWithMeta($microchip, 'Microchip record created successfully.', 201);
+        return $this->sendSuccessWithMeta($microchip, __('messages.pets.microchip_created'), 201);
     }
 }

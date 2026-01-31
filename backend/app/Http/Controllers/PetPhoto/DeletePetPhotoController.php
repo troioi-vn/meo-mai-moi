@@ -78,7 +78,7 @@ class DeletePetPhotoController extends Controller
         }
 
         if (! $media) {
-            return $this->sendError('Photo not found.', 404);
+            return $this->sendError(__('messages.pets.photo_not_found'), 404);
         }
 
         // Delete the media (this will also delete the file)

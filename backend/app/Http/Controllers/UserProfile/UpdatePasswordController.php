@@ -65,6 +65,6 @@ class UpdatePasswordController extends Controller
         $user->password = Hash::make($request->new_password);
         $user->save();
 
-        return $this->sendSuccessWithMeta(null, 'Password updated successfully.');
+        return $this->sendSuccessWithMeta(null, __('messages.auth.password_updated'));
     }
 }

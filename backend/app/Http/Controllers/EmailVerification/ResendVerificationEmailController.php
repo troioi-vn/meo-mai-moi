@@ -49,7 +49,7 @@ class ResendVerificationEmailController extends Controller
     public function __invoke(Request $request)
     {
         if ($request->user()->hasVerifiedEmail()) {
-            return $this->sendError('Email address already verified.', 400);
+            return $this->sendError(__('messages.auth.email_already_verified'), 400);
         }
 
         // Idempotency window: avoid duplicate resend spam inside 30 seconds

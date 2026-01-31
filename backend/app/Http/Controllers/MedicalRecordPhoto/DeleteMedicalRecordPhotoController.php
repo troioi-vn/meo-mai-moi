@@ -43,7 +43,7 @@ class DeleteMedicalRecordPhotoController extends Controller
         $media = $record->getMedia('photos')->firstWhere('id', $photo);
 
         if (! $media) {
-            return $this->sendError('Photo not found.', 404);
+            return $this->sendError(__('messages.pets.photo_not_found'), 404);
         }
 
         $media->delete();

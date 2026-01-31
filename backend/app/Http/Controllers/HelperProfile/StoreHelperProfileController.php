@@ -63,12 +63,12 @@ class StoreHelperProfileController extends Controller
 
         $cities = City::whereIn('id', $validatedData['city_ids'])->get();
         if ($cities->count() !== count($validatedData['city_ids'])) {
-            return $this->sendError('One or more cities not found', 422);
+            return $this->sendError(__('messages.helper.cities_not_found'), 422);
         }
 
         foreach ($cities as $city) {
             if ($city->country !== $validatedData['country']) {
-                return $this->sendError("City {$city->name} does not belong to the specified country.", 422);
+                return $this->sendError(__('messages.helper.city_country_mismatch', ['name' => $city->name]), 422);
             }
         }
 

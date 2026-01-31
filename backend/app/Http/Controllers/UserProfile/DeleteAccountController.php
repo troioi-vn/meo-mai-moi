@@ -61,6 +61,6 @@ class DeleteAccountController extends Controller
         $user->tokens()->delete(); // Revoke all tokens for the user
         $user->delete();
 
-        return $this->sendSuccessWithMeta(null, 'Account deleted successfully.');
+        return $this->sendSuccessWithMeta(null, __('messages.auth.account_deleted'));
     }
 }

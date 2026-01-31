@@ -66,15 +66,15 @@ class ExecuteNotificationActionController extends Controller
     public function __invoke(Request $request, Notification $notification, string $actionKey, NotificationActionRegistry $registry)
     {
         if ($notification->user_id !== Auth::id()) {
-            return $this->sendError('Forbidden', 403);
+            return $this->sendError(__('messages.forbidden'), 403);
         }
 
         try {
             $result = $registry->execute($notification, $actionKey, $request->user());
         } catch (AuthorizationException) {
-            return $this->sendError('Forbidden', 403);
+            return $this->sendError(__('messages.forbidden'), 403);
         } catch (ModelNotFoundException) {
-            return $this->sendError('Not found', 404);
+            return $this->sendError(__('messages.not_found'), 404);
         } catch (\InvalidArgumentException $e) {
             return $this->sendError($e->getMessage(), 422);
         }

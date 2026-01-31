@@ -47,12 +47,12 @@ class UpdateNotificationPreferencesRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'preferences.*.type.required' => 'The notification type is required.',
-            'preferences.*.type.in' => 'The selected notification type is invalid.',
-            'preferences.*.email_enabled.required' => 'The email enabled preference is required.',
-            'preferences.*.email_enabled.boolean' => 'The email enabled preference must be true or false.',
-            'preferences.*.in_app_enabled.required' => 'The in-app enabled preference is required.',
-            'preferences.*.in_app_enabled.boolean' => 'The in-app enabled preference must be true or false.',
+            'preferences.*.type.required' => __('validation.notification.type_required'),
+            'preferences.*.type.in' => __('validation.notification.type_invalid'),
+            'preferences.*.email_enabled.required' => __('validation.notification.email_enabled_required'),
+            'preferences.*.email_enabled.boolean' => __('validation.notification.email_enabled_boolean'),
+            'preferences.*.in_app_enabled.required' => __('validation.notification.in_app_enabled_required'),
+            'preferences.*.in_app_enabled.boolean' => __('validation.notification.in_app_enabled_boolean'),
         ];
     }
 }

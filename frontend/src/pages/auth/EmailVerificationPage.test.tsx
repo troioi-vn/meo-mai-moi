@@ -40,6 +40,7 @@ describe('EmailVerificationPage', () => {
     })
 
     await waitFor(() => {
+      // Title from i18n is "Email Verified!"
       expect(screen.getByRole('heading', { name: /email verified/i })).toBeInTheDocument()
       expect(screen.getByText(/your email has been successfully verified/i)).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /go to dashboard/i })).toBeInTheDocument()
@@ -65,8 +66,10 @@ describe('EmailVerificationPage', () => {
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /verification failed/i })).toBeInTheDocument()
-      expect(screen.getByText(/invalid or expired verification link/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /go to login/i })).toBeInTheDocument()
+      // Error from 403 shows expiredLink message
+      expect(screen.getByText(/verification link has expired/i)).toBeInTheDocument()
+      // Button text from i18n is "Back to Login"
+      expect(screen.getByRole('button', { name: /back to login/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /register again/i })).toBeInTheDocument()
     })
   })
@@ -85,7 +88,8 @@ describe('EmailVerificationPage', () => {
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /verification failed/i })).toBeInTheDocument()
-      expect(screen.getByText(/email address already verified/i)).toBeInTheDocument()
+      // Error message for already verified from i18n
+      expect(screen.getByText(/already verified/i)).toBeInTheDocument()
     })
   })
 
@@ -108,6 +112,7 @@ describe('EmailVerificationPage', () => {
     })
 
     await waitFor(() => {
+      // Title from i18n is "Email Verified!"
       expect(screen.getByRole('heading', { name: /email verified/i })).toBeInTheDocument()
     })
 
@@ -150,10 +155,11 @@ describe('EmailVerificationPage', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /go to login/i })).toBeInTheDocument()
+      // Button text from i18n is "Back to Login"
+      expect(screen.getByRole('button', { name: /back to login/i })).toBeInTheDocument()
     })
 
-    await user.click(screen.getByRole('button', { name: /go to login/i }))
+    await user.click(screen.getByRole('button', { name: /back to login/i }))
 
     expect(navigate).toHaveBeenCalledWith('/login')
   })

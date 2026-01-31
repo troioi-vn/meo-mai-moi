@@ -68,10 +68,11 @@ describe('ResetPasswordPage', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /reset password/i })).toBeInTheDocument()
+      // Title from i18n is "Reset your password"
+      expect(screen.getByRole('heading', { name: /reset your password/i })).toBeInTheDocument()
       expect(screen.getByDisplayValue('test@example.com')).toBeInTheDocument()
-      expect(screen.getByLabelText(/new password/i)).toBeInTheDocument()
-      expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument()
+      expect(screen.getByLabelText(/^new password$/i)).toBeInTheDocument()
+      expect(screen.getByLabelText(/^confirm (?:new )?password$/i)).toBeInTheDocument()
     })
   })
 
@@ -130,11 +131,12 @@ describe('ResetPasswordPage', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /reset password/i })).toBeInTheDocument()
+      // Title from i18n is "Reset your password"
+      expect(screen.getByRole('heading', { name: /reset your password/i })).toBeInTheDocument()
     })
 
-    await user.type(screen.getByLabelText(/new password/i), 'newpassword123')
-    await user.type(screen.getByLabelText(/confirm password/i), 'newpassword123')
+    await user.type(screen.getByLabelText(/^new password$/i), 'newpassword123')
+    await user.type(screen.getByLabelText(/^confirm (?:new )?password$/i), 'newpassword123')
     await user.click(screen.getByRole('button', { name: /reset password/i }))
 
     await waitFor(() => {
@@ -163,11 +165,12 @@ describe('ResetPasswordPage', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /reset password/i })).toBeInTheDocument()
+      // Title from i18n is "Reset your password"
+      expect(screen.getByRole('heading', { name: /reset your password/i })).toBeInTheDocument()
     })
 
-    await user.type(screen.getByLabelText(/new password/i), 'password1')
-    await user.type(screen.getByLabelText(/confirm password/i), 'password2')
+    await user.type(screen.getByLabelText(/^new password$/i), 'password1')
+    await user.type(screen.getByLabelText(/^confirm (?:new )?password$/i), 'password2')
     await user.click(screen.getByRole('button', { name: /reset password/i }))
 
     expect(screen.getByText(/passwords do not match/i)).toBeInTheDocument()
@@ -191,11 +194,12 @@ describe('ResetPasswordPage', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /reset password/i })).toBeInTheDocument()
+      // Title from i18n is "Reset your password"
+      expect(screen.getByRole('heading', { name: /reset your password/i })).toBeInTheDocument()
     })
 
-    await user.type(screen.getByLabelText(/new password/i), '123')
-    await user.type(screen.getByLabelText(/confirm password/i), '123')
+    await user.type(screen.getByLabelText(/^new password$/i), '123')
+    await user.type(screen.getByLabelText(/^confirm (?:new )?password$/i), '123')
     await user.click(screen.getByRole('button', { name: /reset password/i }))
 
     expect(screen.getByText(/password must be at least 8 characters/i)).toBeInTheDocument()
@@ -219,10 +223,11 @@ describe('ResetPasswordPage', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /reset password/i })).toBeInTheDocument()
+      // Title from i18n is "Reset your password"
+      expect(screen.getByRole('heading', { name: /reset your password/i })).toBeInTheDocument()
     })
 
-    const passwordInput = screen.getByLabelText(/new password/i)
+    const passwordInput = screen.getByLabelText(/^new password$/i)
     const toggleButton = passwordInput.parentElement?.querySelector('button')
 
     expect(passwordInput).toHaveAttribute('type', 'password')

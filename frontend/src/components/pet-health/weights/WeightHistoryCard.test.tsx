@@ -1,5 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { render, screen, waitFor, userEvent } from '@/testing'
 import { describe, it, expect, beforeEach } from 'vitest'
 import { WeightHistoryCard } from './WeightHistoryCard'
 import { server } from '@/testing/mocks/server'

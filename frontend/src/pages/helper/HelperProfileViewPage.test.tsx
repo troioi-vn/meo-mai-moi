@@ -1,29 +1,23 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { screen, waitFor, render } from '@testing-library/react'
+import { MemoryRouter, Routes, Route } from 'react-router-dom'
+import { AllTheProviders, testQueryClient } from '@/testing'
 import { http, HttpResponse } from 'msw'
 import HelperProfileViewPage from './HelperProfileViewPage'
 import { mockHelperProfile } from '@/testing/mocks/data/helper-profiles'
 import { server } from '@/testing/mocks/server'
-import { TestAuthProvider } from '@/contexts/TestAuthProvider'
 
-const createQueryClient = () =>
-  new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  })
-
-const renderWithRouter = (profileId = mockHelperProfile.id, authUser = null) => {
-  const queryClient = createQueryClient()
+const renderHelperProfile = (profileId = mockHelperProfile.id, authUser = null) => {
+  testQueryClient.clear()
   return render(
-    <QueryClientProvider client={queryClient}>
-      <TestAuthProvider mockValues={{ user: authUser }}>
-        <MemoryRouter initialEntries={[`/helper/${String(profileId)}`]}>
-          <Routes>
-            <Route path="/helper/:id" element={<HelperProfileViewPage />} />
-          </Routes>
-        </MemoryRouter>
-      </TestAuthProvider>
-    </QueryClientProvider>
+    <MemoryRouter initialEntries={[`/helper/${String(profileId)}`]}>
+      <AllTheProviders
+        initialAuthState={{ user: authUser, isLoading: false, isAuthenticated: !!authUser }}
+      >
+        <Routes>
+          <Route path="/helper/:id" element={<HelperProfileViewPage />} />
+        </Routes>
+      </AllTheProviders>
+    </MemoryRouter>
   )
 }
 
@@ -77,10 +71,10 @@ describe('HelperProfileViewPage - Placement Responses section', () => {
       })
     )
 
-    renderWithRouter(profileWithPets.id)
+    renderHelperProfile(profileWithPets.id)
 
     await waitFor(() => {
-      expect(screen.getByText('Placement Requests')).toBeInTheDocument()
+      expect(screen.getByText(/Placement Requests/)).toBeInTheDocument()
     })
 
     expect(screen.getByText('Fluffy')).toBeInTheDocument()
@@ -98,10 +92,10 @@ describe('HelperProfileViewPage - Placement Responses section', () => {
       })
     )
 
-    renderWithRouter()
+    renderHelperProfile()
 
     await waitFor(() => {
-      expect(screen.getByText('Placement Requests')).toBeInTheDocument()
+      expect(screen.getByText(/Placement Requests/)).toBeInTheDocument()
     })
 
     expect(screen.getByText('No placement requests yet.')).toBeInTheDocument()

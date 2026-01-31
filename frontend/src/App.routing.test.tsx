@@ -142,14 +142,13 @@ describe('App Routing', () => {
         initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
       })
 
+      // Wait for the notification preferences component to be rendered
       await waitFor(
-        async () => {
-          expect(await screen.findByText(/notification settings/i)).toBeInTheDocument()
+        () => {
+          expect(screen.getByTestId('notification-preferences')).toBeInTheDocument()
         },
         { timeout: 5000 }
       )
-
-      expect(screen.getByTestId('notification-preferences')).toBeInTheDocument()
     })
   })
 

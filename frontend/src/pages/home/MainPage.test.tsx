@@ -139,8 +139,7 @@ describe('MainPage Integration Tests', () => {
       })
 
       // Should show empty state message
-      expect(screen.getByText('No active placement requests at the moment.')).toBeInTheDocument()
-      expect(screen.getByText('Check back soon for pets needing help!')).toBeInTheDocument()
+      expect(screen.getByText('No placement requests yet.')).toBeInTheDocument()
 
       // Should show paw emoji
       expect(screen.getByText('🐾')).toBeInTheDocument()

@@ -1,10 +1,10 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { screen, waitFor, fireEvent } from '@testing-library/react'
+import { renderWithRouter, userEvent } from '@/testing'
 import { PlacementRequestModal } from './PlacementRequestModal'
 import { useCreatePlacementRequest } from '@/hooks/useCreatePlacementRequest'
 import type { PlacementRequestPayload } from '@/hooks/useCreatePlacementRequest'
 import { vi } from 'vitest'
 import type { Mock } from 'vitest'
-import userEvent from '@testing-library/user-event'
 import type { UseMutationResult } from '@tanstack/react-query'
 import type { PlacementRequest } from '@/types/pet'
 import { AxiosError } from 'axios'
@@ -71,7 +71,7 @@ describe('PlacementRequestModal', () => {
   })
 
   it('renders correctly when open', () => {
-    render(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
+    renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
     expect(screen.getByText('Create Placement Request')).toBeInTheDocument()
     const submit = screen.getByRole('button', { name: /create request/i })
     expect(submit).toBeDisabled()
@@ -84,13 +84,13 @@ describe('PlacementRequestModal', () => {
   })
 
   it('does not render when closed', () => {
-    render(<PlacementRequestModal petId={1} isOpen={false} onClose={mockOnClose} />)
+    renderWithRouter(<PlacementRequestModal petId={1} isOpen={false} onClose={mockOnClose} />)
     expect(screen.queryByText('Create Placement Request')).not.toBeInTheDocument()
   })
 
   it('calls onClose when the cancel button is clicked', async () => {
     const user = userEvent.setup()
-    render(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
+    renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
     expect(await screen.findByText('Create Placement Request')).toBeInTheDocument()
     const cancelButton = await screen.findByRole('button', { name: /cancel/i })
     await user.click(cancelButton)
@@ -101,7 +101,7 @@ describe('PlacementRequestModal', () => {
 
   it('closes the pick-up date picker after selecting a date', async () => {
     const user = userEvent.setup()
-    render(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
+    renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
 
     // Open the popover
     const startDateButton = screen.getByLabelText('Pick-up Date')
@@ -119,7 +119,7 @@ describe('PlacementRequestModal', () => {
 
   it('submits the form with the correct data for a permanent request', async () => {
     const user = userEvent.setup()
-    render(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
+    renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
     expect(await screen.findByText('Create Placement Request')).toBeInTheDocument()
 
     // Open and select request type
@@ -184,7 +184,7 @@ describe('PlacementRequestModal', () => {
     const futureDate = new Date()
     futureDate.setDate(today.getDate() + 10)
 
-    render(
+    renderWithRouter(
       <PlacementRequestModal
         petId={1}
         isOpen={true}
@@ -236,7 +236,7 @@ describe('PlacementRequestModal', () => {
 
   it('does not allow submission without accepting terms', async () => {
     const user = userEvent.setup()
-    render(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
+    renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
 
     // Open and select request type
     const requestTypeTrigger = screen.getByRole('combobox')
@@ -266,7 +266,7 @@ describe('PlacementRequestModal', () => {
 
   it('shows Drop-off Date field for foster requests but not for permanent', async () => {
     const user = userEvent.setup()
-    render(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
+    renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
 
     // Initially no request type selected - Drop-off Date should not be visible
     // (requestType !== 'permanent' is true but we want to check the foster case)
@@ -289,7 +289,7 @@ describe('PlacementRequestModal', () => {
   })
 
   it('shows public profile warning checkbox', () => {
-    render(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
+    renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
 
     expect(
       screen.getByText("I understand the pet's profile will become publicly visible.")

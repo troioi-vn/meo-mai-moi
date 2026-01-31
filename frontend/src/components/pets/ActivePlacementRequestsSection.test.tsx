@@ -1,6 +1,6 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { screen, fireEvent, waitFor } from '@testing-library/react'
+import { renderWithRouter } from '@/testing'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import type { MockedFunction } from 'vitest'
 import { ActivePlacementRequestsSection } from './ActivePlacementRequestsSection'
@@ -31,10 +31,6 @@ vi.mock('react-router-dom', async () => {
     useNavigate: () => mockNavigate,
   }
 })
-
-const renderWithRouter = (ui: React.ReactElement) => {
-  return render(<MemoryRouter>{ui}</MemoryRouter>)
-}
 
 const mockCatType: PetType = {
   id: 1,
@@ -221,10 +217,17 @@ describe('ActivePlacementRequestsSection', () => {
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByText('No active placement requests at the moment.')).toBeInTheDocument()
+        expect(screen.getByText('No placement requests yet.')).toBeInTheDocument()
       })
 
-      expect(screen.getByText('Check back soon for pets needing help!')).toBeInTheDocument()
+      // Debug: check all text content
+      const allText = screen.getAllByText(/.*/).map((el) => el.textContent)
+      console.log('All text content:', allText)
+
+      // Try to find any text containing "Check back soon"
+      const helpText = screen.getByText(/Check back soon/i)
+      expect(helpText).toBeInTheDocument()
+
       expect(screen.getByText('🐾')).toBeInTheDocument()
     })
 
@@ -234,7 +237,7 @@ describe('ActivePlacementRequestsSection', () => {
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByText('No active placement requests at the moment.')).toBeInTheDocument()
+        expect(screen.getByText('No placement requests yet.')).toBeInTheDocument()
       })
 
       expect(screen.queryByRole('button', { name: 'View All Requests' })).not.toBeInTheDocument()
@@ -430,7 +433,7 @@ describe('ActivePlacementRequestsSection', () => {
       renderWithRouter(<ActivePlacementRequestsSection className="custom-class" />)
 
       await waitFor(() => {
-        expect(screen.getByText('No active placement requests at the moment.')).toBeInTheDocument()
+        expect(screen.getByText('No placement requests yet.')).toBeInTheDocument()
       })
 
       const section = screen.getByText('Active Placement Requests').closest('section')
@@ -443,7 +446,7 @@ describe('ActivePlacementRequestsSection', () => {
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByText('No active placement requests at the moment.')).toBeInTheDocument()
+        expect(screen.getByText('No placement requests yet.')).toBeInTheDocument()
       })
 
       const section = screen.getByText('Active Placement Requests').closest('section')

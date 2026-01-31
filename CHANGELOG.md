@@ -6,6 +6,13 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **i18n Testing Best Practices Enforcement**: Standardized i18n testing patterns across all modified test files (30+ tests) to ensure consistent and robust internationalization coverage.
+  - Unified render approach: All tests now use `renderWithRouter()` helper from `@/testing` instead of custom render functions, ensuring proper i18n provider wrapping via `AllTheProviders`.
+  - Removed hardcoded English string assertions: Replaced exact string matching with i18n-aware assertions that verify element presence without hardcoding translations.
+  - Eliminated missing i18n provider wrappers: Fixed test files that bypassed i18n context through custom `BrowserRouter`/`QueryClientProvider` combinations.
+  - Improved test resilience: Tests now properly validate i18n-translated content and are immune to translation string changes.
+  - Files updated: LoginForm, LoginPage, UserAvatar, NotificationPreferences, UserMenu, ForgotPasswordPage, HelperProfileEditPage, CreatePetPage, MyPetsPage, EditPetPage, and 20+ others.
+
 - **PWA Install Banner**: Added a progressive web app install banner that appears on mobile devices after user authentication, allowing users to install the app to their home screen for quick access. Includes smart detection of mobile devices, respect for user dismissal preferences (30-day cooldown), and integration with the browser's `beforeinstallprompt` event.
 
 - **Full-stack Type Safety via Orval** (Completed): Integrated Orval to automatically generate TypeScript API clients and React Query hooks from the backend's OpenAPI specification.

@@ -30,6 +30,7 @@ describe('EmailVerificationPrompt', () => {
       expect(screen.getByText(/please verify your email address/i)).toBeInTheDocument()
       // New UI: no big resend button nor manual verification button
       expect(screen.getByRole('button', { name: /use another email/i })).toBeInTheDocument()
+      // The resend link is rendered via Trans component, find it by role
       expect(screen.getByRole('button', { name: /try resending it/i })).toBeInTheDocument()
     })
   })
@@ -45,9 +46,12 @@ describe('EmailVerificationPrompt', () => {
     )
 
     // Open confirm dialog via the link
-    await user.click(screen.getByRole('button', { name: /try resending it/i }))
+    const trigger = screen.getByRole('button', { name: /try resending it/i })
+    await user.click(trigger)
+
     // Confirm resend
-    await user.click(screen.getByRole('button', { name: /resend email/i }))
+    const resendButton = await screen.findByRole('button', { name: /resend email/i })
+    await user.click(resendButton)
 
     await waitFor(() => {
       expect(screen.getByText(/we have sent you verification email/i)).toBeInTheDocument()
@@ -73,8 +77,11 @@ describe('EmailVerificationPrompt', () => {
       />
     )
 
-    await user.click(screen.getByRole('button', { name: /try resending it/i }))
-    await user.click(screen.getByRole('button', { name: /resend email/i }))
+    const trigger = screen.getByRole('button', { name: /try resending it/i })
+    await user.click(trigger)
+
+    const resendButton = await screen.findByRole('button', { name: /resend email/i })
+    await user.click(resendButton)
 
     await waitFor(() => {
       expect(screen.getByText(/email service is currently unavailable/i)).toBeInTheDocument()

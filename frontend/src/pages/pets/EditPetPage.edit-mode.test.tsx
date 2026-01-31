@@ -1,10 +1,8 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { renderWithRouter } from '@/testing'
 import EditPetPage from './EditPetPage'
-import { AuthProvider } from '@/contexts/AuthContext'
 import { getPetsId as getPet, putPetsIdStatus as updatePetStatus } from '@/api/generated/pets/pets'
 import { getPetTypes } from '@/api/generated/pet-types/pet-types'
 import type { Pet } from '@/types/pet'
@@ -46,24 +44,6 @@ const mockPet: Partial<Pet> = {
 
 const mockUser = { id: 1, name: 'Test User', email: 'test@example.com' }
 
-function renderEditPage() {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  })
-  return render(
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider initialUser={mockUser}>
-          <Routes>
-            <Route path="/pets/:id/edit" element={<EditPetPage />} />
-            <Route path="/pets/:id" element={<div>Pet Profile Page</div>} />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
-  )
-}
-
 describe('CreatePetPage edit mode enhancements', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -88,38 +68,58 @@ describe('CreatePetPage edit mode enhancements', () => {
     }))
   })
 
+  const renderEditPage = (petId: string = '123') => {
+    return renderWithRouter(<EditPetPage />, {
+      route: `/pets/${petId}/edit`,
+      routes: [{ path: '/pets/:id/edit', element: <EditPetPage /> }],
+    })
+  }
+
   it('shows pet photo with upload controls in edit mode', async () => {
-    window.history.pushState({}, 'Edit Pet', '/pets/123/edit')
-    renderEditPage()
+    renderEditPage('123')
 
     await waitFor(() =>
       expect(screen.getByRole('heading', { name: /edit pet/i })).toBeInTheDocument()
     )
 
     // Check that pet data is loaded into form fields
-    expect(screen.getByDisplayValue('Fluffy')).toBeInTheDocument()
+    await waitFor(
+      () => {
+        expect(screen.getByDisplayValue('Fluffy')).toBeInTheDocument()
+      },
+      { timeout: 3000 }
+    )
 
     // Check that upload controls are shown
     expect(screen.getByRole('button', { name: /upload/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /remove/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /delete/i })).toBeInTheDocument()
   })
 
   it('has navigation button', async () => {
-    window.history.pushState({}, 'Edit Pet', '/pets/123/edit')
-    renderEditPage()
+    renderEditPage('123')
     await waitFor(() =>
       expect(screen.getByRole('heading', { name: /edit pet/i })).toBeInTheDocument()
     )
 
     // Breadcrumb navigation
     expect(screen.getByRole('link', { name: /home/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /fluffy/i })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: /fluffy/i })).toBeInTheDocument()
+    })
   })
 
   it('redirects to pet profile after status update', async () => {
     const user = userEvent.setup()
-    window.history.pushState({}, 'Edit Pet', '/pets/123/edit')
-    renderEditPage()
+    renderWithRouter(<EditPetPage />, {
+      route: '/pets/123/edit',
+      routes: [
+        { path: '/pets/:id/edit', element: <EditPetPage /> },
+        {
+          path: '/pets/:id',
+          element: <div>Pet Profile Page</div>,
+        },
+      ],
+    })
     await waitFor(() =>
       expect(screen.getByRole('heading', { name: /edit pet/i })).toBeInTheDocument()
     )
@@ -150,6 +150,6 @@ describe('CreatePetPage edit mode enhancements', () => {
     const confirmBtn = screen.getByRole('button', { name: /confirm/i })
     await user.click(confirmBtn)
 
-    await waitFor(() => expect(screen.getByText('Pet Profile Page')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText(/Pet Profile Page/)).toBeInTheDocument())
   })
 })

@@ -1,6 +1,5 @@
-import { render, screen } from '@testing-library/react'
-import { BrowserRouter } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { renderWithRouter, testQueryClient } from '@/testing'
+import { screen } from '@testing-library/react'
 import NotificationSettingsPage from './NotificationSettingsPage'
 import { vi } from 'vitest'
 
@@ -12,18 +11,8 @@ vi.mock('@/components/notifications/NotificationPreferences', () => ({
 }))
 
 const renderWithProviders = (component: React.ReactElement) => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-      mutations: { retry: false },
-    },
-  })
-
-  return render(
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>{component}</BrowserRouter>
-    </QueryClientProvider>
-  )
+  testQueryClient.clear()
+  return renderWithRouter(component)
 }
 
 describe('NotificationSettingsPage', () => {

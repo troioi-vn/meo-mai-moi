@@ -1,7 +1,5 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { AuthProvider } from '@/contexts/AuthContext'
+import { screen, waitFor } from '@testing-library/react'
+import { renderWithRouter, testQueryClient } from '@/testing'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import RequestDetailPage from '@/pages/placement/RequestDetailPage'
 import { http, HttpResponse } from 'msw'
@@ -19,22 +17,10 @@ vi.mock('react-router-dom', async () => {
 })
 
 const renderWithProviders = (component: React.ReactElement, user: User | null = null) => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-      mutations: { retry: false },
-    },
+  testQueryClient.clear()
+  return renderWithRouter(component, {
+    initialAuthState: { user, isLoading: false, isAuthenticated: !!user },
   })
-
-  return render(
-    <QueryClientProvider client={queryClient}>
-      <MemoryRouter>
-        <AuthProvider initialUser={user} initialLoading={false} skipInitialLoad={true}>
-          {component}
-        </AuthProvider>
-      </MemoryRouter>
-    </QueryClientProvider>
-  )
 }
 
 describe('RequestDetailPage', () => {

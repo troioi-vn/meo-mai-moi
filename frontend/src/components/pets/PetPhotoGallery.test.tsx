@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { render, screen, waitFor, userEvent } from '@/testing'
 import { PetPhotoGallery } from './PetPhotoGallery'
 import type { Pet, PetPhoto } from '@/types/pet'
 
@@ -139,7 +138,7 @@ describe('PetPhotoGallery', () => {
       expect(setPrimaryPetPhoto).toHaveBeenCalledWith(mockPet.id, 2)
     })
 
-    expect(toast.success).toHaveBeenCalledWith('Avatar updated successfully')
+    expect(toast.success).toHaveBeenCalledWith('Avatar updated successfully', undefined)
     expect(mockOnPetUpdate).toHaveBeenCalledWith(updatedPet)
   })
 
@@ -184,7 +183,7 @@ describe('PetPhotoGallery', () => {
       expect(deletePetPhoto).toHaveBeenCalledWith(mockPet.id, '2')
     })
 
-    expect(toast.success).toHaveBeenCalledWith('Photo deleted successfully')
+    expect(toast.success).toHaveBeenCalledWith('Photo deleted successfully', undefined)
     expect(getPet).toHaveBeenCalledWith(mockPet.id)
     expect(mockOnPetUpdate).toHaveBeenCalledWith(updatedPet)
   })
@@ -205,7 +204,7 @@ describe('PetPhotoGallery', () => {
     await user.click(screen.getByRole('button', { name: /set as avatar/i }))
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Failed to set avatar')
+      expect(toast.error).toHaveBeenCalledWith('Failed to update avatar', undefined)
     })
 
     expect(mockOnPetUpdate).not.toHaveBeenCalled()
@@ -227,7 +226,7 @@ describe('PetPhotoGallery', () => {
     await user.click(screen.getByRole('button', { name: /delete/i }))
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Failed to delete photo')
+      expect(toast.error).toHaveBeenCalledWith('Failed to delete photo', undefined)
     })
 
     expect(mockOnPetUpdate).not.toHaveBeenCalled()

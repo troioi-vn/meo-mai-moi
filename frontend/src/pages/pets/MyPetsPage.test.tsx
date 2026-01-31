@@ -1,7 +1,6 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { BrowserRouter } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { renderWithRouter } from '@/testing'
 import type { MockedFunction } from 'vitest'
 import MyPetsPage from './MyPetsPage'
 import { getMyPetsSections } from '@/api/generated/pets/pets'
@@ -97,26 +96,11 @@ const mockUser = {
   email: 'test@example.com',
 }
 
-const renderWithProviders = (
-  component: React.ReactElement,
-  user: { id: number; name: string; email: string } | null = mockUser
-) => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-      mutations: { retry: false },
-    },
+// Helper to render with authenticated user by default
+const renderAuthenticatedPage = () => {
+  return renderWithRouter(<MyPetsPage />, {
+    initialAuthState: { user: mockUser, isLoading: false, isAuthenticated: true },
   })
-
-  return render(
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider initialUser={user} initialLoading={false} skipInitialLoad={true}>
-          {component}
-        </AuthProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
-  )
 }
 
 describe('MyPetsPage', () => {
@@ -141,16 +125,16 @@ describe('MyPetsPage', () => {
       transferred_away: [],
     })
 
-    renderWithProviders(<MyPetsPage />)
+    renderAuthenticatedPage()
 
-    expect(screen.getByText('Pets')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'New Pet' })).toBeInTheDocument()
+    expect(screen.getByText('My Pets')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Add Pet' })).toBeInTheDocument()
   })
 
   it('shows loading state initially', () => {
     mockGetMyPetsSections.mockImplementation(() => new Promise(() => {})) // Never resolves
 
-    renderWithProviders(<MyPetsPage />)
+    renderAuthenticatedPage()
 
     expect(screen.getByText('Loading your pets...')).toBeInTheDocument()
   })
@@ -158,7 +142,7 @@ describe('MyPetsPage', () => {
   it('shows error state when API fails', async () => {
     mockGetMyPetsSections.mockRejectedValue(new Error('API Error'))
 
-    renderWithProviders(<MyPetsPage />)
+    renderAuthenticatedPage()
 
     await waitFor(() => {
       expect(
@@ -175,7 +159,7 @@ describe('MyPetsPage', () => {
       transferred_away: [],
     })
 
-    renderWithProviders(<MyPetsPage />)
+    renderAuthenticatedPage()
 
     await waitFor(() => {
       expect(
@@ -198,7 +182,7 @@ describe('MyPetsPage', () => {
       transferred_away: [],
     })
 
-    renderWithProviders(<MyPetsPage />)
+    renderAuthenticatedPage()
 
     await waitFor(() => {
       // No more 'Owned' header displayed
@@ -221,7 +205,7 @@ describe('MyPetsPage', () => {
       transferred_away: [],
     })
 
-    renderWithProviders(<MyPetsPage />)
+    renderAuthenticatedPage()
 
     await waitFor(() => {
       expect(screen.getByText('Fostering (Active)')).toBeInTheDocument()
@@ -241,7 +225,7 @@ describe('MyPetsPage', () => {
       transferred_away: transferredAway,
     })
 
-    renderWithProviders(<MyPetsPage />)
+    renderAuthenticatedPage()
 
     await waitFor(() => {
       expect(screen.getByText('Transferred Away')).toBeInTheDocument()
@@ -262,7 +246,7 @@ describe('MyPetsPage', () => {
       transferred_away: [],
     })
 
-    renderWithProviders(<MyPetsPage />)
+    renderAuthenticatedPage()
 
     await waitFor(() => {
       expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
@@ -285,7 +269,7 @@ describe('MyPetsPage', () => {
       transferred_away: [],
     })
 
-    renderWithProviders(<MyPetsPage />)
+    renderAuthenticatedPage()
 
     await waitFor(() => {
       expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
@@ -311,13 +295,13 @@ describe('MyPetsPage', () => {
       transferred_away: [],
     })
 
-    renderWithProviders(<MyPetsPage />)
+    renderAuthenticatedPage()
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'New Pet' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Add Pet' })).toBeInTheDocument()
     })
 
-    const newPetButton = screen.getByRole('button', { name: 'New Pet' })
+    const newPetButton = screen.getByRole('button', { name: 'Add Pet' })
     fireEvent.click(newPetButton)
 
     expect(mockNavigate).toHaveBeenCalledWith('/pets/create')
@@ -331,7 +315,7 @@ describe('MyPetsPage', () => {
       transferred_away: [],
     })
 
-    renderWithProviders(<MyPetsPage />)
+    renderAuthenticatedPage()
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Add Your First Pet' })).toBeInTheDocument()
@@ -344,7 +328,9 @@ describe('MyPetsPage', () => {
   })
 
   it('shows unauthenticated message when user is not logged in', () => {
-    renderWithProviders(<MyPetsPage />, null)
+    renderWithRouter(<MyPetsPage />, {
+      initialAuthState: { user: null, isLoading: false, isAuthenticated: false },
+    })
 
     expect(screen.getByText('Please log in to view your pets.')).toBeInTheDocument()
   })
@@ -362,7 +348,7 @@ describe('MyPetsPage', () => {
       transferred_away: [],
     })
 
-    renderWithProviders(<MyPetsPage />)
+    renderAuthenticatedPage()
 
     await waitFor(() => {
       expect(screen.getByLabelText('Show all')).toBeInTheDocument()
@@ -379,7 +365,7 @@ describe('MyPetsPage', () => {
       transferred_away: [],
     })
 
-    renderWithProviders(<MyPetsPage />)
+    renderAuthenticatedPage()
 
     await waitFor(() => {
       expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
@@ -398,7 +384,7 @@ describe('MyPetsPage', () => {
       transferred_away: [],
     })
 
-    renderWithProviders(<MyPetsPage />)
+    renderAuthenticatedPage()
 
     await waitFor(() => {
       expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()

@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react'
-import { BrowserRouter } from 'react-router-dom'
+import { screen } from '@testing-library/react'
+import { renderWithRouter } from '@/testing'
 import { describe, it, expect, vi } from 'vitest'
 import AccountPasswordPage from './AccountPasswordPage'
 
@@ -10,11 +10,7 @@ vi.mock('@/components/auth/ChangePasswordForm', () => ({
 
 describe('AccountPasswordPage', () => {
   const renderPage = () => {
-    render(
-      <BrowserRouter>
-        <AccountPasswordPage />
-      </BrowserRouter>
-    )
+    renderWithRouter(<AccountPasswordPage />)
   }
 
   it('renders breadcrumbs and header', () => {

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { renderWithRouter } from '@/testing'
 import { UserMenu } from './UserMenu'
 import { mockUser } from '@/testing/mocks/data/user'
 import { useAuth } from '@/hooks/use-auth'
@@ -18,10 +18,6 @@ vi.mock('@/hooks/use-theme', () => ({
 vi.mock('@/assets/images/default-avatar.webp', () => ({
   default: 'default-avatar.webp',
 }))
-
-const renderWithRouter = (ui: React.ReactElement) => {
-  return render(<MemoryRouter>{ui}</MemoryRouter>)
-}
 
 describe('UserMenu', () => {
   const mockLogout = vi.fn()
@@ -106,7 +102,7 @@ describe('UserMenu', () => {
 
     // Check that menu items are visible after clicking
     expect(screen.getByRole('menuitem', { name: 'Settings' })).toBeInTheDocument()
-    expect(screen.getByRole('menuitem', { name: 'Log Out' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Logout' })).toBeInTheDocument()
   })
 
   it('has correct navigation links in the menu', async () => {
@@ -146,7 +142,7 @@ describe('UserMenu', () => {
 
     await user.click(avatar)
 
-    const logoutButton = screen.getByRole('menuitem', { name: 'Log Out' })
+    const logoutButton = screen.getByRole('menuitem', { name: 'Logout' })
     await user.click(logoutButton)
 
     // Confirmation dialog should appear
@@ -154,7 +150,7 @@ describe('UserMenu', () => {
     expect(screen.getByText('Log out?')).toBeInTheDocument()
 
     // Click the confirm button in the dialog
-    const confirmButton = screen.getByRole('button', { name: 'Log Out' })
+    const confirmButton = screen.getByRole('button', { name: 'Logout' })
     await user.click(confirmButton)
 
     expect(mockLogout).toHaveBeenCalledTimes(1)
@@ -175,7 +171,7 @@ describe('UserMenu', () => {
 
     await user.click(avatar)
 
-    const logoutButton = screen.getByRole('menuitem', { name: 'Log Out' })
+    const logoutButton = screen.getByRole('menuitem', { name: 'Logout' })
     await user.click(logoutButton)
 
     // Confirmation dialog should appear
@@ -248,14 +244,14 @@ describe('UserMenu', () => {
 
     await user.click(avatar)
 
-    const logoutButton = screen.getByRole('menuitem', { name: 'Log Out' })
+    const logoutButton = screen.getByRole('menuitem', { name: 'Logout' })
     await user.click(logoutButton)
 
     // Confirmation dialog should appear
     expect(screen.getByRole('alertdialog')).toBeInTheDocument()
 
     // Click the confirm button in the dialog
-    const confirmButton = screen.getByRole('button', { name: 'Log Out' })
+    const confirmButton = screen.getByRole('button', { name: 'Logout' })
     await user.click(confirmButton)
 
     expect(mockLogout).toHaveBeenCalledTimes(1)

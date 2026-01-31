@@ -1,44 +1,13 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { BrowserRouter } from 'react-router-dom'
 import { userEvent, renderWithRouter } from '@/testing'
 import ForgotPasswordPage from './ForgotPasswordPage'
 import { server } from '@/testing/mocks/server'
 import { http, HttpResponse } from 'msw'
 
-// Ensure ProgressEvent is available for MSW's XHR interceptor in Node
-if (!(globalThis as { ProgressEvent?: unknown }).ProgressEvent) {
-  class PolyfillProgressEvent extends Event {
-    lengthComputable = false
-    loaded = 0
-    total = 0
-    constructor(
-      type: string,
-      init?: { lengthComputable?: boolean; loaded?: number; total?: number }
-    ) {
-      super(type)
-      if (init) {
-        this.lengthComputable = !!init.lengthComputable
-        this.loaded = init.loaded ?? 0
-        this.total = init.total ?? 0
-      }
-    }
-  }
-  ;(globalThis as { ProgressEvent?: unknown }).ProgressEvent = PolyfillProgressEvent
-}
-
 beforeEach(() => {
   vi.clearAllMocks()
 })
-
-// Simple render function without the full router setup
-const renderPage = () => {
-  return render(
-    <BrowserRouter>
-      <ForgotPasswordPage />
-    </BrowserRouter>
-  )
-}
 
 describe('ForgotPasswordPage', () => {
   let user: ReturnType<typeof userEvent.setup>
@@ -48,10 +17,10 @@ describe('ForgotPasswordPage', () => {
   })
 
   it('renders forgot password form', () => {
-    renderPage()
+    renderWithRouter(<ForgotPasswordPage />)
 
-    expect(screen.getByRole('heading', { name: /forgot password/i })).toBeInTheDocument()
-    expect(screen.getByLabelText(/email address/i)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /reset your password/i })).toBeInTheDocument()
+    expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /send reset link/i })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /back to login/i })).toBeInTheDocument()
   })
@@ -67,9 +36,9 @@ describe('ForgotPasswordPage', () => {
       })
     )
 
-    renderPage()
+    renderWithRouter(<ForgotPasswordPage />)
 
-    await user.type(screen.getByLabelText(/email address/i), 'test@example.com')
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com')
     await user.click(screen.getByRole('button', { name: /send reset link/i }))
 
     await waitFor(() => {
@@ -88,9 +57,9 @@ describe('ForgotPasswordPage', () => {
       })
     )
 
-    renderPage()
+    renderWithRouter(<ForgotPasswordPage />)
 
-    await user.type(screen.getByLabelText(/email address/i), 'invalid-email')
+    await user.type(screen.getByLabelText(/email/i), 'invalid-email')
     await user.click(screen.getByRole('button', { name: /send reset link/i }))
 
     await waitFor(() => {
@@ -105,9 +74,9 @@ describe('ForgotPasswordPage', () => {
       })
     )
 
-    renderPage()
+    renderWithRouter(<ForgotPasswordPage />)
 
-    await user.type(screen.getByLabelText(/email address/i), 'test@example.com')
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com')
     await user.click(screen.getByRole('button', { name: /send reset link/i }))
 
     await waitFor(() => {
@@ -126,9 +95,9 @@ describe('ForgotPasswordPage', () => {
       })
     )
 
-    renderPage()
+    renderWithRouter(<ForgotPasswordPage />)
 
-    await user.type(screen.getByLabelText(/email address/i), 'test@example.com')
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com')
     await user.click(screen.getByRole('button', { name: /send reset link/i }))
 
     await waitFor(() => {
@@ -137,8 +106,8 @@ describe('ForgotPasswordPage', () => {
 
     await user.click(screen.getByRole('button', { name: /send another email/i }))
 
-    expect(screen.getByRole('heading', { name: /forgot password/i })).toBeInTheDocument()
-    expect(screen.getByLabelText(/email address/i)).toHaveValue('')
+    expect(screen.getByRole('heading', { name: /reset your password/i })).toBeInTheDocument()
+    expect(screen.getByLabelText(/email/i)).toHaveValue('')
   })
 
   it('shows loading state during submission', async () => {
@@ -154,13 +123,13 @@ describe('ForgotPasswordPage', () => {
       })
     )
 
-    renderPage()
+    renderWithRouter(<ForgotPasswordPage />)
 
-    await user.type(screen.getByLabelText(/email address/i), 'test@example.com')
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com')
     await user.click(screen.getByRole('button', { name: /send reset link/i }))
 
     expect(screen.getByRole('button', { name: /sending.../i })).toBeInTheDocument()
-    expect(screen.getByLabelText(/email address/i)).toBeDisabled()
+    expect(screen.getByLabelText(/email/i)).toBeDisabled()
   })
 
   it('prefills email from URL parameter', () => {
@@ -169,7 +138,7 @@ describe('ForgotPasswordPage', () => {
       routes: [{ path: '/forgot-password', element: <ForgotPasswordPage /> }],
     })
 
-    const emailInput = screen.getByLabelText<HTMLInputElement>(/email address/i)
+    const emailInput = screen.getByLabelText<HTMLInputElement>(/email/i)
     expect(emailInput.value).toBe('prefilled@example.com')
   })
 })

@@ -1,6 +1,9 @@
-import { describe, it, expect } from 'vitest'
-import { validatePetForm, buildPetPayload, VALIDATION_MESSAGES } from './useCreatePetForm'
+import { describe, it, expect, vi } from 'vitest'
+import { validatePetForm, buildPetPayload } from './useCreatePetForm'
 import type { CreatePetFormData } from './useCreatePetForm'
+
+// Mock translation function that returns the key
+const mockT = (key: string) => key
 
 describe('useCreatePetForm helpers', () => {
   const baseFormData: CreatePetFormData = {
@@ -24,43 +27,49 @@ describe('useCreatePetForm helpers', () => {
 
   describe('validatePetForm', () => {
     it('returns empty errors for valid data', () => {
-      const errors = validatePetForm(baseFormData)
+      const errors = validatePetForm(baseFormData, mockT)
       expect(errors).toEqual({})
     })
 
     it('requires name', () => {
-      const errors = validatePetForm({ ...baseFormData, name: '  ' })
-      expect(errors.name).toBe(VALIDATION_MESSAGES.REQUIRED_NAME)
+      const errors = validatePetForm({ ...baseFormData, name: '  ' }, mockT)
+      expect(errors.name).toBe('pets:validation.nameRequired')
     })
 
     it('requires pet_type_id', () => {
-      const errors = validatePetForm({ ...baseFormData, pet_type_id: null })
-      expect(errors.pet_type_id).toBe(VALIDATION_MESSAGES.REQUIRED_PET_TYPE)
+      const errors = validatePetForm({ ...baseFormData, pet_type_id: null }, mockT)
+      expect(errors.pet_type_id).toBe('pets:validation.petTypeRequired')
     })
 
     it('requires country', () => {
-      const errors = validatePetForm({ ...baseFormData, country: '' })
-      expect(errors.country).toBe(VALIDATION_MESSAGES.REQUIRED_COUNTRY)
+      const errors = validatePetForm({ ...baseFormData, country: '' }, mockT)
+      expect(errors.country).toBe('pets:validation.countryRequired')
     })
 
     describe('precision: day', () => {
       it('requires full date components if birthday string is empty', () => {
-        const errors = validatePetForm({
-          ...baseFormData,
-          birthday_precision: 'day',
-          birthday: '',
-          birthday_year: '',
-        })
-        expect(errors.birthday).toBe(VALIDATION_MESSAGES.REQUIRED_BIRTHDAY_COMPONENTS)
+        const errors = validatePetForm(
+          {
+            ...baseFormData,
+            birthday_precision: 'day',
+            birthday: '',
+            birthday_year: '',
+          },
+          mockT
+        )
+        expect(errors.birthday).toBe('pets:validation.birthdayComponentsRequired')
       })
 
       it('validates year range', () => {
-        const errors = validatePetForm({
-          ...baseFormData,
-          birthday_precision: 'day',
-          birthday_year: '1899',
-        })
-        expect(errors.birthday_year).toBe(VALIDATION_MESSAGES.INVALID_YEAR)
+        const errors = validatePetForm(
+          {
+            ...baseFormData,
+            birthday_precision: 'day',
+            birthday_year: '1899',
+          },
+          mockT
+        )
+        expect(errors.birthday_year).toBe('pets:validation.invalidYear')
       })
     })
   })

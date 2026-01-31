@@ -10,27 +10,21 @@ vi.mock('sonner', () => ({
 }))
 
 import { useCreatePlacementRequest } from './useCreatePlacementRequest'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { testQueryClient } from '@/testing'
 import { server } from '@/testing/mocks/server'
 import { HttpResponse, http } from 'msw'
 import { toast } from 'sonner'
+import { AllTheProviders } from '@/testing/providers'
 
 describe('useCreatePlacementRequest', () => {
-  let queryClient: QueryClient
-
   beforeEach(() => {
-    queryClient = new QueryClient({
-      defaultOptions: {
-        mutations: { retry: false },
-        queries: { retry: false },
-      },
-    })
+    testQueryClient.clear()
     server.resetHandlers()
     vi.clearAllMocks()
   })
 
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <AllTheProviders>{children}</AllTheProviders>
   )
 
   describe('success', () => {
@@ -50,7 +44,7 @@ describe('useCreatePlacementRequest', () => {
 
       const { result } = renderHook(() => useCreatePlacementRequest(), { wrapper })
 
-      const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries')
+      const invalidateSpy = vi.spyOn(testQueryClient, 'invalidateQueries')
 
       await act(async () => {
         await result.current.mutateAsync({
@@ -60,7 +54,10 @@ describe('useCreatePlacementRequest', () => {
         })
       })
 
-      expect(toast.success).toHaveBeenCalledWith('Placement request created successfully!')
+      expect(toast.success).toHaveBeenCalledWith(
+        'Placement request created successfully!',
+        undefined
+      )
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: ['pet', '123'],
       })
@@ -89,7 +86,8 @@ describe('useCreatePlacementRequest', () => {
       })
 
       expect(toast.error).toHaveBeenCalledWith(
-        'An active placement request of this type already exists for this pet.'
+        'An active placement request of this type already exists for this pet.',
+        undefined
       )
     })
   })
@@ -115,7 +113,7 @@ describe('useCreatePlacementRequest', () => {
         }
       })
 
-      expect(toast.error).toHaveBeenCalledWith('Backend validation error')
+      expect(toast.error).toHaveBeenCalledWith('Backend validation error', undefined)
     })
 
     it('falls back to default message when no backend message', async () => {
@@ -138,7 +136,7 @@ describe('useCreatePlacementRequest', () => {
         }
       })
 
-      expect(toast.error).toHaveBeenCalledWith('Failed to create placement request.')
+      expect(toast.error).toHaveBeenCalledWith('Failed to create placement request.', undefined)
     })
   })
 })

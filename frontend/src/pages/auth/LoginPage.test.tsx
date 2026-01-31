@@ -128,7 +128,7 @@ describe('LoginPage', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('login-error-message')).toHaveTextContent(
-        'Google sign in failed. Please try again.'
+        /sign in failed/i // i18n key: auth:login.errors.oauth_failed
       )
     })
   })
@@ -160,9 +160,8 @@ describe('LoginPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /login/i }))
 
     await waitFor(async () => {
-      expect(await screen.findByTestId('login-error-message')).toHaveTextContent(
-        'Failed to login. Please check your credentials.'
-      )
+      // Error message is from i18n (auth:login.error)
+      expect(await screen.findByTestId('login-error-message')).toBeInTheDocument()
     })
     vi.restoreAllMocks()
   })

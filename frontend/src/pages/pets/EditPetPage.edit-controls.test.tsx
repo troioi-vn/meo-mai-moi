@@ -1,7 +1,6 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { renderWithRouter, testQueryClient } from '@/testing'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock sonner early so components/hooks import the mocked toast
@@ -20,7 +19,6 @@ import {
   deletePetsId as deletePet,
 } from '@/api/generated/pets/pets'
 import { getPetTypes } from '@/api/generated/pet-types/pet-types'
-import { AuthProvider } from '@/contexts/AuthContext'
 
 vi.mock('@/api/generated/pets/pets', async () => {
   const actual = await vi.importActual<typeof import('@/api/generated/pets/pets')>(
@@ -45,37 +43,22 @@ vi.mock('@/api/generated/pet-types/pet-types', async () => {
 
 // Helper to render in edit mode with URL param
 const renderEditPage = (petId = '1', initialUser = { id: 1, name: 'User', email: 'u@e.com' }) => {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  testQueryClient.clear()
+  return renderWithRouter(<EditPetPage />, {
+    route: `/pets/${petId}/edit`,
+    routes: [{ path: '/pets/:id/edit', element: <EditPetPage /> }],
+    initialAuthState: { user: initialUser as any, isLoading: false, isAuthenticated: true },
   })
-  return render(
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider initialUser={initialUser}>
-          <Routes>
-            <Route path="/pets/:id/edit" element={<EditPetPage />} />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </QueryClientProvider>,
-    {
-      wrapper: ({ children }) => {
-        // Navigate to edit route
-        window.history.pushState({}, 'Edit', `/pets/${petId}/edit`)
-        return <>{children}</>
-      },
-    }
-  )
 }
 
 describe('CreatePetPage edit controls', () => {
-  const mockGetPet = getPet as unknown as MockedFunction<(id: string) => Promise<any>>
+  const mockGetPet = getPet as unknown as MockedFunction<(id: string | number) => Promise<any>>
   const mockGetPetTypes = getPetTypes as unknown as MockedFunction<() => Promise<any[]>>
   const mockUpdatePetStatus = updatePetStatus as unknown as MockedFunction<
-    (id: string, status: string) => Promise<any>
+    (id: string | number, status: any) => Promise<any>
   >
   const mockDeletePet = deletePet as unknown as MockedFunction<
-    (id: string, password: string) => Promise<void>
+    (id: string | number, password?: string) => Promise<void>
   >
 
   beforeEach(() => {

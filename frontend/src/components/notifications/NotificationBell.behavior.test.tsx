@@ -1,12 +1,11 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, waitFor, within } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { screen, waitFor, within } from '@testing-library/react'
+import { renderWithRouter } from '@/testing'
 import { NotificationsProvider, useNotifications } from '@/contexts/NotificationProvider'
 import { NotificationBell } from './NotificationBell'
 import { server } from '@/testing/mocks/server'
 import { http, HttpResponse } from 'msw'
 import { toast } from 'sonner'
-import { TestAuthProvider } from '@/contexts/TestAuthProvider'
 
 const mockUser = {
   id: 1,
@@ -21,16 +20,6 @@ function RefreshControl() {
     <button type="button" onClick={() => void refresh({ includeBellNotifications: true })}>
       Refresh
     </button>
-  )
-}
-
-function renderWithProviders(ui: React.ReactNode) {
-  return render(
-    <MemoryRouter>
-      <TestAuthProvider mockValues={{ user: mockUser, isAuthenticated: true }}>
-        <NotificationsProvider>{ui}</NotificationsProvider>
-      </TestAuthProvider>
-    </MemoryRouter>
   )
 }
 
@@ -66,7 +55,12 @@ describe('NotificationBell behavior', () => {
       })
     )
 
-    renderWithProviders(<NotificationBell />)
+    renderWithRouter(<NotificationBell />, {
+      initialAuthState: {
+        user: mockUser,
+        isAuthenticated: true,
+      },
+    })
 
     const link = await screen.findByRole('link', { name: /open notifications/i })
     await waitFor(() => {
@@ -110,11 +104,17 @@ describe('NotificationBell behavior', () => {
     // Reset toast mocks
     vi.clearAllMocks()
 
-    renderWithProviders(
+    renderWithRouter(
       <>
         <NotificationBell />
         <RefreshControl />
-      </>
+      </>,
+      {
+        initialAuthState: {
+          user: mockUser,
+          isAuthenticated: true,
+        },
+      }
     )
 
     // Wait for initial empty fetch to settle

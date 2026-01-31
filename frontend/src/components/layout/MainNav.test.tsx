@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
 import { renderWithRouter } from '@/testing'
 import MainNav from './MainNav'
@@ -52,6 +52,6 @@ describe('MainNav', () => {
     })
     expect(screen.getByText(/TU/i)).toBeInTheDocument() // User menu avatar with initials
     expect(screen.getByTitle('Requests')).toBeInTheDocument()
-    expect(screen.getByTitle('Pets')).toBeInTheDocument()
+    expect(screen.getByTitle('My Pets')).toBeInTheDocument()
   })
 })

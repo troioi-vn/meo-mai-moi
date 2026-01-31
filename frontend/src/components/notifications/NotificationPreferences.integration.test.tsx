@@ -1,6 +1,6 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { screen, fireEvent, waitFor } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { renderWithRouter, testQueryClient } from '@/testing'
 import { NotificationPreferences } from './NotificationPreferences'
 import * as notificationPreferencesApi from '@/api/generated/notification-preferences/notification-preferences'
 import { toast } from 'sonner'
@@ -54,25 +54,10 @@ const mockPreferences = [
   },
 ]
 
-const renderWithQueryClient = (component: React.ReactElement) => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-      mutations: {
-        retry: false,
-        onError: (error) => {
-          console.error('Mutation error:', error)
-        },
-      },
-    },
-  })
-
-  return render(<QueryClientProvider client={queryClient}>{component}</QueryClientProvider>)
-}
-
 describe('NotificationPreferences Integration Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    testQueryClient.clear()
   })
 
   it('handles complete user workflow of loading and updating preferences', async () => {
@@ -82,7 +67,7 @@ describe('NotificationPreferences Integration Tests', () => {
       message: 'Updated successfully',
     })
 
-    renderWithQueryClient(<NotificationPreferences />)
+    renderWithRouter(<NotificationPreferences />)
 
     // Wait for initial load
     await waitFor(() => {
@@ -121,7 +106,7 @@ describe('NotificationPreferences Integration Tests', () => {
     })
 
     // Verify success message appears
-    expect(toast.success).toHaveBeenCalledWith('Settings saved')
+    expect(toast.success).toHaveBeenCalledWith('Notification preferences saved', undefined)
   })
 
   it('handles multiple rapid preference changes correctly', async () => {
@@ -131,7 +116,7 @@ describe('NotificationPreferences Integration Tests', () => {
       message: 'Updated successfully',
     })
 
-    renderWithQueryClient(<NotificationPreferences />)
+    renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
       expect(screen.getByText('Response to Placement Request')).toBeInTheDocument()
@@ -154,7 +139,7 @@ describe('NotificationPreferences Integration Tests', () => {
     mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
     mockUpdateNotificationPreferences.mockRejectedValue(new Error('Network error'))
 
-    renderWithQueryClient(<NotificationPreferences />)
+    renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
       expect(screen.getByText('Response to Placement Request')).toBeInTheDocument()
@@ -181,7 +166,7 @@ describe('NotificationPreferences Integration Tests', () => {
     })
     mockUpdateNotificationPreferences.mockReturnValue(updatePromise)
 
-    renderWithQueryClient(<NotificationPreferences />)
+    renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
       expect(screen.getByText('Response to Placement Request')).toBeInTheDocument()
@@ -217,7 +202,7 @@ describe('NotificationPreferences Integration Tests', () => {
   it('handles empty preferences list gracefully', async () => {
     mockGetNotificationPreferences.mockResolvedValue([])
 
-    renderWithQueryClient(<NotificationPreferences />)
+    renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
       expect(screen.getByText('No notification types available.')).toBeInTheDocument()
@@ -232,7 +217,7 @@ describe('NotificationPreferences Integration Tests', () => {
   it('handles network errors during initial load', async () => {
     mockGetNotificationPreferences.mockRejectedValue(new Error('Failed to fetch'))
 
-    renderWithQueryClient(<NotificationPreferences />)
+    renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
       expect(screen.getByText('Failed to fetch')).toBeInTheDocument()
@@ -247,7 +232,7 @@ describe('NotificationPreferences Integration Tests', () => {
     mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
     mockUpdateNotificationPreferences.mockRejectedValue(new Error('Update failed'))
 
-    renderWithQueryClient(<NotificationPreferences />)
+    renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
       expect(screen.getByText('Response to Placement Request')).toBeInTheDocument()
@@ -286,7 +271,7 @@ describe('NotificationPreferences Integration Tests', () => {
 
     mockGetNotificationPreferences.mockResolvedValue(preferencesWithGroups)
 
-    renderWithQueryClient(<NotificationPreferences />)
+    renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
       expect(screen.getByText('Response to Placement Request')).toBeInTheDocument()
@@ -309,7 +294,7 @@ describe('NotificationPreferences Integration Tests', () => {
       message: 'Updated successfully',
     })
 
-    renderWithQueryClient(<NotificationPreferences />)
+    renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
       expect(screen.getByText('Response to Placement Request')).toBeInTheDocument()

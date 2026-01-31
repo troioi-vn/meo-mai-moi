@@ -14,7 +14,7 @@ import {
   postHelperProfilesIdArchive as archiveHelperProfile,
   postHelperProfilesIdRestore as restoreHelperProfile,
 } from '@/api/generated/helper-profiles/helper-profiles'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 import { HelperProfileFormFields } from '@/components/helper/HelperProfileFormFields'
 import { PetTypesSelector } from '@/components/helper/PetTypesSelector'
 import { LoadingState } from '@/components/ui/LoadingState'
@@ -106,43 +106,55 @@ const HelperProfileEditPage: React.FC = () => {
   const deleteMutation = useMutation({
     mutationFn: () => (id ? deleteHelperProfile(id) : Promise.reject(new Error('missing id'))),
     onSuccess: () => {
-      toast.success('Helper profile deleted successfully!')
+      toast.success('settings:helperProfiles.deleted')
       void queryClient.invalidateQueries({ queryKey: ['helper-profiles'] })
       void navigate('/helper')
     },
     onError: (error: unknown) => {
       const message =
-        (error as ApiError).response?.data?.message ?? 'Failed to delete helper profile'
-      toast.error(message)
+        (error as ApiError).response?.data?.message ?? 'settings:helperProfiles.deleteError'
+      if (message.startsWith('settings:')) {
+        toast.error(message)
+      } else {
+        toast.raw.error(message)
+      }
     },
   })
 
   const archiveMutation = useMutation({
     mutationFn: () => (id ? archiveHelperProfile(id) : Promise.reject(new Error('missing id'))),
     onSuccess: () => {
-      toast.success('Helper profile archived successfully!')
+      toast.success('settings:helperProfiles.archived')
       void queryClient.invalidateQueries({ queryKey: ['helper-profiles'] })
       void queryClient.invalidateQueries({ queryKey: ['helper-profile', id] })
       void navigate('/helper')
     },
     onError: (error: unknown) => {
       const message =
-        (error as ApiError).response?.data?.message ?? 'Failed to archive helper profile'
-      toast.error(message)
+        (error as ApiError).response?.data?.message ?? 'settings:helperProfiles.archiveError'
+      if (message.startsWith('settings:')) {
+        toast.error(message)
+      } else {
+        toast.raw.error(message)
+      }
     },
   })
 
   const restoreMutation = useMutation({
     mutationFn: () => (id ? restoreHelperProfile(id) : Promise.reject(new Error('missing id'))),
     onSuccess: () => {
-      toast.success('Helper profile restored successfully!')
+      toast.success('settings:helperProfiles.restored')
       void queryClient.invalidateQueries({ queryKey: ['helper-profiles'] })
       void queryClient.invalidateQueries({ queryKey: ['helper-profile', id] })
     },
     onError: (error: unknown) => {
       const message =
-        (error as ApiError).response?.data?.message ?? 'Failed to restore helper profile'
-      toast.error(message)
+        (error as ApiError).response?.data?.message ?? 'settings:helperProfiles.restoreError'
+      if (message.startsWith('settings:')) {
+        toast.error(message)
+      } else {
+        toast.raw.error(message)
+      }
     },
   })
 
@@ -151,11 +163,11 @@ const HelperProfileEditPage: React.FC = () => {
       id ? deleteHelperProfilePhoto(id, photoId) : Promise.reject(new Error('missing id')),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['helper-profile', id] })
-      toast.success('Photo deleted successfully!')
+      toast.success('settings:helperProfiles.photoDeleted')
     },
     onError: (error) => {
       console.error('Delete photo error:', error)
-      toast.error('Failed to delete photo. Please try again.')
+      toast.error('settings:helperProfiles.photoDeleteError')
     },
   })
 

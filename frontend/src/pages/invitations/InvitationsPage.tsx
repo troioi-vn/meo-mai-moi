@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 import {
   getInvitations as getUserInvitations,
   postInvitations as generateInvitation,
@@ -102,10 +102,10 @@ export default function InvitationsPage() {
             }
           : null
       )
-      toast.success('Invitation generated successfully!')
+      toast.success('common:messages.invitationGenerated')
     } catch (err: unknown) {
       console.error('Failed to generate invitation:', err)
-      toast.error('Failed to generate invitation. You may have reached your daily limit.')
+      toast.error('common:messages.invitationLimitReached')
     } finally {
       setIsGenerating(false)
     }
@@ -114,10 +114,10 @@ export default function InvitationsPage() {
   const handleCopyInvitation = async (invitation: Invitation) => {
     try {
       await navigator.clipboard.writeText(invitation.invitation_url ?? '')
-      toast.success('Invitation link copied to clipboard!')
+      toast.success('common:messages.copied')
     } catch (err: unknown) {
       console.error('Failed to copy:', err)
-      toast.error('Failed to copy invitation link')
+      toast.error('common:messages.invitationCopyFailed')
     }
   }
 
@@ -137,10 +137,10 @@ export default function InvitationsPage() {
             }
           : null
       )
-      toast.success('Invitation revoked successfully')
+      toast.success('common:messages.invitationRevoked')
     } catch (err: unknown) {
       console.error('Failed to revoke invitation:', err)
-      toast.error('Failed to revoke invitation')
+      toast.error('common:messages.invitationRevokeFailed')
     }
   }
 

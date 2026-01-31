@@ -6,7 +6,7 @@ import { FileInput } from '@/components/ui/FileInput'
 import useHelperProfileForm from '@/hooks/useHelperProfileForm'
 import { getPetTypes } from '@/api/generated/pet-types/pet-types'
 import type { PetType } from '@/types/pet'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 import { HelperProfileFormFields } from '@/components/helper/HelperProfileFormFields'
 import { PetTypesSelector } from '@/components/helper/PetTypesSelector'
 import { Heart, Camera, UserPlus } from 'lucide-react'
@@ -49,7 +49,7 @@ const CreateHelperProfilePage: React.FC = () => {
         setPetTypes(types)
       } catch (err: unknown) {
         console.error('Failed to load pet types:', err)
-        toast.error('Failed to load pet types. Please try again.')
+        toast.error('common:errors.generic')
       } finally {
         setLoadingPetTypes(false)
       }

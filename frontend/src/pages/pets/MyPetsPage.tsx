@@ -8,8 +8,10 @@ import { useEffect, useState } from 'react'
 import { getMyPetsSections } from '@/api/generated/pets/pets'
 import type { Pet } from '@/types/pet'
 import { useAuth } from '@/hooks/use-auth'
+import { useTranslation } from 'react-i18next'
 
 export default function MyPetsPage() {
+  const { t } = useTranslation('pets')
   const [sections, setSections] = useState<{
     owned: Pet[]
     fostering_active: Pet[]
@@ -30,7 +32,7 @@ export default function MyPetsPage() {
         setSections(response)
         setError(null)
       } catch (err: unknown) {
-        setError('Failed to fetch your pets. Please try again later.')
+        setError(t('messages.fetchError'))
         console.error(err)
       } finally {
         setLoading(false)
@@ -40,12 +42,12 @@ export default function MyPetsPage() {
     if (isAuthenticated && !isLoading) {
       void fetchPets()
     }
-  }, [isAuthenticated, isLoading])
+  }, [isAuthenticated, isLoading, t])
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Loading authentication status...</p>
+        <p className="text-muted-foreground">{t('messages.loadingAuth')}</p>
       </div>
     )
   }
@@ -53,7 +55,7 @@ export default function MyPetsPage() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Please log in to view your pets.</p>
+        <p className="text-muted-foreground">{t('messages.loginRequired')}</p>
       </div>
     )
   }
@@ -61,14 +63,14 @@ export default function MyPetsPage() {
   return (
     <div className="container mx-auto px-4 py-8 bg-background min-h-screen">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Pets</h1>
+        <h1 className="text-3xl font-bold text-foreground">{t('title')}</h1>
         <Button onClick={() => void navigate('/pets/create')}>
           <PlusCircle className="mr-2 h-4 w-4" />
-          New Pet
+          {t('addPet')}
         </Button>
       </div>
 
-      {loading && <p className="text-muted-foreground">Loading your pets...</p>}
+      {loading && <p className="text-muted-foreground">{t('messages.loadingPets')}</p>}
       {error && <p className="text-destructive">{error}</p>}
 
       {!loading && !error && (
@@ -100,12 +102,12 @@ export default function MyPetsPage() {
                                 htmlFor="show-all"
                                 className="text-xs font-medium cursor-pointer"
                               >
-                                Show all
+                                {t('showAll')}
                               </label>
                             </div>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>Includes deceased pets</p>
+                            <p>{t('includesDeceased')}</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -119,7 +121,7 @@ export default function MyPetsPage() {
           {/* Fostering (Active) */}
           {sections.fostering_active.length > 0 && (
             <section>
-              <h2 className="text-2xl font-semibold mb-3">Fostering (Active)</h2>
+              <h2 className="text-2xl font-semibold mb-3">{t('sections.fostering_active')}</h2>
               <SectionGrid pets={sections.fostering_active} />
             </section>
           )}
@@ -127,7 +129,7 @@ export default function MyPetsPage() {
           {/* Fostering (Past) */}
           {sections.fostering_past.length > 0 && (
             <section>
-              <h2 className="text-2xl font-semibold mb-3">Fostering (Past)</h2>
+              <h2 className="text-2xl font-semibold mb-3">{t('sections.fostering_past')}</h2>
               <SectionGrid pets={sections.fostering_past} />
             </section>
           )}
@@ -135,7 +137,7 @@ export default function MyPetsPage() {
           {/* Transferred Away */}
           {sections.transferred_away.length > 0 && (
             <section>
-              <h2 className="text-2xl font-semibold mb-3">Transferred Away</h2>
+              <h2 className="text-2xl font-semibold mb-3">{t('sections.transferred_away')}</h2>
               <SectionGrid pets={sections.transferred_away} />
             </section>
           )}
@@ -154,12 +156,10 @@ export default function MyPetsPage() {
             return (
               !hasVisiblePets && (
                 <div className="text-center py-12">
-                  <p className="text-muted-foreground mb-4">
-                    No pets yet — add your first pet to get started!
-                  </p>
+                  <p className="text-muted-foreground mb-4">{t('messages.noPetsYetDescription')}</p>
                   <Button onClick={() => void navigate('/pets/create')}>
                     <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Your First Pet
+                    {t('addFirstPet')}
                   </Button>
                 </div>
               )

@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 import {
   getPlacementRequestsId as getPlacementRequest,
   postPlacementRequestsIdFinalize as finalizePlacementRequest,
@@ -113,11 +113,11 @@ export default function RequestDetailPage() {
       setActionLoading(`accept-${String(responseId)}`)
       try {
         await acceptPlacementResponse(responseId)
-        toast.success('Response accepted!')
+        toast.success('pets:placement.messages.responseAccepted')
         void fetchRequest()
       } catch (err) {
         console.error('Failed to accept response', err)
-        toast.error('Failed to accept response. Please try again.')
+        toast.error('pets:placement.messages.acceptFailed')
       } finally {
         setActionLoading(null)
       }
@@ -130,11 +130,11 @@ export default function RequestDetailPage() {
       setActionLoading(`reject-${String(responseId)}`)
       try {
         await rejectPlacementResponse(responseId)
-        toast.success('Response rejected')
+        toast.success('pets:placement.messages.responseRejected')
         void fetchRequest()
       } catch (err) {
         console.error('Failed to reject response', err)
-        toast.error('Failed to reject response. Please try again.')
+        toast.error('pets:placement.messages.rejectFailed')
       } finally {
         setActionLoading(null)
       }
@@ -147,11 +147,11 @@ export default function RequestDetailPage() {
       setActionLoading('cancel-response')
       try {
         await cancelPlacementResponse(responseId)
-        toast.success('Your response has been cancelled')
+        toast.success('pets:placement.messages.responseCancelled')
         void fetchRequest()
       } catch (err) {
         console.error('Failed to cancel response', err)
-        toast.error('Failed to cancel your response')
+        toast.error('pets:placement.messages.cancelResponseFailed')
       } finally {
         setActionLoading(null)
       }
@@ -164,11 +164,11 @@ export default function RequestDetailPage() {
       setActionLoading('confirm-handover')
       try {
         await confirmTransfer(transferId)
-        toast.success('Handover confirmed! You are now responsible for this pet.')
+        toast.success('pets:placement.messages.handoverConfirmed')
         void fetchRequest()
       } catch (err) {
         console.error('Failed to confirm handover', err)
-        toast.error('Failed to confirm handover. Please try again.')
+        toast.error('pets:placement.messages.confirmHandoverFailed')
       } finally {
         setActionLoading(null)
       }
@@ -181,11 +181,11 @@ export default function RequestDetailPage() {
     setActionLoading('finalize')
     try {
       await finalizePlacementRequest(request.id)
-      toast.success('Pet has been marked as returned!')
+      toast.success('pets:placement.messages.petReturned')
       void fetchRequest()
     } catch (err) {
       console.error('Failed to finalize placement', err)
-      toast.error('Failed to mark pet as returned. Please try again.')
+      toast.error('pets:placement.messages.returnFailed')
     } finally {
       setActionLoading(null)
     }
@@ -196,11 +196,11 @@ export default function RequestDetailPage() {
     setActionLoading('delete')
     try {
       await deletePlacementRequest(request.id)
-      toast.success('Placement request deleted')
+      toast.success('pets:placement.messages.placementRequestDeleted')
       void navigate('/requests')
     } catch (err) {
       console.error('Failed to delete placement request', err)
-      toast.error('Failed to delete placement request. Please try again.')
+      toast.error('pets:placement.messages.placementRequestDeleteFailed')
     } finally {
       setActionLoading(null)
     }
@@ -225,7 +225,7 @@ export default function RequestDetailPage() {
         helper_profile_id: Number(selectedProfileId),
         message: responseMessage || undefined,
       })
-      toast.success('Your response has been submitted!')
+      toast.success('common:messages.success')
       setSelectedProfileId('')
       setResponseMessage('')
       void fetchRequest()
@@ -238,15 +238,15 @@ export default function RequestDetailPage() {
         }
       }
       if (anyErr.response?.status === 409) {
-        toast.info("You've already responded to this request.")
+        toast.raw.info("You've already responded to this request.")
         void fetchRequest()
       } else if (anyErr.response?.status === 422) {
         const errs = anyErr.response.data?.errors ?? {}
         const joined = Object.values(errs).flat().join('\n')
         const msg = joined !== '' ? joined : (anyErr.response.data?.message ?? 'Validation error.')
-        toast.error(msg)
+        toast.raw.error(msg)
       } else {
-        toast.error('Failed to submit response. Please try again.')
+        toast.error('common:errors.generic')
       }
     } finally {
       setSubmittingResponse(false)

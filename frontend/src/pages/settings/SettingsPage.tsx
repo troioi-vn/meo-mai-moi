@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { NotificationPreferences } from '@/components/notifications/NotificationPreferences'
@@ -11,6 +12,7 @@ import { ChangePasswordDialog } from '@/components/auth/ChangePasswordDialog'
 import { SetPasswordComponent } from '@/components/auth/SetPasswordComponent'
 import { DeleteAccountDialog } from '@/components/auth/DeleteAccountDialog'
 import { useCreateChat } from '@/hooks/useMessaging'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { MessageCircle } from 'lucide-react'
 
 const TAB_VALUES = ['account', 'notifications', 'contact-us'] as const
@@ -21,6 +23,7 @@ function isTabValue(value: string): value is TabValue {
 }
 
 function AccountTabContent() {
+  const { t } = useTranslation('settings')
   const { user, isLoading, logout } = useAuth()
   const navigate = useNavigate()
 
@@ -54,8 +57,8 @@ function AccountTabContent() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Account overview</CardTitle>
-          <CardDescription>Loading your account details…</CardDescription>
+          <CardTitle>{t('profile.title')}</CardTitle>
+          <CardDescription>{t('profile.loading')}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6 md:flex-row md:items-center">
           <Skeleton className="h-24 w-24 rounded-full" />
@@ -72,13 +75,11 @@ function AccountTabContent() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Account overview</CardTitle>
-          <CardDescription>We couldn’t load your account details right now.</CardDescription>
+          <CardTitle>{t('profile.title')}</CardTitle>
+          <CardDescription>{t('profile.errorLoading')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Please refresh the page or log back in to manage your account settings.
-          </p>
+          <p className="text-sm text-muted-foreground">{t('profile.errorLoadingDescription')}</p>
         </CardContent>
       </Card>
     )
@@ -93,11 +94,11 @@ function AccountTabContent() {
             <UserAvatar size="xl" showUploadControls={true} />
             <div className="flex-1 space-y-4">
               <div>
-                <p className="text-sm text-muted-foreground">Name</p>
+                <p className="text-sm text-muted-foreground">{t('profile.name')}</p>
                 <p className="text-lg font-semibold text-card-foreground">{user.name}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Email</p>
+                <p className="text-sm text-muted-foreground">{t('profile.email')}</p>
                 <p className="text-lg font-semibold text-card-foreground">{user.email}</p>
               </div>
             </div>
@@ -108,11 +109,11 @@ function AccountTabContent() {
       {/* Password Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Password</CardTitle>
+          <CardTitle>{t('security.passwordTitle')}</CardTitle>
           <CardDescription>
             {user.has_password
-              ? 'Update your password to keep your account secure.'
-              : 'Set a password to sign in directly without third-party authentication.'}
+              ? t('security.passwordDescription')
+              : t('security.setPasswordDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -120,17 +121,29 @@ function AccountTabContent() {
         </CardContent>
       </Card>
 
+      {/* Language Preference Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('preferences.language.title')}</CardTitle>
+          <CardDescription>{t('preferences.language.description')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">{t('preferences.language.current')}</p>
+            <LanguageSwitcher />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Session Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Session</CardTitle>
-          <CardDescription>
-            Sign out of this session. You can always log back in later.
-          </CardDescription>
+          <CardTitle>{t('security.sessions.title')}</CardTitle>
+          <CardDescription>{t('security.sessions.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Button variant="outline" onClick={handleLogout}>
-            Log out
+            {t('security.sessions.logout')}
           </Button>
         </CardContent>
       </Card>
@@ -138,10 +151,8 @@ function AccountTabContent() {
       {/* Danger Zone */}
       <Card className="border-destructive/50">
         <CardHeader>
-          <CardTitle className="text-destructive">Danger zone</CardTitle>
-          <CardDescription>
-            Permanently delete your account and all associated data.
-          </CardDescription>
+          <CardTitle className="text-destructive">{t('security.deleteAccount.title')}</CardTitle>
+          <CardDescription>{t('security.deleteAccount.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <DeleteAccountDialog onAccountDeleted={handleAccountDeleted} />
@@ -152,6 +163,7 @@ function AccountTabContent() {
 }
 
 export default function SettingsPage() {
+  const { t } = useTranslation('settings')
   const location = useLocation()
   const navigate = useNavigate()
   const { create, creating } = useCreateChat()
@@ -175,9 +187,9 @@ export default function SettingsPage() {
     <div className="container mx-auto max-w-5xl py-10">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="account">Account</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="contact-us">Contact us</TabsTrigger>
+          <TabsTrigger value="account">{t('tabs.account')}</TabsTrigger>
+          <TabsTrigger value="notifications">{t('tabs.notifications')}</TabsTrigger>
+          <TabsTrigger value="contact-us">{t('tabs.contactUs')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="account">
@@ -187,8 +199,8 @@ export default function SettingsPage() {
         <TabsContent value="notifications">
           <Card>
             <CardHeader>
-              <CardTitle>Notification settings</CardTitle>
-              <CardDescription>Choose how we contact you and manage device alerts.</CardDescription>
+              <CardTitle>{t('notifications.title')}</CardTitle>
+              <CardDescription>{t('notifications.description')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <NotificationPreferences />
@@ -199,10 +211,8 @@ export default function SettingsPage() {
         <TabsContent value="contact-us">
           <Card>
             <CardHeader>
-              <CardTitle>Contact Support</CardTitle>
-              <CardDescription>
-                Need help? Start a conversation with our support team.
-              </CardDescription>
+              <CardTitle>{t('contactUs.title')}</CardTitle>
+              <CardDescription>{t('contactUs.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button
@@ -217,7 +227,7 @@ export default function SettingsPage() {
                 disabled={creating}
               >
                 <MessageCircle className="mr-2 h-4 w-4" />
-                {creating ? 'Starting...' : 'Chat with Support'}
+                {creating ? t('contactUs.starting') : t('contactUs.chatWithSupport')}
               </Button>
             </CardContent>
           </Card>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 
 import { useCreatePetForm } from '@/hooks/useCreatePetForm'
 import {
@@ -22,6 +22,7 @@ import { MedicalRecordsSection } from '@/components/pet-health/medical/MedicalRe
 import { PetStatusControls } from '@/components/pets/PetStatusControls'
 import { PetDangerZone } from '@/components/pets/PetDangerZone'
 import { PetFormSection } from '@/components/pets/PetFormSection'
+import { useTranslation } from 'react-i18next'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -34,6 +35,7 @@ import {
 type TabValue = 'general' | 'health' | 'status'
 
 const EditPetPage: React.FC = () => {
+  const { t } = useTranslation(['pets', 'common'])
   const { id: petId } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<TabValue>('general')
@@ -71,28 +73,28 @@ const EditPetPage: React.FC = () => {
         setCurrentStatus(st)
         setNewStatus(st === 'deleted' ? 'active' : st)
       } catch {
-        setLoadError('Pet not found')
+        setLoadError(t('pets:messages.notFound'))
       }
     }
     void loadPet().catch(() => {
-      setLoadError('Failed to load pet')
+      setLoadError(t('pets:messages.loadError'))
     })
-  }, [petId])
+  }, [petId, t])
 
   const handleUpdateStatusClick = async () => {
     if (!petId) return
     if (!newStatus) {
-      toast.error('Please select a status')
+      toast.error(t('pets:messages.selectStatus'))
       return
     }
     try {
       setIsUpdatingStatus(true)
       const updated = await updatePetStatus(Number(petId), { status: newStatus })
       setCurrentStatus(updated.status)
-      toast.success('Status updated')
+      toast.success(t('pets:messages.statusUpdated'))
       void navigate(`/pets/${petId}`, { replace: true })
     } catch {
-      toast.error('Failed to update status')
+      toast.error(t('pets:messages.updateStatusError'))
     } finally {
       setIsUpdatingStatus(false)
     }
@@ -101,23 +103,23 @@ const EditPetPage: React.FC = () => {
   const handleDeletePetClick = async (password: string) => {
     if (!petId) return
     if (!password.trim()) {
-      toast.error('Please enter your password to confirm')
+      toast.error(t('pets:messages.passwordRequired'))
       return
     }
     try {
       setIsDeleting(true)
       await deletePet(Number(petId), { password })
-      toast.success('Pet removed')
+      toast.success(t('pets:messages.removed'))
       void navigate('/', { replace: true })
     } catch {
-      toast.error('Failed to remove pet')
+      toast.error(t('pets:messages.removeError'))
     } finally {
       setIsDeleting(false)
     }
   }
 
   if (isLoadingPet) {
-    return <LoadingState message="Loading pet data..." />
+    return <LoadingState message={t('pets:messages.loadingData')} />
   }
 
   if (loadError) {
@@ -127,7 +129,7 @@ const EditPetPage: React.FC = () => {
         onRetry={() => {
           void navigate('/')
         }}
-        retryText="Back to My Pets"
+        retryText={t('common:nav.pets')}
       />
     )
   }
@@ -148,18 +150,20 @@ const EditPetPage: React.FC = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link to="/">Home</Link>
+                  <Link to="/">{t('common:nav.home')}</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link to={`/pets/${petId ?? ''}`}>{loadedPet?.name ?? 'Pet'}</Link>
+                  <Link to={`/pets/${petId ?? ''}`}>
+                    {loadedPet?.name ?? t('pets:species.other')}
+                  </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Edit</BreadcrumbPage>
+                <BreadcrumbPage>{t('common:actions.edit')}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -167,7 +171,7 @@ const EditPetPage: React.FC = () => {
       </div>
 
       <div className="w-full max-w-2xl mx-auto px-4 pb-8">
-        <h1 className="text-3xl font-bold text-center text-foreground mb-6">Edit Pet</h1>
+        <h1 className="text-3xl font-bold text-center text-foreground mb-6">{t('pets:editPet')}</h1>
         <Tabs
           value={activeTab}
           onValueChange={(value) => {
@@ -176,9 +180,9 @@ const EditPetPage: React.FC = () => {
           className="space-y-6"
         >
           <TabsList className={`grid w-full ${supportsHealth ? 'grid-cols-3' : 'grid-cols-2'}`}>
-            <TabsTrigger value="general">General</TabsTrigger>
-            {supportsHealth && <TabsTrigger value="health">Health</TabsTrigger>}
-            <TabsTrigger value="status">Status</TabsTrigger>
+            <TabsTrigger value="general">{t('pets:tabs.general')}</TabsTrigger>
+            {supportsHealth && <TabsTrigger value="health">{t('pets:tabs.health')}</TabsTrigger>}
+            <TabsTrigger value="status">{t('pets:tabs.status')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="general" className="space-y-6">
@@ -222,7 +226,7 @@ const EditPetPage: React.FC = () => {
               updateCategories={updateCategories}
               cityValue={formData.city_selected}
               onCityChange={updateCity}
-              submitLabel={isSubmitting ? 'Updating...' : 'Update Pet'}
+              submitLabel={isSubmitting ? t('pets:messages.updating') : t('pets:messages.updated')}
             />
 
             {supportsMicrochips && loadedPet && (

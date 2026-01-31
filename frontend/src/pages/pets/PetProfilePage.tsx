@@ -19,6 +19,7 @@ import { calculateVaccinationStatus } from '@/utils/vaccinationStatus'
 import { petSupportsCapability, formatPetAge } from '@/types/pet'
 import type { Pet } from '@/types/pet'
 import { formatRequestType, formatStatus } from '@/types/placement'
+import { useTranslation } from 'react-i18next'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -37,6 +38,7 @@ const isPubliclyViewable = (petData: Pet | null): boolean => {
 }
 
 const PetProfilePage: React.FC = () => {
+  const { t } = useTranslation(['pets', 'common'])
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { pet, setPet, loading, error } = usePetProfile(id)
@@ -70,7 +72,7 @@ const PetProfilePage: React.FC = () => {
   }, [loading, pet, canEdit, id, navigate])
 
   if (loading) {
-    return <LoadingState message="Loading pet information..." />
+    return <LoadingState message={t('pets:messages.loadingInfo')} />
   }
 
   if (error) {
@@ -87,7 +89,7 @@ const PetProfilePage: React.FC = () => {
   if (!pet) {
     return (
       <ErrorState
-        error="Pet not found"
+        error={t('pets:messages.notFound')}
         onRetry={() => {
           void navigate('/')
         }}
@@ -105,7 +107,7 @@ const PetProfilePage: React.FC = () => {
               <BreadcrumbList>
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
-                    <Link to="/">Home</Link>
+                    <Link to="/">{t('common:nav.home')}</Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
@@ -121,15 +123,17 @@ const PetProfilePage: React.FC = () => {
             <Card>
               <CardContent className="py-12 text-center space-y-4">
                 <ShieldAlert className="h-12 w-12 mx-auto text-muted-foreground" />
-                <h2 className="text-xl font-semibold text-foreground">Access Restricted</h2>
-                <p className="text-muted-foreground">This pet profile is not publicly available.</p>
+                <h2 className="text-xl font-semibold text-foreground">
+                  {t('pets:accessRestricted')}
+                </h2>
+                <p className="text-muted-foreground">{t('pets:accessRestrictedDescription')}</p>
                 <Button
                   variant="outline"
                   onClick={() => {
                     void navigate('/')
                   }}
                 >
-                  Go to Home
+                  {t('common:actions.goHome')}
                 </Button>
               </CardContent>
             </Card>
@@ -138,7 +142,7 @@ const PetProfilePage: React.FC = () => {
       </div>
     )
   }
-  const ageDisplay = formatPetAge(pet)
+  const ageDisplay = formatPetAge(pet, t)
   const isDeceased = pet.status === 'deceased'
   const hasAvatar = Boolean(pet.photo_url)
 
@@ -192,7 +196,7 @@ const PetProfilePage: React.FC = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link to="/">Home</Link>
+                  <Link to="/">{t('common:nav.home')}</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
@@ -203,7 +207,7 @@ const PetProfilePage: React.FC = () => {
           </Breadcrumb>
           {canEdit && (
             <Button variant="ghost" size="default" onClick={handleEdit} className="text-base">
-              Edit
+              {t('common:actions.edit')}
             </Button>
           )}
         </div>
@@ -263,11 +267,15 @@ const PetProfilePage: React.FC = () => {
           {supportsPlacement && (
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg font-semibold">Placement Requests</CardTitle>
+                <CardTitle className="text-lg font-semibold">
+                  {t('pets:placementRequests.title')}
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {!hasPlacementRequests && (
-                  <p className="text-sm text-muted-foreground py-2">No placement requests yet.</p>
+                  <p className="text-sm text-muted-foreground py-2">
+                    {t('pets:placementRequests.none')}
+                  </p>
                 )}
 
                 {sortedPlacementRequests.map((request) => (
@@ -282,7 +290,7 @@ const PetProfilePage: React.FC = () => {
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                           <div className="min-w-0">
                             <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                              Type
+                              {t('pets:placementRequests.type')}
                             </p>
                             <div className="mt-1">
                               <Badge
@@ -296,18 +304,18 @@ const PetProfilePage: React.FC = () => {
 
                           <div className="min-w-0">
                             <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                              Created
+                              {t('pets:placementRequests.created')}
                             </p>
                             <p className="text-sm font-medium">
                               {request.created_at
-                                ? new Date(request.created_at).toLocaleDateString('en-US')
+                                ? new Date(request.created_at).toLocaleDateString()
                                 : '—'}
                             </p>
                           </div>
 
                           <div className="min-w-0">
                             <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                              Status
+                              {t('pets:placementRequests.status')}
                             </p>
                             <div className="mt-1">
                               <Badge

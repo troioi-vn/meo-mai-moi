@@ -1,16 +1,18 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import RegisterForm from '@/components/auth/RegisterForm'
 import WaitlistForm from '@/components/layout/WaitlistForm'
 import EmailVerificationPrompt from '@/components/auth/EmailVerificationPrompt'
 import { useInviteSystem } from '@/hooks/use-invite-system'
 import { useAuth } from '@/hooks/use-auth'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Loader2, Lock, Globe } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { RegisterResponse } from '@/types/auth'
 
 export default function RegisterPage() {
+  const { t } = useTranslation(['auth', 'common'])
   const navigate = useNavigate()
   const { loadUser, user } = useAuth()
   const [searchParams] = useSearchParams()
@@ -40,7 +42,7 @@ export default function RegisterPage() {
       setRegisteredEmail(email)
     } else {
       // User is already verified, can proceed
-      toast.success('Registration successful! Welcome!')
+      toast.success('auth:register.successToast')
       void navigate('/')
     }
   }
@@ -48,12 +50,12 @@ export default function RegisterPage() {
   const handleVerificationComplete = async () => {
     // Reload user data and redirect to dashboard
     await loadUser()
-    toast.success('Email verified successfully! Welcome!')
+    toast.success('auth:verifyEmail.success')
     void navigate('/')
   }
 
   const handleWaitlistSuccess = () => {
-    toast.success('Successfully joined the waitlist! Check your email for confirmation.')
+    toast.success('auth:register.waitlistSuccessToast')
   }
 
   // Show email verification prompt if registration requires verification
@@ -70,9 +72,7 @@ export default function RegisterPage() {
           }}
           disableEmailChange={disableEmailChange}
           emailChangeDisabledReason={
-            disableEmailChange
-              ? 'Invited accounts must keep the email that received the invitation. Ask your inviter to send a new link if you need to switch addresses.'
-              : undefined
+            disableEmailChange ? t('auth:register.emailChangeDisabledReason') : undefined
           }
         />
       </div>
@@ -84,7 +84,7 @@ export default function RegisterPage() {
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center space-y-4">
           <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-          <p className="text-muted-foreground">Loading registration...</p>
+          <p className="text-muted-foreground">{t('auth:register.loading')}</p>
         </div>
       </div>
     )
@@ -103,7 +103,7 @@ export default function RegisterPage() {
               onClick={clearError}
               className="text-primary hover:underline text-sm"
             >
-              Try again
+              {t('common:actions.tryAgain')}
             </button>
           </div>
         </div>
@@ -114,13 +114,13 @@ export default function RegisterPage() {
   const getTitle = () => {
     switch (mode) {
       case 'invite-only-no-code':
-        return 'Join the Waitlist'
+        return t('auth:register.titles.waitlist')
       case 'invite-only-with-code':
-        return 'Complete Your Registration'
+        return t('auth:register.titles.complete')
       case 'open-registration':
-        return 'Create an Account'
+        return t('auth:register.titles.create')
       default:
-        return 'Create an Account'
+        return t('auth:register.titles.create')
     }
   }
 
@@ -148,19 +148,21 @@ export default function RegisterPage() {
           <div className="flex justify-center">{getIcon()}</div>
           <h1 className="text-2xl font-bold text-card-foreground">{getTitle()}</h1>
           {mode === 'open-registration' && (
-            <p className="text-sm text-muted-foreground">Anyone can join our community</p>
+            <p className="text-sm text-muted-foreground">{t('auth:register.subtitles.open')}</p>
           )}
           {mode === 'invite-only-with-code' && (
-            <p className="text-sm text-muted-foreground">You have a valid invitation</p>
+            <p className="text-sm text-muted-foreground">{t('auth:register.subtitles.valid')}</p>
           )}
           {mode === 'invite-only-no-code' && (
-            <p className="text-sm text-muted-foreground">We&apos;re currently invite-only</p>
+            <p className="text-sm text-muted-foreground">
+              {t('auth:register.subtitles.inviteOnly')}
+            </p>
           )}
         </div>
 
         <div className="space-y-4">
           <Button asChild variant="outline" className="w-full">
-            <a href={googleLoginHref}>Sign in with Google</a>
+            <a href={googleLoginHref}>{t('auth:login.googleSignIn')}</a>
           </Button>
 
           <div className="relative">
@@ -168,7 +170,9 @@ export default function RegisterPage() {
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
+              <span className="bg-card px-2 text-muted-foreground">
+                {t('auth:register.orEmail')}
+              </span>
             </div>
           </div>
 

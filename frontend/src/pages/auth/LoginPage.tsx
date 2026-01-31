@@ -1,9 +1,11 @@
 import { use, useEffect, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { LoginForm } from '@/components/auth/LoginForm'
 import { AuthContext } from '@/contexts/AuthContext'
 
 export default function LoginPage() {
+  const { t } = useTranslation(['auth'])
   const auth = use(AuthContext)
   const navigate = useNavigate()
   const location = useLocation()
@@ -13,34 +15,34 @@ export default function LoginPage() {
     const error = params.get('error')
 
     if (error === 'oauth_failed') {
-      return 'Google sign in failed. Please try again.'
+      return t('auth:login.errors.oauth_failed')
     }
 
     if (error === 'missing_email') {
-      return 'Unable to retrieve your email from Google. Please try another login method.'
+      return t('auth:login.errors.missing_email')
     }
 
     if (error === 'already_on_waitlist') {
-      return 'You are already in the waiting list. We will notify you when an invitation is available.'
+      return t('auth:login.errors.already_on_waitlist')
     }
 
     if (error === 'waitlist_failed') {
-      return 'Failed to add you to the waiting list. Please try again later.'
+      return t('auth:login.errors.waitlist_failed')
     }
 
     return null
-  }, [location.search])
+  }, [location.search, t])
 
   const successMessage = useMemo(() => {
     const params = new URLSearchParams(location.search)
     const status = params.get('status')
 
     if (status === 'added_to_waitlist') {
-      return "We're currently invite-only. You've been added to our waiting list and we'll notify you as soon as we have space!"
+      return t('auth:login.waitlist.success')
     }
 
     return null
-  }, [location.search])
+  }, [location.search, t])
 
   useEffect(() => {
     if (auth && !auth.isLoading && auth.isAuthenticated) {

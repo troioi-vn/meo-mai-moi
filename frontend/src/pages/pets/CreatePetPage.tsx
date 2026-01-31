@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 import { useCreatePetForm } from '@/hooks/useCreatePetForm'
 import { PetFormSection } from '@/components/pets/PetFormSection'
@@ -13,6 +14,7 @@ import {
 } from '@/components/ui/breadcrumb'
 
 const CreatePetPage: React.FC = () => {
+  const { t } = useTranslation(['pets', 'common'])
   const {
     formData,
     petTypes,
@@ -36,12 +38,12 @@ const CreatePetPage: React.FC = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link to="/">Home</Link>
+                  <Link to="/">{t('common:nav.home')}</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Add New Pet</BreadcrumbPage>
+                <BreadcrumbPage>{t('pets:addPet')}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -49,7 +51,7 @@ const CreatePetPage: React.FC = () => {
       </div>
 
       <div className="w-full max-w-2xl mx-auto px-4 pb-8">
-        <h1 className="text-3xl font-bold text-center text-foreground mb-6">Add a New Pet</h1>
+        <h1 className="text-3xl font-bold text-center text-foreground mb-6">{t('pets:addPet')}</h1>
 
         <PetFormSection
           formData={formData}
@@ -69,7 +71,7 @@ const CreatePetPage: React.FC = () => {
           updateCategories={updateCategories}
           cityValue={formData.city_selected}
           onCityChange={updateCity}
-          submitLabel={isSubmitting ? 'Creating...' : 'Create Pet'}
+          submitLabel={isSubmitting ? t('pets:messages.creating') : t('pets:addPet')}
         />
       </div>
     </div>

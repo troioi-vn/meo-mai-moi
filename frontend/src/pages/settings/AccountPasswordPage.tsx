@@ -2,18 +2,21 @@ import { ChangePasswordForm } from '@/components/auth/ChangePasswordForm'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 export default function AccountPasswordPage() {
+  const { t } = useTranslation('settings')
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Breadcrumbs */}
         <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-6">
           <Link to="/settings/account" className="hover:text-foreground transition-colors">
-            Settings
+            {t('title')}
           </Link>
           <span>/</span>
-          <span className="text-foreground">Password</span>
+          <span className="text-foreground">{t('security.passwordTitle')}</span>
         </nav>
 
         {/* Page Header */}
@@ -21,17 +24,17 @@ export default function AccountPasswordPage() {
           <Button variant="ghost" size="sm" asChild>
             <Link to="/settings/account" className="flex items-center gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Back to Settings
+              {t('security.changePassword.backToSettings')}
             </Link>
           </Button>
         </div>
 
         <div className="space-y-6">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Change Password</h1>
-            <p className="text-muted-foreground mt-2">
-              Update your account password. Choose a strong password you don&apos;t use elsewhere.
-            </p>
+            <h1 className="text-3xl font-bold text-foreground">
+              {t('security.changePassword.title')}
+            </h1>
+            <p className="text-muted-foreground mt-2">{t('security.changePassword.description')}</p>
           </div>
 
           <div className="bg-card rounded-lg border p-6">

@@ -1,7 +1,8 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useEffect, lazy, Suspense } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/hooks/use-auth'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 import { Toaster } from '@/components/ui/sonner'
 import MainNav from '@/components/layout/MainNav'
 import { BannedReadOnlyBanner } from '@/components/layout/BannedReadOnlyBanner'
@@ -188,6 +189,7 @@ export function AppRoutes() {
 export default function App() {
   const location = useLocation()
   const { isAuthenticated } = useAuth()
+  const { t } = useTranslation()
 
   // PWA update notification handler
   usePwaUpdate()
@@ -200,7 +202,7 @@ export default function App() {
     if (typeof window === 'undefined') return
     const params = new URLSearchParams(location.search)
     if (params.get('verified') === '1') {
-      toast.success('Email verified successfully!')
+      toast.success(t('common:messages.emailVerified'))
       params.delete('verified')
       const hash = location.hash || ''
       const newUrl = `${location.pathname}${params.toString() ? `?${params.toString()}` : ''}${hash}`

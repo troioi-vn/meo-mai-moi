@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { Button } from '@/components/ui/button'
 import { type Control } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import {
   Form,
   FormControl,
@@ -23,27 +24,28 @@ interface ApiError {
   errors?: Record<string, string[]>
 }
 
-const passwordChangeSchema = z
-  .object({
-    current_password: z.string().min(1, { message: 'Current password is required.' }),
-    new_password: z.string().min(8, { message: 'New password must be at least 8 characters.' }),
-    new_password_confirmation: z.string().min(1, { message: 'Confirm new password is required.' }),
-  })
-  .refine((data) => data.new_password === data.new_password_confirmation, {
-    message: 'New password and confirmation do not match.',
-    path: ['new_password_confirmation'],
-  })
-
-type PasswordChangeFormValues = z.infer<typeof passwordChangeSchema>
-
 interface ChangePasswordFormProps {
   onSuccess?: () => void
 }
 
 const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({ onSuccess }) => {
+  const { t } = useTranslation(['auth', 'common', 'validation'])
   const { changePassword, logout } = useAuth()
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
+
+  const passwordChangeSchema = z
+    .object({
+      current_password: z.string().min(1, { message: t('validation:required') }),
+      new_password: z.string().min(8, { message: t('validation:password.min', { min: 8 }) }),
+      new_password_confirmation: z.string().min(1, { message: t('validation:required') }),
+    })
+    .refine((data) => data.new_password === data.new_password_confirmation, {
+      message: t('validation:password.match'),
+      path: ['new_password_confirmation'],
+    })
+
+  type PasswordChangeFormValues = z.infer<typeof passwordChangeSchema>
 
   const form = useForm<PasswordChangeFormValues>({
     resolver: zodResolver(passwordChangeSchema),
@@ -63,8 +65,8 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({ onSuccess }) =>
         values.new_password_confirmation
       )
       toast({
-        title: 'Password Changed',
-        description: 'Your password has been updated successfully. Please log in again.',
+        title: t('auth:changePassword.successTitle'),
+        description: t('auth:changePassword.successDescription'),
       })
       form.reset()
       // Call onSuccess callback if provided (e.g., to close a dialog)
@@ -79,7 +81,7 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({ onSuccess }) =>
       }
       void navigate('/login')
     } catch (error: unknown) {
-      let errorMessage = 'An unexpected error occurred.'
+      let errorMessage = t('common:errors.generic')
       if (error instanceof AxiosError) {
         const axiosError = error as AxiosError<ApiError>
         errorMessage = axiosError.response?.data.message ?? axiosError.message
@@ -99,7 +101,7 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({ onSuccess }) =>
       }
 
       toast({
-        title: 'Password Change Failed',
+        title: t('auth:changePassword.failedTitle'),
         description: errorMessage,
         variant: 'destructive',
       })
@@ -116,7 +118,7 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({ onSuccess }) =>
           name="current_password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Current Password</FormLabel>
+              <FormLabel>{t('auth:changePassword.currentPassword')}</FormLabel>
               <FormControl>
                 <Input type="password" {...field} />
               </FormControl>
@@ -129,7 +131,7 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({ onSuccess }) =>
           name="new_password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>New Password</FormLabel>
+              <FormLabel>{t('auth:changePassword.newPassword')}</FormLabel>
               <FormControl>
                 <Input type="password" {...field} />
               </FormControl>
@@ -142,7 +144,7 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({ onSuccess }) =>
           name="new_password_confirmation"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Confirm New Password</FormLabel>
+              <FormLabel>{t('auth:changePassword.confirmNewPassword')}</FormLabel>
               <FormControl>
                 <Input type="password" {...field} />
               </FormControl>
@@ -151,7 +153,7 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({ onSuccess }) =>
           )}
         />
         <Button type="submit" disabled={isLoading}>
-          {isLoading ? 'Changing...' : 'Change Password'}
+          {isLoading ? t('auth:changePassword.changing') : t('auth:changePassword.submit')}
         </Button>
       </form>
     </Form>

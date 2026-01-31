@@ -14,7 +14,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { getCities, postCities as createCity } from '@/api/generated/cities/cities'
 import type { City } from '@/api/generated/model'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 
 interface BaseProps {
   country: string | null
@@ -70,7 +70,7 @@ export const CitySelect: React.FC<Props> = (props) => {
       setCities(result)
     } catch (err: unknown) {
       console.error('Failed to load cities:', err)
-      toast.error('Failed to load cities')
+      toast.error('common:errors.generic')
     } finally {
       setLoading(false)
     }
@@ -112,7 +112,7 @@ export const CitySelect: React.FC<Props> = (props) => {
       } else if (value.length < maxCities) {
         multiProps.onChange([...value, city])
       } else {
-        toast.error(`Maximum ${String(maxCities)} cities allowed`)
+        toast.raw.error(`Maximum ${String(maxCities)} cities allowed`)
       }
     } else {
       const singleProps = props as SingleProps
@@ -165,10 +165,10 @@ export const CitySelect: React.FC<Props> = (props) => {
 
       setSearchValue('')
       setOpen(false)
-      toast.success('City created')
+      toast.success('common:messages.success')
     } catch (err: unknown) {
       console.error('Failed to create city:', err)
-      toast.error('Failed to create city')
+      toast.error('common:errors.generic')
     } finally {
       setCreating(false)
     }

@@ -19,6 +19,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useTranslation } from 'react-i18next'
 
 type Status = 'active' | 'lost' | 'deceased' | 'deleted' | ''
 
@@ -37,19 +38,21 @@ export const PetStatusControls: React.FC<Props> = ({
   onUpdateStatus,
   isUpdating,
 }) => {
+  const { t } = useTranslation(['pets', 'common'])
   const statusChanged = currentStatus !== newStatus
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Status</CardTitle>
+        <CardTitle>{t('pets:statusControls.title')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Current status: <span className="font-medium">{currentStatus}</span>
+          {t('pets:statusControls.current')}
+          <span className="font-medium">{t(`pets:statusLabels.${currentStatus}`)}</span>
         </p>
         <div className="grid gap-3 sm:grid-cols-[200px_1fr] items-center">
-          <div className="text-sm font-medium">New status</div>
+          <div className="text-sm font-medium">{t('pets:statusControls.newLabel')}</div>
           <div>
             <Select
               value={newStatus}
@@ -58,12 +61,12 @@ export const PetStatusControls: React.FC<Props> = ({
               }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select status" />
+                <SelectValue placeholder={t('pets:statusControls.placeholder')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="lost">Lost</SelectItem>
-                <SelectItem value="deceased">Deceased</SelectItem>
+                <SelectItem value="active">{t('pets:statusLabels.active')}</SelectItem>
+                <SelectItem value="lost">{t('pets:statusLabels.lost')}</SelectItem>
+                <SelectItem value="deceased">{t('pets:statusLabels.deceased')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -72,21 +75,26 @@ export const PetStatusControls: React.FC<Props> = ({
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button disabled={isUpdating || !statusChanged}>
-                {isUpdating ? 'Updating...' : 'Update status'}
+                {isUpdating
+                  ? t('pets:statusControls.updating')
+                  : t('pets:statusControls.updateButton')}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Update pet status?</AlertDialogTitle>
+                <AlertDialogTitle>{t('pets:statusControls.dialogTitle')}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to change the status from{' '}
-                  <span className="font-medium">{currentStatus}</span> to{' '}
-                  <span className="font-medium">{newStatus}</span>?
+                  {t('pets:statusControls.dialogDescription', {
+                    current: t(`pets:statusLabels.${currentStatus}`),
+                    new: t(`pets:statusLabels.${newStatus}`),
+                  })}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={onUpdateStatus}>Confirm</AlertDialogAction>
+                <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
+                <AlertDialogAction onClick={onUpdateStatus}>
+                  {t('pets:statusControls.confirm')}
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

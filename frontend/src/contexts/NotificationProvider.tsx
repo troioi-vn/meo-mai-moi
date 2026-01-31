@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useCallback, use, useEffect, useMemo, useRef, useState } from 'react'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 import {
   getNotificationsUnified,
   postNotificationsMarkAllRead,
@@ -35,13 +35,13 @@ const LEVEL_TO_TOAST: Record<
   ) => void
 > = {
   info: (message, opts) =>
-    toast.info(message, { description: opts?.description, action: opts?.action }),
+    toast.raw.info(message, { description: opts?.description, action: opts?.action }),
   success: (message, opts) =>
-    toast.success(message, { description: opts?.description, action: opts?.action }),
+    toast.raw.success(message, { description: opts?.description, action: opts?.action }),
   warning: (message, opts) =>
-    toast.warning(message, { description: opts?.description, action: opts?.action }),
+    toast.raw.warning(message, { description: opts?.description, action: opts?.action }),
   error: (message, opts) =>
-    toast.error(message, { description: opts?.description, action: opts?.action }),
+    toast.raw.error(message, { description: opts?.description, action: opts?.action }),
 }
 
 function useVisibility(): boolean {
@@ -280,9 +280,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
 
         if (event.all) {
           const now = new Date().toISOString()
-          setBellNotifications((prev) =>
-            prev.map((n) => (n.read_at ? n : { ...n, read_at: now }))
-          )
+          setBellNotifications((prev) => prev.map((n) => (n.read_at ? n : { ...n, read_at: now })))
           return
         }
 

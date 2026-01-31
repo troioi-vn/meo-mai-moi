@@ -32,7 +32,7 @@ import type { PlacementRequestResponse } from '@/types/placement'
 import { formatRequestType } from '@/types/placement'
 import type { HelperProfile } from '@/types/helper-profile'
 import { api } from '@/api/axios'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 import { useCreateChat } from '@/hooks/useMessaging'
 
 interface ResponsesDrawerProps {
@@ -82,7 +82,7 @@ export function ResponsesDrawer({
       setViewingProfile(true)
     } catch (error) {
       console.error('Failed to load helper profile', error)
-      toast.error('Failed to load helper profile')
+      toast.error('common:errors.generic')
     } finally {
       setLoadingProfile(false)
     }
@@ -133,7 +133,7 @@ export function ResponsesDrawer({
   const handleChatWithHelper = useCallback(async () => {
     const helperUserId = currentResponse?.helper_profile?.user?.id
     if (!helperUserId) {
-      toast.error('Cannot start chat: helper information not available')
+      toast.error('common:errors.generic')
       return
     }
     const chat = await createChat(helperUserId, 'PlacementRequest', placementRequestId)

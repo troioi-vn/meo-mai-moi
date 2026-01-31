@@ -17,16 +17,18 @@ import {
 } from '@/components/ui/alert-dialog'
 // Using default avatar as placeholder for pets
 import placeholderCatImage from '@/assets/images/default-avatar.webp'
-import { formatPetAge, petSupportsCapability, PetSexLabels } from '@/types/pet'
+import { formatPetAge, petSupportsCapability } from '@/types/pet'
 import { useVaccinations } from '@/hooks/useVaccinations'
 import { calculateVaccinationStatus } from '@/utils/vaccinationStatus'
 import { VaccinationStatusBadge } from '@/components/pet-health/vaccinations/VaccinationStatusBadge'
+import { useTranslation } from 'react-i18next'
 
 interface PetCardProps {
   pet: Pet
 }
 
 export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
+  const { t } = useTranslation(['pets', 'common'])
   const { isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
   const [isLoginPromptOpen, setIsLoginPromptOpen] = React.useState(false)
@@ -131,19 +133,21 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-primary">{pet.name}</CardTitle>
         <CardDescription className="text-muted-foreground">
-          {pet.sex && pet.sex !== 'not_specified' && <span>{PetSexLabels[pet.sex]} • </span>}
-          {formatPetAge(pet)}
+          {pet.sex && pet.sex !== 'not_specified' && (
+            <span>{t(`pets:sexLabels.${pet.sex}`)} • </span>
+          )}
+          {formatPetAge(pet, t)}
         </CardDescription>
         <div className="mt-2 flex flex-wrap gap-2">
           {supportsVaccinations && <PetVaccinationStatusBadge petId={pet.id} />}
           {hasFulfilledPlacement && (
             <Badge variant="success" className="rounded-full">
-              Fulfilled
+              {t('pets:status.fulfilled')}
             </Badge>
           )}
           {pet.status === 'lost' && (
             <Badge variant="destructive" className="rounded-full">
-              Lost
+              {t('pets:status.lost')}
             </Badge>
           )}
           {pet.placement_requests?.map((request) => {
@@ -169,8 +173,8 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
                   <div className="space-y-2">
                     <p className="text-sm text-muted-foreground text-center">
                       {myAcceptedResponse
-                        ? 'Your response was accepted!'
-                        : 'You responded... Waiting for approval'}
+                        ? t('pets:placement.accepted')
+                        : t('pets:placement.responded')}
                     </p>
                     <Button
                       variant={myAcceptedResponse ? 'default' : 'outline'}
@@ -181,7 +185,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
                         void navigate(`/requests/${String(activePlacementRequestId)}`)
                       }}
                     >
-                      View Details
+                      {t('pets:placement.viewDetails')}
                     </Button>
                   </div>
                 ) : (
@@ -196,7 +200,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
                       }
                     }}
                   >
-                    Respond
+                    {t('pets:placement.respond')}
                   </Button>
                 )}
               </>
@@ -206,9 +210,9 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
           <AlertDialog open={isLoginPromptOpen} onOpenChange={setIsLoginPromptOpen}>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Login Required</AlertDialogTitle>
+                <AlertDialogTitle>{t('pets:loginRequired.title')}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Please login to respond to this placement request.
+                  {t('pets:loginRequired.description')}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -217,7 +221,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
                     e.stopPropagation()
                   }}
                 >
-                  Cancel
+                  {t('common:actions.cancel')}
                 </AlertDialogCancel>
                 <AlertDialogAction
                   onClick={(e) => {
@@ -228,7 +232,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
                     void navigate(`/login?redirect=${encodeURIComponent(redirectUrl)}`)
                   }}
                 >
-                  Login
+                  {t('common:nav.login')}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

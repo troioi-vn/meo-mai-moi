@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { Syringe, Pencil, Trash2, RefreshCw, History, ImagePlus } from 'lucide-react'
 import { HealthRecordPhotoModal } from '@/components/pet-health/HealthRecordPhotoModal'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
@@ -32,7 +33,7 @@ import {
 } from '@/utils/vaccinationStatus'
 import { type VaccinationRecord } from '@/api/generated/model/vaccinationRecord'
 import { format, parseISO } from 'date-fns'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 
 /* eslint-disable @typescript-eslint/no-confusing-void-expression */
 
@@ -50,6 +51,7 @@ export function UpcomingVaccinationsSection({
   onVaccinationChange,
   mode = 'view',
 }: UpcomingVaccinationsSectionProps) {
+  const { t } = useTranslation(['pets', 'common'])
   const vState = useVaccinations(petId)
   const { items, loading, create, update, remove, renew, setStatus } = vState
   const uploadPhoto = vState.uploadPhoto as (recordId: number, file: File) => Promise<unknown>
@@ -91,7 +93,7 @@ export function UpcomingVaccinationsSection({
       setAdding(false)
       onVaccinationChange?.()
     } catch {
-      setServerError('Failed to save vaccination')
+      setServerError(t('vaccinations.saveError'))
     } finally {
       setSubmitting(false)
     }
@@ -103,10 +105,10 @@ export function UpcomingVaccinationsSection({
     try {
       await update(id, values)
       setEditingId(null)
-      toast.success('Vaccination updated')
+      toast.success('pets:vaccinations.updateSuccess')
       onVaccinationChange?.()
     } catch {
-      setServerError('Failed to update vaccination')
+      setServerError(t('vaccinations.updateError'))
     } finally {
       setSubmitting(false)
     }
@@ -116,10 +118,10 @@ export function UpcomingVaccinationsSection({
     setDeletingId(id)
     try {
       await remove(id)
-      toast.success('Vaccination record deleted')
+      toast.success('pets:vaccinations.deleteSuccess')
       onVaccinationChange?.()
     } catch {
-      toast.error('Failed to delete vaccination record')
+      toast.error('pets:vaccinations.deleteError')
     } finally {
       setDeletingId(null)
     }
@@ -132,10 +134,10 @@ export function UpcomingVaccinationsSection({
     try {
       await renew(renewingRecord.id, values)
       setRenewingRecord(null)
-      toast.success('Vaccination renewed successfully')
+      toast.success('pets:vaccinations.renewSuccess')
       onVaccinationChange?.()
     } catch {
-      setServerError('Failed to renew vaccination')
+      setServerError(t('vaccinations.renewError'))
     } finally {
       setSubmitting(false)
     }
@@ -151,22 +153,22 @@ export function UpcomingVaccinationsSection({
     if (!file || !selectedRecordId) return
 
     if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file')
+      toast.error('pets:medical.selectImageError')
       return
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      toast.error('File size must be less than 10MB')
+      toast.error('pets:medical.fileSizeError')
       return
     }
 
     setUploadingPhotoForId(selectedRecordId)
     try {
       await uploadPhoto(selectedRecordId, file)
-      toast.success('Photo uploaded')
+      toast.success('pets:medical.uploadSuccess')
       onVaccinationChange?.()
     } catch {
-      toast.error('Failed to upload photo')
+      toast.error('pets:medical.uploadError')
     } finally {
       setUploadingPhotoForId(null)
       setSelectedRecordId(null)
@@ -179,10 +181,10 @@ export function UpcomingVaccinationsSection({
   const handleDeletePhoto = async (recordId: number) => {
     try {
       await deletePhoto(recordId)
-      toast.success('Photo deleted')
+      toast.success('pets:medical.photoDeleteSuccess')
       onVaccinationChange?.()
     } catch {
-      toast.error('Failed to delete photo')
+      toast.error('pets:medical.photoDeleteError')
     }
   }
 
@@ -212,11 +214,11 @@ export function UpcomingVaccinationsSection({
       <Card>
         <CardHeader>
           <CardTitle className="text-lg font-semibold">
-            {mode === 'edit' ? 'Vaccinations' : 'Upcoming Vaccinations'}
+            {mode === 'edit' ? t('vaccinations.title') : t('vaccinations.upcomingTitle')}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">Loading...</p>
+          <p className="text-sm text-muted-foreground">{t('common:messages.loading')}</p>
         </CardContent>
       </Card>
     )
@@ -237,7 +239,7 @@ export function UpcomingVaccinationsSection({
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg font-semibold">
-              {mode === 'edit' ? 'Vaccinations' : 'Upcoming Vaccinations'}
+              {mode === 'edit' ? t('vaccinations.title') : t('vaccinations.upcomingTitle')}
             </CardTitle>
             {mode === 'edit' && (
               <div className="flex items-center gap-2">
@@ -251,7 +253,7 @@ export function UpcomingVaccinationsSection({
                   className="text-sm text-muted-foreground flex items-center gap-1"
                 >
                   <History className="h-4 w-4" />
-                  Show History
+                  {t('vaccinations.showHistory')}
                 </Label>
               </div>
             )}
@@ -276,9 +278,9 @@ export function UpcomingVaccinationsSection({
                 <p className="text-sm text-muted-foreground py-2">
                   {mode === 'edit'
                     ? showHistory
-                      ? 'No vaccination history.'
-                      : 'No active vaccinations recorded.'
-                    : 'No upcoming vaccinations scheduled.'}
+                      ? t('vaccinations.noHistory')
+                      : t('vaccinations.noActive')
+                    : t('vaccinations.noUpcoming')}
                 </p>
               ) : (
                 <ul className="space-y-2">
@@ -322,7 +324,9 @@ export function UpcomingVaccinationsSection({
                                   }`}
                                 />
                                 <div className="flex items-center gap-2">
-                                  <span className="font-medium">{v.vaccine_name ?? 'Unknown'}</span>
+                                  <span className="font-medium">
+                                    {v.vaccine_name ?? t('common:status.unknown')}
+                                  </span>
                                   {dueDate && (
                                     <span
                                       className={`text-sm ${
@@ -338,7 +342,7 @@ export function UpcomingVaccinationsSection({
                                   )}
                                   {isCompleted && (
                                     <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
-                                      Renewed
+                                      {t('vaccinations.renewed')}
                                     </span>
                                   )}
                                 </div>
@@ -355,7 +359,7 @@ export function UpcomingVaccinationsSection({
                                     }}
                                   >
                                     <RefreshCw className="h-3 w-3" />
-                                    Renew
+                                    {t('vaccinations.renew')}
                                   </Button>
                                 )}
                                 {/* Edit mode: show Pencil and Delete icons */}
@@ -385,26 +389,25 @@ export function UpcomingVaccinationsSection({
                                       <AlertDialogContent>
                                         <AlertDialogHeader>
                                           <AlertDialogTitle>
-                                            Delete vaccination record?
+                                            {t('vaccinations.deleteTitle')}
                                           </AlertDialogTitle>
                                           <AlertDialogDescription>
-                                            Are you sure you want to delete the vaccination record
-                                            for{' '}
-                                            <span className="font-medium">
-                                              {v.vaccine_name ?? 'Unknown'}
-                                            </span>
-                                            ? This action cannot be undone.
+                                            {t('vaccinations.deleteConfirm', {
+                                              name: v.vaccine_name ?? t('common:status.unknown'),
+                                            })}
                                           </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
-                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                          <AlertDialogCancel>
+                                            {t('common:actions.cancel')}
+                                          </AlertDialogCancel>
                                           <AlertDialogAction
                                             onClick={() => {
                                               void handleDelete(v.id)
                                             }}
                                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                           >
-                                            Delete
+                                            {t('common:actions.delete')}
                                           </AlertDialogAction>
                                         </AlertDialogFooter>
                                       </AlertDialogContent>
@@ -427,26 +430,25 @@ export function UpcomingVaccinationsSection({
                                     <AlertDialogContent>
                                       <AlertDialogHeader>
                                         <AlertDialogTitle>
-                                          Delete vaccination history?
+                                          {t('vaccinations.deleteHistoryTitle')}
                                         </AlertDialogTitle>
                                         <AlertDialogDescription>
-                                          Are you sure you want to delete this historical
-                                          vaccination record for{' '}
-                                          <span className="font-medium">
-                                            {v.vaccine_name ?? 'Unknown'}
-                                          </span>
-                                          ? This action cannot be undone.
+                                          {t('vaccinations.deleteHistoryConfirm', {
+                                            name: v.vaccine_name ?? t('common:status.unknown'),
+                                          })}
                                         </AlertDialogDescription>
                                       </AlertDialogHeader>
                                       <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogCancel>
+                                          {t('common:actions.cancel')}
+                                        </AlertDialogCancel>
                                         <AlertDialogAction
                                           onClick={() => {
                                             void handleDelete(v.id)
                                           }}
                                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                         >
-                                          Delete
+                                          {t('common:actions.delete')}
                                         </AlertDialogAction>
                                       </AlertDialogFooter>
                                     </AlertDialogContent>
@@ -484,7 +486,9 @@ export function UpcomingVaccinationsSection({
                                     disabled={uploadingPhotoForId === v.id}
                                   >
                                     <ImagePlus className="h-3 w-3 mr-1" />
-                                    {uploadingPhotoForId === v.id ? 'Uploading...' : 'Add Photo'}
+                                    {uploadingPhotoForId === v.id
+                                      ? t('medical.uploading')
+                                      : t('medical.addPhoto')}
                                   </Button>
                                 )}
                               </div>
@@ -500,7 +504,7 @@ export function UpcomingVaccinationsSection({
               {canEdit && mode === 'view' && (
                 <>
                   <Button variant="outline" className="w-full mt-3" onClick={handleAddClick}>
-                    + Add New Vaccination Entry
+                    + {t('vaccinations.addVaccinationEntry')}
                   </Button>
                 </>
               )}
@@ -508,7 +512,7 @@ export function UpcomingVaccinationsSection({
               {canEdit && mode === 'edit' && (
                 <>
                   <Button variant="outline" className="w-full mt-3" onClick={handleAddClick}>
-                    + Add Vaccination
+                    + {t('vaccinations.addVaccination')}
                   </Button>
                 </>
               )}
@@ -524,10 +528,9 @@ export function UpcomingVaccinationsSection({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Renew Vaccination</DialogTitle>
+            <DialogTitle>{t('vaccinations.renewTitle')}</DialogTitle>
             <DialogDescription>
-              Record a new vaccination for {renewingRecord?.vaccine_name}. The previous record will
-              be marked as completed.
+              {t('vaccinations.renewDescription', { name: renewingRecord?.vaccine_name })}
             </DialogDescription>
           </DialogHeader>
           {renewingRecord && (

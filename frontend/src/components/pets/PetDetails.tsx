@@ -1,6 +1,6 @@
 import React from 'react'
 import type { Pet } from '@/types/pet'
-import { formatPetAge, PetSexLabels } from '@/types/pet'
+import { formatPetAge } from '@/types/pet'
 import { getStatusDisplay, getStatusClasses } from '@/utils/petStatus'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
@@ -10,6 +10,7 @@ import { PlacementRequestsSection } from '@/components/placement/pet-profile/Pla
 import { PlacementResponseSection } from '@/components/placement/pet-profile/PlacementResponseSection'
 import { PetPhoto } from '@/components/pets/PetPhoto'
 import { getCountryName } from '@/components/ui/CountrySelect'
+import { useTranslation } from 'react-i18next'
 
 interface PetDetailsProps {
   pet: Pet
@@ -26,8 +27,9 @@ const PetDetails: React.FC<PetDetailsProps> = ({
   onOpenPlacementRequest,
   onPetUpdate,
 }) => {
-  const ageDisplay = formatPetAge(pet)
-  const statusDisplay = getStatusDisplay(pet.status)
+  const { t } = useTranslation(['pets', 'common'])
+  const ageDisplay = formatPetAge(pet, t)
+  const statusDisplay = getStatusDisplay(pet.status, t)
   const statusClasses = getStatusClasses(pet.status)
   const { isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
@@ -76,7 +78,7 @@ const PetDetails: React.FC<PetDetailsProps> = ({
             <h1 className="text-3xl font-bold text-card-foreground">{pet.name}</h1>
             <p className="text-lg text-muted-foreground">
               {pet.pet_type.name}
-              {pet.sex && pet.sex !== 'not_specified' && ` • ${PetSexLabels[pet.sex]}`}
+              {pet.sex && pet.sex !== 'not_specified' && ` • ${t(`pets:sexLabels.${pet.sex}`)}`}
               {' • '}
               {ageDisplay}
             </p>
@@ -96,7 +98,7 @@ const PetDetails: React.FC<PetDetailsProps> = ({
                   }}
                   variant="outline"
                 >
-                  Placement Requests
+                  {t('pets:details.placement_requests')}
                 </Button>
               )}
               <Button

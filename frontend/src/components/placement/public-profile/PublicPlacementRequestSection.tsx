@@ -15,7 +15,7 @@ import {
   Home,
   ExternalLink,
 } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 import { useAuth } from '@/hooks/use-auth'
 import type { PublicPetResponse } from '@/api/generated/model'
 import { useCreateChat } from '@/hooks/useMessaging'
@@ -116,11 +116,11 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
       setCancellingResponseId(responseId)
       try {
         await cancelPlacementResponse(responseId)
-        toast.success('Your response has been cancelled')
+        toast.success('pets:placement.messages.responseCancelled')
         onRefresh?.()
       } catch (error) {
         console.error('Failed to cancel response', error)
-        toast.error('Failed to cancel your response')
+        toast.error('pets:placement.messages.cancelResponseFailed')
       } finally {
         setCancellingResponseId(null)
       }
@@ -143,11 +143,11 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
       setConfirmingTransferId(transferId)
       try {
         await confirmTransfer(transferId)
-        toast.success('Handover confirmed! You are now responsible for this pet.')
+        toast.success('pets:placement.messages.handoverConfirmed')
         onRefresh?.()
       } catch (error) {
         console.error('Failed to confirm transfer', error)
-        toast.error('Failed to confirm handover. Please try again.')
+        toast.error('pets:placement.messages.confirmHandoverFailed')
       } finally {
         setConfirmingTransferId(null)
       }

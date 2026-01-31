@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -13,6 +14,7 @@ const RESEND_COOLDOWN_SECONDS = 60
  * Guides them to use the password reset flow to set their initial password.
  */
 export function SetPasswordComponent() {
+  const { t } = useTranslation(['auth', 'common'])
   const { user } = useAuth()
 
   const [isLoading, setIsLoading] = useState(false)
@@ -52,7 +54,7 @@ export function SetPasswordComponent() {
     try {
       const email = user?.email
       if (!email) {
-        setError('Unable to determine your email address for this session.')
+        setError(t('auth:setPassword.noEmailError'))
         return
       }
 
@@ -62,11 +64,9 @@ export function SetPasswordComponent() {
     } catch (error: unknown) {
       if (error instanceof Error && 'response' in error) {
         const axiosError = error as { response?: { data?: { message?: string } } }
-        setError(
-          axiosError.response?.data?.message ?? 'Failed to send reset email. Please try again.'
-        )
+        setError(axiosError.response?.data?.message ?? t('auth:setPassword.genericError'))
       } else {
-        setError('Failed to send reset email. Please try again.')
+        setError(t('auth:setPassword.genericError'))
       }
     } finally {
       setIsLoading(false)
@@ -79,18 +79,13 @@ export function SetPasswordComponent() {
     <div className="space-y-4">
       <Alert>
         <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          Your account doesn&apos;t have a password set yet. To add one, we&apos;ll send a secure
-          link to your email.
-        </AlertDescription>
+        <AlertDescription>{t('auth:setPassword.infoMessage')}</AlertDescription>
       </Alert>
 
       {emailSent && (
         <Alert className="border-emerald-500/50 bg-emerald-500/5 text-emerald-700 dark:text-emerald-400">
           <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-          <AlertDescription>
-            We have sent you an email with password reset instructions
-          </AlertDescription>
+          <AlertDescription>{t('auth:setPassword.successMessage')}</AlertDescription>
         </Alert>
       )}
 
@@ -110,14 +105,14 @@ export function SetPasswordComponent() {
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Sending...
+            {t('auth:setPassword.sending')}
           </>
         ) : cooldownSeconds > 0 ? (
-          `Resend in ${String(cooldownSeconds)}s`
+          t('auth:setPassword.resendIn', { count: cooldownSeconds })
         ) : emailSent ? (
-          'Resend email'
+          t('auth:setPassword.resendEmail')
         ) : (
-          'Set password via email'
+          t('auth:setPassword.submit')
         )}
       </Button>
     </div>

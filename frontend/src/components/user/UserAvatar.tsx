@@ -2,7 +2,8 @@ import React, { useRef, useState, useEffect } from 'react'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
+import { useTranslation } from 'react-i18next'
 import { User as UserIcon, Upload, Trash2 } from 'lucide-react'
 import type { AxiosError } from 'axios'
 import defaultAvatar from '@/assets/images/default-avatar.webp'
@@ -22,6 +23,7 @@ const sizeClasses = {
 }
 
 export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvatarProps) {
+  const { t } = useTranslation('settings')
   const { user, loadUser } = useAuth()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
@@ -55,13 +57,13 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file')
+      toast.error('settings:profile.avatarInvalidFile')
       return
     }
 
     // Validate file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
-      toast.error('File size must be less than 10MB')
+      toast.error('settings:profile.avatarFileTooLarge')
       return
     }
 
@@ -70,15 +72,17 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
     try {
       await postUsersMeAvatar({ avatar: file })
 
-      toast.success('Avatar uploaded successfully')
+      toast.success('settings:profile.avatarUploaded')
       await loadUser()
     } catch (error: unknown) {
-      let errorMessage = 'Failed to upload avatar'
+      let errorMessage = 'settings:profile.avatarUploadError'
       if (error instanceof Error && 'response' in error) {
         const axiosError = error as AxiosError<{ message?: string }>
-        errorMessage = axiosError.response?.data.message ?? axiosError.message
-      } else if (error instanceof Error) {
-        errorMessage = error.message
+        const apiMessage = axiosError.response?.data.message
+        if (apiMessage) {
+          toast.raw.error(apiMessage)
+          return
+        }
       }
       toast.error(errorMessage)
     } finally {
@@ -97,15 +101,17 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
 
     try {
       await deleteUsersMeAvatar()
-      toast.success('Avatar deleted successfully')
+      toast.success('settings:profile.avatarDeleted')
       await loadUser()
     } catch (error: unknown) {
-      let errorMessage = 'Failed to delete avatar'
+      let errorMessage = 'settings:profile.avatarDeleteError'
       if (error instanceof Error && 'response' in error) {
         const axiosError = error as AxiosError<{ message?: string }>
-        errorMessage = axiosError.response?.data.message ?? axiosError.message
-      } else if (error instanceof Error) {
-        errorMessage = error.message
+        const apiMessage = axiosError.response?.data.message
+        if (apiMessage) {
+          toast.raw.error(apiMessage)
+          return
+        }
       }
       toast.error(errorMessage)
     } finally {
@@ -128,7 +134,7 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
         <div className="flex space-x-2">
           <Button onClick={handleUploadClick} disabled={isUploading} size="sm" variant="outline">
             <Upload className="h-4 w-4 mr-2" />
-            {isUploading ? 'Uploading...' : 'Upload Avatar'}
+            {isUploading ? t('profile.uploading') : t('profile.avatarUpload')}
           </Button>
 
           {user.avatar_url && (
@@ -141,7 +147,7 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
               variant="outline"
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              {isDeleting ? 'Deleting...' : 'Remove'}
+              {isDeleting ? t('profile.deleting') : t('profile.avatarRemove')}
             </Button>
           )}
         </div>

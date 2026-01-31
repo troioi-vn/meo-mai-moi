@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +28,7 @@ interface DeleteAccountDialogProps {
 }
 
 const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDeleted }) => {
+  const { t } = useTranslation(['auth', 'common'])
   const { deleteAccount } = useAuth()
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -37,13 +39,13 @@ const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDele
     try {
       await deleteAccount(password)
       toast({
-        title: 'Account Deleted',
-        description: 'Your account has been successfully deleted.',
+        title: t('auth:deleteAccount.successTitle'),
+        description: t('auth:deleteAccount.successDescription'),
       })
       setIsOpen(false)
       onAccountDeleted()
     } catch (error: unknown) {
-      let errorMessage = 'An unexpected error occurred.'
+      let errorMessage = t('common:errors.generic')
       if (error instanceof AxiosError) {
         const axiosError = error as AxiosError<ApiError>
         errorMessage = axiosError.response?.data.message ?? axiosError.message
@@ -51,7 +53,7 @@ const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDele
         errorMessage = error.message
       }
       toast({
-        title: 'Account Deletion Failed',
+        title: t('auth:deleteAccount.failedTitle'),
         description: errorMessage,
         variant: 'destructive',
       })
@@ -63,19 +65,18 @@ const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDele
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive">Delete Account</Button>
+        <Button variant="destructive">{t('auth:deleteAccount.title')}</Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogTitle>{t('auth:deleteAccount.confirmTitle')}</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete your account and remove your
-            data from our servers. To confirm, please type your password below.
+            {t('auth:deleteAccount.confirmDescription')}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="password">Your Password</Label>
+            <Label htmlFor="password">{t('auth:deleteAccount.passwordLabel')}</Label>
             <Input
               id="password"
               type="password"
@@ -88,9 +89,9 @@ const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDele
           </div>
         </div>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isLoading}>{t('common:actions.cancel')}</AlertDialogCancel>
           <AlertDialogAction onClick={() => void handleDeleteAccount()} disabled={isLoading}>
-            {isLoading ? 'Deleting...' : 'Delete My Account'}
+            {isLoading ? t('auth:deleteAccount.deleting') : t('auth:deleteAccount.submit')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

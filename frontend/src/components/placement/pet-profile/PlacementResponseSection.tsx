@@ -9,7 +9,7 @@ import { Clock, X, MessageCircle, CheckCircle2, Loader2, HandshakeIcon } from 'l
 import { useCreateChat } from '@/hooks/useMessaging'
 import { postPlacementResponsesIdCancel as cancelPlacementResponse } from '@/api/generated/placement-request-responses/placement-request-responses'
 import { postTransferRequestsIdConfirm as confirmTransfer } from '@/api/generated/transfer-requests/transfer-requests'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 
 type PlacementRequest = NonNullable<Pet['placement_requests']>[number]
 
@@ -43,11 +43,11 @@ export const PlacementResponseSection: React.FC<Props> = ({
     setCancelling(true)
     try {
       await cancelPlacementResponse(myPendingResponse.id)
-      toast.success('Response cancelled')
+      toast.success('pets:placement.messages.responseCancelled')
       onRefresh?.()
     } catch (error) {
       console.error('Failed to cancel response', error)
-      toast.error('Failed to cancel response')
+      toast.error('pets:placement.messages.cancelResponseFailed')
     } finally {
       setCancelling(false)
     }
@@ -58,11 +58,11 @@ export const PlacementResponseSection: React.FC<Props> = ({
     setConfirmingHandover(true)
     try {
       await confirmTransfer(myPendingTransfer.id)
-      toast.success('Handover confirmed! You are now responsible for this pet.')
+      toast.success('pets:placement.messages.handoverConfirmed')
       onRefresh?.()
     } catch (error) {
       console.error('Failed to confirm handover', error)
-      toast.error('Failed to confirm handover')
+      toast.error('pets:placement.messages.confirmHandoverFailed')
     } finally {
       setConfirmingHandover(false)
     }

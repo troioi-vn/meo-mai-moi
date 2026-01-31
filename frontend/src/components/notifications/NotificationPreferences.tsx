@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
+import { useTranslation } from 'react-i18next'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import {
@@ -22,6 +23,7 @@ interface NotificationPreferencesState {
 }
 
 export function NotificationPreferences() {
+  const { t } = useTranslation('settings')
   const [state, setState] = useState<NotificationPreferencesState>({
     preferences: [],
     loading: true,
@@ -47,7 +49,7 @@ export function NotificationPreferences() {
       setState((prev) => ({
         ...prev,
         loading: false,
-        error: error instanceof Error ? error.message : 'Failed to load notification preferences',
+        error: error instanceof Error ? error.message : t('notifications.error'),
       }))
     }
   }
@@ -102,13 +104,13 @@ export function NotificationPreferences() {
         updating: false,
       }))
 
-      toast.success('Settings saved')
+      toast.success('settings:notifications.saved')
     } catch (error) {
       // Revert the optimistic update on error and preserve the error message
       setState((prev) => ({
         ...prev,
         updating: false,
-        error: error instanceof Error ? error.message : 'Failed to update preference',
+        error: error instanceof Error ? error.message : t('notifications.error'),
         preferences: previousPreferences,
       }))
       // Do not reload preferences here because that would clear the error immediately
@@ -123,10 +125,8 @@ export function NotificationPreferences() {
     return (
       <div className="space-y-4">
         <div className="space-y-2">
-          <h3 className="text-lg font-medium">Notification Preferences</h3>
-          <p className="text-sm text-muted-foreground">
-            Control how you receive notifications for different events.
-          </p>
+          <h3 className="text-lg font-medium">{t('notifications.title')}</h3>
+          <p className="text-sm text-muted-foreground">{t('notifications.controlDescription')}</p>
         </div>
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -139,10 +139,8 @@ export function NotificationPreferences() {
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <h3 className="text-lg font-medium">Notification Preferences</h3>
-        <p className="text-sm text-muted-foreground">
-          Control how you receive notifications for different events.
-        </p>
+        <h3 className="text-lg font-medium">{t('notifications.title')}</h3>
+        <p className="text-sm text-muted-foreground">{t('notifications.controlDescription')}</p>
       </div>
 
       <DeviceNotificationsCard />

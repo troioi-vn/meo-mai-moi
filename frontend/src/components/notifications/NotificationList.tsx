@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import { CheckCircle2, Info, AlertTriangle, XCircle } from 'lucide-react'
 import { useState } from 'react'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import {
   AlertDialog,
@@ -74,17 +75,18 @@ function NotificationActionButton({
   action: NotificationAction
   onDone: (result: ExecuteNotificationActionData) => void
 }) {
+  const { t } = useTranslation('common')
   const [open, setOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
   const disabled = Boolean(action.disabled)
   const confirm = action.confirm ?? {
-    title: 'Are you sure?',
+    title: t('actions.confirm'),
     description: null,
     confirm_label: action.label,
   }
 
-  const title = confirm.title || 'Are you sure?'
+  const title = confirm.title || t('actions.confirm')
   const description = confirm.description ?? null
   const confirmLabel = confirm.confirm_label ?? action.label
 
@@ -116,7 +118,7 @@ function NotificationActionButton({
             e.stopPropagation()
           }}
         >
-          {submitting ? 'Working…' : action.label}
+          {submitting ? t('status.loading') : action.label}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -125,7 +127,7 @@ function NotificationActionButton({
           {description ? <AlertDialogDescription>{description}</AlertDialogDescription> : null}
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={submitting}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={submitting}>{t('actions.cancel')}</AlertDialogCancel>
           <AlertDialogAction
             disabled={submitting}
             onClick={(e) => {
@@ -133,12 +135,12 @@ function NotificationActionButton({
               setSubmitting(true)
               executeNotificationAction(notificationId, action.key)
                 .then((res) => {
-                  if (res.message) toast.success(res.message)
+                  if (res.message) toast.raw.success(res.message)
                   onDone(res)
                 })
                 .catch((err: unknown) => {
                   console.error('Failed to execute notification action:', err)
-                  toast.error('Action failed')
+                  toast.error('common:messages.error')
                 })
                 .finally(() => {
                   setSubmitting(false)
@@ -155,12 +157,13 @@ function NotificationActionButton({
 }
 
 export function NotificationList() {
+  const { t } = useTranslation('common')
   const { bellNotifications, loading, markBellRead, applyBellUpdate } = useNotifications()
 
   if (loading && bellNotifications.length === 0) {
     return (
       <div className="rounded-lg border bg-card p-8 text-center text-sm text-muted-foreground">
-        Loading notifications...
+        {t('messages.loading')}
       </div>
     )
   }
@@ -168,7 +171,7 @@ export function NotificationList() {
   if (bellNotifications.length === 0) {
     return (
       <div className="rounded-lg border bg-card p-8 text-center text-sm text-muted-foreground">
-        No notifications
+        {t('messages.noData')}
       </div>
     )
   }

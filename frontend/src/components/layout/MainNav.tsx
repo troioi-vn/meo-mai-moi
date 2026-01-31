@@ -2,6 +2,7 @@ import React from 'react'
 import { Cat, PawPrint, MessageCircle } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { NotificationBell } from '@/components/notifications/NotificationBell'
 import { UserMenu } from '@/components/user/UserMenu'
@@ -45,6 +46,7 @@ function NavIconLink({ to, label, icon, badgeCount = 0 }: NavIconLinkProps) {
 }
 
 const MainNav: React.FC = () => {
+  const { t } = useTranslation('common')
   const { isAuthenticated, isLoading, user } = useAuth()
   const isVerified = Boolean(user?.email_verified_at)
   const { unreadMessageCount } = useNotifications()
@@ -58,28 +60,28 @@ const MainNav: React.FC = () => {
             <Button
               variant="ghost"
               size="icon"
-              aria-label="Pets"
-              title="Pets"
+              aria-label={t('nav.pets')}
+              title={t('nav.pets')}
               className="ml-0 sm:ml-6"
               asChild
             >
               <Link to="/">
                 <Cat className="size-6" />
-                <span className="sr-only">Pets</span>
+                <span className="sr-only">{t('nav.pets')}</span>
               </Link>
             </Button>
           )}
           <Button
             variant="ghost"
             size="icon"
-            aria-label="Requests"
-            title="Requests"
+            aria-label={t('nav.requests')}
+            title={t('nav.requests')}
             className="ml-0 sm:ml-6"
             asChild
           >
             <Link to="/requests">
               <PawPrint className="size-6" />
-              <span className="sr-only">Requests</span>
+              <span className="sr-only">{t('nav.requests')}</span>
             </Link>
           </Button>
         </div>
@@ -95,7 +97,7 @@ const MainNav: React.FC = () => {
               {isVerified && (
                 <NavIconLink
                   to="/messages"
-                  label="Messages"
+                  label={t('nav.messages')}
                   icon={<MessageCircle className="size-6" />}
                   badgeCount={unreadMessageCount}
                 />
@@ -106,10 +108,10 @@ const MainNav: React.FC = () => {
           ) : (
             <>
               <Link to="/login">
-                <Button variant="outline">Login</Button>
+                <Button variant="outline">{t('nav.login')}</Button>
               </Link>
               <Link to="/register">
-                <Button>Register</Button>
+                <Button>{t('nav.register')}</Button>
               </Link>
             </>
           )}

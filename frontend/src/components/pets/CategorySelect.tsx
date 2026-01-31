@@ -15,7 +15,8 @@ import { Badge } from '@/components/ui/badge'
 import type { Category } from '@/types/pet'
 import { postCategories as createCategory } from '@/api/generated/categories/categories'
 import { useGetCategories } from '@/api/generated/categories/categories'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   petTypeId: number | null
@@ -32,6 +33,7 @@ export const CategorySelect: React.FC<Props> = ({
   maxCategories = 10,
   disabled = false,
 }) => {
+  const { t } = useTranslation(['pets', 'common'])
   const { data: categoriesResponse, isLoading: loading } = useGetCategories(
     { pet_type_id: petTypeId ?? 0 },
     { query: { enabled: !!petTypeId } }
@@ -63,7 +65,7 @@ export const CategorySelect: React.FC<Props> = ({
     } else if (selectedCategories.length < maxCategories) {
       onChange([...selectedCategories, category])
     } else {
-      toast.error(`Maximum ${String(maxCategories)} categories allowed`)
+      toast.raw.error(t('pets:categories.limitError', { count: maxCategories }))
     }
   }
 
@@ -86,10 +88,10 @@ export const CategorySelect: React.FC<Props> = ({
         onChange([...selectedCategories, newCategory])
       }
       setSearchValue('')
-      toast.success('Category created')
+      toast.success('pets:categories.createSuccess')
     } catch (err: unknown) {
       console.error('Failed to create category:', err)
-      toast.error('Failed to create category')
+      toast.error('pets:categories.createError')
     } finally {
       setCreating(false)
     }
@@ -104,9 +106,9 @@ export const CategorySelect: React.FC<Props> = ({
   if (!petTypeId) {
     return (
       <div className="space-y-2">
-        <label className="text-sm font-medium">Categories</label>
+        <label className="text-sm font-medium">{t('pets:categories.label')}</label>
         <div className="text-sm text-muted-foreground">
-          Select a pet type first to add categories
+          {t('pets:categories.selectPetTypeFirst')}
         </div>
       </div>
     )
@@ -115,7 +117,7 @@ export const CategorySelect: React.FC<Props> = ({
   return (
     <div className="space-y-2">
       <label className="text-sm font-medium">
-        Categories{' '}
+        {t('pets:categories.label')}{' '}
         <span className="text-muted-foreground font-normal">
           ({selectedCategories.length}/{maxCategories})
         </span>
@@ -133,7 +135,7 @@ export const CategorySelect: React.FC<Props> = ({
               {category.name}
               {!category.approved_at && (
                 <Badge variant="outline" className="ml-1 text-[10px] px-1 py-0">
-                  Pending
+                  {t('pets:categories.pending')}
                 </Badge>
               )}
             </TagsValue>
@@ -141,7 +143,9 @@ export const CategorySelect: React.FC<Props> = ({
         </TagsTrigger>
         <TagsContent>
           <TagsInput
-            placeholder={loading ? 'Loading...' : 'Search categories...'}
+            placeholder={
+              loading ? t('common:actions.loading') : t('pets:categories.searchPlaceholder')
+            }
             onValueChange={setSearchValue}
             disabled={loading}
           />
@@ -165,10 +169,10 @@ export const CategorySelect: React.FC<Props> = ({
                       ) : (
                         <PlusIcon className="text-muted-foreground" size={14} />
                       )}
-                      Create: &quot;{searchValue.trim()}&quot;
+                      {t('pets:categories.createButton')} &quot;{searchValue.trim()}&quot;
                     </button>
                   ) : (
-                    'No categories found.'
+                    t('common:messages.noData')
                   )}
                 </TagsEmpty>
                 <TagsGroup>
@@ -186,7 +190,7 @@ export const CategorySelect: React.FC<Props> = ({
                         <div className="flex items-center gap-2">
                           {!category.approved_at && (
                             <Badge variant="outline" className="text-xs">
-                              Pending
+                              {t('pets:categories.pending')}
                             </Badge>
                           )}
                           {isSelected && <CheckIcon className="text-muted-foreground" size={14} />}

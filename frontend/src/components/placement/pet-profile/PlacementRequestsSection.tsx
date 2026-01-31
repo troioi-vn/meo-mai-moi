@@ -24,7 +24,7 @@ import {
   X,
   ExternalLink,
 } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 import type { Pet } from '@/types/pet'
 import type { PlacementRequestResponse } from '@/types/placement'
 import {
@@ -108,11 +108,11 @@ export const PlacementRequestsSection: React.FC<Props> = ({
     async (responseId: number) => {
       try {
         await acceptPlacementResponse(responseId)
-        toast.success('Response accepted!')
+        toast.success('pets:placement.messages.responseAccepted')
         onRefresh?.()
       } catch (error) {
         console.error('Failed to accept response', error)
-        toast.error('Failed to accept response. Please try again.')
+        toast.error('pets:placement.messages.acceptFailed')
       }
     },
     [onRefresh]
@@ -122,11 +122,11 @@ export const PlacementRequestsSection: React.FC<Props> = ({
     async (responseId: number) => {
       try {
         await rejectPlacementResponse(responseId)
-        toast.success('Response rejected')
+        toast.success('pets:placement.messages.responseRejected')
         onRefresh?.()
       } catch (error) {
         console.error('Failed to reject response', error)
-        toast.error('Failed to reject response. Please try again.')
+        toast.error('pets:placement.messages.rejectFailed')
       }
     },
     [onRefresh]
@@ -137,11 +137,11 @@ export const PlacementRequestsSection: React.FC<Props> = ({
       setCancellingTransferId(transferId)
       try {
         await rejectTransfer(transferId)
-        toast.success('Transfer cancelled')
+        toast.success('pets:placement.messages.transferCancelled')
         onRefresh?.()
       } catch (error) {
         console.error('Failed to cancel transfer', error)
-        toast.error('Failed to cancel transfer. Please try again.')
+        toast.error('pets:placement.messages.cancelFailed')
       } finally {
         setCancellingTransferId(null)
       }
@@ -175,11 +175,11 @@ export const PlacementRequestsSection: React.FC<Props> = ({
       setFinalizingId(requestId)
       try {
         await finalizePlacementRequest(requestId)
-        toast.success('Pet has been marked as returned!')
+        toast.success('pets:placement.messages.petReturned')
         onRefresh?.()
       } catch (error) {
         console.error('Failed to finalize placement request', error)
-        toast.error('Failed to mark pet as returned. Please try again.')
+        toast.error('pets:placement.messages.returnFailed')
       } finally {
         setFinalizingId(null)
       }

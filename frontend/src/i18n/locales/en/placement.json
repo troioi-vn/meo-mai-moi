@@ -1,0 +1,130 @@
+{
+  "title": "Placement Requests",
+  "headers": {
+    "available": "Available for Placement",
+    "awaitingHandover": "Awaiting Handover",
+    "active": "Active Placement",
+    "inProgress": "Placement in Progress",
+    "myRequests": "My Requests"
+  },
+  "status": {
+    "open": "Open",
+    "pending_transfer": "Pending Handover",
+    "active": "Active",
+    "finalized": "Finalized",
+    "cancelled": "Cancelled",
+    "expires": "Expires {{date}}"
+  },
+  "requestTypes": {
+    "foster_paid": "Foster (Paid)",
+    "foster_free": "Foster (Free)",
+    "permanent": "Permanent",
+    "pet_sitting": "Pet Sitting"
+  },
+  "response": {
+    "accepted": "Your response was accepted!",
+    "confirmHandover": "Confirm Handover",
+    "confirmHandoverDescription": "Please confirm once you have received the pet physically.",
+    "activeCaring": "You are currently caring for {{name}}",
+    "temporaryTypeNotice": "The owner will mark the placement as complete when the pet is returned.",
+    "chatWithOwner": "Chat with Owner",
+    "messageOwner": "Message Owner",
+    "startingChat": "Starting chat...",
+    "cannotRespondOwn": "You cannot respond to your own pet's placement request.",
+    "pending": "Your response is pending approval",
+    "viewDetails": "View Request Details",
+    "cancel": "Cancel Response",
+    "respond": "Respond to Placement Request",
+    "signInToRespond": " to respond to this placement request"
+  },
+  "createModal": {
+    "title": "Create Placement Request",
+    "description": "Fill out the form below to create a new placement request for your pet.",
+    "labels": {
+      "type": "Request Type",
+      "notes": "Notes",
+      "pickupDate": "Pick-up Date",
+      "dropoffDate": "Drop-off Date",
+      "typePlaceholder": "Select a request type",
+      "notesPlaceholder": "Describe any specific needs or requirements.",
+      "datePlaceholder": "Pick a date",
+      "publicProfileNotice": "I understand the pet's profile will become publicly visible.",
+      "termsPrefix": "I confirm I am authorized to place this pet and that the information I provide is accurate. I understand the platform only facilitates connections and is not responsible for outcomes. I agree to the ",
+      "termsLink": "Placement Terms",
+      "cancel": "Cancel",
+      "create": "Create Request",
+      "creating": "Creating..."
+    },
+    "errors": {
+      "pickupInPast": "Pick-up date cannot be in the past",
+      "dropoffBeforePickup": "Drop-off date must be on or after pick-up date"
+    }
+  },
+  "termsModal": {
+    "title": "Placement Terms & Conditions",
+    "description": "Please read these terms carefully before creating a placement request.",
+    "version": "(Version: {{version}})"
+  },
+  "manage": {
+    "viewDetails": "View Details",
+    "delete": {
+      "title": "Delete Placement Request",
+      "description": "Are you sure you want to delete this placement request? This action cannot be undone.",
+      "confirm": "Delete"
+    },
+    "waitingForHelper": "Waiting for {{name}} to confirm handover",
+    "chatWithHelper": "Chat with Helper",
+    "cancelTransfer": "Cancel Transfer",
+    "activeStatus": {
+      "foster": "Pet is currently with foster",
+      "pet_sitting": "Pet is currently with sitter",
+      "generic": "Placement is active"
+    },
+    "petReturned": {
+      "button": "Pet is Returned",
+      "confirmTitle": "Confirm Pet Return",
+      "confirmDescription": "Are you confirming that the pet has been returned to you? This will end the {{type}} period and mark the placement as completed.",
+      "confirmAction": "Confirm Return",
+      "fosterType": " fostering",
+      "sittingType": " pet sitting"
+    },
+    "completed": "Placement completed successfully",
+    "responses_one": "{{count}} response",
+    "responses_other": "{{count}} responses"
+  },
+  "responsesDrawer": {
+    "title": "Responses",
+    "helperProfile": "Helper Profile",
+    "viewingProfile": "Viewing {{name}}'s profile",
+    "responses_one": "{{count}} person responded to your request",
+    "responses_other": "{{count}} people responded to your request",
+    "messageFromHelper": "Message from Helper",
+    "unknownHelper": "Unknown Helper",
+    "locationNotSpecified": "Location not specified",
+    "respondedAt": "Responded {{date}}",
+    "navigation": "{{current}} of {{total}}",
+    "viewProfile": "View Profile",
+    "chat": "Chat",
+    "accept": "Accept",
+    "reject": "Reject",
+    "close": "Close",
+    "message": "Message:",
+    "labels": {
+      "name": "Name:",
+      "email": "Email:",
+      "phone": "Phone:",
+      "location": "Location:",
+      "hasPets": "Has pets:",
+      "hasChildren": "Has children:",
+      "experience": "Experience",
+      "about": "About",
+      "photos": "Photos"
+    }
+  },
+  "messages": {
+    "responseCancelled": "Response cancelled",
+    "cancelResponseFailed": "Failed to cancel response",
+    "handoverConfirmed": "Handover confirmed",
+    "confirmHandoverFailed": "Failed to confirm handover"
+  }
+}

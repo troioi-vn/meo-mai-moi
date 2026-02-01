@@ -8,6 +8,8 @@ import enAuth from './locales/en/auth.json'
 import enPets from './locales/en/pets.json'
 import enSettings from './locales/en/settings.json'
 import enValidation from './locales/en/validation.json'
+import enHelper from './locales/en/helper.json'
+import enPlacement from './locales/en/placement.json'
 
 // Import Russian translations - use type assertions for JSON files
 import ruCommon from './locales/ru/common.json'
@@ -15,6 +17,8 @@ import ruAuth from './locales/ru/auth.json'
 import ruPets from './locales/ru/pets.json'
 import ruSettings from './locales/ru/settings.json'
 import ruValidation from './locales/ru/validation.json'
+import ruHelper from './locales/ru/helper.json'
+import ruPlacement from './locales/ru/placement.json'
 
 export const supportedLocales = ['en', 'ru'] as const
 export type SupportedLocale = (typeof supportedLocales)[number]
@@ -35,7 +39,7 @@ if (!isTest) {
 }
 
 // Force reload after adding translations
-i18nInstance.use(initReactI18next).init({
+void i18nInstance.use(initReactI18next).init({
   resources: {
     en: {
       common: enCommon,
@@ -43,6 +47,8 @@ i18nInstance.use(initReactI18next).init({
       pets: enPets,
       settings: enSettings,
       validation: enValidation,
+      helper: enHelper,
+      placement: enPlacement,
     },
     ru: {
       common: ruCommon,
@@ -50,6 +56,8 @@ i18nInstance.use(initReactI18next).init({
       pets: ruPets,
       settings: ruSettings,
       validation: ruValidation,
+      helper: ruHelper,
+      placement: ruPlacement,
     },
   },
   lng: isTest ? 'en' : undefined, // Force English in tests, auto-detect otherwise

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Languages, ChevronDown } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,7 +54,7 @@ export function LanguageSwitcher() {
         {supportedLocales.map((locale) => (
           <DropdownMenuItem
             key={locale}
-            onClick={() => changeLanguage(locale)}
+            onClick={() => void changeLanguage(locale)}
             className={currentLocale === locale ? 'bg-accent font-medium' : ''}
           >
             {localeNames[locale]}

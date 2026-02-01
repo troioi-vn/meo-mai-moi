@@ -208,7 +208,7 @@ export default function App() {
       const newUrl = `${location.pathname}${params.toString() ? `?${params.toString()}` : ''}${hash}`
       window.history.replaceState({}, '', newUrl)
     }
-  }, [location.pathname, location.search, location.hash])
+  }, [location.pathname, location.search, location.hash, t])
 
   return (
     <>

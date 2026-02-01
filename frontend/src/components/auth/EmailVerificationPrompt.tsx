@@ -240,7 +240,11 @@ export default function EmailVerificationPrompt({
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => void handleUseAnotherEmail()}>
+                  <AlertDialogAction
+                    onClick={() => {
+                      void handleUseAnotherEmail()
+                    }}
+                  >
                     {t('auth:verifyEmail.useAnotherEmail')}
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -260,7 +264,9 @@ export default function EmailVerificationPrompt({
                       type="button"
                       className="text-primary hover:underline"
                       disabled={isResending}
-                      onClick={() => setIsResendDialogOpen(true)}
+                      onClick={() => {
+                        setIsResendDialogOpen(true)
+                      }}
                     />
                   ),
                 }}

@@ -70,7 +70,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
     setPasswordConfirmation(newPassword)
   }
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.SyntheticEvent) => {
     event.preventDefault()
     setError(null)
 

@@ -25,6 +25,7 @@ import { format, addMonths, startOfDay, isBefore } from 'date-fns'
 import { CalendarIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { PlacementTermsLink } from './PlacementTermsDialog'
+import { useTranslation } from 'react-i18next'
 
 interface PlacementRequestModalProps {
   petId: number
@@ -46,6 +47,7 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
   onSuccess,
   initialValues,
 }) => {
+  const { t } = useTranslation(['placement', 'common'])
   const [requestType, setRequestType] = useState(initialValues?.request_type ?? '')
   const [notes, setNotes] = useState(initialValues?.notes ?? '')
   const [startDate, setStartDate] = useState<Date | undefined>(
@@ -79,7 +81,7 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
     return !isBefore(startOfDay(endDate), startOfDay(startDate))
   }, [endDate, startDate, requestType])
 
-  const handleSubmit = (e: React.SubmitEvent) => {
+  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     // Basic client-side validation to align with backend (start_date required)
     if (!requestType || !startDate) {
@@ -108,32 +110,36 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
-          <DialogTitle>Create Placement Request</DialogTitle>
-          <DialogDescription>
-            Fill out the form below to create a new placement request for your pet.
-          </DialogDescription>
+          <DialogTitle>{t('placement:createModal.title')}</DialogTitle>
+          <DialogDescription>{t('placement:createModal.description')}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="request-type" className="text-right">
-                Request Type
+                {t('placement:createModal.labels.type')}
               </Label>
               <Select onValueChange={setRequestType} value={requestType}>
                 <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select a request type" />
+                  <SelectValue placeholder={t('placement:createModal.labels.typePlaceholder')} />
                 </SelectTrigger>
                 <SelectContent className="bg-background">
-                  <SelectItem value="foster_paid">Foster (Paid)</SelectItem>
-                  <SelectItem value="foster_free">Foster (Free)</SelectItem>
-                  <SelectItem value="permanent">Permanent</SelectItem>
-                  <SelectItem value="pet_sitting">Pet Sitting</SelectItem>
+                  <SelectItem value="foster_paid">
+                    {t('placement:requestTypes.foster_paid')}
+                  </SelectItem>
+                  <SelectItem value="foster_free">
+                    {t('placement:requestTypes.foster_free')}
+                  </SelectItem>
+                  <SelectItem value="permanent">{t('placement:requestTypes.permanent')}</SelectItem>
+                  <SelectItem value="pet_sitting">
+                    {t('placement:requestTypes.pet_sitting')}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="notes" className="text-right">
-                Notes
+                {t('placement:createModal.labels.notes')}
               </Label>
               <Textarea
                 id="notes"
@@ -142,12 +148,12 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
                   setNotes(e.target.value)
                 }}
                 className="col-span-3"
-                placeholder="Describe any specific needs or requirements."
+                placeholder={t('placement:createModal.labels.notesPlaceholder')}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="start-date" className="text-right">
-                Pick-up Date
+                {t('placement:createModal.labels.pickupDate')}
               </Label>
               <div className="col-span-3 space-y-1">
                 <Popover open={startDatePickerOpen} onOpenChange={setStartDatePickerOpen}>
@@ -162,7 +168,11 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {startDate ? format(startDate, 'PPP') : <span>Pick a date</span>}
+                      {startDate ? (
+                        format(startDate, 'PPP')
+                      ) : (
+                        <span>{t('placement:createModal.labels.datePlaceholder')}</span>
+                      )}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
@@ -179,14 +189,16 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
                   </PopoverContent>
                 </Popover>
                 {!isStartDateValid && (
-                  <p className="text-xs text-destructive">Pick-up date cannot be in the past</p>
+                  <p className="text-xs text-destructive">
+                    {t('placement:createModal.errors.pickupInPast')}
+                  </p>
                 )}
               </div>
             </div>
             {requestType !== 'permanent' && (
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="end-date" className="text-right">
-                  Drop-off Date
+                  {t('placement:createModal.labels.dropoffDate')}
                 </Label>
                 <div className="col-span-3 space-y-1">
                   <Popover open={endDatePickerOpen} onOpenChange={setEndDatePickerOpen}>
@@ -201,7 +213,11 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {endDate ? format(endDate, 'PPP') : <span>Pick a date</span>}
+                        {endDate ? (
+                          format(endDate, 'PPP')
+                        ) : (
+                          <span>{t('placement:createModal.labels.datePlaceholder')}</span>
+                        )}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
@@ -221,7 +237,7 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
                   </Popover>
                   {!isEndDateValid && (
                     <p className="text-xs text-destructive">
-                      Drop-off date must be on or after pick-up date
+                      {t('placement:createModal.errors.dropoffBeforePickup')}
                     </p>
                   )}
                 </div>
@@ -243,7 +259,7 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
                 className="flex-1 min-w-0 items-start text-sm font-normal leading-relaxed cursor-pointer"
               >
                 <span className="leading-relaxed">
-                  I understand the pet&apos;s profile will become publicly visible.
+                  {t('placement:createModal.labels.publicProfileNotice')}
                 </span>
               </Label>
             </div>
@@ -263,9 +279,7 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
                 className="flex-1 min-w-0 items-start text-sm font-normal leading-relaxed cursor-pointer"
               >
                 <span className="leading-relaxed">
-                  I confirm I am authorized to place this pet and that the information I provide is
-                  accurate. I understand the platform only facilitates connections and is not
-                  responsible for outcomes. I agree to the{' '}
+                  {t('placement:createModal.labels.termsPrefix')}
                   <PlacementTermsLink className="text-sm" />.
                 </span>
               </Label>
@@ -273,7 +287,7 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {t('placement:createModal.labels.cancel')}
             </Button>
             <Button
               type="submit"
@@ -287,7 +301,9 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
                 !termsAccepted
               }
             >
-              {createPlacementRequestMutation.isPending ? 'Creating...' : 'Create Request'}
+              {createPlacementRequestMutation.isPending
+                ? t('placement:createModal.labels.creating')
+                : t('placement:createModal.labels.create')}
             </Button>
           </DialogFooter>
         </form>

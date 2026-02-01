@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call */
 import React, { useCallback, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import type { Pet } from '@/types/pet'
 import type { PlacementRequestResponse, TransferRequest } from '@/types/placement'
-import { formatRequestType, requiresHandover } from '@/types/placement'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Clock, X, MessageCircle, CheckCircle2, Loader2, HandshakeIcon } from 'lucide-react'
@@ -34,6 +35,7 @@ export const PlacementResponseSection: React.FC<Props> = ({
   onRefresh,
 }) => {
   const navigate = useNavigate()
+  const { t } = useTranslation(['placement', 'pets', 'common'])
   const [cancelling, setCancelling] = useState(false)
   const [confirmingHandover, setConfirmingHandover] = useState(false)
   const { create: createChat, creating: creatingChat } = useCreateChat()
@@ -43,30 +45,30 @@ export const PlacementResponseSection: React.FC<Props> = ({
     setCancelling(true)
     try {
       await cancelPlacementResponse(myPendingResponse.id)
-      toast.success('pets:placement.messages.responseCancelled')
+      toast.success(t('placement:messages.responseCancelled'))
       onRefresh?.()
     } catch (error) {
       console.error('Failed to cancel response', error)
-      toast.error('pets:placement.messages.cancelResponseFailed')
+      toast.error(t('placement:messages.cancelResponseFailed'))
     } finally {
       setCancelling(false)
     }
-  }, [myPendingResponse, onRefresh])
+  }, [myPendingResponse, onRefresh, t])
 
   const handleConfirmHandover = useCallback(async () => {
     if (!myPendingTransfer) return
     setConfirmingHandover(true)
     try {
       await confirmTransfer(myPendingTransfer.id)
-      toast.success('pets:placement.messages.handoverConfirmed')
+      toast.success(t('placement:messages.handoverConfirmed'))
       onRefresh?.()
     } catch (error) {
       console.error('Failed to confirm handover', error)
-      toast.error('pets:placement.messages.confirmHandoverFailed')
+      toast.error(t('placement:messages.confirmHandoverFailed'))
     } finally {
       setConfirmingHandover(false)
     }
-  }, [myPendingTransfer, onRefresh])
+  }, [myPendingTransfer, onRefresh, t])
 
   const handleMessageOwner = useCallback(async () => {
     if (!activePlacementRequest.user_id) return
@@ -91,8 +93,10 @@ export const PlacementResponseSection: React.FC<Props> = ({
   return (
     <div className="rounded-lg border p-4 bg-muted/50 space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-foreground">Placement Request</h3>
-        <Badge variant="secondary">{formatRequestType(activePlacementRequest.request_type)}</Badge>
+        <h3 className="font-semibold text-foreground">{t('placement:title')}</h3>
+        <Badge variant="secondary">
+          {t(`placement:requestTypes.${activePlacementRequest.request_type}`)}
+        </Badge>
       </div>
 
       {/* State 1: Response pending approval */}
@@ -100,7 +104,7 @@ export const PlacementResponseSection: React.FC<Props> = ({
         <div className="rounded-md bg-background border p-3 space-y-3">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Clock className="h-4 w-4" />
-            <span>Your response is pending approval</span>
+            <span>{t('placement:response.pending')}</span>
           </div>
           <div className="space-y-2">
             {activePlacementRequest.user_id && (
@@ -114,7 +118,9 @@ export const PlacementResponseSection: React.FC<Props> = ({
                 className="w-full"
               >
                 <MessageCircle className="h-4 w-4 mr-1" />
-                {creatingChat ? 'Starting chat...' : 'Chat with Owner'}
+                {creatingChat
+                  ? t('placement:response.startingChat')
+                  : t('placement:response.chatWithOwner')}
               </Button>
             )}
             <Button
@@ -131,7 +137,7 @@ export const PlacementResponseSection: React.FC<Props> = ({
               ) : (
                 <X className="h-4 w-4 mr-1" />
               )}
-              Cancel Response
+              {t('placement:response.cancel')}
             </Button>
           </div>
         </div>
@@ -142,10 +148,10 @@ export const PlacementResponseSection: React.FC<Props> = ({
         <div className="rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 p-3 space-y-3">
           <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
             <CheckCircle2 className="h-4 w-4" />
-            <span className="font-medium">Your response was accepted!</span>
+            <span className="font-medium">{t('placement:response.accepted')}</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            Please confirm once you have received the pet physically.
+            {t('placement:response.confirmHandoverDescription')}
           </p>
           <div className="flex gap-2">
             <Button
@@ -156,12 +162,12 @@ export const PlacementResponseSection: React.FC<Props> = ({
               {confirmingHandover ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Confirming...
+                  {t('common:confirming')}...
                 </>
               ) : (
                 <>
                   <HandshakeIcon className="h-4 w-4 mr-2" />
-                  Confirm Handover
+                  {t('placement:response.confirmHandover')}
                 </>
               )}
             </Button>
@@ -173,7 +179,7 @@ export const PlacementResponseSection: React.FC<Props> = ({
                 className="flex-1"
               >
                 <MessageCircle className="h-4 w-4 mr-2" />
-                {creatingChat ? 'Starting...' : 'Chat'}
+                {creatingChat ? t('common:starting') : t('placement:responsesDrawer.chat')}
               </Button>
             )}
           </div>
@@ -185,7 +191,9 @@ export const PlacementResponseSection: React.FC<Props> = ({
         <div className="rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 p-3 space-y-3">
           <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
             <CheckCircle2 className="h-4 w-4" />
-            <span className="font-medium">You are currently caring for {pet.name}</span>
+            <span className="font-medium">
+              {t('placement:response.activeCaring', { name: pet.name })}
+            </span>
           </div>
           {activePlacementRequest.user_id && (
             <Button
@@ -195,7 +203,9 @@ export const PlacementResponseSection: React.FC<Props> = ({
               className="w-full"
             >
               <MessageCircle className="h-4 w-4 mr-2" />
-              {creatingChat ? 'Starting chat...' : 'Chat with Owner'}
+              {creatingChat
+                ? t('placement:response.startingChat')
+                : t('placement:response.chatWithOwner')}
             </Button>
           )}
         </div>
@@ -205,7 +215,7 @@ export const PlacementResponseSection: React.FC<Props> = ({
       {!isPending && !isAccepted && (
         <Button className="w-full" asChild>
           <Link to={`/requests/${String(activePlacementRequest.id)}`}>
-            Respond to Placement Request
+            {t('placement:response.respond')}
           </Link>
         </Button>
       )}

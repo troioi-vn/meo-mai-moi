@@ -41,6 +41,7 @@ import {
 import { deleteTransferRequestsId as rejectTransfer } from '@/api/generated/transfer-requests/transfer-requests'
 import { postPlacementRequestsIdFinalize as finalizePlacementRequest } from '@/api/generated/placement-requests/placement-requests'
 import { useCreateChat } from '@/hooks/useMessaging'
+import { useTranslation } from 'react-i18next'
 
 type PlacementRequest = NonNullable<Pet['placement_requests']>[number]
 
@@ -82,6 +83,7 @@ export const PlacementRequestsSection: React.FC<Props> = ({
   onDeletePlacementRequest,
   onRefresh,
 }) => {
+  const { t } = useTranslation(['placement', 'common', 'pets'])
   const navigate = useNavigate()
   const { create: createChat, creating: creatingChat } = useCreateChat()
   const [finalizingId, setFinalizingId] = useState<number | null>(null)
@@ -217,18 +219,22 @@ export const PlacementRequestsSection: React.FC<Props> = ({
                     variant={getRequestTypeBadgeVariant(request.request_type)}
                     className="w-fit"
                   >
-                    {formatRequestType(request.request_type)}
+                    {t(`placement:requestTypes.${request.request_type}`, {
+                      defaultValue: formatRequestType(request.request_type),
+                    })}
                   </Badge>
                   {request.status !== 'open' && (
                     <Badge variant={getStatusBadgeVariant(request.status)} className="w-fit">
-                      {formatStatus(request.status)}
+                      {t(`placement:status.${request.status}`, {
+                        defaultValue: formatStatus(request.status),
+                      })}
                     </Badge>
                   )}
                   <Link
                     to={`/requests/${String(request.id)}`}
                     className="text-xs text-muted-foreground hover:text-primary inline-flex items-center gap-1 transition-colors"
                   >
-                    View Details
+                    {t('placement:manage.viewDetails')}
                     <ExternalLink className="h-3 w-3" />
                   </Link>
                 </div>
@@ -248,19 +254,18 @@ export const PlacementRequestsSection: React.FC<Props> = ({
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Delete Placement Request</AlertDialogTitle>
+                      <AlertDialogTitle>{t('placement:manage.delete.title')}</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Are you sure you want to delete this placement request? This action cannot
-                        be undone.
+                        {t('placement:manage.delete.description')}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
                       <AlertDialogAction
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         onClick={() => void handleDelete(request.id)}
                       >
-                        Delete
+                        {t('placement:manage.delete.confirm')}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -273,7 +278,7 @@ export const PlacementRequestsSection: React.FC<Props> = ({
               <div className="rounded-md bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 p-3 space-y-3">
                 <div className="flex items-center gap-2 text-sm text-yellow-700 dark:text-yellow-400">
                   <Clock className="h-4 w-4" />
-                  <span>Waiting for {helperName} to confirm handover</span>
+                  <span>{t('placement:manage.waitingForHelper', { name: helperName })}</span>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2">
                   {helperUserId && (
@@ -285,7 +290,9 @@ export const PlacementRequestsSection: React.FC<Props> = ({
                       className="w-full sm:flex-1"
                     >
                       <MessageCircle className="h-4 w-4 mr-1" />
-                      {creatingChat ? 'Starting...' : 'Chat with Helper'}
+                      {creatingChat
+                        ? t('common:actions.loading')
+                        : t('placement:manage.chatWithHelper')}
                     </Button>
                   )}
                   {pendingTransfer && canEdit && (
@@ -301,7 +308,7 @@ export const PlacementRequestsSection: React.FC<Props> = ({
                       ) : (
                         <X className="h-4 w-4 mr-1" />
                       )}
-                      Cancel Transfer
+                      {t('placement:manage.cancelTransfer')}
                     </Button>
                   )}
                 </div>
@@ -315,10 +322,10 @@ export const PlacementRequestsSection: React.FC<Props> = ({
                   <Home className="h-4 w-4" />
                   <span>
                     {isFostering
-                      ? 'Pet is currently with foster'
+                      ? t('placement:manage.activeStatus.foster')
                       : request.request_type === 'pet_sitting'
-                        ? 'Pet is currently with sitter'
-                        : 'Placement is active'}
+                        ? t('placement:manage.activeStatus.pet_sitting')
+                        : t('placement:manage.activeStatus.generic')}
                   </span>
                 </div>
               </div>
@@ -332,32 +339,38 @@ export const PlacementRequestsSection: React.FC<Props> = ({
                     {isFinishing ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Processing...
+                        {t('common:actions.loading')}
                       </>
                     ) : (
                       <>
                         <CheckCircle2 className="h-4 w-4 mr-2" />
-                        Pet is Returned
+                        {t('placement:manage.petReturned.button')}
                       </>
                     )}
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Confirm Pet Return</AlertDialogTitle>
+                    <AlertDialogTitle>
+                      {t('placement:manage.petReturned.confirmTitle')}
+                    </AlertDialogTitle>
                     <AlertDialogDescription>
-                      Are you confirming that the pet has been returned to you? This will end the
-                      {isFostering ? ' fostering' : ' pet sitting'} period and mark the placement as
-                      completed.
+                      {t('placement:manage.petReturned.confirmDescription', {
+                        type: isFostering
+                          ? t('placement:manage.petReturned.fosterType')
+                          : t('placement:manage.petReturned.sittingType'),
+                      })}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={() => void handleFinalize(request.id)}
                       disabled={isFinishing}
                     >
-                      {isFinishing ? 'Processing...' : 'Confirm Return'}
+                      {isFinishing
+                        ? t('common:actions.loading')
+                        : t('placement:manage.petReturned.confirmAction')}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -369,7 +382,7 @@ export const PlacementRequestsSection: React.FC<Props> = ({
               <div className="rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 p-3">
                 <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
                   <CheckCircle2 className="h-4 w-4" />
-                  <span>Placement completed successfully</span>
+                  <span>{t('placement:manage.completed')}</span>
                 </div>
               </div>
             )}
@@ -386,23 +399,23 @@ export const PlacementRequestsSection: React.FC<Props> = ({
                     className="flex items-center gap-1 hover:text-foreground transition-colors underline underline-offset-2 cursor-pointer"
                   >
                     <Users className="h-4 w-4" />
-                    <span>
-                      {responseCount} {responseCount === 1 ? 'response' : 'responses'}
-                    </span>
+                    <span>{t('placement:manage.responses', { count: responseCount })}</span>
                   </button>
                 )}
                 {responseCount > 0 && !canEdit && (
                   <div className="flex items-center gap-1">
                     <Users className="h-4 w-4" />
-                    <span>
-                      {responseCount} {responseCount === 1 ? 'response' : 'responses'}
-                    </span>
+                    <span>{t('placement:manage.responses', { count: responseCount })}</span>
                   </div>
                 )}
                 {request.expires_at && (
                   <div className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
-                    <span>Expires {new Date(request.expires_at).toLocaleDateString()}</span>
+                    <span>
+                      {t('placement:status.expires', {
+                        date: new Date(request.expires_at).toLocaleDateString(),
+                      })}
+                    </span>
                   </div>
                 )}
               </div>

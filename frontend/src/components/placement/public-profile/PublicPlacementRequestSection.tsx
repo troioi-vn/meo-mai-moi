@@ -13,13 +13,13 @@ import {
   Loader2,
   HandshakeIcon,
   Home,
-  ExternalLink,
 } from 'lucide-react'
 import { toast } from '@/lib/i18n-toast'
 import { useAuth } from '@/hooks/use-auth'
 import type { PublicPetResponse } from '@/api/generated/model'
 import { useCreateChat } from '@/hooks/useMessaging'
 import type { PlacementRequestResponse, TransferRequest, PlacementRequest } from '@/types/placement'
+import { useTranslation } from 'react-i18next'
 
 type PublicPet = PublicPetResponse
 import {
@@ -67,6 +67,7 @@ const getStatusBadgeVariant = (
 }
 
 export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh }) => {
+  const { t } = useTranslation(['placement', 'common', 'pets'])
   const { user } = useAuth()
   const navigate = useNavigate()
   const { create: createChat, creating: creatingChat } = useCreateChat()
@@ -162,7 +163,7 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold">Placement Requests</CardTitle>
+        <CardTitle className="text-lg font-semibold">{t('placement:title')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {visiblePlacementRequests.map((request) => {
@@ -178,20 +179,24 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
               <div className="flex items-center justify-between gap-2">
                 <h3 className="font-semibold text-foreground">
                   {request.status === 'open'
-                    ? 'Available for Placement'
+                    ? t('placement:headers.available')
                     : request.status === 'pending_transfer'
-                      ? 'Awaiting Handover'
+                      ? t('placement:headers.awaitingHandover')
                       : request.status === 'active'
-                        ? 'Active Placement'
-                        : 'Placement in Progress'}
+                        ? t('placement:headers.active')
+                        : t('placement:headers.inProgress')}
                 </h3>
                 <div className="flex items-center gap-2">
                   <Badge variant={getRequestTypeBadgeVariant(request.request_type)}>
-                    {formatRequestType(request.request_type)}
+                    {t(`placement:requestTypes.${request.request_type}`, {
+                      defaultValue: formatRequestType(request.request_type),
+                    })}
                   </Badge>
                   {request.status !== 'open' && (
                     <Badge variant={getStatusBadgeVariant(request.status)}>
-                      {formatStatus(request.status)}
+                      {t(`placement:status.${request.status}`, {
+                        defaultValue: formatStatus(request.status),
+                      })}
                     </Badge>
                   )}
                 </div>
@@ -202,7 +207,11 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
               {request.expires_at && request.status === 'open' && (
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <Clock className="h-4 w-4" />
-                  <span>Expires {new Date(request.expires_at).toLocaleDateString()}</span>
+                  <span>
+                    {t('placement:status.expires', {
+                      date: new Date(request.expires_at).toLocaleDateString(),
+                    })}
+                  </span>
                 </div>
               )}
 
@@ -211,10 +220,10 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                 <div className="rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 p-3 space-y-3">
                   <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
                     <CheckCircle2 className="h-4 w-4" />
-                    <span className="font-medium">Your response was accepted!</span>
+                    <span className="font-medium">{t('placement:response.accepted')}</span>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Please confirm once you have received the pet physically.
+                    {t('placement:response.confirmHandoverDescription')}
                   </p>
                   <div className="flex gap-2">
                     <Button
@@ -225,12 +234,12 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                       {confirmingTransferId === myPendingTransfer.id ? (
                         <>
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Confirming...
+                          {t('common:actions.loading')}
                         </>
                       ) : (
                         <>
                           <HandshakeIcon className="h-4 w-4 mr-2" />
-                          Confirm Handover
+                          {t('placement:response.confirmHandover')}
                         </>
                       )}
                     </Button>
@@ -242,7 +251,7 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                         className="flex-1"
                       >
                         <MessageCircle className="h-4 w-4 mr-2" />
-                        {creatingChat ? 'Starting...' : 'Chat'}
+                        {creatingChat ? t('common:actions.loading') : t('common:nav.messages')}
                       </Button>
                     )}
                   </div>
@@ -254,11 +263,13 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                 <div className="rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 p-3 space-y-3">
                   <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
                     <Home className="h-4 w-4" />
-                    <span className="font-medium">You are currently caring for {pet.name}</span>
+                    <span className="font-medium">
+                      {t('placement:response.activeCaring', { name: pet.name })}
+                    </span>
                   </div>
                   {isTemporaryType(request.request_type) && (
                     <p className="text-xs text-muted-foreground">
-                      The owner will mark the placement as complete when the pet is returned.
+                      {t('placement:response.temporaryTypeNotice')}
                     </p>
                   )}
                   {request.user_id != null && (
@@ -269,7 +280,9 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                       className="w-full"
                     >
                       <MessageCircle className="h-4 w-4 mr-2" />
-                      {creatingChat ? 'Starting chat...' : 'Chat with Owner'}
+                      {creatingChat
+                        ? t('placement:response.startingChat')
+                        : t('placement:response.chatWithOwner')}
                     </Button>
                   )}
                 </div>
@@ -283,20 +296,20 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                       <Alert variant="info" className="mt-2">
                         <Info className="h-4 w-4" />
                         <AlertDescription>
-                          You cannot respond to your own pet&apos;s placement request.
+                          {t('placement:response.cannotRespondOwn')}
                         </AlertDescription>
                       </Alert>
                     ) : myPendingResponse ? (
                       <div className="rounded-md bg-background border p-3 space-y-3">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Clock className="h-4 w-4" />
-                          <span>Your response is pending approval</span>
+                          <span>{t('placement:response.pending')}</span>
                         </div>
                         <div className="space-y-2">
                           <Button variant="outline" size="sm" className="w-full" asChild>
                             <Link to={`/requests/${String(request.id)}`}>
-                              <ExternalLink className="h-4 w-4 mr-1" />
-                              View Request Details
+                              <Info className="h-4 w-4 mr-1" />
+                              {t('placement:response.viewDetails')}
                             </Link>
                           </Button>
                           {request.user_id != null && (
@@ -308,7 +321,9 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                               className="w-full"
                             >
                               <MessageCircle className="h-4 w-4 mr-1" />
-                              {creatingChat ? 'Starting chat...' : 'Chat with Owner'}
+                              {creatingChat
+                                ? t('placement:response.startingChat')
+                                : t('placement:response.chatWithOwner')}
                             </Button>
                           )}
                           <Button
@@ -323,7 +338,7 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                             ) : (
                               <X className="h-4 w-4 mr-1" />
                             )}
-                            Cancel Response
+                            {t('placement:response.cancel')}
                           </Button>
                         </div>
                       </div>
@@ -331,7 +346,7 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                       <div className="space-y-2">
                         <Button className="w-full" asChild>
                           <Link to={`/requests/${String(request.id)}`}>
-                            Respond to Placement Request
+                            {t('placement:response.respond')}
                           </Link>
                         </Button>
                         {request.user_id != null && (
@@ -342,7 +357,9 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                             className="w-full"
                           >
                             <MessageCircle className="h-4 w-4 mr-2" />
-                            {creatingChat ? 'Starting chat...' : 'Message Owner'}
+                            {creatingChat
+                              ? t('placement:response.startingChat')
+                              : t('placement:response.messageOwner')}
                           </Button>
                         )}
                       </div>
@@ -353,9 +370,9 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                         to={`/login?redirect=${encodeURIComponent(`/requests/${String(request.id)}`)}`}
                         className="text-primary hover:underline"
                       >
-                        Sign in
-                      </Link>{' '}
-                      to respond to this placement request
+                        {t('common:nav.login')}
+                      </Link>
+                      {t('placement:response.signInToRespond')}
                     </div>
                   )}
                 </>

@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
 import { NotificationPreferences } from '@/components/notifications/NotificationPreferences'
 import { UserAvatar } from '@/components/user/UserAvatar'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -72,11 +73,23 @@ function AccountTabContent() {
           </CardTitle>
           <CardDescription>{t('profile.loading')}</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-6 md:flex-row md:items-center">
-          <Skeleton className="h-24 w-24 rounded-full" />
-          <div className="flex-1 space-y-3">
-            <Skeleton className="h-5 w-48" />
-            <Skeleton className="h-5 w-64" />
+        <CardContent className="space-y-8">
+          <div className="flex flex-col gap-6 md:flex-row md:items-start">
+            <Skeleton className="h-24 w-24 rounded-full" />
+            <div className="flex-1 space-y-3 pt-2">
+              <Skeleton className="h-5 w-48" />
+              <Skeleton className="h-5 w-64" />
+            </div>
+          </div>
+          <Separator />
+          <div className="space-y-4">
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <Separator />
+          <div className="space-y-4">
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-10 w-full" />
           </div>
         </CardContent>
       </Card>
@@ -102,86 +115,76 @@ function AccountTabContent() {
 
   return (
     <div className="space-y-6">
-      {/* Profile Card */}
+      {/* Main Account Settings Card */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            {t('profile.title')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="flex flex-col gap-6 md:flex-row md:items-center">
+        <CardContent className="space-y-8 pt-6">
+          {/* Profile Section */}
+          <div className="flex flex-col gap-6 md:flex-row md:items-start">
             <UserAvatar size="xl" showUploadControls={true} />
-            <div className="flex-1 space-y-4">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">{t('profile.name')}</p>
-                <p className="text-lg font-semibold text-card-foreground">{user.name}</p>
+            <div className="flex-1 grid gap-4 pt-2">
+              <div className="grid gap-1">
+                <p className="text-sm font-medium leading-none text-muted-foreground">
+                  {t('profile.name')}
+                </p>
+                <p className="text-lg font-semibold">{user.name}</p>
               </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">{t('profile.email')}</p>
-                <p className="text-lg font-semibold text-card-foreground">{user.email}</p>
+              <div className="grid gap-1">
+                <p className="text-sm font-medium leading-none text-muted-foreground">
+                  {t('profile.email')}
+                </p>
+                <p className="text-lg font-semibold">{user.email}</p>
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Password Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Lock className="h-5 w-5" />
-            {t('security.passwordTitle')}
-          </CardTitle>
-          <CardDescription>
-            {user.has_password
-              ? t('security.passwordDescription')
-              : t('security.setPasswordDescription')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {user.has_password ? <ChangePasswordDialog /> : <SetPasswordComponent />}
-        </CardContent>
-      </Card>
+          <Separator />
 
-      {/* Language Preference Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Languages className="h-5 w-5" />
-            {t('preferences.language.title')}
-          </CardTitle>
-          <CardDescription>{t('preferences.language.description')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-            <p className="text-sm font-medium text-muted-foreground">
-              {t('preferences.language.current')}
-            </p>
+          {/* Password Section */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Lock className="h-4 w-4 text-muted-foreground" />
+              <h4 className="text-base font-semibold">{t('security.passwordTitle')}</h4>
+            </div>
+            {user.has_password ? <ChangePasswordDialog /> : <SetPasswordComponent />}
+          </div>
+
+          <Separator />
+
+          {/* Language Preference Section */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <h4 className="text-base font-semibold">{t('preferences.language.title')}</h4>
+            </div>
             <LanguageSwitcher />
+          </div>
+
+          <Separator />
+
+          {/* Session Section */}
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <LogOut className="h-4 w-4 text-muted-foreground" />
+                <h4 className="text-base font-semibold">{t('security.sessions.title')}</h4>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLogout}
+                className="flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                {t('security.sessions.logout')}
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground max-w-md">
+              {t('security.sessions.description')}
+            </p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Session Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <LogOut className="h-5 w-5" />
-            {t('security.sessions.title')}
-          </CardTitle>
-          <CardDescription>{t('security.sessions.description')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button variant="outline" onClick={handleLogout} className="flex items-center gap-2">
-            <LogOut className="h-4 w-4" />
-            {t('security.sessions.logout')}
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Danger Zone */}
+      {/* Danger Zone - Kept separate for emphasis */}
       <Card className="border-destructive/50 bg-destructive/5">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-destructive">
@@ -220,7 +223,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-5xl py-10">
+    <div className="container mx-auto max-w-4xl py-6 md:py-10">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="account">{t('tabs.account')}</TabsTrigger>

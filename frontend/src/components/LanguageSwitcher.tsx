@@ -44,7 +44,6 @@ export function LanguageSwitcher() {
           className="flex w-full items-center justify-between gap-2 px-3 sm:w-[200px]"
         >
           <div className="flex items-center gap-2">
-            <Languages className="h-4 w-4 text-muted-foreground" />
             <span className="font-medium">{localeNames[currentLocale]}</span>
           </div>
           <ChevronDown className="h-4 w-4 opacity-50" />

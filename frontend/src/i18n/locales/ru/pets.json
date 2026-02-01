@@ -27,7 +27,7 @@
   "accessRestricted": "Доступ ограничен",
   "accessRestrictedDescription": "Этот профиль питомца не является публичным.",
   "placementRequests": {
-    "title": "Заявки на пристройство",
+    "title": "Заявки",
     "none": "Заявок на пристройство пока нет.",
     "type": "Тип",
     "created": "Создано",
@@ -310,7 +310,7 @@
     }
   },
   "details": {
-    "placementRequests": "Заявки на пристройство"
+    "placementRequests": "Заявки"
   },
   "statusControls": {
     "title": "Статус",

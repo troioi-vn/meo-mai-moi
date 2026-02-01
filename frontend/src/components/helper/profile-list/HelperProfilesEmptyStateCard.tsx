@@ -1,8 +1,10 @@
+import { useTranslation } from 'react-i18next'
 import { Home, PlusCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
 export function HelperProfilesEmptyStateCard({ onCreate }: { onCreate: () => void }) {
+  const { t } = useTranslation('common')
   return (
     <Card>
       <CardContent className="py-12 text-center space-y-4">
@@ -12,15 +14,14 @@ export function HelperProfilesEmptyStateCard({ onCreate }: { onCreate: () => voi
           </div>
         </div>
         <div className="space-y-2">
-          <h2 className="text-lg font-semibold text-foreground">No helper profiles yet</h2>
+          <h2 className="text-lg font-semibold text-foreground">{t('helperProfiles.noProfiles')}</h2>
           <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-            Create a helper profile to let pet owners know you&apos;re available to foster or adopt
-            pets.
+            {t('helperProfiles.noProfilesHint')}
           </p>
         </div>
         <Button onClick={onCreate} className="mt-4">
           <PlusCircle className="mr-2 h-4 w-4" />
-          Create Your First Profile
+          {t('helperProfiles.createFirst')}
         </Button>
       </CardContent>
     </Card>

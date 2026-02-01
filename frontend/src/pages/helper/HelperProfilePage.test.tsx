@@ -6,7 +6,7 @@ import { mockHelperProfile } from '@/testing/mocks/data/helper-profiles'
 describe('HelperProfilePage', () => {
   beforeEach(() => {
     testQueryClient.clear()
-    testQueryClient.setQueryData(['helper-profiles'], [mockHelperProfile])
+    testQueryClient.setQueryData(['/helper-profiles'], [mockHelperProfile])
   })
 
   it('renders helper profiles with location and edit button', async () => {

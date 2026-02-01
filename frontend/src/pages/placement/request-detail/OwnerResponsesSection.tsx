@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { PlacementRequestDetail } from '@/types/placement'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -20,13 +21,15 @@ export function OwnerResponsesSection({
   onReject,
   onChat,
 }: OwnerResponsesSectionProps) {
+  const { t } = useTranslation('common')
+
   if (request.status !== 'open') return null
 
   return (
     <Card className="mb-6">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center justify-between">
-          <span>Responses</span>
+          <span>{t('requestDetail.responses')}</span>
           <Badge variant="secondary">{request.response_count}</Badge>
         </CardTitle>
       </CardHeader>
@@ -51,13 +54,13 @@ export function OwnerResponsesSection({
 
             {request.responses.filter((r) => r.status === 'responded').length === 0 && (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No pending responses yet.
+                {t('requestDetail.noPendingResponses')}
               </p>
             )}
           </div>
         ) : (
           <p className="text-sm text-muted-foreground text-center py-4">
-            No responses yet. Helpers will appear here when they respond.
+            {t('requestDetail.noResponsesYet')}
           </p>
         )}
       </CardContent>

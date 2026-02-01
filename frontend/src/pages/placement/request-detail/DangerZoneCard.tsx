@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Loader2, Trash2 } from 'lucide-react'
 import {
   AlertDialog,
@@ -20,12 +21,14 @@ interface DangerZoneCardProps {
 }
 
 export function DangerZoneCard({ canDelete, actionLoading, onDelete }: DangerZoneCardProps) {
+  const { t } = useTranslation('common')
+
   if (!canDelete) return null
 
   return (
     <Card className="border-destructive/50">
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg text-destructive">Danger Zone</CardTitle>
+        <CardTitle className="text-lg text-destructive">{t('requestDetail.dangerZone')}</CardTitle>
       </CardHeader>
       <CardContent>
         <AlertDialog>
@@ -36,24 +39,23 @@ export function DangerZoneCard({ canDelete, actionLoading, onDelete }: DangerZon
               ) : (
                 <Trash2 className="h-4 w-4 mr-2" />
               )}
-              Delete Placement Request
+              {t('requestDetail.deletePlacementRequest')}
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete Placement Request</AlertDialogTitle>
+              <AlertDialogTitle>{t('requestDetail.deleteConfirmTitle')}</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to delete this placement request? This action cannot be undone
-                and will reject all pending responses.
+                {t('requestDetail.deleteConfirmDescription')}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
               <AlertDialogAction
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 onClick={() => void onDelete()}
               >
-                Delete
+                {t('actions.delete')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

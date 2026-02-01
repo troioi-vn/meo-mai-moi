@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { MessageCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -22,11 +23,13 @@ export const ChatList: React.FC<ChatListProps> = ({
   selectedChatId,
   onSelectChat,
 }) => {
+  const { t } = useTranslation('common')
+
   if (loading) {
     return (
       <div className="h-full flex flex-col">
         <div className="p-4 border-b">
-          <h2 className="text-lg font-semibold">Messages</h2>
+          <h2 className="text-lg font-semibold">{t('messaging.title')}</h2>
         </div>
         <div className="flex-1 p-4 space-y-4">
           {Array.from({ length: 5 }, (_, i) => (
@@ -40,15 +43,15 @@ export const ChatList: React.FC<ChatListProps> = ({
   return (
     <div className="h-full flex flex-col">
       <div className="p-4 border-b">
-        <h2 className="text-lg font-semibold">Messages</h2>
+        <h2 className="text-lg font-semibold">{t('messaging.title')}</h2>
       </div>
 
       {chats.length === 0 ? (
         <div className="flex-1 flex items-center justify-center text-muted-foreground">
           <div className="text-center space-y-2 p-4">
             <MessageCircle className="h-12 w-12 mx-auto opacity-50" />
-            <p>No conversations yet</p>
-            <p className="text-sm">Start a conversation from a placement request</p>
+            <p>{t('messaging.noConversations')}</p>
+            <p className="text-sm">{t('messaging.noConversationsHint')}</p>
           </div>
         </div>
       ) : (
@@ -78,9 +81,10 @@ interface ChatListItemProps {
 }
 
 const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onClick }) => {
+  const { t } = useTranslation('common')
   // For direct chats, find the other participant (not current user, assuming id 1)
   const otherParticipant = chat.participants?.find((p) => p.id !== 1)
-  const displayName = otherParticipant?.name ?? 'Unknown'
+  const displayName = otherParticipant?.name ?? t('messaging.unknownUser')
   const avatarUrl = otherParticipant?.avatar_url ?? undefined
   const initials = getInitials(displayName)
 
@@ -127,7 +131,7 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onClick }
                 {lastMessage.content}
               </p>
             ) : (
-              <p className="text-sm text-muted-foreground italic">No messages yet</p>
+              <p className="text-sm text-muted-foreground italic">{t('messaging.noMessages')}</p>
             )}
 
             {hasUnread && (
@@ -139,7 +143,7 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onClick }
 
           {chat.contextable_type && (
             <p className="text-xs text-muted-foreground mt-1">
-              via {chat.contextable_type === 'PlacementRequest' ? 'Placement Request' : 'Pet'}
+              {t('messaging.via')} {chat.contextable_type === 'PlacementRequest' ? t('messaging.viaPlacementRequest') : t('messaging.viaPet')}
             </p>
           )}
         </div>

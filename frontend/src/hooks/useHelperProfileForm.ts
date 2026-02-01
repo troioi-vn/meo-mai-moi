@@ -171,7 +171,7 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
   const createMutation = useMutation({
     mutationFn: createHelperProfileWithFormData,
     onSuccess: (data) => {
-      void queryClient.invalidateQueries({ queryKey: ['helper-profiles'] })
+      void queryClient.invalidateQueries({ queryKey: ['/helper-profiles'] })
       toast.success(
         profileId ? t('settings:helperProfiles.updated') : t('settings:helperProfiles.created')
       )
@@ -196,7 +196,7 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
     mutationFn: (vars: { id: number; data: FormData }) =>
       updateHelperProfileWithFormData(vars.id, vars.data),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['helper-profiles'] })
+      void queryClient.invalidateQueries({ queryKey: ['/helper-profiles'] })
       if (profileId) {
         void queryClient.invalidateQueries({ queryKey: ['helper-profile', profileId] })
       }

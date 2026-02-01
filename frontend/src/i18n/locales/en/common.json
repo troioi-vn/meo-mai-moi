@@ -107,5 +107,189 @@
     "failed": "Failed to end impersonation",
     "stop": "Stop",
     "stopImpersonating": "Stop impersonating"
+  },
+  "invitations": {
+    "title": "Invitations",
+    "generateButton": "Generate Invitation",
+    "generating": "Generating...",
+    "loading": "Loading your invitations...",
+    "loadError": "Failed to load invitations. Please try again.",
+    "stats": {
+      "total": "Total",
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "expired": "Expired",
+      "revoked": "Revoked"
+    },
+    "status": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "expired": "Expired",
+      "revoked": "Revoked"
+    },
+    "list": {
+      "title": "Your Invitations",
+      "empty": "You haven't sent any invitations yet.",
+      "count": "You have sent {{count}} invitation.",
+      "count_other": "You have sent {{count}} invitations.",
+      "noInvitations": "No invitations yet",
+      "noInvitationsHint": "Generate your first invitation to get started!",
+      "generateFirst": "Generate Your First Invitation"
+    },
+    "item": {
+      "created": "Created {{date}}",
+      "acceptedBy": "Accepted by {{name}}",
+      "expires": "Expires {{date}}",
+      "copyLink": "Copy invitation link",
+      "revoke": "Revoke invitation"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read"
+  },
+  "messaging": {
+    "title": "Messages",
+    "selectConversation": "Select a conversation",
+    "selectConversationHint": "Choose a chat from the list to start messaging",
+    "noConversations": "No conversations yet",
+    "noConversationsHint": "Start a conversation from a placement request",
+    "noMessages": "No messages yet",
+    "loadOlder": "Load older messages",
+    "sending": "Sending...",
+    "sendMessage": "Send message",
+    "typePlaceholder": "Type a message...",
+    "via": "via",
+    "viaPlacementRequest": "Placement Request",
+    "viaPet": "Pet",
+    "unknownUser": "Unknown"
+  },
+  "helperProfiles": {
+    "title": "Helper Profiles",
+    "create": "Create",
+    "loading": "Loading helper profiles...",
+    "loadError": "Failed to load helper profiles",
+    "activeProfiles": "Active Profiles",
+    "archivedProfiles": "Archived Profiles",
+    "noProfiles": "No helper profiles yet",
+    "noProfilesHint": "Create a helper profile to let pet owners know you're available to foster or adopt pets.",
+    "createFirst": "Create Your First Profile",
+    "noLocationSet": "No location set",
+    "requestTypes": {
+      "foster_paid": "Foster (Paid)",
+      "foster_free": "Foster (Free)",
+      "permanent": "Permanent",
+      "pet_sitting": "Pet Sitting"
+    }
+  },
+  "requests": {
+    "title": "Placement Requests",
+    "loading": "Loading placement requests...",
+    "loadError": "Failed to fetch data. Please try again later.",
+    "noResults": "No results match your filters.",
+    "filters": {
+      "allTypes": "All Request Types",
+      "allPetTypes": "All Pet Types",
+      "allCountries": "All Countries",
+      "pickup": "Pickup",
+      "dropoff": "Drop-off"
+    },
+    "requestTypes": {
+      "all": "All Request Types",
+      "foster_paid": "Foster (Paid)",
+      "foster_free": "Foster (Free)",
+      "permanent": "Permanent",
+      "pet_sitting": "Pet Sitting"
+    },
+    "sort": {
+      "newest": "Newest first",
+      "oldest": "Oldest first"
+    },
+    "dateComparison": {
+      "before": "Before",
+      "on": "On",
+      "after": "After"
+    }
+  },
+  "requestDetail": {
+    "breadcrumb": {
+      "requests": "Requests",
+      "request": "Request #{{id}}"
+    },
+    "chat": "Chat",
+    "yourResponse": "Your Response",
+    "yourResponseStatus": "Your Response Status",
+    "cancelMyResponse": "Cancel My Response",
+    "responseAccepted": "Your response was accepted!",
+    "confirmHandoverHint": "Please confirm once you have received the pet physically.",
+    "confirmHandover": "Confirm Handover",
+    "caringFor": "You are currently caring for {{name}}",
+    "returnHint": "The owner will mark the placement as complete when the pet is returned.",
+    "loadingProfiles": "Loading your helper profiles...",
+    "noHelperProfile": "No Helper Profile Found",
+    "noHelperProfileHint": "To respond to this placement request, please create your Helper Profile first.",
+    "createHelperProfile": "Create Helper Profile",
+    "selectHelperProfile": "Select Helper Profile",
+    "choosePlaceholder": "Choose a profile...",
+    "messageToOwner": "Message to Owner",
+    "messageOptional": "(optional)",
+    "messagePlaceholder": "Introduce yourself and explain why you'd like to help...",
+    "sendResponse": "Send Response",
+    "cannotRespond": "You cannot respond to this placement request.",
+    "chatWithOwner": "Chat with Owner",
+    "startingChat": "Starting chat...",
+    "responses": "Responses",
+    "noPendingResponses": "No pending responses yet.",
+    "noResponsesYet": "No responses yet. Helpers will appear here when they respond.",
+    "petInformation": "Pet Information",
+    "viewProfile": "View Profile",
+    "notes": "Notes",
+    "timeline": "Timeline",
+    "timelineStatus": {
+      "open": "Open",
+      "pendingTransfer": "Pending Transfer",
+      "active": "Active",
+      "completed": "Completed"
+    },
+    "created": "Created {{date}}",
+    "starts": "Starts {{date}}",
+    "ends": "Ends {{date}}",
+    "dangerZone": "Danger Zone",
+    "deletePlacementRequest": "Delete Placement Request",
+    "deleteConfirmTitle": "Delete Placement Request",
+    "deleteConfirmDescription": "Are you sure you want to delete this placement request? This action cannot be undone and will reject all pending responses.",
+    "errors": {
+      "noPermission": "You do not have permission to view this request.",
+      "notFound": "Placement request not found.",
+      "loadFailed": "Failed to load placement request. Please try again."
+    },
+    "activePlacement": "Active Placement",
+    "petWithSitter": "Pet is currently with sitter",
+    "petWithFoster": "Pet is currently with foster",
+    "petReturned": "Pet is Returned",
+    "confirmReturnTitle": "Confirm Pet Return",
+    "confirmReturnDescription": "Are you confirming that {{name}} has been returned to you? This will end the {{type}} period and mark the placement as completed.",
+    "petSitting": "pet sitting",
+    "fostering": "fostering",
+    "confirmReturn": "Confirm Return",
+    "awaitingHandover": "Awaiting Handover",
+    "waitingForHandover": "Waiting for {{name}} to confirm handover",
+    "theHelper": "the helper",
+    "chatWithHelper": "Chat with Helper",
+    "unknownHelper": "Unknown Helper",
+    "accept": "Accept",
+    "reject": "Reject"
+  },
+  "petPublicProfile": {
+    "home": "Home",
+    "loading": "Loading pet profile...",
+    "viewingOwnPet": "You are viewing the public profile of your pet.",
+    "lostPetAlert": "This pet has been reported as lost. If you have any information, please contact the owner.",
+    "details": "Details",
+    "sex": "Sex",
+    "location": "Location",
+    "locationNotSpecified": "Location not specified",
+    "categories": "Categories",
+    "about": "About"
   }
 }

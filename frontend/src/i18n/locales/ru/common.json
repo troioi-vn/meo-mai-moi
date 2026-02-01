@@ -12,7 +12,10 @@
     "profile": "Профиль",
     "logout": "Выход",
     "login": "Вход",
-    "register": "Регистрация"
+    "register": "Регистрация",
+    "invitations": "Приглашения",
+    "helperProfiles": "Хелпер",
+    "requests": "Заявки"
   },
   "actions": {
     "save": "Сохранить",
@@ -42,7 +45,8 @@
     "upload": "Загрузить",
     "uploading": "Загрузка...",
     "copy": "Копировать",
-    "share": "Поделиться"
+    "share": "Поделиться",
+    "or": "ИЛИ"
   },
   "status": {
     "active": "Активный",
@@ -96,5 +100,202 @@
     "label": "Язык",
     "en": "Английский",
     "ru": "Русский"
+  },
+  "userMenu": {
+    "installApp": "Установить приложение",
+    "darkMode": "Тёмная",
+    "logoutConfirmTitle": "Выйти?",
+    "logoutConfirmDescription": "Вы уверены, что хотите выйти из аккаунта?"
+  },
+  "impersonation": {
+    "ended": "Имперсонация завершена",
+    "failed": "Не удалось завершить имперсонацию",
+    "stop": "Остановить",
+    "stopImpersonating": "Прекратить имперсонацию"
+  },
+  "invitations": {
+    "title": "Приглашения",
+    "generateButton": "Создать приглашение",
+    "generating": "Создание...",
+    "loading": "Загрузка приглашений...",
+    "loadError": "Не удалось загрузить приглашения. Попробуйте снова.",
+    "stats": {
+      "total": "Всего",
+      "pending": "Ожидают",
+      "accepted": "Приняты",
+      "expired": "Истекли",
+      "revoked": "Отозваны"
+    },
+    "status": {
+      "pending": "Ожидает",
+      "accepted": "Принято",
+      "expired": "Истекло",
+      "revoked": "Отозвано"
+    },
+    "list": {
+      "title": "Ваши приглашения",
+      "empty": "Вы ещё не отправляли приглашений.",
+      "count": "Вы отправили {{count}} приглашение.",
+      "count_few": "Вы отправили {{count}} приглашения.",
+      "count_many": "Вы отправили {{count}} приглашений.",
+      "noInvitations": "Приглашений пока нет",
+      "noInvitationsHint": "Создайте первое приглашение, чтобы начать!",
+      "generateFirst": "Создать первое приглашение"
+    },
+    "item": {
+      "created": "Создано {{date}}",
+      "acceptedBy": "Принято: {{name}}",
+      "expires": "Истекает {{date}}",
+      "copyLink": "Скопировать ссылку",
+      "revoke": "Отозвать приглашение"
+    }
+  },
+  "notifications": {
+    "title": "Уведомления",
+    "markAllRead": "Отметить все как прочитанные"
+  },
+  "messaging": {
+    "title": "Сообщения",
+    "selectConversation": "Выберите диалог",
+    "selectConversationHint": "Выберите чат из списка, чтобы начать переписку",
+    "noConversations": "Диалогов пока нет",
+    "noConversationsHint": "Начните общение через заявку на пристройство",
+    "noMessages": "Сообщений пока нет",
+    "loadOlder": "Загрузить старые сообщения",
+    "sending": "Отправка...",
+    "sendMessage": "Отправить сообщение",
+    "typePlaceholder": "Введите сообщение...",
+    "via": "через",
+    "viaPlacementRequest": "Заявку на пристройство",
+    "viaPet": "Питомца",
+    "unknownUser": "Неизвестно"
+  },
+  "helperProfiles": {
+    "title": "Мои профили",
+    "create": "Создать",
+    "loading": "Загрузка профилей помощников...",
+    "loadError": "Не удалось загрузить профили помощников",
+    "activeProfiles": "Активные профили",
+    "archivedProfiles": "Архивные профили",
+    "noProfiles": "Профилей помощников пока нет",
+    "noProfilesHint": "Создайте профиль помощника, чтобы владельцы питомцев знали, что вы готовы взять на передержку или усыновить питомца.",
+    "createFirst": "Создать первый профиль",
+    "noLocationSet": "Местоположение не указано",
+    "requestTypes": {
+      "foster_paid": "Передержка (платная)",
+      "foster_free": "Передержка (бесплатная)",
+      "permanent": "Постоянное размещение",
+      "pet_sitting": "Присмотр за питомцем"
+    }
+  },
+  "requests": {
+    "title": "Заявки",
+    "loading": "Загрузка заявок...",
+    "loadError": "Не удалось загрузить данные. Пожалуйста, попробуйте позже.",
+    "noResults": "Нет результатов, соответствующих фильтрам.",
+    "filters": {
+      "allTypes": "Все типы заявок",
+      "allPetTypes": "Все типы питомцев",
+      "allCountries": "Все страны",
+      "pickup": "Дата начала",
+      "dropoff": "Дата окончания"
+    },
+    "requestTypes": {
+      "all": "Все типы заявок",
+      "foster_paid": "Передержка (платная)",
+      "foster_free": "Передержка (бесплатная)",
+      "permanent": "Постоянное размещение",
+      "pet_sitting": "Присмотр за питомцем"
+    },
+    "sort": {
+      "newest": "Сначала новые",
+      "oldest": "Сначала старые"
+    },
+    "dateComparison": {
+      "before": "До",
+      "on": "Точно",
+      "after": "После"
+    }
+  },
+  "requestDetail": {
+    "breadcrumb": {
+      "requests": "Заявки",
+      "request": "Заявка #{{id}}"
+    },
+    "chat": "Чат",
+    "yourResponse": "Ваш отклик",
+    "yourResponseStatus": "Статус вашего отклика",
+    "cancelMyResponse": "Отменить мой отклик",
+    "responseAccepted": "Ваш отклик принят!",
+    "confirmHandoverHint": "Пожалуйста, подтвердите, когда получите питомца физически.",
+    "confirmHandover": "Подтвердить передачу",
+    "caringFor": "Сейчас вы ухаживаете за {{name}}",
+    "returnHint": "Владелец отметит завершение размещения, когда питомец будет возвращён.",
+    "loadingProfiles": "Загрузка ваших профилей помощника...",
+    "noHelperProfile": "Профиль помощника не найден",
+    "noHelperProfileHint": "Чтобы откликнуться на эту заявку, пожалуйста, сначала создайте профиль помощника.",
+    "createHelperProfile": "Создать профиль помощника",
+    "selectHelperProfile": "Выберите профиль помощника",
+    "choosePlaceholder": "Выберите профиль...",
+    "messageToOwner": "Сообщение владельцу",
+    "messageOptional": "(необязательно)",
+    "messagePlaceholder": "Представьтесь и объясните, почему хотите помочь...",
+    "sendResponse": "Отправить отклик",
+    "cannotRespond": "Вы не можете откликнуться на эту заявку.",
+    "chatWithOwner": "Написать владельцу",
+    "startingChat": "Открытие чата...",
+    "responses": "Отклики",
+    "noPendingResponses": "Ожидающих откликов пока нет.",
+    "noResponsesYet": "Откликов пока нет. Помощники появятся здесь, когда откликнутся.",
+    "petInformation": "Информация о питомце",
+    "viewProfile": "Просмотр профиля",
+    "notes": "Заметки",
+    "timeline": "Хронология",
+    "timelineStatus": {
+      "open": "Открыта",
+      "pendingTransfer": "Ожидает передачи",
+      "active": "Активна",
+      "completed": "Завершена"
+    },
+    "created": "Создано {{date}}",
+    "starts": "Начало {{date}}",
+    "ends": "Окончание {{date}}",
+    "dangerZone": "Опасная зона",
+    "deletePlacementRequest": "Удалить заявку",
+    "deleteConfirmTitle": "Удалить заявку на пристройство",
+    "deleteConfirmDescription": "Вы уверены, что хотите удалить эту заявку? Это действие необратимо и отклонит все ожидающие отклики.",
+    "errors": {
+      "noPermission": "У вас нет прав для просмотра этой заявки.",
+      "notFound": "Заявка на пристройство не найдена.",
+      "loadFailed": "Не удалось загрузить заявку. Попробуйте снова."
+    },
+    "activePlacement": "Активное размещение",
+    "petWithSitter": "Питомец сейчас у няни",
+    "petWithFoster": "Питомец сейчас на передержке",
+    "petReturned": "Питомец возвращён",
+    "confirmReturnTitle": "Подтвердить возврат питомца",
+    "confirmReturnDescription": "Вы подтверждаете, что {{name}} был возвращён вам? Это завершит период {{type}} и отметит размещение как выполненное.",
+    "petSitting": "присмотра",
+    "fostering": "передержки",
+    "confirmReturn": "Подтвердить возврат",
+    "awaitingHandover": "Ожидание передачи",
+    "waitingForHandover": "Ожидание подтверждения передачи от {{name}}",
+    "theHelper": "помощника",
+    "chatWithHelper": "Написать помощнику",
+    "unknownHelper": "Неизвестный помощник",
+    "accept": "Принять",
+    "reject": "Отклонить"
+  },
+  "petPublicProfile": {
+    "home": "Главная",
+    "loading": "Загрузка профиля питомца...",
+    "viewingOwnPet": "Вы просматриваете публичный профиль своего питомца.",
+    "lostPetAlert": "Этот питомец отмечен как потерянный. Если у вас есть информация, пожалуйста, свяжитесь с владельцем.",
+    "details": "Подробности",
+    "sex": "Пол",
+    "location": "Местоположение",
+    "locationNotSpecified": "Местоположение не указано",
+    "categories": "Категории",
+    "about": "О питомце"
   }
 }

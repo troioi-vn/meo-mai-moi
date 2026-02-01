@@ -1,12 +1,14 @@
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
 import type { HelperProfile } from '@/types/helper-profile'
 import { ChevronRight, Heart, Home, MapPin } from 'lucide-react'
 
 export function HelperProfileListItem({ profile }: { profile: HelperProfile }) {
+  const { t } = useTranslation('common')
   const cityName = typeof profile.city === 'string' ? profile.city : profile.city?.name
   const locationParts = [cityName, profile.state, profile.country].filter(Boolean)
-  const location = locationParts.join(', ') || 'No location set'
+  const location = locationParts.join(', ') || t('helperProfiles.noLocationSet')
 
   return (
     <Link
@@ -22,7 +24,7 @@ export function HelperProfileListItem({ profile }: { profile: HelperProfile }) {
             </div>
             {profile.status === 'archived' && (
               <Badge variant="secondary" className="text-[10px] h-5">
-                Archived
+                {t('status.archived')}
               </Badge>
             )}
           </div>
@@ -31,25 +33,25 @@ export function HelperProfileListItem({ profile }: { profile: HelperProfile }) {
             {profile.request_types?.includes('foster_paid') && (
               <Badge variant="outline" className="text-xs">
                 <Home className="h-3 w-3 mr-1" />
-                Foster (Paid)
+                {t('helperProfiles.requestTypes.foster_paid')}
               </Badge>
             )}
             {profile.request_types?.includes('foster_free') && (
               <Badge variant="outline" className="text-xs">
                 <Home className="h-3 w-3 mr-1" />
-                Foster (Free)
+                {t('helperProfiles.requestTypes.foster_free')}
               </Badge>
             )}
             {profile.request_types?.includes('permanent') && (
               <Badge variant="outline" className="text-xs">
                 <Heart className="h-3 w-3 mr-1" />
-                Permanent
+                {t('helperProfiles.requestTypes.permanent')}
               </Badge>
             )}
             {profile.request_types?.includes('pet_sitting') && (
               <Badge variant="outline" className="text-xs">
                 <Heart className="h-3 w-3 mr-1" />
-                Pet Sitting
+                {t('helperProfiles.requestTypes.pet_sitting')}
               </Badge>
             )}
           </div>

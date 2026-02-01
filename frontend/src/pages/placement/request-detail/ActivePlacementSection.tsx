@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { CheckCircle2, Home, Loader2 } from 'lucide-react'
 import {
   AlertDialog,
@@ -25,12 +26,19 @@ export function ActivePlacementSection({
   actionLoading,
   onFinalize,
 }: ActivePlacementSectionProps) {
+  const { t } = useTranslation('common')
+
   if (!request.available_actions.can_finalize) return null
+
+  const placementType =
+    request.request_type === 'pet_sitting'
+      ? t('requestDetail.petSitting')
+      : t('requestDetail.fostering')
 
   return (
     <Card className="mb-6">
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg">Active Placement</CardTitle>
+        <CardTitle className="text-lg">{t('requestDetail.activePlacement')}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 p-4 space-y-3">
@@ -38,8 +46,8 @@ export function ActivePlacementSection({
             <Home className="h-4 w-4" />
             <span>
               {request.request_type === 'pet_sitting'
-                ? 'Pet is currently with sitter'
-                : 'Pet is currently with foster'}
+                ? t('requestDetail.petWithSitter')
+                : t('requestDetail.petWithFoster')}
             </span>
           </div>
 
@@ -51,22 +59,23 @@ export function ActivePlacementSection({
                 ) : (
                   <CheckCircle2 className="h-4 w-4 mr-2" />
                 )}
-                Pet is Returned
+                {t('requestDetail.petReturned')}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Confirm Pet Return</AlertDialogTitle>
+                <AlertDialogTitle>{t('requestDetail.confirmReturnTitle')}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you confirming that {request.pet.name} has been returned to you? This will end
-                  the {request.request_type === 'pet_sitting' ? 'pet sitting' : 'fostering'} period
-                  and mark the placement as completed.
+                  {t('requestDetail.confirmReturnDescription', {
+                    name: request.pet.name,
+                    type: placementType,
+                  })}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
                 <AlertDialogAction onClick={() => void onFinalize()}>
-                  Confirm Return
+                  {t('requestDetail.confirmReturn')}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

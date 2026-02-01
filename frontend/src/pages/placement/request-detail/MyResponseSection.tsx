@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   MessageCircle,
   Send,
@@ -95,18 +96,20 @@ export function MyResponseSection({
   onChatOwner,
   onCreateHelperProfile,
 }: MyResponseSectionProps) {
+  const { t } = useTranslation('common')
+
   if (!canShow) return null
 
   return (
     <Card className="mb-6">
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg">Your Response</CardTitle>
+        <CardTitle className="text-lg">{t('requestDetail.yourResponse')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {myResponse ? (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm">Your Response Status</span>
+              <span className="text-sm">{t('requestDetail.yourResponseStatus')}</span>
               <Badge variant={getResponseStatusBadgeVariant(myResponse.status)}>
                 {PlacementResponseStatusLabels[myResponse.status] ?? myResponse.status}
               </Badge>
@@ -130,7 +133,7 @@ export function MyResponseSection({
                 ) : (
                   <X className="h-4 w-4 mr-2" />
                 )}
-                Cancel My Response
+                {t('requestDetail.cancelMyResponse')}
               </Button>
             )}
 
@@ -138,10 +141,10 @@ export function MyResponseSection({
               <div className="rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 p-4 space-y-3">
                 <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
                   <CheckCircle2 className="h-4 w-4" />
-                  <span className="font-medium">Your response was accepted!</span>
+                  <span className="font-medium">{t('requestDetail.responseAccepted')}</span>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Please confirm once you have received the pet physically.
+                  {t('requestDetail.confirmHandoverHint')}
                 </p>
                 <Button
                   onClick={() => void onConfirmHandover(myTransferId)}
@@ -153,7 +156,7 @@ export function MyResponseSection({
                   ) : (
                     <HandshakeIcon className="h-4 w-4 mr-2" />
                   )}
-                  Confirm Handover
+                  {t('requestDetail.confirmHandover')}
                 </Button>
               </div>
             )}
@@ -163,12 +166,12 @@ export function MyResponseSection({
                 <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
                   <Home className="h-4 w-4" />
                   <span className="font-medium">
-                    You are currently caring for {request.pet.name}
+                    {t('requestDetail.caringFor', { name: request.pet.name })}
                   </span>
                 </div>
                 {isTemporaryType(request.request_type) && (
                   <p className="text-xs text-muted-foreground mt-2">
-                    The owner will mark the placement as complete when the pet is returned.
+                    {t('requestDetail.returnHint')}
                   </p>
                 )}
               </div>
@@ -180,7 +183,7 @@ export function MyResponseSection({
               <div className="flex items-center justify-center py-6">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 <span className="ml-2 text-sm text-muted-foreground">
-                  Loading your helper profiles...
+                  {t('requestDetail.loadingProfiles')}
                 </span>
               </div>
             ) : helperProfiles.length === 0 ? (
@@ -189,23 +192,25 @@ export function MyResponseSection({
                   <UserPlus className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <div>
-                  <p className="font-medium">No Helper Profile Found</p>
+                  <p className="font-medium">{t('requestDetail.noHelperProfile')}</p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    To respond to this placement request, please create your Helper Profile first.
+                    {t('requestDetail.noHelperProfileHint')}
                   </p>
                 </div>
                 <Button onClick={onCreateHelperProfile} className="w-full">
                   <UserPlus className="h-4 w-4 mr-2" />
-                  Create Helper Profile
+                  {t('requestDetail.createHelperProfile')}
                 </Button>
               </InfoRow>
             ) : (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Select Helper Profile</label>
+                  <label className="text-sm font-medium">
+                    {t('requestDetail.selectHelperProfile')}
+                  </label>
                   <Select value={selectedProfileId} onValueChange={onSelectedProfileIdChange}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Choose a profile..." />
+                      <SelectValue placeholder={t('requestDetail.choosePlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       {helperProfiles.map((profile) => (
@@ -239,11 +244,13 @@ export function MyResponseSection({
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">
-                    Message to Owner{' '}
-                    <span className="text-muted-foreground font-normal">(optional)</span>
+                    {t('requestDetail.messageToOwner')}{' '}
+                    <span className="text-muted-foreground font-normal">
+                      {t('requestDetail.messageOptional')}
+                    </span>
                   </label>
                   <Textarea
-                    placeholder="Introduce yourself and explain why you'd like to help..."
+                    placeholder={t('requestDetail.messagePlaceholder')}
                     value={responseMessage}
                     onChange={(e) => {
                       onResponseMessageChange(e.target.value)
@@ -262,15 +269,13 @@ export function MyResponseSection({
                   ) : (
                     <Send className="h-4 w-4 mr-2" />
                   )}
-                  Send Response
+                  {t('requestDetail.sendResponse')}
                 </Button>
               </div>
             )}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">
-            You cannot respond to this placement request.
-          </p>
+          <p className="text-sm text-muted-foreground">{t('requestDetail.cannotRespond')}</p>
         )}
 
         {canChatWithOwner && (isHelper || !!myResponse) && (
@@ -281,7 +286,7 @@ export function MyResponseSection({
             className="w-full"
           >
             <MessageCircle className="h-4 w-4 mr-2" />
-            {creatingChat ? 'Starting chat...' : 'Chat with Owner'}
+            {creatingChat ? t('requestDetail.startingChat') : t('requestDetail.chatWithOwner')}
           </Button>
         )}
       </CardContent>

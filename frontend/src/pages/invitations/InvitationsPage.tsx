@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -34,6 +35,7 @@ const InvitationQRCode = lazy(() => import('@/components/invitations/InvitationQ
 const REFRESH_INTERVAL_MS = 30_000
 
 export default function InvitationsPage() {
+  const { t } = useTranslation('common')
   const [invitations, setInvitations] = useState<Invitation[]>([])
   const [stats, setStats] = useState<InvitationStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -66,7 +68,7 @@ export default function InvitationsPage() {
     } catch (err: unknown) {
       console.error('Failed to load invitations:', err)
       if (showLoading) {
-        setError('Failed to load invitations. Please try again.')
+        setError(t('invitations.loadError'))
       }
     } finally {
       isRefreshingRef.current = false
@@ -160,7 +162,7 @@ export default function InvitationsPage() {
     return (
       <Badge variant={variant} className="flex items-center gap-1">
         <Icon className={`h-3 w-3 ${color}`} />
-        {currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1)}
+        {t(`invitations.status.${currentStatus}`)}
       </Badge>
     )
   }
@@ -171,7 +173,7 @@ export default function InvitationsPage() {
         <div className="flex items-center justify-center min-h-400px">
           <div className="text-center space-y-4">
             <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-            <p className="text-muted-foreground">Loading your invitations...</p>
+            <p className="text-muted-foreground">{t('invitations.loading')}</p>
           </div>
         </div>
       </div>
@@ -187,7 +189,7 @@ export default function InvitationsPage() {
           </div>
           <Button onClick={() => void loadData()} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
-            Try Again
+            {t('actions.tryAgain')}
           </Button>
         </div>
       </div>
@@ -199,7 +201,7 @@ export default function InvitationsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Invitations</h1>
+          <h1 className="text-3xl font-bold">{t('invitations.title')}</h1>
         </div>
         <Button onClick={() => void handleGenerateInvitation()} disabled={isGenerating}>
           {isGenerating ? (
@@ -207,7 +209,7 @@ export default function InvitationsPage() {
           ) : (
             <Plus className="h-4 w-4 mr-2" />
           )}
-          Generate Invitation
+          {isGenerating ? t('invitations.generating') : t('invitations.generateButton')}
         </Button>
       </div>
 
@@ -222,7 +224,7 @@ export default function InvitationsPage() {
         >
           <Card size="sm" className="py-3 gap-2">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
-              <CardTitle className="text-sm font-medium">Total</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('invitations.stats.total')}</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent className="pt-1">
@@ -234,7 +236,7 @@ export default function InvitationsPage() {
 
           <Card size="sm" className="py-3 gap-2">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
-              <CardTitle className="text-sm font-medium">Pending</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('invitations.stats.pending')}</CardTitle>
               <Clock className="h-4 w-4 text-yellow-600" />
             </CardHeader>
             <CardContent className="pt-1">
@@ -246,7 +248,7 @@ export default function InvitationsPage() {
 
           <Card size="sm" className="py-3 gap-2">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
-              <CardTitle className="text-sm font-medium">Accepted</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('invitations.stats.accepted')}</CardTitle>
               <CheckCircle className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent className="pt-1">
@@ -258,7 +260,7 @@ export default function InvitationsPage() {
 
           <Card size="sm" className="py-3 gap-2">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
-              <CardTitle className="text-sm font-medium">Expired</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('invitations.stats.expired')}</CardTitle>
               <XCircle className="h-4 w-4 text-red-600" />
             </CardHeader>
             <CardContent className="pt-1">
@@ -271,7 +273,7 @@ export default function InvitationsPage() {
           {showRevoked && (
             <Card size="sm" className="py-3 gap-2 col-span-2 sm:col-span-1">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
-                <CardTitle className="text-sm font-medium">Revoked</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('invitations.stats.revoked')}</CardTitle>
                 <XCircle className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent className="pt-1">
@@ -287,11 +289,11 @@ export default function InvitationsPage() {
       {/* Invitations List */}
       <Card>
         <CardHeader>
-          <CardTitle>Your Invitations</CardTitle>
+          <CardTitle>{t('invitations.list.title')}</CardTitle>
           <CardDescription>
             {invitations.length === 0
-              ? "You haven't sent any invitations yet."
-              : `You have sent ${String(invitations.length)} invitation${invitations.length === 1 ? '' : 's'}.`}
+              ? t('invitations.list.empty')
+              : t('invitations.list.count', { count: invitations.length })}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -299,14 +301,14 @@ export default function InvitationsPage() {
             <div className="text-center py-8 space-y-4">
               <Mail className="h-12 w-12 text-muted-foreground mx-auto" />
               <div>
-                <p className="text-lg font-medium">No invitations yet</p>
+                <p className="text-lg font-medium">{t('invitations.list.noInvitations')}</p>
                 <p className="text-muted-foreground">
-                  Generate your first invitation to get started!
+                  {t('invitations.list.noInvitationsHint')}
                 </p>
               </div>
               <Button onClick={() => void handleGenerateInvitation()} disabled={isGenerating}>
                 <Plus className="h-4 w-4 mr-2" />
-                Generate Your First Invitation
+                {t('invitations.list.generateFirst')}
               </Button>
             </div>
           ) : (
@@ -328,24 +330,28 @@ export default function InvitationsPage() {
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          Created{' '}
-                          {invitation.created_at
-                            ? format(new Date(invitation.created_at), 'MMM d, yyyy')
-                            : 'N/A'}
+                          {t('invitations.item.created', {
+                            date: invitation.created_at
+                              ? format(new Date(invitation.created_at), 'MMM d, yyyy')
+                              : 'N/A',
+                          })}
                         </div>
 
                         {invitation.recipient && (
                           <div className="flex items-center gap-1">
                             <Users className="h-3 w-3" />
-                            Accepted by{' '}
-                            {(invitation.recipient as { name?: string }).name ?? 'Unknown'}
+                            {t('invitations.item.acceptedBy', {
+                              name: (invitation.recipient as { name?: string }).name ?? t('messaging.unknownUser'),
+                            })}
                           </div>
                         )}
 
                         {invitation.expires_at && (
                           <div className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
-                            Expires {format(new Date(invitation.expires_at), 'MMM d, yyyy')}
+                            {t('invitations.item.expires', {
+                              date: format(new Date(invitation.expires_at), 'MMM d, yyyy'),
+                            })}
                           </div>
                         )}
                       </div>
@@ -357,7 +363,7 @@ export default function InvitationsPage() {
                         size="sm"
                         onClick={() => void handleCopyInvitation(invitation)}
                         disabled={invitation.status !== 'pending'}
-                        title="Copy invitation link"
+                        title={t('invitations.item.copyLink')}
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
@@ -384,7 +390,7 @@ export default function InvitationsPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => void handleRevokeInvitation(invitation)}
-                          title="Revoke invitation"
+                          title={t('invitations.item.revoke')}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

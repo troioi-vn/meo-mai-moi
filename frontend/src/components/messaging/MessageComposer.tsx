@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -12,8 +13,10 @@ interface MessageComposerProps {
 export const MessageComposer: React.FC<MessageComposerProps> = ({
   onSend,
   disabled = false,
-  placeholder = 'Type a message...',
+  placeholder,
 }) => {
+  const { t } = useTranslation('common')
+  const resolvedPlaceholder = placeholder ?? t('messaging.typePlaceholder')
   const [content, setContent] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -63,7 +66,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
           setContent(e.target.value)
         }}
         onKeyDown={handleKeyDown}
-        placeholder={placeholder}
+        placeholder={resolvedPlaceholder}
         disabled={disabled}
         className="min-h-11 max-h-30 resize-none"
         rows={1}
@@ -75,7 +78,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
         className="h-11 w-11 shrink-0"
       >
         <Send className="h-5 w-5" />
-        <span className="sr-only">Send message</span>
+        <span className="sr-only">{t('messaging.sendMessage')}</span>
       </Button>
     </form>
   )

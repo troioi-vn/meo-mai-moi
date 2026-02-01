@@ -107,7 +107,7 @@ const HelperProfileEditPage: React.FC = () => {
     mutationFn: () => (id ? deleteHelperProfile(id) : Promise.reject(new Error('missing id'))),
     onSuccess: () => {
       toast.success('settings:helperProfiles.deleted')
-      void queryClient.invalidateQueries({ queryKey: ['helper-profiles'] })
+      void queryClient.invalidateQueries({ queryKey: ['/helper-profiles'] })
       void navigate('/helper')
     },
     onError: (error: unknown) => {
@@ -125,7 +125,7 @@ const HelperProfileEditPage: React.FC = () => {
     mutationFn: () => (id ? archiveHelperProfile(id) : Promise.reject(new Error('missing id'))),
     onSuccess: () => {
       toast.success('settings:helperProfiles.archived')
-      void queryClient.invalidateQueries({ queryKey: ['helper-profiles'] })
+      void queryClient.invalidateQueries({ queryKey: ['/helper-profiles'] })
       void queryClient.invalidateQueries({ queryKey: ['helper-profile', id] })
       void navigate('/helper')
     },
@@ -144,7 +144,7 @@ const HelperProfileEditPage: React.FC = () => {
     mutationFn: () => (id ? restoreHelperProfile(id) : Promise.reject(new Error('missing id'))),
     onSuccess: () => {
       toast.success('settings:helperProfiles.restored')
-      void queryClient.invalidateQueries({ queryKey: ['helper-profiles'] })
+      void queryClient.invalidateQueries({ queryKey: ['/helper-profiles'] })
       void queryClient.invalidateQueries({ queryKey: ['helper-profile', id] })
     },
     onError: (error: unknown) => {

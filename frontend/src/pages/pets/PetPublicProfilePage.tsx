@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { Info, Eye } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -21,7 +22,10 @@ import {
 } from '@/components/ui/breadcrumb'
 
 // Helper function to format pet age from public pet data
-const formatPublicPetAge = (pet: PublicPet): string => {
+const formatPublicPetAge = (
+  pet: PublicPet,
+  t: (key: string, options?: Record<string, unknown>) => string
+): string => {
   const precision = pet.birthday_precision ?? 'unknown'
   const today = new Date()
 
@@ -34,12 +38,12 @@ const formatPublicPetAge = (pet: PublicPet): string => {
         if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
           years--
         }
-        return years === 1 ? '1 year old' : `${String(years)} years old`
+        return t('pets:age.year.other', { count: years })
       }
-      return 'Age unknown'
+      return t('pets:age.unknown')
     }
     case 'month': {
-      if (!pet.birthday_year || !pet.birthday_month) return 'Age unknown'
+      if (!pet.birthday_year || !pet.birthday_month) return t('pets:age.unknown')
       const years =
         today.getFullYear() -
         pet.birthday_year -
@@ -48,24 +52,24 @@ const formatPublicPetAge = (pet: PublicPet): string => {
         const monthsDiff =
           (today.getFullYear() - pet.birthday_year) * 12 +
           (today.getMonth() + 1 - pet.birthday_month)
-        return monthsDiff <= 1
-          ? '1 month old (approx)'
-          : `${String(monthsDiff)} months old (approx)`
+        const monthText = t('pets:age.month.other', { count: monthsDiff })
+        return t('pets:age.approx', { text: monthText })
       }
-      return years === 1 ? '≈1 year old' : `≈${String(years)} years old`
+      const yearText = t('pets:age.year.other', { count: years })
+      return t('pets:age.approxSymbol', { text: yearText })
     }
     case 'year': {
-      if (!pet.birthday_year) return 'Age unknown'
+      if (!pet.birthday_year) return t('pets:age.unknown')
       const years = today.getFullYear() - pet.birthday_year
-      return years <= 0
-        ? 'Less than 1 year (approx)'
-        : years === 1
-          ? '≈1 year old'
-          : `≈${String(years)} years old`
+      if (years <= 0) {
+        return t('pets:age.lessThanYearApprox')
+      }
+      const yearText = t('pets:age.year.other', { count: years })
+      return t('pets:age.approxSymbol', { text: yearText })
     }
     case 'unknown':
     default:
-      return 'Age unknown'
+      return t('pets:age.unknown')
   }
 }
 
@@ -79,21 +83,18 @@ const derivePublicPetImageUrl = (pet: PublicPet): string => {
 }
 
 // Helper function to format location
-const formatLocation = (pet: PublicPet): string => {
+const formatLocation = (
+  pet: PublicPet,
+  fallback: string
+): string => {
   // In PublicPetResponse, city is a string (not a City object)
   const cityName = pet.city ?? undefined
   const parts = [cityName, pet.state, pet.country].filter(Boolean)
-  return parts.join(', ') || 'Location not specified'
-}
-
-// Sex labels
-const SexLabels: Record<string, string> = {
-  male: 'Male',
-  female: 'Female',
-  not_specified: 'Not Specified',
+  return parts.join(', ') || fallback
 }
 
 const PetPublicProfilePage: React.FC = () => {
+  const { t } = useTranslation(['common', 'pets'])
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [pet, setPet] = useState<PublicPet | null>(null)
@@ -142,7 +143,7 @@ const PetPublicProfilePage: React.FC = () => {
   }
 
   if (loading) {
-    return <LoadingState message="Loading pet profile..." />
+    return <LoadingState message={t('common:petPublicProfile.loading')} />
   }
 
   if (error) {
@@ -169,7 +170,7 @@ const PetPublicProfilePage: React.FC = () => {
 
   const isOwner = Boolean(pet.viewer_permissions?.is_owner)
   const imageUrl = derivePublicPetImageUrl(pet)
-  const ageDisplay = formatPublicPetAge(pet)
+  const ageDisplay = formatPublicPetAge(pet, t)
   const isLost = pet.status === 'lost'
   const isDeceased = pet.status === 'deceased'
   const hasActivePlacementRequests = (pet.placement_requests ?? []).some(
@@ -185,7 +186,7 @@ const PetPublicProfilePage: React.FC = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link to="/">Home</Link>
+                  <Link to="/">{t('common:petPublicProfile.home')}</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
@@ -204,7 +205,7 @@ const PetPublicProfilePage: React.FC = () => {
           {isOwner && (
             <Alert variant="default">
               <Eye className="h-4 w-4" />
-              <AlertDescription>You are viewing the public profile of your pet.</AlertDescription>
+              <AlertDescription>{t('common:petPublicProfile.viewingOwnPet')}</AlertDescription>
             </Alert>
           )}
 
@@ -216,8 +217,7 @@ const PetPublicProfilePage: React.FC = () => {
             >
               <Info className="h-4 w-4" />
               <AlertDescription className="text-yellow-700">
-                This pet has been reported as lost. If you have any information, please contact the
-                owner.
+                {t('common:petPublicProfile.lostPetAlert')}
               </AlertDescription>
             </Alert>
           )}
@@ -258,22 +258,32 @@ const PetPublicProfilePage: React.FC = () => {
           {/* Pet Details */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg font-semibold">Details</CardTitle>
+              <CardTitle className="text-lg font-semibold">
+                {t('common:petPublicProfile.details')}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {pet.sex && pet.sex !== 'not_specified' && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Sex</span>
-                  <span className="font-medium">{SexLabels[pet.sex] ?? pet.sex}</span>
+                  <span className="text-muted-foreground">
+                    {t('common:petPublicProfile.sex')}
+                  </span>
+                  <span className="font-medium">{t(`pets:sexLabels.${pet.sex}`)}</span>
                 </div>
               )}
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Location</span>
-                <span className="font-medium">{formatLocation(pet)}</span>
+                <span className="text-muted-foreground">
+                  {t('common:petPublicProfile.location')}
+                </span>
+                <span className="font-medium">
+                  {formatLocation(pet, t('common:petPublicProfile.locationNotSpecified'))}
+                </span>
               </div>
               {pet.categories && pet.categories.length > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Categories</span>
+                  <span className="text-muted-foreground">
+                    {t('common:petPublicProfile.categories')}
+                  </span>
                   <div className="flex flex-wrap gap-1 justify-end">
                     {pet.categories.map((cat) => (
                       <Badge key={cat.id} variant="outline" className="text-xs">
@@ -290,7 +300,9 @@ const PetPublicProfilePage: React.FC = () => {
           {pet.description && (
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg font-semibold">About</CardTitle>
+                <CardTitle className="text-lg font-semibold">
+                  {t('common:petPublicProfile.about')}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground whitespace-pre-wrap">

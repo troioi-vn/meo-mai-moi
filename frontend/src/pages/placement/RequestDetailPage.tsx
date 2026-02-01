@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { toast } from '@/lib/i18n-toast'
@@ -33,6 +34,7 @@ import { TimelineCard } from './request-detail/TimelineCard'
 import { DangerZoneCard } from './request-detail/DangerZoneCard'
 
 export default function RequestDetailPage() {
+  const { t } = useTranslation('common')
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -61,11 +63,11 @@ export default function RequestDetailPage() {
       console.error('Failed to fetch placement request', err)
       const anyErr = err as { response?: { status?: number } }
       if (anyErr.response?.status === 403) {
-        setError('You do not have permission to view this request.')
+        setError(t('requestDetail.errors.noPermission'))
       } else if (anyErr.response?.status === 404) {
-        setError('Placement request not found.')
+        setError(t('requestDetail.errors.notFound'))
       } else {
-        setError('Failed to load placement request. Please try again.')
+        setError(t('requestDetail.errors.loadFailed'))
       }
     } finally {
       setLoading(false)
@@ -328,7 +330,7 @@ export default function RequestDetailPage() {
                 }}
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Go Back
+                {t('actions.goBack')}
               </Button>
             </div>
           </CardContent>

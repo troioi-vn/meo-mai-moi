@@ -16,7 +16,6 @@ import CreatePetPage from './CreatePetPage'
 import { postPets } from '@/api/generated/pets/pets'
 import { getPetTypes } from '@/api/generated/pet-types/pet-types'
 import type { PetType } from '@/types/pet'
-import { AuthProvider } from '@/contexts/AuthContext'
 
 // Mock the API functions
 vi.mock('@/api/generated/pets/pets', () => ({
@@ -123,7 +122,6 @@ describe('CreatePetPage', () => {
   })
 
   it('renders form with base fields and precision selector (no date input until Full Date selected)', async () => {
-    const user = userEvent.setup()
     renderWithRouter(<CreatePetPage />)
 
     expect(screen.getByRole('heading', { name: 'Add Pet' })).toBeInTheDocument()

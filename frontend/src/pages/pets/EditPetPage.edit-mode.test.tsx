@@ -42,8 +42,6 @@ const mockPet: Partial<Pet> = {
   user_id: 1,
 }
 
-const mockUser = { id: 1, name: 'Test User', email: 'test@example.com' }
-
 describe('CreatePetPage edit mode enhancements', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -68,7 +66,7 @@ describe('CreatePetPage edit mode enhancements', () => {
     }))
   })
 
-  const renderEditPage = (petId: string = '123') => {
+  const renderEditPage = (petId = '123') => {
     return renderWithRouter(<EditPetPage />, {
       route: `/pets/${petId}/edit`,
       routes: [{ path: '/pets/:id/edit', element: <EditPetPage /> }],

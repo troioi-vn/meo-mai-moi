@@ -5,7 +5,6 @@ import type { MockedFunction } from 'vitest'
 import MyPetsPage from './MyPetsPage'
 import { getMyPetsSections } from '@/api/generated/pets/pets'
 import type { Pet, PetType } from '@/types/pet'
-import { AuthProvider } from '@/contexts/AuthContext'
 
 // Mock the API function
 vi.mock('@/api/generated/pets/pets', () => ({

@@ -14,16 +14,7 @@ import { SetPasswordComponent } from '@/components/auth/SetPasswordComponent'
 import { DeleteAccountDialog } from '@/components/auth/DeleteAccountDialog'
 import { useCreateChat } from '@/hooks/useMessaging'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
-import {
-  MessageCircle,
-  User,
-  Lock,
-  Languages,
-  LogOut,
-  AlertTriangle,
-  Bell,
-  Info,
-} from 'lucide-react'
+import { MessageCircle, User, Lock, LogOut, AlertTriangle, Bell, Info } from 'lucide-react'
 
 const TAB_VALUES = ['account', 'notifications', 'contact-us'] as const
 type TabValue = (typeof TAB_VALUES)[number]

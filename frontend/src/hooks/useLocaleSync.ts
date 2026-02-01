@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from './useAuth'
-import type { SupportedLocale } from '@/i18n'
 
 /**
  * Hook to sync the user's locale preference from the backend.
@@ -9,11 +8,15 @@ import type { SupportedLocale } from '@/i18n'
  */
 export function useLocaleSync() {
   const { i18n } = useTranslation()
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
   const { user } = useAuth()
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (user?.locale && user.locale !== i18n.language) {
-      i18n.changeLanguage(user.locale as SupportedLocale)
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
+      void i18n.changeLanguage(user.locale)
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   }, [user?.locale, i18n])
 }

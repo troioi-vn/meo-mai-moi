@@ -59,7 +59,7 @@ const RequestsPage = () => {
     }
 
     void fetchInitialData()
-  }, [])
+  }, [t])
 
   useEffect(() => {
     const sortParam = searchParams.get('sort')

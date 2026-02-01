@@ -28,7 +28,7 @@
   "accessRestrictedDescription": "Этот профиль питомца не является публичным.",
   "placementRequests": {
     "title": "Заявки",
-    "none": "Заявок на пристройство пока нет.",
+    "none": "Заявок пока нет.",
     "type": "Тип",
     "created": "Создано",
     "status": "Статус"
@@ -122,9 +122,9 @@
       "returnFailed": "Не удалось отметить питомца как возвращённого. Попробуйте ещё раз.",
       "cancelResponseFailed": "Не удалось отменить отклик",
       "confirmHandoverFailed": "Не удалось подтвердить передачу",
-      "placementRequestDeleted": "Заявка на пристройство удалена",
-      "placementRequestDeleteFailed": "Не удалось удалить заявку на пристройство. Попробуйте ещё раз.",
-      "placementRequestCreated": "Заявка на пристройство успешно создана",
+      "placementRequestDeleted": "Заявка удалена",
+      "placementRequestDeleteFailed": "Не удалось удалить заявку. Попробуйте ещё раз.",
+      "placementRequestCreated": "Заявка успешно создана",
       "createSuccess": "Питомец успешно создан",
       "updateSuccess": "Питомец успешно обновлён"
     }
@@ -341,8 +341,8 @@
     "present": "Наст. время"
   },
   "activePlacementRequests": {
-    "title": "Активные заявки на пристройство",
-    "loadError": "Не удалось загрузить заявки на пристройство. Пожалуйста, попробуйте позже.",
+    "title": "Активные заявки",
+    "loadError": "Не удалось загрузить заявки. Пожалуйста, попробуйте позже.",
     "emptyMessage": "Загляните позже за питомцами, нуждающимися в помощи!"
   },
   "categories": {

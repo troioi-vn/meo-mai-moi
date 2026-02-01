@@ -43,7 +43,7 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
     }
 
     void fetchPlacementRequests()
-  }, [])
+  }, [t])
 
   const handleShowMore = () => {
     void navigate('/requests')

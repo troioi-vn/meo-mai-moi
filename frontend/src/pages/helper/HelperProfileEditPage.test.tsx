@@ -1,5 +1,4 @@
 import { screen, waitFor, render, fireEvent } from '@testing-library/react'
-import { vi } from 'vitest'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import { AllTheProviders } from '@/testing/providers'
 import HelperProfileEditPage from './HelperProfileEditPage'

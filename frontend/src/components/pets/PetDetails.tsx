@@ -27,7 +27,7 @@ const PetDetails: React.FC<PetDetailsProps> = ({
   onOpenPlacementRequest,
   onPetUpdate,
 }) => {
-  const { t } = useTranslation(['pets', 'common'])
+  const { t } = useTranslation(['pets', 'common', 'placement'])
   const ageDisplay = formatPetAge(pet, t)
   const statusDisplay = getStatusDisplay(pet.status, t)
   const statusClasses = getStatusClasses(pet.status)
@@ -98,7 +98,7 @@ const PetDetails: React.FC<PetDetailsProps> = ({
                   }}
                   variant="outline"
                 >
-                  {t('pets:details.placement_requests')}
+                  {t('placement:title')}
                 </Button>
               )}
               <Button
@@ -107,7 +107,7 @@ const PetDetails: React.FC<PetDetailsProps> = ({
                 }}
                 variant="outline"
               >
-                Edit
+                {t('common:actions.edit')}
               </Button>
             </div>
           )}
@@ -115,7 +115,9 @@ const PetDetails: React.FC<PetDetailsProps> = ({
 
         <div className="space-y-4">
           <div>
-            <h3 className="font-semibold text-card-foreground">Location</h3>
+            <h3 className="font-semibold text-card-foreground">
+              {t('common:location.title', { defaultValue: 'Location' })}
+            </h3>
             <p className="text-muted-foreground">
               {[
                 typeof pet.city === 'string' ? pet.city : pet.city?.name,
@@ -127,13 +129,13 @@ const PetDetails: React.FC<PetDetailsProps> = ({
             </p>
           </div>
           <div>
-            <h3 className="font-semibold text-card-foreground">Description</h3>
+            <h3 className="font-semibold text-card-foreground">{t('pets:form.description')}</h3>
             <p className="text-muted-foreground">{pet.description}</p>
           </div>
 
           {showPlacementRequests && (
             <div className="space-y-3">
-              <h3 className="font-semibold text-card-foreground">Placement Requests</h3>
+              <h3 className="font-semibold text-card-foreground">{t('placement:title')}</h3>
               <PlacementRequestsSection
                 placementRequests={placementRequests}
                 canEdit={Boolean(pet.viewer_permissions?.can_edit)}

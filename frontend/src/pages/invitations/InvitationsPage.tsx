@@ -44,39 +44,42 @@ export default function InvitationsPage() {
   const isRefreshingRef = useRef(false)
   const showRevoked = (stats?.revoked ?? 0) > 0
 
-  const loadData = useCallback(async (params?: { showLoading?: boolean }) => {
-    const { showLoading = true } = params ?? {}
-    if (isRefreshingRef.current) {
-      return
-    }
-
-    if (showLoading) {
-      setIsLoading(true)
-      setError(null)
-    }
-
-    isRefreshingRef.current = true
-
-    try {
-      const [invitationsData, statsData] = await Promise.all([
-        getUserInvitations(),
-        getInvitationStats(),
-      ])
-      setInvitations(invitationsData)
-      setStats(statsData)
-      setError(null)
-    } catch (err: unknown) {
-      console.error('Failed to load invitations:', err)
-      if (showLoading) {
-        setError(t('invitations.loadError'))
+  const loadData = useCallback(
+    async (params?: { showLoading?: boolean }) => {
+      const { showLoading = true } = params ?? {}
+      if (isRefreshingRef.current) {
+        return
       }
-    } finally {
-      isRefreshingRef.current = false
+
       if (showLoading) {
-        setIsLoading(false)
+        setIsLoading(true)
+        setError(null)
       }
-    }
-  }, [])
+
+      isRefreshingRef.current = true
+
+      try {
+        const [invitationsData, statsData] = await Promise.all([
+          getUserInvitations(),
+          getInvitationStats(),
+        ])
+        setInvitations(invitationsData)
+        setStats(statsData)
+        setError(null)
+      } catch (err: unknown) {
+        console.error('Failed to load invitations:', err)
+        if (showLoading) {
+          setError(t('invitations.loadError'))
+        }
+      } finally {
+        isRefreshingRef.current = false
+        if (showLoading) {
+          setIsLoading(false)
+        }
+      }
+    },
+    [t]
+  )
 
   useEffect(() => {
     void loadData()
@@ -236,7 +239,9 @@ export default function InvitationsPage() {
 
           <Card size="sm" className="py-3 gap-2">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
-              <CardTitle className="text-sm font-medium">{t('invitations.stats.pending')}</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                {t('invitations.stats.pending')}
+              </CardTitle>
               <Clock className="h-4 w-4 text-yellow-600" />
             </CardHeader>
             <CardContent className="pt-1">
@@ -248,7 +253,9 @@ export default function InvitationsPage() {
 
           <Card size="sm" className="py-3 gap-2">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
-              <CardTitle className="text-sm font-medium">{t('invitations.stats.accepted')}</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                {t('invitations.stats.accepted')}
+              </CardTitle>
               <CheckCircle className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent className="pt-1">
@@ -260,7 +267,9 @@ export default function InvitationsPage() {
 
           <Card size="sm" className="py-3 gap-2">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
-              <CardTitle className="text-sm font-medium">{t('invitations.stats.expired')}</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                {t('invitations.stats.expired')}
+              </CardTitle>
               <XCircle className="h-4 w-4 text-red-600" />
             </CardHeader>
             <CardContent className="pt-1">
@@ -273,7 +282,9 @@ export default function InvitationsPage() {
           {showRevoked && (
             <Card size="sm" className="py-3 gap-2 col-span-2 sm:col-span-1">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
-                <CardTitle className="text-sm font-medium">{t('invitations.stats.revoked')}</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  {t('invitations.stats.revoked')}
+                </CardTitle>
                 <XCircle className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent className="pt-1">
@@ -302,9 +313,7 @@ export default function InvitationsPage() {
               <Mail className="h-12 w-12 text-muted-foreground mx-auto" />
               <div>
                 <p className="text-lg font-medium">{t('invitations.list.noInvitations')}</p>
-                <p className="text-muted-foreground">
-                  {t('invitations.list.noInvitationsHint')}
-                </p>
+                <p className="text-muted-foreground">{t('invitations.list.noInvitationsHint')}</p>
               </div>
               <Button onClick={() => void handleGenerateInvitation()} disabled={isGenerating}>
                 <Plus className="h-4 w-4 mr-2" />
@@ -341,7 +350,9 @@ export default function InvitationsPage() {
                           <div className="flex items-center gap-1">
                             <Users className="h-3 w-3" />
                             {t('invitations.item.acceptedBy', {
-                              name: (invitation.recipient as { name?: string }).name ?? t('messaging.unknownUser'),
+                              name:
+                                (invitation.recipient as { name?: string }).name ??
+                                t('messaging.unknownUser'),
                             })}
                           </div>
                         )}

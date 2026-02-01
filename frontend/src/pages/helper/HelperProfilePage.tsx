@@ -14,7 +14,6 @@ export default function HelperProfilePage() {
   const navigate = useNavigate()
   const { data, isLoading, isError, refetch } = useGetHelperProfiles()
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- TS incorrectly infers isLoading is always false
   if (isLoading) {
     return <LoadingState message={t('helperProfiles.loading')} />
   }

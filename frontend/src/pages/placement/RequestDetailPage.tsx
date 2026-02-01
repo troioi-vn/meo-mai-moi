@@ -72,7 +72,7 @@ export default function RequestDetailPage() {
     } finally {
       setLoading(false)
     }
-  }, [id])
+  }, [id, t])
 
   useEffect(() => {
     void fetchRequest()

@@ -59,7 +59,7 @@ export function PetPhoto({
       toast.success('pets:photos.uploadSuccess')
       onPhotoUpdate(response as Pet)
     } catch (error: unknown) {
-      let errorMessage = 'pets:photos.uploadError'
+      const errorMessage = 'pets:photos.uploadError'
       if (error instanceof Error && 'response' in error) {
         const axiosError = error as AxiosError<{ message?: string }>
         const apiMessage = axiosError.response?.data.message
@@ -91,7 +91,7 @@ export function PetPhoto({
       const updatedPet = await getPet(pet.id)
       onPhotoUpdate(updatedPet)
     } catch (error: unknown) {
-      let errorMessage = 'pets:photos.deleteError'
+      const errorMessage = 'pets:photos.deleteError'
       if (error instanceof Error && 'response' in error) {
         const axiosError = error as AxiosError<{ message?: string }>
         const apiMessage = axiosError.response?.data.message

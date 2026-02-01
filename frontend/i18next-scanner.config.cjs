@@ -22,7 +22,7 @@ module.exports = {
       extensions: ['.js', '.jsx', '.ts', '.tsx'],
     },
     lngs: ['en', 'ru'],
-    ns: ['common', 'auth', 'pets', 'settings', 'validation'],
+    ns: ['common', 'auth', 'pets', 'settings', 'validation', 'helper', 'placement'],
     defaultLng: 'en',
     defaultNs: 'common',
     defaultValue: '__STRING_NOT_TRANSLATED__',

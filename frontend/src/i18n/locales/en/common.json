@@ -132,7 +132,7 @@
     "list": {
       "title": "Your Invitations",
       "empty": "You haven't sent any invitations yet.",
-      "count": "You have sent {{count}} invitation.",
+      "count_one": "You have sent {{count}} invitation.",
       "count_other": "You have sent {{count}} invitations.",
       "noInvitations": "No invitations yet",
       "noInvitationsHint": "Generate your first invitation to get started!",
@@ -180,7 +180,9 @@
     "searchCities": "Search cities...",
     "noCitiesFound": "No cities found.",
     "selectCountryFirst": "Select a country first to choose a city",
-    "maxCitiesAllowed": "Maximum {{count}} cities allowed"
+    "maxCitiesAllowed": "Maximum {{count}} cities allowed",
+    "maxCitiesAllowed_one": "Maximum {{count}} city allowed",
+    "maxCitiesAllowed_other": "Maximum {{count}} cities allowed"
   },
   "helperProfiles": {
     "title": "Helper Profiles",
@@ -326,5 +328,33 @@
     "locationNotSpecified": "Location not specified",
     "categories": "Categories",
     "about": "About"
-  }
+  },
+  "forgotPassword": {},
+  "medical": {
+    "types": {}
+  },
+  "vaccinations": {},
+  "weight": {},
+  "form": {
+    "genderOptions": {},
+    "birthdayPrecisionOptions": {}
+  },
+  "photos": {},
+  "petType": {},
+  "confirming": "Confirming",
+  "n/a": "N/A",
+  "yes": "Yes",
+  "no": "No",
+  "profile": {},
+  "check_form": "Please check the form for errors.",
+  "sections": {},
+  "security": {
+    "changePassword": {},
+    "sessions": {},
+    "deleteAccount": {}
+  },
+  "preferences": {
+    "language": {}
+  },
+  "contactUs": {}
 }

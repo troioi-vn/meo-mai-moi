@@ -354,7 +354,9 @@
     "createButton": "Создать",
     "selectPetTypeFirst": "Сначала выберите тип питомца, чтобы добавить категории",
     "searchPlaceholder": "Поиск категорий...",
-    "pending": "Ожидает"
+    "pending": "Ожидает",
+    "limitError_few": "Максимум {{count}} категории разрешено",
+    "limitError_many": "Максимум {{count}} категорий разрешено"
   },
   "petType": {
     "label": "Тип питомца",
@@ -395,6 +397,12 @@
     },
     "approx": "{{text}} (прибл.)",
     "approxSymbol": "≈{{text}}",
-    "lessThanYearApprox": "Меньше 1 года (прибл.)"
+    "lessThanYearApprox": "Меньше 1 года (прибл.)",
+    "year_few": "{{count}} года",
+    "year_many": "{{count}} лет",
+    "month_few": "{{count}} месяца",
+    "month_many": "{{count}} месяцев",
+    "day_few": "{{count}} дня",
+    "day_many": "{{count}} дней"
   }
 }

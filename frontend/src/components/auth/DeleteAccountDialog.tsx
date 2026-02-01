@@ -28,7 +28,7 @@ interface DeleteAccountDialogProps {
 }
 
 const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDeleted }) => {
-  const { t } = useTranslation(['auth', 'common'])
+  const { t } = useTranslation(['auth', 'common', 'settings'])
   const { deleteAccount } = useAuth()
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -39,8 +39,8 @@ const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDele
     try {
       await deleteAccount(password)
       toast({
-        title: t('auth:deleteAccount.successTitle'),
-        description: t('auth:deleteAccount.successDescription'),
+        title: t('settings:security.deleteAccount.successTitle'),
+        description: t('settings:security.deleteAccount.successDescription'),
       })
       setIsOpen(false)
       onAccountDeleted()
@@ -53,7 +53,7 @@ const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDele
         errorMessage = error.message
       }
       toast({
-        title: t('auth:deleteAccount.failedTitle'),
+        title: t('settings:security.deleteAccount.failedTitle'),
         description: errorMessage,
         variant: 'destructive',
       })
@@ -65,18 +65,18 @@ const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDele
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive">{t('auth:deleteAccount.title')}</Button>
+        <Button variant="destructive">{t('settings:security.deleteAccount.button')}</Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{t('auth:deleteAccount.confirmTitle')}</AlertDialogTitle>
+          <AlertDialogTitle>{t('settings:security.deleteAccount.confirmTitle')}</AlertDialogTitle>
           <AlertDialogDescription>
-            {t('auth:deleteAccount.confirmDescription')}
+            {t('settings:security.deleteAccount.confirmDescription')}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="password">{t('auth:deleteAccount.passwordLabel')}</Label>
+            <Label htmlFor="password">{t('settings:security.deleteAccount.passwordLabel')}</Label>
             <Input
               id="password"
               type="password"
@@ -91,7 +91,9 @@ const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDele
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isLoading}>{t('common:actions.cancel')}</AlertDialogCancel>
           <AlertDialogAction onClick={() => void handleDeleteAccount()} disabled={isLoading}>
-            {isLoading ? t('auth:deleteAccount.deleting') : t('auth:deleteAccount.submit')}
+            {isLoading
+              ? t('settings:security.deleteAccount.deleting')
+              : t('settings:security.deleteAccount.submit')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

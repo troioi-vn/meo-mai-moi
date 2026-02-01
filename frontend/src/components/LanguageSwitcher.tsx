@@ -41,7 +41,7 @@ export function LanguageSwitcher() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="flex w-full items-center justify-between gap-2 px-3 sm:w-[200px]"
+          className="flex w-full items-center justify-between gap-2 px-3 sm:w-50"
         >
           <div className="flex items-center gap-2">
             <span className="font-medium">{localeNames[currentLocale]}</span>
@@ -50,7 +50,7 @@ export function LanguageSwitcher() {
           <span className="sr-only">Change language</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-[200px]">
+      <DropdownMenuContent align="start" className="w-50">
         {supportedLocales.map((locale) => (
           <DropdownMenuItem
             key={locale}

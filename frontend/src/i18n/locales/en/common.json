@@ -39,6 +39,7 @@
     "retry": "Retry",
     "tryAgain": "Try Again",
     "loading": "Loading...",
+    "saving": "Saving...",
     "view": "View",
     "view_all": "View All",
     "download": "Download",
@@ -180,6 +181,23 @@
       "foster_free": "Foster (Free)",
       "permanent": "Permanent",
       "pet_sitting": "Pet Sitting"
+    },
+    "status": {
+      "title": "Profile Status",
+      "archiveProfile": "Archive Profile",
+      "archiving": "Archiving...",
+      "restoreProfile": "Restore Profile",
+      "restoring": "Restoring...",
+      "deleteProfile": "Delete Profile",
+      "deleting": "Deleting...",
+      "confirmDeleteTitle": "Are you absolutely sure?",
+      "confirmDeleteDescription": "This action cannot be undone. This will permanently delete your helper profile and remove your data from our servers.",
+      "cannotDeleteWithRequests": "Note: Profiles with associated placement requests cannot be deleted."
+    },
+    "edit": {
+      "title": "Edit Helper Profile",
+      "description": "Keep your profile up to date to help pet owners find the best match for their pets.",
+      "currentPhotos": "Current Photos"
     }
   },
   "requests": {

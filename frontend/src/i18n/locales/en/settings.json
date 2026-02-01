@@ -23,6 +23,7 @@
     "avatarFileTooLarge": "File size must be less than 10MB",
     "uploading": "Uploading...",
     "deleting": "Deleting...",
+    "saving": "Saving...",
     "bio": "Bio",
     "saveChanges": "Save Changes",
     "saved": "Profile updated",
@@ -69,8 +70,14 @@
       "title": "Delete Account",
       "description": "Permanently delete your account and all associated data",
       "button": "Delete Account",
-      "confirm": "Are you sure? This action cannot be undone.",
-      "password": "Enter your password to confirm"
+      "confirmTitle": "Are you absolutely sure?",
+      "confirmDescription": "This action cannot be undone. This will permanently delete your account and remove your data from our servers. To confirm, please type your password below.",
+      "passwordLabel": "Your Password",
+      "submit": "Delete My Account",
+      "deleting": "Deleting...",
+      "successTitle": "Account Deleted",
+      "successDescription": "Your account has been successfully deleted.",
+      "failedTitle": "Account Deletion Failed"
     }
   },
   "notifications": {

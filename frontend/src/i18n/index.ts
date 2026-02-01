@@ -34,6 +34,7 @@ if (!isTest) {
   i18nInstance.use(LanguageDetector)
 }
 
+// Force reload after adding translations
 i18nInstance.use(initReactI18next).init({
   resources: {
     en: {

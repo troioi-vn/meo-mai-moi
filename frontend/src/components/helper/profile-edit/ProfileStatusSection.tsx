@@ -12,6 +12,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { FormSectionHeader } from './FormSectionHeader'
+import { useTranslation } from 'react-i18next'
 
 export function ProfileStatusSection({
   status,
@@ -32,18 +33,24 @@ export function ProfileStatusSection({
   isRestoring: boolean
   isDeleting: boolean
 }) {
+  const { t } = useTranslation('common')
+
   return (
     <section className="pt-6 border-t space-y-4">
-      <FormSectionHeader icon={UserCog} title="Profile Status" />
+      <FormSectionHeader icon={UserCog} title={t('common:helperProfiles.status.title')} />
       <div className="flex flex-wrap gap-4">
         {status === 'active' && (
           <Button type="button" variant="outline" onClick={onArchive} disabled={isArchiving}>
-            {isArchiving ? 'Archiving...' : 'Archive Profile'}
+            {isArchiving
+              ? t('common:helperProfiles.status.archiving')
+              : t('common:helperProfiles.status.archiveProfile')}
           </Button>
         )}
         {status === 'archived' && (
           <Button type="button" variant="outline" onClick={onRestore} disabled={isRestoring}>
-            {isRestoring ? 'Restoring...' : 'Restore Profile'}
+            {isRestoring
+              ? t('common:helperProfiles.status.restoring')
+              : t('common:helperProfiles.status.restoreProfile')}
           </Button>
         )}
 
@@ -51,29 +58,32 @@ export function ProfileStatusSection({
           <AlertDialogTrigger asChild>
             <Button type="button" variant="destructive" disabled={isDeleting}>
               <Trash2 className="mr-2 h-4 w-4" />
-              {isDeleting ? 'Deleting...' : 'Delete Profile'}
+              {isDeleting
+                ? t('common:helperProfiles.status.deleting')
+                : t('common:helperProfiles.status.deleteProfile')}
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogTitle>
+                {t('common:helperProfiles.status.confirmDeleteTitle')}
+              </AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete your helper profile and
-                remove your data from our servers.
+                {t('common:helperProfiles.status.confirmDeleteDescription')}
                 {hasPlacementResponses && (
                   <p className="mt-2 font-semibold text-destructive">
-                    Note: Profiles with associated placement requests cannot be deleted.
+                    {t('common:helperProfiles.status.cannotDeleteWithRequests')}
                   </p>
                 )}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={onDelete}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                Delete
+                {t('common:actions.delete')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

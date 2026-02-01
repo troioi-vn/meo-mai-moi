@@ -67,11 +67,11 @@ class StorePlacementRequestResponseController extends Controller
     {
         $placementRequest = PlacementRequest::find($placementRequestId);
         if (! $placementRequest) {
-            return $this->sendError('Placement request not found.', 404);
+            return $this->sendError(__('messages.placement.not_found'), 404);
         }
         /** @var PlacementRequest $placementRequest */
         if (! $placementRequest->isActive()) {
-            return $this->sendError('This placement request is no longer active.', 403);
+            return $this->sendError(__('messages.placement.not_active'), 403);
         }
 
         /** @var \App\Models\User $user */
@@ -98,20 +98,20 @@ class StorePlacementRequestResponseController extends Controller
         if (! $placementRequest->canHelperRespond($helperProfile->id)) {
             // If blocked (rejected), treat as forbidden rather than conflict
             if ($placementRequest->isHelperBlocked($helperProfile->id)) {
-                return $this->sendError('You cannot respond to this placement request at this time.', 403);
+                return $this->sendError(__('messages.placement.cannot_respond'), 403);
             }
 
             // If they already responded and it's active, return 409 for frontend to handle
             if ($placementRequest->hasResponseFrom($helperProfile->id)) {
-                return $this->sendError('You have already responded to this placement request.', 409);
+                return $this->sendError(__('messages.placement.already_responded'), 409);
             }
 
-            return $this->sendError('You cannot respond to this placement request at this time.', 403);
+            return $this->sendError(__('messages.placement.cannot_respond'), 403);
         }
 
         // Owner cannot respond to their own request
         if ($placementRequest->user_id === $user->id) {
-            return $this->sendError('You cannot respond to your own placement request.', 403);
+            return $this->sendError(__('messages.placement.cannot_self_respond'), 403);
         }
 
         $validatedData = $request->validate([

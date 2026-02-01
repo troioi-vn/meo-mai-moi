@@ -66,7 +66,7 @@ class StoreCityController extends Controller
             ->count();
 
         if ($citiesCreatedInLast24Hours >= 10) {
-            return $this->sendError('You have reached the limit of 10 cities per 24 hours. Please try again later.', 422);
+            return $this->sendError(__('messages.city.limit_reached'), 422);
         }
 
         // Unique name per country
@@ -75,7 +75,7 @@ class StoreCityController extends Controller
             ->first();
 
         if ($existingByName) {
-            return $this->sendError('A city with this name already exists for this country.', 422);
+            return $this->sendError(__('messages.city.already_exists'), 422);
         }
 
         $existingBySlug = City::where('slug', $slug)

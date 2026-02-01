@@ -13,13 +13,6 @@ use Symfony\Component\HttpFoundation\Response;
 class SetLocaleMiddleware
 {
     /**
-     * Supported locales.
-     *
-     * @var array<string>
-     */
-    private const SUPPORTED_LOCALES = ['en', 'ru'];
-
-    /**
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
@@ -108,6 +101,9 @@ class SetLocaleMiddleware
      */
     private function isSupported(string $locale): bool
     {
-        return in_array($locale, self::SUPPORTED_LOCALES, true);
+        /** @var array<string> $supported */
+        $supported = config('locales.supported', ['en']);
+
+        return in_array($locale, $supported, true);
     }
 }

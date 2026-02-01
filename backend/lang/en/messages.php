@@ -156,4 +156,128 @@ return [
     'locale' => [
         'updated' => 'Language preference updated.',
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Placement Request Messages
+    |--------------------------------------------------------------------------
+    */
+    'placement' => [
+        'not_found' => 'Placement request not found.',
+        'not_active' => 'This placement request is no longer active.',
+        'unauthorized_create' => 'You are not authorized to create a placement request for this pet.',
+        'already_exists' => 'An active placement request of this type already exists for this pet.',
+        'only_owner_can_finalize' => 'Only the pet owner can finalize this placement request.',
+        'only_active_can_finalize' => 'Only active placement requests can be finalized.',
+        'only_temporary_can_finalize' => 'Only temporary placements can be finalized this way.',
+        'cannot_respond' => 'You cannot respond to this placement request at this time.',
+        'already_responded' => 'You have already responded to this placement request.',
+        'cannot_self_respond' => 'You cannot respond to your own placement request.',
+        'response_cannot_accept' => 'This response cannot be accepted in its current state.',
+        'response_cannot_cancel' => 'This response cannot be cancelled in its current state.',
+        'response_cannot_reject' => 'This response cannot be rejected in its current state.',
+        'unauthorized_view_responses' => 'You are not authorized to view responses for this placement request.',
+        'terms_not_found' => 'Placement terms not found.',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Transfer Request Messages
+    |--------------------------------------------------------------------------
+    */
+    'transfer' => [
+        'only_pending_reject' => 'Only pending requests can be rejected.',
+        'only_pending_cancel' => 'Only pending requests can be canceled.',
+        'only_pending_confirm' => 'Only pending transfers can be confirmed.',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | City Messages
+    |--------------------------------------------------------------------------
+    */
+    'city' => [
+        'not_found' => 'City not found.',
+        'country_mismatch' => 'Selected city does not belong to the specified country.',
+        'limit_reached' => 'You have reached the limit of 10 cities per 24 hours. Please try again later.',
+        'already_exists' => 'A city with this name already exists for this country.',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Category Messages
+    |--------------------------------------------------------------------------
+    */
+    'category' => [
+        'already_exists' => 'A category with this name already exists for this pet type.',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Message/Messaging Messages
+    |--------------------------------------------------------------------------
+    */
+    'message' => [
+        'unauthorized_view' => 'You are not authorized to view this message.',
+        'unauthorized_mark_read' => 'You are not authorized to mark this message as read.',
+        'unauthorized_delete' => 'You are not authorized to delete this message.',
+        'group_not_implemented' => 'Group chats are not yet implemented.',
+        'only_owner_can_message' => 'Only the placement request owner can message helpers in this request.',
+        'recipient_must_be_helper' => 'Recipient must be a helper who responded to the placement request.',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Email Messages
+    |--------------------------------------------------------------------------
+    */
+    'email' => [
+        'verification_unavailable' => 'We are unable to send verification email at the moment. But hopefully admins are working on it and you will receive it soon.',
+        'send_failed' => 'We are unable to send email at the moment. Please try again later.',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | User Profile Messages
+    |--------------------------------------------------------------------------
+    */
+    'profile' => [
+        'no_avatar' => 'No avatar to delete.',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Messages
+    |--------------------------------------------------------------------------
+    */
+    'admin' => [
+        'cannot_ban_admin' => 'Cannot ban an admin user.',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pet Additional Messages
+    |--------------------------------------------------------------------------
+    */
+    'pets_extra' => [
+        'not_public' => 'This pet profile is not publicly available.',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Impersonation Messages
+    |--------------------------------------------------------------------------
+    */
+    'impersonation' => [
+        'not_impersonating' => 'Not impersonating.',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Unsubscribe Messages
+    |--------------------------------------------------------------------------
+    */
+    'unsubscribe' => [
+        'invalid_request' => 'Invalid unsubscribe request. The link may be expired or invalid.',
+    ],
 ];

@@ -17,7 +17,7 @@ class BanUserController extends Controller
     {
         // Prevent banning admins/super_admins via API.
         if (method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin'])) {
-            return $this->sendError('Cannot ban an admin user.', 422);
+            return $this->sendError(__('messages.admin.cannot_ban_admin'), 422);
         }
 
         $validated = $request->validate([

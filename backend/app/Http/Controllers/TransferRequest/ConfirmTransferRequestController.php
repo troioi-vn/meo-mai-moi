@@ -72,7 +72,7 @@ class ConfirmTransferRequestController extends Controller
 
         // Ensure pending before proceeding
         if ($transferRequest->status !== TransferRequestStatus::PENDING) {
-            return $this->sendError('Only pending transfers can be confirmed.', 409);
+            return $this->sendError(__('messages.transfer.only_pending_confirm'), 409);
         }
 
         $actor = $request->user();

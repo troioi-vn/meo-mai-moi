@@ -87,6 +87,6 @@ class CancelPlacementRequestResponseController extends Controller
             );
         }
 
-        return $this->sendError('This response cannot be cancelled in its current state.', 403);
+        return $this->sendError(__('messages.placement.response_cannot_cancel'), 403);
     }
 }

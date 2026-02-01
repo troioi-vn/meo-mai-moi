@@ -59,6 +59,6 @@ class ProcessUnsubscribeController extends Controller
             return $this->sendSuccessWithMeta(null, 'You have been successfully unsubscribed from this notification type.');
         }
 
-        return $this->sendError('Invalid unsubscribe request. The link may be expired or invalid.', 400);
+        return $this->sendError(__('messages.unsubscribe.invalid_request'), 400);
     }
 }

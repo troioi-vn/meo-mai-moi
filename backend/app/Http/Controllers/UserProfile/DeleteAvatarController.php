@@ -38,7 +38,7 @@ class DeleteAvatarController extends Controller
         $user = $request->user();
 
         if (! $user->avatar_url) {
-            return $this->sendError('No avatar to delete.', 404);
+            return $this->sendError(__('messages.profile.no_avatar'), 404);
         }
 
         // Clear avatar from MediaLibrary

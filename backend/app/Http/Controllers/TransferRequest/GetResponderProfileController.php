@@ -53,7 +53,7 @@ class GetResponderProfileController extends Controller
         $profile = $transferRequest->helperProfile;
 
         if (! $profile) {
-            return $this->sendError('Helper profile not found.', 404);
+            return $this->sendError(__('messages.helper.not_found'), 404);
         }
 
         return $this->sendSuccess($profile);

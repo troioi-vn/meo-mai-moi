@@ -68,7 +68,7 @@ class StoreCategoryController extends Controller
             ->first();
 
         if ($existingByName) {
-            return $this->sendError('A category with this name already exists for this pet type.', 422);
+            return $this->sendError(__('messages.category.already_exists'), 422);
         }
 
         // Check for unique slug + pet_type_id combination

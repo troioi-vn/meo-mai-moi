@@ -90,7 +90,7 @@ class StoreChatController extends Controller
                     /** @var PlacementRequest|null $placementRequest */
                     $placementRequest = PlacementRequest::find($contextableId);
                     if (! $placementRequest) {
-                        return $this->sendError('Placement request not found.', 404);
+                        return $this->sendError(__('messages.placement.not_found'), 404);
                     }
 
                     $ownerId = (int) $placementRequest->user_id;
@@ -100,7 +100,7 @@ class StoreChatController extends Controller
                     if ($recipientId !== $ownerId) {
                         // For owner -> helper, require the authenticated user is the owner
                         if ((int) $user->id !== $ownerId) {
-                            return $this->sendError('Only the placement request owner can message helpers in this request.', 403);
+                            return $this->sendError(__('messages.message.only_owner_can_message'), 403);
                         }
 
                         // And require the recipient is a helper who has responded to this placement request
@@ -112,7 +112,7 @@ class StoreChatController extends Controller
                             ->exists();
 
                         if (! $recipientHasResponded) {
-                            return $this->sendError('Recipient must be a helper who responded to the placement request.', 422);
+                            return $this->sendError(__('messages.message.recipient_must_be_helper'), 422);
                         }
                     }
                 }
@@ -141,6 +141,6 @@ class StoreChatController extends Controller
         }
 
         // For private groups - not implemented in phase 1
-        return $this->sendError('Group chats are not yet implemented.', 501);
+        return $this->sendError(__('messages.message.group_not_implemented'), 501);
     }
 }

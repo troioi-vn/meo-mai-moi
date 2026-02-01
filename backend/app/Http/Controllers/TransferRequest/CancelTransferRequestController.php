@@ -60,7 +60,7 @@ class CancelTransferRequestController extends Controller
 
         // Ensure pending before proceeding
         if ($transferRequest->status !== TransferRequestStatus::PENDING) {
-            return $this->sendError('Only pending requests can be canceled.', 409);
+            return $this->sendError(__('messages.transfer.only_pending_cancel'), 409);
         }
 
         $transferRequest->status = TransferRequestStatus::CANCELED;

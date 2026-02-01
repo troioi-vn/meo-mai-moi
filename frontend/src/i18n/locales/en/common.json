@@ -101,6 +101,11 @@
     "today": "Today",
     "yesterday": "Yesterday"
   },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "ru": "Russian"
+  },
   "userMenu": {
     "installApp": "Install App",
     "darkMode": "Dark",

@@ -62,7 +62,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Ensure API requests return 401 JSON instead of redirecting to a non-existent login route
         $exceptions->render(function (AuthenticationException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
-                return response()->json(['message' => 'Unauthenticated.'], 401);
+                return response()->json(['message' => __('messages.unauthenticated')], 401);
             }
         });
 
@@ -96,7 +96,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
                 if ($request->is('api/*') || $request->expectsJson()) {
                     return response()->json([
-                        'message' => 'We are unable to send email at the moment. Please try again later.',
+                        'message' => __('messages.email.send_failed'),
                     ], 500);
                 }
             }

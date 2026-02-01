@@ -16,13 +16,6 @@ class LocaleController extends Controller
 {
     use ApiResponseTrait;
 
-    /**
-     * Supported locales.
-     *
-     * @var array<string>
-     */
-    private const SUPPORTED_LOCALES = ['en', 'ru'];
-
     #[OA\Get(
         path: '/api/locale',
         summary: 'Get current locale',
@@ -56,7 +49,7 @@ class LocaleController extends Controller
     {
         return $this->sendSuccess([
             'current' => App::getLocale(),
-            'supported' => self::SUPPORTED_LOCALES,
+            'supported' => config('locales.supported', ['en']),
         ]);
     }
 
@@ -92,7 +85,7 @@ class LocaleController extends Controller
     public function update(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'locale' => ['required', 'string', Rule::in(self::SUPPORTED_LOCALES)],
+            'locale' => ['required', 'string', Rule::in(config('locales.supported', ['en']))],
         ]);
 
         $user = $request->user();

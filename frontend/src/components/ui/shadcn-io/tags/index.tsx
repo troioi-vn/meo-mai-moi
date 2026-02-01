@@ -112,7 +112,7 @@ export type TagsTriggerProps = ComponentProps<typeof Button> & {
 export const TagsTrigger = ({
   className,
   children,
-  placeholder = 'Select a tag...',
+  placeholder = '',
   ...props
 }: TagsTriggerProps) => (
   <PopoverTrigger asChild>

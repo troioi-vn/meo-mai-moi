@@ -49,8 +49,8 @@ describe('HelperProfileEditPage', () => {
       expect(screen.getByText(/cities/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/phone number/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/experience/i)).toBeInTheDocument()
-      expect(screen.getByLabelText(/has pets/i)).toBeInTheDocument()
-      expect(screen.getByLabelText(/has children/i)).toBeInTheDocument()
+      expect(screen.getByLabelText(/pets/i)).toBeInTheDocument()
+      expect(screen.getByLabelText(/children/i)).toBeInTheDocument()
       // Check request types checkboxes are present
       expect(screen.getByLabelText(/foster \(free\)/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/permanent adoption/i)).toBeInTheDocument()

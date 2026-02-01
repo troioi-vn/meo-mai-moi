@@ -48,7 +48,7 @@ const CreateHelperProfilePage: React.FC = () => {
     const loadPetTypes = async () => {
       try {
         const types = await getPetTypes()
-        setPetTypes(types)
+        setPetTypes(types as PetType[])
       } catch (err: unknown) {
         console.error('Failed to load pet types:', err)
         toast.error('common:errors.generic')
@@ -125,7 +125,7 @@ const CreateHelperProfilePage: React.FC = () => {
                 />
 
                 <section>
-                  <FormSectionHeader icon={Heart} title="Pet Preferences" />
+                  <FormSectionHeader icon={Heart} title={t('helper:form.petPreferencesSection')} />
                   <PetTypesSelector
                     petTypes={petTypes}
                     selectedPetTypeIds={formData.pet_type_ids}
@@ -133,24 +133,23 @@ const CreateHelperProfilePage: React.FC = () => {
                       updateField('pet_type_ids')(ids)
                     }}
                     loading={loadingPetTypes}
-                    label="Pet Types Available for Placement Requests"
+                    label={t('helper:form.petTypesLabel')}
                     error={errors.pet_type_ids}
                   />
                 </section>
 
                 <section>
-                  <FormSectionHeader icon={Camera} title="Photos" />
+                  <FormSectionHeader icon={Camera} title={t('helper:form.photosSection')} />
                   <div className="bg-muted/30 rounded-lg p-4 border-2 border-dashed border-muted-foreground/20">
                     <FileInput
                       id="photos"
-                      label="Upload Photos"
+                      label={t('helper:form.uploadPhotos')}
                       onChange={updateField('photos')}
                       error={errors.photos}
                       multiple
                     />
                     <p className="text-xs text-muted-foreground mt-2">
-                      Add photos of your home or previous pets to help owners get to know you
-                      better.
+                      {t('helper:form.photosDescription')}
                     </p>
                   </div>
                 </section>
@@ -158,10 +157,12 @@ const CreateHelperProfilePage: React.FC = () => {
                 <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t">
                   <Button
                     type="submit"
-                    aria-label="Create Helper Profile"
+                    aria-label={t('helper:actions.createProfile')}
                     disabled={isSubmitting || loadingPetTypes}
                   >
-                    {isSubmitting ? 'Creating Profile...' : 'Create Helper Profile'}
+                    {isSubmitting
+                      ? t('helper:actions.creatingProfile')
+                      : t('helper:actions.createProfile')}
                   </Button>
                   <Button
                     type="button"
@@ -171,7 +172,7 @@ const CreateHelperProfilePage: React.FC = () => {
                     }}
                     disabled={isSubmitting}
                   >
-                    Cancel
+                    {t('common:actions.cancel')}
                   </Button>
                 </div>
               </form>

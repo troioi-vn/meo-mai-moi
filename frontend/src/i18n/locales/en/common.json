@@ -47,7 +47,8 @@
     "uploading": "Uploading...",
     "copy": "Copy",
     "share": "Share",
-    "or": "OR"
+    "or": "OR",
+    "createWithName": "Create: \"{{name}}\""
   },
   "status": {
     "active": "Active",
@@ -164,6 +165,22 @@
     "viaPlacementRequest": "Placement Request",
     "viaPet": "Pet",
     "unknownUser": "Unknown"
+  },
+  "location": {
+    "title": "Location",
+    "country": "Country",
+    "state": "State",
+    "city": "City",
+    "address": "Address",
+    "selectCountry": "Select a country",
+    "searchCountry": "Search country...",
+    "noCountryFound": "No country found.",
+    "selectCity": "Select city",
+    "selectCities": "Select cities",
+    "searchCities": "Search cities...",
+    "noCitiesFound": "No cities found.",
+    "selectCountryFirst": "Select a country first to choose a city",
+    "maxCitiesAllowed": "Maximum {{count}} cities allowed"
   },
   "helperProfiles": {
     "title": "Helper Profiles",

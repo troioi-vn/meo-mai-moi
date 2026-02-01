@@ -64,7 +64,7 @@ void i18nInstance.use(initReactI18next).init({
   fallbackLng: 'en',
   supportedLngs: supportedLocales,
   defaultNS: 'common',
-  ns: ['common', 'auth', 'pets', 'settings', 'validation'],
+  ns: ['common', 'auth', 'pets', 'settings', 'validation', 'helper', 'placement'],
   interpolation: {
     escapeValue: false,
   },

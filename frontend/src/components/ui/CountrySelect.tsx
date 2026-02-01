@@ -1,7 +1,9 @@
 import * as React from 'react'
 import countries from 'i18n-iso-countries'
 import enLocale from 'i18n-iso-countries/langs/en.json'
+import ruLocale from 'i18n-iso-countries/langs/ru.json'
 import { Check, ChevronsUpDown } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -15,8 +17,9 @@ import {
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
-// Register English locale for country names
+// Register locales
 countries.registerLocale(enLocale)
+countries.registerLocale(ruLocale)
 
 interface CountrySelectProps {
   value?: string
@@ -34,15 +37,18 @@ interface CountrySelectProps {
 export function CountrySelect({
   value,
   onValueChange,
-  placeholder = 'Select a country',
+  placeholder,
   disabled = false,
   className,
   'data-testid': dataTestId,
 }: CountrySelectProps) {
+  const { t, i18n } = useTranslation(['common'])
   const [open, setOpen] = React.useState(false)
 
+  const lang = i18n.language.startsWith('ru') ? 'ru' : 'en'
+
   // Get all countries as { code: name } object
-  const countryNames = countries.getNames('en', { select: 'official' })
+  const countryNames = React.useMemo(() => countries.getNames(lang, { select: 'official' }), [lang])
 
   // Sort countries alphabetically by name, but put Vietnam first as default
   const sortedCountries = React.useMemo(() => {
@@ -74,15 +80,15 @@ export function CountrySelect({
           disabled={disabled}
           data-testid={dataTestId}
         >
-          {selectedCountryName ?? placeholder}
+          {selectedCountryName ?? (placeholder || t('common:location.selectCountry'))}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
         <Command>
-          <CommandInput placeholder="Search country..." />
+          <CommandInput placeholder={t('common:location.searchCountry')} />
           <CommandList>
-            <CommandEmpty>No country found.</CommandEmpty>
+            <CommandEmpty>{t('common:location.noCountryFound')}</CommandEmpty>
             <CommandGroup>
               {sortedCountries.map(([code, name]) => (
                 <CommandItem

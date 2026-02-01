@@ -1,5 +1,23 @@
 {
   "title": "Placement Requests",
+  "none": "No placement requests yet.",
+  "responseStatus": {
+    "responded": "Pending Review",
+    "accepted": "Accepted",
+    "rejected": "Rejected",
+    "cancelled": "Cancelled"
+  },
+  "labels": {
+    "owner": "Owner",
+    "pet": "Pet",
+    "responded": "Responded",
+    "status": "Status",
+    "actionRequired": "Action required",
+    "waiting": "Waiting"
+  },
+  "aria": {
+    "openRequest": "Open placement request {{id}} for {{petName}}"
+  },
   "headers": {
     "available": "Available for Placement",
     "awaitingHandover": "Awaiting Handover",

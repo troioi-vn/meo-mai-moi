@@ -43,6 +43,13 @@ All notable changes to this project are documented here, following the [Keep a C
 
 - **Frontend Hook Tests**: Added comprehensive unit tests for React hooks to improve code reliability and catch regressions early. Implemented tests for CRUD operations in `useMedicalRecords`, `useVaccinations`, `useMicrochips`, and `useWeights`; business logic in `usePlacementInfo` and `usePetProfile`; side effects in `useCreatePlacementRequest` and `use-pwa-update`; and form validation/payload building in `useCreatePetForm` and `useHelperProfileForm`. Refactored form hooks to extract pure helper functions for better testability. Fixed Sonner toast mock to support both callable and method forms.
 
+- **i18n Implementation for Helper Profile Creation**: Completed internationalization for the helper profile creation page and related components to support both English and Russian locales.
+  - Localized all hardcoded strings on the helper/create page including section headers ("Pet Preferences", "Photos"), form labels, placeholders, and button text.
+  - Enhanced `CountrySelect` and `CitySelect` components with full i18n support, including Russian country names via `i18n-iso-countries` library and localized search placeholders, validation messages, and empty states.
+  - Added comprehensive translation keys to `common.json`, `helper.json`, and `placement.json` for both English and Russian locales.
+  - Updated `HelperProfilePlacementRequestsCard` to use localized status labels and badges.
+  - Fixed test regressions by updating assertions to match new localized strings and resolved initialization order issues in `NotificationPreferences` component.
+
 ### Changed
 
 - **Frontend API Consumption**: Updated the Axios interceptor to automatically "unwrap" the backend's data envelope. Components now receive the direct payload (e.g., as `const user = await api.get('/user')`) instead of having to manually navigate `.data.data`.

@@ -1,5 +1,23 @@
 {
   "title": "Запросы на размещение",
+  "none": "Запросов на размещение пока нет.",
+  "responseStatus": {
+    "responded": "На рассмотрении",
+    "accepted": "Принято",
+    "rejected": "Отклонено",
+    "cancelled": "Отменено"
+  },
+  "labels": {
+    "owner": "Владелец",
+    "pet": "Питомец",
+    "responded": "Откликнулись",
+    "status": "Статус",
+    "actionRequired": "Требуется действие",
+    "waiting": "Ожидание"
+  },
+  "aria": {
+    "openRequest": "Открыть запрос на размещение {{id}} для {{petName}}"
+  },
   "headers": {
     "available": "Доступно для размещения",
     "awaitingHandover": "Ожидание передачи",

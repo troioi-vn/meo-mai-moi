@@ -47,7 +47,8 @@
     "uploading": "Загрузка...",
     "copy": "Копировать",
     "share": "Поделиться",
-    "or": "ИЛИ"
+    "or": "ИЛИ",
+    "createWithName": "Создать: \"{{name}}\""
   },
   "status": {
     "active": "Активный",
@@ -170,6 +171,22 @@
     "viaPlacementRequest": "Заявку",
     "viaPet": "Питомца",
     "unknownUser": "Неизвестно"
+  },
+  "location": {
+    "title": "Местоположение",
+    "country": "Страна",
+    "state": "Область/Штат",
+    "city": "Город",
+    "address": "Адрес",
+    "selectCountry": "Выберите страну",
+    "searchCountry": "Поиск страны...",
+    "noCountryFound": "Страна не найдена.",
+    "selectCity": "Выберите город",
+    "selectCities": "Выберите города",
+    "searchCities": "Поиск городов...",
+    "noCitiesFound": "Города не найдены.",
+    "selectCountryFirst": "Сначала выберите страну, чтобы выбрать город",
+    "maxCitiesAllowed": "Максимальное количество городов: {{count}}"
   },
   "helperProfiles": {
     "title": "Мои профили",

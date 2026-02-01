@@ -31,11 +31,6 @@ export function NotificationPreferences() {
     updating: false,
   })
 
-  // Load preferences on component mount
-  useEffect(() => {
-    void loadPreferences()
-  }, [loadPreferences])
-
   const loadPreferences = useCallback(async () => {
     try {
       setState((prev) => ({ ...prev, loading: true, error: null }))
@@ -53,6 +48,11 @@ export function NotificationPreferences() {
       }))
     }
   }, [t])
+
+  // Load preferences on component mount
+  useEffect(() => {
+    void loadPreferences()
+  }, [loadPreferences])
 
   // Group preferences by group
   const groupedPreferences = useMemo(() => {

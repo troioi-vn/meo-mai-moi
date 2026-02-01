@@ -127,7 +127,7 @@ describe('MyPetsPage', () => {
 
     renderAuthenticatedPage()
 
-    expect(screen.getByText('My Pets')).toBeInTheDocument()
+    expect(screen.getByText('Pets')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Add Pet' })).toBeInTheDocument()
   })
 

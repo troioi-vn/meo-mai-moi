@@ -11,7 +11,7 @@
     "invalidDay": "Day must be between 1 and 31",
     "typeRequired": "Pet type is required"
   },
-  "title": "My Pets",
+  "title": "Pets",
   "addPet": "Add Pet",
   "editPet": "Edit Pet",
   "tabs": {
@@ -34,7 +34,7 @@
     "status": "Status"
   },
   "sections": {
-    "owned": "My Pets",
+    "owned": "Pets",
     "fostered": "Fostered",
     "shared": "Shared with me",
     "fostering_active": "Fostering (Active)",

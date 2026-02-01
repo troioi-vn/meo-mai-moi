@@ -52,6 +52,6 @@ describe('MainNav', () => {
     })
     expect(screen.getByText(/TU/i)).toBeInTheDocument() // User menu avatar with initials
     expect(screen.getByTitle('Requests')).toBeInTheDocument()
-    expect(screen.getByTitle('My Pets')).toBeInTheDocument()
+    expect(screen.getByTitle('Pets')).toBeInTheDocument()
   })
 })

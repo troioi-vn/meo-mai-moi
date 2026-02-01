@@ -79,11 +79,7 @@
     "invitationCopyFailed": "Не удалось скопировать ссылку приглашения",
     "invitationRevokeFailed": "Не удалось отозвать приглашение",
     "invitationLimitReached": "Не удалось создать приглашение. Возможно, вы достигли дневного лимита.",
-    "emailVerified": "Email подтверждён успешно",
-    "loadingAuth": "Загрузка авторизации...",
-    "loginRequired": "Пожалуйста, войдите в систему.",
-    "loadingPets": "Загрузка питомцев...",
-    "noPetsYetDescription": "У вас пока нет питомцев — добавьте первого питомца, чтобы начать!"
+    "emailVerified": "Email подтверждён успешно"
   },
   "errors": {
     "generic": "Что-то пошло не так. Попробуйте снова.",
@@ -162,13 +158,7 @@
   },
   "notifications": {
     "title": "Уведомления",
-    "markAllRead": "Отметить все как прочитанные",
-    "error": "Ошибка уведомлений",
-    "controlDescription": "Управляйте настройками уведомлений",
-    "backToSettings": "Вернуться к настройкам",
-    "pageTitle": "Настройки уведомлений",
-    "pageDescription": "Управляйте тем, как и когда вы получаете уведомления",
-    "description": "Настройте уведомления по своему усмотрению"
+    "markAllRead": "Отметить все как прочитанные"
   },
   "messaging": {
     "title": "Сообщения",
@@ -351,152 +341,9 @@
     "categories": "Категории",
     "about": "О питомце"
   },
-  "forgotPassword": {
-    "checkEmailTitle": "Проверьте свой email",
-    "noEmailReceived": "Не получили письмо? Проверьте папку спам или попробуйте ещё раз.",
-    "tryAgain": "Попробовать ещё раз",
-    "backToLogin": "Вернуться к входу",
-    "resetPasswordTitle": "Сбросить пароль",
-    "resetPasswordDescription": "Введите ваш email адрес и мы отправим вам ссылку для сброса пароля",
-    "email": "Email",
-    "sending": "Отправка...",
-    "submit": "Отправить ссылку сброса",
-    "rememberPassword": "Помните пароль?"
-  },
-  "medical": {
-    "title": "Медицинские записи",
-    "noRecords": "Медицинских записей пока нет.",
-    "types": {
-      "other": "Другое"
-    },
-    "vetLabel": "Ветеринар: {{name}}",
-    "uploading": "Загрузка...",
-    "addPhoto": "Добавить фото",
-    "deleteTitle": "Удалить медицинскую запись",
-    "deleteConfirm": "Вы уверены, что хотите удалить эту медицинскую запись? Это действие нельзя отменить.",
-    "addRecord": "Добавить медицинскую запись"
-  },
-  "vaccinations": {
-    "saveError": "Не удалось сохранить вакцинацию",
-    "updateError": "Не удалось обновить вакцинацию",
-    "renewError": "Не удалось продлить вакцинацию",
-    "title": "Вакцинации",
-    "upcomingTitle": "Предстоящие вакцинации",
-    "showHistory": "Показать историю",
-    "noHistory": "История вакцинаций отсутствует.",
-    "noActive": "Активных вакцинаций не записано.",
-    "noUpcoming": "Предстоящих вакцинаций не запланировано.",
-    "renewed": "Продлено",
-    "renew": "Продлить",
-    "deleteTitle": "Удалить запись о вакцинации",
-    "deleteConfirm": "Вы уверены, что хотите удалить запись о вакцинации для {{name}}? Это действие нельзя отменить.",
-    "deleteHistoryTitle": "Удалить историю вакцинации",
-    "deleteHistoryConfirm": "Вы уверены, что хотите удалить эту историческую запись о вакцинации для {{name}}? Это действие нельзя отменить.",
-    "addVaccinationEntry": "Добавить новую запись о вакцинации",
-    "addVaccination": "Добавить вакцинацию",
-    "renewTitle": "Продлить вакцинацию",
-    "renewDescription": "Записать новую вакцинацию для {{name}}. Предыдущая запись будет отмечена как завершённая."
-  },
-  "weight": {
-    "title": "История веса",
-    "deleteTitle": "Удалить запись о весе",
-    "deleteConfirm": "Вы уверены, что хотите удалить эту запись о весе ({{weight}} кг на {{date}})? Это действие нельзя отменить.",
-    "noHistory": "Записей о весе пока нет.",
-    "addWeight": "Добавить новую запись о весе"
-  },
-  "form": {
-    "nameLabel": "Имя",
-    "namePlaceholder": "Введите имя питомца",
-    "gender": "Пол",
-    "genderOptions": {
-      "not_specified": "Не указан",
-      "male": "Самец",
-      "female": "Самка"
-    },
-    "birthdayPrecision": "Точность даты рождения",
-    "birthdayPrecisionOptions": {
-      "year": "Год",
-      "month": "Год + Месяц",
-      "day": "Полная дата"
-    },
-    "birthday": "День рождения",
-    "birthdayPlaceholder": "Выберите день рождения питомца",
-    "birthYear": "Год рождения",
-    "birthMonth": "Месяц рождения",
-    "country": "Страна",
-    "address": "Адрес",
-    "addressPlaceholder": "Введите адрес",
-    "description": "Описание",
-    "descriptionPlaceholder": "Опишите характер и особенности питомца"
-  },
-  "photos": {
-    "maxSizeError": "Размер файла должен быть менее {{size}}МБ",
-    "upload": "Загрузить фото",
-    "deleting": "Удаление...",
-    "delete": "Удалить",
-    "counter": "Фото {{current}} из {{total}}",
-    "description": "Просмотр и управление фотографиями питомца",
-    "settingPrimary": "Установка...",
-    "currentAvatar": "Текущий аватар",
-    "setAsAvatar": "Установить как аватар",
-    "gallery": "Галерея фотографий"
-  },
-  "petType": {
-    "label": "Тип питомца",
-    "placeholder": "Выберите тип питомца..."
-  },
   "confirming": "Подтверждение",
-  "starting": "Начало",
   "n/a": "Н/Д",
   "yes": "Да",
   "no": "Нет",
-  "profile": {
-    "uploading": "Загрузка...",
-    "avatarUpload": "Загрузить аватар",
-    "deleting": "Удаление...",
-    "avatarRemove": "Удалить аватар",
-    "title": "Профиль",
-    "errorLoading": "Ошибка загрузки",
-    "errorLoadingDescription": "Не удалось загрузить данные профиля",
-    "name": "Имя",
-    "email": "Email"
-  },
-  "check_form": "Пожалуйста, проверьте форму на наличие ошибок.",
-  "title": "Питомцы",
-  "addPet": "Добавить питомца",
-  "showAll": "Показать всех",
-  "includesDeceased": "Включая умерших питомцев",
-  "sections": {
-    "fostering_active": "Опека (Активная)",
-    "fostering_past": "Опека (Прошлая)",
-    "transferred_away": "Переданные"
-  },
-  "security": {
-    "passwordTitle": "Пароль",
-    "changePassword": {
-      "backToSettings": "Вернуться к настройкам",
-      "title": "Изменить пароль",
-      "description": "Обновите пароль, чтобы обеспечить безопасность аккаунта."
-    },
-    "sessions": {
-      "title": "Сессии",
-      "logout": "Выйти",
-      "description": "Управляйте активными сессиями"
-    },
-    "deleteAccount": {
-      "title": "Удалить аккаунт",
-      "description": "Навсегда удалить ваш аккаунт и все данные"
-    }
-  },
-  "preferences": {
-    "language": {
-      "title": "Язык"
-    }
-  },
-  "contactUs": {
-    "title": "Связаться с нами",
-    "description": "Нужна помощь? Свяжитесь с нашей службой поддержки",
-    "starting": "Начало",
-    "chatWithSupport": "Чат с поддержкой"
-  }
+  "check_form": "Пожалуйста, проверьте форму на наличие ошибок."
 }

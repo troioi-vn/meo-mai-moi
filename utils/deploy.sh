@@ -684,6 +684,49 @@ if ! check_frontend_api_generation; then
     exit 1
 fi
 
+# --- i18n Translation Validation Check ---
+# Verify all translation keys are present in all languages and properly formatted.
+# This catches missing translations before deployment.
+check_i18n_translations() {
+    local frontend_dir="$PROJECT_ROOT/frontend"
+
+    if [ ! -d "$frontend_dir" ]; then
+        note "⚠️  Frontend directory not found, skipping i18n check"
+        log_warn "Frontend directory not found" "path=$frontend_dir"
+        return 0
+    fi
+
+    # Check if bun is available
+    if ! command -v bun &> /dev/null; then
+        note "⚠️  Bun not installed on host, skipping i18n check (manual verification needed)"
+        log_warn "Bun not available on host, i18n check skipped"
+        return 0
+    fi
+
+    note "ℹ️  Checking i18n translations..."
+    log_info "Running i18n translation validation"
+
+    # Run i18n:ci which only checks for missing and invalid keys (not unused)
+    if (cd "$frontend_dir" && bun run i18n:ci) > /tmp/i18n-check-output.txt 2>&1; then
+        note "✓ i18n translations validated successfully"
+        log_success "i18n translation validation passed"
+    else
+        echo "✗ i18n translation validation failed" >&2
+        echo "Output:" >&2
+        cat /tmp/i18n-check-output.txt >&2
+        log_error "i18n translation validation failed" "output=$(cat /tmp/i18n-check-output.txt)"
+        return 1
+    fi
+
+    rm -f /tmp/i18n-check-output.txt
+    return 0
+}
+
+if ! check_i18n_translations; then
+    echo "✗ Pre-deployment check failed: i18n translations" >&2
+    exit 1
+fi
+
 deploy_db_initialize
 
 if [ "$QUIET" = "true" ]; then

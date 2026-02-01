@@ -32,6 +32,7 @@
     "i18n:unused": "i18n-check --locales src/i18n/locales --source en --format i18next --only unused --unused src --reporter summary",
     "i18n:missing": "i18n-check --locales src/i18n/locales --source en --format i18next --only missingKeys --reporter summary",
     "i18n:check": "i18n-check --locales src/i18n/locales --source en --format i18next --unused src --reporter summary",
+    "i18n:ci": "i18n-check --locales src/i18n/locales --source en --format i18next --only missingKeys,invalidKeys --reporter summary",
     "i18n:clean": "echo 'Use i18n:unused to identify unused keys, then manually remove them for safety'",
     "i18n:clean-placeholders": "node scripts/clean-translation-placeholders.cjs"
   },

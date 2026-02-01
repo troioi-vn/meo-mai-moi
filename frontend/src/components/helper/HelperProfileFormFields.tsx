@@ -10,6 +10,7 @@ import { MapPin, Phone, Briefcase, ClipboardList, CircleHelp } from 'lucide-reac
 import { type PlacementRequestType } from '@/types/helper-profile'
 import { CitySelect } from '@/components/location/CitySelect'
 import type { City } from '@/types/pet'
+import { useTranslation } from 'react-i18next'
 
 // Form section header with icon and title
 const FormSectionHeader = ({ icon: Icon, title }: { icon: React.ElementType; title: string }) => (
@@ -18,13 +19,6 @@ const FormSectionHeader = ({ icon: Icon, title }: { icon: React.ElementType; tit
     <h3 className="text-lg font-semibold">{title}</h3>
   </div>
 )
-
-const REQUEST_TYPE_OPTIONS: { value: PlacementRequestType; label: string }[] = [
-  { value: 'foster_paid', label: 'Foster (Paid)' },
-  { value: 'foster_free', label: 'Foster (Free)' },
-  { value: 'permanent', label: 'Permanent Adoption' },
-  { value: 'pet_sitting', label: 'Pet Sitting' },
-]
 
 interface Props {
   formData: {
@@ -53,15 +47,24 @@ export const HelperProfileFormFields: React.FC<Props> = ({
   citiesValue = [],
   onCitiesChange,
 }) => {
+  const { t } = useTranslation(['helper', 'pets', 'common'])
+
+  const REQUEST_TYPE_OPTIONS: { value: PlacementRequestType; label: string }[] = [
+    { value: 'foster_paid', label: t('helper:form.types.foster_paid') },
+    { value: 'foster_free', label: t('helper:form.types.foster_free') },
+    { value: 'permanent', label: t('helper:form.types.permanent') },
+    { value: 'pet_sitting', label: t('helper:form.types.pet_sitting') },
+  ]
+
   return (
     <div className="space-y-8">
       {/* Location Section */}
       <section>
-        <FormSectionHeader icon={MapPin} title="Location" />
+        <FormSectionHeader icon={MapPin} title={t('common:location.title')} />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="country" className={errors.country ? 'text-destructive' : ''}>
-              Country
+              {t('pets:form.country')}
             </Label>
             <TooltipProvider>
               <Tooltip>
@@ -79,7 +82,7 @@ export const HelperProfileFormFields: React.FC<Props> = ({
                 </TooltipTrigger>
                 {citiesValue.length > 0 && (
                   <TooltipContent>
-                    <p>Clear selected cities to change country</p>
+                    <p>{t('helper:form.clearCitiesToChangeCountry')}</p>
                   </TooltipContent>
                 )}
               </Tooltip>
@@ -91,7 +94,7 @@ export const HelperProfileFormFields: React.FC<Props> = ({
           <div className="space-y-2">
             <CitySelect
               id="cities"
-              label="Cities"
+              label={t('helper:form.cities')}
               multiple
               country={formData.country || null}
               value={citiesValue}
@@ -108,26 +111,26 @@ export const HelperProfileFormFields: React.FC<Props> = ({
         <div className="mt-4">
           <FormField
             id="address"
-            label="Address"
+            label={t('helper:form.address')}
             value={formData.address}
             onChange={updateField('address')}
             error={errors.address}
-            placeholder="Enter your address"
+            placeholder={t('helper:form.addressPlaceholder')}
           />
         </div>
       </section>
 
       {/* Contact Section */}
       <section>
-        <FormSectionHeader icon={Phone} title="Contact Information" />
+        <FormSectionHeader icon={Phone} title={t('helper:form.contactInfo')} />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             id="phone_number"
-            label="Phone Number"
+            label={t('helper:form.phoneNumber')}
             value={formData.phone_number}
             onChange={updateField('phone_number')}
             error={errors.phone_number}
-            placeholder="Enter your phone number"
+            placeholder={t('helper:form.phoneNumber')}
           />
           <div className="space-y-2">
             <div className="flex items-center gap-2">
@@ -135,7 +138,7 @@ export const HelperProfileFormFields: React.FC<Props> = ({
                 htmlFor="contact_info"
                 className={errors.contact_info ? 'text-destructive' : ''}
               >
-                Contact Info
+                {t('helper:form.additionalContact')}
               </Label>
               <TooltipProvider>
                 <Tooltip>
@@ -143,10 +146,7 @@ export const HelperProfileFormFields: React.FC<Props> = ({
                     <CircleHelp className="h-4 w-4 text-muted-foreground" />
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">
-                    <p>
-                      You can add any additional contact info here, this info and your phone number
-                      will be visible for pet owners when you reply to their Placement Requests
-                    </p>
+                    <p>{t('helper:form.additionalContactHelp')}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -158,7 +158,7 @@ export const HelperProfileFormFields: React.FC<Props> = ({
               onChange={(e) => {
                 updateField('contact_info')(e.target.value)
               }}
-              placeholder="Telegram, Zalo, WhatsApp, etc."
+              placeholder={t('helper:form.contactInfoPlaceholder')}
               rows={1}
               className="min-h-10"
               aria-invalid={!!errors.contact_info}
@@ -175,28 +175,28 @@ export const HelperProfileFormFields: React.FC<Props> = ({
 
       {/* Experience & Household Section */}
       <section>
-        <FormSectionHeader icon={Briefcase} title="Experience & Household" />
+        <FormSectionHeader icon={Briefcase} title={t('helper:form.experienceHouseholdSection')} />
         <div className="space-y-4">
           <FormField
             id="experience"
-            label="Experience"
+            label={t('helper:form.experience')}
             type="textarea"
             value={formData.experience}
             onChange={updateField('experience')}
             error={errors.experience}
-            placeholder="Describe your experience with pets..."
+            placeholder={t('helper:form.experiencePlaceholder')}
           />
           <div className="flex flex-wrap gap-6">
             <CheckboxField
               id="has_pets"
-              label="Has Pets"
+              label={t('helper:form.hasPets')}
               checked={formData.has_pets}
               onChange={updateField('has_pets')}
               error={errors.has_pets}
             />
             <CheckboxField
               id="has_children"
-              label="Has Children"
+              label={t('helper:form.hasChildren')}
               checked={formData.has_children}
               onChange={updateField('has_children')}
               error={errors.has_children}
@@ -207,10 +207,10 @@ export const HelperProfileFormFields: React.FC<Props> = ({
 
       {/* Request Types Section */}
       <section>
-        <FormSectionHeader icon={ClipboardList} title="Request Types" />
+        <FormSectionHeader icon={ClipboardList} title={t('helper:form.placementTypes')} />
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            Select which types of placement requests you can respond to
+            {t('helper:form.requestTypesDescription')}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {REQUEST_TYPE_OPTIONS.map((option) => (

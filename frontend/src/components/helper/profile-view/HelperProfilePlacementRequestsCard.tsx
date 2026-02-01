@@ -2,13 +2,15 @@ import { Link } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { PlacementResponseStatusLabels, type PlacementResponseStatus } from '@/types/placement'
+import { type PlacementResponseStatus } from '@/types/placement'
 import type { HelperProfile } from '@/types/helper-profile'
+import { useTranslation } from 'react-i18next'
 
 const formatLabel = (value: string, fallback = 'Unknown') =>
   value ? value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : fallback
 
 export function HelperProfilePlacementRequestsCard({ profile }: { profile: HelperProfile }) {
+  const { t } = useTranslation(['placement', 'common'])
   const placementResponses = profile.placement_responses ?? []
 
   const placementRequests = placementResponses
@@ -87,17 +89,20 @@ export function HelperProfilePlacementRequestsCard({ profile }: { profile: Helpe
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold">Placement Requests</CardTitle>
+        <CardTitle className="text-lg font-semibold">{t('placement:title')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {placementRequests.length === 0 && (
-          <p className="text-sm text-muted-foreground">No placement requests yet.</p>
+          <p className="text-sm text-muted-foreground">{t('placement:none')}</p>
         )}
         {placementRequests.map((item) => (
           <Link
             key={item.id}
             to={`/requests/${String(item.id)}`}
-            aria-label={`Open placement request ${String(item.id)} for ${item.petName}`}
+            aria-label={t('placement:aria.openRequest', {
+              id: item.id,
+              petName: item.petName,
+            })}
             className="block rounded-lg border bg-card hover:bg-accent/50 transition-colors"
           >
             <div className="p-4 flex items-center gap-4">
@@ -105,33 +110,33 @@ export function HelperProfilePlacementRequestsCard({ profile }: { profile: Helpe
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <div className="min-w-0">
                     <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                      Owner
+                      {t('placement:labels.owner')}
                     </p>
                     <p className="text-sm font-medium truncate">{item.ownerName}</p>
                   </div>
                   <div className="min-w-0">
                     <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                      Pet
+                      {t('placement:labels.pet')}
                     </p>
                     <p className="text-sm font-medium truncate">{item.petName}</p>
                   </div>
                   <div className="min-w-0">
                     <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                      Responded
+                      {t('placement:labels.responded')}
                     </p>
                     <p className="text-sm font-medium">
-                      {item.respondedAt
-                        ? new Date(item.respondedAt).toLocaleDateString('en-US')
-                        : '—'}
+                      {item.respondedAt ? new Date(item.respondedAt).toLocaleDateString() : '—'}
                     </p>
                   </div>
                   <div className="min-w-0">
                     <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                      Status
+                      {t('placement:labels.status')}
                     </p>
                     <div className="mt-1 flex flex-wrap items-center gap-2">
                       <Badge variant="outline">
-                        {PlacementResponseStatusLabels[item.status] ?? formatLabel(item.status)}
+                        {t(`placement:responseStatus.${item.status}`, {
+                          defaultValue: formatLabel(item.status),
+                        })}
                       </Badge>
                       <Badge
                         className={
@@ -140,7 +145,9 @@ export function HelperProfilePlacementRequestsCard({ profile }: { profile: Helpe
                             : 'bg-muted text-foreground hover:bg-muted'
                         }
                       >
-                        {item.isActionRequired ? 'Action required' : 'Waiting'}
+                        {item.isActionRequired
+                          ? t('placement:labels.actionRequired')
+                          : t('placement:labels.waiting')}
                       </Badge>
                     </div>
                   </div>

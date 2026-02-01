@@ -10,6 +10,7 @@ import { toast } from '@/lib/i18n-toast'
 import { HelperProfileFormFields } from '@/components/helper/HelperProfileFormFields'
 import { PetTypesSelector } from '@/components/helper/PetTypesSelector'
 import { Heart, Camera, UserPlus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -27,6 +28,7 @@ const FormSectionHeader = ({ icon: Icon, title }: { icon: React.ElementType; tit
 )
 
 const CreateHelperProfilePage: React.FC = () => {
+  const { t } = useTranslation(['helper', 'common'])
   const {
     formData,
     errors,
@@ -81,18 +83,18 @@ const CreateHelperProfilePage: React.FC = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link to="/">Home</Link>
+                  <Link to="/">{t('common:nav.home')}</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link to="/helper">Helper</Link>
+                  <Link to="/helper">{t('common:nav.helperProfiles')}</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Create</BreadcrumbPage>
+                <BreadcrumbPage>{t('common:actions.create')}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -105,10 +107,9 @@ const CreateHelperProfilePage: React.FC = () => {
             <div className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-full mb-4">
               <UserPlus className="h-8 w-8 text-primary" />
             </div>
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Create Helper Profile</h1>
+            <h1 className="text-3xl font-bold tracking-tight mb-2">{t('helper:createTitle')}</h1>
             <p className="text-muted-foreground max-w-lg mx-auto">
-              Join our community of helpers. Your profile will be shown to pet owners when you
-              respond to their placement requests.
+              {t('helper:createDescription')}
             </p>
           </div>
 

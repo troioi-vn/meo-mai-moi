@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { toast } from '@/lib/i18n-toast'
 import { useTranslation } from 'react-i18next'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -34,9 +34,9 @@ export function NotificationPreferences() {
   // Load preferences on component mount
   useEffect(() => {
     void loadPreferences()
-  }, [])
+  }, [loadPreferences])
 
-  const loadPreferences = async () => {
+  const loadPreferences = useCallback(async () => {
     try {
       setState((prev) => ({ ...prev, loading: true, error: null }))
       const response = await getNotificationPreferences()
@@ -52,7 +52,7 @@ export function NotificationPreferences() {
         error: error instanceof Error ? error.message : t('notifications.error'),
       }))
     }
-  }
+  }, [t])
 
   // Group preferences by group
   const groupedPreferences = useMemo(() => {

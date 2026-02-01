@@ -107,11 +107,7 @@ const mockUser = {
   email: 'jane@example.com',
 }
 
-interface MockUser {
-  id: number
-  name: string
-  email: string
-}
+
 
 describe('PetCard', () => {
   beforeEach(() => {

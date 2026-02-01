@@ -8,7 +8,7 @@ import i18n from '../i18n' // Initialize i18n for tests
 // Reset i18n to a clean state before each test
 beforeEach(() => {
   // Ensure i18n is ready and reset to English
-  i18n.changeLanguage('en')
+  void i18n.changeLanguage('en')
 })
 
 // Mock virtual:pwa-register

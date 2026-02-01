@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { screen, waitFor, within } from '@testing-library/react'
 import { renderWithRouter } from '@/testing'
-import { NotificationsProvider, useNotifications } from '@/contexts/NotificationProvider'
+import { useNotifications } from '@/contexts/NotificationProvider'
 import { NotificationBell } from './NotificationBell'
 import { server } from '@/testing/mocks/server'
 import { http, HttpResponse } from 'msw'

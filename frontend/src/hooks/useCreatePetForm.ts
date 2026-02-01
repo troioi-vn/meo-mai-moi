@@ -232,7 +232,7 @@ export const useCreatePetForm = (petId?: string) => {
       }
     }
     void loadPetTypes()
-  }, [])
+  }, [t])
 
   // Load existing pet data in edit mode
   useEffect(() => {
@@ -286,7 +286,7 @@ export const useCreatePetForm = (petId?: string) => {
       }
       void loadPetData()
     }
-  }, [isEditMode, petId])
+  }, [isEditMode, petId, t])
 
   const updateField = (field: keyof CreatePetFormData) => (valueOrEvent: unknown) => {
     let value: unknown

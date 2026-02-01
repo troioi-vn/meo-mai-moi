@@ -134,5 +134,6 @@ describe('UserAvatar', () => {
     })
 
     const { container } = renderWithRouter(<UserAvatar />)
+    expect(container).toBeEmptyDOMElement()
   })
 })

@@ -75,7 +75,7 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
       toast.success('settings:profile.avatarUploaded')
       await loadUser()
     } catch (error: unknown) {
-      let errorMessage = 'settings:profile.avatarUploadError'
+      const errorMessage = 'settings:profile.avatarUploadError'
       if (error instanceof Error && 'response' in error) {
         const axiosError = error as AxiosError<{ message?: string }>
         const apiMessage = axiosError.response?.data.message
@@ -104,7 +104,7 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
       toast.success('settings:profile.avatarDeleted')
       await loadUser()
     } catch (error: unknown) {
-      let errorMessage = 'settings:profile.avatarDeleteError'
+      const errorMessage = 'settings:profile.avatarDeleteError'
       if (error instanceof Error && 'response' in error) {
         const axiosError = error as AxiosError<{ message?: string }>
         const apiMessage = axiosError.response?.data.message

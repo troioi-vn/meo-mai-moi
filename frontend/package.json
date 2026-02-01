@@ -27,7 +27,10 @@
     "format": "prettier --write .",
     "api:generate": "orval",
     "api:watch": "orval --watch",
-    "api:check": "orval && git diff --exit-code src/api/generated"
+    "api:check": "orval && git diff --exit-code src/api/generated",
+    "i18n:scan": "i18next-scanner --config i18next-scanner.config.cjs",
+    "i18n:unused": "node scripts/find-unused-translations.cjs",
+    "i18n:clean": "node scripts/remove-unused-translations.cjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.1.0",
@@ -113,7 +116,9 @@
     "eslint-plugin-react-refresh": "^0.4.26",
     "eslint-plugin-react-x": "^2.7.4",
     "fs-extra": "^11.3.3",
+    "glob": "^13.0.0",
     "globals": "^17.2.0",
+    "i18next-scanner": "^4.6.0",
     "jsdom": "^27.4.0",
     "msw": "^2.12.7",
     "orval": "^8.1.0",

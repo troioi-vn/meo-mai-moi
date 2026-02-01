@@ -6,6 +6,12 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **i18n Translation Maintenance Suite**: Introduced a set of tools to proactively find and remove unused translation keys from the codebase.
+  - Added `i18next-scanner` configuration for automated key extraction from Source code.
+  - Developed custom scripts `find-unused-translations.cjs` and `remove-unused-translations.cjs` with automatic backup mechanism and safer namespaced detection logic.
+  - Added npm scripts `i18n:scan`, `i18n:unused`, and `i18n:clean` to [frontend/package.json](frontend/package.json).
+  - Comprehensive documentation in [docs/i18n.md](docs/i18n.md) covering best practices for translation cleanup.
+
 - **i18n Testing Best Practices Enforcement**: Standardized i18n testing patterns across all modified test files (30+ tests) to ensure consistent and robust internationalization coverage.
   - Unified render approach: All tests now use `renderWithRouter()` helper from `@/testing` instead of custom render functions, ensuring proper i18n provider wrapping via `AllTheProviders`.
   - Removed hardcoded English string assertions: Replaced exact string matching with i18n-aware assertions that verify element presence without hardcoding translations.

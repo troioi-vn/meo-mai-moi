@@ -365,7 +365,7 @@ export const useCreatePetForm = (petId?: string) => {
             }
           })
           setErrors(newFormErrors)
-          toast.error(t('common:check_form'))
+          toast.error(t('common:errors.validation'))
           return
         }
       }

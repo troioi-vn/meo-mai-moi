@@ -39,6 +39,7 @@
     "retry": "Retry",
     "tryAgain": "Try Again",
     "loading": "Loading...",
+    "starting": "Starting...",
     "saving": "Saving...",
     "view": "View",
     "view_all": "View All",
@@ -55,7 +56,9 @@
     "inactive": "Inactive",
     "pending": "Pending",
     "archived": "Archived",
-    "deleted": "Deleted"
+    "deleted": "Deleted",
+    "unknown": "Unknown",
+    "loading": "Loading"
   },
   "messages": {
     "success": "Operation completed successfully",
@@ -329,32 +332,9 @@
     "categories": "Categories",
     "about": "About"
   },
-  "forgotPassword": {},
-  "medical": {
-    "types": {}
-  },
-  "vaccinations": {},
-  "weight": {},
-  "form": {
-    "genderOptions": {},
-    "birthdayPrecisionOptions": {}
-  },
-  "photos": {},
-  "petType": {},
   "confirming": "Confirming",
   "n/a": "N/A",
   "yes": "Yes",
   "no": "No",
-  "profile": {},
-  "check_form": "Please check the form for errors.",
-  "sections": {},
-  "security": {
-    "changePassword": {},
-    "sessions": {},
-    "deleteAccount": {}
-  },
-  "preferences": {
-    "language": {}
-  },
-  "contactUs": {}
+  "check_form": "Please check the form for errors."
 }

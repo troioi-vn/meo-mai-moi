@@ -28,7 +28,7 @@
     "api:generate": "orval",
     "api:watch": "orval --watch",
     "api:check": "orval && git diff --exit-code src/api/generated",
-    "i18n:scan": "i18next-scanner --config i18next-scanner.config.cjs",
+    "i18n:scan": "echo 'WARNING: i18next-scanner cannot parse modern TypeScript syntax. Use i18n:check for analysis instead.' && i18next-scanner --config i18next-scanner.config.cjs || true",
     "i18n:unused": "i18n-check --locales src/i18n/locales --source en --format i18next --only unused --unused src --reporter summary",
     "i18n:missing": "i18n-check --locales src/i18n/locales --source en --format i18next --only missingKeys --reporter summary",
     "i18n:check": "i18n-check --locales src/i18n/locales --source en --format i18next --unused src --reporter summary",

@@ -6,11 +6,14 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
-- **i18n Translation Maintenance Suite**: Introduced a set of tools to proactively find and remove unused translation keys from the codebase.
-  - Added `i18next-scanner` configuration for automated key extraction from Source code.
-  - Developed custom scripts `find-unused-translations.cjs` and `remove-unused-translations.cjs` with automatic backup mechanism and safer namespaced detection logic.
-  - Added npm scripts `i18n:scan`, `i18n:unused`, and `i18n:clean` to [frontend/package.json](frontend/package.json).
-  - Comprehensive documentation in [docs/i18n.md](docs/i18n.md) covering best practices for translation cleanup.
+- **i18n Translation Maintenance Suite**: Introduced professional tooling to proactively find and manage unused translation keys in the codebase.
+  - **REPLACED** custom wheel-reinvention scripts (`find-unused-translations.cjs`, `remove-unused-translations.cjs`, `clean-unused-translations.cjs`) with professional `@lingual/i18n-check` tool for better reliability and maintenance.
+  - **FIXED** import issue in `useLocaleSync.ts` (changed from `'./useAuth'` to `'./use-auth'`).
+  - **CLEANED** duplicate `check_form` keys from translation files.
+  - **RENAMED** `clean-translation-placeholders.js` to `.cjs` for consistency.
+  - Added npm scripts `i18n:unused`, `i18n:missing`, `i18n:check`, and `i18n:clean-placeholders` to [frontend/package.json](frontend/package.json).
+  - **DOCUMENTED** `i18next-scanner` TypeScript parsing limitations: The scanner cannot parse modern TypeScript syntax (interfaces, type annotations, complex destructuring) and shows parsing errors for most `.tsx` files. Updated documentation to recommend manual key management and alternative approaches until scanner compatibility improves.
+  - Comprehensive documentation in [docs/i18n.md](docs/i18n.md) covering best practices for translation maintenance and current tooling limitations.
 
 - **i18n Testing Best Practices Enforcement**: Standardized i18n testing patterns across all modified test files (30+ tests) to ensure consistent and robust internationalization coverage.
   - Unified render approach: All tests now use `renderWithRouter()` helper from `@/testing` instead of custom render functions, ensuring proper i18n provider wrapping via `AllTheProviders`.

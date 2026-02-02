@@ -377,32 +377,20 @@
   },
   "age": {
     "unknown": "Возраст неизвестен",
-    "year": {
-      "one": "1 год",
-      "few": "{{count}} года",
-      "many": "{{count}} лет",
-      "other": "{{count}} лет"
-    },
-    "month": {
-      "one": "1 месяц",
-      "few": "{{count}} месяца",
-      "many": "{{count}} месяцев",
-      "other": "{{count}} месяцев"
-    },
-    "day": {
-      "one": "1 день",
-      "few": "{{count}} дня",
-      "many": "{{count}} дней",
-      "other": "{{count}} дней"
-    },
-    "approx": "{{text}} (прибл.)",
-    "approxSymbol": "≈{{text}}",
-    "lessThanYearApprox": "Меньше 1 года (прибл.)",
+    "year_one": "1 год",
     "year_few": "{{count}} года",
     "year_many": "{{count}} лет",
+    "year_other": "{{count}} лет",
+    "month_one": "1 месяц",
     "month_few": "{{count}} месяца",
     "month_many": "{{count}} месяцев",
+    "month_other": "{{count}} месяцев",
+    "day_one": "1 день",
     "day_few": "{{count}} дня",
-    "day_many": "{{count}} дней"
+    "day_many": "{{count}} дней",
+    "day_other": "{{count}} дней",
+    "approx": "{{text}} (прибл.)",
+    "approxSymbol": "≈{{text}}",
+    "lessThanYearApprox": "Меньше 1 года (прибл.)"
   }
 }

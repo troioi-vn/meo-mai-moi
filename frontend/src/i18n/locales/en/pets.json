@@ -375,18 +375,12 @@
   },
   "age": {
     "unknown": "Age unknown",
-    "year": {
-      "one": "1 year old",
-      "other": "{{count}} years old"
-    },
-    "month": {
-      "one": "1 month old",
-      "other": "{{count}} months old"
-    },
-    "day": {
-      "one": "1 day old",
-      "other": "{{count}} days old"
-    },
+    "year_one": "1 year old",
+    "year_other": "{{count}} years old",
+    "month_one": "1 month old",
+    "month_other": "{{count}} months old",
+    "day_one": "1 day old",
+    "day_other": "{{count}} days old",
     "approx": "{{text}} (approx)",
     "approxSymbol": "≈{{text}}",
     "lessThanYearApprox": "Less than 1 year (approx)"

@@ -38,7 +38,7 @@ const formatPublicPetAge = (
         if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
           years--
         }
-        return t('pets:age.year.other', { count: years })
+        return t('pets:age.year', { count: years })
       }
       return t('pets:age.unknown')
     }
@@ -52,10 +52,10 @@ const formatPublicPetAge = (
         const monthsDiff =
           (today.getFullYear() - pet.birthday_year) * 12 +
           (today.getMonth() + 1 - pet.birthday_month)
-        const monthText = t('pets:age.month.other', { count: monthsDiff })
+        const monthText = t('pets:age.month', { count: monthsDiff })
         return t('pets:age.approx', { text: monthText })
       }
-      const yearText = t('pets:age.year.other', { count: years })
+      const yearText = t('pets:age.year', { count: years })
       return t('pets:age.approxSymbol', { text: yearText })
     }
     case 'year': {
@@ -64,7 +64,7 @@ const formatPublicPetAge = (
       if (years <= 0) {
         return t('pets:age.lessThanYearApprox')
       }
-      const yearText = t('pets:age.year.other', { count: years })
+      const yearText = t('pets:age.year', { count: years })
       return t('pets:age.approxSymbol', { text: yearText })
     }
     case 'unknown':
@@ -83,10 +83,7 @@ const derivePublicPetImageUrl = (pet: PublicPet): string => {
 }
 
 // Helper function to format location
-const formatLocation = (
-  pet: PublicPet,
-  fallback: string
-): string => {
+const formatLocation = (pet: PublicPet, fallback: string): string => {
   // In PublicPetResponse, city is a string (not a City object)
   const cityName = pet.city ?? undefined
   const parts = [cityName, pet.state, pet.country].filter(Boolean)
@@ -265,9 +262,7 @@ const PetPublicProfilePage: React.FC = () => {
             <CardContent className="space-y-3">
               {pet.sex && pet.sex !== 'not_specified' && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    {t('common:petPublicProfile.sex')}
-                  </span>
+                  <span className="text-muted-foreground">{t('common:petPublicProfile.sex')}</span>
                   <span className="font-medium">{t(`pets:sexLabels.${pet.sex}`)}</span>
                 </div>
               )}

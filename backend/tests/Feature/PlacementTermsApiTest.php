@@ -49,7 +49,7 @@ class PlacementTermsApiTest extends TestCase
             $response = $this->getJson('/api/legal/placement-terms');
             $response->assertStatus(404)
                 ->assertJson([
-                    'message' => 'Placement terms not found',
+                    'message' => 'Placement terms not found.',
                 ]);
         } finally {
             // Restore the file

@@ -20,12 +20,22 @@ import ruValidation from './locales/ru/validation.json'
 import ruHelper from './locales/ru/helper.json'
 import ruPlacement from './locales/ru/placement.json'
 
-export const supportedLocales = ['en', 'ru'] as const
+// Import Vietnamese translations - use type assertions for JSON files
+import viCommon from './locales/vi/common.json'
+import viAuth from './locales/vi/auth.json'
+import viPets from './locales/vi/pets.json'
+import viSettings from './locales/vi/settings.json'
+import viValidation from './locales/vi/validation.json'
+import viHelper from './locales/vi/helper.json'
+import viPlacement from './locales/vi/placement.json'
+
+export const supportedLocales = ['en', 'ru', 'vi'] as const
 export type SupportedLocale = (typeof supportedLocales)[number]
 
 export const localeNames: Record<SupportedLocale, string> = {
   en: 'English',
   ru: 'Русский',
+  vi: 'Tiếng Việt',
 }
 
 const isTest = typeof process !== 'undefined' && process.env.NODE_ENV === 'test'
@@ -58,6 +68,15 @@ void i18nInstance.use(initReactI18next).init({
       validation: ruValidation,
       helper: ruHelper,
       placement: ruPlacement,
+    },
+    vi: {
+      common: viCommon,
+      auth: viAuth,
+      pets: viPets,
+      settings: viSettings,
+      validation: viValidation,
+      helper: viHelper,
+      placement: viPlacement,
     },
   },
   lng: isTest ? 'en' : undefined, // Force English in tests, auto-detect otherwise

@@ -1,0 +1,148 @@
+{
+  "title": "Yêu cầu gửi gắm",
+  "none": "Chưa có yêu cầu gửi gắm nào.",
+  "responseStatus": {
+    "responded": "Đang chờ xem xét",
+    "accepted": "Đã chấp nhận",
+    "rejected": "Đã từ chối",
+    "cancelled": "Đã hủy"
+  },
+  "labels": {
+    "owner": "Chủ sở hữu",
+    "pet": "Thú cưng",
+    "responded": "Đã phản hồi",
+    "status": "Trạng thái",
+    "actionRequired": "Yêu cầu hành động",
+    "waiting": "Đang chờ"
+  },
+  "aria": {
+    "openRequest": "Mở yêu cầu gửi gắm {{id}} cho {{petName}}"
+  },
+  "headers": {
+    "available": "Sẵn sàng để gửi gắm",
+    "awaitingHandover": "Đang chờ bàn giao",
+    "active": "Gửi gắm đang hoạt động",
+    "inProgress": "Đang trong quá trình gửi gắm",
+    "myRequests": "Yêu cầu của tôi"
+  },
+  "status": {
+    "open": "Đang mở",
+    "pending_transfer": "Đang chờ bàn giao",
+    "active": "Hoạt động",
+    "finalized": "Đã hoàn tất",
+    "cancelled": "Đã hủy",
+    "expires": "Hết hạn vào {{date}}"
+  },
+  "requestTypes": {
+    "foster_paid": "Nhận nuôi tạm thời (Có phí)",
+    "foster_free": "Nhận nuôi tạm thời (Miễn phí)",
+    "permanent": "Vĩnh viễn",
+    "pet_sitting": "Trông giữ thú cưng"
+  },
+  "response": {
+    "accepted": "Phản hồi của bạn đã được chấp nhận!",
+    "confirmHandover": "Xác nhận bàn giao",
+    "confirmHandoverDescription": "Vui lòng xác nhận sau khi bạn đã nhận được thú cưng trên thực tế.",
+    "activeCaring": "Bạn hiện đang chăm sóc cho {{name}}",
+    "temporaryTypeNotice": "Chủ sở hữu sẽ đánh dấu việc gửi gắm là hoàn tất khi thú cưng được trả lại.",
+    "chatWithOwner": "Trò chuyện với chủ sở hữu",
+    "messageOwner": "Nhắn tin cho chủ sở hữu",
+    "startingChat": "Đang bắt đầu trò chuyện...",
+    "cannotRespondOwn": "Bạn không thể phản hồi yêu cầu gửi gắm của chính thú cưng của mình.",
+    "pending": "Phản hồi của bạn đang chờ phê duyệt",
+    "viewDetails": "Xem chi tiết yêu cầu",
+    "cancel": "Hủy phản hồi",
+    "respond": "Phản hồi yêu cầu gửi gắm",
+    "signInToRespond": " để phản hồi yêu cầu gửi gắm này"
+  },
+  "createModal": {
+    "title": "Tạo yêu cầu gửi gắm",
+    "description": "Điền vào biểu mẫu dưới đây để tạo một yêu cầu gửi gắm mới cho thú cưng của bạn.",
+    "labels": {
+      "type": "Loại yêu cầu",
+      "notes": "Ghi chú",
+      "pickupDate": "Ngày nhận thú cưng",
+      "dropoffDate": "Ngày trả thú cưng",
+      "typePlaceholder": "Chọn một loại yêu cầu",
+      "notesPlaceholder": "Mô tả bất kỳ nhu cầu hoặc yêu cầu cụ thể nào.",
+      "datePlaceholder": "Chọn một ngày",
+      "publicProfileNotice": "Tôi hiểu rằng hồ sơ của thú cưng sẽ hiển thị công khai.",
+      "termsPrefix": "Tôi xác nhận rằng tôi được quyền gửi gắm thú cưng này và thông tin tôi cung cấp là chính xác. Tôi hiểu rằng nền tảng chỉ tạo điều kiện kết nối và không chịu trách nhiệm về kết quả. Tôi đồng ý với ",
+      "termsLink": "Điều khoản gửi gắm",
+      "cancel": "Hủy",
+      "create": "Tạo yêu cầu",
+      "creating": "Đang tạo..."
+    },
+    "errors": {
+      "pickupInPast": "Ngày nhận không thể ở quá khứ",
+      "dropoffBeforePickup": "Ngày trả phải trùng hoặc sau ngày nhận"
+    }
+  },
+  "termsModal": {
+    "title": "Điều khoản & Điều kiện gửi gắm",
+    "description": "Vui lòng đọc kỹ các điều khoản này trước khi tạo yêu cầu gửi gắm.",
+    "version": "(Phiên bản: {{version}})"
+  },
+  "manage": {
+    "viewDetails": "Xem chi tiết",
+    "delete": {
+      "title": "Xóa yêu cầu gửi gắm",
+      "description": "Bạn có chắc chắn muốn xóa yêu cầu gửi gắm này không? Hành động này không thể hoàn tác.",
+      "confirm": "Xóa"
+    },
+    "waitingForHelper": "Đang chờ {{name}} xác nhận bàn giao",
+    "chatWithHelper": "Trò chuyện với người hỗ trợ",
+    "cancelTransfer": "Hủy chuyển giao",
+    "activeStatus": {
+      "foster": "Thú cưng hiện đang ở cùng người nuôi tạm",
+      "pet_sitting": "Thú cưng hiện đang ở cùng người trông giữ",
+      "generic": "Việc gửi gắm đang hoạt động"
+    },
+    "petReturned": {
+      "button": "Thú cưng đã được trả lại",
+      "confirmTitle": "Xác nhận trả thú cưng",
+      "confirmDescription": "Bạn có xác nhận rằng thú cưng đã được trả lại cho bạn không? Điều này sẽ kết thúc giai đoạn {{type}} và đánh dấu việc gửi gắm là đã hoàn thành.",
+      "confirmAction": "Xác nhận trả lại",
+      "fosterType": " nuôi tạm thời",
+      "sittingType": " trông giữ thú cưng"
+    },
+    "completed": "Gửi gắm đã hoàn tất thành công",
+    "responses_one": "{{count}} phản hồi",
+    "responses_other": "{{count}} phản hồi"
+  },
+  "responsesDrawer": {
+    "title": "Phản hồi",
+    "helperProfile": "Hồ sơ người hỗ trợ",
+    "viewingProfile": "Đang xem hồ sơ của {{name}}",
+    "responses_one": "{{count}} người đã phản hồi yêu cầu của bạn",
+    "responses_other": "{{count}} người đã phản hồi yêu cầu của bạn",
+    "messageFromHelper": "Tin nhắn từ người hỗ trợ",
+    "unknownHelper": "Người hỗ trợ không xác định",
+    "locationNotSpecified": "Vị trí chưa được chỉ định",
+    "respondedAt": "Đã phản hồi vào {{date}}",
+    "navigation": "{{current}} trên {{total}}",
+    "viewProfile": "Xem hồ sơ",
+    "chat": "Trò chuyện",
+    "accept": "Chấp nhận",
+    "reject": "Từ chối",
+    "close": "Đóng",
+    "message": "Tin nhắn:",
+    "labels": {
+      "name": "Tên:",
+      "email": "Email:",
+      "phone": "Điện thoại:",
+      "location": "Vị trí:",
+      "hasPets": "Có nuôi thú cưng:",
+      "hasChildren": "Có trẻ em:",
+      "experience": "Kinh nghiệm",
+      "about": "Giới thiệu",
+      "photos": "Hình ảnh"
+    }
+  },
+  "messages": {
+    "responseCancelled": "Đã hủy phản hồi",
+    "cancelResponseFailed": "Hủy phản hồi thất bại",
+    "handoverConfirmed": "Đã xác nhận bàn giao",
+    "confirmHandoverFailed": "Xác nhận bàn giao thất bại"
+  }
+}

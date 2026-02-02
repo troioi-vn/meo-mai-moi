@@ -104,7 +104,8 @@
   "language": {
     "label": "Language",
     "en": "English",
-    "ru": "Russian"
+    "ru": "Russian",
+    "vi": "Vietnamese"
   },
   "userMenu": {
     "installApp": "Install App",
@@ -338,6 +339,8 @@
     "about": "About"
   },
   "confirming": "Confirming",
+  "loading": "Loading",
+  "starting": "Starting",
   "n/a": "N/A",
   "yes": "Yes",
   "no": "No",

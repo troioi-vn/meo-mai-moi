@@ -1,0 +1,33 @@
+{
+  "required": "Trường này là bắt buộc",
+  "email": {
+    "required": "Email là bắt buộc",
+    "invalid": "Vui lòng nhập một địa chỉ email hợp lệ"
+  },
+  "password": {
+    "required": "Mật khẩu là bắt buộc",
+    "min": "Mật khẩu phải có ít nhất {{min}} ký tự",
+    "match": "Mật khẩu không khớp",
+    "weak": "Mật khẩu quá yếu"
+  },
+  "name": {
+    "required": "Tên là bắt buộc",
+    "min": "Tên phải có ít nhất {{min}} ký tự",
+    "max": "Tên không được vượt quá {{max}} ký tự"
+  },
+  "pet": {
+    "nameRequired": "Tên thú cưng là bắt buộc",
+    "speciesRequired": "Loài là bắt buộc"
+  },
+  "file": {
+    "required": "Vui lòng chọn một tệp",
+    "size": "Kích thước tệp không được vượt quá {{size}}",
+    "type": "Loại tệp không hợp lệ"
+  },
+  "date": {
+    "required": "Ngày là bắt buộc",
+    "invalid": "Ngày không hợp lệ",
+    "future": "Ngày không thể ở tương lai",
+    "past": "Ngày không thể ở quá khứ"
+  }
+}

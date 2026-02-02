@@ -6,6 +6,11 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Vietnamese Language Support**: Added complete Vietnamese (vi) localization to the pet care management platform.
+  - **Backend**: Added Vietnamese to supported locales in `config/locales.php` and created comprehensive translation files for messages (`lang/vi/messages.php`) and validation errors (`lang/vi/validation.php`).
+  - **Frontend**: Added Vietnamese translations for all major features including authentication, pet management, helper profiles, placement requests, settings, and common UI elements. Updated i18n configuration to include Vietnamese locale support with proper language detection and fallback handling.
+  - **Translation Coverage**: Complete Vietnamese translations for 7 namespaces (common, auth, pets, settings, validation, helper, placement) with over 1000 translated strings ensuring full user experience in Vietnamese.
+
 - **i18n Translation Maintenance Suite**: Introduced professional tooling to proactively find and manage unused translation keys in the codebase.
   - **REPLACED** custom wheel-reinvention scripts (`find-unused-translations.cjs`, `remove-unused-translations.cjs`, `clean-unused-translations.cjs`) with professional `@lingual/i18n-check` tool for better reliability and maintenance.
   - **FIXED** import issue in `useLocaleSync.ts` (changed from `'./useAuth'` to `'./use-auth'`).

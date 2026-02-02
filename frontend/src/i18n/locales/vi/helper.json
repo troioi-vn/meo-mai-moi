@@ -1,0 +1,46 @@
+{
+  "title": "Người hỗ trợ",
+  "createTitle": "Tạo hồ sơ người hỗ trợ",
+  "createDescription": "Tham gia cộng đồng người hỗ trợ của chúng tôi. Hồ sơ của bạn sẽ được hiển thị cho chủ sở hữu thú cưng khi bạn phản hồi yêu cầu gửi gắm của họ.",
+  "form": {
+    "personalInfo": "Thông tin cá nhân",
+    "contactInfo": "Thông tin liên hệ",
+    "phoneNumber": "Số điện thoại",
+    "additionalContact": "Thông tin liên hệ bổ sung",
+    "experience": "Kinh nghiệm",
+    "hasPets": "Bạn có đang nuôi thú cưng không?",
+    "hasChildren": "Có sống cùng trẻ em?",
+    "placementTypes": "Loại hình hỗ trợ",
+    "placementTypesHelp": "Chọn ít nhất một loại hình hỗ trợ bạn có thể giúp đỡ.",
+    "petTypes": "Loài thú cưng",
+    "clearCitiesToChangeCountry": "Xóa các thành phố đã chọn để đổi quốc gia",
+    "cities": "Thành phố",
+    "address": "Địa chỉ",
+    "addressPlaceholder": "Nhập địa chỉ của bạn",
+    "loadingPetTypes": "Đang tải các loài thú cưng...",
+    "noPetTypes": "Không có loài thú cưng nào khả dụng cho yêu cầu gửi gắm.",
+    "experienceHouseholdSection": "Kinh nghiệm & Hộ gia đình",
+    "experiencePlaceholder": "Mô tả kinh nghiệm của bạn với thú cưng...",
+    "additionalContactHelp": "Bạn có thể thêm bất kỳ thông tin liên hệ bổ sung nào tại đây, thông tin này và số điện thoại của bạn sẽ hiển thị cho chủ sở hữu thú cưng khi bạn phản hồi Yêu cầu gửi gắm của họ",
+    "contactInfoPlaceholder": "Telegram, Zalo, WhatsApp, v.v.",
+    "requestTypesDescription": "Chọn loại yêu cầu gửi gắm mà bạn có thể phản hồi",
+    "petPreferencesSection": "Sở thích thú cưng",
+    "petTypesLabel": "Các loài thú cưng có sẵn cho yêu cầu gửi gắm",
+    "photosSection": "Hình ảnh",
+    "uploadPhotos": "Tải ảnh lên",
+    "photosDescription": "Thêm ảnh về ngôi nhà của bạn hoặc những con vật bạn từng nuôi để giúp chủ sở hữu hiểu rõ hơn về bạn.",
+    "types": {
+      "foster_paid": "Nhận nuôi tạm thời (Có phí)",
+      "foster_free": "Nhận nuôi tạm thời (Miễn phí)",
+      "permanent": "Nhận nuôi vĩnh viễn",
+      "pet_sitting": "Trông giữ thú cưng"
+    }
+  },
+  "messages": {
+    "created": "Tạo hồ sơ người hỗ trợ thành công"
+  },
+  "actions": {
+    "createProfile": "Tạo hồ sơ người hỗ trợ",
+    "creatingProfile": "Đang tạo hồ sơ..."
+  }
+}

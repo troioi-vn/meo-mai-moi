@@ -1,0 +1,133 @@
+{
+  "title": "Cài đặt",
+  "tabs": {
+    "account": "Tài khoản",
+    "profile": "Hồ sơ",
+    "security": "Bảo mật",
+    "notifications": "Thông báo",
+    "preferences": "Tùy chọn",
+    "contactUs": "Liên hệ chúng tôi"
+  },
+  "profile": {
+    "title": "Cài đặt hồ sơ",
+    "name": "Họ và tên",
+    "email": "Email",
+    "avatar": "Ảnh đại diện",
+    "avatarUpload": "Tải ảnh đại diện mới",
+    "avatarRemove": "Xóa ảnh đại diện",
+    "avatarUploaded": "Tải ảnh đại diện thành công",
+    "avatarDeleted": "Xóa ảnh đại diện thành công",
+    "avatarUploadError": "Tải ảnh đại diện thất bại",
+    "avatarDeleteError": "Xóa ảnh đại diện thất bại",
+    "avatarInvalidFile": "Vui lòng chọn một tệp hình ảnh",
+    "avatarFileTooLarge": "Kích thước tệp phải nhỏ hơn 10MB",
+    "uploading": "Đang tải lên...",
+    "deleting": "Đang xóa...",
+    "saving": "Đang lưu...",
+    "bio": "Giới thiệu",
+    "saveChanges": "Lưu thay đổi",
+    "saved": "Đã cập nhật hồ sơ",
+    "error": "Cập nhật hồ sơ thất bại",
+    "loading": "Đang tải chi tiết tài khoản của bạn…",
+    "errorLoading": "Hiện tại chúng tôi không thể tải chi tiết tài khoản của bạn.",
+    "errorLoadingDescription": "Vui lòng làm mới trang hoặc đăng nhập lại để quản lý cài đặt tài khoản."
+  },
+  "security": {
+    "title": "Cài đặt bảo mật",
+    "changePassword": {
+      "title": "Đổi mật khẩu",
+      "description": "Cập nhật mật khẩu tài khoản của bạn. Chọn một mật khẩu mạnh mà bạn không sử dụng ở nơi khác.",
+      "backToSettings": "Quay lại Cài đặt"
+    },
+    "currentPassword": "Mật khẩu hiện tại",
+    "newPassword": "Mật khẩu mới",
+    "confirmPassword": "Xác nhận mật khẩu mới",
+    "updatePassword": "Cập nhật mật khẩu",
+    "passwordUpdated": "Cập nhật mật khẩu thành công",
+    "passwordError": "Cập nhật mật khẩu thất bại",
+    "passwordTitle": "Mật khẩu",
+    "passwordDescription": "Cập nhật mật khẩu của bạn để giữ an toàn cho tài khoản.",
+    "setPasswordDescription": "Thiết lập mật khẩu để đăng nhập trực tiếp mà không cần xác thực qua bên thứ ba.",
+    "twoFactor": {
+      "title": "Xác thực hai yếu tố",
+      "description": "Thêm một lớp bảo mật bổ sung cho tài khoản của bạn",
+      "enabled": "Đã bật",
+      "disabled": "Đã tắt",
+      "enable": "Bật 2FA",
+      "disable": "Tắt 2FA",
+      "setup": "Thiết lập xác thực hai yếu tố",
+      "recoveryCodes": "Mã khôi phục",
+      "regenerateCodes": "Tạo lại mã"
+    },
+    "sessions": {
+      "title": "Phiên hoạt động",
+      "current": "Phiên hiện tại",
+      "logoutOthers": "Đăng xuất các phiên khác",
+      "description": "Đăng xuất khỏi phiên này. Bạn luôn có thể đăng nhập lại sau.",
+      "logout": "Đăng xuất"
+    },
+    "deleteAccount": {
+      "title": "Xóa tài khoản",
+      "description": "Xóa vĩnh viễn tài khoản của bạn và tất cả dữ liệu liên quan",
+      "button": "Xóa tài khoản",
+      "confirmTitle": "Bạn có chắc chắn không?",
+      "confirmDescription": "Hành động này không thể hoàn tác. Điều này sẽ xóa vĩnh viễn tài khoản của bạn và gỡ bỏ dữ liệu của bạn khỏi máy chủ của chúng tôi. Để xác nhận, vui lòng nhập mật khẩu của bạn bên dưới.",
+      "passwordLabel": "Mật khẩu của bạn",
+      "submit": "Xóa tài khoản của tôi",
+      "deleting": "Đang xóa...",
+      "successTitle": "Đã xóa tài khoản",
+      "successDescription": "Tài khoản của bạn đã được xóa thành công.",
+      "failedTitle": "Xóa tài khoản thất bại"
+    }
+  },
+  "notifications": {
+    "title": "Tùy chọn thông báo",
+    "description": "Chọn cách chúng tôi liên hệ với bạn và quản lý cảnh báo thiết bị.",
+    "pageTitle": "Cài đặt thông báo",
+    "pageDescription": "Quản lý cách bạn nhận thông báo về các sự kiện và cập nhật quan trọng.",
+    "backToSettings": "Quay lại Cài đặt",
+    "controlDescription": "Kiểm soát cách bạn nhận thông báo cho các sự kiện khác nhau.",
+    "email": {
+      "title": "Thông báo qua Email",
+      "messages": "Tin nhắn mới",
+      "petUpdates": "Cập nhật về thú cưng",
+      "placementRequests": "Yêu cầu gửi gắm",
+      "marketing": "Tin tức và cập nhật"
+    },
+    "push": {
+      "title": "Thông báo đẩy",
+      "enable": "Bật thông báo đẩy",
+      "messages": "Tin nhắn mới",
+      "petUpdates": "Cập nhật về thú cưng"
+    },
+    "saved": "Đã lưu tùy chọn thông báo",
+    "error": "Lưu tùy chọn thất bại"
+  },
+  "contactUs": {
+    "title": "Liên hệ hỗ trợ",
+    "description": "Cần giúp đỡ? Hãy bắt đầu cuộc trò chuyện với đội ngũ hỗ trợ của chúng tôi.",
+    "starting": "Đang bắt đầu...",
+    "chatWithSupport": "Trò chuyện với hỗ trợ"
+  },
+  "preferences": {
+    "language": {
+      "title": "Ngôn ngữ",
+      "description": "Chọn ngôn ngữ ưu tiên của bạn cho giao diện.",
+      "current": "Ngôn ngữ hiện tại:"
+    }
+  },
+  "helperProfiles": {
+    "created": "Tạo hồ sơ người hỗ trợ thành công",
+    "updated": "Cập nhật hồ sơ người hỗ trợ thành công",
+    "deleted": "Xóa hồ sơ người hỗ trợ thành công",
+    "archived": "Lưu trữ hồ sơ người hỗ trợ thành công",
+    "restored": "Khôi phục hồ sơ người hỗ trợ thành công",
+    "photoDeleted": "Xóa ảnh thành công",
+    "createError": "Tạo hồ sơ người hỗ trợ thất bại. Vui lòng thử lại.",
+    "updateError": "Cập nhật hồ sơ người hỗ trợ thất bại. Vui lòng thử lại.",
+    "deleteError": "Xóa hồ sơ người hỗ trợ thất bại",
+    "archiveError": "Lưu trữ hồ sơ người hỗ trợ thất bại",
+    "restoreError": "Khôi phục hồ sơ người hỗ trợ thất bại",
+    "photoDeleteError": "Xóa ảnh thất bại"
+  }
+}

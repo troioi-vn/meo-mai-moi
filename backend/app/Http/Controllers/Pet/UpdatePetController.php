@@ -195,16 +195,21 @@ class UpdatePetController extends Controller
             }
         }
 
-        if (isset($data['city_id'])) {
-            $countryForCity = $data['country'] ?? $pet->country;
-            $city = City::find($data['city_id']);
-            if (! $city instanceof City) {
-                return $this->sendError(__('messages.city.not_found'), 422);
+        if (array_key_exists('city_id', $data)) {
+            if (! empty($data['city_id'])) {
+                $countryForCity = $data['country'] ?? $pet->country;
+                $city = City::find($data['city_id']);
+                if (! $city instanceof City) {
+                    return $this->sendError(__('messages.city.not_found'), 422);
+                }
+                if ($city->country !== $countryForCity) {
+                    return $this->sendError(__('messages.city.country_mismatch'), 422);
+                }
+                $data['city'] = $city->name;
+            } else {
+                $data['city'] = null;
+                $data['city_id'] = null;
             }
-            if ($city->country !== $countryForCity) {
-                return $this->sendError(__('messages.city.country_mismatch'), 422);
-            }
-            $data['city'] = $city->name;
         }
 
         $pet->fill(array_filter([

@@ -67,8 +67,8 @@ class CategorySeeder extends Seeder
             }
 
             foreach ($categories as $categoryData) {
-                $enName = is_array($categoryData['name']) ? $categoryData['name']['en'] : $categoryData['name'];
-                $translations = is_array($categoryData['name']) ? $categoryData['name'] : ['en' => $categoryData['name']];
+                $enName = $categoryData['name']['en'];
+                $translations = $categoryData['name'];
 
                 Category::updateOrCreate(
                     [

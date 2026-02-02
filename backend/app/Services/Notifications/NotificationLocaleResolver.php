@@ -41,8 +41,8 @@ class NotificationLocaleResolver
 
     private function supportedLocales(): array
     {
-        // For now defer to app.supported_locales if present, else at least the default
-        $supported = config('app.supported_locales');
+        // For now defer to locales.supported if present, else at least the default
+        $supported = config('locales.supported');
         if (is_array($supported) && $supported) {
             return $supported;
         }

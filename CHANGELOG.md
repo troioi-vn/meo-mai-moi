@@ -101,7 +101,7 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Fixed
 
-- **Emoji Initials in Chat and Avatars**: Fixed broken initials display when user names contain multi-character emojis (e.g., flags, family emojis) in chat list, chat windows, message bubbles, and user avatars. Implemented grapheme-aware initials generation using `Intl.Segmenter` with a fallback to `grapheme-splitter` library. Added comprehensive unit tests for emoji handling.
+- **Ukrainian Language Implementation**: Fixed missing Ukrainian language option in the language switcher dropdown by adding the `uk` key to the `language` object in English, Russian, and Vietnamese translation files (`common.json`). The Ukrainian language was fully implemented but not accessible through the UI due to this oversight.
 
 - **Database Seeders**: Updated `DatabaseSeeder` to create placement requests for all seeded pets (excluding birds), and implemented `PlacementRequestSeeder` as an idempotent seeder to backfill placement requests for existing cats and dogs in the database.
 

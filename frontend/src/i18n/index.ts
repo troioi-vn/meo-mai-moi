@@ -29,13 +29,23 @@ import viValidation from './locales/vi/validation.json'
 import viHelper from './locales/vi/helper.json'
 import viPlacement from './locales/vi/placement.json'
 
-export const supportedLocales = ['en', 'ru', 'vi'] as const
+// Import Ukrainian translations - use type assertions for JSON files
+import ukCommon from './locales/uk/common.json'
+import ukAuth from './locales/uk/auth.json'
+import ukPets from './locales/uk/pets.json'
+import ukSettings from './locales/uk/settings.json'
+import ukValidation from './locales/uk/validation.json'
+import ukHelper from './locales/uk/helper.json'
+import ukPlacement from './locales/uk/placement.json'
+
+export const supportedLocales = ['en', 'vi', 'uk', 'ru'] as const
 export type SupportedLocale = (typeof supportedLocales)[number]
 
 export const localeNames: Record<SupportedLocale, string> = {
   en: 'English',
-  ru: 'Русский',
   vi: 'Tiếng Việt',
+  uk: 'Українська',
+  ru: 'Русский',
 }
 
 const isTest = typeof process !== 'undefined' && process.env.NODE_ENV === 'test'
@@ -77,6 +87,15 @@ void i18nInstance.use(initReactI18next).init({
       validation: viValidation,
       helper: viHelper,
       placement: viPlacement,
+    },
+    uk: {
+      common: ukCommon,
+      auth: ukAuth,
+      pets: ukPets,
+      settings: ukSettings,
+      validation: ukValidation,
+      helper: ukHelper,
+      placement: ukPlacement,
     },
   },
   lng: isTest ? 'en' : undefined, // Force English in tests, auto-detect otherwise

@@ -46,7 +46,8 @@ class SendNotificationEmail implements ShouldQueue
         public User $user,
         public string $type,
         public array $data,
-        public int $notificationId
+        public int $notificationId,
+        public ?string $recipientEmailOverride = null
     ) {
         // NOTE: These are public for legacy tests that introspect queued job properties
     }
@@ -94,6 +95,8 @@ class SendNotificationEmail implements ShouldQueue
             return;
         }
 
+        $recipientEmail = null;
+
         try {
             // Get the notification type enum
             $notificationType = NotificationType::tryFrom($this->type);
@@ -109,9 +112,31 @@ class SendNotificationEmail implements ShouldQueue
                 throw new \InvalidArgumentException("No mail class found for notification type: {$this->type}");
             }
 
-            // Validate user email
-            if (! isset($this->user->email) || $this->user->email === '' || ! filter_var($this->user->email, FILTER_VALIDATE_EMAIL)) {
-                throw new \InvalidArgumentException('Invalid user email address: '.($this->user->email ?? 'empty'));
+            $recipientEmail = $this->recipientEmailOverride;
+            if (! is_string($recipientEmail) || $recipientEmail === '') {
+                $candidate = $this->data['recipient_email'] ?? null;
+                $recipientEmail = is_string($candidate) && $candidate !== '' ? $candidate : null;
+            }
+            if (! $recipientEmail) {
+                $recipientEmail = $this->user->email ?? null;
+            }
+
+            // Validate recipient email
+            if (! is_string($recipientEmail) || $recipientEmail === '' || ! filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
+                throw new \InvalidArgumentException('Invalid recipient email address: '.(is_string($recipientEmail) && $recipientEmail !== '' ? $recipientEmail : 'empty'));
+            }
+
+            // Optional locale override (used by templates + translations)
+            $localeOverride = $this->data['locale'] ?? null;
+            $supportedLocales = config('locales.supported', ['en']);
+            if (! is_array($supportedLocales) || $supportedLocales === []) {
+                $supportedLocales = ['en'];
+            }
+            if (! is_string($localeOverride) || $localeOverride === '' || ! in_array($localeOverride, $supportedLocales, true)) {
+                $localeOverride = null;
+            }
+            if ($localeOverride && method_exists($mail, 'locale')) {
+                $mail->locale($localeOverride);
             }
 
             // Validate email configuration before logging/sending, but allow sending without an active record
@@ -131,7 +156,7 @@ class SendNotificationEmail implements ShouldQueue
                         'user_id' => $this->user->id,
                         'notification_id' => $this->notificationId,
                         'email_configuration_id' => null,
-                        'recipient_email' => $this->user->email,
+                        'recipient_email' => $recipientEmail,
                         'subject' => method_exists($mail, 'envelope') ? ($mail->envelope()->subject ?? 'Notification Email') : 'Notification Email',
                         'body' => $this->extractEmailBody($mail),
                         'status' => 'failed',
@@ -165,7 +190,7 @@ class SendNotificationEmail implements ShouldQueue
                 'user_id' => $this->user->id,
                 'notification_id' => $this->notificationId,
                 'email_configuration_id' => $activeConfigId,
-                'recipient_email' => $this->user->email,
+                'recipient_email' => $recipientEmail,
                 'subject' => $mail->envelope()->subject ?? 'Notification Email',
                 'body' => $this->extractEmailBody($mail),
                 'status' => 'pending',
@@ -192,7 +217,7 @@ class SendNotificationEmail implements ShouldQueue
             }
 
             // Send the email
-            Mail::to($this->user->email)->send($mail);
+            Mail::to($recipientEmail)->send($mail);
 
             // Mark email as accepted in log (Mailgun accepted for delivery)
             $this->emailLog->markAsAccepted('Email accepted by mail system');
@@ -208,6 +233,7 @@ class SendNotificationEmail implements ShouldQueue
                 'notification_id' => $this->notificationId,
                 'user_id' => $this->user->id,
                 'user_email' => $this->user->email,
+                'recipient_email' => $recipientEmail,
                 'type' => $this->type,
             ]);
         } catch (\Exception $e) {
@@ -222,6 +248,7 @@ class SendNotificationEmail implements ShouldQueue
                 'email_log_id' => $this->emailLog?->id,
                 'user_id' => $this->user->id,
                 'user_email' => $this->user->email,
+                'recipient_email' => $recipientEmail ?? null,
                 'type' => $this->type,
                 'error' => $e->getMessage(),
                 'attempt' => $this->attempts(),

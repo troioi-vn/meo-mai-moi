@@ -73,6 +73,25 @@ class SendNotificationEmailJobTest extends TestCase
         $this->assertNull($this->notification->failure_reason);
     }
 
+    public function test_job_can_override_recipient_email_address()
+    {
+        Mail::fake();
+
+        $job = new SendNotificationEmail(
+            $this->user,
+            NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
+            ['pet_id' => 1],
+            $this->notification->id,
+            'override@example.com'
+        );
+
+        $job->handle();
+
+        Mail::assertSent(PlacementRequestResponseMail::class, function ($mail) {
+            return $mail->hasTo('override@example.com');
+        });
+    }
+
     public function test_job_sends_helper_response_accepted_email()
     {
         Mail::fake();
@@ -330,6 +349,7 @@ class SendNotificationEmailJobTest extends TestCase
             'notification_id' => $this->notification->id,
             'user_id' => $this->user->id,
             'user_email' => $this->user->email,
+            'recipient_email' => $this->user->email,
             'type' => NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
         ]);
 

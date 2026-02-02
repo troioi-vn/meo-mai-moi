@@ -16,7 +16,10 @@ class EmailNotificationChannel implements NotificationChannelInterface
         try {
             $notification = $this->createNotificationRecord($user, $type, $data);
 
-            SendNotificationEmail::dispatch($user, $type, $data, $notification->id);
+            $recipientOverride = $data['recipient_email'] ?? null;
+            $recipientOverride = is_string($recipientOverride) && $recipientOverride !== '' ? $recipientOverride : null;
+
+            SendNotificationEmail::dispatch($user, $type, $data, $notification->id, $recipientOverride);
 
             $this->logSuccess($user, $notification, $type);
 

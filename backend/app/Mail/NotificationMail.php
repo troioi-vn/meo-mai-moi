@@ -27,6 +27,8 @@ abstract class NotificationMail extends Mailable
 
     protected array $data;
 
+    protected ?string $templateLocaleOverride = null;
+
     /**
      * Create a new message instance.
      */
@@ -36,9 +38,19 @@ abstract class NotificationMail extends Mailable
         $this->notificationType = $notificationType;
         $this->data = $data;
 
-        // Set locale for the mailable based on user preference
         $localeResolver = app(\App\Services\Notifications\NotificationLocaleResolver::class);
-        $this->locale($localeResolver->resolve($this->user));
+        $supportedLocales = config('locales.supported', ['en']);
+        if (! is_array($supportedLocales) || $supportedLocales === []) {
+            $supportedLocales = ['en'];
+        }
+
+        $override = $data['locale'] ?? null;
+        if (is_string($override) && $override !== '' && in_array($override, $supportedLocales, true)) {
+            $this->templateLocaleOverride = $override;
+        }
+
+        // Set locale for the mailable (used by translations) based on override → user → defaults
+        $this->locale($this->templateLocaleOverride ?? $localeResolver->resolve($this->user));
     }
 
     /**
@@ -63,7 +75,7 @@ abstract class NotificationMail extends Mailable
         $renderer = app(\App\Services\Notifications\NotificationTemplateRenderer::class);
         $localeResolver = app(\App\Services\Notifications\NotificationLocaleResolver::class);
 
-        $locale = $localeResolver->resolve($this->user, request());
+        $locale = $this->templateLocaleOverride ?? $localeResolver->resolve($this->user, request());
         $resolved = $resolver->resolve($this->notificationType->value, 'email', $locale);
 
         if ($resolved) {

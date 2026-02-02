@@ -6,7 +6,13 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
-- **i18n Support for Email and In-App Notifications**: Implemented comprehensive internationalization for all notification-related content across email templates and in-app notification UI.
+- **Admin Test Notification Feature**: Added a "Test Notification" section in the admin panel under Email Configurations, enabling administrators to send test notifications for validation and debugging purposes.
+  - **UI Components**: Created a new Filament widget (`TestNotificationWidget`) with form fields for test email address, notification type selection (checkboxes for all supported types including enum and ad-hoc types), and optional locale dropdown (defaults to English).
+  - **Notification Dispatch**: Implemented force-send functionality that bypasses user preferences, sending selected notification types as emails to the specified address and/or creating in-app notifications for the current admin user.
+  - **Type Discovery**: Dynamically populates notification types from the registry, enum values, and existing database records to ensure comprehensive coverage of both templated and ad-hoc notification types.
+  - **Email Overrides**: Enhanced `SendNotificationEmail` job and `EmailNotificationChannel` to support recipient email and locale overrides for testing scenarios.
+  - **Validation & Feedback**: Added server-side validation for inputs and provides success notifications with dispatch counts (emails queued, in-app created, failures).
+  - **Testing**: Updated unit tests for email job to cover recipient override functionality and ensured backward compatibility.
   - **Email Templates**: Converted all notification email templates from hardcoded English to fully translatable content using Laravel's `__()` helper. Added complete email translation sections to all supported languages (English, Russian, Ukrainian, Vietnamese) including subjects, greetings, content, and common phrases for placement requests, helper responses, pet birthdays, vaccination reminders, messaging, and system notifications.
   - **In-App Notifications**: Added translatable notification types, groups, and action labels to backend language files. Implemented localized notification metadata (labels and descriptions) for all notification categories including placement requests, pet reminders, account notifications, and messaging.
   - **Frontend UI**: Updated notification components (`NotificationBell`, `NotificationList`) with i18n support for aria labels, time formatting, and action buttons. Added short-form time display keys (`secondsAgoShort`, `minutesAgoShort`, etc.) to all language files for compact notification timestamps.

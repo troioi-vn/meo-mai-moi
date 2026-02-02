@@ -64,7 +64,8 @@ class NotificationEmailChannel
             $notifiable,
             $notificationData['type'],
             $notificationData['data'],
-            $notificationRecord->id
+            $notificationRecord->id,
+            null
         );
     }
 }

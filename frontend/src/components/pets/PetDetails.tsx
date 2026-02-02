@@ -1,4 +1,5 @@
 import React from 'react'
+import { Mars, Venus } from 'lucide-react'
 import type { Pet } from '@/types/pet'
 import { formatPetAge } from '@/types/pet'
 import { getStatusDisplay, getStatusClasses } from '@/utils/petStatus'
@@ -76,12 +77,21 @@ const PetDetails: React.FC<PetDetailsProps> = ({
         <div className="flex justify-between items-start mb-4">
           <div>
             <h1 className="text-3xl font-bold text-card-foreground">{pet.name}</h1>
-            <p className="text-lg text-muted-foreground">
-              {pet.pet_type.name}
-              {pet.sex && pet.sex !== 'not_specified' && ` • ${t(`pets:sexLabels.${pet.sex}`)}`}
-              {' • '}
-              {ageDisplay}
-            </p>
+            <div className="text-lg text-muted-foreground flex items-center gap-1">
+              <span>{pet.pet_type.name}</span>
+              {pet.sex && pet.sex !== 'not_specified' && (
+                <>
+                  <span> • </span>
+                  {pet.sex === 'male' ? (
+                    <Mars className="h-5 w-5 text-blue-500" />
+                  ) : (
+                    <Venus className="h-5 w-5 text-pink-500" />
+                  )}
+                </>
+              )}
+              <span> • </span>
+              <span>{ageDisplay}</span>
+            </div>
             <div className="flex items-center gap-2 mt-2">
               <span className="inline-block bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-1 rounded-full text-sm font-medium">
                 {pet.pet_type.name}

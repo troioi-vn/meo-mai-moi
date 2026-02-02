@@ -1,5 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Mars, Venus } from 'lucide-react'
 import type { Pet } from '@/types/pet'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
@@ -132,9 +133,16 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
       </div>
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-primary">{pet.name}</CardTitle>
-        <CardDescription className="text-muted-foreground">
+        <CardDescription className="text-muted-foreground flex items-center gap-1">
           {pet.sex && pet.sex !== 'not_specified' && (
-            <span>{t(`pets:sexLabels.${pet.sex}`)} • </span>
+            <>
+              {pet.sex === 'male' ? (
+                <Mars className="h-4 w-4 text-blue-500" />
+              ) : (
+                <Venus className="h-4 w-4 text-pink-500" />
+              )}
+              <span> • </span>
+            </>
           )}
           {formatPetAge(pet, t)}
         </CardDescription>

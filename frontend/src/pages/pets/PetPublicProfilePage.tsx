@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams, useNavigate } from 'react-router-dom'
-import { Info, Eye } from 'lucide-react'
+import { Info, Eye, Mars, Venus } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -261,9 +261,15 @@ const PetPublicProfilePage: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-3">
               {pet.sex && pet.sex !== 'not_specified' && (
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-sm items-center">
                   <span className="text-muted-foreground">{t('common:petPublicProfile.sex')}</span>
-                  <span className="font-medium">{t(`pets:sexLabels.${pet.sex}`)}</span>
+                  <span className="font-medium">
+                    {pet.sex === 'male' ? (
+                      <Mars className="h-4 w-4 text-blue-500" />
+                    ) : (
+                      <Venus className="h-4 w-4 text-pink-500" />
+                    )}
+                  </span>
                 </div>
               )}
               <div className="flex justify-between text-sm">

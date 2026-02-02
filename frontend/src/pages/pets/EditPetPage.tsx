@@ -226,7 +226,7 @@ const EditPetPage: React.FC = () => {
               updateCategories={updateCategories}
               cityValue={formData.city_selected}
               onCityChange={updateCity}
-              submitLabel={isSubmitting ? t('pets:messages.updating') : t('pets:messages.updated')}
+              submitLabel={isSubmitting ? t('pets:messages.updating') : t('pets:updatePet')}
             />
 
             {supportsMicrochips && loadedPet && (

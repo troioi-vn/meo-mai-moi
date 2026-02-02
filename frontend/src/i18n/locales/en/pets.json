@@ -14,6 +14,7 @@
   "title": "Pets",
   "addPet": "Add Pet",
   "editPet": "Edit Pet",
+  "updatePet": "Update Pet",
   "tabs": {
     "general": "General",
     "health": "Health",

@@ -57,7 +57,6 @@ class CategorySeeder extends Seeder
             ],
         ];
 
-
         foreach ($categoriesByPetType as $petTypeSlug => $categories) {
             $petType = PetType::where('slug', $petTypeSlug)->first();
 

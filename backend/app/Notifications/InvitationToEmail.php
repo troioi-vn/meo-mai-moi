@@ -49,9 +49,10 @@ class InvitationToEmail extends Notification implements ShouldQueue
     {
         $appName = config('app.name', 'Our Platform');
         $invitationUrl = $this->invitation->getInvitationUrl();
+        $this->locale = app(\App\Services\Notifications\NotificationLocaleResolver::class)->resolve(request: request());
 
         return (new MailMessage)
-            ->subject("You're invited to join {$appName}!")
+            ->subject(__('messages.emails.subjects.invitation', ['app' => $appName], $this->locale))
             ->markdown('emails.invitation', [
                 'inviter' => $this->inviter,
                 'invitation' => $this->invitation,
@@ -66,14 +67,15 @@ class InvitationToEmail extends Notification implements ShouldQueue
     {
         $appName = config('app.name', 'Our Platform');
         $invitationUrl = $invitation->getInvitationUrl();
+        $locale = $inviter->locale ?? app()->getLocale();
 
         Mail::send('emails.invitation', [
             'inviter' => $inviter,
             'invitation' => $invitation,
             'invitationUrl' => $invitationUrl,
-        ], function ($message) use ($email, $appName): void {
+        ], function ($message) use ($email, $appName, $locale): void {
             $message->to($email)
-                ->subject("You're invited to join {$appName}!");
+                ->subject(__('messages.emails.subjects.invitation', ['app' => $appName], $locale));
         });
     }
 

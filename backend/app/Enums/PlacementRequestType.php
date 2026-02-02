@@ -16,12 +16,7 @@ enum PlacementRequestType: string implements HasColor, HasLabel
 
     public function getLabel(): string
     {
-        return match ($this) {
-            self::FOSTER_PAID => 'Foster (Paid)',
-            self::FOSTER_FREE => 'Foster (Free)',
-            self::PERMANENT => 'Permanent',
-            self::PET_SITTING => 'Pet Sitting',
-        };
+        return __("messages.enums.placement_request_type.{$this->value}");
     }
 
     public function getColor(): string

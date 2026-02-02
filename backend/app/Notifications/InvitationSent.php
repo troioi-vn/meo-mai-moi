@@ -45,9 +45,10 @@ class InvitationSent extends Notification implements ShouldQueue
     {
         $appName = config('app.name', 'Our Platform');
         $invitationUrl = $this->invitation->getInvitationUrl();
+        $this->locale = app(\App\Services\Notifications\NotificationLocaleResolver::class)->resolve($notifiable);
 
         return (new MailMessage)
-            ->subject("You're invited to join {$appName}!")
+            ->subject(__('messages.emails.subjects.invitation', ['app' => $appName], $this->locale))
             ->markdown('emails.invitation', [
                 'inviter' => $this->inviter,
                 'invitation' => $this->invitation,

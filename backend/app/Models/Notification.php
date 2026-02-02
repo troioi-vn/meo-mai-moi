@@ -85,21 +85,16 @@ class Notification extends Model
      */
     public function getTypeDisplayAttribute(): string
     {
-        return match ($this->type) {
-            'placement_request' => 'Placement Request',
-            'transfer_request' => 'Transfer Request',
-            'transfer_accepted' => 'Transfer Accepted',
-            'transfer_rejected' => 'Transfer Rejected',
-            'handover_scheduled' => 'Handover Scheduled',
-            'handover_completed' => 'Handover Completed',
-            'review_received' => 'Review Received',
-            'profile_approved' => 'Profile Approved',
-            'profile_rejected' => 'Profile Rejected',
-            'system_announcement' => 'System Announcement',
-            'deployment' => 'Deployment',
-            'new_message' => 'New Message',
-            default => ucfirst(str_replace('_', ' ', $this->type ?? 'notification')),
-        };
+        $enum = NotificationType::tryFrom((string) $this->type);
+        if ($enum) {
+            return $enum->getLabel();
+        }
+
+        // Fallback to translation or formatted string for unknown types
+        $key = "messages.notifications.types.{$this->type}.label";
+        $translated = __($key);
+
+        return $translated !== $key ? $translated : ucfirst(str_replace('_', ' ', (string) ($this->type ?? 'notification')));
     }
 
     /**

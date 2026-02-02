@@ -1,45 +1,25 @@
 @component('mail::message')
 
-# Verify Your Email Address
+# {{ __('messages.emails.verification.title') }}
 
-Hi {{ $user->name ?? 'there' }},
+{{ __('messages.emails.common.hi', ['name' => $user->name ?? __('messages.emails.common.someone')]) }}
 
-Thanks for registering with {{ $appName }}. Please confirm your email address by clicking the button below:
-
-@component('mail::button', ['url' => $verificationUrl])
-Verify Email
-@endcomponent
-
-If the button doesn't work, copy and paste this link into your browser:
-
-{{ $verificationUrl }}
-
-This link will expire in 60 minutes for your security.
-
-Thanks,
-The {{ $appName }} Team
-
-@endcomponent
-@component('mail::message')
-# Welcome to {{ $appName }}!
-
-Hi {{ $user->name }},
-
-Thank you for registering with {{ $appName }}! To complete your registration and start managing your cat's care, please verify your email address by clicking the button below.
+{{ __('messages.emails.verification.thanks_registering', ['app' => $appName]) }}
 
 @component('mail::button', ['url' => $verificationUrl])
-Verify Email Address
+{{ __('messages.emails.common.verify_email') }}
 @endcomponent
 
-This verification link will expire in 60 minutes for security reasons.
+{{ __('messages.emails.verification.expire', ['minutes' => 60]) }}
 
-If you didn't create an account with {{ $appName }}, you can safely ignore this email.
+{{ __('messages.emails.verification.ignore', ['app' => $appName]) }}
 
-Thanks,<br>
-The {{ $appName }} Team
+{{ __('messages.emails.common.thanks') }}<br>
+{{ __('messages.emails.common.team', ['app' => $appName]) }}
 
 ---
 
-If you're having trouble clicking the "Verify Email Address" button, copy and paste the URL below into your web browser:
+{{ __('messages.emails.common.button_trouble', ['action' => __('messages.emails.common.verify_email')]) }}
 {{ $verificationUrl }}
+
 @endcomponent

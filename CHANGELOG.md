@@ -6,6 +6,14 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **i18n Support for Email and In-App Notifications**: Implemented comprehensive internationalization for all notification-related content across email templates and in-app notification UI.
+  - **Email Templates**: Converted all notification email templates from hardcoded English to fully translatable content using Laravel's `__()` helper. Added complete email translation sections to all supported languages (English, Russian, Ukrainian, Vietnamese) including subjects, greetings, content, and common phrases for placement requests, helper responses, pet birthdays, vaccination reminders, messaging, and system notifications.
+  - **In-App Notifications**: Added translatable notification types, groups, and action labels to backend language files. Implemented localized notification metadata (labels and descriptions) for all notification categories including placement requests, pet reminders, account notifications, and messaging.
+  - **Frontend UI**: Updated notification components (`NotificationBell`, `NotificationList`) with i18n support for aria labels, time formatting, and action buttons. Added short-form time display keys (`secondsAgoShort`, `minutesAgoShort`, etc.) to all language files for compact notification timestamps.
+  - **Notification Locale Resolution**: Enhanced `NotificationLocaleResolver` service to properly determine recipient locales from user preferences, Accept-Language headers, or app defaults for consistent localized notification delivery.
+  - **Email Layout**: Updated notification email layout to use dynamic language attributes and translatable app descriptions instead of hardcoded strings.
+  - **Testing**: Updated email template rendering tests to validate translated content and ensured all notification-related translations are complete across all supported languages.
+
 - **Translatable Pet Data (i18n)**: Implemented full internationalization support for pet-related entities (Pet Types, Categories, Cities) enabling multi-language content management.
   - **Database Migration**: Added migration to convert `name` columns from VARCHAR to JSONB format for PetType, Category, and City models, preserving existing data as English translations.
   - **Model Updates**: Enhanced Category, City, and PetType models with `HasTranslations` trait and custom `SerializesTranslatableAsString` concern for automatic locale-based serialization.

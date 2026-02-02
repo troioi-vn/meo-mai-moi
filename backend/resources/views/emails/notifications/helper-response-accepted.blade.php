@@ -2,24 +2,24 @@
 
 @section('content')
     <div class="greeting">
-        Wonderful news, {{ $user->name }}!
+        {{ __('messages.emails.helper_response_accepted.greeting', ['name' => $user->name]) }}
     </div>
 
     <div class="message">
-        Your response to help with a pet has been accepted! The pet owner has chosen you to provide care.
+        {{ __('messages.emails.helper_response_accepted.intro') }}
     </div>
 
     @if(isset($pet))
         <div class="pet-info">
             <div class="pet-name">{{ $pet->name }}</div>
             <div class="pet-details">
-                <strong>Type:</strong> {{ $pet->petType->name ?? 'Pet' }}<br>
-                <strong>Location:</strong> {{ collect([$pet->city, $pet->state, $pet->country])->filter()->implode(', ') ?: 'Unknown' }}<br>
+                <strong>{{ __('messages.emails.common.type') }}</strong> {{ $pet->petType->name ?? __('messages.emails.common.a_pet') }}<br>
+                <strong>{{ __('messages.emails.common.location') }}</strong> {{ collect([$pet->city, $pet->state, $pet->country])->filter()->implode(', ') ?: __('messages.not_found') }}<br>
                 @if($pet->birthday)
-                    <strong>Age:</strong> {{ $pet->birthday->age }} years old<br>
+                    <strong>{{ __('messages.emails.common.age') }}</strong> {{ __('messages.emails.common.years_old', ['count' => $pet->birthday->age]) }}<br>
                 @endif
                 @if($pet->description)
-                    <strong>About {{ $pet->name }}:</strong> {{ Str::limit($pet->description, 150) }}<br>
+                    <strong>{{ __('messages.emails.helper_response_accepted.about_pet', ['name' => $pet->name]) }}</strong> {{ Str::limit($pet->description, 150) }}<br>
                 @endif
             </div>
         </div>
@@ -27,40 +27,40 @@
 
     @if(isset($placementRequest))
         <div style="background-color: #d4edda; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #28a745;">
-            <strong>✓ Request Details:</strong><br>
-            <strong>Type:</strong> {{ ucfirst(str_replace('_', ' ', $placementRequest->request_type->value)) }}<br>
+            <strong>{{ __('messages.emails.helper_response_accepted.request_details') }}</strong><br>
+            <strong>{{ __('messages.emails.common.type') }}</strong> {{ ucfirst(str_replace('_', ' ', $placementRequest->request_type->value)) }}<br>
             @if($placementRequest->start_date)
-                <strong>Start Date:</strong> {{ $placementRequest->start_date->format('M j, Y') }}<br>
+                <strong>{{ __('messages.emails.helper_response_accepted.start_date') }}</strong> {{ $placementRequest->start_date->format('M j, Y') }}<br>
             @endif
             @if($placementRequest->end_date)
-                <strong>End Date:</strong> {{ $placementRequest->end_date->format('M j, Y') }}<br>
+                <strong>{{ __('messages.emails.helper_response_accepted.end_date') }}</strong> {{ $placementRequest->end_date->format('M j, Y') }}<br>
             @endif
             @if($placementRequest->notes)
-                <strong>Special Notes:</strong> {{ Str::limit($placementRequest->notes, 100) }}<br>
+                <strong>{{ __('messages.emails.helper_response_accepted.special_notes') }}</strong> {{ Str::limit($placementRequest->notes, 100) }}<br>
             @endif
         </div>
     @endif
 
     <div class="message">
-        The pet owner will be in touch with you soon to coordinate the handover details. Please be prepared to:
+        {{ __('messages.emails.helper_response_accepted.next_steps') }}
     </div>
 
     <div class="message">
-        <strong>Preparation Checklist:</strong>
+        <strong>{{ __('messages.emails.helper_response_accepted.checklist_title') }}</strong>
         <ul style="margin: 15px 0; padding-left: 20px;">
-            <li>Prepare a safe and comfortable space for {{ isset($pet) ? $pet->name : 'the pet' }}</li>
-            <li>Stock up on necessary supplies (food, litter, toys)</li>
-            <li>Review any medical or care instructions from the owner</li>
-            <li>Coordinate pickup/delivery logistics</li>
-            <li>Exchange contact information for ongoing communication</li>
+            <li>{{ __('messages.emails.helper_response_accepted.checklist_space', ['pet' => isset($pet) ? $pet->name : __('messages.emails.common.the_pet')]) }}</li>
+            <li>{{ __('messages.emails.helper_response_accepted.checklist_supplies') }}</li>
+            <li>{{ __('messages.emails.helper_response_accepted.checklist_medical') }}</li>
+            <li>{{ __('messages.emails.helper_response_accepted.checklist_logistics') }}</li>
+            <li>{{ __('messages.emails.helper_response_accepted.checklist_contact') }}</li>
         </ul>
     </div>
 
     <div style="text-align: center; margin: 30px 0;">
-        <a href="{{ $actionUrl }}" class="action-button">View Request Details</a>
+        <a href="{{ $actionUrl }}" class="action-button">{{ __('messages.emails.common.view_request') }}</a>
     </div>
 
     <div class="message" style="font-size: 14px; color: #666; background-color: #e8f4fd; padding: 15px; border-radius: 6px; border-left: 4px solid #007bff;">
-        <strong>Thank you</strong> for opening your heart and home to help {{ isset($pet) ? $pet->name : 'a pet' }} in need. Your kindness makes a real difference!
+        {{ __('messages.emails.helper_response_accepted.closing', ['pet' => isset($pet) ? $pet->name : __('messages.emails.common.a_pet')]) }}
     </div>
 @endsection

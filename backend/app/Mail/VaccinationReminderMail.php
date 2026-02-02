@@ -15,7 +15,7 @@ class VaccinationReminderMail extends NotificationMail
 
     protected function getSubject(): string
     {
-        $petName = 'your pet';
+        $petName = __('messages.emails.common.your_pet');
         if (isset($this->data['pet_id'])) {
             $pet = Pet::find($this->data['pet_id']);
             if ($pet instanceof Pet) {
@@ -23,9 +23,13 @@ class VaccinationReminderMail extends NotificationMail
             }
         }
 
-        $vaccine = $this->data['vaccine_name'] ?? 'a vaccine';
-        $dueStr = isset($this->data['due_at']) ? (string) $this->data['due_at'] : 'soon';
+        $vaccine = $this->data['vaccine_name'] ?? __('messages.emails.common.a_vaccine');
+        $dueStr = isset($this->data['due_at']) ? (string) $this->data['due_at'] : __('messages.emails.common.soon');
 
-        return "Reminder: {$petName} is due for {$vaccine} {$dueStr}";
+        return __('messages.emails.subjects.vaccination_reminder', [
+            'pet' => $petName,
+            'vaccine' => $vaccine,
+            'due' => $dueStr,
+        ]);
     }
 }

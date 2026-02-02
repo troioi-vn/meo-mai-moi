@@ -8,6 +8,8 @@
     "pets": "Pets",
     "messages": "Messages",
     "notifications": "Notifications",
+    "notificationsOpen": "Open notifications",
+    "notificationsUnread": "Open notifications ({{count}} unread)",
     "settings": "Settings",
     "profile": "Profile",
     "logout": "Logout",
@@ -99,7 +101,11 @@
     "daysAgo": "{{count}} day ago",
     "daysAgo_other": "{{count}} days ago",
     "today": "Today",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "secondsAgoShort": "{{count}}s",
+    "minutesAgoShort": "{{count}}m",
+    "hoursAgoShort": "{{count}}h",
+    "daysAgoShort": "{{count}}d"
   },
   "language": {
     "label": "Language",

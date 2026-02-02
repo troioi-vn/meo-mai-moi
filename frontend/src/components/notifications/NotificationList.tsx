@@ -54,18 +54,6 @@ function LevelIcon({ level }: { level: 'info' | 'success' | 'warning' | 'error' 
   }
 }
 
-function timeAgo(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime()
-  const s = Math.floor(diff / 1000)
-  if (s < 60) return `${String(s)}s`
-  const m = Math.floor(s / 60)
-  if (m < 60) return `${String(m)}m`
-  const h = Math.floor(m / 60)
-  if (h < 24) return `${String(h)}h`
-  const d = Math.floor(h / 24)
-  return `${String(d)}d`
-}
-
 function NotificationActionButton({
   notificationId,
   action,
@@ -159,6 +147,18 @@ function NotificationActionButton({
 export function NotificationList() {
   const { t } = useTranslation('common')
   const { bellNotifications, loading, markBellRead, applyBellUpdate } = useNotifications()
+
+  const timeAgo = (iso: string) => {
+    const diff = Date.now() - new Date(iso).getTime()
+    const s = Math.floor(diff / 1000)
+    if (s < 60) return t('time.secondsAgoShort', { count: s })
+    const m = Math.floor(s / 60)
+    if (m < 60) return t('time.minutesAgoShort', { count: m })
+    const h = Math.floor(m / 60)
+    if (h < 24) return t('time.hoursAgoShort', { count: h })
+    const d = Math.floor(h / 24)
+    return t('time.daysAgoShort', { count: d })
+  }
 
   if (loading && bellNotifications.length === 0) {
     return (

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Reset - {{ config('app.name') }}</title>
+    <title>{{ __('messages.emails.subjects.password_reset', ['app' => config('app.name')]) }}</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
@@ -98,42 +98,42 @@
     <div class="email-container">
         <div class="header">
             <div class="logo">{{ config('app.name') }}</div>
-            <div>Password Reset Request</div>
+            <div>{{ __('messages.emails.password_reset.title') }}</div>
         </div>
 
         <div class="content" style="color: #333333;">
-            <h2 style="color: #333333;">Hello {{ $user->name }},</h2>
+            <h2 style="color: #333333;">{{ __('messages.emails.common.hello', ['name' => $user->name]) }}</h2>
 
-            <p style="color: #333333;">We received a request to reset your password for your {{ config('app.name') }} account.</p>
+            <p style="color: #333333;">{{ __('messages.emails.password_reset.intro', ['app' => config('app.name')]) }}</p>
 
             <div class="reset-info" style="color: #333333;">
-                <p style="color: #333333;"><strong>Account:</strong> {{ $user->email }}</p>
-                <p style="color: #333333;"><strong>Requested at:</strong> {{ now()->format('M d, Y \a\t g:i A') }}</p>
+                <p style="color: #333333;"><strong>{{ __('messages.emails.password_reset.account') }}</strong> {{ $user->email }}</p>
+                <p style="color: #333333;"><strong>{{ __('messages.emails.password_reset.requested_at') }}</strong> {{ now()->format('M d, Y \a\t g:i A') }}</p>
             </div>
 
-            <p style="color: #333333;">Click the button below to reset your password:</p>
+            <p style="color: #333333;">{{ __('messages.emails.password_reset.click_button') }}</p>
 
             <div style="text-align: center;">
-                <a href="{{ $resetUrl }}" class="reset-button">Reset My Password</a>
+                <a href="{{ $resetUrl }}" class="reset-button">{{ __('messages.emails.common.reset_password') }}</a>
             </div>
 
-            <p style="color: #333333;">If the button doesn't work, copy and paste this link into your browser:</p>
+            <p style="color: #333333;">{{ __('messages.emails.common.button_trouble', ['action' => __('messages.emails.common.reset_password')]) }}</p>
             <div class="url-fallback" style="color: #333333;">{{ $resetUrl }}</div>
 
             <div class="security-notice" style="color: #333333;">
-                <strong style="color: #333333;">Security Notice:</strong><br>
-                • This link will expire in 60 minutes<br>
-                • If you didn't request this reset, you can safely ignore this email<br>
-                • Your password won't be changed unless you click the link above
+                <strong style="color: #333333;">{{ __('messages.emails.password_reset.notice_title') }}</strong><br>
+                • {{ __('messages.emails.password_reset.notice_expire', ['minutes' => 60]) }}<br>
+                • {{ __('messages.emails.password_reset.notice_ignore') }}<br>
+                • {{ __('messages.emails.password_reset.notice_safety') }}
             </div>
 
-            <p style="color: #333333;">If you're having trouble accessing your account or didn't request this password reset, please contact our support team.</p>
+            <p style="color: #333333;">{{ __('messages.emails.password_reset.support') }}</p>
         </div>
 
         <div class="footer" style="color: #666666;">
-            <p style="color: #666666;">This email was sent from {{ config('app.name') }}</p>
+            <p style="color: #666666;">{{ __('messages.emails.password_reset.sent_from', ['app' => config('app.name')]) }}</p>
             <p class="small-text" style="color: #888888;">
-                If you no longer wish to receive these emails, please update your account preferences or contact support.
+                {{ __('messages.emails.password_reset.unsubscribe_notice') }}
             </p>
         </div>
     </div>

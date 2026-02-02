@@ -15,7 +15,9 @@
     "register": "Đăng ký",
     "invitations": "Lời mời",
     "helperProfiles": "Hồ sơ người hỗ trợ",
-    "requests": "Yêu cầu"
+    "requests": "Yêu cầu",
+    "notificationsOpen": "Mở thông báo",
+    "notificationsUnread": "Mở thông báo ({{count}} chưa đọc)"
   },
   "actions": {
     "save": "Lưu",
@@ -99,7 +101,11 @@
     "daysAgo": "{{count}} ngày trước",
     "daysAgo_other": "{{count}} ngày trước",
     "today": "Hôm nay",
-    "yesterday": "Hôm qua"
+    "yesterday": "Hôm qua",
+    "secondsAgoShort": "{{count}} giây",
+    "minutesAgoShort": "{{count}} phút",
+    "hoursAgoShort": "{{count}} giờ",
+    "daysAgoShort": "{{count}} ngày"
   },
   "language": {
     "label": "Ngôn ngữ",

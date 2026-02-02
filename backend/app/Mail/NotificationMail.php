@@ -35,6 +35,10 @@ abstract class NotificationMail extends Mailable
         $this->user = $user;
         $this->notificationType = $notificationType;
         $this->data = $data;
+
+        // Set locale for the mailable based on user preference
+        $localeResolver = app(\App\Services\Notifications\NotificationLocaleResolver::class);
+        $this->locale($localeResolver->resolve($this->user));
     }
 
     /**

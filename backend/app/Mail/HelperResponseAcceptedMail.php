@@ -19,7 +19,7 @@ class HelperResponseAcceptedMail extends NotificationMail
      */
     protected function getSubject(): string
     {
-        $petName = 'a pet';
+        $petName = __('messages.emails.common.a_pet');
         if (isset($this->data['pet_id'])) {
             $pet = \App\Models\Pet::find($this->data['pet_id']);
             if ($pet instanceof \App\Models\Pet) {
@@ -27,6 +27,6 @@ class HelperResponseAcceptedMail extends NotificationMail
             }
         }
 
-        return "Great news! Your response for {$petName} has been accepted";
+        return __('messages.emails.subjects.helper_response_accepted', ['pet' => $petName]);
     }
 }

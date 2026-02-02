@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -97,7 +97,7 @@
     <div class="email-container">
         <div class="header">
             <div class="logo">{{ $appName }}</div>
-            <div style="color: #666; font-size: 14px;">Cat Rehoming Platform</div>
+            <div style="color: #666; font-size: 14px;">{{ __('messages.emails.app_description') }}</div>
         </div>
 
         <div class="content">
@@ -105,12 +105,12 @@
         </div>
 
         <div class="footer">
-            <p>This email was sent by {{ $appName }}. If you have any questions, please contact our support team.</p>
+            <p>{{ __('messages.emails.password_reset.sent_from', ['app' => $appName]) }}. {{ __('messages.emails.password_reset.support') }}</p>
 
             <div class="unsubscribe">
                 <p>
-                    Don't want to receive these emails?
-                    <a href="{{ $unsubscribeUrl }}">Unsubscribe from this notification type</a>
+                    {{ __('messages.emails.waitlist.unsubscribe_text') }}
+                    <a href="{{ $unsubscribeUrl }}">{{ __('messages.emails.common.unsubscribe') }}</a>
                 </p>
             </div>
         </div>

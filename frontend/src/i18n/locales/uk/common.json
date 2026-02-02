@@ -15,7 +15,9 @@
     "register": "Реєстрація",
     "invitations": "Запрошення",
     "helperProfiles": "Профілі помічників",
-    "requests": "Запити"
+    "requests": "Запити",
+    "notificationsOpen": "Відкрити сповіщення",
+    "notificationsUnread": "Відкрити сповіщення ({{count}} не прочитано)"
   },
   "actions": {
     "save": "Зберегти",
@@ -105,7 +107,11 @@
     "daysAgo_many": "{{count}} дні тому",
     "daysAgo_other": "{{count}} днів тому",
     "today": "Сьогодні",
-    "yesterday": "Вчора"
+    "yesterday": "Вчора",
+    "secondsAgoShort": "{{count}}с",
+    "minutesAgoShort": "{{count}}хв",
+    "hoursAgoShort": "{{count}}год",
+    "daysAgoShort": "{{count}}д"
   },
   "language": {
     "label": "Мова",

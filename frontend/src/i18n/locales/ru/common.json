@@ -15,7 +15,9 @@
     "register": "Регистрация",
     "invitations": "Приглашения",
     "helperProfiles": "Хелпер",
-    "requests": "Заявки"
+    "requests": "Заявки",
+    "notificationsOpen": "Открыть уведомления",
+    "notificationsUnread": "Открыть уведомления ({{count}} не прочитано)"
   },
   "actions": {
     "save": "Сохранить",
@@ -99,7 +101,11 @@
     "daysAgo": "{{count}} день назад",
     "daysAgo_other": "{{count}} дней назад",
     "today": "Сегодня",
-    "yesterday": "Вчера"
+    "yesterday": "Вчера",
+    "secondsAgoShort": "{{count}}с",
+    "minutesAgoShort": "{{count}}м",
+    "hoursAgoShort": "{{count}}ч",
+    "daysAgoShort": "{{count}}д"
   },
   "language": {
     "label": "Язык",

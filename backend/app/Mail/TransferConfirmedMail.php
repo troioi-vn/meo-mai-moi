@@ -19,7 +19,7 @@ class TransferConfirmedMail extends NotificationMail
      */
     protected function getSubject(): string
     {
-        $petName = 'your pet';
+        $petName = __('messages.emails.common.your_pet');
         if (isset($this->data['pet_name'])) {
             $petName = $this->data['pet_name'];
         } elseif (isset($this->data['pet_id'])) {
@@ -29,6 +29,6 @@ class TransferConfirmedMail extends NotificationMail
             }
         }
 
-        return "Handover confirmed for {$petName}";
+        return __('messages.emails.subjects.transfer_confirmed', ['pet' => $petName]);
     }
 }

@@ -83,128 +83,133 @@ class PetTypeSeeder extends Seeder
             'microchips_allowed' => false,
         ]);
 
+        // Sync Postgres sequence if needed before continuing with auto-incrementing IDs
+        if (config('database.default') === 'pgsql') {
+            \Illuminate\Support\Facades\DB::statement("SELECT setval(pg_get_serial_sequence('pet_types', 'id'), MAX(id)) FROM pet_types");
+        }
+
         $moreTypes = [
             [
                 'name' => [
                     'en' => 'Fish',
                     'vi' => 'Cá',
                     'ru' => 'Рыба',
-                    'uk' => 'Риба'
+                    'uk' => 'Риба',
                 ],
                 'slug' => 'fish',
-                'description' => 'Aquatic pets'
+                'description' => 'Aquatic pets',
             ],
             [
                 'name' => [
                     'en' => 'Rabbit',
                     'vi' => 'Thỏ',
                     'ru' => 'Кролик',
-                    'uk' => 'Кролик'
+                    'uk' => 'Кролик',
                 ],
                 'slug' => 'rabbit',
                 'description' => 'Domestic rabbits',
                 'weight_tracking_allowed' => true,
-                'microchips_allowed' => true
+                'microchips_allowed' => true,
             ],
             [
                 'name' => [
                     'en' => 'Hamster',
                     'vi' => 'Chuột hamster',
                     'ru' => 'Хомяк',
-                    'uk' => 'Хом’як'
+                    'uk' => 'Хом’як',
                 ],
                 'slug' => 'hamster',
                 'description' => 'Small pet rodents',
-                'weight_tracking_allowed' => true
+                'weight_tracking_allowed' => true,
             ],
             [
                 'name' => [
                     'en' => 'Guinea pig',
                     'vi' => 'Chuột lang',
                     'ru' => 'Морская свинка',
-                    'uk' => 'Морська свинка'
+                    'uk' => 'Морська свинка',
                 ],
                 'slug' => 'guinea-pig',
                 'description' => 'Social pet rodents',
-                'weight_tracking_allowed' => true
+                'weight_tracking_allowed' => true,
             ],
             [
                 'name' => [
                     'en' => 'Mouse',
                     'vi' => 'Chuột',
                     'ru' => 'Мышь',
-                    'uk' => 'Миша'
+                    'uk' => 'Миша',
                 ],
                 'slug' => 'mouse',
                 'description' => 'Small pet rodents',
-                'weight_tracking_allowed' => true
+                'weight_tracking_allowed' => true,
             ],
             [
                 'name' => [
                     'en' => 'Rat',
                     'vi' => 'Chuột cống',
                     'ru' => 'Крыса',
-                    'uk' => 'Щур'
+                    'uk' => 'Щур',
                 ],
                 'slug' => 'rat',
                 'description' => 'Intelligent pet rodents',
-                'weight_tracking_allowed' => true
+                'weight_tracking_allowed' => true,
             ],
             [
                 'name' => [
                     'en' => 'Gerbil',
                     'vi' => 'Chuột nhảy',
                     'ru' => 'Песчанка',
-                    'uk' => 'Піщанка'
+                    'uk' => 'Піщанка',
                 ],
                 'slug' => 'gerbil',
                 'description' => 'Small desert rodents',
-                'weight_tracking_allowed' => true
+                'weight_tracking_allowed' => true,
             ],
             [
                 'name' => [
                     'en' => 'Ferret',
                     'vi' => 'Chồn Ferret',
                     'ru' => 'Хорек',
-                    'uk' => 'Тхір'
+                    'uk' => 'Тхір',
                 ],
                 'slug' => 'ferret',
                 'description' => 'Domesticated mustelids',
                 'weight_tracking_allowed' => true,
-                'microchips_allowed' => true
+                'microchips_allowed' => true,
             ],
             [
                 'name' => [
                     'en' => 'Chinchilla',
                     'vi' => 'Sóc Chinchilla',
                     'ru' => 'Шиншилла',
-                    'uk' => 'Шиншила'
+                    'uk' => 'Шиншила',
                 ],
                 'slug' => 'chinchilla',
                 'description' => 'Soft-furred rodents',
-                'weight_tracking_allowed' => true
+                'weight_tracking_allowed' => true,
             ],
             [
                 'name' => [
                     'en' => 'Hedgehog',
                     'vi' => 'Nhím',
                     'ru' => 'Еж',
-                    'uk' => 'Їжак'
+                    'uk' => 'Їжак',
                 ],
                 'slug' => 'hedgehog',
                 'description' => 'Spiny mammals',
-                'weight_tracking_allowed' => true
+                'weight_tracking_allowed' => true,
             ],
             [
                 'name' => [
                     'en' => 'Sugar glider',
                     'vi' => 'Sóc bay Australia',
                     'ru' => 'Сахарная сумчатая летяга',
-                    'uk' => 'Цукрова сумчаста летяга'
+                    'uk' => 'Цукрова сумчаста летяга',
                 ],
                 'slug' => 'sugar-glider',
                 'description' => 'Gliding marsupials',
-                'weight_tracking_allowed' => true
+                'weight_tracking_allowed' => true,
             ],
 
             [
@@ -212,55 +217,55 @@ class PetTypeSeeder extends Seeder
                     'en' => 'Lizard',
                     'vi' => 'Thằn lằn',
                     'ru' => 'Ящерица',
-                    'uk' => 'Ящірка'
+                    'uk' => 'Ящірка',
                 ],
                 'slug' => 'lizard',
                 'description' => 'Pet reptiles',
-                'weight_tracking_allowed' => true
+                'weight_tracking_allowed' => true,
             ],
             [
                 'name' => [
                     'en' => 'Snake',
                     'vi' => 'Rắn',
                     'ru' => 'Змея',
-                    'uk' => 'Змія'
+                    'uk' => 'Змія',
                 ],
                 'slug' => 'snake',
                 'description' => 'Pet reptiles',
-                'weight_tracking_allowed' => true
+                'weight_tracking_allowed' => true,
             ],
             [
                 'name' => [
                     'en' => 'Turtle',
                     'vi' => 'Rùa',
                     'ru' => 'Черепаха',
-                    'uk' => 'Черепаха'
+                    'uk' => 'Черепаха',
                 ],
                 'slug' => 'turtle',
                 'description' => 'Pet reptiles',
-                'weight_tracking_allowed' => true
+                'weight_tracking_allowed' => true,
             ],
             [
                 'name' => [
                     'en' => 'Frog',
                     'vi' => 'Ếch',
                     'ru' => 'Лягушка',
-                    'uk' => 'Жаба'
+                    'uk' => 'Жаба',
                 ],
                 'slug' => 'frog',
                 'description' => 'Pet amphibians',
-                'weight_tracking_allowed' => true
+                'weight_tracking_allowed' => true,
             ],
             [
                 'name' => [
                     'en' => 'Axolotl',
                     'vi' => 'Kỳ giông Axolotl',
                     'ru' => 'Аксолотль',
-                    'uk' => 'Аксолотль'
+                    'uk' => 'Аксолотль',
                 ],
                 'slug' => 'axolotl',
                 'description' => 'Aquatic amphibians',
-                'weight_tracking_allowed' => true
+                'weight_tracking_allowed' => true,
             ],
 
             [
@@ -268,40 +273,40 @@ class PetTypeSeeder extends Seeder
                     'en' => 'Spider',
                     'vi' => 'Nhện',
                     'ru' => 'Паук',
-                    'uk' => 'Павук'
+                    'uk' => 'Павук',
                 ],
                 'slug' => 'spider',
-                'description' => 'Pet arachnids'
+                'description' => 'Pet arachnids',
             ],
             [
                 'name' => [
                     'en' => 'Scorpion',
                     'vi' => 'Bọ cạp',
                     'ru' => 'Скорпион',
-                    'uk' => 'Скорпіон'
+                    'uk' => 'Скорпіон',
                 ],
                 'slug' => 'scorpion',
-                'description' => 'Pet arachnids'
+                'description' => 'Pet arachnids',
             ],
             [
                 'name' => [
                     'en' => 'Snail',
                     'vi' => 'Ốc sên',
                     'ru' => 'Улитка',
-                    'uk' => 'Равлик'
+                    'uk' => 'Равлик',
                 ],
                 'slug' => 'snail',
-                'description' => 'Pet mollusks'
+                'description' => 'Pet mollusks',
             ],
             [
                 'name' => [
                     'en' => 'Crab',
                     'vi' => 'Cua',
                     'ru' => 'Краб',
-                    'uk' => 'Краб'
+                    'uk' => 'Краб',
                 ],
                 'slug' => 'crab',
-                'description' => 'Pet crustaceans'
+                'description' => 'Pet crustaceans',
             ],
 
             [
@@ -309,97 +314,96 @@ class PetTypeSeeder extends Seeder
                     'en' => 'Horse',
                     'vi' => 'Ngựa',
                     'ru' => 'Лошадь',
-                    'uk' => 'Кінь'
+                    'uk' => 'Кінь',
                 ],
                 'slug' => 'horse',
                 'description' => 'Large domesticated mammals',
                 'weight_tracking_allowed' => true,
-                'microchips_allowed' => true
+                'microchips_allowed' => true,
             ],
             [
                 'name' => [
                     'en' => 'Goat',
                     'vi' => 'Dê',
                     'ru' => 'Коза',
-                    'uk' => 'Коза'
+                    'uk' => 'Коза',
                 ],
                 'slug' => 'goat',
                 'description' => 'Farm animals as pets',
                 'weight_tracking_allowed' => true,
-                'microchips_allowed' => true
+                'microchips_allowed' => true,
             ],
             [
                 'name' => [
                     'en' => 'Sheep',
                     'vi' => 'Cừu',
                     'ru' => 'Овца',
-                    'uk' => 'Вівця'
+                    'uk' => 'Вівця',
                 ],
                 'slug' => 'sheep',
                 'description' => 'Farm animals as pets',
                 'weight_tracking_allowed' => true,
-                'microchips_allowed' => true
+                'microchips_allowed' => true,
             ],
             [
                 'name' => [
                     'en' => 'Pig',
                     'vi' => 'Lợn',
                     'ru' => 'Свинья',
-                    'uk' => 'Свиня'
+                    'uk' => 'Свиня',
                 ],
                 'slug' => 'pig',
                 'description' => 'Farm animals as pets',
                 'weight_tracking_allowed' => true,
-                'microchips_allowed' => true
+                'microchips_allowed' => true,
             ],
             [
                 'name' => [
                     'en' => 'Donkey',
                     'vi' => 'Lừa',
                     'ru' => 'Осел',
-                    'uk' => 'Осел'
+                    'uk' => 'Осел',
                 ],
                 'slug' => 'donkey',
                 'description' => 'Large domesticated mammals',
                 'weight_tracking_allowed' => true,
-                'microchips_allowed' => true
+                'microchips_allowed' => true,
             ],
             [
                 'name' => [
                     'en' => 'Cattle',
                     'vi' => 'Gia súc',
                     'ru' => 'Рогатый скот',
-                    'uk' => 'Велика рогата худоба'
+                    'uk' => 'Велика рогата худоба',
                 ],
                 'slug' => 'cattle',
                 'description' => 'Farm animals as pets',
                 'weight_tracking_allowed' => true,
-                'microchips_allowed' => true
+                'microchips_allowed' => true,
             ],
             [
                 'name' => [
                     'en' => 'Chicken',
                     'vi' => 'Gà',
                     'ru' => 'Курица',
-                    'uk' => 'Курка'
+                    'uk' => 'Курка',
                 ],
                 'slug' => 'chicken',
                 'description' => 'Domestic poultry',
-                'weight_tracking_allowed' => true
+                'weight_tracking_allowed' => true,
             ],
             [
                 'name' => [
                     'en' => 'Duck',
                     'vi' => 'Vịt',
                     'ru' => 'Утка',
-                    'uk' => 'Качка'
+                    'uk' => 'Качка',
                 ],
                 'slug' => 'duck',
                 'description' => 'Domestic poultry',
-                'weight_tracking_allowed' => true
+                'weight_tracking_allowed' => true,
             ],
         ];
-
 
         foreach ($moreTypes as $index => $data) {
             $type = PetType::updateOrCreate(

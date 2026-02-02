@@ -19,7 +19,7 @@ class HelperResponseCanceledMail extends NotificationMail
      */
     protected function getSubject(): string
     {
-        $petName = 'your pet';
+        $petName = __('messages.emails.common.your_pet');
         if (isset($this->data['pet_name'])) {
             $petName = $this->data['pet_name'];
         } elseif (isset($this->data['pet_id'])) {
@@ -29,6 +29,6 @@ class HelperResponseCanceledMail extends NotificationMail
             }
         }
 
-        return "A helper withdrew their response for {$petName}";
+        return __('messages.emails.subjects.helper_response_canceled', ['pet' => $petName]);
     }
 }

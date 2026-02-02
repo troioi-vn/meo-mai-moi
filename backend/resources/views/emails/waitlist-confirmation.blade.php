@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>You're on the waitlist!</title>
+    <title>{{ __('messages.emails.subjects.waitlist', ['app' => config('app.name')]) }}</title>
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
         .header { background: #10B981; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
@@ -15,51 +15,51 @@
 </head>
 <body>
     <div class="header">
-        <h1>🎉 You're on the waitlist!</h1>
+        <h1>{{ __('messages.emails.waitlist.title') }}</h1>
     </div>
 
     <div class="content">
-        <p>Hello there!</p>
+        <p>{{ __('messages.emails.common.hello_simple') }}</p>
 
-        <p>Thank you for your interest in <strong>{{ config('app.name') }}</strong>! We've successfully added you to our waitlist.</p>
+        <p>{{ __('messages.emails.waitlist.intro', ['app' => config('app.name')]) }}</p>
 
-        <h3>What happens next?</h3>
+        <h3>{{ __('messages.emails.waitlist.next_steps_title') }}</h3>
         <ul>
-            <li>You'll be among the first to know when we have space available</li>
-            <li>We'll send you an invitation as soon as possible</li>
-            <li>Keep an eye on your inbox for updates</li>
+            <li>{{ __('messages.emails.waitlist.next_step_first') }}</li>
+            <li>{{ __('messages.emails.waitlist.next_step_invite') }}</li>
+            <li>{{ __('messages.emails.waitlist.next_step_inbox') }}</li>
         </ul>
 
         <div class="details">
-            <h3>Your Details</h3>
-            <p><strong>Email:</strong> {{ $waitlistEntry->email }}</p>
-            <p><strong>Joined waitlist:</strong> {{ $waitlistEntry->created_at->format('F j, Y \a\t g:i A') }}</p>
-            <p><strong>Status:</strong> {{ ucfirst($waitlistEntry->status) }}</p>
+            <h3>{{ __('messages.emails.waitlist.details_title') }}</h3>
+            <p><strong>{{ __('messages.emails.waitlist.details_email') }}</strong> {{ $waitlistEntry->email }}</p>
+            <p><strong>{{ __('messages.emails.waitlist.details_joined') }}</strong> {{ $waitlistEntry->created_at->format('F j, Y \a\t g:i A') }}</p>
+            <p><strong>{{ __('messages.emails.waitlist.details_status') }}</strong> {{ ucfirst($waitlistEntry->status) }}</p>
         </div>
 
         <div class="highlight">
-            <h3>Stay Connected</h3>
-            <p>While you wait, feel free to:</p>
+            <h3>{{ __('messages.emails.waitlist.stay_connected_title') }}</h3>
+            <p>{{ __('messages.emails.waitlist.stay_connected_intro') }}</p>
             <ul>
-                <li>Follow us on social media for updates</li>
-                <li>Share {{ config('app.name') }} with friends who might be interested</li>
-                <li>Reply to this email if you have any questions</li>
+                <li>{{ __('messages.emails.waitlist.stay_connected_social') }}</li>
+                <li>{{ __('messages.emails.waitlist.stay_connected_share', ['app' => config('app.name')]) }}</li>
+                <li>{{ __('messages.emails.waitlist.stay_connected_questions') }}</li>
             </ul>
         </div>
 
-        <p>We're excited to welcome you to the community soon!</p>
+        <p>{{ __('messages.emails.waitlist.closing') }}</p>
 
         <div class="footer">
-            <p>Best regards,<br>The {{ config('app.name') }} Team</p>
+            <p>{{ __('messages.emails.common.best_regards') }},<br>{{ __('messages.emails.common.team', ['app' => config('app.name')]) }}</p>
 
             <hr style="margin: 20px 0;">
 
             <p><small>
-                <strong>Don't want to wait?</strong> If you have a friend who's already a member, ask them to send you an invitation!
+                <strong>{{ __('messages.emails.waitlist.dont_want_wait_title') }}</strong> {{ __('messages.emails.waitlist.dont_want_wait_text') }}
             </small></p>
 
             <p><small>
-                To unsubscribe from waitlist updates, <a href="{{ url('/unsubscribe?email=' . urlencode($waitlistEntry->email)) }}">click here</a>.
+                {{ __('messages.emails.waitlist.unsubscribe_text') }} <a href="{{ url('/unsubscribe?email=' . urlencode($waitlistEntry->email)) }}">{{ __('messages.emails.waitlist.click_here') }}</a>.
             </small></p>
         </div>
     </div>

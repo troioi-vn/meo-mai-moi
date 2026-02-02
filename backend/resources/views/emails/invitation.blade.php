@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>You're Invited!</title>
+    <title>{{ __('messages.emails.subjects.invitation', ['app' => config('app.name')]) }}</title>
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
         .header { background: #4F46E5; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
@@ -15,38 +15,38 @@
 </head>
 <body>
     <div class="header">
-        <h1>🎉 You're Invited!</h1>
+        <h1>{{ __('messages.emails.invitation.title') }}</h1>
     </div>
 
     <div class="content">
-        <p>Hello there! 👋</p>
+        <p>{{ __('messages.emails.common.hello_simple') }} 👋</p>
 
-        <p><strong>{{ $inviter->name }}</strong> has invited you to join <strong>{{ config('app.name') }}</strong>.</p>
+        <p><strong>{{ $inviter->name }}</strong> {{ __('messages.emails.invitation.intro', ['app' => config('app.name'), 'inviter' => '']) }}</p>
 
-        <p>We're building an amazing community and would love to have you as part of it!</p>
+        <p>{{ __('messages.emails.invitation.community') }}</p>
 
         <div style="text-align: center; margin: 30px 0;">
-            <a href="{{ $invitationUrl }}" class="button">Accept Invitation</a>
+            <a href="{{ $invitationUrl }}" class="button">{{ __('messages.emails.common.accept_invitation') }}</a>
         </div>
 
         <div class="highlight">
-            <h3>Important Notes:</h3>
+            <h3>{{ __('messages.emails.invitation.notes_title') }}:</h3>
             <ul>
-                <li>This invitation is personal to you and cannot be shared</li>
-                <li>The invitation link will expire if not used</li>
-                <li>If you have any questions, just reply to this email</li>
+                <li>{{ __('messages.emails.invitation.note_personal') }}</li>
+                <li>{{ __('messages.emails.invitation.note_expire') }}</li>
+                <li>{{ __('messages.emails.invitation.note_questions') }}</li>
             </ul>
         </div>
 
-        <p>We can't wait to welcome you to the community!</p>
+        <p>{{ __('messages.emails.invitation.closing') }}</p>
 
         <div class="footer">
-            <p>Best regards,<br>The {{ config('app.name') }} Team</p>
+            <p>{{ __('messages.emails.common.best_regards') }},<br>{{ __('messages.emails.common.team', ['app' => config('app.name')]) }}</p>
 
             <hr style="margin: 20px 0;">
 
             <p><small>
-                If you're having trouble clicking the "Accept Invitation" button, copy and paste the URL below into your web browser:<br>
+                {{ __('messages.emails.common.button_trouble', ['action' => __('messages.emails.common.accept_invitation')]) }}<br>
                 <a href="{{ $invitationUrl }}">{{ $invitationUrl }}</a>
             </small></p>
         </div>

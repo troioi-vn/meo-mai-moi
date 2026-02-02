@@ -4,15 +4,24 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\SerializesTranslatableAsString;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
+use Spatie\Translatable\HasTranslations;
 
 class Category extends Model
 {
     use HasFactory;
+    use HasTranslations;
+    use SerializesTranslatableAsString;
+
+    /**
+     * Attributes that are translatable.
+     */
+    public array $translatable = ['name'];
 
     protected $fillable = [
         'name',

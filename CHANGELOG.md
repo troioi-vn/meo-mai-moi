@@ -6,6 +6,16 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Translatable Pet Data (i18n)**: Implemented full internationalization support for pet-related entities (Pet Types, Categories, Cities) enabling multi-language content management.
+  - **Database Migration**: Added migration to convert `name` columns from VARCHAR to JSONB format for PetType, Category, and City models, preserving existing data as English translations.
+  - **Model Updates**: Enhanced Category, City, and PetType models with `HasTranslations` trait and custom `SerializesTranslatableAsString` concern for automatic locale-based serialization.
+  - **Admin Panel**: Updated all Filament resources (CategoryResource, CityResource, PetTypeResource) with `Translatable` trait and locale switchers for multi-language editing in the admin interface.
+  - **API Controllers**: Modified ListCategoriesController, StoreCategoryController, ListCitiesController, and StoreCityController to support locale-aware searching and validation for translatable fields.
+  - **Seeders**: Updated CategorySeeder, CitySeeder, and PetTypeSeeder to include comprehensive translations in English, Vietnamese, and Russian for all seeded data.
+  - **Dependencies**: Added `spatie/laravel-translatable` and `filament/spatie-laravel-translatable-plugin` packages for robust translation management.
+  - **Tests**: Updated CategoryTest and CityTest assertions to work with JSONB translation fields.
+  - **Documentation**: Enhanced i18n documentation with translatable model usage examples and updated API conventions to explain locale-based serialization.
+
 - **Vietnamese Language Support**: Added complete Vietnamese (vi) localization to the pet care management platform.
   - **Backend**: Added Vietnamese to supported locales in `config/locales.php` and created comprehensive translation files for messages (`lang/vi/messages.php`) and validation errors (`lang/vi/validation.php`).
   - **Frontend**: Added Vietnamese translations for all major features including authentication, pet management, helper profiles, placement requests, settings, and common UI elements. Updated i18n configuration to include Vietnamese locale support with proper language detection and fallback handling.

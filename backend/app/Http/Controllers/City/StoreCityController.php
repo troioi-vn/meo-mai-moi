@@ -69,8 +69,9 @@ class StoreCityController extends Controller
             return $this->sendError(__('messages.city.limit_reached'), 422);
         }
 
-        // Unique name per country
-        $existingByName = City::where('name', $validated['name'])
+        // Unique name per country (check against current locale)
+        $locale = app()->getLocale();
+        $existingByName = City::whereJsonContainsLocale('name', $locale, $validated['name'])
             ->where('country', $country)
             ->first();
 

@@ -13,6 +13,7 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\SpatieLaravelTranslatablePlugin;
 use Filament\Support\Colors\Color;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -45,7 +46,11 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->plugin(FilamentUsersPlugin::make());
+            ->plugin(FilamentUsersPlugin::make())
+            ->plugin(
+                SpatieLaravelTranslatablePlugin::make()
+                    ->defaultLocales(config('locales.supported', ['en', 'ru', 'vi']))
+            );
 
         // Register Filament Shield only outside of the test environment to simplify test access
         if (! app()->environment('testing')) {

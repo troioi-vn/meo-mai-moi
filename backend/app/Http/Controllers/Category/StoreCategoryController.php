@@ -62,8 +62,9 @@ class StoreCategoryController extends Controller
         // Generate slug and check uniqueness
         $slug = Str::slug($validated['name']);
 
-        // Check for unique name + pet_type_id combination
-        $existingByName = Category::where('name', $validated['name'])
+        // Check for unique name + pet_type_id combination (check against current locale)
+        $locale = app()->getLocale();
+        $existingByName = Category::whereJsonContainsLocale('name', $locale, $validated['name'])
             ->where('pet_type_id', $validated['pet_type_id'])
             ->first();
 

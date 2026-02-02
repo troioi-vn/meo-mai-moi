@@ -4,14 +4,23 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\SerializesTranslatableAsString;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
+use Spatie\Translatable\HasTranslations;
 
 class PetType extends Model
 {
     use HasFactory;
+    use HasTranslations;
+    use SerializesTranslatableAsString;
+
+    /**
+     * Attributes that are translatable.
+     */
+    public array $translatable = ['name'];
 
     protected $attributes = [
         'placement_requests_allowed' => false,
@@ -124,7 +133,9 @@ class PetType extends Model
      */
     public function scopeOrdered($query)
     {
-        return $query->orderBy('display_order')->orderBy('name');
+        $locale = app()->getLocale();
+
+        return $query->orderBy('display_order')->orderByRaw('name->>? asc', [$locale]);
     }
 
     /**

@@ -14,6 +14,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
+use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\BulkActionGroup;
@@ -28,6 +29,8 @@ use Illuminate\Support\Str;
 
 class PetTypeResource extends Resource
 {
+    use Translatable;
+
     protected static ?string $model = PetType::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';

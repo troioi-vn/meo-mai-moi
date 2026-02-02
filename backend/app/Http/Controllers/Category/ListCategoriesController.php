@@ -59,10 +59,12 @@ class ListCategoriesController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->where('name', 'ilike', "%{$search}%");
+            $locale = app()->getLocale();
+            $query->whereRaw('name->>? ilike ?', [$locale, "%{$search}%"]);
         }
 
-        $categories = $query->orderBy('name')->get();
+        $locale = app()->getLocale();
+        $categories = $query->orderByRaw('name->>? asc', [$locale])->get();
 
         return $this->sendSuccess($categories);
     }

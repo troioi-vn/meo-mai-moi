@@ -11,6 +11,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\BulkActionGroup;
@@ -25,6 +26,8 @@ use Illuminate\Support\Str;
 
 class CityResource extends Resource
 {
+    use Translatable;
+
     protected static ?string $model = City::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office';

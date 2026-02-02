@@ -32,7 +32,7 @@ Categories enable pet owners and administrators to organize and tag pets with me
 
 ```sql
 id                  bigint (primary key)
-name                varchar(50) - category name (e.g., "Siamese", "Tabby", "Long-haired")
+name                jsonb - translatable category name (e.g., {"en": "Siamese", "vi": "Mèo Siamese"})
 slug                varchar(60) - URL-friendly name (auto-generated, unique per pet type)
 pet_type_id         bigint (foreign key) - references pet_types.id on delete cascade
 description         text (nullable) - category description/guidelines
@@ -74,7 +74,7 @@ Located at `backend/app/Models/Category.php`
 
 **Attributes:**
 
-- `name`: Category display name (50 char max)
+- `name`: Category display name (Translatable JSONB)
 - `slug`: Auto-generated from name, unique per pet type
 - `description`: Optional markdown/text description
 - `created_by`: User ID of creator (null if admin-created)

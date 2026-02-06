@@ -42,6 +42,8 @@ docs/.vitepress/dist
 backups/
 tmp/
 .deploy/
+.agents/
+.claude/
 entrypoint-*.log
 docker_error.md
 

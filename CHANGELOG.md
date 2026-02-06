@@ -6,6 +6,15 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Health Records UX Improvements**:
+  - Made health record description optional across backend and frontend.
+  - Streamlined photo uploads by allowing direct file attachment during record creation and editing, removing the separate upload step.
+  - Enhanced vaccination records with automatic next due date calculation based on pet age and configurable booster intervals (1 month for kittens/puppies, 12 months for adults).
+  - Added "Schedule early" option for vaccinations to set reminders ahead of the actual due date.
+  - Updated vaccination forms with full i18n support for new fields across all supported languages.
+
+- **Frontend Test Stability**: Improved `MyPetsPage` unit tests with better async handling and comprehensive mock data.
+
 - **Admin Test Notification Feature**: Added a "Test Notification" section in the admin panel under Email Configurations, enabling administrators to send test notifications for validation and debugging purposes.
   - **UI Components**: Created a new Filament widget (`TestNotificationWidget`) with form fields for test email address, notification type selection (checkboxes for all supported types including enum and ad-hoc types), and optional locale dropdown (defaults to English).
   - **Notification Dispatch**: Implemented force-send functionality that bypasses user preferences, sending selected notification types as emails to the specified address and/or creating in-app notifications for the current admin user.
@@ -81,26 +90,6 @@ All notable changes to this project are documented here, following the [Keep a C
   - Added comprehensive translation keys to `common.json`, `helper.json`, and `placement.json` for both English and Russian locales.
   - Updated `HelperProfilePlacementRequestsCard` to use localized status labels and badges.
   - Fixed test regressions by updating assertions to match new localized strings and resolved initialization order issues in `NotificationPreferences` component.
-
-- **UI Layout and Navigation Improvements**: Enhanced user interface with better navigation, layout consistency, and internationalization support.
-  - Fixed page layouts to account for fixed navigation bar by changing `min-h-screen` to `min-h-[calc(100vh-4rem)]` across all pages.
-  - Added active state highlighting to main navigation items using `useLocation` for current page detection.
-  - Updated footer with GitHub and Patreon links including Heart icon for better branding.
-  - Improved pet card design with shadow transitions instead of scaling and updated aspect ratios.
-  - Updated icon colors to use theme-aware colors (emerald/destructive) for better dark mode compatibility.
-
-- **Progressive Web App Support**: Added internationalization to PWA install banner with translations for install prompts, buttons, and descriptions in all supported languages (English, Russian, Ukrainian, Vietnamese).
-
-- **Messaging System Fixes**: Fixed user identification in chat components by replacing hardcoded user ID with authenticated user ID from `useAuth` hook, ensuring correct message display and chat participant identification.
-
-- **Comprehensive UI Translations**: Added extensive translation coverage for new UI features including 404 pages, banned user notifications, PWA install prompts, and helper profile validation warnings across all supported languages.
-
-- **Component Refactors**: Improved various page components with better empty states, layout consistency, and user experience enhancements.
-  - Added empty state with icon to messages page when no conversations exist.
-  - Refactored MyPetsPage with new Empty component and improved responsive layout.
-  - Updated NotFoundPage with full internationalization support.
-  - Enhanced RequestDetailPage with better spacing and translated error messages.
-  - Updated test expectations to match new component structures and translated content.
 
 ### Changed
 

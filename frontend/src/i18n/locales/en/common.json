@@ -331,7 +331,13 @@
     "chatWithHelper": "Chat with Helper",
     "unknownHelper": "Unknown Helper",
     "accept": "Accept",
-    "reject": "Reject"
+    "reject": "Reject",
+    "warnings": {
+      "requestTypeMismatch": "This helper profile doesn't accept {{type}} requests. Please select another profile or update your profile settings.",
+      "cityMismatch": "This pet is located in a different city than your helper profile.",
+      "countryMismatch": "This pet is located in a different country than your helper profile.",
+      "alreadyResponded": "You've already responded to this request."
+    }
   },
   "petPublicProfile": {
     "home": "Home",
@@ -351,5 +357,21 @@
   "n/a": "N/A",
   "yes": "Yes",
   "no": "No",
-  "check_form": "Please check the form for errors."
+  "check_form": "Please check the form for errors.",
+  "pwa": {
+    "installTitle": "Install Meo Mai Moi",
+    "installDescription": "Add to your home screen for quick access.",
+    "notNow": "Not now",
+    "install": "Install"
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "description": "The page you are looking for does not exist.",
+    "goHome": "Go to Homepage"
+  },
+  "banned": {
+    "title": "Read-only mode",
+    "description": "Your account has been banned. You can browse, but any changes (posting, editing, messaging) are disabled.",
+    "reason": "Reason: {{reason}}"
+  }
 }

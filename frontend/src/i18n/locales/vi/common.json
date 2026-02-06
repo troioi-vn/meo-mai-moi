@@ -331,7 +331,13 @@
     "chatWithHelper": "Trò chuyện với người hỗ trợ",
     "unknownHelper": "Người hỗ trợ không xác định",
     "accept": "Chấp nhận",
-    "reject": "Từ chối"
+    "reject": "Từ chối",
+    "warnings": {
+      "requestTypeMismatch": "Hồ sơ người hỗ trợ này không chấp nhận yêu cầu loại {{type}}. Vui lòng chọn hồ sơ khác hoặc cập nhật cài đặt hồ sơ.",
+      "cityMismatch": "Thú cưng này ở thành phố khác với hồ sơ người hỗ trợ của bạn.",
+      "countryMismatch": "Thú cưng này ở quốc gia khác với hồ sơ người hỗ trợ của bạn.",
+      "alreadyResponded": "Bạn đã phản hồi yêu cầu này."
+    }
   },
   "petPublicProfile": {
     "home": "Trang chủ",
@@ -351,5 +357,21 @@
   "n/a": "N/A",
   "yes": "Có",
   "no": "Không",
-  "check_form": "Vui lòng kiểm tra lại lỗi trong biểu mẫu."
+  "check_form": "Vui lòng kiểm tra lại lỗi trong biểu mẫu.",
+  "pwa": {
+    "installTitle": "Cài đặt Meo Mai Moi",
+    "installDescription": "Thêm vào màn hình chính để truy cập nhanh.",
+    "notNow": "Không phải bây giờ",
+    "install": "Cài đặt"
+  },
+  "notFound": {
+    "title": "Không tìm thấy trang",
+    "description": "Trang bạn đang tìm kiếm không tồn tại.",
+    "goHome": "Về trang chủ"
+  },
+  "banned": {
+    "title": "Chế độ chỉ đọc",
+    "description": "Tài khoản của bạn đã bị cấm. Bạn có thể duyệt xem, nhưng mọi thay đổi (đăng bài, chỉnh sửa, nhắn tin) đều bị vô hiệu hóa.",
+    "reason": "Lý do: {{reason}}"
+  }
 }

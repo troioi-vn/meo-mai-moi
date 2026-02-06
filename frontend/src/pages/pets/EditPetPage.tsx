@@ -240,7 +240,12 @@ const EditPetPage: React.FC = () => {
                 <WeightHistoryCard petId={loadedPet.id} canEdit={true} mode="edit" />
               )}
               {supportsVaccinations && loadedPet && (
-                <UpcomingVaccinationsSection petId={loadedPet.id} canEdit={true} mode="edit" />
+                <UpcomingVaccinationsSection
+                  petId={loadedPet.id}
+                  canEdit={true}
+                  mode="edit"
+                  petBirthday={loadedPet.birthday}
+                />
               )}
               {supportsMedical && loadedPet && (
                 <MedicalRecordsSection petId={loadedPet.id} canEdit={true} mode="edit" />

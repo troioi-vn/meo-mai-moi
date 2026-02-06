@@ -21,7 +21,7 @@ export interface UseVaccinationsResult {
     administered_at: string
     due_at?: string | null
     notes?: string | null
-  }) => Promise<void>
+  }) => Promise<VaccinationRecord>
   update: (
     id: number,
     payload: Partial<{
@@ -77,7 +77,7 @@ export const useVaccinations = (
     administered_at: string
     due_at?: string | null
     notes?: string | null
-  }) => {
+  }): Promise<VaccinationRecord> => {
     const created = await createVaccination(petId, {
       vaccine_name: payload.vaccine_name,
       administered_at: payload.administered_at,
@@ -88,6 +88,7 @@ export const useVaccinations = (
     if (status === 'active' || status === 'all') {
       setItems((prev) => [created, ...prev])
     }
+    return created
   }
 
   const update = async (

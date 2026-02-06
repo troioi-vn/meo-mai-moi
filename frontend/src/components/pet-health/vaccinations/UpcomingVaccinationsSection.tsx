@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react'
-import { Syringe, Pencil, Trash2, RefreshCw, History, ImagePlus } from 'lucide-react'
+import { useState } from 'react'
+import { Syringe, Pencil, Trash2, RefreshCw, History } from 'lucide-react'
 import { HealthRecordPhotoModal } from '@/components/pet-health/HealthRecordPhotoModal'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
@@ -26,11 +26,7 @@ import {
 } from '@/components/ui/dialog'
 import { useVaccinations } from '@/hooks/useVaccinations'
 import { VaccinationForm, type VaccinationFormValues } from './VaccinationForm'
-import {
-  getUpcomingVaccinations,
-  getVaccinationIntervalDays,
-  calculateNextDueDate,
-} from '@/utils/vaccinationStatus'
+import { getUpcomingVaccinations } from '@/utils/vaccinationStatus'
 import { type VaccinationRecord } from '@/api/generated/model/vaccinationRecord'
 import { format, parseISO } from 'date-fns'
 import { toast } from '@/lib/i18n-toast'
@@ -43,6 +39,8 @@ interface UpcomingVaccinationsSectionProps {
   onVaccinationChange?: () => void
   /** 'view' shows upcoming vaccinations with add button, 'edit' shows all vaccinations without add button */
   mode?: 'view' | 'edit'
+  /** Pet's birthday for calculating default booster interval */
+  petBirthday?: string | null
 }
 
 export function UpcomingVaccinationsSection({
@@ -50,6 +48,7 @@ export function UpcomingVaccinationsSection({
   canEdit,
   onVaccinationChange,
   mode = 'view',
+  petBirthday,
 }: UpcomingVaccinationsSectionProps) {
   const { t } = useTranslation(['pets', 'common'])
   const vState = useVaccinations(petId)
@@ -68,9 +67,6 @@ export function UpcomingVaccinationsSection({
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
-  const [uploadingPhotoForId, setUploadingPhotoForId] = useState<number | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [selectedRecordId, setSelectedRecordId] = useState<number | null>(null)
   // Photo modal state
   const [photoModalOpen, setPhotoModalOpen] = useState(false)
   const [photoModalRecord, setPhotoModalRecord] = useState<
@@ -89,7 +85,14 @@ export function UpcomingVaccinationsSection({
     setServerError(null)
     setSubmitting(true)
     try {
-      await create(values)
+      const record = await create(values)
+      if (values.photo && record.id) {
+        try {
+          await uploadPhoto(record.id, values.photo)
+        } catch {
+          toast.error('pets:medical.uploadError')
+        }
+      }
       setAdding(false)
       onVaccinationChange?.()
     } catch {
@@ -104,6 +107,13 @@ export function UpcomingVaccinationsSection({
     setSubmitting(true)
     try {
       await update(id, values)
+      if (values.photo) {
+        try {
+          await uploadPhoto(id, values.photo)
+        } catch {
+          toast.error('pets:medical.uploadError')
+        }
+      }
       setEditingId(null)
       toast.success('pets:vaccinations.updateSuccess')
       onVaccinationChange?.()
@@ -143,41 +153,6 @@ export function UpcomingVaccinationsSection({
     }
   }
 
-  const handleUploadClick = (recordId: number) => {
-    setSelectedRecordId(recordId)
-    fileInputRef.current?.click()
-  }
-
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file || !selectedRecordId) return
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('pets:medical.selectImageError')
-      return
-    }
-
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('pets:medical.fileSizeError')
-      return
-    }
-
-    setUploadingPhotoForId(selectedRecordId)
-    try {
-      await uploadPhoto(selectedRecordId, file)
-      toast.success('pets:medical.uploadSuccess')
-      onVaccinationChange?.()
-    } catch {
-      toast.error('pets:medical.uploadError')
-    } finally {
-      setUploadingPhotoForId(null)
-      setSelectedRecordId(null)
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
-      }
-    }
-  }
-
   const handleDeletePhoto = async (recordId: number) => {
     try {
       await deletePhoto(recordId)
@@ -193,18 +168,15 @@ export function UpcomingVaccinationsSection({
     setPhotoModalOpen(true)
   }
 
-  // Calculate initial values for renew form
+  // Calculate initial values for renew form (due_at omitted so the form auto-calculates it)
   const getRenewInitialValues = (
     record: VaccinationRecord & { id: number }
   ): Partial<VaccinationFormValues> => {
     const today = new Date().toISOString().split('T')[0] ?? ''
-    const intervalDays = getVaccinationIntervalDays(record)
-    const defaultInterval = 365 // Default to 1 year if no interval found
 
     return {
       vaccine_name: record.vaccine_name ?? '',
       administered_at: today,
-      due_at: calculateNextDueDate(today, intervalDays ?? defaultInterval),
       notes: null,
     }
   }
@@ -270,6 +242,7 @@ export function UpcomingVaccinationsSection({
                 }}
                 submitting={submitting}
                 serverError={serverError}
+                petBirthday={petBirthday}
               />
             </div>
           ) : (
@@ -309,6 +282,11 @@ export function UpcomingVaccinationsSection({
                             }}
                             submitting={submitting}
                             serverError={serverError}
+                            petBirthday={petBirthday}
+                            existingPhotoUrl={v.photo_url}
+                            onDeleteExistingPhoto={async () => {
+                              await handleDeletePhoto(v.id)
+                            }}
                           />
                         ) : (
                           <div className="flex flex-col gap-2">
@@ -348,7 +326,7 @@ export function UpcomingVaccinationsSection({
                                 </div>
                               </div>
                               <div className="flex items-center gap-1">
-                                {/* View mode: show Renew button only */}
+                                {/* View mode: show Renew button */}
                                 {mode === 'view' && canEdit && !isCompleted && dueDate && (
                                   <Button
                                     variant={isPast ? 'default' : 'outline'}
@@ -362,8 +340,8 @@ export function UpcomingVaccinationsSection({
                                     {t('vaccinations.renew')}
                                   </Button>
                                 )}
-                                {/* Edit mode: show Pencil and Delete icons */}
-                                {mode === 'edit' && canEdit && !isCompleted && (
+                                {/* Show Pencil and Delete icons when canEdit */}
+                                {canEdit && !isCompleted && (
                                   <>
                                     <Button
                                       variant="ghost"
@@ -414,8 +392,8 @@ export function UpcomingVaccinationsSection({
                                     </AlertDialog>
                                   </>
                                 )}
-                                {/* Delete for completed records (in edit mode only) */}
-                                {mode === 'edit' && canEdit && isCompleted && (
+                                {/* Delete for completed records */}
+                                {canEdit && isCompleted && (
                                   <AlertDialog>
                                     <AlertDialogTrigger asChild>
                                       <Button
@@ -457,40 +435,21 @@ export function UpcomingVaccinationsSection({
                               </div>
                             </div>
                             {/* Photo section */}
-                            {(Boolean(v.photo_url) ||
-                              (mode === 'edit' && canEdit && !isCompleted)) && (
+                            {Boolean(v.photo_url) && (
                               <div className="flex items-center gap-2 mt-1 ml-8">
-                                {v.photo_url && (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      openPhotoModal(v)
-                                    }}
-                                    className="w-12 h-12 overflow-hidden rounded border cursor-pointer hover:opacity-90 transition-opacity"
-                                  >
-                                    <img
-                                      src={v.photo_url || ''}
-                                      alt="Vaccination record"
-                                      className="w-full h-full object-cover"
-                                    />
-                                  </button>
-                                )}
-                                {mode === 'edit' && canEdit && !isCompleted && !v.photo_url && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-7 text-xs"
-                                    onClick={() => {
-                                      handleUploadClick(v.id)
-                                    }}
-                                    disabled={uploadingPhotoForId === v.id}
-                                  >
-                                    <ImagePlus className="h-3 w-3 mr-1" />
-                                    {uploadingPhotoForId === v.id
-                                      ? t('medical.uploading')
-                                      : t('medical.addPhoto')}
-                                  </Button>
-                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    openPhotoModal(v)
+                                  }}
+                                  className="w-12 h-12 overflow-hidden rounded border cursor-pointer hover:opacity-90 transition-opacity"
+                                >
+                                  <img
+                                    src={v.photo_url ?? ''}
+                                    alt="Vaccination record"
+                                    className="w-full h-full object-cover"
+                                  />
+                                </button>
                               </div>
                             )}
                           </div>
@@ -543,21 +502,11 @@ export function UpcomingVaccinationsSection({
               }}
               submitting={submitting}
               serverError={serverError}
+              petBirthday={petBirthday}
             />
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Hidden file input for photo uploads */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={(event) => {
-          void handleFileChange(event)
-        }}
-        className="hidden"
-      />
 
       {/* Photo modal */}
       {photoModalRecord?.photo_url && (
@@ -572,7 +521,7 @@ export function UpcomingVaccinationsSection({
           open={photoModalOpen}
           onOpenChange={setPhotoModalOpen}
           initialIndex={0}
-          canDelete={mode === 'edit' && canEdit && !photoModalRecord.completed_at}
+          canDelete={canEdit && !photoModalRecord.completed_at}
           onDelete={async () => {
             await handleDeletePhoto(photoModalRecord.id)
           }}

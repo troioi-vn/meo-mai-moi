@@ -250,6 +250,7 @@ const PetProfilePage: React.FC = () => {
               canEdit={canEdit}
               onVaccinationChange={handleVaccinationChange}
               mode="view"
+              petBirthday={pet.birthday}
             />
           )}
 

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { CheckCircle2, Info, AlertTriangle, XCircle } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from '@/lib/i18n-toast'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
@@ -144,12 +144,32 @@ function NotificationActionButton({
   )
 }
 
+function useNow(intervalMs = 60_000) {
+  const [now, setNow] = useState<number>(0)
+  useEffect(() => {
+    const initTimeout = setTimeout(() => {
+      setNow(Date.now())
+    }, 0)
+    const id = setInterval(() => {
+      setNow(Date.now())
+    }, intervalMs)
+    return () => {
+      clearTimeout(initTimeout)
+      clearInterval(id)
+    }
+  }, [intervalMs])
+  return now
+}
+
 export function NotificationList() {
   const { t } = useTranslation('common')
   const { bellNotifications, loading, markBellRead, applyBellUpdate } = useNotifications()
 
+  const now = useNow()
+
   const timeAgo = (iso: string) => {
-    const diff = Date.now() - new Date(iso).getTime()
+    const created = new Date(iso).getTime()
+    const diff = now === 0 ? 0 : now - created
     const s = Math.floor(diff / 1000)
     if (s < 60) return t('time.secondsAgoShort', { count: s })
     const m = Math.floor(s / 60)

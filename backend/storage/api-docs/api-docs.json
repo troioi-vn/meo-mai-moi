@@ -1779,7 +1779,6 @@
                             "schema": {
                                 "required": [
                                     "record_type",
-                                    "description",
                                     "record_date"
                                 ],
                                 "properties": {

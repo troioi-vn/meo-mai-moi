@@ -24,7 +24,7 @@ use OpenApi\Attributes as OA;
     requestBody: new OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
-            required: ['record_type', 'description', 'record_date'],
+            required: ['record_type', 'record_date'],
             properties: [
                 new OA\Property(property: 'record_type', type: 'string', example: 'Vet Visit'),
                 new OA\Property(property: 'description', type: 'string', example: 'Annual checkup - all clear'),
@@ -53,7 +53,7 @@ class StoreMedicalRecordController extends Controller
 
         $validated = $this->validateWithErrorHandling($request, [
             'record_type' => ['required', 'string', 'max:100'],
-            'description' => $this->textValidationRules(true, 2000),
+            'description' => $this->textValidationRules(false, 2000),
             'record_date' => $this->dateValidationRules(true, false),
             'vet_name' => $this->textValidationRules(false, 255),
         ]);

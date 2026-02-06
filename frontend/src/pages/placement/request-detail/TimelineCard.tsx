@@ -44,7 +44,7 @@ export function TimelineCard({ request }: TimelineCardProps) {
           </div>
           <div className="flex-1 h-px bg-border" />
           <div
-            className={`flex items-center gap-1 ${request.status === 'finalized' ? 'text-green-600 font-medium' : 'text-muted-foreground'}`}
+            className={`flex items-center gap-1 ${request.status === 'finalized' ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-muted-foreground'}`}
           >
             <div
               className={`h-3 w-3 rounded-full ${request.status === 'finalized' ? 'bg-green-600' : 'bg-muted-foreground'}`}

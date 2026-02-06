@@ -1,6 +1,6 @@
 import React from 'react'
 import { Cat, PawPrint, MessageCircle } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
@@ -10,15 +10,17 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ImpersonationIndicator } from '@/components/layout/ImpersonationBanner'
 import { AdminPanelLink } from '@/components/user/AdminPanelLink'
 import { useNotifications } from '@/contexts/NotificationProvider'
+import { cn } from '@/lib/utils'
 
 interface NavIconLinkProps {
   to: string
   label: string
   icon: React.ReactNode
   badgeCount?: number
+  active?: boolean
 }
 
-function NavIconLink({ to, label, icon, badgeCount = 0 }: NavIconLinkProps) {
+function NavIconLink({ to, label, icon, badgeCount = 0, active }: NavIconLinkProps) {
   const hasBadge = badgeCount > 0
   const badgeText = badgeCount > 9 ? '9+' : String(badgeCount)
   const ariaLabel = hasBadge ? `${label} (${badgeText} unread)` : label
@@ -29,7 +31,7 @@ function NavIconLink({ to, label, icon, badgeCount = 0 }: NavIconLinkProps) {
       size="icon"
       aria-label={ariaLabel}
       title={label}
-      className="relative"
+      className={cn('relative min-h-11 min-w-11', active && 'text-primary')}
       asChild
     >
       <Link to={to}>
@@ -50,43 +52,34 @@ const MainNav: React.FC = () => {
   const { isAuthenticated, isLoading, user } = useAuth()
   const isVerified = Boolean(user?.email_verified_at)
   const { unreadMessageCount } = useNotifications()
+  const location = useLocation()
+
+  const isOnPets = location.pathname === '/' || location.pathname.startsWith('/pets')
+  const isOnRequests = location.pathname.startsWith('/requests')
+  const isOnMessages = location.pathname.startsWith('/messages')
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 border-b py-2">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 border-b">
       <nav className="container flex h-16 items-center justify-between px-3 sm:px-4">
-        {/* Left: Brand */}
+        {/* Left: Main navigation */}
         <div className="flex items-center gap-1 sm:gap-2">
           {isAuthenticated && (
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={t('nav.pets')}
-              title={t('nav.pets')}
-              className="ml-0 sm:ml-6"
-              asChild
-            >
-              <Link to="/">
-                <Cat className="size-6" />
-                <span className="sr-only">{t('nav.pets')}</span>
-              </Link>
-            </Button>
+            <NavIconLink
+              to="/"
+              label={t('nav.pets')}
+              icon={<Cat className="size-6" />}
+              active={isOnPets}
+            />
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={t('nav.requests')}
-            title={t('nav.requests')}
-            className="ml-0 sm:ml-6"
-            asChild
-          >
-            <Link to="/requests">
-              <PawPrint className="size-6" />
-              <span className="sr-only">{t('nav.requests')}</span>
-            </Link>
-          </Button>
+          <NavIconLink
+            to="/requests"
+            label={t('nav.requests')}
+            icon={<PawPrint className="size-6" />}
+            active={isOnRequests}
+          />
         </div>
 
-        {/* Right: Actions padding right 5 */}
+        {/* Right: Actions */}
         <div className="flex items-center gap-1 sm:gap-2">
           {isLoading ? (
             <Skeleton className="h-9 w-24" />
@@ -100,6 +93,7 @@ const MainNav: React.FC = () => {
                   label={t('nav.messages')}
                   icon={<MessageCircle className="size-6" />}
                   badgeCount={unreadMessageCount}
+                  active={isOnMessages}
                 />
               )}
               {isVerified && <NotificationBell />}
@@ -122,5 +116,3 @@ const MainNav: React.FC = () => {
 }
 
 export default MainNav
-
-// Reminder: Add 'pt-16' to your main content wrapper to offset the fixed nav height.

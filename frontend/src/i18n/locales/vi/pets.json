@@ -236,7 +236,11 @@
     "dateAdministered": "Ngày tiêm",
     "nextDueDate": "Ngày tiêm nhắc lại",
     "batchNumber": "Số lô",
-    "administeredBy": "Người thực hiện"
+    "administeredBy": "Người thực hiện",
+    "boosterInterval": "Khoảng cách tiêm nhắc lại",
+    "boosterIntervalUnit": "tháng",
+    "scheduleEarly": "Lên lịch sớm",
+    "scheduleEarlyUnit": "ngày"
   },
   "weight": {
     "title": "Lịch sử cân nặng",

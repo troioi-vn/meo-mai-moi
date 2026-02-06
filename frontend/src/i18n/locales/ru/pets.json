@@ -236,7 +236,11 @@
     "dateAdministered": "Дата вакцинации",
     "nextDueDate": "Следующая дата",
     "batchNumber": "Номер партии",
-    "administeredBy": "Кем введено"
+    "administeredBy": "Кем введено",
+    "boosterInterval": "Интервал ревакцинации",
+    "boosterIntervalUnit": "мес.",
+    "scheduleEarly": "Запас по сроку",
+    "scheduleEarlyUnit": "дн."
   },
   "weight": {
     "title": "История веса",

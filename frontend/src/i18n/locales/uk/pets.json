@@ -236,7 +236,11 @@
     "dateAdministered": "Дата щеплення",
     "nextDueDate": "Дата наступного щеплення",
     "batchNumber": "Номер партіі",
-    "administeredBy": "Ким введено"
+    "administeredBy": "Ким введено",
+    "boosterInterval": "Інтервал ревакцинації",
+    "boosterIntervalUnit": "місяців",
+    "scheduleEarly": "Запланувати заздалегідь",
+    "scheduleEarlyUnit": "днів"
   },
   "weight": {
     "title": "Історія ваги",

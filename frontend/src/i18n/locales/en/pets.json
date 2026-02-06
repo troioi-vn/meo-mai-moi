@@ -236,7 +236,11 @@
     "dateAdministered": "Date Administered",
     "nextDueDate": "Next Due Date",
     "batchNumber": "Batch Number",
-    "administeredBy": "Administered By"
+    "administeredBy": "Administered By",
+    "boosterInterval": "Booster interval",
+    "boosterIntervalUnit": "months",
+    "scheduleEarly": "Schedule early",
+    "scheduleEarlyUnit": "days"
   },
   "weight": {
     "title": "Weight History",

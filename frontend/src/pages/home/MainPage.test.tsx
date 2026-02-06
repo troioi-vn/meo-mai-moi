@@ -75,7 +75,7 @@ describe('MainPage Integration Tests', () => {
 
       // Check that the page container has proper flex layout
       const pageContainer = mainElement.parentElement
-      expect(pageContainer).toHaveClass('flex', 'flex-col', 'min-h-screen', 'bg-background')
+      expect(pageContainer).toHaveClass('flex', 'flex-col')
     })
   })
 

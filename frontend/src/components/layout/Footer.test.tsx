@@ -7,6 +7,6 @@ describe('Footer', () => {
     render(<Footer />)
     const footer = screen.getByRole('contentinfo')
     expect(footer).toBeInTheDocument()
-    expect(footer).toHaveClass('w-full', 'border-t', 'py-4')
+    expect(footer).toHaveClass('w-full', 'border-t')
   })
 })

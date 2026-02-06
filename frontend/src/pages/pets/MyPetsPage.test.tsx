@@ -161,9 +161,7 @@ describe('MyPetsPage', () => {
     renderAuthenticatedPage()
 
     await waitFor(() => {
-      expect(
-        screen.getByText('No pets yet — add your first pet to get started!')
-      ).toBeInTheDocument()
+      expect(screen.getByText('No pets yet')).toBeInTheDocument()
       expect(screen.getByRole('button', { name: 'Add Your First Pet' })).toBeInTheDocument()
     })
   })

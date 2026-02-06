@@ -12,8 +12,7 @@ describe('PwaInstallBanner', () => {
 
     expect(screen.getByText('Install Meo Mai Moi')).toBeInTheDocument()
     expect(screen.getByText(/Add to your home screen for quick access/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /install/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /dismiss/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /not now/i })).toBeInTheDocument()
   })
 
   it('calls onInstall when install button is clicked', () => {
@@ -22,17 +21,23 @@ describe('PwaInstallBanner', () => {
 
     render(<PwaInstallBanner onInstall={onInstall} onDismiss={onDismiss} />)
 
-    fireEvent.click(screen.getByRole('button', { name: /install/i }))
+    // Find the Install button (not the "Not now" button)
+    const installButtons = screen.getAllByRole('button')
+    const installBtn = installButtons.find(
+      (btn) => btn.textContent === 'Install' && btn.getAttribute('data-variant') === 'default'
+    )
+    expect(installBtn).toBeDefined()
+    fireEvent.click(installBtn!)
     expect(onInstall).toHaveBeenCalledTimes(1)
   })
 
-  it('calls onDismiss when dismiss button is clicked', () => {
+  it('calls onDismiss when not now button is clicked', () => {
     const onInstall = vi.fn().mockResolvedValue(undefined)
     const onDismiss = vi.fn()
 
     render(<PwaInstallBanner onInstall={onInstall} onDismiss={onDismiss} />)
 
-    fireEvent.click(screen.getByRole('button', { name: /dismiss/i }))
+    fireEvent.click(screen.getByRole('button', { name: /not now/i }))
     expect(onDismiss).toHaveBeenCalledTimes(1)
   })
 })

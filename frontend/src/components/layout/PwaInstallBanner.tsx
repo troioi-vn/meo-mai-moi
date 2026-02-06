@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -17,6 +18,7 @@ interface PwaInstallBannerProps {
 }
 
 export function PwaInstallBanner({ onInstall, onDismiss }: PwaInstallBannerProps) {
+  const { t } = useTranslation('common')
   const [open, setOpen] = React.useState(true)
 
   const handleInstall = async () => {
@@ -25,7 +27,6 @@ export function PwaInstallBanner({ onInstall, onDismiss }: PwaInstallBannerProps
       setOpen(false)
     } catch (error) {
       console.error('Failed to install PWA:', error)
-      // Optionally dismiss the banner on error to allow user to retry later
       onDismiss()
       setOpen(false)
     }
@@ -44,19 +45,19 @@ export function PwaInstallBanner({ onInstall, onDismiss }: PwaInstallBannerProps
         <DialogHeader className="gap-1">
           <DialogTitle className="flex items-center gap-2">
             <Download className="h-4 w-4 text-muted-foreground" />
-            Install Meo Mai Moi
+            {t('pwa.installTitle')}
           </DialogTitle>
-          <DialogDescription>Add to your home screen for quick access.</DialogDescription>
+          <DialogDescription>{t('pwa.installDescription')}</DialogDescription>
         </DialogHeader>
 
         <DialogFooter className="sm:justify-end">
           <DialogClose asChild>
             <Button type="button" variant="outline" size="sm">
-              Not now
+              {t('pwa.notNow')}
             </Button>
           </DialogClose>
           <Button type="button" size="sm" onClick={() => void handleInstall()}>
-            Install
+            {t('pwa.install')}
           </Button>
         </DialogFooter>
 
@@ -66,7 +67,7 @@ export function PwaInstallBanner({ onInstall, onDismiss }: PwaInstallBannerProps
             variant="ghost"
             size="icon-sm"
             className="absolute top-4 right-4"
-            aria-label="Dismiss"
+            aria-label={t('actions.close')}
           >
             <X className="h-4 w-4" />
           </Button>

@@ -121,14 +121,14 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
 
   return (
     <Card
-      className="flex flex-col overflow-hidden rounded-lg shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer"
+      className="flex flex-col overflow-hidden rounded-lg shadow-sm transition-shadow duration-200 hover:shadow-lg cursor-pointer"
       onClick={handleCardClick}
     >
       <div className="block">
         <img
           src={imageUrl}
           alt={pet.name}
-          className={`h-48 w-full object-cover ${isDeceased ? 'grayscale' : ''}`}
+          className={`aspect-square w-full object-cover ${isDeceased ? 'grayscale' : ''}`}
         />
       </div>
       <CardHeader>
@@ -168,8 +168,8 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
           })}
         </div>
       </CardHeader>
-      <CardContent className="flex grow flex-col justify-between p-4">
-        <div className="mt-4">
+      <CardContent className="flex grow flex-col justify-end p-4">
+        <div>
           {/* Show Respond button for all users (except pet owner) when there's an active placement request */}
           {(!isAuthenticated || !isOwner) &&
             supportsPlacement &&

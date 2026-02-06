@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import type { Chat } from '@/api/generated/model'
 import { formatRelativeTime } from '@/utils/date'
 import { getInitials } from '@/utils/initials'
+import { useAuth } from '@/hooks/use-auth'
 
 interface ChatListProps {
   chats: Chat[]
@@ -24,6 +25,7 @@ export const ChatList: React.FC<ChatListProps> = ({
   onSelectChat,
 }) => {
   const { t } = useTranslation('common')
+  const { user } = useAuth()
 
   if (loading) {
     return (
@@ -62,6 +64,7 @@ export const ChatList: React.FC<ChatListProps> = ({
                 key={chat.id}
                 chat={chat}
                 isSelected={chat.id === selectedChatId}
+                currentUserId={user?.id}
                 onClick={() => {
                   onSelectChat(chat.id)
                 }}
@@ -77,13 +80,13 @@ export const ChatList: React.FC<ChatListProps> = ({
 interface ChatListItemProps {
   chat: Chat
   isSelected: boolean
+  currentUserId?: number
   onClick: () => void
 }
 
-const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onClick }) => {
+const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, currentUserId, onClick }) => {
   const { t } = useTranslation('common')
-  // For direct chats, find the other participant (not current user, assuming id 1)
-  const otherParticipant = chat.participants?.find((p) => p.id !== 1)
+  const otherParticipant = chat.participants?.find((p) => p.id !== currentUserId)
   const displayName = otherParticipant?.name ?? t('messaging.unknownUser')
   const avatarUrl = otherParticipant?.avatar_url ?? undefined
   const initials = getInitials(displayName)

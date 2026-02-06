@@ -11,6 +11,7 @@ import { MessageBubble } from './MessageBubble'
 import type { Chat, ChatMessage } from '@/api/generated/model'
 import { cn } from '@/lib/utils'
 import { getInitials } from '@/utils/initials'
+import { useAuth } from '@/hooks/use-auth'
 
 interface ChatWindowProps {
   chat: Chat | null
@@ -54,7 +55,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     }
   }, [loading, messages.length])
 
-  const otherParticipant = chat?.participants?.find((p) => p.id !== 1)
+  const { user } = useAuth()
+  const otherParticipant = chat?.participants?.find((p) => p.id !== user?.id)
   const displayName = otherParticipant?.name ?? t('actions.loading')
   const avatarUrl = otherParticipant?.avatar_url ?? undefined
   const initials = getInitials(displayName)
